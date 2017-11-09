@@ -9,11 +9,13 @@ import { CloseIconButton }  from '../button';
 type PropsType = {
   hasActiveFilters?: boolean,
   isExpandable?: boolean,
+  hasDetails?: boolean,
   previousQueryLoading?: boolean,
   error?: string,
   onDeleteNode: Function,
   onFilterClick: Function,
   onExpandClick: Function,
+  onDetailsClick: Function,
 };
 
 const QueryNodeActions = (props: PropsType) => {
@@ -55,6 +57,15 @@ const QueryNodeActions = (props: PropsType) => {
               className={`btn--icon ${base}__action`}
             >
               <i className="fa fa-expand" /> {T.translate('queryEditor.expand')}
+            </span>
+          }
+          {
+            props.hasDetails &&
+            <span
+              onClick={props.onDetailsClick}
+              className={`btn--icon ${base}__action`}
+            >
+              <i className="fa fa-list-alt" /> {T.translate('queryEditor.details')}
             </span>
           }
         </div>

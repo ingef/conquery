@@ -2,6 +2,7 @@ import React, { PropTypes }   from 'react';
 import classnames             from 'classnames';
 import T                      from 'i18n-react';
 import { DropTarget }         from 'react-dnd';
+import { NativeTypes }        from 'react-dnd-html5-backend';
 import { dndTypes }           from '../common/constants';
 
 
@@ -9,7 +10,10 @@ const dropzoneTarget = {
   drop(props, monitor) {
     const item = monitor.getItem();
 
-    props.onDropNode(item);
+    if (item.files)
+      props.onDropFiles(item);
+    else
+      props.onDropNode(item);
 
     if (item.isPreviousQuery)
       props.onLoadPreviousQuery(item.id);
@@ -54,6 +58,7 @@ QueryEditorDropzone.propTypes = {
   connectDropTarget: PropTypes.func.isRequired,
   isOver: PropTypes.bool.isRequired,
   onDropNode: PropTypes.func.isRequired,
+  onDropFiles: PropTypes.func.isRequired,
   onLoadPreviousQuery: PropTypes.func.isRequired,
 };
 
@@ -61,7 +66,8 @@ export default DropTarget(
   [
     dndTypes.CATEGORY_TREE_NODE,
     dndTypes.QUERY_NODE,
-    dndTypes.PREVIOUS_QUERY
+    dndTypes.PREVIOUS_QUERY,
+    NativeTypes.FILE
   ],
   dropzoneTarget,
   collect

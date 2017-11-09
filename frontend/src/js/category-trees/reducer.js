@@ -73,11 +73,13 @@ const setTreeSuccess = (state: StateType, action: Object): StateType => {
   // Globally store the huge (1-5 MB) trees for read only
   // - keeps the redux store free from huge data
   const { treeId, data } = action.payload;
-  const rootConcept = state.trees[treeId]
+  const newState = updateTree(state, action, { loading: false });
+
+  const rootConcept = newState.trees[treeId];
 
   setTree(rootConcept, treeId, data);
 
-  return updateTree(state, action, { loading: false });
+  return newState;
 };
 
 const setTreeError = (state: StateType, action: Object): StateType => {

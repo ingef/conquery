@@ -188,3 +188,27 @@ export function postPrefixForSuggestions(
     }
   );
 };
+
+export type ConceptListResolutionResultType = {
+  resolvedConcepts?: String[],
+  unknownCodes?: String[],
+  resolvedFilter?: {
+    filterId: String,
+    tableId: String,
+    value: {
+      label: String,
+      value: String
+    }[]
+  }
+};
+
+export function postConceptsListToResolve(
+  datasetId: DatasetIdType,
+  conceptId: string,
+  concepts: string[],
+): ConceptListResolutionResultType {
+  return fetchJson(API_URL + `/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
+    method: 'POST',
+    body: { concepts },
+  });
+};

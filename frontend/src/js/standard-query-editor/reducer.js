@@ -3,7 +3,7 @@
 import T from 'i18n-react';
 
 import {
-  getConceptByIdWithTables
+  getConceptsByIdsWithTables
 } from '../category-trees/globalTreeStoreHelper';
 
 import {
@@ -36,6 +36,10 @@ import {
 } from '../previous-queries/list/actionTypes';
 
 import {
+  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT
+} from '../upload-concept-list-modal/actionTypes'
+
+import {
   INTEGER_RANGE
 } from '../form';
 
@@ -48,9 +52,12 @@ import {
   LOAD_QUERY,
   CLEAR_QUERY,
   EXPAND_PREVIOUS_QUERY,
+  SHOW_CONCEPT_LIST_DETAILS,
+  HIDE_CONCEPT_LIST_DETAILS,
 } from './actionTypes';
 
 import type {
+  ElementType, QueryGroupType,
   StandardQueryType
 } from './types';
 
@@ -58,7 +65,7 @@ import type {
 const initialState: StandardQueryType = [];
 
 
-const filterItem = (item) => {
+const filterItem = (item: ElementType) => {
   return {
     id: item.id,
     label: item.label,
@@ -69,6 +76,10 @@ const filterItem = (item) => {
     hasActiveFilters: item.hasActiveFilters,
     excludeTimestamps: item.excludeTimestamps,
     isPreviousQuery: item.isPreviousQuery,
+
+    ids: item.ids,
+    isConceptList: item.isConceptList,
+    conceptListMetadata: item.conceptListMetadata,
   };
 };
 
@@ -98,17 +109,30 @@ const setElementProperties = (node, andIdx, orIdx, properties) => {
   return setGroupProperties(node, andIdx, groupProperties);
 }
 
+const setAllElementsProperties = (node, properties) => {
+  return node.map(group => ({
+    ...group,
+    elements: group.elements.map(element => ({
+      ...element,
+      ...properties
+    }))
+  }));
+}
+
 const nodeHasActiveFilters = (node, tables = node.tables) => {
   return node.excludeTimestamps || nodeHasActiveTableFilters(tables);
 }
 
 const dropAndNode = (state, action) => {
-  const { item } = action.payload;
+  const group = state[state.length - 1];
+  const dateRangeOfLastGroup = (group ? group.dateRange : null);
+  const {item, dateRange = dateRangeOfLastGroup} = action.payload;
 
   const nextState = [
     ...state,
     {
-      elements: [filterItem(item)]
+      elements: [filterItem(item)],
+      dateRange: dateRange
     },
   ];
 
@@ -387,28 +411,48 @@ const mergeTablesFromSavedConcept = (savedConcept, concept) => {
 const expandPreviousQuery = (state, action) => {
   const { rootConcepts, groups } = action.payload;
 
-  return groups.map(group => {
+  return groups.map((group: QueryGroupType) => {
     return {
       ...group,
-      elements: group.elements.map(element => {
+      elements: group.elements.map((element: ElementType) => {
         if (element.type === 'QUERY') {
           return {
             ...element,
             isPreviousQuery: true
           };
-        } else {
-          const savedConcept = getConceptByIdWithTables(element.id, rootConcepts);
+        } else if (element.type === 'CONCEPT_LIST') {
+          const lookupResult = getConceptsByIdsWithTables(element.ids, rootConcepts);
 
-          if (!savedConcept)
+          if (!lookupResult)
+            return {
+              ...element,
+              error: T.translate('queryEditor.couldNotInsertConceptList')
+            };
+
+          const tables = mergeTablesFromSavedConcept(lookupResult, element);
+
+          return {
+            isConceptList: true,
+            label: element.label,
+            conceptListMetadata:
+              buildConceptListMetadata(lookupResult.root, lookupResult.concepts),
+            ids: element.ids,
+            hasActiveFilters: nodeHasActiveFilters(element, tables),
+            tables
+          };
+        } else {
+          const lookupResult = getConceptsByIdsWithTables([element.id], rootConcepts);
+
+          if (!lookupResult)
             return {
               ...element,
               error: T.translate('queryEditor.couldNotExpandNode')
             };
 
-          const tables = mergeTablesFromSavedConcept(savedConcept, element);
+          const tables = mergeTablesFromSavedConcept(lookupResult, element);
 
           return {
-            ...savedConcept,
+            ...lookupResult.concepts[0],
             ...element,
             hasActiveFilters: nodeHasActiveFilters(element, tables),
             tables
@@ -418,6 +462,16 @@ const expandPreviousQuery = (state, action) => {
     }
   });
 };
+
+const showConceptListDetails = (state, action) => {
+  const { andIdx, orIdx } = action.payload;
+
+  return setElementProperties(state, andIdx, orIdx, { showDetails: true });
+}
+
+const hideConceptListDetails = (state, action) => {
+  return setAllElementsProperties(state, { showDetails: false });
+}
 
 const findPreviousQueries = (state, action) => {
   // Find all nodes that are previous queries and have the correct id
@@ -508,6 +562,57 @@ const loadFilterSuggestionsSuccess = (state, action) =>
 const loadFilterSuggestionsError = (state, action) =>
   setNodeFilterProperties(state, action, { isLoading: false, options: [] });
 
+const buildConceptListMetadata = (root, concepts) => ({
+  root: root.label,
+  concepts: concepts.map(c => ({ label: c.label, description: c.description }))
+});
+
+const insertUploadedConceptList = (state, action) => {
+  const { label, rootConcepts, resolutionResult, queryContext } = action.data;
+
+  let queryElement = { error: T.translate('queryEditor.couldNotInsertConceptList') };
+
+  if (resolutionResult.conceptList) {
+    const lookupResult = getConceptsByIdsWithTables(resolutionResult.conceptList, rootConcepts);
+
+    if (lookupResult)
+      queryElement = {
+        label,
+        conceptListMetadata:
+          buildConceptListMetadata(lookupResult.root, lookupResult.concepts),
+        ids: resolutionResult.conceptList,
+        tables: lookupResult.tables,
+        isConceptList: true
+      };
+  } else if (resolutionResult.filter) {
+    const [conceptRoot] =
+      getConceptsByIdsWithTables([resolutionResult.selectedRoot], rootConcepts).concepts;
+    const resolvedTable = {
+      id: resolutionResult.filter.tableId,
+      filters: [{
+          id: resolutionResult.filter.filterId,
+          value: resolutionResult.filter.value.map(filterValue => filterValue.value),
+          options: resolutionResult.filter.value,
+      }]
+    };
+    const tables = conceptRoot.tables.map(table => ({
+      ...table,
+      filters: mergeFiltersFromSavedConcept(resolvedTable, table)
+    }));
+
+    queryElement = {
+      ...filterItem(conceptRoot),
+      tables,
+      hasActiveFilters: true
+    };
+  }
+
+  if (queryContext.andIdx !== undefined && queryContext.andIdx !== null)
+    return dropOrNode(state, { payload: { item: queryElement, andIdx: queryContext.andIdx } });
+
+  return dropAndNode(state, { payload: { item: queryElement, dateRange: queryContext.dateRange } });
+};
+
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
 // like `dateRange` or `exclude`.
@@ -578,6 +683,10 @@ const query = (
       return resetGroupDates(state, action);
     case EXPAND_PREVIOUS_QUERY:
       return expandPreviousQuery(state, action)
+    case SHOW_CONCEPT_LIST_DETAILS:
+      return showConceptListDetails(state, action);
+    case HIDE_CONCEPT_LIST_DETAILS:
+      return hideConceptListDetails(state);
     case LOAD_PREVIOUS_QUERY_START:
       return loadPreviousQueryStart(state, action);
     case LOAD_PREVIOUS_QUERY_SUCCESS:
@@ -592,6 +701,8 @@ const query = (
       return loadFilterSuggestionsSuccess(state, action);
     case LOAD_STANDARD_FILTER_SUGGESTIONS_ERROR:
       return loadFilterSuggestionsError(state, action);
+    case UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
+      return insertUploadedConceptList(state, action);
     default:
       return state;
   }

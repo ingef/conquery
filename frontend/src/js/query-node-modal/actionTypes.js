@@ -1,6 +1,3 @@
-// @flow
-/* eslint-disable max-len */
-
 // QUERY NODE MODAL
 export const SET_STANDARD_NODE = "query-node-modal/SET_STANDARD_NODE";
 export const CLEAR_STANDARD_NODE = "query-node-modal/CLEAR_STANDARD_NODE";

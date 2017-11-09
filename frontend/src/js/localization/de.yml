@@ -18,20 +18,24 @@ queryRunner:
   stopSuccess: "Anfrage erfolgreich gestoppt."
   stopError: "Anfrage stoppen fehlgeschlagen."
   startSuccess: "Anfrage erfolgreich gestartet."
+  endSuccess: "Anfrage erfolgreich abgeschlossen."
   startError: "Anfrage starten fehlgeschlagen."
   resultError: "Anfrageergebnis konnte nicht geladen werden."
-  resultCount: " Ergebnisse gefunden"
+  resultCount: "{count} Ergebnisse gefunden"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
   downloadResults: "Ergebnisse herunterladen (CSV)"
 
 queryEditor:
   couldNotExpandNode: "Knoten nicht gefunden"
+  couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
   filter: "Filter"
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
+  details: "Details"
   previousQuery: "Anfrage"
+  conceptList: "Konzeptliste"
   loadingPreviousQuery: "Lade Anfragedetails"
 
 dropzone:
@@ -153,13 +157,23 @@ statistics:
     timespan: "Zeitraum"
     dateMinLabel: "Von"
     dateMaxLabel: "Bis"
-    timeResolution: "Zeitliche Auflösung"
     timeInterval: "Zeitintervall"
-    before: "DAVOR"
-    neutral: "NEUTRAL"
-    after: "DANACH"
-    days: "TAGE"
-    quarters: "QUARTALE"
+    indexDate:
+      label: "Indexdatum"
+      before: "DAVOR"
+      neutral: "GLEICH"
+      after: "DANACH"
+    timeUnit:
+      label: "Zeiteinheit"
+      days: "Tage"
+      quarters: "Quartale"
+      years: "Jahre"
+      complete: "Gesamter Zeitraum"
+    timestamp:
+      label: "Zeitstempel"
+      first: "ERSTES"
+      last: "LETZTES"
+      random: "ZUFÄLLIG"
     filter: "Filter"
 
   exampleForm:
@@ -174,6 +188,24 @@ uploadQueryResultsModal:
   previousQueryCreated: "Frühere Anfrage erfolgreich erstellt"
   formatInfo:
     text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
+
+uploadConceptListModal:
+  headline: "Konzeptliste hochladen"
+  label: "Name der Konzeptliste"
+  selectConceptRootNode: "Konzeptbaum-Wurzel auswählen"
+  insertNode: "Knoten einfügen"
+  result: "Ergebnis"
+  resolvedCodes:
+    1: "Ein Konzeptcode konnte aufgelöst werden."
+    _: "{context} Konzeptcodes konnten aufgelöst werden."
+  unknownCodes:
+    1: "Folgender Konzeptcode konnte nicht aufgelöst werden:"
+    _: "Folgende {context} Konzeptcodes konnten nicht aufgelöst werden:"
+  error: "Beim Auflösen der Konzeptcodes ist ein Fehler aufgetreten."
+
+conceptListDetailsModal:
+  conceptTreeRoot: "Konzeptbaum"
+  conceptCodes: "Konzeptcodes"
 
 uploadReport:
   successful: "{count} Zeilen erfolgreich importiert"

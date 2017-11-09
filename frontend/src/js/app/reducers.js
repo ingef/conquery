@@ -32,6 +32,7 @@ import { reducer as uploadQueryResults }       from '../previous-queries/upload'
 import { reducer as deletePreviousQueryModal } from '../previous-queries/delete-modal';
 import { reducer as timebasedQuery }           from '../timebased-query-editor';
 import { reducer as statistics }               from '../statistics';
+import { reducer as uploadConceptListModal }   from '../upload-concept-list-modal';
 
 import { createQueryRunnerReducer }            from '../query-runner';
 import { createQueryNodeModalReducer }         from '../query-node-modal';
@@ -46,6 +47,7 @@ export type StateType = {
 export default combineReducers({
   categoryTrees,
   query,
+  uploadConceptListModal,
   standardQueryRunner: createQueryRunnerReducer('standard'),
   timebasedQueryRunner: createQueryRunnerReducer('timebased'),
   queryNodeModal: createQueryNodeModalReducer('standard'),

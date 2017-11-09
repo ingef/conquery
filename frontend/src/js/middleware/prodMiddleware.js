@@ -1,4 +1,5 @@
 import thunk                 from 'redux-thunk';
+import multi                 from 'redux-multi'
 import { routerMiddleware }  from 'react-router-redux';
 
 export default function(browserHistory) {
@@ -6,6 +7,7 @@ export default function(browserHistory) {
 
   return [
     thunk,
+    multi,
     reduxRouterMiddleware,
   ];
 }

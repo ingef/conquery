@@ -18,6 +18,8 @@ const {
 type PropsType = FieldPropsType & {
   label?: string,
   className?: string,
+  inputGroupClassName?: string,
+  inputGroupElementClassName? : string,
 };
 
 const formatDate = (date) =>
@@ -57,49 +59,51 @@ const DateRangePicker = (props: PropsType) => {
           {props.label}
         </span>
       }
-      <div>
-        <label
-          className="input-label"
-          htmlFor="datepicker-min"
-        >
-          {T.translate('statistics.common.dateMinLabel')}
-        </label>
-        <DatePicker
-          id="datepicker-min"
-          className={classnames({
-            "query-group-modal__datepicker--has-value": !!props.input.value.minDate
-          })}
-          locale="de"
-          dateFormat={LOCALIZED_DATE_FORMAT}
-          selected={convertToDate(props.input.value.minDate)}
-          placeholderText={T.translate('queryGroupModal.datePlaceholder')}
-          isClearable={true}
-          onChange={date => onChangeMinDate(formatDate(date))}
-          showYearDropdown={true}
-          scrollableYearDropdown={true}
-        />
-      </div>
-      <div>
-        <label
-          className="input-label"
-          htmlFor="datepicker-max"
-        >
-          {T.translate('statistics.common.dateMaxLabel')}
-        </label>
-        <DatePicker
-          id="datepicker-max"
-          className={classnames({
-            "query-group-modal__datepicker--has-value": !!props.input.value.maxDate
-          })}
-          locale="de"
-          dateFormat={LOCALIZED_DATE_FORMAT}
-          selected={convertToDate(props.input.value.maxDate)}
-          placeholderText={T.translate('queryGroupModal.datePlaceholder')}
-          isClearable={true}
-          onChange={date => onChangeMaxDate(formatDate(date))}
-          showYearDropdown={true}
-          scrollableYearDropdown={true}
-        />
+      <div className={props.inputGroupClassName}>
+        <div className={props.inputGroupElementClassName}>
+          <label
+            className="input-label"
+            htmlFor="datepicker-min"
+          >
+            {T.translate('statistics.common.dateMinLabel')}
+          </label>
+          <DatePicker
+            id="datepicker-min"
+            className={classnames({
+              "query-group-modal__datepicker--has-value": !!props.input.value.minDate
+            })}
+            locale="de"
+            dateFormat={LOCALIZED_DATE_FORMAT}
+            selected={convertToDate(props.input.value.minDate)}
+            placeholderText={T.translate('queryGroupModal.datePlaceholder')}
+            isClearable={true}
+            onChange={date => onChangeMinDate(formatDate(date))}
+            showYearDropdown={true}
+            scrollableYearDropdown={true}
+          />
+        </div>
+        <div className={props.inputGroupElementClassName}>
+          <label
+            className="input-label"
+            htmlFor="datepicker-max"
+          >
+            {T.translate('statistics.common.dateMaxLabel')}
+          </label>
+          <DatePicker
+            id="datepicker-max"
+            className={classnames({
+              "query-group-modal__datepicker--has-value": !!props.input.value.maxDate
+            })}
+            locale="de"
+            dateFormat={LOCALIZED_DATE_FORMAT}
+            selected={convertToDate(props.input.value.maxDate)}
+            placeholderText={T.translate('queryGroupModal.datePlaceholder')}
+            isClearable={true}
+            onChange={date => onChangeMaxDate(formatDate(date))}
+            showYearDropdown={true}
+            scrollableYearDropdown={true}
+          />
+        </div>
       </div>
     </div>
   );

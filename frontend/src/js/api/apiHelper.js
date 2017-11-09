@@ -52,6 +52,18 @@ const transformStandardQueryToApi = (query, version) =>  {
             type: 'QUERY',
             excludeTimestamps: element.excludeTimestamps,
           };
+        } else if (element.isConceptList) {
+          const tables = element.tables
+            ? transformTablesToApi(element.tables)
+            : [];
+
+          return {
+            ids: element.ids,
+            type: 'CONCEPT_LIST',
+            label: element.label,
+            tables,
+            excludeTimestamps: element.excludeTimestamps
+          }
         } else {
           const tables = element.tables
             ? transformTablesToApi(element.tables)

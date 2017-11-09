@@ -1,4 +1,6 @@
 --require test/.setup
+--require jsdom-global/register
+--require mock-local-storage
 --compilers js:babel-register
 --reporter spec
 --recursive

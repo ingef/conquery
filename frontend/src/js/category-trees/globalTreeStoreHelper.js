@@ -74,14 +74,19 @@ const findParentConcepts = (concepts: TreeNodeType[]): TreeNodeType[] => {
   return findParentConcepts([parentConceptWithId, ...concepts]);
 }
 
-export const getConceptByIdWithTables = (conceptId: TreeNodeIdType, rootConcepts: TreesType) => {
-  const concept = getConceptById(conceptId);
+export const getConceptsByIdsWithTables = (
+  conceptIds: TreeNodeIdType[],
+  rootConcepts: TreesType
+) => {
+  const concepts = conceptIds.map(c => {
+    const concept = getConceptById(c);
 
-  if (!concept) return null;
+    return concept !== null ?  {...concept, id: c} : null;
+  }).filter(c => !!c);
 
-  const conceptWithId = { ...concept, id: conceptId };
+  if (concepts.length !== conceptIds.length) return null;
 
-  const parentConceptIds = findParentConcepts([conceptWithId]).map(
+  const parentConceptIds = findParentConcepts(concepts).map(
     c => c.id.toString() // toString so we can find them by object keys
   );
 
@@ -97,7 +102,8 @@ export const getConceptByIdWithTables = (conceptId: TreeNodeIdType, rootConcepts
   if (parentConceptsWithTables.length !== 1) return null;
 
   return {
-    ...conceptWithId,
+    concepts,
+    root: parentConceptsWithTables[0],
     tables: parentConceptsWithTables[0].tables
   };
 }

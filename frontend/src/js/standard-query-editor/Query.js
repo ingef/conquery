@@ -16,31 +16,42 @@ import {
 
 import {
   dropAndNode,
+  dropConceptListFile,
+  dropOrConceptListFile,
   dropOrNode,
   deleteNode,
   deleteGroup,
   toggleExcludeGroup,
   expandPreviousQuery,
   setStandardNode,
+  showConceptListDetails,
+  hideConceptListDetails,
 }                                 from './actions'
 import type { StandardQueryType } from './types';
 
 import QueryEditorDropzone        from './QueryEditorDropzone';
 import QueryGroup                 from './QueryGroup';
+import ConceptListDetailsModal    from './ConceptListDetailsModal';
 
 
 type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
   dropAndNode: Function,
+  dropConceptListFile: Function,
   dropOrNode: Function,
+  dropOrConceptListFile: Function,
   deleteNode: Function,
   deleteGroup: Function,
   toggleExcludeGroup: Function,
   expandPreviousQuery: Function,
+  showConceptListDetails: Function,
+  hideConceptListDetails: Function,
   loadPreviousQuery: Function,
   setStandardNode: Function,
   queryGroupModalSetNode: Function,
+  dateRange: Object,
+  selectedConceptListDetails: Object,
 };
 
 const Query = (props: PropsType) => {
@@ -52,6 +63,7 @@ const Query = (props: PropsType) => {
         <QueryEditorDropzone
           isInitial
           onDropNode={props.dropAndNode}
+          onDropFiles={props.dropConceptListFile}
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
       }
@@ -65,10 +77,12 @@ const Query = (props: PropsType) => {
                 group={group}
                 andIdx={andIdx}
                 onDropNode={item => props.dropOrNode(item, andIdx)}
+                onDropFiles={item => props.dropOrConceptListFile(item, andIdx)}
                 onDeleteNode={orIdx => props.deleteNode(andIdx, orIdx)}
                 onDeleteGroup={() => props.deleteGroup(andIdx)}
                 onFilterClick={orIdx => props.setStandardNode(andIdx, orIdx)}
                 onExpandClick={props.expandPreviousQuery}
+                onDetailsClick={props.showConceptListDetails}
                 onExcludeClick={() => props.toggleExcludeGroup(andIdx)}
                 onDateClick={() => props.queryGroupModalSetNode(andIdx)}
                 onLoadPreviousQuery={props.loadPreviousQuery}
@@ -81,13 +95,26 @@ const Query = (props: PropsType) => {
               >
                 <QueryEditorDropzone
                   isAnd
-                  onDropNode={props.dropAndNode}
+                  onDropNode={item => props.dropAndNode(item, props.dateRange)}
+                  onDropFiles={item => props.dropConceptListFile(item, props.dateRange)}
                   onLoadPreviousQuery={props.loadPreviousQuery}
                 />
               </div>
             )
         }
       </div>
+      {
+        props.selectedConceptListDetails &&
+        <ConceptListDetailsModal
+          onCloseModal={props.hideConceptListDetails}
+          headline={props.selectedConceptListDetails.label}
+          conceptTreeRoot={props.selectedConceptListDetails.conceptListMetadata.root}
+          items={
+            props.selectedConceptListDetails.conceptListMetadata.concepts
+              .map(({ label }) => label)
+          }
+        />
+      }
     </div>
   );
 };
@@ -96,6 +123,9 @@ function mapStateToProps(state) {
   return {
     query: state.query,
     isEmptyQuery: state.query.length === 0,
+    selectedConceptListDetails: state.query.map(x => x.elements)
+      .reduce((a, b) => a.concat(b), [])
+      .find(x => x.showDetails),
 
     // only used by other actions
     selectedDatasetId: state.datasets.selectedDatasetId,
@@ -105,7 +135,9 @@ function mapStateToProps(state) {
 
 function mapDispatchToProps(dispatch: Dispatch<*>) {
   return {
-    dropAndNode: (item) => dispatch(dropAndNode(item)),
+    dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
+    dropConceptListFile: (item, dateRange) => dispatch(dropConceptListFile(item, { dateRange })),
+    dropOrConceptListFile: (item, andIdx) => dispatch(dropOrConceptListFile(item, andIdx)),
     dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
     deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
     deleteGroup: (andIdx) => dispatch(deleteGroup(andIdx)),
@@ -124,6 +156,8 @@ function mapDispatchToProps(dispatch: Dispatch<*>) {
         });
       });
     },
+    showConceptListDetails: (andIdx, orIdx) => dispatch(showConceptListDetails(andIdx, orIdx)),
+    hideConceptListDetails: () => dispatch(hideConceptListDetails()),
     loadPreviousQuery: (datasetId, queryId) =>
       dispatch(loadPreviousQuery(datasetId, queryId)),
   };

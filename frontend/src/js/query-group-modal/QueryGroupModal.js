@@ -9,6 +9,7 @@ import moment               from 'moment';
 
 import { dateTypes }        from '../common/constants';
 import { Modal }            from '../modal';
+
 import {
   queryGroupModalClearNode,
   queryGroupModalSetMinDate,

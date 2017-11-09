@@ -1,7 +1,11 @@
 declare module "redux-form" {
   declare type FormPropsType = {
+    submitting: boolean,
+    submitSucceeded: boolean,
+    submitFailed: boolean,
     error: any,
     valid: boolean,
+    pristine: boolean,
     handleSubmit: (event: Event) => void,
     change: (field: string, value: any) => void,
     initialValues: Object,
@@ -9,15 +13,16 @@ declare module "redux-form" {
   };
 
   declare type FieldPropsType = {
-    input: Object,
     meta?: {
       touched: boolean,
       valid: boolean,
+      invalid: boolean,
       error: ?string | {
         id: string,
         variables: { [name: string]: string }
       }
     },
+    input: Object
   };
 
   declare function reduxForm(options: HOCOptionsType): ReactClass<any>;
@@ -35,8 +40,5 @@ declare module "redux-form" {
   declare function formValueSelector(
     formName: string,
     getFormState: Function
-  ): (
-    state: Object,
-    field: string
-  ) => any;
+  ): (state: Object, field: string) => any;
 };

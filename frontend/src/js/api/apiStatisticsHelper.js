@@ -1,4 +1,4 @@
-// flow
+// @flow
 
 const transformExampleFormQueryToApi = (exampleForm) => {
   // POSSIBLY: Transform example values before sending them somewhere

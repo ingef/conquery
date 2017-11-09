@@ -59,6 +59,9 @@ describe('helpers', () => {
 
       it('works with non-empty object', () => {
         expect(stripObject({ a: 1, b: 2 })).to.deep.equal({a: 1, b: 2});
+        // expect(stripObject({ a: undefined, b: 2 })).to.deep.equal({a: undefined, b: 2});
+        // expect(stripObject({ a: {}, b: 2 })).to.deep.equal({a: undefined, b: 2});
+        // expect(stripObject({ a: "", b: 2 })).to.deep.equal({a: undefined, b: 2});
       });
     });
   });

@@ -11,16 +11,20 @@ type PropsType = {
 };
 
 const QueryResults = (props: PropsType) => {
-  if (typeof props.resultCount === 'undefined') return null;
+  if (typeof props.resultCount === 'undefined' &&
+    typeof props.resultUrl === 'undefined') return null;
 
+  let isDownload = props.resultCount > 0 || props.resultUrl;
   return (
     <div className="query-results">
       <p className="query-results__text">
-        {props.resultCount}
-        {T.translate('queryRunner.resultCount')}
+        {props.resultCount
+          ? T.translate('queryRunner.resultCount', {'count':props.resultCount})
+          : T.translate('queryRunner.endSuccess')
+        }
       </p>
       {
-        props.resultCount > 0 && props.resultUrl &&
+        isDownload &&
         <DownloadButton
           className="query-results__download-btn btn btn--small btn--primary"
           label={T.translate('queryRunner.downloadResults')}

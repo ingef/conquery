@@ -258,4 +258,18 @@ module.exports = function (app, port) {
         res.send(JSON.stringify(suggestions));
       }, 500);
     });
+
+  app.post(
+    '/api/datasets/:datasetId/concepts/:conceptId/resolve',
+    function response (req, res) {
+      setTimeout(() => {
+        res.setHeader('Content-Type', 'application/json');
+
+        res.send({
+          resolvedConcepts: req.body.concepts.slice(0, 1),
+          unknownConcepts: req.body.concepts.slice(1)
+        });
+      }, 500);
+    }
+  )
 };
