@@ -1,0 +1,90 @@
+{
+  "id": 1,
+  "status": "DONE",
+  "numberOfResults": 5,
+  "resultUrl": "http://172.20.1.130:8080/files/1234-123123123-123123-1231.csv",
+  "createdAt": "2016-12-02T14:19:09Z",
+  "version": 0,
+  "tags": ["Fun"],
+  "query": {
+    "groups":[
+      {
+        "exclude": true,
+        "dateRange": {
+          "min": "1969-12-01",
+          "max": "2012-01-31"
+        },
+        "elements":[
+          {
+            "id": 25602,
+            "type": "QUERY",
+            "label": "Example query",
+            "createdAt": "2016-12-02T14:19:09Z",
+            "status": "DONE",
+            "numberOfResults": 2465,
+            "resultUrl": "http://172.20.1.130:8080/files/1234-123123123-123123-1231.csv"
+          },
+          {
+            "id":13312,
+            "type": "CONCEPT",
+            "tables":[
+              {
+                "id": 0
+              }
+            ]
+          },
+          {
+            "id":13880,
+            "type": "CONCEPT",
+            "tables":[
+              {
+                "id":1,
+                "filters":[
+                  {
+                    "id":323,
+                    "value":125
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "elements":[
+          {
+            "id":10178,
+            "type": "CONCEPT",
+            "tables":[
+              {
+                "id":0
+              },
+              {
+                "id":1,
+                "filters":[
+                  {
+                    "id": 323,
+                    "type": "SELECT",
+                    "value": 125
+                  },
+                  {
+                    "id": 324,
+                    "type": "MULTI_SELECT",
+                    "value": [ 125, 126 ]
+                  },
+                  {
+                    "id": 324,
+                    "type": "INTEGER_RANGE",
+                    "value": {
+                      "exact": 124
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

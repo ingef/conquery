@@ -1,0 +1,32 @@
+.header
+  background-color: $col-blue-gray-dark
+  color: white
+  padding: 0 20px
+  overflow: hidden
+
+  // Fix, so content can expand to 100% and scroll
+  position: absolute
+  z-index: 2
+  width: 100%
+  top: 0
+  left: 0
+
+  &__headline, &__logo, &__spacer
+    display: inline-block
+    vertical-align: middle
+
+  &__spacer
+    margin: 0 10px
+    height: 20px
+
+  &__headline
+    margin: 0
+    line-height: 2
+    font-size: $font-sm
+    font-style: italic
+    font-weight: 300
+
+  &__logo
+    height: 50px
+    border-bottom: 5px solid $col-blue-gray-dark
+    border-top: 5px solid $col-blue-gray-dark

@@ -1,0 +1,33 @@
+.query-node-modal
+
+  &__headline
+    margin: 10px
+    text-align: center
+
+  &__description
+    margin: 10px 10px 20px
+
+  &__explanation
+    margin: 10px
+    font-size: $font-sm
+    text-transform: uppercase
+    font-weight: 700
+
+  &__reset-all
+    padding: 8px 12px
+    font-size: $font-sm
+    cursor: pointer
+    color: $col-blue-gray-dark
+    font-weight: 700
+
+  &__tables
+    text-align: center
+
+  &__toggle-timestamps
+    margin-left: 5px
+
+  .Select
+    &.has-value
+      &:not(.is-disabled)
+        .Select-control
+          border: 1px solid $col-blue-gray-dark !important // To override any is-focused styles

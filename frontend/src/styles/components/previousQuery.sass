@@ -1,0 +1,61 @@
+.previous-query-container
+  margin: 4px 0
+
+.previous-query
+  margin: 0
+  padding: 5px 10px
+  cursor: pointer
+  border-radius: $border-radius
+  border: 1px solid $col-gray-light
+  background-color: $col-bg
+
+  &__shared-indicator
+    margin-left: 10px
+    color: $col-blue-gray
+
+  &__btn
+    margin-left: 10px
+
+  &__hover-btn
+    display: none
+
+  &:hover
+    &:not(.previous-query--own):not(.previous-query--system)
+      border-color: $col-blue-gray
+
+    &.previous-query--own, &.previous-query--system
+      border-top-color: $col-blue-gray
+      border-right-color: $col-blue-gray
+      border-bottom-color: $col-blue-gray
+
+    .previous-query__hover-btn
+      display: inline-block
+
+  &__label, &__top-infos
+    margin: 0
+
+  &__label
+    font-weight: 400
+
+  &__tags
+    margin-top: 5px
+
+  &__top-infos
+    color: $col-gray
+
+  &__top-right
+    float: right
+
+  &__error
+    margin: 0
+
+  &--own
+    border-left: 4px solid $col-orange
+
+  &--system
+    border-left: 4px solid $col-blue-gray-dark
+
+  &__middle-row
+    display: flex
+    justify-content: space-between
+

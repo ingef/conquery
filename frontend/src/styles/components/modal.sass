@@ -1,0 +1,33 @@
+.modal
+  position: fixed
+  z-index: 2
+  top: 0
+  left: 0
+  width: 100%
+  max-width: 100%
+  height: 100vh
+  display: table
+  table-layout: fixed
+  background-color: rgba(255,255,255,0.5)
+
+  &__close-button
+    position: absolute
+    top: 12px
+    right: 15px
+
+  &__center
+    display: table-cell
+    vertical-align: middle
+    cursor: pointer
+    text-align: center
+
+  &__content
+    display: inline-block
+    text-align: left
+    cursor: initial
+    background-color: white
+    border: 1px solid $col-blue-gray-light
+    border-radius: $border-radius
+    padding: 30px 20px 20px
+    margin: 0 20px
+    position: relative

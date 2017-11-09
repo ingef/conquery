@@ -1,0 +1,35 @@
+.parameter-table
+  display: inline-block
+  vertical-align: top
+  padding: 5px
+  text-align: left
+  max-width: 400px
+
+  &--value-changed
+    .parameter-table__content
+      border: 1px solid $col-blue-gray-dark
+
+  &__content
+    border: 1px solid $col-gray-light
+    padding: 5px
+    min-width: 300px
+
+  &__filter
+    padding-bottom: 15px
+    &:last-child
+      padding-bottom: 0
+
+  &__head
+    font-size: $font-md
+    font-weight: 700
+    width: 100%
+    text-align: left
+
+  &__exclude-icon
+    margin-right: 10px
+
+  &__body
+    padding: 10px
+
+    select
+      width: 100%

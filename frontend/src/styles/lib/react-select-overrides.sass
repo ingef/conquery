@@ -1,0 +1,56 @@
+// Define some own classes for re-styling dynamically
+.select-override
+  &--tiny
+    .Select--single
+      > .Select-control
+        height: 24px
+        .Select-input
+          height: 24px
+        .Select-value
+          line-height: 24px
+
+
+// Override the defaults
+.Select
+  font-size: $font-sm
+  outline: none
+  &.is-disabled
+    > .Select-control
+      cursor: not-allowed
+
+.Select-control
+  border-radius: 2px
+  border: 1px solid $col-gray-medium-light
+
+  overflow: initial
+
+.is-focused:not(.is-open) > .Select-control
+  box-shadow: none
+  border-color: $col-gray-medium-light
+
+.Select--multi
+  .Select-value
+    font-size: $font-sm
+    background-color: $col-gray-very-light
+    border: 1px solid $col-gray
+    color: $col-black
+  a.Select-value-label
+    color: $col-blue-gray-dark
+  .Select-value-icon
+    border-right: 1px solid $col-gray
+    &:hover, &:focus
+      background-color: $col-blue-gray-light
+      color: $col-blue-gray-dark
+    &:active
+      background-color: $col-blue-gray-light
+
+  .Select-multi-value-wrapper
+    display: table-cell
+
+.Select-option
+  &.is-selected
+    background-color: $col-blue-gray-light
+  &.is-focused
+    background-color: $col-gray-very-light
+    &.is-selected
+      background-color: $col-blue-gray-light

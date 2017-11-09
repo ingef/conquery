@@ -1,0 +1,27 @@
+// Used especially
+// - when displayed with a label
+// - to indicate in ParameterTable that a value has been changed
+.input
+  &--value-changed
+    &.input-integer-range__input-with-label
+      input
+        border: 1px solid $col-blue-gray-dark
+    .input-select__label
+      color: $col-blue-gray-dark
+      font-weight: 700
+
+  &--full-width
+    width: 100%
+    .input__input
+      width: 100%
+    input
+      width: 100%
+
+.input-label
+  display: block
+  font-size: $font-sm
+  margin: 2px 8px
+  &--tiny
+    font-size: $font-xs
+  &--disabled
+    color: $col-gray !important // override possible value-changed state

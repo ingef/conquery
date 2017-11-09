@@ -1,0 +1,6 @@
+export const QUERY_GROUP_MODAL_SET_NODE = "query-group-modal/QUERY_GROUP_MODAL_SET_NODE";
+export const QUERY_GROUP_MODAL_CLEAR_NODE = "query-group-modal/QUERY_GROUP_MODAL_CLEAR_NODE";
+export const QUERY_GROUP_MODAL_SET_MIN_DATE = "query-group-modal/QUERY_GROUP_MODAL_SET_MIN_DATE";
+export const QUERY_GROUP_MODAL_SET_MAX_DATE = "query-group-modal/QUERY_GROUP_MODAL_SET_MAX_DATE";
+export const QUERY_GROUP_MODAL_RESET_ALL_DATES =
+  "query-group-modal/QUERY_GROUP_MODAL_RESET_ALL_DATES";

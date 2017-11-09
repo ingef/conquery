@@ -1,0 +1,21 @@
+// @flow
+
+export const SELECT = 'SELECT';
+export const MULTI_SELECT = 'MULTI_SELECT';
+export const INTEGER_RANGE = 'INTEGER_RANGE';
+export const REAL_RANGE = 'REAL_RANGE';
+export const STRING = 'STRING';
+export const BIG_MULTI_SELECT = 'BIG_MULTI_SELECT';
+
+export const SUPPORTED_FILTERS = {
+  SELECT: SELECT,
+  MULTI_SELECT: MULTI_SELECT,
+  INTEGER_RANGE: INTEGER_RANGE,
+  REAL_RANGE: REAL_RANGE,
+  STRING: STRING,
+  BIG_MULTI_SELECT: BIG_MULTI_SELECT,
+  // Maybe later:
+  // 'MONEY_RANGE'
+  // 'DATE_RANGE'
+  // 'BOOLEAN'
+};

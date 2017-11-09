@@ -1,0 +1,32 @@
+.category-tree-node
+  font-size: $font-sm
+
+  .additional-info-hoverable
+    display: inline-block
+
+  &__text-container
+    position: relative // Needed to fix a drag & drop issue in Safari
+    cursor: pointer
+    padding: 0 20px 0 15px
+    margin: 2px 0
+
+  &__icon
+    color: $col-blue-gray-dark
+    padding-right: 10px
+
+  &__text
+    user-select: none
+    border-radius: $border-radius
+    margin: 0
+    padding: 0 20px
+    line-height: 20px
+    &--zero
+      color: $col-red
+
+    &:hover
+      background-color: $col-blue-gray-light
+
+    &--open
+      background-color: $col-blue-gray-light
+      &:hover
+        background-color: rgba($col-blue-gray-light, 0.8)

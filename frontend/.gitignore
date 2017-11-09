@@ -1,0 +1,12 @@
+# Tmp / invisibles
+.DS_Store
+*.log
+
+# Libraries
+node_modules
+
+# Artifacts
+.nyc_output
+coverage
+dist
+bin

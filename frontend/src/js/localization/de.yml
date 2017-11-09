@@ -1,0 +1,186 @@
+headline: "Anfragen und Analyse"
+leftPane:
+  categoryTrees: "Konzeptbäume"
+  previousQueries: "Anfragen"
+
+rightPane:
+  queryEditor: "Editor"
+  timebasedQueryEditor: "Zeit-Editor"
+  statistics: "Statistik"
+
+categoryTreeList:
+  loading: "Lade Konzeptbaum: {tree}"
+  error: "Konnte Konzeptbaum {tree} nicht laden."
+
+queryRunner:
+  start: "Anfrage starten"
+  stop: "Anfrage stoppen"
+  stopSuccess: "Anfrage erfolgreich gestoppt."
+  stopError: "Anfrage stoppen fehlgeschlagen."
+  startSuccess: "Anfrage erfolgreich gestartet."
+  startError: "Anfrage starten fehlgeschlagen."
+  resultError: "Anfrageergebnis konnte nicht geladen werden."
+  resultCount: " Ergebnisse gefunden"
+  queryFailed: "Anfrage ist fehlgeschlagen."
+  queryCanceled: "Anfrage wurde abgebrochen."
+  downloadResults: "Ergebnisse herunterladen (CSV)"
+
+queryEditor:
+  couldNotExpandNode: "Knoten nicht gefunden"
+  filter: "Filter"
+  exclude: "Nicht"
+  date: "Datum"
+  expand: "Expandieren"
+  previousQuery: "Anfrage"
+  loadingPreviousQuery: "Lade Anfragedetails"
+
+dropzone:
+  dragElementPlease: "Ziehe ein Konzept oder eine Anfrage in diesen Bereich"
+  dragElementPleaseShort: "Füge ein Element hinzu"
+  dragQuery: "Füge eine Anfrage hinzu"
+
+datasetSelector:
+  pleaseChoose: "Datenbank auswählen"
+  error: "Konnte Datenbanken nicht laden"
+
+queryNodeModal:
+  resetAll: "Alle zurücksetzen"
+  explanation: "Anfragetabellen konfigurieren"
+  excludeTimestamps: "Von Zeitberechnung ausschließen"
+
+queryGroupModal:
+  explanation: "Zeitlich einschränken"
+  datePlaceholder: "Datum wählen"
+  today: "Heute"
+  dateMinLabel: "Von"
+  dateMaxLabel: "Bis"
+  headlineStart: "Elemente:"
+  dateFormat: "DD.MM.YYYY"
+
+deletePreviousQueryModal:
+  areYouSure: "Diese Anfrage wirklich löschen?"
+
+common:
+  any: "Beliebig"
+  save: "Speichern"
+  edit: "Bearbeiten"
+  cancel: "Abbrechen"
+  delete: "Löschen"
+  done: "Fertig"
+  and: "UND"
+  or: "ODER"
+  clear: "Zurücksetzen"
+  timeUnitDays: "Tage"
+  title: "Titel"
+  description: "Beschreibung"
+  clearAll: "Alle entfernen"
+  clearValue: "Wert entfernen"
+
+tooltip:
+  entriesFound:
+    1: "gefundener Eintrag"
+    _: "gefundene Einträge"
+
+  placeholder: "Weitere Informationen über einen Konzeptknoten ..."
+  hide: "Verstecken"
+  show: "Weitere Informationen anzeigen"
+
+reactSelect:
+  placeholder: "Auswählen ..."
+  tagPlaceholder: "Tag ..."
+  searchPlaceholder: "Suchen ..."
+  backspaceToRemove: "Backspace zum Entfernen drücken"
+  noResults: "Keine Werte gefunden"
+  createTag: "Tag erstellen: {label}"
+  searchFor: "Suchen nach: {label}"
+  clearAll: "Alle entfernen"
+  clearValue: "Wert entfernen"
+
+inputRange:
+  range: 'Bereich'
+  exact: 'Gleich'
+  exactLabel: 'exakt'
+  minLabel: 'min'
+  maxLabel: 'max'
+
+previousQueries:
+  loading: "Lade Anfragen"
+  error: "Konnte Anfragen nicht laden"
+  results: "Ergebnisse"
+  noQueriesFound: "Keine Anfragen gefunden"
+
+previousQuery:
+  addTag: "Tag hinzufügen"
+  share: "Freigeben"
+  shared: "Freigegeben"
+  loadError: "Konnte Anfrage nicht laden"
+  renameError: "Konnte Anfrage nicht umbenennen"
+  retagError: "Konnte Tags nicht speichern"
+  shareError: "Konnte Anfrage nicht freigeben"
+  deleteError: "Konnte Anfrage nicht löschen"
+
+previousQueriesFilter:
+  all: "Alle"
+  own: "Selbst erstellt"
+  shared: "Freigegeben"
+  system: "SYSTEM"
+
+timebasedQueryEditor:
+  headline: "Anfragen in Relation"
+  opBefore: "VOR"
+  opBeforeOrSame: "VOR ODER GLEICH"
+  opDays: "TAGE VOR"
+  opSame: "GLEICH"
+  opDaysOrNoEventBefore: "TAGE ODER KEIN EREIGNIS DAVOR"
+  timestampFirst: "ERSTER"
+  timestampLast: "LETZTER"
+  timestampRandom: "ZUFÄLLIG"
+  timestamp: "Zeitpunkt"
+  condition: "Bedingung"
+  timestampResultsFrom: "Nutze als Ergebnis-Zeitstempel"
+  addCondition: "Bedingung hinzufügen"
+  minDaysLabel: "Min. Tage"
+  maxDaysLabel: "Max. Tage"
+
+statistics:
+  forms: "Formulare"
+  formValidation:
+    isRequired: "ist erforderlich"
+    invalidDateRange: "Enddatum liegt vor Startdatum"
+
+  common:
+    relativeToIndex: "Relativ zum Indexdatum"
+    timespan: "Zeitraum"
+    dateMinLabel: "Von"
+    dateMaxLabel: "Bis"
+    timeResolution: "Zeitliche Auflösung"
+    timeInterval: "Zeitintervall"
+    before: "DAVOR"
+    neutral: "NEUTRAL"
+    after: "DANACH"
+    days: "TAGE"
+    quarters: "QUARTALE"
+    filter: "Filter"
+
+  exampleForm:
+    headline: "Example form"
+
+uploadQueryResultsModal:
+  headline: "Lade ein Anfrageergebnis hoch"
+  dropzone: "Lege eine CSV-Datei hier ab"
+  upload: "Hochladen"
+  uploadFailed: "Konnte Datei nicht hochladen"
+  uploadSucceeded: "Datei hochladen erfolgreich"
+  previousQueryCreated: "Frühere Anfrage erfolgreich erstellt"
+  formatInfo:
+    text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
+
+uploadReport:
+  successful: "{count} Zeilen erfolgreich importiert"
+  unsuccessful: "{count} Zeilen ignoriert"
+
+uploadQueryResults:
+  uploadResults: "Lade Anfrageergebnis hoch"
+
+authorization:
+  unauthorized: "Authorisierung fehlgeschlagen. Ein Authorisierungs-Token fehlt, oder ist abgelaufen"

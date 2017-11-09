@@ -1,0 +1,42 @@
+declare module "redux-form" {
+  declare type FormPropsType = {
+    error: any,
+    valid: boolean,
+    handleSubmit: (event: Event) => void,
+    change: (field: string, value: any) => void,
+    initialValues: Object,
+    initialize: (values: Object) => void
+  };
+
+  declare type FieldPropsType = {
+    input: Object,
+    meta?: {
+      touched: boolean,
+      valid: boolean,
+      error: ?string | {
+        id: string,
+        variables: { [name: string]: string }
+      }
+    },
+  };
+
+  declare function reduxForm(options: HOCOptionsType): ReactClass<any>;
+
+  declare function reducer(state: Object): Object;
+
+  declare var Field: ReactClass<any>;
+  declare var FormSection: ReactClass<any>;
+  declare var FieldArray: ReactClass<any>;
+
+  declare function isPristine(formName: string): (form: Object) => boolean;
+  declare function isValid(formName: string): (form: Object) => boolean;
+  declare function getFormValues(formName: string): (form: Object) => Object;
+
+  declare function formValueSelector(
+    formName: string,
+    getFormState: Function
+  ): (
+    state: Object,
+    field: string
+  ) => any;
+};
