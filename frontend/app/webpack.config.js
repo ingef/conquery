@@ -12,13 +12,13 @@ module.exports = {
     ]
   },
   output: {
-    path: path.join(process.cwd(), '/dist/'),
+    path: path.join(__dirname, '/dist/'),
     filename: '[name].js',
     publicPath: '/'
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'src/index.tpl.html',
+      template: 'app/src/index.tpl.html',
       inject: 'body',
       filename: 'index.html'
     }),

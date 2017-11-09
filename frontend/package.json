@@ -2,17 +2,17 @@
   "name": "conquery",
   "version": "0.1.0",
   "description": "conquery",
-  "main": "server.js",
+  "main": "app/server.js",
   "private": true,
   "engines": {
     "node": ">=6.5.0 <7.0.0",
     "yarn": ">=0.16.1"
   },
   "scripts": {
-    "start": "node server",
-    "start-production": "NODE_ENV=production PORT=8000 node server > webapp.log 2> webapp-err.log &",
+    "start": "node app/server",
+    "start-production": "NODE_ENV=production PORT=8000 node app/server > webapp.log 2> webapp-err.log &",
     "build": "rimraf dist && NODE_ENV=production webpack --config ./webpack.production.config.js --progress --profile --colors",
-    "lint": "eslint --ext=js src/js test",
+    "lint": "eslint --ext=js src/js test app/src/js",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "test": "rimraf coverage && nyc _mocha test",
     "test-watch": "mocha test --watch",
