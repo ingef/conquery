@@ -1,1 +1,1 @@
-import '../../../src/js/conquery';
+import '../../../lib/js/conquery';

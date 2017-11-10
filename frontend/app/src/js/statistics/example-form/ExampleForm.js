@@ -8,15 +8,15 @@ import T                    from 'i18n-react';
 
 import {
   EXAMPLE_FORM
-} from '../statisticsFormTypes';
+} from '../../../../../lib/js/statistics/statisticsFormTypes';
 
 import {
   InputWithLabel
-} from '../../form';
+} from '../../../../../lib/js/form';
 
 import {
   validateRequired
-} from '../validators';
+} from '../../../../../lib/js/statistics/validators';
 
 type PropsType = {
   onSubmit: Function,
