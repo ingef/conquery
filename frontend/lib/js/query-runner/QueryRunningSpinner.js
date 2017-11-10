@@ -2,7 +2,7 @@
 
 import React from 'react';
 
-import spinner from '../../images/spinner.png';
+import spinner from '../../../app/images/spinner.png'; //TODO
 
 type PropsType = {
   isQueryRunning: boolean

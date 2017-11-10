@@ -8,7 +8,7 @@ import {
   EXAMPLE_FORM,
 }  from './statisticsFormTypes';
 
-import { ExampleForm }      from './example-form';
+import { ExampleForm }      from '../../../app/src/js/statistics/example-form'; // TODO
 
 type PropsType = {
   activeForm: $Keys<typeof AVAILABLE_FORMS>,

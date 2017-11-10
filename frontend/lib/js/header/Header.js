@@ -1,7 +1,7 @@
 import React from 'react';
 import T     from 'i18n-react';
 
-import logo  from '../../images/conquery_logo.svg'
+import logo  from '../../../app/images/conquery_logo.svg' // TODO
 
 class Header extends React.Component {
   render() {

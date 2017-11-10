@@ -30,7 +30,7 @@ require('es6-promise').polyfill();
 
 require('font-awesome-webpack');
 require('../styles/styles.sass');
-require('../images/favicon.png');
+require('../../app/images/favicon.png'); // TODO
 
 // TODO: OG image required?
 // require('../../images/og.png');
