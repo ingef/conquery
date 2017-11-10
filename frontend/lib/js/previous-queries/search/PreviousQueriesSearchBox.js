@@ -1,6 +1,6 @@
 import { connect }                     from 'react-redux';
 
-import { SearchBox }                   from '../../form';
+import { SearchBox }                   from '../../editorComponents';
 import { updatePreviousQueriesSearch } from './actions';
 
 const mapStateToProps = (state) => ({

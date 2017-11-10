@@ -41,7 +41,7 @@ import {
 
 import {
   INTEGER_RANGE
-} from '../form';
+} from '../editorComponents';
 
 import {
   DROP_AND_NODE,

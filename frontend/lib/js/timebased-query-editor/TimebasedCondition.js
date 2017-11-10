@@ -14,7 +14,7 @@ import { isEmpty }                  from '../common/helpers';
 
 import {
   VerticalToggleButton,
-} from '../form';
+} from '../editorComponents';
 
 import TimebasedQueryEditorDropzone from './TimebasedQueryEditorDropzone';
 import TimebasedConditionDayRange   from './TimebasedConditionDayRange';

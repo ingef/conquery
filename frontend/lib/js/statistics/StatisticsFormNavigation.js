@@ -5,7 +5,7 @@ import T                     from 'i18n-react';
 import type { Dispatch }     from 'redux-thunk';
 import { connect }           from 'react-redux';
 
-import { InputSelect }       from '../form';
+import { InputSelect }       from '../editorComponents';
 
 import { setStatisticsForm } from './actions';
 import { AVAILABLE_FORMS }   from './statisticsFormTypes';

@@ -12,7 +12,7 @@ import {
 
 import {
   InputWithLabel
-} from '../../../../../lib/js/form';
+} from '../../../../../lib/js/editorComponents';
 
 import {
   validateRequired
