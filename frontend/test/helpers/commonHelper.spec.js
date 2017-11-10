@@ -3,7 +3,7 @@ import {
   isEmpty,
   isEmptyObject,
   stripObject,
-} from '../../src/js/common/helpers';
+} from '../../lib/js/common/helpers';
 
 describe('helpers', () => {
   describe('commonHelper', () => {
