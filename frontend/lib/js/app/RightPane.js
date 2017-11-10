@@ -16,10 +16,10 @@ import {
 } from '../timebased-query-editor'
 
 import {
-  StatisticsQueryRunner,
-  StatisticsFormNavigation,
-  StatisticsFormContainer,
-} from '../statistics';
+  FormQueryRunner,
+  FormNavigation,
+  FormContainer,
+} from '../form';
 
 
 type PropsType = {
@@ -44,11 +44,11 @@ const RightPane = (props: PropsType) => {
         <TimebasedQueryRunner key={2} />,
       ]
       break;
-    case 'statistics':
+    case 'form':
       rightPaneContent = [
-        <StatisticsFormNavigation key={0} />,
-        <StatisticsFormContainer key={1} />,
-        <StatisticsQueryRunner key={2} />,
+        <FormNavigation key={0} />,
+        <FormContainer key={1} />,
+        <FormQueryRunner key={2} />,
       ]
       break;
     default:

@@ -15,7 +15,7 @@ export type StateType = {
     tabs: TabType[]
   },
   right: {
-    activeTab: 'queryEditor' | 'timebasedQueryEditor' | 'statistics',
+    activeTab: 'queryEditor' | 'timebasedQueryEditor' | 'form',
     tabs: TabType[]
   }
 };
@@ -33,7 +33,7 @@ const initialState: StateType = {
     tabs: [
       { label: T.translate('rightPane.queryEditor'), tab: 'queryEditor' },
       { label: T.translate('rightPane.timebasedQueryEditor'), tab: 'timebasedQueryEditor' },
-      { label: T.translate('rightPane.statistics'), tab: 'statistics' },
+      { label: T.translate('rightPane.form'), tab: 'form' },
     ]
   }
 };

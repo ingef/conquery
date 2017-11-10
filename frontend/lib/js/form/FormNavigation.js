@@ -7,15 +7,15 @@ import { connect }           from 'react-redux';
 
 import { InputSelect }       from '../editorComponents';
 
-import { setStatisticsForm } from './actions';
-import { AVAILABLE_FORMS }   from './statisticsFormTypes';
+import { setForm } from './actions';
+import { AVAILABLE_FORMS }   from './formTypes';
 
 type PropsType = {
   activeForm: $Keys<typeof AVAILABLE_FORMS>,
   onItemClick: Function,
 };
 
-const StatisticsFormNavigation = (props: PropsType) => {
+const FormNavigation = (props: PropsType) => {
   const options = Object
     .keys(AVAILABLE_FORMS)
     .map(formType => ({
@@ -24,9 +24,9 @@ const StatisticsFormNavigation = (props: PropsType) => {
     }));
 
   return (
-    <div className="statistics-form-navigation">
+    <div className="form-navigation">
       <InputSelect
-        label={T.translate('statistics.forms')}
+        label={T.translate('form.forms')}
         options={options}
         input={{
           value: props.activeForm,
@@ -43,11 +43,11 @@ const StatisticsFormNavigation = (props: PropsType) => {
 };
 
 const mapStateToProps = (state) => ({
-  activeForm: state.statistics.activeForm,
+  activeForm: state.form.activeForm,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onItemClick: (form) => dispatch(setStatisticsForm(form)),
+  onItemClick: (form) => dispatch(setForm(form)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(StatisticsFormNavigation);
+export default connect(mapStateToProps, mapDispatchToProps)(FormNavigation);

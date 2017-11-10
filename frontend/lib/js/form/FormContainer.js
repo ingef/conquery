@@ -6,15 +6,15 @@ import { connect }          from 'react-redux';
 import {
   AVAILABLE_FORMS,
   EXAMPLE_FORM,
-}  from './statisticsFormTypes';
+}  from './formTypes';
 
-import { ExampleForm }      from '../../../app/src/js/statistics/example-form'; // TODO
+import { ExampleForm }      from '../../../app/src/js/forms/example-form'; // TODO
 
 type PropsType = {
   activeForm: $Keys<typeof AVAILABLE_FORMS>,
 };
 
-const StatisticsFormContainer = (props: PropsType) => {
+const FormContainer = (props: PropsType) => {
   let form;
 
   switch (props.activeForm) {
@@ -26,14 +26,14 @@ const StatisticsFormContainer = (props: PropsType) => {
   }
 
   return (
-    <div className="statistics-form-container">
+    <div className="form-container">
       { form }
     </div>
   );
 };
 
 const mapStateToProps = (state) => ({
-  activeForm: state.statistics.activeForm,
+  activeForm: state.form.activeForm,
 });
 
-export default connect(mapStateToProps)(StatisticsFormContainer);
+export default connect(mapStateToProps)(FormContainer);
