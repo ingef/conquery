@@ -31,10 +31,6 @@
                             <goal>install-node-and-npm</goal>
                         </goals>
                         <phase>generate-resources</phase>
-                        <configuration>
-                            <nodeVersion>v6.11.5</nodeVersion>
-                            <npmVersion>v3.10.10</npmVersion>
-                        </configuration>
                     </execution>
                     <execution>
                         <id>npm install</id>
@@ -60,6 +56,9 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <nodeVersion>v6.11.5</nodeVersion>
+                    <npmVersion>v3.10.10</npmVersion>
+                    <downloadRoot>https://nodejs.org/dist/</downloadRoot>
                     <workingDirectory>frontend</workingDirectory>
                     <installDirectory>frontend/dist</installDirectory>
                 </configuration>
