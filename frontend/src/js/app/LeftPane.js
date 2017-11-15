@@ -1,6 +1,7 @@
 // @flow
 
 import React                        from 'react';
+import { Route }                    from 'react-router';
 
 import { Pane }                     from '../pane';
 import { CategoryTreeList }         from '../category-trees';
@@ -10,26 +11,33 @@ import { PreviousQueriesSearchBox } from '../previous-queries/search';
 import { PreviousQueriesFilter }    from '../previous-queries/filter';
 import { PreviousQueriesContainer } from '../previous-queries/list';
 import { UploadQueryResults }       from '../previous-queries/upload';
+import { toDataset }                from '../routes';
 
 type PropsType = {
   activeTab: string
 };
 
 const LeftPane = (props: PropsType) => (
-  <Pane type="left">
-    <DatasetSelector />
-    <CategoryTreeList />
-    {
-      props.activeTab === 'previousQueries' &&
-      [
-        <PreviousQueriesFilter key={0} />,
-        <PreviousQueriesSearchBox key={1} />,
-        <UploadQueryResults key={2} />,
-        <PreviousQueriesContainer key={3} />,
-        <DeletePreviousQueryModal key={4} />,
-      ]
-    }
-  </Pane>
+  <Route path={toDataset()} children={({ match }) => {
+    const selectedDatasetId = match && match.params ? match.params.datasetId : null;
+
+    return (
+      <Pane type="left">
+        <DatasetSelector selectedDatasetId={selectedDatasetId} />
+        <CategoryTreeList />
+        {
+          props.activeTab === 'previousQueries' &&
+          [
+            <PreviousQueriesFilter key={0} />,
+            <PreviousQueriesSearchBox key={1} />,
+            <UploadQueryResults datasetId={selectedDatasetId} key={2} />,
+            <PreviousQueriesContainer datasetId={selectedDatasetId} key={3} />,
+            <DeletePreviousQueryModal datasetId={selectedDatasetId} key={4} />,
+          ]
+        }
+      </Pane>
+    )
+  }} />
 );
 
 export default LeftPane;

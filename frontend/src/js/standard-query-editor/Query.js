@@ -128,7 +128,6 @@ function mapStateToProps(state) {
       .find(x => x.showDetails),
 
     // only used by other actions
-    selectedDatasetId: state.datasets.selectedDatasetId,
     rootConcepts: state.categoryTrees.trees,
   };
 }
@@ -169,14 +168,15 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...ownProps,
   loadPreviousQuery: (queryId) =>
     dispatchProps.loadPreviousQuery(
-      stateProps.selectedDatasetId,
+      ownProps.selectedDatasetId,
       queryId
     ),
-  expandPreviousQuery: (groups) =>
+  expandPreviousQuery: (groups, queryId) =>
     dispatchProps.expandPreviousQuery(
-      stateProps.selectedDatasetId,
+      ownProps.selectedDatasetId,
       stateProps.rootConcepts,
-      groups
+      groups,
+      queryId
     ),
 });
 

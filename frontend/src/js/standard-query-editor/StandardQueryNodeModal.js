@@ -37,7 +37,6 @@ function mapStateToProps(state) {
     isExcludeTimestampsPossible: true,
     andIdx: state.queryNodeModal.andIdx,
     orIdx: state.queryNodeModal.orIdx,
-    datasetId: state.datasets.selectedDatasetId,
   };
 }
 

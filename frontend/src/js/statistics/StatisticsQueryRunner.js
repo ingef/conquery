@@ -27,7 +27,6 @@ function isActiveFormValid(state) {
 
 function isButtonEnabled(state) {
   return !!( // Return true or false even if all are undefined / null
-    state.datasets.selectedDatasetId !== undefined &&
     !state.statistics.queryRunner.startQuery.loading &&
     !state.statistics.queryRunner.stopQuery.loading &&
     isActiveFormValid(state)
@@ -50,7 +49,6 @@ const mapStateToProps = (state) => ({
     formName: state.statistics.activeForm,
     form: getFormValues(state.statistics.activeForm)(state.statistics),
   },
-  datasetId: state.datasets.selectedDatasetId,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -64,13 +62,14 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
+  isButtonEnabled: stateProps.isButtonEnabled && ownProps.datasetId !== null,
   startQuery: () => dispatchProps.startQuery(
-    stateProps.datasetId,
+    ownProps.datasetId,
     stateProps.query,
     stateProps.version,
   ),
   stopQuery: () => dispatchProps.stopQuery(
-    stateProps.datasetId,
+    ownProps.datasetId,
     stateProps.queryId,
   ),
 });

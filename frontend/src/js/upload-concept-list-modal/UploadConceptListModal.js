@@ -241,7 +241,6 @@ const mapStateToProps = (state: StateType) => ({
   queryContext: state.uploadConceptListModal.queryContext,
   label: state.uploadConceptListModal.label,
   conceptCodesFromFile: state.uploadConceptListModal.conceptCodesFromFile,
-  selectedDatasetId: state.datasets.selectedDatasetId,
   availableConceptRootNodes: selectAvailableConceptRootNodes(state),
   selectedConceptRootNode: state.uploadConceptListModal.selectedConceptRootNode,
   loading: state.uploadConceptListModal.loading,

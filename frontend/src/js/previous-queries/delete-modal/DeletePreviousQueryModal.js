@@ -43,7 +43,6 @@ DeletePreviousQueryModal.propTypes = {
 
 const mapStateToProps = (state) => ({
   queryId: state.deletePreviousQueryModal.queryId,
-  datasetId: state.datasets.selectedDatasetId,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -59,7 +58,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...dispatchProps,
   ...ownProps,
   onDeletePreviousQuery: () =>
-    dispatchProps.onDeletePreviousQuery(stateProps.datasetId, stateProps.queryId),
+    dispatchProps.onDeletePreviousQuery(ownProps.datasetId, stateProps.queryId),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(DeletePreviousQueryModal);

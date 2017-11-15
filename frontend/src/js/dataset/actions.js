@@ -1,6 +1,9 @@
 // @flow
 
 import type { Dispatch } from 'redux-thunk';
+import { replace }       from 'react-router-redux';
+
+import { toDataset }     from '../routes';
 
 import api from '../api';
 
@@ -35,7 +38,6 @@ import {
   LOAD_DATASETS_START,
   LOAD_DATASETS_SUCCESS,
   LOAD_DATASETS_ERROR,
-  SELECT_DATASET,
   SAVE_QUERY,
 } from './actionTypes';
 
@@ -50,7 +52,7 @@ export const loadDatasetsError = (err: any) => defaultError(LOAD_DATASETS_ERROR,
 export const loadDatasetsSuccess = (res: any) => defaultSuccess(LOAD_DATASETS_SUCCESS, res);
 
 // Done at the very beginning on loading the site
-export const loadDatasets = () => {
+export const loadDatasets = (selectedDatasetId?: DatasetIdType) => {
   return (dispatch: Dispatch) => {
     dispatch(loadDatasetsStart());
 
@@ -59,36 +61,45 @@ export const loadDatasets = () => {
         r => {
           dispatch(loadDatasetsSuccess(r));
 
-          if (!r[0]) return r;
+          let firstDatasetId = selectedDatasetId;
 
-          const firstDatasetId = r[0].id;
+          if (selectedDatasetId !== null)
+            // Check if the user-provided id is valid
+            if (r.find(dataset => dataset.id === selectedDatasetId) === undefined)
+              firstDatasetId = null;
 
-          if (firstDatasetId === undefined) return r;
+          if (firstDatasetId === null && !!r[0])
+            // Choose the first dataset from the list
+            firstDatasetId = r[0].id;
 
           dispatch(selectDatasetInput(firstDatasetId));
 
-          return dispatch(loadTrees(firstDatasetId));
+          if (firstDatasetId)
+            return dispatch(loadTrees(firstDatasetId));
         },
         e => dispatch(loadDatasetsError(e))
       );
   };
 };
 
-export const selectDatasetInput = (datasetId: DatasetIdType) => {
-  return { type: SELECT_DATASET, payload: { datasetId } };
+export const selectDatasetInput = (datasetId?: DatasetIdType) => {
+  if (datasetId && datasetId.length)
+    return replace(toDataset(datasetId));
+  return replace(("/"));
 };
 
-export const saveQuery = (query: StandardQueryType) => {
-  return { type: SAVE_QUERY, payload: { query } };
+export const saveQuery = (query: StandardQueryType, previouslySelectedDatasetId: DatasetIdType) => {
+  return { type: SAVE_QUERY, payload: { query, previouslySelectedDatasetId } };
 };
 
 export const selectDataset = (
   datasets: DatasetType[],
   datasetId: DatasetIdType,
+  previouslySelectedDatasetId: DatasetIdType,
   query: StandardQueryType
 ) => {
   return (dispatch: Dispatch) => {
-    dispatch(saveQuery(query));
+    dispatch(saveQuery(query, previouslySelectedDatasetId));
     dispatch(selectDatasetInput(datasetId));
 
     // Load query if available, else clear

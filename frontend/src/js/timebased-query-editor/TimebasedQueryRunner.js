@@ -12,7 +12,6 @@ const {
 
 function isButtonEnabled(state) {
   return !!(
-    state.datasets.selectedDatasetId !== undefined &&
     !state.timebasedQueryRunner.startQuery.loading &&
     !state.timebasedQueryRunner.stopQuery.loading &&
     allConditionsFilled(state.timebasedQuery)
@@ -27,7 +26,6 @@ const mapStateToProps = (state) => ({
   queryId: state.timebasedQueryRunner.runningQuery,
   version: state.categoryTrees.version,
   query: state.timebasedQuery,
-  datasetId: state.datasets.selectedDatasetId,
 });
 
 const mapDispatchToProps = (dispatch) => ({
@@ -41,13 +39,14 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
+  isButtonEnabled: stateProps.isButtonEnabled && ownProps.datasetId !== null,
   startQuery: () => dispatchProps.startQuery(
-    stateProps.datasetId,
+    ownProps.datasetId,
     stateProps.query,
     stateProps.version,
   ),
   stopQuery: () => dispatchProps.stopQuery(
-    stateProps.datasetId,
+    ownProps.datasetId,
     stateProps.queryId,
   ),
 });
