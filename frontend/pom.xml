@@ -29,7 +29,7 @@
                         <phase>generate-resources</phase>
                         <configuration>
                             <nodeVersion>v6.11.5</nodeVersion>
-                            <npmVersion>v3.10.10</npmVersion>
+                            <npmVersion>3.10.10</npmVersion>
                         </configuration>
                     </execution>
                     <execution>
@@ -48,7 +48,7 @@
                         <goals>
                             <goal>npm</goal>
                         </goals>
-                        <phase>pre-integration-test</phase>
+                        <phase>generate-resources</phase>
 
                         <configuration>
                             <arguments>build</arguments>
