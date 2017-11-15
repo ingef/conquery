@@ -57,7 +57,7 @@
                 </executions>
                 <configuration>
                     <nodeVersion>v6.11.5</nodeVersion>
-                    <npmVersion>v3.10.10</npmVersion>
+                    <npmVersion>3.10.10</npmVersion>
                     <downloadRoot>https://nodejs.org/dist/</downloadRoot>
                     <workingDirectory>frontend</workingDirectory>
                     <installDirectory>frontend/dist</installDirectory>
