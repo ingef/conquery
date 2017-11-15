@@ -2,7 +2,7 @@
 # This Dockerfile creates an image that allows to deploy the app
 #
 
-FROM node:7.3.0
+FROM node:6.5.0
 
 EXPOSE 8000
 
