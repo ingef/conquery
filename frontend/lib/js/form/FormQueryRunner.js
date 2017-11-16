@@ -35,7 +35,7 @@ function isButtonEnabled(state) {
 }
 
 function getActiveForm(state) {
-  return state.form.form[state.form.activeForm]
+  return state.form.reduxForm[state.form.activeForm]
 }
 
 

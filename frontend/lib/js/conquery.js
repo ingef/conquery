@@ -9,8 +9,8 @@ import ReactDOM                   from 'react-dom';
 import {
   compose,
   applyMiddleware,
-  createStore,
-}                                 from 'redux';
+  createStore, combineReducers,
+} from 'redux';
 import { Provider }               from 'react-redux';
 import { useRouterHistory }       from 'react-router';
 import createHistory              from 'history/lib/createBrowserHistory';
@@ -23,7 +23,7 @@ import { BASENAME, isProduction } from './environment';
 import createMiddleware           from './middleware';
 
 import AppRouter                  from './app/AppRouter';
-import reducers                   from './app/reducers';
+import conqueryReducers           from './app/reducers';
 
 
 require('es6-promise').polyfill();
@@ -37,7 +37,7 @@ require('../../app/images/favicon.png'); // TODO
 // Required for isomophic-fetch
 
 
-function makeStore(initialState: Object, middleware) {
+function makeStore(initialState: Object, middleware, formReducers: Object) {
   let enhancer;
 
   if (!isProduction)
@@ -49,28 +49,34 @@ function makeStore(initialState: Object, middleware) {
   else
     enhancer = compose(middleware);
 
+  // extend with pluggable formReducers from app
+  conqueryReducers.form = combineReducers({...conqueryReducers.form, ...formReducers});
+
+  const reducers = combineReducers(conqueryReducers);
+
   return createStore(reducers, initialState, enhancer);
 }
 
-const initialState = {};
+export default function conquery(formReducers) {
+  const initialState = {};
 
-// Redux Router setup
-const browserHistory = useRouterHistory(createHistory)({
-  basename: BASENAME
-});
+  // Redux Router setup
+  const browserHistory = useRouterHistory(createHistory)({
+    basename: BASENAME
+  });
 
-const middleware = applyMiddleware(...createMiddleware(browserHistory));
+  const middleware = applyMiddleware(...createMiddleware(browserHistory));
 
-const store = makeStore(initialState, middleware);
+  const store = makeStore(initialState, middleware, formReducers);
 
-const history = syncHistoryWithStore(browserHistory, store);
-
-// ---------------------
-// RENDER
-// ---------------------
-ReactDOM.render(
-  <Provider store={store}>
-    <AppRouter history={history} />
-  </Provider>,
-  document.getElementById('root')
-);
+  const history = syncHistoryWithStore(browserHistory, store);
+  // ---------------------
+  // RENDER
+  // ---------------------
+  ReactDOM.render(
+    <Provider store={store}>
+      <AppRouter history={history} />
+    </Provider>,
+    document.getElementById('root')
+  );
+};

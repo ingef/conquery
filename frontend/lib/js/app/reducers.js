@@ -1,6 +1,5 @@
 // @flow
 
-import { combineReducers }                     from 'redux';
 import { routerReducer }                       from 'react-router-redux';
 
 import {
@@ -31,7 +30,7 @@ import { reducer as previousQueriesFilter }    from '../previous-queries/filter'
 import { reducer as uploadQueryResults }       from '../previous-queries/upload';
 import { reducer as deletePreviousQueryModal } from '../previous-queries/delete-modal';
 import { reducer as timebasedQuery }           from '../timebased-query-editor';
-import { reducer as form }               from '../form';
+import { reducer as form }                     from '../form';
 import { reducer as uploadConceptListModal }   from '../upload-concept-list-modal';
 
 import { createQueryRunnerReducer }            from '../query-runner';
@@ -44,7 +43,7 @@ export type StateType = {
   panes: PanesStateType,
 };
 
-export default combineReducers({
+export default {
   categoryTrees,
   query,
   uploadConceptListModal,
@@ -63,4 +62,4 @@ export default combineReducers({
   timebasedQuery,
   form,
   routing: routerReducer,
-});
+};

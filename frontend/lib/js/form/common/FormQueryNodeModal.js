@@ -70,12 +70,12 @@ const findActiveFilters = (concept) => (
 
 function mapStateToProps(state, ownProps) {
   // storeName could be 'example', subfields are then named 'exampleFeatures'
-  const formStoreName = `${ownProps.formStoreName}Form`
-  const formStoreFieldName = `${ownProps.formStoreName}${capitalize(ownProps.name)}`
-  const form = state.form[formStoreName][formStoreFieldName]
+  const formStoreName = `${ownProps.formStoreName}Form`;
+  const formStoreFieldName = `${ownProps.formStoreName}${capitalize(ownProps.name)}`;
+  const form = state.form[formStoreName][formStoreFieldName];
   const { andIdx, orIdx } = form;
 
-  const node = findNode(state.form.form, ownProps.formType, ownProps.name, andIdx, orIdx);
+  const node = findNode(state.form.reduxForm, ownProps.formType, ownProps.name, andIdx, orIdx);
 
   const showTables = node && node.tables && (
     node.tables.length > 1 ||

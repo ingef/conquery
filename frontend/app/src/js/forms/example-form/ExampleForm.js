@@ -40,7 +40,7 @@ const ExampleForm = (props: PropsType) => {
 
 export default reduxForm({
   form: EXAMPLE_FORM,
-  getFormState: (state) => state.form.form,
+  getFormState: (state) => state.form.reduxForm,
   initialValues: {
     text: 0,
   },
