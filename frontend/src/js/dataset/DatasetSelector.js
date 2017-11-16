@@ -7,18 +7,12 @@ import Select                from 'react-select';
 import { connect }           from 'react-redux';
 
 import { isEmpty }           from '../common/helpers';
-import type {
-  DatasetType
-}                            from './reducer';
 
-import {
-  loadDatasets,
-  selectDataset,
-}                            from './actions';
+import type { DatasetType }  from './reducer';
+import { selectDataset }     from './actions';
 
 type PropsType = {
   selectedDatasetId: String,
-  datasetsLoading: Boolean,
   datasets: DatasetType[],
   error: string,
   loadDatasets: Function,
@@ -58,14 +52,12 @@ const DatasetSelector = (props: PropsType) => (
 );
 
 const mapStateToProps = (state) => ({
-  datasetsLoading: state.datasets.loading,
   datasets: state.datasets.data,
   error: state.datasets.error,
   query: state.query,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  loadDatasets: (selectedDatasetId) => dispatch(loadDatasets(selectedDatasetId)),
   selectDataset: (datasets, datasetId, previouslySelectedDatasetId, query) =>
     dispatch(selectDataset(datasets, datasetId, previouslySelectedDatasetId, query)),
 });
@@ -80,7 +72,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
       datasetId,
       selectedDatasetId,
       stateProps.query
-    ),
+    )
 });
 
 export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(DatasetSelector);
