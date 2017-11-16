@@ -1,7 +1,7 @@
 headline: "Anfragen und Analyse"
 leftPane:
   categoryTrees: "Konzeptbäume"
-  previousQueries: "Anfragen"
+  previousQueries: "Historie"
 
 rightPane:
   queryEditor: "Editor"
