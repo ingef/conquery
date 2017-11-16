@@ -69,6 +69,19 @@ export const loadPreviousQuery = (datasetId, queryId) => {
   };
 };
 
+export const loadAllPreviousQueriesInGroups = (groups, datasetId) => {
+  const actions = [];
+
+  groups.forEach(group => {
+    group.elements.forEach(element => {
+      if (element.type === 'QUERY')
+        actions.push(loadPreviousQuery(datasetId, element.id));
+    });
+  });
+
+  return actions;
+};
+
 
 export const toggleEditPreviousQueryLabel = (queryId) => ({
   type: TOGGLE_EDIT_PREVIOUS_QUERY_LABEL,

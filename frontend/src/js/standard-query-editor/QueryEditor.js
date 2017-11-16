@@ -1,13 +1,19 @@
 import React                  from 'react';
-import { Route }              from 'react-router';
 
 import { QueryGroupModal }    from '../query-group-modal';
 import UploadConceptListModal from '../upload-concept-list-modal/UploadConceptListModal';
+import type { DatasetIdType } from '../dataset/reducer';
 
 import Query                  from './Query';
 import StandardQueryNodeModal from './StandardQueryNodeModal';
 
+type PropsType = {
+  selectedDatasetId: DatasetIdType
+}
+
 class QueryEditor extends React.Component {
+  props: PropsType;
+
   render() {
     return (
       <div className="query-editor">

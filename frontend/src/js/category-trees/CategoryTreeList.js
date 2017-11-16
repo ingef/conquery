@@ -1,7 +1,6 @@
 // @flow
 
 import React                from 'react';
-import type { Dispatch }    from 'redux-thunk';
 import { connect }          from 'react-redux';
 
 import type { StateType }   from '../app/reducers';

@@ -52,7 +52,7 @@ export const loadDatasetsError = (err: any) => defaultError(LOAD_DATASETS_ERROR,
 export const loadDatasetsSuccess = (res: any) => defaultSuccess(LOAD_DATASETS_SUCCESS, res);
 
 // Done at the very beginning on loading the site
-export const loadDatasets = (selectedDatasetId?: DatasetIdType) => {
+export const loadDatasets = (selectedDatasetId: ?DatasetIdType) => {
   return (dispatch: Dispatch) => {
     dispatch(loadDatasetsStart());
 
@@ -72,7 +72,8 @@ export const loadDatasets = (selectedDatasetId?: DatasetIdType) => {
             // Choose the first dataset from the list
             firstDatasetId = r[0].id;
 
-          dispatch(selectDatasetInput(firstDatasetId));
+          if (selectedDatasetId !== firstDatasetId)
+            dispatch(selectDatasetInput(firstDatasetId));
 
           if (firstDatasetId)
             return dispatch(loadTrees(firstDatasetId));
@@ -82,7 +83,7 @@ export const loadDatasets = (selectedDatasetId?: DatasetIdType) => {
   };
 };
 
-export const selectDatasetInput = (datasetId?: DatasetIdType) => {
+export const selectDatasetInput = (datasetId: ?DatasetIdType) => {
   if (datasetId && datasetId.length)
     return replace(toDataset(datasetId));
   return replace(("/"));

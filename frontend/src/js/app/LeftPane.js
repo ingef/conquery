@@ -11,14 +11,14 @@ import { PreviousQueriesSearchBox } from '../previous-queries/search';
 import { PreviousQueriesFilter }    from '../previous-queries/filter';
 import { PreviousQueriesContainer } from '../previous-queries/list';
 import { UploadQueryResults }       from '../previous-queries/upload';
-import { toDataset }                from '../routes';
+import { templates }                from '../routes';
 
 type PropsType = {
   activeTab: string
 };
 
 const LeftPane = (props: PropsType) => (
-  <Route path={toDataset()} children={({ match }) => {
+  <Route path={templates.toDataset} children={({ match }) => {
     const selectedDatasetId = match && match.params ? match.params.datasetId : null;
 
     return (

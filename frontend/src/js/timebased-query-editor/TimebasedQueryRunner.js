@@ -10,17 +10,18 @@ const {
   stopTimebasedQuery,
 } = actions;
 
-function isButtonEnabled(state) {
+function isButtonEnabled(state, ownProps) {
   return !!(
+    ownProps.datasetId !== null &&
     !state.timebasedQueryRunner.startQuery.loading &&
     !state.timebasedQueryRunner.stopQuery.loading &&
     allConditionsFilled(state.timebasedQuery)
   );
 }
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state, ownProps) => ({
   queryRunner: state.timebasedQueryRunner,
-  isButtonEnabled: isButtonEnabled(state),
+  isButtonEnabled: isButtonEnabled(state, ownProps),
   isQueryRunning: !!state.timebasedQueryRunner.runningQuery,
   // Following ones only needed in dispatch functions
   queryId: state.timebasedQueryRunner.runningQuery,
@@ -39,7 +40,6 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  isButtonEnabled: stateProps.isButtonEnabled && ownProps.datasetId !== null,
   startQuery: () => dispatchProps.startQuery(
     ownProps.datasetId,
     stateProps.query,

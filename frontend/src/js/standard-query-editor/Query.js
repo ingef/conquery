@@ -4,6 +4,10 @@ import React                      from 'react';
 import { connect }                from 'react-redux';
 import type { Dispatch }          from 'redux';
 import T                          from 'i18n-react';
+import { replace }                from 'react-router-redux';
+
+
+import { toQuery }                from '../routes'
 
 
 import {
@@ -12,6 +16,7 @@ import {
 
 import {
   loadPreviousQuery,
+  loadAllPreviousQueriesInGroups,
 }                                 from '../previous-queries/list/actions';
 
 import {
@@ -145,15 +150,12 @@ function mapDispatchToProps(dispatch: Dispatch<*>) {
       dispatch(setStandardNode(andIdx, orIdx)),
     queryGroupModalSetNode: (andIdx) =>
       dispatch(queryGroupModalSetNode(andIdx)),
-    expandPreviousQuery: (datasetId, rootConcepts, groups) => {
+    expandPreviousQuery: (datasetId, rootConcepts, groups, queryId) => {
       dispatch(expandPreviousQuery(rootConcepts, groups));
 
-      groups.forEach(group => {
-        group.elements.forEach(element => {
-          if (element.type === 'QUERY')
-            dispatch(loadPreviousQuery(datasetId, element.id))
-        });
-      });
+      dispatch(loadAllPreviousQueriesInGroups(groups, datasetId));
+
+      dispatch(replace(toQuery(datasetId, queryId)));
     },
     showConceptListDetails: (andIdx, orIdx) => dispatch(showConceptListDetails(andIdx, orIdx)),
     hideConceptListDetails: () => dispatch(hideConceptListDetails()),

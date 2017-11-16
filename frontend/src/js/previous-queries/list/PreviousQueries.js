@@ -8,6 +8,7 @@ import PreviousQuery                   from './PreviousQuery';
 
 class PreviousQueries extends Component {
   static propTypes = {
+    datasetId: PropTypes.string,
     queries: PropTypes.array.isRequired,
     loading: PropTypes.bool,
     error: PropTypes.string,

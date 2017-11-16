@@ -11,8 +11,9 @@ const {
   stopStandardQuery,
 } = actions;
 
-function isButtonEnabled(state) {
+function isButtonEnabled(state, ownProps) {
   return !!( // Return true or false even if all are undefined / null
+    ownProps.datasetId !== null &&
     !state.standardQueryRunner.startQuery.loading &&
     !state.standardQueryRunner.stopQuery.loading &&
     state.query.length > 0
@@ -20,9 +21,9 @@ function isButtonEnabled(state) {
 }
 
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state, ownProps) => ({
   queryRunner: state.standardQueryRunner,
-  isButtonEnabled: isButtonEnabled(state),
+  isButtonEnabled: isButtonEnabled(state, ownProps),
   isQueryRunning: !!state.standardQueryRunner.runningQuery,
   // Following ones only needed in dispatch functions
   queryId: state.standardQueryRunner.runningQuery,
@@ -41,7 +42,6 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  isButtonEnabled: stateProps.isButtonEnabled && ownProps.datasetId !== null,
   startQuery: () => dispatchProps.startQuery(
     ownProps.datasetId,
     stateProps.query,

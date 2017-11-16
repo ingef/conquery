@@ -8,8 +8,7 @@ import { connect }           from 'react-redux';
 
 import { isEmpty }           from '../common/helpers';
 import type {
-  DatasetType,
-  DatasetIdType
+  DatasetType
 }                            from './reducer';
 
 import {
@@ -26,48 +25,37 @@ type PropsType = {
   selectDataset: Function,
 };
 
-class DatasetSelector extends React.Component {
-  props: PropsType;
-
-  componentDidMount() {
-    this.props.loadDatasets(this.props.selectedDatasetId);
-  }
-
-  render() {
-    return (
-      <div className="dataset-selector">
-        <Select
-          name="dataset-selector"
-          value={this.props.error
-            ? -1
-            : this.props.selectedDatasetId
-          }
-          onChange={(value) =>
-            !isEmpty(value)
-              ? this.props.selectDataset(value.value, this.props.selectedDatasetId)
-              : this.props.selectDataset(null, this.props.selectedDatasetId)
-          }
-          placeholder={T.translate('reactSelect.placeholder')}
-          autosize
-          clearable={false}
-          searchable={false}
-          disabled={!!this.props.error}
-          options={this.props.error
-            ? [{
-                value: -1,
-                label: T.translate('datasetSelector.error')
-              }]
-            : this.props.datasets.map(db => ({
-                value: db.id,
-                label: db.label
-              }))
-          }
-        />
-      </div>
-    )
-  }
-}
-
+const DatasetSelector = (props: PropsType) => (
+  <div className="dataset-selector">
+    <Select
+      name="dataset-selector"
+      value={props.error
+        ? -1
+        : props.selectedDatasetId
+      }
+      onChange={(value) =>
+        !isEmpty(value)
+          ? props.selectDataset(value.value, props.selectedDatasetId)
+          : props.selectDataset(null, props.selectedDatasetId)
+      }
+      placeholder={T.translate('reactSelect.placeholder')}
+      autosize
+      clearable={false}
+      searchable={false}
+      disabled={!!props.error}
+      options={props.error
+        ? [{
+            value: -1,
+            label: T.translate('datasetSelector.error')
+          }]
+        : props.datasets.map(db => ({
+            value: db.id,
+            label: db.label
+          }))
+      }
+    />
+  </div>
+);
 
 const mapStateToProps = (state) => ({
   datasetsLoading: state.datasets.loading,

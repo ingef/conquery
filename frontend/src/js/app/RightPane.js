@@ -4,7 +4,7 @@ import React         from 'react';
 import { Route }     from 'react-router';
 
 import { Pane }      from '../pane';
-import { toDataset } from '../routes';
+import { templates } from '../routes';
 import {
   QueryEditor,
   StandardQueryRunner,
@@ -55,7 +55,7 @@ const RightPane = (props: PropsType) => {
   };
 
   return (
-    <Route path={toDataset()} children={({ match }) => {
+    <Route path={templates.toDataset} children={({ match }) => {
       const selectedDatasetId = match && match.params ? match.params.datasetId : null;
 
       return (
