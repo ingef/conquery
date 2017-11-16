@@ -11,32 +11,15 @@ services:
         environment:
             - HUB_PORT_4444_TCP_ADDR=selenium-hub
             - HUB_PORT_4444_TCP_PORT=4444
-            # see https://github.com/SeleniumHQ/docker-selenium/issues/79
-        volumes:
-            - /dev/shm:/dev/shm
-#    leftpane-module:
-#        image: conquery/test:eva
-#        container_name: leftpane-module
-#        depends_on:
-#            - chrome
-#        environment:
-#            - MODULE=leftpane-module.xml
-#            - BROWSER=chrome
-#            - SELENIUM_HUB=selenium_hub
+#            # see https://github.com/SeleniumHQ/docker-selenium/issues/79
+#        volumes:
+#            - /dev/shm:/dev/shm
+        depends_on:
+            - frontend
     frontend:
         build: ../frontend/
         ports:
             - "8000:8000"
         volumes:
             - .:/usr/src/app
-#        networks:
-#            app_net:
-#              ipv4_address: 172.16.238.10
-#networks:
-#  app_net:
-#    driver: bridge
-#    ipam:
-#      driver: default
-#      config:
-#        - subnet: 172.16.238.0/24 
     
