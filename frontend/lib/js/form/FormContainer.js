@@ -3,36 +3,22 @@
 import React                from 'react';
 import { connect }          from 'react-redux';
 
-import { ExampleForm }      from '../../../app/src/js/forms/example-form'; // TODO make modular
-
-import {
-  AVAILABLE_FORMS,
-  EXAMPLE_FORM,
-}  from './formTypes';
-
 type PropsType = {
-  activeForm: $Keys<typeof AVAILABLE_FORMS>,
+  availableForms: Object,
+  activeForm: string,
 };
 
 const FormContainer = (props: PropsType) => {
-  let form;
-
-  switch (props.activeForm) {
-    case EXAMPLE_FORM:
-      form = <ExampleForm />;
-      break;
-    default:
-      break;
-  }
-
+  const form = React.createElement(props.availableForms[props.activeForm].component);
   return (
     <div className="form-container">
-      { form }
+      {form}
     </div>
   );
 };
 
 const mapStateToProps = (state) => ({
+  availableForms: state.form.availableForms,
   activeForm: state.form.activeForm,
 });
 

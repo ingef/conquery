@@ -7,10 +7,6 @@ import { Field, reduxForm } from 'redux-form';
 import T                    from 'i18n-react';
 
 import {
-  EXAMPLE_FORM
-} from '../../../../../lib/js/form/formTypes';
-
-import {
   InputWithLabel
 } from '../../../../../lib/js/editorComponents';
 
@@ -21,6 +17,8 @@ import {
 type PropsType = {
   onSubmit: Function,
 };
+
+const EXAMPLE_FORM = 'example';
 
 const ExampleForm = (props: PropsType) => {
   return (

@@ -57,8 +57,13 @@ function makeStore(initialState: Object, middleware, formReducers: Object) {
   return createStore(reducers, initialState, enhancer);
 }
 
-export default function conquery(forms: Object) {
-  const initialState = {};
+export default function conquery(forms: Object, defaultForm: string) {
+  const initialState = {
+    form: {
+      availableForms: forms,
+      activeForm: defaultForm
+    }
+  };
 
   // Redux Router setup
   const browserHistory = useRouterHistory(createHistory)({

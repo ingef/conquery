@@ -8,16 +8,16 @@ import { connect }           from 'react-redux';
 import { InputSelect }       from '../editorComponents';
 
 import { setForm } from './actions';
-import { AVAILABLE_FORMS }   from './formTypes';
 
 type PropsType = {
-  activeForm: $Keys<typeof AVAILABLE_FORMS>,
+  availableForms: Object,
+  activeForm: string,
   onItemClick: Function,
 };
 
 const FormNavigation = (props: PropsType) => {
   const options = Object
-    .keys(AVAILABLE_FORMS)
+    .keys(props.availableForms)
     .map(formType => ({
       label: formType,
       value: formType
@@ -43,6 +43,7 @@ const FormNavigation = (props: PropsType) => {
 };
 
 const mapStateToProps = (state) => ({
+  availableForms: state.form.availableForms,
   activeForm: state.form.activeForm,
 });
 
