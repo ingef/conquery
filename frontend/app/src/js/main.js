@@ -1,8 +1,8 @@
 import conquery from '../../../lib/js/conquery';
-import {reducer as exampleFormReducer} from "./forms/example-form";
+import exampleForm from "./forms/example-form";
 
-const formReducers = {
-  example: exampleFormReducer
+const forms = {
+  example: exampleForm,
 };
 
-conquery(formReducers);
+conquery(forms);

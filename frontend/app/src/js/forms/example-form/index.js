@@ -1,4 +1,11 @@
 // @flow
-export reducer from './reducer';
+import { default as ExampleForm } from './ExampleForm';
+import reducer from './reducer';
 
-export { default as ExampleForm } from './ExampleForm';
+const exampleForm = {
+  type: "EXAMPLE_FORM",
+  component: ExampleForm,
+  reducer
+};
+
+export default exampleForm;

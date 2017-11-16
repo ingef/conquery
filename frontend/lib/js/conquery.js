@@ -57,7 +57,7 @@ function makeStore(initialState: Object, middleware, formReducers: Object) {
   return createStore(reducers, initialState, enhancer);
 }
 
-export default function conquery(formReducers) {
+export default function conquery(forms: Object) {
   const initialState = {};
 
   // Redux Router setup
@@ -67,6 +67,8 @@ export default function conquery(formReducers) {
 
   const middleware = applyMiddleware(...createMiddleware(browserHistory));
 
+  // collect reducers from form extension
+  const formReducers = Object.values(forms).map(form => form.reducer);
   const store = makeStore(initialState, middleware, formReducers);
 
   const history = syncHistoryWithStore(browserHistory, store);

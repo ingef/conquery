@@ -1,10 +1,10 @@
 // @flow
 
-import { reducer as reduxFormReducer}        from 'redux-form';
+import { reducer as reduxFormReducer}   from 'redux-form';
 
 import { createQueryRunnerReducer }     from '../query-runner';
 
-import { SET_FORM }          from './actionTypes';
+import { SET_FORM }                     from './actionTypes';
 import { AVAILABLE_FORMS }              from './formTypes';
 
 const initialState: string = AVAILABLE_FORMS.EXAMPLE_FORM;
