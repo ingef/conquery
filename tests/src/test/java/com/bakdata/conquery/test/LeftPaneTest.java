@@ -31,9 +31,9 @@ public class LeftPaneTest {
 
     @Test
     public void tabTest() throws InterruptedException, UnknownHostException {
-        driver.get("http://localhost:8000/");
+        driver.get("http://frontend:8000/");
         System.out.println("URL: " + driver.getCurrentUrl());
-//        leftPane.toTabRequests();
+        leftPane.toTabRequests();
         Assert.assertEquals(true, true);
     }
 
