@@ -18,7 +18,7 @@ type PropsType = {
   onSubmit: Function,
 };
 
-const EXAMPLE_FORM = 'example';
+import type from './index';
 
 const ExampleForm = (props: PropsType) => {
   return (
@@ -37,7 +37,7 @@ const ExampleForm = (props: PropsType) => {
 };
 
 export default reduxForm({
-  form: EXAMPLE_FORM,
+  form: type,
   getFormState: (state) => state.form.reduxForm,
   initialValues: {
     text: 0,
