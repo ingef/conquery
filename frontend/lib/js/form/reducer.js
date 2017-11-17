@@ -6,7 +6,7 @@ import { createQueryRunnerReducer }     from '../query-runner';
 
 import { SET_FORM }                     from './actionTypes';
 
-const activeFormReducer = (state: string, action: Object): string => {
+const activeFormReducer = (state: string = '', action: Object): string => {
   switch (action.type) {
     case SET_FORM:
       return action.payload.form;
