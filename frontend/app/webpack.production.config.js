@@ -1,10 +1,13 @@
-var path = require('path');
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
-var StatsPlugin = require('stats-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const StatsPlugin = require('stats-webpack-plugin');
+
+const conqueryConfig = require('../webpack.config.js');
 
 module.exports = {
+  ...conqueryConfig,
   entry: {
     main: path.join(__dirname, 'src/js/main.js')
   },
@@ -13,6 +16,7 @@ module.exports = {
     filename: '[name]-[hash].min.js'
   },
   plugins: [
+    ...conqueryConfig.plugins,
     new HtmlWebpackPlugin({
       template: 'src/index.tpl.html',
       inject: 'body',
@@ -25,7 +29,6 @@ module.exports = {
         screw_ie8: true
       }
     }),
-    new webpack.NoEmitOnErrorsPlugin(),
     new StatsPlugin('webpack.stats.json', {
       source: false,
       modules: false
@@ -35,28 +38,20 @@ module.exports = {
     })
   ],
   module: {
-    rules: [{
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'babel-loader'
-    }, {
-      test: /\.json$/,
-      loader: 'json-loader'
-    }, {
-      test: /\.yml$/,
-      loader: 'json-loader!yaml-loader'
+  ...conqueryConfig.module,
+  rules: [
+    ...conqueryConfig.module.rules
+      .filter(rule => rule.loader !== 'file-loader'),
+    // Set a file loader that has no output path set
+    {
+      test: /\.(ttf|eot|svg|png|jpg|woff(2)?)(\?.*$|$)/,
+      loader: "file-loader?name=[name].[ext]"
     }, {
       test: /\.sass$/,
       loader: ExtractTextPlugin.extract({
         fallback: "style-loader",
         use: "css-loader!postcss-loader!sass-loader?indentedSyntax"
       })
-    }, {
-      test: /\.woff(2)?(\?.*$|$)/,
-      loader: "url-loader?name=[name].[ext]&limit=10000&minetype=application/font-woff"
-    }, {
-      test: /\.(ttf|eot|svg|png|jpg)(\?.*$|$)/,
-      loader: "file-loader?name=[name].[ext]"
     }]
   }
 };
