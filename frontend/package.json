@@ -2,7 +2,7 @@
   "name": "conquery",
   "version": "0.1.0",
   "description": "conquery",
-  "main": "dist/conquery.js",
+  "main": "dist/js/index.js",
   "private": true,
   "engines": {
     "node": ">=8.9.0 <9.0.0",
@@ -20,7 +20,9 @@
     "debug-test": "node-debug --debug-brk --hidden node_modules _mocha test",
     "prepush": "npm run lint"
   },
-  "files": [ "/dist" ],
+  "files": [
+    "/dist"
+  ],
   "dependencies": {
     "classnames": "^2.2.5",
     "create-react-class": "^15.5.3",
@@ -103,6 +105,7 @@
     "raw-loader": "^0.5.1",
     "redux-logger": "^2.8.1",
     "redux-mock-store": "^1.2.0",
+    "resolve-url-loader": "^2.2.0",
     "rimraf": "^2.5.4",
     "sass-loader": "^6.0.3",
     "stats-webpack-plugin": "^0.5.0",
@@ -112,7 +115,6 @@
     "webpack": "^2.2.1",
     "webpack-dev-middleware": "^1.10.1",
     "webpack-hot-middleware": "^2.17.1",
-    "webpack-stream": "^4.0.0",
     "yaml-loader": "^0.4.0"
   },
   "nyc": {

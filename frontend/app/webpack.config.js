@@ -1,9 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-const conqueryConfig = require('../webpack.config.js');
+const conqueryConfig = require('./webpack.common.config.js');
 
 module.exports = {
   ...conqueryConfig,
@@ -21,11 +20,6 @@ module.exports = {
   },
   plugins: [
     ...conqueryConfig.plugins,
-    new HtmlWebpackPlugin({
-      template: path.join(__dirname, 'src/index.tpl.html'),
-      inject: 'body',
-      filename: 'index.html'
-    }),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development')
@@ -34,16 +28,23 @@ module.exports = {
   module: {
     ...conqueryConfig.module,
     rules: [
-      ...conqueryConfig.module.rules
-        .filter(rule => rule.loader !== 'file-loader'),
-      // Set a file loader that has no output path set
-      {
-        test: /\.(ttf|eot|svg|png|jpg|woff(2)?)(\?.*$|$)/,
-        loader: "file-loader?name=[name].[ext]"
-      },
+      ...conqueryConfig.module.rules,
       {
         test: /\.sass$/,
-        loader: "style-loader!css-loader!postcss-loader!sass-loader?indentedSyntax"
+        loaders: [
+          'style-loader',
+          'css-loader',
+          'postcss-loader',
+          'resolve-url-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              indentedSyntax: true,
+              sourceMap: true, // Necessary for resolve-url
+              includePaths: [path.join(__dirname, 'node_modules/conquery/dist/styles')]
+            }
+          }
+        ]
       },
     ]
   },

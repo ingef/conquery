@@ -29,7 +29,6 @@ import conqueryReducers           from './app/reducers';
 require('es6-promise').polyfill();
 
 require('font-awesome-webpack');
-require('../../app/images/favicon.png'); // TODO
 
 // TODO: OG image required?
 // require('../../images/og.png');

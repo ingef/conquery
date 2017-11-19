@@ -1,6 +1,5 @@
 const path = require('path');
 const webpack = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const StatsPlugin = require('stats-webpack-plugin');
 
@@ -17,11 +16,6 @@ module.exports = {
   },
   plugins: [
     ...conqueryConfig.plugins,
-    new HtmlWebpackPlugin({
-      template: 'src/index.tpl.html',
-      inject: 'body',
-      filename: 'index.html'
-    }),
     new ExtractTextPlugin({ filename: "[name]-[hash].min.css", allChunks: true }),
     new webpack.optimize.UglifyJsPlugin({
       compressor: {
@@ -40,13 +34,9 @@ module.exports = {
   module: {
   ...conqueryConfig.module,
   rules: [
-    ...conqueryConfig.module.rules
-      .filter(rule => rule.loader !== 'file-loader'),
-    // Set a file loader that has no output path set
+    ...conqueryConfig.module.rules,
     {
-      test: /\.(ttf|eot|svg|png|jpg|woff(2)?)(\?.*$|$)/,
-      loader: "file-loader?name=[name].[ext]"
-    }, {
+      // TODO: (RS) Currently broken
       test: /\.sass$/,
       loader: ExtractTextPlugin.extract({
         fallback: "style-loader",
