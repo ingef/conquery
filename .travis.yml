@@ -2,3 +2,10 @@ sudo: required
 language: java
 services:
   - docker
+deploy:
+  provider: releases
+  file_glob: true
+  file: frontend/cfp-*.tgz
+  skip_cleanup: true
+  on:
+    tags: true
