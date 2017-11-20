@@ -4,7 +4,7 @@ services:
   - docker
 deploy:
   provider: releases
-  api_key: 486ee03d9030fae114c0a8598b58c04963c6efea
+  api_key: ${GITHUB_DEPLOY_TOKEN}
   file_glob: true
   file: frontend/cfp-*.tgz
   skip_cleanup: true
