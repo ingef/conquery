@@ -11,6 +11,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <test></test>
     </properties>
     
     <build>
@@ -22,31 +23,31 @@
                 <version>1.6</version>
                 <executions>
                     <execution>
-                        <id>install node and npm</id>
+                        <id>install node and yarn</id>
                         <goals>
-                            <goal>install-node-and-npm</goal>
+                            <goal>install-node-and-yarn</goal>
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
                             <nodeVersion>v6.11.5</nodeVersion>
-                            <npmVersion>3.10.10</npmVersion>
+                            <yarnVersion>v1.3.2</yarnVersion>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>npm install</id>
+                        <id>yarn install</id>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>yarn</goal>
                         </goals>
                         <phase>generate-resources</phase>
 
                         <configuration>
-                            <arguments>install</arguments>
+                            <arguments></arguments>
                         </configuration>
                     </execution>
                     <execution>
-                        <id>npm start</id>
+                        <id>yarn build</id>
                         <goals>
-                            <goal>npm</goal>
+                            <goal>yarn</goal>
                         </goals>
                         <phase>generate-resources</phase>
 
@@ -54,10 +55,18 @@
                             <arguments>build</arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>yarn pack</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                        <configuration>
+                            <arguments>pack --filename cfp-${project.version}.tgz</arguments>
+                        </configuration>
+                    </execution>
                 </executions>
-                <configuration>
-                    <installDirectory>dist</installDirectory>
-                </configuration>
             </plugin>
         </plugins>
     </build>
