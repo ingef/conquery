@@ -14,11 +14,11 @@ import {
   validateRequired
 } from '../../../../../lib/js/form/validators';
 
+import { formType } from './formType';
+
 type PropsType = {
   onSubmit: Function,
 };
-
-import type from './index';
 
 const ExampleForm = (props: PropsType) => {
   return (
@@ -37,7 +37,7 @@ const ExampleForm = (props: PropsType) => {
 };
 
 export default reduxForm({
-  form: type,
+  form: formType,
   getFormState: (state) => state.form.reduxForm,
   initialValues: {
     text: 0,

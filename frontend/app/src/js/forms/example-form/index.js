@@ -1,11 +1,10 @@
 // @flow
 import { default as ExampleForm } from './ExampleForm';
 import reducer from './reducer';
-
-export const type = 'example';
+import { formType } from './formType';
 
 const exampleForm = {
-  type,
+  formType,
   component: ExampleForm,
   reducer
 };
