@@ -4,8 +4,17 @@
     <groupId>com.bakdata</groupId>
     <artifactId>conquery</artifactId>
     <version>1.0-SNAPSHOT</version>
+    
     <packaging>pom</packaging>
+    <name>Conquery Parent</name>
+        
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
+    
+    <modules>
+        <module>frontend</module>
+        <module>tests</module>
+    </modules>
+    
 </project>

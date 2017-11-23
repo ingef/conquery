@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-it-test</actionName>
+            <displayName>it-test</displayName>
+            <goals>
+                <goal>integration-test</goal>
+            </goals>
+        </action>
+    </actions>

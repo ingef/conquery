@@ -1,0 +1,25 @@
+version: "3"
+services:
+    selenium-hub:
+        image: selenium/hub
+        ports:
+            - "4444:4444"
+    chrome:
+        image: selenium/node-chrome
+        links:
+            - selenium-hub:hub
+        environment:
+            - HUB_PORT_4444_TCP_ADDR=selenium-hub
+            - HUB_PORT_4444_TCP_PORT=4444
+#            # see https://github.com/SeleniumHQ/docker-selenium/issues/79
+#        volumes:
+#            - /dev/shm:/dev/shm
+        depends_on:
+            - frontend
+    frontend:
+        build: ../frontend/
+        ports:
+            - "8000:8000"
+        volumes:
+            - .:/usr/src/app
+    
