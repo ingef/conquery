@@ -1,1 +1,1 @@
-export const formType = 'example';
+export const type = 'example';
