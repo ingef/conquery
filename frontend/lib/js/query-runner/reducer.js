@@ -1,6 +1,5 @@
 // @flow
 
-import T                from 'i18n-react';
 import * as actionTypes from './actionTypes';
 
 type APICallType = {

@@ -16,7 +16,6 @@ import { useRouterHistory }       from 'react-router';
 import createHistory              from 'history/lib/createBrowserHistory';
 import { syncHistoryWithStore }   from 'react-router-redux';
 
-import './localization'; // To initialize locales
 import './app/actions'; //  To initialize parameterized actions
 
 import { initializeEnvironment }  from './environment';

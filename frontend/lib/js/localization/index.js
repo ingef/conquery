@@ -2,16 +2,14 @@
 // This makes it easier to handle, since other
 // imported modules might already depend on a set language
 
-import T from 'i18n-react';
-import moment from 'moment';
+import T                  from 'i18n-react';
+import moment             from 'moment';
 
-import de from '../../localization/de.yml';
-// Translation to English possible
-// import en from './locales/en';
+import { mergeDeep }      from '../common/helpers';
 
+export const initializeLocalization = (...texts) => {
+  T.setTexts(mergeDeep(...texts));
 
-// Here could be a detection logic (e.g. check browser language, ... )
-T.setTexts(de);
-
-// Set moment locale
-moment.locale('de');
+  // Set moment locale
+  moment.locale('de');
+};

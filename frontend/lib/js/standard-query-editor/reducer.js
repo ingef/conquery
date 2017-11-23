@@ -1,7 +1,5 @@
 // @flow
 
-import T from 'i18n-react';
-
 import {
   getConceptsByIdsWithTables
 } from '../category-trees/globalTreeStoreHelper';
