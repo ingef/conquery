@@ -4,13 +4,13 @@ cache:
   directories:
   - "$HOME/.m2"
 services:
-  - docker
+- docker
 deploy:
   # Deploy the file(s) to the github release (other targets like amazon-aws or npm can be found here: http://docs.travis-ci.com/user/deployment/ )
   provider: releases
   # The oauth token for github (used by travis to upload the file(s) to github)
   api_key:
-    secure: jGPP6NFctkmO7DxrONS1LIQsNXhS8k9jlliDuQRrkPAp9UIYI6mCPjf2h8C2Vanx4rPnPwf6zuT+8W0JOyBKNuhFZ5oN9mRiKnzb0CYxoUb5FZb2weVQzkE3sPg6wFq7/CdBhdg0WWw/6pUaqtYIBON7IFZ/oURilvyGmm2DFMqeY6Ogu/Lkyl+iqOOPH8uuhmDqf0ETa0vJXm2Ie0htsqwp8tDmtr6vjuVQtxR4XYerk5buP3tA8oZUHIioZFOsmbj0q50rUGJWcujWbq5hJ8nkgGadhtq09zuijvx/T4c2GxjIeBIVm6HoIuc64yN8QMYDSiDfMYP+3ak5J635530qhwuMpvHJ+PjoHZrCnPvuVgBGuCFz5kwRnfJZKwPqz0lRWjuvQ2W1EnJ+c8DARwbq3LvxPJtwd4JsbjgjERqoikXLIqpufSbFATkZQc5NN4a1Z/fzjr0j2qQFiBw+kLXE1iqCzeuh4q4ylW0rrHc5HgLGrRULdhrHpnO4cGthucS/SlccZjFjjccq8fqEqBiGIq6ItmYtW166KJtZEZtJ5XP+wAn2slWWqiYnm20TvXkkFYd5Jf0uBt1oLBsikgPOcSL7lnQIXDweyA5ix1JrPDWC3tnIyqeUDpqZJNPJ7ltqmx6cRPN15X40ERpKZf0BpRcSL948CsMncR9maCI=
+    secure: gpPCpR86xGuPdNwEdoVnxC7E7krmN6na0NoEOlB143BDm2oMZ1ozESOTY8O528H1cJC9pd28MGfeZhataBkD6vmwalX6XVh42oWsn8DVlLkh5gT10JW3leX45a3sN2npUnwd24Ldlca+Y+lRe+FhMy/mftlOgLtdT3BR3n7oVHXMC6Ff+6CGJY1fqLvsaC4R9B9KdRAL+qJKrvzXMf9oLgUVBwlWuXqAsSkyhUxU2tlgl2Rb4ySsHBT9vNXORCwLY5TbRN3a33cL0VsfGuz3BR+lOkxVIllQ36jyJK3Hv1bBOVR3i897FCx7uU2VEu/3ptw6e5g59BKzM/zvKh7Vp3xudob0sN3udhBatAe2nv/QI7iD2UdpOu/bIynW7AMlvLGlPSycQX1k875qvJ38gNCvVYLc0wzGZBleENMgtJYZCzfPfILhtw50ws8uALR/6F168hDmJqLwlY25FVfOTa6Hd1ksMGsFbPBAeWK4jbUoBSKGdYO4b0BkKX3ENa/rW7mdAsBsSHQ0gSk3tlvKinOJlQQ4aMEd5e95hG8J1sfqtU+w+jAtwCRIrI2wmrJtnFjDjX7zEdqHXjvUDQBCkqYDMY6nD+DBj4BA39BXlm+9IiajnHEH+T+hiUsls1xWJrYvD3NQaNwJJJoNW5a5jGrj4OqOisdJuF//bCl3syg=
   file: frontend/cfp-*.tgz
   # do not delete the files we're trying to upload
   skip_cleanup: true
