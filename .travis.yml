@@ -3,6 +3,7 @@ language: java
 cache:
   directories:
   - "$HOME/.m2"
+  - "${TRAVIS_BUILD_DIR}/frontend/node_modules"
 services:
 - docker
 deploy:
