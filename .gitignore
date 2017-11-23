@@ -23,3 +23,5 @@ hs_err_pid*
 /conqueryfrontendtest/target/
 /tests/target/
 /frontend/target/
+/frontend/node/
+/frontend/cfp-*
