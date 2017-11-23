@@ -5,7 +5,7 @@
 import T from 'i18n-react';
 import moment from 'moment';
 
-import de from './de.yml';
+import de from '../../localization/de.yml';
 // Translation to English possible
 // import en from './locales/en';
 

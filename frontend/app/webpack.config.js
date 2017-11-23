@@ -1,9 +1,11 @@
-var path = require('path');
-var webpack = require('webpack');
-var HtmlWebpackPlugin = require('html-webpack-plugin');
-var ExtractTextPlugin = require('extract-text-webpack-plugin');
+const path = require('path');
+const webpack = require('webpack');
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
+
+const conqueryConfig = require('./webpack.common.config.js');
 
 module.exports = {
+  ...conqueryConfig,
   devtool: 'source-map',
   entry: {
     main: [
@@ -12,43 +14,39 @@ module.exports = {
     ]
   },
   output: {
-    path: path.join(__dirname, '/dist/'),
+    path: path.join(__dirname, 'dist/'),
     filename: '[name].js',
     publicPath: '/'
   },
   plugins: [
-    new HtmlWebpackPlugin({
-      template: 'app/src/index.tpl.html',
-      inject: 'body',
-      filename: 'index.html'
-    }),
+    ...conqueryConfig.plugins,
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoEmitOnErrorsPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development')
     }),
   ],
   module: {
-    rules: [{
-      test: /\.js$/,
-      exclude: /node_modules/,
-      loader: 'babel-loader'
-    }, {
-      test: /\.json$/,
-      loader: 'json-loader'
-    }, {
-      test: /\.yml$/,
-      loader: 'json-loader!yaml-loader'
-    }, {
-      test: /\.sass$/,
-      loader: "style-loader!css-loader!postcss-loader!sass-loader?indentedSyntax"
-    }, {
-      test: /\.woff(2)?(\?.*$|$)/,
-      loader: "url-loader?name=[name].[ext]&limit=10000&minetype=application/font-woff"
-    }, {
-      test: /\.(ttf|eot|svg|png|jpg)(\?.*$|$)/,
-      loader: "file-loader?name=[name].[ext]"
-    }]
+    ...conqueryConfig.module,
+    rules: [
+      ...conqueryConfig.module.rules,
+      {
+        test: /\.sass$/,
+        loaders: [
+          'style-loader',
+          'css-loader',
+          'postcss-loader',
+          'resolve-url-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              indentedSyntax: true,
+              sourceMap: true, // Necessary for resolve-url
+              includePaths: [path.join(__dirname, 'node_modules/conquery/dist/styles')]
+            }
+          }
+        ]
+      },
+    ]
   },
   node: {
     fs: "empty"
