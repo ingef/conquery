@@ -71,7 +71,7 @@ export default function conquery(forms: Object, defaultForm: string) {
   const middleware = applyMiddleware(...createMiddleware(browserHistory));
 
   // collect reducers from form extension
-  const formReducers = Object.values(forms).map(form => form.reducer);
+  const formReducers = Object.assign({}, ...Object.values(forms).map(form => ({[form.type]: form.reducer})));
   const store = makeStore(initialState, middleware, formReducers);
 
   const history = syncHistoryWithStore(browserHistory, store);
