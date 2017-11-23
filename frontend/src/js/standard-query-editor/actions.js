@@ -49,7 +49,9 @@ const readConceptListFile = (file) => new Promise((resolve, reject) => {
 });
 
 const parseConceptListFile = (fileContents) => {
-  return fileContents.split('\n').filter(x => !!x.length);
+  return fileContents.split('\n')
+    .map(row => row.trim())
+    .filter(row => row.length > 0);
 };
 
 export const dropConceptListFile = (item, queryContext = {}) => {
