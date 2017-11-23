@@ -63,7 +63,7 @@
                         <phase>generate-resources</phase>
 
                         <configuration>
-                            <arguments>pack --filename cfp.tgz</arguments>
+                            <arguments>pack</arguments>
                         </configuration>
                     </execution>
                 </executions>
