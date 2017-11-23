@@ -63,7 +63,8 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.20</version>
                 <configuration>  
-                    <skip>true</skip>  
+                    <skip>true</skip> 
+                    <skipTests>true</skipTests>
                     <trimStackTrace>false</trimStackTrace>  
                 </configuration>  
                 <executions>  
