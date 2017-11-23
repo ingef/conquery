@@ -52,31 +52,31 @@ export const loadDatasetsError = (err: any) => defaultError(LOAD_DATASETS_ERROR,
 export const loadDatasetsSuccess = (res: any) => defaultSuccess(LOAD_DATASETS_SUCCESS, res);
 
 // Done at the very beginning on loading the site
-export const loadDatasets = (selectedDatasetId: ?DatasetIdType) => {
+export const loadDatasets = (datasetIdFromUrl: ?DatasetIdType) => {
   return (dispatch: Dispatch) => {
     dispatch(loadDatasetsStart());
 
     return api.getDatasets()
       .then(
-        r => {
-          dispatch(loadDatasetsSuccess(r));
+        datasets => {
+          dispatch(loadDatasetsSuccess(datasets));
 
-          let firstDatasetId = selectedDatasetId;
+          let selectedDatasetId = datasetIdFromUrl;
 
-          if (selectedDatasetId !== null)
+          if (datasetIdFromUrl !== null)
             // Check if the user-provided id is valid
-            if (r.find(dataset => dataset.id === selectedDatasetId) === undefined)
-              firstDatasetId = null;
+            if (!datasets.find(dataset => dataset.id === datasetIdFromUrl))
+              selectedDatasetId = null;
 
-          if (firstDatasetId === null && !!r[0])
-            // Choose the first dataset from the list
-            firstDatasetId = r[0].id;
+          // Default to the first dataset from the list
+          if (selectedDatasetId === null && !!datasets[0])
+            selectedDatasetId = datasets[0].id;
 
-          if (selectedDatasetId !== firstDatasetId)
-            dispatch(selectDatasetInput(firstDatasetId));
+          if (datasetIdFromUrl !== selectedDatasetId)
+            dispatch(selectDatasetInput(selectedDatasetId));
 
-          if (firstDatasetId)
-            return dispatch(loadTrees(firstDatasetId));
+          if (selectedDatasetId)
+            return dispatch(loadTrees(selectedDatasetId));
         },
         e => dispatch(loadDatasetsError(e))
       );
@@ -86,6 +86,7 @@ export const loadDatasets = (selectedDatasetId: ?DatasetIdType) => {
 export const selectDatasetInput = (datasetId: ?DatasetIdType) => {
   if (datasetId && datasetId.length)
     return replace(toDataset(datasetId));
+
   return replace(("/"));
 };
 

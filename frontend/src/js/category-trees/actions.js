@@ -54,6 +54,7 @@ export const loadTrees = (datasetId: DatasetIdType) => {
                 if (r.concepts[conceptId].detailsAvailable)
                   dispatch(loadTree(datasetId, conceptId));
               });
+
             return r.concepts;
           }
         },

@@ -28,7 +28,8 @@ export const startupOnQuery = (datasetId, queryId) => {
             dispatch(expandPreviousQuery(concepts, storedQuery.query.groups));
             dispatch(loadAllPreviousQueriesInGroups(storedQuery.query.groups, datasetId));
           },
-          e => dispatch(selectDatasetInput(datasetId)));
+          e => dispatch(selectDatasetInput(datasetId))
+        );
     }
   );
 }

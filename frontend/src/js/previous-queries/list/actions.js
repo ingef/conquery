@@ -70,17 +70,13 @@ export const loadPreviousQuery = (datasetId, queryId) => {
 };
 
 export const loadAllPreviousQueriesInGroups = (groups, datasetId) => {
-  const actions = [];
-
-  groups.forEach(group => {
-    group.elements.forEach(element => {
-      if (element.type === 'QUERY')
-        actions.push(loadPreviousQuery(datasetId, element.id));
-    });
-  });
-
-  return actions;
-};
+  return groups.reduce((actions, group) => ([
+    ...actions,
+    ...group.elements
+      .filter(element => element.type === 'QUERY')
+      .map(element => loadPreviousQuery(datasetId, element.id))
+  ]), []);
+}
 
 
 export const toggleEditPreviousQueryLabel = (queryId) => ({

@@ -9,30 +9,9 @@ import { templates } from '../routes';
 import {
   startupOnDataset,
   startupOnQuery,
-}                           from './actions'
+}                           from './actions';
 
-
-type StartupPropsType = {
-  history: Object,
-  match: Object,
-  location: Object,
-  onStartup: Function,
-};
-
-class Startup extends React.Component {
-  props: StartupPropsType;
-
-  componentDidMount() {
-    // Ignore location changes that were triggered by the application
-    if (this.props.history.action !== 'REPLACE') {
-      const { match } = this.props;
-      const params = match && match.params ? match.params : {};
-      this.props.onStartup(params);
-    }
-  }
-
-  render() { return null; }
-}
+import StartupItem          from './StartupItem';
 
 
 type PropsType = {
@@ -42,19 +21,32 @@ type PropsType = {
   startupOnQuery: Function,
 };
 
-const StartupSwitch = (props: PropsType) => (
+const Startup = (props: PropsType) => (
   <Switch>
     <Route exact path={templates.toDataset}
       render={routeProps =>
-        <Startup {...routeProps}
-          onStartup={({datasetId}) => props.startupOnDataset(datasetId)} />} />
+        <StartupItem
+          {...routeProps}
+          onStartup={({datasetId}) => props.startupOnDataset(datasetId)}
+        />
+      }
+    />
     <Route exact path={templates.toQuery}
       render={routeProps =>
-        <Startup {...routeProps}
-          onStartup={({datasetId, queryId}) => props.startupOnQuery(datasetId, queryId)} />} />
+        <StartupItem
+          {...routeProps}
+          onStartup={({datasetId, queryId}) => props.startupOnQuery(datasetId, queryId)}
+        />
+      }
+    />
     <Route exact path="/*"
       render={routeProps =>
-        <Startup {...routeProps} onStartup={() => props.startupOnDataset(null)} />} />
+        <StartupItem
+          {...routeProps}
+          onStartup={() => props.startupOnDataset(null)}
+        />
+      }
+    />
   </Switch>
 )
 
@@ -67,4 +59,4 @@ const mapDispatchToProps = (dispatch) => {
   };
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(StartupSwitch);
+export default connect(mapStateToProps, mapDispatchToProps)(Startup);
