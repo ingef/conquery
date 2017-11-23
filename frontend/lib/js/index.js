@@ -19,7 +19,8 @@ import { syncHistoryWithStore }   from 'react-router-redux';
 import './localization'; // To initialize locales
 import './app/actions'; //  To initialize parameterized actions
 
-import { BASENAME, isProduction } from './environment';
+import { initializeEnvironment }  from './environment';
+import type { Environment }       from './environment';
 import createMiddleware           from './middleware';
 
 import AppRouter                  from './app/AppRouter';
@@ -35,13 +36,13 @@ require('font-awesome-webpack');
 // Required for isomophic-fetch
 
 
-function makeStore(initialState: Object, middleware, formReducers: Object) {
+function makeStore(initialState: Object, middleware, formReducers: Object, isProduction: Boolean) {
   let enhancer;
 
   if (!isProduction)
     enhancer = compose(
       middleware,
-      // Use the Redux devtools extention, but only in development
+      // Use the Redux devtools extension, but only in development
       window.devToolsExtension ? window.devToolsExtension() : f => f,
     );
   else
@@ -55,7 +56,9 @@ function makeStore(initialState: Object, middleware, formReducers: Object) {
   return createStore(reducers, initialState, enhancer);
 }
 
-export default function conquery(forms: Object, defaultForm: string) {
+export default function conquery(environment: Environment, forms: Object, defaultForm: string) {
+  initializeEnvironment(environment);
+
   const initialState = {
     form: {
       availableForms: forms,
@@ -65,7 +68,7 @@ export default function conquery(forms: Object, defaultForm: string) {
 
   // Redux Router setup
   const browserHistory = useRouterHistory(createHistory)({
-    basename: BASENAME
+    basename: environment.basename
   });
 
   const middleware = applyMiddleware(...createMiddleware(browserHistory));
@@ -73,7 +76,7 @@ export default function conquery(forms: Object, defaultForm: string) {
   // collect reducers from form extension
   const formReducers =
     Object.assign({}, ...Object.values(forms).map(form => ({[form.type]: form.reducer})));
-  const store = makeStore(initialState, middleware, formReducers);
+  const store = makeStore(initialState, middleware, formReducers, environment.isProduction);
 
   const history = syncHistoryWithStore(browserHistory, store);
   // ---------------------

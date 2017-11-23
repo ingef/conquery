@@ -5,7 +5,7 @@ import { type DatasetIdType }  from '../dataset/reducer';
 import { type TreeNodeIdType } from '../category-trees/reducer';
 import { getStoredAuthToken }  from '../authorization';
 
-import { API_URL }             from '../environment';
+import { apiUrl }              from '../environment';
 import {
   transformQueryToApi,
 } from './apiHelper';
@@ -63,7 +63,7 @@ function fetchJson(url: string, request?: RequestType, rawBody?: boolean = false
 }
 
 export function getDatasets() {
-  return fetchJson(API_URL + `/datasets`);
+  return fetchJson(apiUrl() + `/datasets`);
 }
 
 export function postResults(datasetId: DatasetIdType, file: any) {
@@ -80,7 +80,7 @@ export function postResults(datasetId: DatasetIdType, file: any) {
   }).then((results) => {
     const rawBody = true;
 
-    return fetchJson(API_URL + `/datasets/${datasetId}/import`, {
+    return fetchJson(apiUrl() + `/datasets/${datasetId}/import`, {
       method: "POST",
       body: results,
       headers: {
@@ -91,11 +91,11 @@ export function postResults(datasetId: DatasetIdType, file: any) {
 };
 
 export function getConcepts(datasetId: DatasetIdType) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/concepts`);
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts`);
 }
 
 export function getConcept(datasetId: DatasetIdType, conceptId: TreeNodeIdType) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/concepts/${conceptId}`);
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}`);
 }
 
 // Same signature as postFormQueries
@@ -108,20 +108,20 @@ export function postQueries(
   // Transform into backend-compatible format
   const body = transformQueryToApi(query, queryType, version);
 
-  return fetchJson(API_URL + `/datasets/${datasetId}/queries`, {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/queries`, {
     method: "POST",
     body,
   });
 }
 
 export function deleteQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/queries/${queryId}`, {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/queries/${queryId}`, {
     method: 'DELETE',
   });
 }
 
 export function getQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/queries/${queryId}`);
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/queries/${queryId}`);
 }
 
 // Same signature as postQueries
@@ -134,38 +134,38 @@ export function postFormQueries(
   // Transform into backend-compatible format
   const body = transformFormQueryToApi(query, version);
 
-  return fetchJson(API_URL + `/datasets/${datasetId}/form-queries`, {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries`, {
     method: "POST",
     body,
   });
 }
 
 export function deleteFormQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/form-queries/${queryId}`, {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`, {
     method: 'DELETE',
   });
 }
 
 export function getFormQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/form-queries/${queryId}`);
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`);
 }
 
 export function getStoredQueries(datasetId: DatasetIdType) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/stored-queries`);
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries`);
 }
 
 export function getStoredQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/stored-queries/${queryId}`);
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`);
 }
 
 export function deleteStoredQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/stored-queries/${queryId}`, {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`, {
     method: 'DELETE',
   });
 }
 
 export function patchStoredQuery(datasetId: DatasetIdType, queryId: number, attributes: Object) {
-  return fetchJson(API_URL + `/datasets/${datasetId}/stored-queries/${queryId}`, {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`, {
     method: 'PATCH',
     body: attributes,
   });
@@ -179,7 +179,7 @@ export function postPrefixForSuggestions(
   text: string,
 ) {
   return fetchJson(
-    API_URL +
+    apiUrl() +
     `/datasets/${datasetId}/concepts/${conceptId}` +
     `/tables/${tableId}/filters/${filterId}/autocomplete`,
     {
@@ -207,7 +207,7 @@ export function postConceptsListToResolve(
   conceptId: string,
   concepts: string[],
 ): ConceptListResolutionResultType {
-  return fetchJson(API_URL + `/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
     method: 'POST',
     body: { concepts },
   });
