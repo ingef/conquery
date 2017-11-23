@@ -3,7 +3,7 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const StatsPlugin = require('stats-webpack-plugin');
 
-const conqueryConfig = require('../webpack.config.js');
+const conqueryConfig = require('./webpack.common.config.js');
 
 module.exports = {
   ...conqueryConfig,
@@ -36,11 +36,21 @@ module.exports = {
   rules: [
     ...conqueryConfig.module.rules,
     {
-      // TODO: (RS) Currently broken
       test: /\.sass$/,
       loader: ExtractTextPlugin.extract({
         fallback: "style-loader",
-        use: "css-loader!postcss-loader!sass-loader?indentedSyntax"
+        use: [
+          'css-loader',
+          'postcss-loader',
+          'resolve-url-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              indentedSyntax: true,
+              sourceMap: true, // Necessary for resolve-url
+            }
+          }
+        ]
       })
     }]
   }
