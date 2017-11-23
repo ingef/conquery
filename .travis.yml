@@ -3,10 +3,21 @@ language: java
 services:
   - docker
 deploy:
+  # Deploy the file(s) to the github release (other targets like amazon-aws or npm can be found here: http://docs.travis-ci.com/user/deployment/ )
   provider: releases
-  api_key: ${GITHUB_DEPLOY_TOKEN}
+  # The oauth token for github (used by travis to upload the file(s) to github)
+  api_key:
+    # The api-key is encrypted like described here: http://docs.travis-ci.com/user/encryption-keys/  (only travis can decrypt the key)
+    secure: secure: "ha41ncb8HsfQ9ArwbRpDvrMOOgPBmL8m6vKKLTmbVyZObMC0jQCrZBJtmNrPyg7fukoHdxBq+IWDgNV5iuwDOGtZ2cg+vNXjTmQqTbEs5caGbhLz+byS24wcRW5Cc6aKp43eYAvR90DUgbOLMQHLIZ6Fk+GmYVEcMX19e3YPOUukWjNNWhtm7UgruEVvbgZaiP7ABRCHDFp4o47vyVQmkwSep6qumwn+1xQUQeUbECZJr4NBvYlXs0frCHfhzLJCChpzOB8zXxHyD6CBezMF6tRGutLb6db4lDHuztnJjrqUjI81mn08LX1ls/8u6TS+AQc/QguON++jgq8ZAdblbHxBZmxDfwIsF820vzym/txtyCsQgcC0LGbnaRBDFFHaQqK0aruX7aYmPcS4wdUQygrC8ReAYE9KHO0j/1UeScsaPecSLCW5XkALWU7D4TUg2CTUbBG+iJborf3k/gLWqurAjx5FnBCEi1sQaYs7wuTqDyptVwsEpCvvl+uFGsFSEj1/MHaq0gC5UOeyT7gpW5PTzB3MjxjTpz9unE9AHXloGfrvfEZMxNH1+lv14n+WbG74lb9YqfkcHP1zhzWNRGBYLAAf+8hOlo60hUcptdFoxwyCQHY7k2ODppvk7d9wAX7XkwgpplnGwVs4AnKzflXwEUwiDmhuzxQJdZnqNxY="
+  # enable wildcards
   file_glob: true
+  # Which file(s) to upload
   file: frontend/cfp-*.tgz
+  # do not delete the files we're trying to upload
   skip_cleanup: true
+  # only deploy if
   on:
+    # we are on this repo
+    repo: bakdata/conquery
+    # and we are building a tag
     tags: true
