@@ -2,7 +2,7 @@ sudo: required
 language: java
 cache:
   directories:
-  - $HOME/.m2
+  - "$HOME/.m2"
 services:
   - docker
 deploy:
@@ -10,11 +10,7 @@ deploy:
   provider: releases
   # The oauth token for github (used by travis to upload the file(s) to github)
   api_key:
-    # The api-key is encrypted like described here: http://docs.travis-ci.com/user/encryption-keys/  (only travis can decrypt the key)
-    secure: "JGH1j6oJrZTUk6PlJXgEz8KKSjhl/r90Q7fz2fUwxc8cQh+Ef0jcfzfXicOoRnIoLc8IjSXE5Kr+rS+FnsMgvkZ0Zl8MJF6V7Y383I7n+wK9BYk14n6YwxoIHoxpnxpBoQXIAuEjJUaWQpWTJuWy78BU5TEF125muUpHGhS/zUfuTp0MBblNuIETAsle/jLRbPB0pbCQiMXbM2dioalor3PUAoSi49r1C3vugHsG7nuVj8vfYexsmHaryMXgK1hoXC/uB+b0eTKHtXn3Uo0MaWUFdaI05GaT/miNFKxwVEGgf9NDEyyZHd9Z5ecoB1uUkatMZM6vGRaLk5Ge1JEIyss4vSvPLnXzxuWqWZKYCiGh481kHNbQvAx3GXwrkPRB9ZCoKAom/M61qL4Xcj+JRPWeuRiyiXxldvSQyiSP+JVsViB93uvXs682Zskh23UPR1N98fUL/RgnwtVU1CGVUo+sxPoCxnHmo4/x4GkDQofi7vVvhyxHe/jhdPg3WSiLlPoCmAZy58knaygBI4pWoT92RfHatFVVT4/CpgYqjKorHHSPsYXr+Jb56h8mD4pI2kQ7zPBhmZw4FBzVujkPc6eLDNbtqVjwlo5c2MEks+/svEoDafvydbX24A4qqr/2WkLuC5Iw3f2LF+8M4yLah59z5CX7Gogc4ym5vErhEF0="
-  # enable wildcards
-  file_glob: true
-  # Which file(s) to upload
+    secure: jGPP6NFctkmO7DxrONS1LIQsNXhS8k9jlliDuQRrkPAp9UIYI6mCPjf2h8C2Vanx4rPnPwf6zuT+8W0JOyBKNuhFZ5oN9mRiKnzb0CYxoUb5FZb2weVQzkE3sPg6wFq7/CdBhdg0WWw/6pUaqtYIBON7IFZ/oURilvyGmm2DFMqeY6Ogu/Lkyl+iqOOPH8uuhmDqf0ETa0vJXm2Ie0htsqwp8tDmtr6vjuVQtxR4XYerk5buP3tA8oZUHIioZFOsmbj0q50rUGJWcujWbq5hJ8nkgGadhtq09zuijvx/T4c2GxjIeBIVm6HoIuc64yN8QMYDSiDfMYP+3ak5J635530qhwuMpvHJ+PjoHZrCnPvuVgBGuCFz5kwRnfJZKwPqz0lRWjuvQ2W1EnJ+c8DARwbq3LvxPJtwd4JsbjgjERqoikXLIqpufSbFATkZQc5NN4a1Z/fzjr0j2qQFiBw+kLXE1iqCzeuh4q4ylW0rrHc5HgLGrRULdhrHpnO4cGthucS/SlccZjFjjccq8fqEqBiGIq6ItmYtW166KJtZEZtJ5XP+wAn2slWWqiYnm20TvXkkFYd5Jf0uBt1oLBsikgPOcSL7lnQIXDweyA5ix1JrPDWC3tnIyqeUDpqZJNPJ7ltqmx6cRPN15X40ERpKZf0BpRcSL948CsMncR9maCI=
   file: frontend/cfp-*.tgz
   # do not delete the files we're trying to upload
   skip_cleanup: true
