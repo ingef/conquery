@@ -1,7 +1,6 @@
 // @flow
 
 import { combineReducers }                     from 'redux';
-import { routerReducer }                       from 'react-router-redux';
 
 import {
   reducer as categoryTrees,
@@ -62,5 +61,4 @@ export default combineReducers({
   deletePreviousQueryModal,
   timebasedQuery,
   statistics,
-  routing: routerReducer,
 });

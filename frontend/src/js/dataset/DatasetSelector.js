@@ -7,14 +7,15 @@ import Select                from 'react-select';
 import { connect }           from 'react-redux';
 
 import { isEmpty }           from '../common/helpers';
-import type { DatasetType }  from './reducer';
 
-import * as actions          from './actions';
+import type { DatasetType }  from './reducer';
+import { selectDataset }     from './actions';
 
 type PropsType = {
-  selectedDatasetId: number,
+  selectedDatasetId: String,
   datasets: DatasetType[],
   error: string,
+  loadDatasets: Function,
   selectDataset: Function,
 };
 
@@ -28,8 +29,8 @@ const DatasetSelector = (props: PropsType) => (
       }
       onChange={(value) =>
         !isEmpty(value)
-          ? props.selectDataset(value.value)
-          : props.selectDataset(null)
+          ? props.selectDataset(value.value, props.selectedDatasetId)
+          : props.selectDataset(null, props.selectedDatasetId)
       }
       placeholder={T.translate('reactSelect.placeholder')}
       autosize
@@ -51,25 +52,25 @@ const DatasetSelector = (props: PropsType) => (
 );
 
 const mapStateToProps = (state) => ({
-  selectedDatasetId: state.datasets.selectedDatasetId,
   datasets: state.datasets.data,
   error: state.datasets.error,
   query: state.query,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  selectDataset: (datasets, datasetId, query) =>
-    dispatch(actions.selectDataset(datasets, datasetId, query)),
+  selectDataset: (datasets, datasetId, previouslySelectedDatasetId, query) =>
+    dispatch(selectDataset(datasets, datasetId, previouslySelectedDatasetId, query)),
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...ownProps,
   ...stateProps,
   ...dispatchProps,
-  selectDataset: (datasetId) =>
+  selectDataset: (datasetId, selectedDatasetId) =>
     dispatchProps.selectDataset(
       stateProps.datasets,
       datasetId,
+      selectedDatasetId,
       stateProps.query
     )
 });

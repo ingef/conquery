@@ -47,13 +47,16 @@ export const loadTrees = (datasetId: DatasetIdType) => {
 
           // In the future: Data could be cached, version could be checked and
           // further data only loaded when necessary
-          if (r.version > -1)
+          if (r.version > -1) {
             Object
               .keys(r.concepts)
               .forEach(conceptId => {
                 if (r.concepts[conceptId].detailsAvailable)
                   dispatch(loadTree(datasetId, conceptId));
               });
+
+            return r.concepts;
+          }
         },
         e => dispatch(loadTreesError(e))
       );

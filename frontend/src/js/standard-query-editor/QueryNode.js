@@ -37,7 +37,7 @@ const QueryNode = (props: PropsType) => {
         onExpandClick={() => {
           if (!node.query) return;
 
-          props.onExpandClick(node.query.groups);
+          props.onExpandClick(node.query.groups, node.id);
         }}
         onDetailsClick={() => {
           if (!node.isConceptList) return;

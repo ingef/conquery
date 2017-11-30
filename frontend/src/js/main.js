@@ -12,9 +12,7 @@ import {
   createStore,
 }                                 from 'redux';
 import { Provider }               from 'react-redux';
-import { useRouterHistory }       from 'react-router';
-import createHistory              from 'history/lib/createBrowserHistory';
-import { syncHistoryWithStore }   from 'react-router-redux';
+import createHistory              from 'history/createBrowserHistory';
 
 import './localization'; // To initialize locales
 import './app/actions'; //  To initialize parameterized actions
@@ -55,7 +53,7 @@ function makeStore(initialState: Object, middleware) {
 const initialState = {};
 
 // Redux Router setup
-const browserHistory = useRouterHistory(createHistory)({
+const browserHistory = createHistory({
   basename: BASENAME
 });
 
@@ -63,14 +61,12 @@ const middleware = applyMiddleware(...createMiddleware(browserHistory));
 
 const store = makeStore(initialState, middleware);
 
-const history = syncHistoryWithStore(browserHistory, store);
-
 // ---------------------
 // RENDER
 // ---------------------
 ReactDOM.render(
   <Provider store={store}>
-    <AppRouter history={history} />
+    <AppRouter history={browserHistory} />
   </Provider>,
   document.getElementById('root')
 );

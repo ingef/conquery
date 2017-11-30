@@ -8,6 +8,7 @@ import PreviousQueries           from './PreviousQueries';
 const PreviousQueriesContainer = (props) => {
   return (
     <PreviousQueries
+      datasetId={props.datasetId}
       queries={props.queries}
       loading={props.loading}
       error={props.error}
@@ -17,6 +18,7 @@ const PreviousQueriesContainer = (props) => {
 };
 
 PreviousQueriesContainer.propTypes = {
+  datasetId: PropTypes.string.isRequired,
   queries: PropTypes.array.isRequired,
   loading: PropTypes.bool,
   error: PropTypes.string,
@@ -24,7 +26,6 @@ PreviousQueriesContainer.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  datasetId: state.datasets.selectedDatasetId,
   queries: selectPreviousQueries(
     state.previousQueries.queries,
     state.previousQueriesSearch,
@@ -42,7 +43,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...ownProps,
   ...stateProps,
   ...dispatchProps,
-  loadQueries: () => dispatchProps.loadQueries(stateProps.datasetId)
+  loadQueries: () => dispatchProps.loadQueries(ownProps.datasetId)
 });
 
 export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(PreviousQueriesContainer);

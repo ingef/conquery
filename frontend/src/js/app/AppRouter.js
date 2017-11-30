@@ -2,8 +2,9 @@
 
 import React                from 'react';
 import {
-  Router,
   Route,
+  Switch,
+  Router,
 }                           from 'react-router';
 
 import {
@@ -21,8 +22,10 @@ type PropsType = {
 const AppRouter = (props: PropsType) => {
   return (
     <Router history={props.history}>
-      <Route path="/" component={WithAuthToken(App)} />
-      <Route path="/unauthorized" component={Unauthorized} />
+      <Switch>
+        <Route path="/unauthorized" component={Unauthorized} />
+        <Route path="/*" component={WithAuthToken(App)} />
+      </Switch>
     </Router>
   );
 };

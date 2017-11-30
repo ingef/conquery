@@ -4,11 +4,10 @@ import {
   LOAD_DATASETS_START,
   LOAD_DATASETS_SUCCESS,
   LOAD_DATASETS_ERROR,
-  SELECT_DATASET,
   SAVE_QUERY,
 } from './actionTypes';
 
-export type DatasetIdType = number;
+export type DatasetIdType = string;
 
 export type DatasetType = {
   id: DatasetIdType,
@@ -18,23 +17,21 @@ export type DatasetType = {
 export type StateType = {
   loading: boolean,
   error: ?string,
-  selectedDatasetId: ?(DatasetIdType),
   data: DatasetType[],
 };
 
 const initialState: StateType = {
   loading: false,
   error: null,
-  selectedDatasetId: null,
   data: [],
 };
 
 const saveQuery = (state: StateType, action: Object): StateType => {
-  const { query } = action.payload;
+  const { query, previouslySelectedDatasetId } = action.payload;
 
   if (!query || query.length === 0) return state;
 
-  const selectedDataset = state.data.find(db => db.id === state.selectedDatasetId);
+  const selectedDataset = state.data.find(db => db.id === previouslySelectedDatasetId);
 
   if (!selectedDataset) return state;
 
@@ -65,8 +62,6 @@ const datasets = (state: StateType = initialState, action: Object): StateType =>
       return { ...state, loading: false, error: action.payload.message };
     case SAVE_QUERY:
       return saveQuery(state, action);
-    case SELECT_DATASET:
-      return { ...state, selectedDatasetId: action.payload.datasetId };
     default:
       return state;
   }

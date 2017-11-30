@@ -8,6 +8,7 @@ import PreviousQuery                   from './PreviousQuery';
 
 class PreviousQueries extends Component {
   static propTypes = {
+    datasetId: PropTypes.string,
     queries: PropTypes.array.isRequired,
     loading: PropTypes.bool,
     error: PropTypes.string,
@@ -21,7 +22,7 @@ class PreviousQueries extends Component {
   _renderQuery = (index, key) => {
     return (
       <div key={key} className="previous-query-container">
-        <PreviousQuery query={this.props.queries[index]} />
+        <PreviousQuery query={this.props.queries[index]} datasetId={this.props.datasetId} />
       </div>
     );
   }
