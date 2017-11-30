@@ -1,14 +1,14 @@
 // QUERY NODE MODAL
-export const SET_STANDARD_NODE = "query-node-modal/SET_STANDARD_NODE";
-export const CLEAR_STANDARD_NODE = "query-node-modal/CLEAR_STANDARD_NODE";
-export const TOGGLE_STANDARD_TABLE = "query-node-modal/TOGGLE_STANDARD_TABLE";
-export const SET_STANDARD_FILTER_VALUE = "query-node-modal/SET_STANDARD_FILTER_VALUE";
-export const RESET_STANDARD_ALL_FILTERS = "query-node-modal/RESET_STANDARD_ALL_FILTERS";
-export const SWITCH_STANDARD_FILTER_MODE = "query-node-modal/SWITCH_STANDARD_FILTER_MODE";
-export const TOGGLE_STANDARD_TIMESTAMPS = "query-node-modal/TOGGLE_STANDARD_TIMESTAMPS";
-export const LOAD_STANDARD_FILTER_SUGGESTIONS_START =
-  "query-node-modal/LOAD_STANDARD_FILTER_SUGGESTIONS_START";
-export const LOAD_STANDARD_FILTER_SUGGESTIONS_SUCCESS =
-  "query-node-modal/LOAD_STANDARD_FILTER_SUGGESTIONS_SUCCESS";
-export const LOAD_STANDARD_FILTER_SUGGESTIONS_ERROR =
-  "query-node-modal/LOAD_STANDARD_FILTER_SUGGESTIONS_ERROR";
+
+export const createActionTypes = (type: string) => ({
+  SET_NODE: `query-node-modal/SET_${type}_NODE`,
+  CLEAR_NODE: `query-node-modal/CLEAR_${type}_NODE`,
+  TOGGLE_TABLE: `query-node-modal/TOGGLE_${type}_TABLE`,
+  SET_FILTER_VALUE: `query-node-modal/SET_${type}_FILTER_VALUE`,
+  RESET_ALL_FILTERS: `query-node-modal/RESET_${type}_ALL_FILTERS`,
+  SWITCH_FILTER_MODE: `query-node-modal/SWITCH_${type}_FILTER_MODE`,
+  TOGGLE_TIMESTAMPS: `query-node-modal/TOGGLE_${type}_TIMESTAMPS`,
+  LOAD_FILTER_SUGGESTIONS_START: `query-node-modal/LOAD_${type}_FILTER_SUGGESTIONS_START`,
+  LOAD_FILTER_SUGGESTIONS_SUCCESS: `query-node-modal/LOAD_${type}_FILTER_SUGGESTIONS_SUCCESS`,
+  LOAD_FILTER_SUGGESTIONS_ERROR: `query-node-modal/LOAD_${type}_FILTER_SUGGESTIONS_ERROR`,
+});
