@@ -7,7 +7,7 @@ import { connect }           from 'react-redux';
 
 import { InputSelect }       from '../editorComponents';
 
-import { setForm } from './actions';
+import { setForm }           from './actions';
 
 type PropsType = {
   availableForms: Object,
@@ -16,11 +16,10 @@ type PropsType = {
 };
 
 const FormNavigation = (props: PropsType) => {
-  const options = Object
-    .keys(props.availableForms)
+  const options = Object.values(props.availableForms)
     .map(formType => ({
-      label: formType,
-      value: formType
+      label: T.translate(formType.headline),
+      value: formType.type
     }));
 
   return (

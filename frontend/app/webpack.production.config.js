@@ -3,10 +3,10 @@ const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 const StatsPlugin = require('stats-webpack-plugin');
 
-const conqueryConfig = require('./webpack.common.config.js');
+const commonConfig = require('./webpack.common.config.js');
 
 module.exports = {
-  ...conqueryConfig,
+  ...commonConfig,
   entry: {
     main: path.join(__dirname, 'src/js/main.js')
   },
@@ -15,7 +15,7 @@ module.exports = {
     filename: '[name]-[hash].min.js'
   },
   plugins: [
-    ...conqueryConfig.plugins,
+    ...commonConfig.plugins,
     new ExtractTextPlugin({ filename: "[name]-[hash].min.css", allChunks: true }),
     new webpack.optimize.UglifyJsPlugin({
       compressor: {
@@ -32,9 +32,9 @@ module.exports = {
     })
   ],
   module: {
-  ...conqueryConfig.module,
+  ...commonConfig.module,
   rules: [
-    ...conqueryConfig.module.rules,
+    ...commonConfig.module.rules,
     {
       test: /\.sass$/,
       loader: ExtractTextPlugin.extract({

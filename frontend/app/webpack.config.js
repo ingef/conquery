@@ -2,10 +2,10 @@ const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
-const conqueryConfig = require('./webpack.common.config.js');
+const commonConfig = require('./webpack.common.config.js');
 
 module.exports = {
-  ...conqueryConfig,
+  ...commonConfig,
   devtool: 'source-map',
   entry: {
     main: [
@@ -19,16 +19,16 @@ module.exports = {
     publicPath: '/'
   },
   plugins: [
-    ...conqueryConfig.plugins,
+    ...commonConfig.plugins,
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development')
     }),
   ],
   module: {
-    ...conqueryConfig.module,
+    ...commonConfig.module,
     rules: [
-      ...conqueryConfig.module.rules,
+      ...commonConfig.module.rules,
       {
         test: /\.sass$/,
         loaders: [

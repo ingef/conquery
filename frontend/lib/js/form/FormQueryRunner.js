@@ -50,11 +50,14 @@ const mapStateToProps = (state, ownProps) => ({
     formName: state.form.activeForm,
     form: getFormValues(state.form.activeForm)(state.form),
   },
+  formQueryTransformation: state.form.activeForm
+    ? state.form.availableForms[state.form.activeForm].transformQueryToApi
+    : (form) => form
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  startQuery: (datasetId, query, version) =>
-    dispatch(startFormQuery(datasetId, query, version)),
+  startQuery: (datasetId, query, version, formQueryTransformation) =>
+    dispatch(startFormQuery(datasetId, query, version, formQueryTransformation)),
   stopQuery: (datasetId, queryId) =>
     dispatch(stopFormQuery(datasetId, queryId)),
 });
@@ -67,6 +70,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
     ownProps.datasetId,
     stateProps.query,
     stateProps.version,
+    stateProps.formQueryTransformation
   ),
   stopQuery: () => dispatchProps.stopQuery(
     ownProps.datasetId,

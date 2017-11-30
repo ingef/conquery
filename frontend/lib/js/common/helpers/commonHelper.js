@@ -50,22 +50,27 @@ export const toUpperCaseUnderscore = (str: string) => str.replace(
   (upperCaseChar) => '_' + upperCaseChar.toLowerCase()
 ).toUpperCase();
 
-export const isObject = (item) => {
-  return (item && typeof item === 'object' && !Array.isArray(item));
-};
+export const isObject = (item: any) =>
+  item && typeof item === 'object' && !Array.isArray(item);
 
-export const mergeDeep = (target, source) => {
-  // TODO: Use a more functional programming style
-  let output = Object.assign({}, target);
-  if (isObject(target) && isObject(source))
-    Object.keys(source).forEach(key => {
-      if (isObject(source[key]))
-        if (!(key in target))
-          Object.assign(output, { [key]: source[key] });
-        else
-          output[key] = mergeDeep(target[key], source[key]);
-      else
-        Object.assign(output, { [key]: source[key] });
-    });
-  return output;
+export const mergeDeep = (...elements: Object[]) => {
+  return elements
+    .filter(isObject)
+    .reduce((aggregate, current) => {
+      const nonObjectKeys = Object.keys(current).filter(key => !isObject(current[key]));
+      const objectKeys = Object.keys(current).filter(key => isObject(current[key]));
+      const newKeys = objectKeys.filter(key => !(key in aggregate));
+      const mergeKeys = objectKeys.filter(key => key in aggregate);
+
+      const currentMerged = [
+        ...nonObjectKeys.map(key => ({ [key]: current[key] })),
+        ...newKeys.map(key => ({ [key]: current[key] })),
+        ...mergeKeys.map(key => ({ [key]: mergeDeep(aggregate[key], current[key]) }))
+      ].reduce((a, c) => ({...a, ...c }), {});
+
+      return {
+        ...aggregate,
+        ...currentMerged
+      };
+    }, {});
 };

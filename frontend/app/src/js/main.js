@@ -1,3 +1,5 @@
+// @flow
+
 import conquery                   from '../../../lib/js';
 import { initializeLocalization } from '../../../lib/js/localization';
 import de                         from '../../../lib/localization/de.yml';
