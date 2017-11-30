@@ -14,6 +14,10 @@ import {
   validateRequired
 } from '../../../../../lib/js/form/validators';
 
+import {
+  selectReduxFormState
+} from '../../../../../lib/js/form/stateSelectors';
+
 import { type } from './formType';
 
 type PropsType = {
@@ -38,9 +42,9 @@ const ExampleForm = (props: PropsType) => {
 
 export default reduxForm({
   form: type,
-  getFormState: (state) => state.form.reduxForm,
+  getFormState: selectReduxFormState,
   initialValues: {
-    text: 0,
+    text: '',
   },
   validate: (values) => ({
     text: validateRequired(values.text),

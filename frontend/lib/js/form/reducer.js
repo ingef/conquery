@@ -1,6 +1,6 @@
 // @flow
 
-import { reducer as reduxFormReducer}   from 'redux-form';
+import { reducer as reduxFormReducer }  from 'redux-form';
 
 import { createQueryRunnerReducer }     from '../query-runner';
 

@@ -11,6 +11,11 @@ import {
 import { QueryRunner }   from '../query-runner';
 import * as actions      from './actions';
 
+import {
+  selectReduxFormState
+}                        from './stateSelectors';
+
+
 const {
   startFormQuery,
   stopFormQuery,
@@ -21,8 +26,8 @@ function isActiveFormValid(state) {
 
   if (!form) return false;
 
-  return !isPristine(state.form.activeForm)(state.form) &&
-         isValid(state.form.activeForm)(state.form);
+  return !isPristine(state.form.activeForm, selectReduxFormState)(state) &&
+         isValid(state.form.activeForm, selectReduxFormState)(state);
 }
 
 function isButtonEnabled(state, ownProps) {
@@ -48,7 +53,7 @@ const mapStateToProps = (state, ownProps) => ({
   version: state.categoryTrees.version,
   query: {
     formName: state.form.activeForm,
-    form: getFormValues(state.form.activeForm)(state.form),
+    form: getFormValues(state.form.activeForm, selectReduxFormState)(state),
   },
   formQueryTransformation: state.form.activeForm
     ? state.form.availableForms[state.form.activeForm].transformQueryToApi
