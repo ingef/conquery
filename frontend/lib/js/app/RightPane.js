@@ -1,8 +1,10 @@
 // @flow
 
-import React    from 'react';
+import React         from 'react';
+import { Route }     from 'react-router';
 
-import { Pane } from '../pane';
+import { Pane }      from '../pane';
+import { templates } from '../routes';
 import {
   QueryEditor,
   StandardQueryRunner,
@@ -27,38 +29,41 @@ type PropsType = {
 };
 
 const RightPane = (props: PropsType) => {
-  let rightPaneContent;
-
-  switch (props.activeTab) {
-    case 'queryEditor':
-      rightPaneContent = [
-        <QueryClearButton key={0} />,
-        <QueryEditor key={1} />,
-        <StandardQueryRunner key={2} />,
-      ];
-      break;
-    case 'timebasedQueryEditor':
-      rightPaneContent = [
-        <TimebasedQueryClearButton key={0} />,
-        <TimebasedQueryEditor key={1} />,
-        <TimebasedQueryRunner key={2} />,
-      ]
-      break;
-    case 'form':
-      rightPaneContent = [
-        <FormNavigation key={0} />,
-        <FormContainer key={1} />,
-        <FormQueryRunner key={2} />,
-      ]
-      break;
-    default:
-      break;
-  }
+  const rightPaneContent = (activeTab, selectedDatasetId) => {
+    switch (props.activeTab) {
+      case 'queryEditor':
+        return [
+          <QueryClearButton key={0} />,
+          <QueryEditor selectedDatasetId={selectedDatasetId} key={1} />,
+          <StandardQueryRunner datasetId={selectedDatasetId} key={2} />,
+        ];
+      case 'timebasedQueryEditor':
+        return [
+          <TimebasedQueryClearButton key={0} />,
+          <TimebasedQueryEditor key={1} />,
+          <TimebasedQueryRunner datasetId={selectedDatasetId} key={2} />,
+        ]
+      case 'form':
+        return [
+          <FormNavigation key={0} />,
+          <FormContainer key={1} />,
+          <FormQueryRunner datasetId={selectedDatasetId} key={2} />,
+        ]
+      default:
+        return null;
+    }
+  };
 
   return (
-    <Pane type="right">
-      { rightPaneContent }
-    </Pane>
+    <Route path={templates.toDataset} children={({ match }) => {
+      const selectedDatasetId = match && match.params ? match.params.datasetId : null;
+
+      return (
+        <Pane type="right">
+          { rightPaneContent(props.activeTab, selectedDatasetId) }
+        </Pane>
+      );
+    }} />
   )
 };
 

@@ -190,7 +190,6 @@ PreviousQuery.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-    datasetId: state.datasets.selectedDatasetId,
     availableTags: state.previousQueries.tags,
 });
 
@@ -219,11 +218,11 @@ const mapProps = (stateProps, dispatchProps, ownProps) => ({
   ...dispatchProps,
   ...ownProps,
   onSharePreviousQuery: () =>
-    dispatchProps.onSharePreviousQuery(stateProps.datasetId, ownProps.query.id),
+    dispatchProps.onSharePreviousQuery(ownProps.datasetId, ownProps.query.id),
   onRenamePreviousQuery: (label) =>
-    dispatchProps.onRenamePreviousQuery(stateProps.datasetId, ownProps.query.id, label),
+    dispatchProps.onRenamePreviousQuery(ownProps.datasetId, ownProps.query.id, label),
   onRetagPreviousQuery: (tags) =>
-    dispatchProps.onRetagPreviousQuery(stateProps.datasetId, ownProps.query.id, tags),
+    dispatchProps.onRetagPreviousQuery(ownProps.datasetId, ownProps.query.id, tags),
   onDeletePreviousQuery: () =>
     dispatchProps.onDeletePreviousQuery(ownProps.query.id),
   onToggleEditPreviousQueryLabel: () =>

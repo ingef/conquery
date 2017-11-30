@@ -25,9 +25,9 @@ function isActiveFormValid(state) {
          isValid(state.form.activeForm)(state.form);
 }
 
-function isButtonEnabled(state) {
+function isButtonEnabled(state, ownProps) {
   return !!( // Return true or false even if all are undefined / null
-    state.datasets.selectedDatasetId !== undefined &&
+    ownProps.datasetId !== null &&
     !state.form.queryRunner.startQuery.loading &&
     !state.form.queryRunner.stopQuery.loading &&
     isActiveFormValid(state)
@@ -39,9 +39,9 @@ function getActiveForm(state) {
 }
 
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state, ownProps) => ({
   queryRunner: state.form.queryRunner,
-  isButtonEnabled: isButtonEnabled(state),
+  isButtonEnabled: isButtonEnabled(state, ownProps),
   isQueryRunning: !!state.form.queryRunner.runningQuery,
   // Following ones only needed in dispatch functions
   queryId: state.form.queryRunner.runningQuery,
@@ -50,7 +50,6 @@ const mapStateToProps = (state) => ({
     formName: state.form.activeForm,
     form: getFormValues(state.form.activeForm)(state.form),
   },
-  datasetId: state.datasets.selectedDatasetId,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -65,12 +64,12 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...dispatchProps,
   ...ownProps,
   startQuery: () => dispatchProps.startQuery(
-    stateProps.datasetId,
+    ownProps.datasetId,
     stateProps.query,
     stateProps.version,
   ),
   stopQuery: () => dispatchProps.stopQuery(
-    stateProps.datasetId,
+    ownProps.datasetId,
     stateProps.queryId,
   ),
 });

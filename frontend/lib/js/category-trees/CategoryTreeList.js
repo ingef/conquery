@@ -1,12 +1,10 @@
 // @flow
 
 import React                from 'react';
-import type { Dispatch }    from 'redux-thunk';
 import { connect }          from 'react-redux';
 
 import type { StateType }   from '../app/reducers';
 
-import { loadDatasets }    from '../dataset/actions';
 import { getConceptById }   from './globalTreeStoreHelper';
 
 import {
@@ -20,15 +18,10 @@ import CategoryTreeFolder   from './CategoryTreeFolder';
 type PropsType = {
   trees: TreesType,
   activeTab: string,
-  loadDatasets: Function,
 };
 
 class CategoryTreeList extends React.Component {
   props: PropsType;
-
-  componentDidMount() {
-    this.props.loadDatasets();
-  }
 
   render() {
     return (
@@ -85,10 +78,4 @@ const mapStateToProps = (state: StateType) => {
   };
 };
 
-const mapDispatchToProps = (dispatch: Dispatch) => {
-  return {
-    loadDatasets: () => dispatch(loadDatasets()),
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(CategoryTreeList);
+export default connect(mapStateToProps)(CategoryTreeList);

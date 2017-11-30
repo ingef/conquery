@@ -56,7 +56,6 @@ const UploadQueryResults = (props: PropsType) => {
 
 const mapStateToProps = (state) => ({
   isModalOpen: state.uploadQueryResults.isModalOpen,
-  datasetId: state.datasets.selectedDatasetId,
   loading: state.uploadQueryResults.loading,
   success: state.uploadQueryResults.success,
   error: state.uploadQueryResults.error,

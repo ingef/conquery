@@ -6,6 +6,7 @@ import { connect }                  from 'react-redux';
 import { DragDropContext }          from 'react-dnd';
 import HTML5Backend                 from 'react-dnd-html5-backend';
 import SplitPane                    from 'react-split-pane';
+import { withRouter }               from 'react-router';
 
 import { Tooltip, ActivateTooltip } from '../tooltip';
 
@@ -57,4 +58,4 @@ const mapStateToProps = (state, ownProps) => ({
 
 const ConnectedContent = connect(mapStateToProps)(Content);
 
-export default DragDropContext(HTML5Backend)(ConnectedContent);
+export default withRouter(DragDropContext(HTML5Backend)(ConnectedContent));

@@ -11,9 +11,9 @@ const {
   stopStandardQuery,
 } = actions;
 
-function isButtonEnabled(state) {
+function isButtonEnabled(state, ownProps) {
   return !!( // Return true or false even if all are undefined / null
-    state.datasets.selectedDatasetId !== undefined &&
+    ownProps.datasetId !== null &&
     !state.standardQueryRunner.startQuery.loading &&
     !state.standardQueryRunner.stopQuery.loading &&
     state.query.length > 0
@@ -21,15 +21,14 @@ function isButtonEnabled(state) {
 }
 
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = (state, ownProps) => ({
   queryRunner: state.standardQueryRunner,
-  isButtonEnabled: isButtonEnabled(state),
+  isButtonEnabled: isButtonEnabled(state, ownProps),
   isQueryRunning: !!state.standardQueryRunner.runningQuery,
   // Following ones only needed in dispatch functions
   queryId: state.standardQueryRunner.runningQuery,
   version: state.categoryTrees.version,
   query: state.query,
-  datasetId: state.datasets.selectedDatasetId,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -44,12 +43,12 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...dispatchProps,
   ...ownProps,
   startQuery: () => dispatchProps.startQuery(
-    stateProps.datasetId,
+    ownProps.datasetId,
     stateProps.query,
     stateProps.version,
   ),
   stopQuery: () => dispatchProps.stopQuery(
-    stateProps.datasetId,
+    ownProps.datasetId,
     stateProps.queryId,
   ),
 });

@@ -10,11 +10,9 @@ import {
   compose,
   applyMiddleware,
   createStore, combineReducers,
-} from 'redux';
+}                                 from 'redux';
 import { Provider }               from 'react-redux';
-import { useRouterHistory }       from 'react-router';
-import createHistory              from 'history/lib/createBrowserHistory';
-import { syncHistoryWithStore }   from 'react-router-redux';
+import createHistory              from 'history/createBrowserHistory';
 
 import './app/actions'; //  To initialize parameterized actions
 
@@ -66,7 +64,7 @@ export default function conquery(environment: Environment, forms: Object, defaul
   };
 
   // Redux Router setup
-  const browserHistory = useRouterHistory(createHistory)({
+  const browserHistory = createHistory({
     basename: environment.basename
   });
 
@@ -77,13 +75,12 @@ export default function conquery(environment: Environment, forms: Object, defaul
     Object.assign({}, ...Object.values(forms).map(form => ({[form.type]: form.reducer})));
   const store = makeStore(initialState, middleware, formReducers, environment.isProduction);
 
-  const history = syncHistoryWithStore(browserHistory, store);
   // ---------------------
   // RENDER
   // ---------------------
   ReactDOM.render(
     <Provider store={store}>
-      <AppRouter history={history} />
+      <AppRouter history={browserHistory} />
     </Provider>,
     document.getElementById('root')
   );

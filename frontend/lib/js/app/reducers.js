@@ -1,7 +1,5 @@
 // @flow
 
-import { routerReducer }                       from 'react-router-redux';
-
 import {
   reducer as categoryTrees,
   type StateType as CategoryTreesStateType,
@@ -61,5 +59,4 @@ export default {
   deletePreviousQueryModal,
   timebasedQuery,
   form,
-  routing: routerReducer,
 };
