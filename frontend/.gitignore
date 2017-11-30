@@ -1,6 +1,7 @@
 # Tmp / invisibles
 .DS_Store
 *.log
+*.tgz
 
 # Libraries
 node_modules
