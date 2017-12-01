@@ -1,9 +1,9 @@
 {
   "name": "conquery",
-  "version": "0.1.0",
+  "version": "0.0.3",
   "description": "conquery",
   "main": "server.js",
-  "private": true,
+  "private": false,
   "engines": {
     "node": ">=6.5.0 <7.0.0",
     "yarn": ">=0.16.1"
