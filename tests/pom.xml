@@ -99,7 +99,7 @@
                     </execution>  
                 </executions>  
             </plugin>
-            <plugin>
+<!--            <plugin>
                 <groupId>com.dkanejs.maven.plugins</groupId>
                 <artifactId>docker-compose-maven-plugin</artifactId>
                 <version>1.0.1</version>
@@ -127,7 +127,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>
+            </plugin>-->
         </plugins>
     </build>
 </project>
