@@ -19,7 +19,6 @@ const environment = {
     apiUrl: '/api'
 };
 
-// only provides the first selected form, not an order
 const forms = {
   [exampleForm.type]: exampleForm
 };
