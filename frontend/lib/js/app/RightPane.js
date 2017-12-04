@@ -46,7 +46,7 @@ const RightPane = (props: PropsType) => {
       case 'form':
         return [
           <FormNavigation key={0} />,
-          <FormContainer key={1} />,
+          <FormContainer datasetId={selectedDatasetId} key={1} />,
           <FormQueryRunner datasetId={selectedDatasetId} key={2} />,
         ]
       default:
