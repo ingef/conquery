@@ -1,6 +1,6 @@
 // @flow
 
-export { default as reducer }          from './reducer';
+export { default as buildFormReducer } from './reducer';
 
 export { default as FormNavigation }   from './FormNavigation';
 export { default as FormContainer }    from './FormContainer';

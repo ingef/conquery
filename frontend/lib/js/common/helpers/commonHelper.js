@@ -62,15 +62,12 @@ export const mergeDeep = (...elements: Object[]) => {
       const newKeys = objectKeys.filter(key => !(key in aggregate));
       const mergeKeys = objectKeys.filter(key => key in aggregate);
 
-      const currentMerged = [
+      return Object.assign(
+        {},
+        aggregate,
         ...nonObjectKeys.map(key => ({ [key]: current[key] })),
         ...newKeys.map(key => ({ [key]: current[key] })),
         ...mergeKeys.map(key => ({ [key]: mergeDeep(aggregate[key], current[key]) }))
-      ].reduce((a, c) => ({...a, ...c }), {});
-
-      return {
-        ...aggregate,
-        ...currentMerged
-      };
+      );
     }, {});
 };

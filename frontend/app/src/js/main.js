@@ -16,15 +16,12 @@ const environment = {
   basename: isProduction
     ? '/' // Possibly: Run under a subpath in production
     : '/',
-  apiUrl: isProduction
-    ? 'http://localhost:8080/api'
-    : 'http://localhost:8000/api'
+    apiUrl: '/api'
 };
 
 // only provides the first selected form, not an order
-const defaultForm = 'example';
 const forms = {
-  example: exampleForm,
+  [exampleForm.type]: exampleForm
 };
 
-conquery(environment, forms, defaultForm);
+conquery(environment, forms);

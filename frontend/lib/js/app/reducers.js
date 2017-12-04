@@ -1,5 +1,7 @@
 // @flow
 
+import { combineReducers }                     from 'redux';
+
 import {
   reducer as categoryTrees,
   type StateType as CategoryTreesStateType,
@@ -28,7 +30,7 @@ import { reducer as previousQueriesFilter }    from '../previous-queries/filter'
 import { reducer as uploadQueryResults }       from '../previous-queries/upload';
 import { reducer as deletePreviousQueryModal } from '../previous-queries/delete-modal';
 import { reducer as timebasedQuery }           from '../timebased-query-editor';
-import { reducer as form }                     from '../form';
+import { buildFormReducer }                    from '../form';
 import { reducer as uploadConceptListModal }   from '../upload-concept-list-modal';
 
 import { createQueryRunnerReducer }            from '../query-runner';
@@ -41,7 +43,7 @@ export type StateType = {
   panes: PanesStateType,
 };
 
-export default {
+ const buildAppReducer = (availableForms) => combineReducers({
   categoryTrees,
   query,
   uploadConceptListModal,
@@ -58,5 +60,7 @@ export default {
   uploadQueryResults,
   deletePreviousQueryModal,
   timebasedQuery,
-  form,
-};
+  form: buildFormReducer(availableForms),
+});
+
+export default buildAppReducer;

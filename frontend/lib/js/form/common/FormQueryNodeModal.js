@@ -16,7 +16,6 @@ type PropsType = {
   andIdx: number,
   orIdx: number,
   onCloseModal: Function,
-  formStoreName: string,
   formType: string,
   clearFeatureNodeAction: Object,
   clearOutcomesNodeAction: Object,
@@ -69,10 +68,7 @@ const findActiveFilters = (concept) => (
 );
 
 function mapStateToProps(state, ownProps) {
-  // storeName could be 'example', subfields are then named 'exampleFeatures'
-  const formStoreName = ownProps.formStoreName;
-  const formStoreFieldName = `${ownProps.formStoreName}${capitalize(ownProps.name)}`;
-  const form = state.form[formStoreName][formStoreFieldName];
+  const form = state.form[ownProps.formType][ownProps.name];
   const { andIdx, orIdx } = form;
 
   const node = findNode(state.form.reduxForm, ownProps.formType, ownProps.name, andIdx, orIdx);

@@ -6,8 +6,9 @@ import { type }                            from './formType';
 import { transformExampleFormQueryToApi }  from './transformQueryToApi';
 
 const exampleForm = {
-  headline: 'form.exampleForm.headline',
   type,
+  headline: 'form.exampleForm.headline',
+  order: 1,
   component: ExampleForm,
   reducer,
   transformQueryToApi: transformExampleFormQueryToApi

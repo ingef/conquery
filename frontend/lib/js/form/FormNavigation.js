@@ -17,6 +17,7 @@ type PropsType = {
 
 const FormNavigation = (props: PropsType) => {
   const options = Object.values(props.availableForms)
+    .sort((a, b) => a.order - b.order)
     .map(formType => ({
       label: T.translate(formType.headline),
       value: formType.type
