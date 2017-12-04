@@ -1,0 +1,47 @@
+.query-runner
+  margin-top: auto
+  padding: 10px 20px 0 10px
+  border-top: 1px solid $col-gray-light
+  display: table
+  width: 100%
+  // prevent moving and extending UI
+  // together with margin-top auto
+  min-height: 71px
+
+  &__right, &__left
+    display: table-cell
+    vertical-align: middle
+
+  &__start-btn
+    margin: 0 0 10px
+
+  &__status
+    font-weight: 400
+    &--success
+      color: $col-green
+    &--error
+      color: $col-red
+
+  &__spinner
+    height: 30px
+    width: 30px
+    background-image: url('../' + $img-spinner)
+    background-repeat:  no-repeat
+    background-size: 30px
+
+  &__loading-group
+    display: table
+
+  &__results-loading
+    display: table-cell
+    vertical-align: middle
+    margin: 0 auto
+    padding: 5px
+
+  &__info
+    display: table-cell
+    vertical-align: middle
+
+  &__loading, &__status
+    margin: 0 10px
+    font-size: $font-sm

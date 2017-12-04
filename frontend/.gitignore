@@ -11,3 +11,10 @@ node_modules
 coverage
 dist
 bin
+app/dist
+conquery-*.tgz
+package-lock.json
+
+# JetBrains WebStorm
+.idea
+
