@@ -21,7 +21,7 @@ import { BASENAME, isProduction } from './environment';
 import createMiddleware           from './middleware';
 
 import AppRouter                  from './app/AppRouter';
-import reducers                   from './app/reducers';
+import buildAppReducer            from './app/reducers';
 
 
 require('es6-promise').polyfill();
@@ -35,7 +35,7 @@ require('../images/favicon.png');
 // Required for isomophic-fetch
 
 
-function makeStore(initialState: Object, middleware) {
+function makeStore(initialState: Object, middleware, forms: Object) {
   let enhancer;
 
   if (!isProduction)
@@ -47,10 +47,10 @@ function makeStore(initialState: Object, middleware) {
   else
     enhancer = compose(middleware);
 
-  return createStore(reducers, initialState, enhancer);
+  return createStore(buildAppReducer(forms), initialState, enhancer);
 }
 
-export default function conquery() {
+export default function conquery(forms: Object) {
   const initialState = {};
 
   // Redux Router setup
@@ -60,7 +60,7 @@ export default function conquery() {
 
   const middleware = applyMiddleware(...createMiddleware(browserHistory));
 
-  const store = makeStore(initialState, middleware);
+  const store = makeStore(initialState, middleware, forms);
 
   // ---------------------
   // RENDER

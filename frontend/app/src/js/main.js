@@ -1,5 +1,10 @@
 // @flow
 
 import conquery                   from '../../../lib/js';
+import exampleForm                from './forms/example-form';
 
-conquery();
+const forms = {
+  [exampleForm.type]: exampleForm
+};
+
+conquery(forms);
