@@ -1,6 +1,5 @@
 // @flow
 
-import T                   from 'i18n-react';
 import { CLICK_PANE_TAB }  from './actionTypes';
 
 
@@ -24,16 +23,16 @@ const initialState: StateType = {
   left: {
     activeTab: 'categoryTrees',
     tabs: [
-      { label: T.translate('leftPane.categoryTrees'), tab: 'categoryTrees' },
-      { label: T.translate('leftPane.previousQueries'), tab: 'previousQueries' },
+      { label: 'leftPane.categoryTrees', tab: 'categoryTrees' },
+      { label: 'leftPane.previousQueries', tab: 'previousQueries' },
     ]
   },
   right: {
     activeTab: 'queryEditor',
     tabs: [
-      { label: T.translate('rightPane.queryEditor'), tab: 'queryEditor' },
-      { label: T.translate('rightPane.timebasedQueryEditor'), tab: 'timebasedQueryEditor' },
-      { label: T.translate('rightPane.externalForms'), tab: 'externalForms' },
+      { label: 'rightPane.queryEditor', tab: 'queryEditor' },
+      { label: 'rightPane.timebasedQueryEditor', tab: 'timebasedQueryEditor' },
+      { label: 'rightPane.externalForms', tab: 'externalForms' },
     ]
   }
 };
