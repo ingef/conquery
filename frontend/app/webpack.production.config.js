@@ -32,16 +32,26 @@ module.exports = {
     })
   ],
   module: {
-    ...commonConfig.module,
-    rules: [
-      ...commonConfig.module.rules,
-      {
-        test: /\.sass$/,
-        loader: ExtractTextPlugin.extract({
-          fallback: "style-loader",
-          use: "css-loader!postcss-loader!sass-loader?indentedSyntax"
-        })
-      }
-    ]
+  ...commonConfig.module,
+  rules: [
+    ...commonConfig.module.rules,
+    {
+      test: /\.sass$/,
+      loader: ExtractTextPlugin.extract({
+        fallback: "style-loader",
+        use: [
+          'css-loader',
+          'postcss-loader',
+          'resolve-url-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              indentedSyntax: true,
+              sourceMap: true, // Necessary for resolve-url
+            }
+          }
+        ]
+      })
+    }]
   }
 };
