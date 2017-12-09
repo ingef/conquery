@@ -9,9 +9,9 @@ import {
   resolveConceptsStart,
   resolveConceptsSuccess,
   resolveConceptsError
-} from '../../../src/js/upload-concept-list-modal/actions';
+} from '../../../lib/js/upload-concept-list-modal/actions';
 
-import { API_URL }                from '../../../src/js/environment'
+import { API_URL }                from '../../../lib/js/environment'
 
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
