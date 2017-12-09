@@ -8,7 +8,7 @@ module.exports = {
   entry: {
     main: [
       'webpack-hot-middleware/client?reload=true',
-      path.join(__dirname, 'src/js/main.js')
+      path.join(__dirname, 'lib/js/main.js')
     ]
   },
   output: {
@@ -18,7 +18,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'src/index.tpl.html',
+      template: 'lib/index.tpl.html',
       inject: 'body',
       filename: 'index.html'
     }),

@@ -6,7 +6,7 @@ var StatsPlugin = require('stats-webpack-plugin');
 
 module.exports = {
   entry: {
-    main: path.join(__dirname, 'src/js/main.js')
+    main: path.join(__dirname, 'lib/js/main.js')
   },
   output: {
     path: path.join(__dirname, '/dist/'),
@@ -14,7 +14,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin({
-      template: 'src/index.tpl.html',
+      template: 'lib/index.tpl.html',
       inject: 'body',
       filename: 'index.html'
     }),
