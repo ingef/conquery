@@ -5,7 +5,7 @@ import T                        from 'i18n-react';
 import classnames               from 'classnames';
 import { DragSource }           from 'react-dnd';
 
-import { VerticalToggleButton } from '../form';
+import { VerticalToggleButton } from '../editorComponents';
 import {
   FIRST,
   LAST,

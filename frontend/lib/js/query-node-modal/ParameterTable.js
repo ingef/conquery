@@ -10,7 +10,7 @@ import {
 
 import {
   SUPPORTED_FILTERS,
-} from '../form';
+} from '../editorComponents';
 
 import type { TableType } from '../standard-query-editor/types';
 

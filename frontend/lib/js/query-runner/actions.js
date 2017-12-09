@@ -24,7 +24,7 @@ import { QUERY_AGAIN_TIMEOUT } from './constants';
 
 export default function createQueryRunnerActions(
   type: string,
-  isStatistics: boolean = false
+  isForm: boolean = false
 ): { [string]: Function } {
   const uppercaseType = type.toUpperCase();
   const capitalizedType = capitalize(type);
@@ -47,7 +47,7 @@ export default function createQueryRunnerActions(
     return (dispatch) => {
       dispatch(startQueryStart());
 
-      const apiMethod = isStatistics ? api.postFormQueries : api.postQueries;
+      const apiMethod = isForm ? api.postFormQueries : api.postQueries;
 
       return apiMethod(datasetId, query, type, version)
         .then(
@@ -72,7 +72,7 @@ export default function createQueryRunnerActions(
     return (dispatch) => {
       dispatch(stopQueryStart());
 
-      const apiMethod = isStatistics ? api.deleteFormQuery : api.deleteQuery;
+      const apiMethod = isForm ? api.deleteFormQuery : api.deleteQuery;
 
       return apiMethod(datasetId, queryId)
         .then(
@@ -90,7 +90,7 @@ export default function createQueryRunnerActions(
     return (dispatch) => {
       dispatch(queryResultStart());
 
-      const apiMethod = isStatistics ? api.getFormQuery : api.getQuery;
+      const apiMethod = isForm ? api.getFormQuery : api.getQuery;
 
       return apiMethod(datasetId, queryId)
         .then(
