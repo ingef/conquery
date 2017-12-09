@@ -8,15 +8,19 @@ import T                    from 'i18n-react';
 
 import {
   EXAMPLE_FORM
-} from '../statisticsFormTypes';
+} from '../formTypes';
 
 import {
   InputWithLabel
-} from '../../form';
+} from '../../editorComponents';
 
 import {
   validateRequired
 } from '../validators';
+
+import {
+  selectReduxFormState
+} from '../stateSelectors';
 
 type PropsType = {
   onSubmit: Function,
@@ -25,7 +29,7 @@ type PropsType = {
 const ExampleForm = (props: PropsType) => {
   return (
     <form className="example-form">
-      <h3>{T.translate('statistics.exampleForm.headline')}</h3>
+      <h3>{T.translate('form.exampleForm.headline')}</h3>
       <Field
         name="text"
         component={InputWithLabel}
@@ -40,7 +44,7 @@ const ExampleForm = (props: PropsType) => {
 
 export default reduxForm({
   form: EXAMPLE_FORM,
-  getFormState: (state) => state.statistics.form,
+  getFormState: selectReduxFormState,
   initialValues: {
     text: 0,
   },

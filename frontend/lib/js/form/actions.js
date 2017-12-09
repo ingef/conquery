@@ -1,42 +1,42 @@
 // @flow
 
 import { createQueryRunnerActions } from '../query-runner';
-import { SET_STATISTICS_FORM }      from './actionTypes';
+import { SET_FORM }                 from './actionTypes';
 
-export const setStatisticsForm = (form: string) => ({
-  type: SET_STATISTICS_FORM,
+export const setForm = (form: string) => ({
+  type: SET_FORM,
   payload: { form }
 });
 
 
 const {
-  startStatisticsQueryStart,
-  startStatisticsQueryError,
-  startStatisticsQuerySuccess,
-  startStatisticsQuery,
-  stopStatisticsQueryStart,
-  stopStatisticsQueryError,
-  stopStatisticsQuerySuccess,
-  stopStatisticsQuery,
-  queryStatisticsResultStart,
-  queryStatisticsResultStop,
-  queryStatisticsResultError,
-  queryStatisticsResultSuccess,
-  queryStatisticsResult,
-} = createQueryRunnerActions('statistics', true);
+  startFormQueryStart,
+  startFormQueryError,
+  startFormQuerySuccess,
+  startFormQuery,
+  stopFormQueryStart,
+  stopFormQueryError,
+  stopFormQuerySuccess,
+  stopFormQuery,
+  queryFormResultStart,
+  queryFormResultStop,
+  queryFormResultError,
+  queryFormResultSuccess,
+  queryFormResult,
+} = createQueryRunnerActions('form', true);
 
 export {
-  startStatisticsQueryStart,
-  startStatisticsQueryError,
-  startStatisticsQuerySuccess,
-  startStatisticsQuery,
-  stopStatisticsQueryStart,
-  stopStatisticsQueryError,
-  stopStatisticsQuerySuccess,
-  stopStatisticsQuery,
-  queryStatisticsResultStart,
-  queryStatisticsResultStop,
-  queryStatisticsResultError,
-  queryStatisticsResultSuccess,
-  queryStatisticsResult,
+  startFormQueryStart,
+  startFormQueryError,
+  startFormQuerySuccess,
+  startFormQuery,
+  stopFormQueryStart,
+  stopFormQueryError,
+  stopFormQuerySuccess,
+  stopFormQuery,
+  queryFormResultStart,
+  queryFormResultStop,
+  queryFormResultError,
+  queryFormResultSuccess,
+  queryFormResult,
 };
