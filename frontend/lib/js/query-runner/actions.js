@@ -11,7 +11,8 @@ import {
 } from '../common/actions';
 
 import {
-  capitalize
+  capitalize,
+  toUpperCaseUnderscore
 } from '../common/helpers';
 
 import {
@@ -24,9 +25,9 @@ import { QUERY_AGAIN_TIMEOUT } from './constants';
 
 export default function createQueryRunnerActions(
   type: string,
-  isForm: boolean = false
+  isExternalForm: boolean = false
 ): { [string]: Function } {
-  const uppercaseType = type.toUpperCase();
+  const uppercaseType = toUpperCaseUnderscore(type);
   const capitalizedType = capitalize(type);
 
   const START_QUERY_START = actionTypes[`START_${uppercaseType}_QUERY_START`];
@@ -47,7 +48,7 @@ export default function createQueryRunnerActions(
     return (dispatch) => {
       dispatch(startQueryStart());
 
-      const apiMethod = isForm ? api.postFormQueries : api.postQueries;
+      const apiMethod = isExternalForm ? api.postFormQueries : api.postQueries;
 
       return apiMethod(datasetId, query, type, version)
         .then(
@@ -72,7 +73,7 @@ export default function createQueryRunnerActions(
     return (dispatch) => {
       dispatch(stopQueryStart());
 
-      const apiMethod = isForm ? api.deleteFormQuery : api.deleteQuery;
+      const apiMethod = isExternalForm ? api.deleteFormQuery : api.deleteQuery;
 
       return apiMethod(datasetId, queryId)
         .then(
@@ -90,7 +91,7 @@ export default function createQueryRunnerActions(
     return (dispatch) => {
       dispatch(queryResultStart());
 
-      const apiMethod = isForm ? api.getFormQuery : api.getQuery;
+      const apiMethod = isExternalForm ? api.getFormQuery : api.getQuery;
 
       return apiMethod(datasetId, queryId)
         .then(

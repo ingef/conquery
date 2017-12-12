@@ -65,7 +65,7 @@ const DateRangePicker = (props: PropsType) => {
             className="input-label"
             htmlFor="datepicker-min"
           >
-            {T.translate('form.common.dateMinLabel')}
+            {T.translate('externalForms.common.dateMinLabel')}
           </label>
           <DatePicker
             id="datepicker-min"
@@ -87,7 +87,7 @@ const DateRangePicker = (props: PropsType) => {
             className="input-label"
             htmlFor="datepicker-max"
           >
-            {T.translate('form.common.dateMaxLabel')}
+            {T.translate('externalForms.common.dateMaxLabel')}
           </label>
           <DatePicker
             id="datepicker-max"

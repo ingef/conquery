@@ -6,7 +6,7 @@ import { connect }          from 'react-redux';
 import {
   AVAILABLE_FORMS,
   EXAMPLE_FORM,
-}  from './formTypes';
+}  from './externalFormTypes';
 
 import { ExampleForm }      from './example-form';
 
@@ -14,7 +14,7 @@ type PropsType = {
   activeForm: $Keys<typeof AVAILABLE_FORMS>,
 };
 
-const FormContainer = (props: PropsType) => {
+const ExternalFormsContainer = (props: PropsType) => {
   let form;
 
   switch (props.activeForm) {
@@ -26,14 +26,14 @@ const FormContainer = (props: PropsType) => {
   }
 
   return (
-    <div className="form-container">
+    <div className="external-forms-container">
       { form }
     </div>
   );
 };
 
 const mapStateToProps = (state) => ({
-  activeForm: state.form.activeForm,
+  activeForm: state.externalForms.activeForm,
 });
 
-export default connect(mapStateToProps)(FormContainer);
+export default connect(mapStateToProps)(ExternalFormsContainer);

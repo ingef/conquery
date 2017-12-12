@@ -12,7 +12,7 @@ import {
 
 import {
   transformFormQueryToApi,
-} from './apiFormHelper';
+} from './apiExternalFormsHelper';
 
 type RequestType = {
   body?: Object | string,

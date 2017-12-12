@@ -17,8 +17,8 @@ import {
 
 
 const {
-  startFormQuery,
-  stopFormQuery,
+  startExternalFormsQuery,
+  stopExternalFormsQuery,
 } = actions;
 
 function isActiveFormValid(state) {
@@ -26,42 +26,42 @@ function isActiveFormValid(state) {
 
   if (!form) return false;
 
-  return !isPristine(state.form.activeForm, selectReduxFormState)(state) &&
-         isValid(state.form.activeForm, selectReduxFormState)(state);
+  return !isPristine(state.externalForms.activeForm, selectReduxFormState)(state) &&
+         isValid(state.externalForms.activeForm, selectReduxFormState)(state);
 }
 
 function isButtonEnabled(state, ownProps) {
   return !!( // Return true or false even if all are undefined / null
     ownProps.datasetId !== null &&
-    !state.form.queryRunner.startQuery.loading &&
-    !state.form.queryRunner.stopQuery.loading &&
+    !state.externalForms.queryRunner.startQuery.loading &&
+    !state.externalForms.queryRunner.stopQuery.loading &&
     isActiveFormValid(state)
   );
 }
 
 function getActiveForm(state) {
-  return state.form.reduxForm[state.form.activeForm]
+  return state.externalForms.reduxForm[state.externalForms.activeForm]
 }
 
 
 const mapStateToProps = (state, ownProps) => ({
-  queryRunner: state.form.queryRunner,
+  queryRunner: state.externalForms.queryRunner,
   isButtonEnabled: isButtonEnabled(state, ownProps),
-  isQueryRunning: !!state.form.queryRunner.runningQuery,
+  isQueryRunning: !!state.externalForms.queryRunner.runningQuery,
   // Following ones only needed in dispatch functions
-  queryId: state.form.queryRunner.runningQuery,
+  queryId: state.externalForms.queryRunner.runningQuery,
   version: state.categoryTrees.version,
   query: {
-    formName: state.form.activeForm,
-    form: getFormValues(state.form.activeForm, selectReduxFormState)(state),
+    formName: state.externalForms.activeForm,
+    form: getFormValues(state.externalForms.activeForm, selectReduxFormState)(state),
   },
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   startQuery: (datasetId, query, version) =>
-    dispatch(startFormQuery(datasetId, query, version)),
+    dispatch(startExternalFormsQuery(datasetId, query, version)),
   stopQuery: (datasetId, queryId) =>
-    dispatch(stopFormQuery(datasetId, queryId)),
+    dispatch(stopExternalFormsQuery(datasetId, queryId)),
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({
