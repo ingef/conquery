@@ -14,7 +14,7 @@
     
     <modules>
         <module>frontend</module>
-        <module>tests</module>
+        <!--<module>tests</module>-->
     </modules>
     
 </project>
