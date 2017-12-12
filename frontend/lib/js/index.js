@@ -50,23 +50,25 @@ function makeStore(initialState: Object, middleware) {
   return createStore(reducers, initialState, enhancer);
 }
 
-const initialState = {};
+export default function conquery() {
+  const initialState = {};
 
-// Redux Router setup
-const browserHistory = createHistory({
-  basename: BASENAME
-});
+  // Redux Router setup
+  const browserHistory = createHistory({
+    basename: BASENAME
+  });
 
-const middleware = applyMiddleware(...createMiddleware(browserHistory));
+  const middleware = applyMiddleware(...createMiddleware(browserHistory));
 
-const store = makeStore(initialState, middleware);
+  const store = makeStore(initialState, middleware);
 
-// ---------------------
-// RENDER
-// ---------------------
-ReactDOM.render(
-  <Provider store={store}>
-    <AppRouter history={browserHistory} />
-  </Provider>,
-  document.getElementById('root')
-);
+  // ---------------------
+  // RENDER
+  // ---------------------
+  ReactDOM.render(
+    <Provider store={store}>
+      <AppRouter history={browserHistory} />
+    </Provider>,
+    document.getElementById('root')
+  );
+};
