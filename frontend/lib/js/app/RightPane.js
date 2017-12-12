@@ -18,10 +18,10 @@ import {
 } from '../timebased-query-editor'
 
 import {
-  FormQueryRunner,
-  FormNavigation,
-  FormContainer,
-} from '../form';
+  ExternalFormsQueryRunner,
+  ExternalFormsNavigation,
+  ExternalFormsContainer,
+} from '../external-forms';
 
 
 type PropsType = {
@@ -43,11 +43,11 @@ const RightPane = (props: PropsType) => {
           <TimebasedQueryEditor key={1} />,
           <TimebasedQueryRunner datasetId={selectedDatasetId} key={2} />,
         ]
-      case 'form':
+      case 'externalForms':
         return [
-          <FormNavigation key={0} />,
-          <FormContainer key={1} />,
-          <FormQueryRunner datasetId={selectedDatasetId} key={2} />,
+          <ExternalFormsNavigation key={0} />,
+          <ExternalFormsContainer key={1} />,
+          <ExternalFormsQueryRunner datasetId={selectedDatasetId} key={2} />,
         ]
       default:
         return null;

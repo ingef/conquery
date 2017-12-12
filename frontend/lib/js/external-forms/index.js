@@ -1,7 +1,7 @@
 // @flow
 
-export { default as reducer }          from './reducer';
+export { default as reducer }                  from './reducer';
 
-export { default as FormNavigation }   from './FormNavigation';
-export { default as FormContainer }    from './FormContainer';
-export { default as FormQueryRunner }  from './FormQueryRunner';
+export { default as ExternalFormsNavigation }   from './ExternalFormsNavigation';
+export { default as ExternalFormsContainer }    from './ExternalFormsContainer';
+export { default as ExternalFormsQueryRunner }  from './ExternalFormsQueryRunner';

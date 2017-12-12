@@ -5,7 +5,7 @@ import T                            from 'i18n-react';
 
 import {
   InputWithLabel,
-} from '../editorComponents';
+} from '../form-components';
 
 
 type PropsType = {

@@ -6,7 +6,7 @@ leftPane:
 rightPane:
   queryEditor: "Editor"
   timebasedQueryEditor: "Zeit-Editor"
-  form: "Formulare"
+  externalForms: "Formulare"
 
 categoryTreeList:
   loading: "Lade Konzeptbaum: {tree}"
@@ -146,7 +146,7 @@ timebasedQueryEditor:
   minDaysLabel: "Min. Tage"
   maxDaysLabel: "Max. Tage"
 
-form:
+externalForms:
   forms: "Formulare"
   formValidation:
     isRequired: "ist erforderlich"

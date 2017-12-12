@@ -1,3 +1,3 @@
 // @flow
 
-export const SET_FORM = 'form/SET_FORM';
+export const SET_EXTERNAL_FORM = 'form/SET_EXTERNAL_FORM';

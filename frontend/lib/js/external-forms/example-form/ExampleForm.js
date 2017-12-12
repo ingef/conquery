@@ -8,11 +8,11 @@ import T                    from 'i18n-react';
 
 import {
   EXAMPLE_FORM
-} from '../formTypes';
+} from '../externalFormTypes';
 
 import {
   InputWithLabel
-} from '../../editorComponents';
+} from '../../form-components';
 
 import {
   validateRequired
@@ -29,7 +29,7 @@ type PropsType = {
 const ExampleForm = (props: PropsType) => {
   return (
     <form className="example-form">
-      <h3>{T.translate('form.exampleForm.headline')}</h3>
+      <h3>{T.translate('externalForms.exampleForm.headline')}</h3>
       <Field
         name="text"
         component={InputWithLabel}

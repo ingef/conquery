@@ -5,17 +5,17 @@ import T                     from 'i18n-react';
 import type { Dispatch }     from 'redux-thunk';
 import { connect }           from 'react-redux';
 
-import { InputSelect }       from '../editorComponents';
+import { InputSelect }       from '../form-components';
 
-import { setForm }           from './actions';
-import { AVAILABLE_FORMS }   from './formTypes';
+import { setExternalForm }   from './actions';
+import { AVAILABLE_FORMS }   from './externalFormTypes';
 
 type PropsType = {
   activeForm: $Keys<typeof AVAILABLE_FORMS>,
   onItemClick: Function,
 };
 
-const FormNavigation = (props: PropsType) => {
+const ExternalFormsNavigation = (props: PropsType) => {
   const options = Object
     .keys(AVAILABLE_FORMS)
     .map(formType => ({
@@ -24,9 +24,9 @@ const FormNavigation = (props: PropsType) => {
     }));
 
   return (
-    <div className="form-navigation">
+    <div className="external-forms-navigation">
       <InputSelect
-        label={T.translate('form.forms')}
+        label={T.translate('externalForms.forms')}
         options={options}
         input={{
           value: props.activeForm,
@@ -43,11 +43,11 @@ const FormNavigation = (props: PropsType) => {
 };
 
 const mapStateToProps = (state) => ({
-  activeForm: state.form.activeForm,
+  activeForm: state.externalForms.activeForm,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onItemClick: (form) => dispatch(setForm(form)),
+  onItemClick: (form) => dispatch(setExternalForm(form)),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(FormNavigation);
+export default connect(mapStateToProps, mapDispatchToProps)(ExternalFormsNavigation);

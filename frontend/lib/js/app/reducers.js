@@ -30,7 +30,7 @@ import { reducer as previousQueriesFilter }    from '../previous-queries/filter'
 import { reducer as uploadQueryResults }       from '../previous-queries/upload';
 import { reducer as deletePreviousQueryModal } from '../previous-queries/delete-modal';
 import { reducer as timebasedQuery }           from '../timebased-query-editor';
-import { reducer as form }                     from '../form';
+import { reducer as externalForms }            from '../external-forms';
 import { reducer as uploadConceptListModal }   from '../upload-concept-list-modal';
 
 import { createQueryRunnerReducer }            from '../query-runner';
@@ -60,5 +60,5 @@ export default combineReducers({
   uploadQueryResults,
   deletePreviousQueryModal,
   timebasedQuery,
-  form,
+  externalForms,
 });

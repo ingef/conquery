@@ -10,7 +10,7 @@ import { Modal }                 from '../modal';
 import {
   InputSelect,
   InputWithLabel
-}                                from '../editorComponents';
+}                                from '../form-components';
 import { ScrollableList }        from '../scrollable-list'
 
 import type { StateType }        from '../app/reducers';

@@ -18,7 +18,7 @@ import {
 import {
   EditableText,
   EditableTags
-}                           from '../../editorComponents';
+}                           from '../../form-components';
 
 import {
   deletePreviousQueryModalOpen,

@@ -1,42 +1,42 @@
 // @flow
 
 import { createQueryRunnerActions } from '../query-runner';
-import { SET_FORM }                 from './actionTypes';
+import { SET_EXTERNAL_FORM }        from './actionTypes';
 
-export const setForm = (form: string) => ({
-  type: SET_FORM,
+export const setExternalForm = (form: string) => ({
+  type: SET_EXTERNAL_FORM,
   payload: { form }
 });
 
 
 const {
-  startFormQueryStart,
-  startFormQueryError,
-  startFormQuerySuccess,
-  startFormQuery,
-  stopFormQueryStart,
-  stopFormQueryError,
-  stopFormQuerySuccess,
-  stopFormQuery,
-  queryFormResultStart,
-  queryFormResultStop,
-  queryFormResultError,
-  queryFormResultSuccess,
-  queryFormResult,
-} = createQueryRunnerActions('form', true);
+  startExternalFormsQueryStart,
+  startExternalFormsQueryError,
+  startExternalFormsQuerySuccess,
+  startExternalFormsQuery,
+  stopExternalFormsQueryStart,
+  stopExternalFormsQueryError,
+  stopExternalFormsQuerySuccess,
+  stopExternalFormsQuery,
+  queryExternalFormsResultStart,
+  queryExternalFormsResultStop,
+  queryExternalFormsResultError,
+  queryExternalFormsResultSuccess,
+  queryExternalFormsResult,
+} = createQueryRunnerActions('externalForms', true);
 
 export {
-  startFormQueryStart,
-  startFormQueryError,
-  startFormQuerySuccess,
-  startFormQuery,
-  stopFormQueryStart,
-  stopFormQueryError,
-  stopFormQuerySuccess,
-  stopFormQuery,
-  queryFormResultStart,
-  queryFormResultStop,
-  queryFormResultError,
-  queryFormResultSuccess,
-  queryFormResult,
+  startExternalFormsQueryStart,
+  startExternalFormsQueryError,
+  startExternalFormsQuerySuccess,
+  startExternalFormsQuery,
+  stopExternalFormsQueryStart,
+  stopExternalFormsQueryError,
+  stopExternalFormsQuerySuccess,
+  stopExternalFormsQuery,
+  queryExternalFormsResultStart,
+  queryExternalFormsResultStop,
+  queryExternalFormsResultError,
+  queryExternalFormsResultSuccess,
+  queryExternalFormsResult,
 };

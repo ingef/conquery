@@ -19,7 +19,7 @@ import {
   REAL_RANGE,
   STRING,
   BIG_MULTI_SELECT,
-} from '../editorComponents';
+} from '../form-components';
 
 import {
   type FilterType
