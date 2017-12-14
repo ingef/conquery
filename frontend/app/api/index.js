@@ -57,7 +57,7 @@ module.exports = function (app, port) {
           id: 1,
           status: "DONE",
           numberOfResults: 5,
-          resultUrl: `http://localhost:${port}/api/results/results.csv`
+          resultUrl: `/api/results/results.csv`
         }));
       } else {
         res.status(422);
@@ -73,9 +73,7 @@ module.exports = function (app, port) {
     res.setHeader('Content-Type', 'application/json');
 
     res.send(JSON.stringify([
-      { id: 1, label: "Research database" },
-      { id: 2, label: "Development database" },
-      { id: 3, label: "Test database" }
+      { id: 'imdb', label: "IMDb" }
     ]));
   });
 
@@ -117,7 +115,7 @@ module.exports = function (app, port) {
         createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000)).toISOString(),
         own: Math.random() < 0.1,
         shared: Math.random() < 0.8,
-        resultUrl: `http://localhost:${port}/api/results/results.csv`,
+        resultUrl: `/api/results/results.csv`,
         ownerName: "System",
       });
 
@@ -208,7 +206,7 @@ module.exports = function (app, port) {
           id: 1,
           status: "DONE",
           numberOfResults: 5,
-          resultUrl: `http://localhost:${port}/api/results/results.csv`
+          resultUrl: `/api/results/results.csv`
         }));
       } else {
         res.status(422);
@@ -245,15 +243,18 @@ module.exports = function (app, port) {
     function response (req, res) {
       setTimeout(() => {
         res.setHeader('Content-Type', 'application/json');
-        const storedValues = [
+
+        const countriesRequested = req.params.filterId === 'production_country';
+
+        const storedValues = countriesRequested ? require('./autocomplete/countries') : [
           "1008508208", "1015841172", "1011218302",
           "1007680436", "1017776144", "1003780588",
           "1000326535", "1014150881", "1017126347", "1008445564"
         ];
 
         const suggestions = storedValues
-          .filter(v => v.startsWith(req.body.prefix))
-          .map((v, id) => ({ label: v, value: id }));
+          .map((v, id) => ({ label: v, value: id }))
+          .filter(v => v.label.toLowerCase().startsWith(req.body.text.toLowerCase()));
 
         res.send(JSON.stringify(suggestions));
       }, 500);

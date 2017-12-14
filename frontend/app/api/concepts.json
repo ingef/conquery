@@ -1,0 +1,174 @@
+{
+  "version": 1,
+  "concepts": {
+    "movie_appearances": {
+      "label": "Movie Appearances",
+      "active": true,
+      "children": [
+        "action_movies",
+        "fantasy_movies",
+        "comedies",
+        "horror_movies",
+        "family_movies",
+        "independent_movies"
+      ],
+      "detailsAvailable": true,
+      "tables": [
+        {
+          "id": "feature_films",
+          "label": "Feature Films",
+          "filters": [
+            {
+              "id": "studio",
+              "label": "Production Studio",
+              "type": "MULTI_SELECT",
+              "description": "The studio producing the movie",
+              "options": [
+                {
+                  "value": "universal",
+                  "label": "Universal Studios"
+                },
+                {
+                  "value": "paramount",
+                  "label": "Paramount Pictures"
+                },
+                {
+                  "value": "warner_bros",
+                  "label": "Warner Bros."
+                },
+                {
+                  "value": "20th_century_fox",
+                  "label": "20th Century Fox"
+                },
+                {
+                  "value": "sony",
+                  "label": "Sony/Columbia Pictures"
+                },
+                {
+                  "value": "disney",
+                  "label": "Walt Disney Studios"
+                }
+              ]
+            },
+            {
+              "id": "production_country",
+              "label": "Production Country",
+              "type": "BIG_MULTI_SELECT"
+            },
+            {
+              "id": "budget",
+              "label": "Budget",
+              "type": "INTEGER_RANGE",
+              "unit": "1K USD",
+              "description": "The movie's total budget",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "id": "tv_series",
+          "label": "TV Series",
+          "filters": [
+            {
+              "id": "network",
+              "label": "Network",
+              "type": "MULTI_SELECT",
+              "description": "The original broadcasting network",
+              "options": [
+                {
+                  "value": "amc",
+                  "label": "AMC"
+                },
+                {
+                  "value": "fox",
+                  "label": "FOX"
+                },
+                {
+                  "value": "cbs",
+                  "label": "CBS"
+                },
+                {
+                  "value": "hbo",
+                  "label": "HBO"
+                },
+                {
+                  "value": "netflix",
+                  "label": "Netflix"
+                },
+                {
+                  "value": "amazon",
+                  "label": "Amazon Video"
+                }
+              ]
+            },
+            {
+              "id": "picture_format",
+              "label": "Picture Format",
+              "type": "SELECT",
+              "description": "The original picture format",
+              "options": [
+                {
+                  "value": "sdtv",
+                  "label": "SDTV"
+                },
+                {
+                  "value": "hdtv",
+                  "label": "HDTV"
+                },
+                {
+                  "value": "4k",
+                  "label": "4K"
+                }
+              ]
+            },
+            {
+              "id": "production_country",
+              "label": "Production Country",
+              "type": "BIG_MULTI_SELECT"
+            },
+            {
+              "id": "series_count",
+              "label": "Number of series",
+              "type": "COUNT",
+              "distinct": true,
+              "unit": "#",
+              "description": "The total number of series"
+            }
+          ]
+        }
+      ]
+    },
+    "awards": {
+      "label": "Awards",
+      "active": true,
+      "children": [
+        "academy_award",
+        "golden_globe_award"
+      ],
+      "detailsAvailable": true,
+      "tables": [
+        {
+          "id": "awards",
+          "label": "Awards",
+          "filters": [
+            {
+              "id": "award_type",
+              "label": "Type of award",
+              "type": "MULTI_SELECT",
+              "options": [
+                {
+                  "value": "nominated",
+                  "label": "Nominated"
+                },
+                {
+                  "value": "won",
+                  "label": "Won"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
