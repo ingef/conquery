@@ -51,6 +51,7 @@ const InputMultiSelect = (props: PropsType) => (
       onInputChange={props.onInputChange || function(value) { return value; }}
       isLoading={props.isLoading}
       className={props.className}
+      matchPos="start"
     />
   </label>
 );

@@ -272,6 +272,22 @@ const setNodeFilterProperties = (state, action, obj) => {
   // or empty objects
   const properties = stripObject(obj);
 
+  if (properties.options) {
+    // Options are only updated in the context of autocompletion.
+    // In this case we don't want to replace the existing options but update
+    // them with the new list, removing duplicates
+    const previousOptions = filter.options || [];
+    properties.options = properties.options
+      .concat(previousOptions)
+      .reduce(
+        (options, currentOption) =>
+          options.find(x => x.value === currentOption.value)
+            ? options
+            : [...options, currentOption],
+        []
+      );
+  }
+
   const newTable = {
     ...table,
     filters: [
