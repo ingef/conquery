@@ -13,6 +13,7 @@ export const displayAdditionalInfos = (node: Object) => ({
       label: node.label,
       description: node.description,
       matchingEntries: node.matchingEntries,
+      dateRange: node.dateRange,
       infos: node.additionalInfos,
     }
   }
