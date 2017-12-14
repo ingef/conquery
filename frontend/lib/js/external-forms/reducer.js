@@ -31,7 +31,7 @@ const buildExternalFormsReducer = (availableForms: Object) => {
     // Redux-Form reducer to keep the state of all forms:
     reduxForm: reduxFormReducer,
 
-    // Query Runner reducer that works with form / forms
+    // Query Runner reducer that works with external forms
     queryRunner: createQueryRunnerReducer('externalForms'),
 
     // available forms store added at conquery initialization
