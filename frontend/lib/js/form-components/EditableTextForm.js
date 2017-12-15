@@ -21,6 +21,7 @@ class EditableTextForm extends React.Component {
   componentDidMount() {
     this.refs.input.focus();
     this.refs.input.value = this.props.text;
+    this.refs.input.select();
   }
 
   handleClickOutside() {
