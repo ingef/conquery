@@ -11,6 +11,7 @@ type PropsType = {
   className?: string,
   text: string,
   loading: boolean,
+  selectTextOnEdit: boolean,
   onSubmit: Function,
   onCancel: Function,
 };
@@ -21,7 +22,8 @@ class EditableTextForm extends React.Component {
   componentDidMount() {
     this.refs.input.focus();
     this.refs.input.value = this.props.text;
-    this.refs.input.select();
+    if (this.props.selectTextOnEdit)
+      this.refs.input.select();
   }
 
   handleClickOutside() {

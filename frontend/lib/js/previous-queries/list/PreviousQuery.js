@@ -125,6 +125,7 @@ const PreviousQuery = (props) => {
               className="previous-query__label"
               loading={!!query.loading}
               text={label}
+              selectTextOnEdit={true}
               editing={!!query.editingLabel}
               onSubmit={onRenamePreviousQuery}
               onToggleEdit={onToggleEditPreviousQueryLabel}
