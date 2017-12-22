@@ -6,22 +6,12 @@ import './fixEdge';
 
 import React                      from 'react';
 import ReactDOM                   from 'react-dom';
-import {
-  compose,
-  applyMiddleware,
-  createStore,
-}                                 from 'redux';
 import { Provider }               from 'react-redux';
-import createHistory              from 'history/createBrowserHistory';
 
 import './localization'; // To initialize locales
 import './app/actions'; //  To initialize parameterized actions
-
-import { BASENAME, isProduction } from './environment';
-import createMiddleware           from './middleware';
-
+import {store, browserHistory }   from './store'
 import AppRouter                  from './app/AppRouter';
-import reducers                   from './app/reducers';
 
 
 require('es6-promise').polyfill();
@@ -34,34 +24,7 @@ require('../images/favicon.png');
 // require('../../images/og.png');
 // Required for isomophic-fetch
 
-
-function makeStore(initialState: Object, middleware) {
-  let enhancer;
-
-  if (!isProduction)
-    enhancer = compose(
-      middleware,
-      // Use the Redux devtools extention, but only in development
-      window.devToolsExtension ? window.devToolsExtension() : f => f,
-    );
-  else
-    enhancer = compose(middleware);
-
-  return createStore(reducers, initialState, enhancer);
-}
-
 export default function conquery() {
-  const initialState = {};
-
-  // Redux Router setup
-  const browserHistory = createHistory({
-    basename: BASENAME
-  });
-
-  const middleware = applyMiddleware(...createMiddleware(browserHistory));
-
-  const store = makeStore(initialState, middleware);
-
   // ---------------------
   // RENDER
   // ---------------------
