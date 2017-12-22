@@ -36,7 +36,6 @@ export default function conquery() {
   renderRoot();
 
   // ---Hot Module Replacement
-  if (module.hot) {
+  if (module.hot)
     module.hot.accept('./AppRoot', renderRoot);
-  }
 };
