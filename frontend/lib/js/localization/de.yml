@@ -88,6 +88,10 @@ tooltip:
   placeholder: "Weitere Informationen über einen Konzeptknoten ..."
   hide: "Verstecken"
   show: "Weitere Informationen anzeigen"
+  date:
+    daterange: "Zeitraum"
+    from: "Von"
+    to: "Bis"
 
 reactSelect:
   placeholder: "Auswählen ..."
