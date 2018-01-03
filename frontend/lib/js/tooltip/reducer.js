@@ -15,6 +15,7 @@ export type AdditionalInfosType = {
   label: ?string,
   description: ?string,
   matchingEntries: ?number,
+  dateRange: ?Object,
   infos: ?InfoType[]
 };
 
@@ -29,6 +30,7 @@ const initialState = {
     label: null,
     description: null,
     matchingEntries: null,
+    dateRange: null,
     infos: null,
   },
 };
@@ -40,6 +42,7 @@ const setAdditionalInfos = (state, action) => {
       label: null,
       description: null,
       matchingEntries: null,
+      dateRange: null,
       infos: null,
     }
   };
