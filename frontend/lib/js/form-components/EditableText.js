@@ -10,6 +10,7 @@ class EditableText extends React.Component {
           className={this.props.className}
           loading={this.props.loading}
           text={this.props.text}
+          selectTextOnMount={this.props.selectTextOnMount}
           onSubmit={this.props.onSubmit}
           onCancel={this.props.onToggleEdit}
         />
@@ -32,6 +33,7 @@ EditableText.propTypes = {
   loading: PropTypes.bool.isRequired,
   editing: PropTypes.bool.isRequired,
   text: PropTypes.string.isRequired,
+  selectTextOnMount: PropTypes.bool.isRequired,
   onSubmit: PropTypes.func.isRequired,
   onToggleEdit: PropTypes.func.isRequired,
 };

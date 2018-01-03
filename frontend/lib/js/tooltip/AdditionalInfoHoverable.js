@@ -25,6 +25,7 @@ const AdditionalInfoHoverable = (Component: any) => {
         label: ownProps.node.label,
         description: node.description,
         matchingEntries: node.matchingEntries,
+        dateRange: node.dateRange,
         additionalInfos: node.additionalInfos,
       };
 
