@@ -36,6 +36,7 @@ class CategoryTreeNode extends React.Component {
             description: data.description,
             tables: data.tables,
             matchingEntries: data.matchingEntries,
+            dateRange: data.dateRange,
             additionalInfos: data.additionalInfos,
             hasChildren: !!data.children,
           }}

@@ -25,7 +25,7 @@ const Tooltip = (props: PropsType) => {
   if (!props.displayTooltip) return <ActivateTooltip />;
 
   const { additionalInfos, toggleDisplayTooltip } = props;
-  const { label, description, infos, matchingEntries } = additionalInfos;
+  const { label, description, infos, matchingEntries, dateRange } = additionalInfos;
 
   return (
     <div className="tooltip">
@@ -56,6 +56,7 @@ const Tooltip = (props: PropsType) => {
       <TooltipEntries
         className="tooltip__right"
         matchingEntries={matchingEntries}
+        dateRange={dateRange}
       />
       <IconButton
         onClick={toggleDisplayTooltip}
