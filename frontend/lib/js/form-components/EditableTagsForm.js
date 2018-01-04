@@ -1,4 +1,5 @@
-import React, { PropTypes }    from 'react';
+import React                   from 'react';
+import PropTypes               from 'prop-types';
 import T                       from 'i18n-react';
 import classnames              from 'classnames';
 import clickOutside            from 'react-onclickoutside';
