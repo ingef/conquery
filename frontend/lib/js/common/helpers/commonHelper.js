@@ -24,7 +24,11 @@ export const isEmptyObject = (variable: any) => {
 export const stripObject = (obj: Object) => {
   return Object.keys(obj).reduce((acc, k) => ({
     ...acc,
-    [k]: (isEmpty(obj[k]) || isEmptyObject(obj[k])) ? undefined : obj[k]
+    ...(
+      (isEmpty(obj[k]) || isEmptyObject(obj[k]))
+        ? {}
+        : { [k]: obj[k] }
+    )
   }), {});
 }
 
