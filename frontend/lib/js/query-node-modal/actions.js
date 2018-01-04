@@ -174,6 +174,7 @@ export default function createQueryNodeModalActions(type: string): Object {
     [`switch${capitalizedType}FilterMode`]: switchFilterMode,
     [`toggle${capitalizedType}Timestamps`]: toggleTimestamps,
     [`load${capitalizedType}FilterSuggestions`]: loadFilterSuggestions,
+    [`load${capitalizedType}FilterSuggestionsSuccess`]: loadFilterSuggestionsSuccess,
     [`load${capitalizedType}FormFilterSuggestions`]: loadFormFilterSuggestions,
   };
 };
