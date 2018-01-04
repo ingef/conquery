@@ -1,5 +1,6 @@
 // @flow
-import React, {PropsType}              from 'react';
+import React                           from 'react';
+import PropTypes                       from 'prop-types';
 import { Provider }                    from 'react-redux';
 
 import AppRouter                       from './app/AppRouter';
@@ -11,8 +12,8 @@ const AppRoot = ({store, browserHistory}) => (
 );
 
 AppRoot.propTypes = {
-  store: PropsType.object.isRequired,
-  browserHistory: PropsType.object.isRequired,
+  store: PropTypes.object.isRequired,
+  browserHistory: PropTypes.object.isRequired,
 };
 
 export default AppRoot;
