@@ -1,4 +1,5 @@
-import React, { PropTypes } from 'react';
+import React                from 'react';
+import PropTypes            from 'prop-types';
 
 import { SelectableLabel }  from '../selectable-label';
 import EditableTextForm     from './EditableTextForm';
