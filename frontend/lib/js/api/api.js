@@ -124,15 +124,16 @@ export function getQuery(datasetId: DatasetIdType, queryId: number) {
   return fetchJson(API_URL + `/datasets/${datasetId}/queries/${queryId}`);
 }
 
-// Same signature as postQueries
+// Same signature as postQueries, plus a form query transformator
 export function postFormQueries(
   datasetId: DatasetIdType,
   query: Object,
   queryType: string,
-  version: any
+  version: any,
+  formQueryTransformation: Function
 ) {
   // Transform into backend-compatible format
-  const body = transformFormQueryToApi(query, version);
+  const body = transformFormQueryToApi(query, version, formQueryTransformation);
 
   return fetchJson(API_URL + `/datasets/${datasetId}/form-queries`, {
     method: "POST",

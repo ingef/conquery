@@ -1,5 +1,5 @@
 import { toUpperCaseUnderscore } from '../common/helpers';
-import * as actionTypes          from './actionTypes';
+import { createActionTypes }     from './actionTypes';
 
 export default function createQueryNodeModalReducer(type) {
   const initialState = {
@@ -8,19 +8,17 @@ export default function createQueryNodeModalReducer(type) {
   };
 
   const uppercasedType = toUpperCaseUnderscore(type);
-
-  const SET_NODE = actionTypes[`SET_${uppercasedType}_NODE`];
-  const CLEAR_NODE = actionTypes[`CLEAR_${uppercasedType}_NODE`];
+  const actionTypes = createActionTypes(uppercasedType);
 
   return (state = initialState, action) => {
     switch (action.type) {
-      case SET_NODE:
+      case actionTypes.SET_NODE:
         return {
           ...state,
           andIdx: action.payload.andIdx,
           orIdx: action.payload.orIdx
         };
-      case CLEAR_NODE:
+      case actionTypes.CLEAR_NODE:
         return {
           ...state,
           andIdx: null,

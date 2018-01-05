@@ -44,11 +44,18 @@ export default function createQueryRunnerActions(
   const startQueryStart = () => ({ type: START_QUERY_START });
   const startQueryError = (err) => defaultError(START_QUERY_ERROR, err);
   const startQuerySuccess = (res) => defaultSuccess(START_QUERY_SUCCESS, res);
-  const startQuery = (datasetId, query, version) => {
+  const startQuery = (
+    datasetId,
+    query,
+    version,
+    formQueryTransformation?: Function = (form) => form
+  ) => {
     return (dispatch) => {
       dispatch(startQueryStart());
 
-      const apiMethod = isExternalForm ? api.postFormQueries : api.postQueries;
+      const apiMethod = isExternalForm
+        ? (...args) => api.postFormQueries(...args, formQueryTransformation)
+        : api.postQueries;
 
       return apiMethod(datasetId, query, type, version)
         .then(

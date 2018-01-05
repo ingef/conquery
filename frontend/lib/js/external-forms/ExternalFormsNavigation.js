@@ -8,19 +8,19 @@ import { connect }           from 'react-redux';
 import { InputSelect }       from '../form-components';
 
 import { setExternalForm }   from './actions';
-import { AVAILABLE_FORMS }   from './externalFormTypes';
 
 type PropsType = {
-  activeForm: $Keys<typeof AVAILABLE_FORMS>,
+  availableForms: Object,
+  activeForm: string,
   onItemClick: Function,
 };
 
 const ExternalFormsNavigation = (props: PropsType) => {
-  const options = Object
-    .keys(AVAILABLE_FORMS)
+  const options = Object.values(props.availableForms)
+    .sort((a, b) => a.order - b.order)
     .map(formType => ({
-      label: formType,
-      value: formType
+      label: T.translate(formType.headline),
+      value: formType.type
     }));
 
   return (
@@ -43,6 +43,7 @@ const ExternalFormsNavigation = (props: PropsType) => {
 };
 
 const mapStateToProps = (state) => ({
+  availableForms: state.externalForms.availableForms,
   activeForm: state.externalForms.activeForm,
 });
 
