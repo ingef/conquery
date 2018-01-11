@@ -26,11 +26,14 @@ require('../images/favicon.png');
 // Render the App including Hot Module Replacement
 const renderRoot = (forms: Object) => ReactDOM.render(
   <HotReloader>
-    <AppRoot store={store} browserHistory={browserHistory} forms={forms}/>
+    <AppRoot store={store(forms)} browserHistory={browserHistory} forms={forms} />
   </HotReloader>,
   document.getElementById('root')
 );
 
 export default function conquery(forms: Object) {
   renderRoot(forms);
+
+  if (module.hot)
+    module.hot.accept('./AppRoot', () => renderRoot(forms));
 }

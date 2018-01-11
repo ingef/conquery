@@ -29,5 +29,5 @@ export const browserHistory = createHistory({
 
 const middleware = applyMiddleware(...createMiddleware(browserHistory));
 
-export const store = makeStore(initialState, middleware);
+export const store = (forms: Object) => makeStore(initialState, middleware, forms);
 
