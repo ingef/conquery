@@ -1,80 +1,61 @@
 // @flow
 
-import { type Dispatch } from 'redux-thunk';
+import { type Dispatch }        from 'redux-thunk';
 
-import api              from '../api';
+import api                      from '../api';
 
 import {
   capitalize,
   toUpperCaseUnderscore,
-} from '../common/helpers';
+}                               from '../common/helpers';
 
-import * as actionTypes from './actionTypes';
+import { createActionTypes }    from './actionTypes';
 
 export default function createQueryNodeModalActions(type: string): Object {
   const uppercaseUnderscoreType = toUpperCaseUnderscore(type)
   const capitalizedType = capitalize(type);
 
-  const SET_NODE = actionTypes[`SET_${uppercaseUnderscoreType}_NODE`];
-  const CLEAR_NODE = actionTypes[`CLEAR_${uppercaseUnderscoreType}_NODE`];
-  const TOGGLE_TABLE = actionTypes[`TOGGLE_${uppercaseUnderscoreType}_TABLE`];
-  const SET_FILTER_VALUE = actionTypes[`SET_${uppercaseUnderscoreType}_FILTER_VALUE`];
-  const RESET_ALL_FILTERS = actionTypes[`RESET_${uppercaseUnderscoreType}_ALL_FILTERS`];
-  const SWITCH_FILTER_MODE = actionTypes[`SWITCH_${uppercaseUnderscoreType}_FILTER_MODE`];
-  const TOGGLE_TIMESTAMPS = actionTypes[`TOGGLE_${uppercaseUnderscoreType}_TIMESTAMPS`];
-  const LOAD_FILTER_SUGGESTIONS_START =
-    actionTypes[`LOAD_${uppercaseUnderscoreType}_FILTER_SUGGESTIONS_START`];
-  const LOAD_FILTER_SUGGESTIONS_SUCCESS =
-    actionTypes[`LOAD_${uppercaseUnderscoreType}_FILTER_SUGGESTIONS_SUCCESS`];
-  const LOAD_FILTER_SUGGESTIONS_ERROR =
-    actionTypes[`LOAD_${uppercaseUnderscoreType}_FILTER_SUGGESTIONS_ERROR`];
-  const LOAD_FORM_FILTER_SUGGESTIONS_START =
-    actionTypes[`LOAD_${uppercaseUnderscoreType}_FORM_FILTER_SUGGESTIONS_START`];
-  const LOAD_FORM_FILTER_SUGGESTIONS_SUCCESS =
-    actionTypes[`LOAD_${uppercaseUnderscoreType}_FORM_FILTER_SUGGESTIONS_SUCCESS`];
-  const LOAD_FORM_FILTER_SUGGESTIONS_ERROR =
-    actionTypes[`LOAD_${uppercaseUnderscoreType}_FORM_FILTER_SUGGESTIONS_ERROR`];
-
+  const actionTypes = createActionTypes(uppercaseUnderscoreType);
 
   const setNode = (andIdx, orIdx) => ({
-    type: SET_NODE,
+    type: actionTypes.SET_NODE,
     payload: { andIdx, orIdx }
   });
 
-  const clearNode = () => ({ type: CLEAR_NODE });
+  const clearNode = () => ({ type: actionTypes.CLEAR_NODE });
 
   const toggleTable = (andIdx, orIdx, tableIdx, isExcluded) => ({
-    type: TOGGLE_TABLE,
+    type: actionTypes.TOGGLE_TABLE,
     payload: { andIdx, orIdx, tableIdx, isExcluded }
   });
 
   const setFilterValue = (andIdx, orIdx, tableIdx, filterIdx, value) => ({
-    type: SET_FILTER_VALUE,
+    type: actionTypes.SET_FILTER_VALUE,
     payload: { andIdx, orIdx, tableIdx, filterIdx, value }
   });
 
   const resetAllFilters = (andIdx, orIdx) => ({
-    type: RESET_ALL_FILTERS,
+    type: actionTypes.RESET_ALL_FILTERS,
     payload: { andIdx, orIdx }
   });
 
   const switchFilterMode = (andIdx, orIdx, tableIdx, filterIdx, mode) => ({
-    type: SWITCH_FILTER_MODE,
+    type: actionTypes.SWITCH_FILTER_MODE,
     payload: { andIdx, orIdx, tableIdx, filterIdx, mode }
   });
 
   const toggleTimestamps = (andIdx, orIdx, isExcluded) => ({
-    type: TOGGLE_TIMESTAMPS,
+    type: actionTypes.TOGGLE_TIMESTAMPS,
     payload: { andIdx, orIdx, isExcluded }
   });
 
   const loadFilterSuggestionsStart = (andIdx, orIdx, tableIdx, conceptId, filterIdx, prefix) => ({
-    type: LOAD_FILTER_SUGGESTIONS_START,
+    type: actionTypes.LOAD_FILTER_SUGGESTIONS_START,
     payload: { andIdx, orIdx, tableIdx, conceptId, filterIdx, prefix }
   });
 
   const loadFilterSuggestionsSuccess = (suggestions, andIdx, orIdx, tableIdx, filterIdx) => ({
-    type: LOAD_FILTER_SUGGESTIONS_SUCCESS,
+    type: actionTypes.LOAD_FILTER_SUGGESTIONS_SUCCESS,
     payload: {
       suggestions,
       andIdx,
@@ -85,7 +66,7 @@ export default function createQueryNodeModalActions(type: string): Object {
   });
 
   const loadFilterSuggestionsError = (error, andIdx, orIdx, tableIdx, filterIdx) => ({
-    type: LOAD_FILTER_SUGGESTIONS_ERROR,
+    type: actionTypes.LOAD_FILTER_SUGGESTIONS_ERROR,
     payload: {
       message: error.message,
       ...error,
@@ -111,13 +92,13 @@ export default function createQueryNodeModalActions(type: string): Object {
 
   const loadFormFilterSuggestionsStart =
     (formName, fieldName, andIdx, orIdx, tableIdx, conceptId, filterIdx, prefix) => ({
-      type: LOAD_FORM_FILTER_SUGGESTIONS_START,
+      type: actionTypes.LOAD_FILTER_SUGGESTIONS_START,
       payload: { formName, fieldName, andIdx, orIdx, tableIdx, conceptId, filterIdx, prefix }
   });
 
   const loadFormFilterSuggestionsSuccess =
     (suggestions, formName, fieldName, andIdx, orIdx, tableIdx, filterIdx) => ({
-      type: LOAD_FORM_FILTER_SUGGESTIONS_SUCCESS,
+      type: actionTypes.LOAD_FILTER_SUGGESTIONS_SUCCESS,
       payload: {
         suggestions,
         formName,
@@ -131,7 +112,7 @@ export default function createQueryNodeModalActions(type: string): Object {
 
   const loadFormFilterSuggestionsError =
     (error, formName, fieldName, andIdx, orIdx, tableIdx, filterIdx) => ({
-      type: LOAD_FORM_FILTER_SUGGESTIONS_ERROR,
+      type: actionTypes.LOAD_FILTER_SUGGESTIONS_ERROR,
       payload: {
         ...error,
         formName,

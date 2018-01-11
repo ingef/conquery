@@ -38,6 +38,23 @@ export const transformTablesToApi = (tables: TableType[]) => {
       });
 }
 
+export const transformElementGroupsToApi = (elementGroups) => elementGroups.map(elements => ({
+  matchingType: elements.matchingType,
+  elements: transformElementsToApi(elements.concepts)
+}));
+
+export const transformElementsToApi = (conceptGroup) => conceptGroup.map(concept => {
+  const tables = concept.tables
+    ? transformTablesToApi(concept.tables)
+    : [];
+
+  return {
+    id: concept.id,
+    type: 'CONCEPT',
+    tables,
+  };
+});
+
 const transformStandardQueryToApi = (query, version) =>  {
   return {
     version,

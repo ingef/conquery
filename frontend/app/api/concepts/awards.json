@@ -1,0 +1,153 @@
+{
+  "academy_award": {
+    "parent": "awards",
+    "label": "Academy Award",
+    "children": [
+      "best_picture_award",
+      "best_actor_award",
+      "best_actress_award",
+      "best_supporting_actor_award",
+      "best_supporting_actress_award"
+    ]
+  },
+  "best_picture_award": {
+    "parent": "academy_award",
+    "label": "Best Picture"
+  },
+  "best_actor_award": {
+    "parent": "academy_award",
+    "label": "Best Actor"
+  },
+  "best_actress_award": {
+    "parent": "academy_award",
+    "label": "Best Actress"
+  },
+  "best_supporting_actor_award": {
+    "parent": "academy_award",
+    "label": "Best Suporting Actor"
+  },
+  "best_supporting_actress_award": {
+    "parent": "academy_award",
+    "label": "Best Suporting Actress"
+  },
+  "golden_globe_award": {
+    "parent": "awards",
+    "label": "Golden Globe Award",
+    "children": [
+      "golden_globe_motion_picture_awards",
+      "golden_globe_television_awards"
+    ]
+  },
+  "golden_globe_motion_picture_awards": {
+    "parent": "golden_globe_award",
+    "label": "Motion picture awards",
+    "children": [
+      "best_motion_picture_drama_golden_globe_award",
+      "best_motion_picture_musical_or_comedy_golden_globe_award",
+      "best_actor_motion_picture_drama_golden_globe_award",
+      "best_actor_motion_picture_musical_or_comedy_golden_globe_award",
+      "best_actress_motion_picture_drama_golden_globe_award",
+      "best_actress_motion_picture_musical_or_comedy_golden_globe_award",
+      "best_supporting_actor_motion_picture_golden_globe_award",
+      "best_supporting_actress_motion_picture_golden_globe_award",
+      "best_foreign_language_film_golden_globe_award"
+    ]
+  },
+  "best_motion_picture_drama_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Motion Picture – Drama"
+  },
+  "best_motion_picture_musical_or_comedy_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Motion Picture – Musical or Comedy"
+  },
+  "best_actor_motion_picture_drama_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Actor – Motion Picture Drama"
+  },
+  "best_actor_motion_picture_musical_or_comedy_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Actor – Motion Picture Musical or Comedy"
+  },
+  "best_actress_motion_picture_drama_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Actress – Motion Picture Drama"
+  },
+  "best_actress_motion_picture_musical_or_comedy_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Actress – Motion Picture Musical or Comedy"
+  },
+  "best_supporting_actor_motion_picture_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Supporting Actor – Motion Picture"
+  },
+  "best_supporting_actress_motion_picture_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Supporting Actress – Motion Picture"
+  },
+  "best_foreign_language_film_golden_globe_award": {
+    "parent": "golden_globe_motion_picture_awards",
+    "label": "Best Foreign Language Film"
+  },
+  "golden_globe_television_awards": {
+    "parent": "golden_globe_award",
+    "label": "Television awards",
+    "children": [
+      "best_drama_series_golden_globe_award",
+      "best_comedy_series_golden_globe_award",
+      "best_actor_in_a_television_drama_series_golden_globe_award",
+      "best_actor_in_a_television_comedy_series_golden_globe_award",
+      "best_acress_in_a_television_drama_series_golden_globe_award",
+      "best_actress_in_a_television_comedy_series_golden_globe_award",
+      "best_limited_series_or_motion_picture_made_for_television_golden_globe_award",
+      "best_actor_in_a_limited_series_or_motion_picture_made_for_television_golden_globe_award",
+      "best_actress_in_a_limited_series_or_motion_picture_made_for_television_golden_globe_award",
+      "best_supporting_actor_in_a_limited_series_or_motion_picture_made_for_television_golden_globe_award",
+      "best_supporting_actress_in_a_limited_series_or_motion_picture_made_for_television_golden_globe_award"
+    ]
+  },
+  "best_drama_series_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Drama Series"
+  },
+  "best_comedy_series_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Comedy Series"
+  },
+  "best_actor_in_a_television_drama_series_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Actor in a Television Drama Series"
+  },
+  "best_actor_in_a_television_comedy_series_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Actor in a Television Comedy Series"
+  },
+  "best_acress_in_a_television_drama_series_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Actress in a Television Drama Series"
+  },
+  "best_actress_in_a_television_comedy_series_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Actress in a Television Comedy Series"
+  },
+  "best_limited_series_or_motion_picture_made_for_television_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Limited Series or Motion Picture made for Television"
+  },
+  "best_actor_in_a_limited_series_or_motion_picture_made_for_television_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Actor in a Limited Series or Motion Picture made for Television"
+  },
+  "best_actress_in_a_limited_series_or_motion_picture_made_for_television_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Actress in a Limited Series or Motion Picture made for Television"
+  },
+  "best_supporting_actor_in_a_limited_series_or_motion_picture_made_for_television_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Supporting Actor in a Series, Limited Series or Motion Picture made for Television"
+  },
+  "best_supporting_actress_in_a_limited_series_or_motion_picture_made_for_television_golden_globe_award": {
+    "parent": "golden_globe_television_awards",
+    "label": "Best Supporting Actress in a Series, Limited Series or Motion Picture made for Television"
+  }
+}

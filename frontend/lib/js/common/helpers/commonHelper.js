@@ -53,3 +53,25 @@ export const toUpperCaseUnderscore = (str: string) => str.replace(
   /[A-Z]/g,
   (upperCaseChar) => '_' + upperCaseChar.toLowerCase()
 ).toUpperCase();
+
+export const isObject = (item: any) =>
+  item && typeof item === 'object' && !Array.isArray(item);
+
+export const mergeDeep = (...elements: Object[]) => {
+  return elements
+    .filter(isObject)
+    .reduce((aggregate, current) => {
+      const nonObjectKeys = Object.keys(current).filter(key => !isObject(current[key]));
+      const objectKeys = Object.keys(current).filter(key => isObject(current[key]));
+      const newKeys = objectKeys.filter(key => !(key in aggregate));
+      const mergeKeys = objectKeys.filter(key => key in aggregate);
+
+      return Object.assign(
+        {},
+        aggregate,
+        ...nonObjectKeys.map(key => ({ [key]: current[key] })),
+        ...newKeys.map(key => ({ [key]: current[key] })),
+        ...mergeKeys.map(key => ({ [key]: mergeDeep(aggregate[key], current[key]) }))
+      );
+    }, {});
+};

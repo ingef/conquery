@@ -180,9 +180,6 @@ externalForms:
       random: "ZUFÄLLIG"
     filter: "Filter"
 
-  exampleForm:
-    headline: "Example form"
-
 uploadQueryResultsModal:
   headline: "Lade ein Anfrageergebnis hoch"
   dropzone: "Lege eine CSV-Datei hier ab"

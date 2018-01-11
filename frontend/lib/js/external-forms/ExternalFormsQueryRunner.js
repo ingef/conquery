@@ -55,11 +55,14 @@ const mapStateToProps = (state, ownProps) => ({
     formName: state.externalForms.activeForm,
     form: getFormValues(state.externalForms.activeForm, selectReduxFormState)(state),
   },
+  formQueryTransformation: state.externalForms.activeForm
+    ? state.externalForms.availableForms[state.externalForms.activeForm].transformQueryToApi
+    : (query) => query
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  startQuery: (datasetId, query, version) =>
-    dispatch(startExternalFormsQuery(datasetId, query, version)),
+  startQuery: (datasetId, query, version, formQueryTransformation) =>
+    dispatch(startExternalFormsQuery(datasetId, query, version, formQueryTransformation)),
   stopQuery: (datasetId, queryId) =>
     dispatch(stopExternalFormsQuery(datasetId, queryId)),
 });
@@ -72,6 +75,7 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
     ownProps.datasetId,
     stateProps.query,
     stateProps.version,
+    stateProps.formQueryTransformation
   ),
   stopQuery: () => dispatchProps.stopQuery(
     ownProps.datasetId,
