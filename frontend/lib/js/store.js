@@ -1,11 +1,11 @@
 import {applyMiddleware, compose, createStore}   from "redux";
 import createHistory                             from 'history/createBrowserHistory';
 
-import reducers                                  from "./app/reducers";
+import buildAppReducer                           from './app/reducers';
 import {BASENAME, isProduction}                  from "./environment";
 import createMiddleware                          from "./middleware";
 
-function makeStore(initialState: Object, middleware) {
+function makeStore(initialState: Object, middleware, forms: Object) {
   let enhancer;
 
   if (!isProduction)
@@ -17,7 +17,7 @@ function makeStore(initialState: Object, middleware) {
   else
     enhancer = compose(middleware);
 
-  return createStore(reducers, initialState, enhancer);
+  return createStore(buildAppReducer(forms), initialState, enhancer);
 }
 
 const initialState = {};

@@ -3,27 +3,17 @@
 import React                from 'react';
 import { connect }          from 'react-redux';
 
-import {
-  AVAILABLE_FORMS,
-  EXAMPLE_FORM,
-}  from './externalFormTypes';
-
-import { ExampleForm }      from './example-form';
-
 type PropsType = {
-  activeForm: $Keys<typeof AVAILABLE_FORMS>,
+  availableForms: Object,
+  activeForm: string,
+  datasetId: string
 };
 
 const ExternalFormsContainer = (props: PropsType) => {
-  let form;
-
-  switch (props.activeForm) {
-    case EXAMPLE_FORM:
-      form = <ExampleForm />
-      break;
-    default:
-      break;
-  }
+  const form = React.createElement(
+    props.availableForms[props.activeForm].component,
+    { selectedDatasetId: props.datasetId }
+  );
 
   return (
     <div className="external-forms-container">
@@ -33,6 +23,7 @@ const ExternalFormsContainer = (props: PropsType) => {
 };
 
 const mapStateToProps = (state) => ({
+  availableForms: state.externalForms.availableForms,
   activeForm: state.externalForms.activeForm,
 });
 
