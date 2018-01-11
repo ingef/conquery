@@ -5,7 +5,14 @@ import buildAppReducer                           from './app/reducers';
 import {BASENAME, isProduction}                  from "./environment";
 import createMiddleware                          from "./middleware";
 
-function makeStore(initialState: Object, middleware, forms: Object) {
+// Redux Router setup
+export const browserHistory = createHistory({
+  basename: BASENAME
+});
+
+const middleware = applyMiddleware(...createMiddleware(browserHistory));
+
+export function makeStore(initialState: Object, forms: Object) {
   let enhancer;
 
   if (!isProduction)
@@ -17,17 +24,15 @@ function makeStore(initialState: Object, middleware, forms: Object) {
   else
     enhancer = compose(middleware);
 
-  return createStore(buildAppReducer(forms), initialState, enhancer);
+  const store = createStore(buildAppReducer(forms), initialState, enhancer);
+
+  if (module.hot)
+    // Enable Webpack hot module replacement for reducers
+    module.hot.accept('./app/reducers', () => {
+      const nextRootReducer = buildAppReducer(forms);
+      store.replaceReducer(nextRootReducer);
+    });
+
+
+  return store;
 }
-
-const initialState = {};
-
-// Redux Router setup
-export const browserHistory = createHistory({
-  basename: BASENAME
-});
-
-const middleware = applyMiddleware(...createMiddleware(browserHistory));
-
-export const store = (forms: Object) => makeStore(initialState, middleware, forms);
-
