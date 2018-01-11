@@ -26,8 +26,6 @@ import buildAppReducer            from './app/reducers';
 require('es6-promise').polyfill();
 
 require('font-awesome-webpack');
-require('../styles/styles.sass');
-require('../images/favicon.png');
 
 // TODO: OG image required?
 // require('../../images/og.png');

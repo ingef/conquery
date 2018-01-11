@@ -106,6 +106,7 @@
     "raw-loader": "^0.5.1",
     "redux-logger": "^2.8.1",
     "redux-mock-store": "^1.2.0",
+    "resolve-url-loader": "^2.2.0",
     "rimraf": "^2.5.4",
     "sass-loader": "^6.0.3",
     "stats-webpack-plugin": "^0.5.0",

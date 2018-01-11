@@ -7,6 +7,9 @@ import appDE                      from '../localization/de.yml';
 import exampleForm                from './forms/example-form';
 
 
+require('../styles/styles.sass');
+require('../images/favicon.png');
+
 initializeLocalization(de, appDE);
 
 const forms = {
