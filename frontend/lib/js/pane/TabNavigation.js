@@ -2,6 +2,7 @@
 
 import React                from 'react';
 import classnames           from 'classnames';
+import T                    from 'i18n-react';
 import type { TabType }     from './reducer';
 
 type PropsType = {
@@ -28,7 +29,7 @@ const TabNavigation = (props: PropsType) => {
                 props.onClickTab(tab);
             }}
           >
-            {label}
+            {T.translate(label)}
           </h2>
         ))
       }

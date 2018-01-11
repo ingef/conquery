@@ -1,0 +1,32 @@
+{
+  "action_movies": {
+    "parent": "movie_appearances",
+    "label": "Action Movies",
+    "matchingEntries": 8234
+  },
+  "fantasy_movies": {
+    "parent": "movie_appearances",
+    "label": "Fantasy Movies",
+    "matchingEntries": 9374
+  },
+  "comedies": {
+    "parent": "movie_appearances",
+    "label": "Comedies",
+    "matchingEntries": 2135
+  },
+  "horror_movies": {
+    "parent": "movie_appearances",
+    "label": "Horror Movies",
+    "matchingEntries": 24093
+  },
+  "family_movies": {
+    "parent": "movie_appearances",
+    "label": "Family Movies",
+    "matchingEntries": 8431
+  },
+  "independent_movies": {
+    "parent": "movie_appearances",
+    "label": "Independent Movies",
+    "matchingEntries": 10248
+  }
+}

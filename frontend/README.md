@@ -27,18 +27,18 @@ Commands analogoues to `start_production.sh` script.
 
 **Requirements**
 
-- `node` >= 6.5.0
-- `yarn` >= 0.16.1
+- `node` 8.9 LTS
+- `yarn` >= 1.3.2
 
 **Install**
 
 ```bash
-yarn
+$ yarn
 ```
 
 **Start**
 ```bash
-yarn start
+$ yarn start
 ```
 
 ## Glossary

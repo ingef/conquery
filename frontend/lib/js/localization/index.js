@@ -1,17 +1,13 @@
-// This module only needs to be imported to run.
-// This makes it easier to handle, since other
-// imported modules might already depend on a set language
+import _T                 from 'i18n-react';
+import moment             from 'moment';
 
-import T from 'i18n-react';
-import moment from 'moment';
+import { mergeDeep }      from '../common/helpers';
 
-import de from './de.yml';
-// Translation to English possible
-// import en from './locales/en';
+export const T = _T;
 
+export const initializeLocalization = (...texts) => {
+  T.setTexts(mergeDeep(...texts));
 
-// Here could be a detection logic (e.g. check browser language, ... )
-T.setTexts(de);
-
-// Set moment locale
-moment.locale('de');
+  // Set moment locale
+  moment.locale('de');
+};

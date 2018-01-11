@@ -1,11 +1,15 @@
 // @flow
 
-export const isProduction = process.env.NODE_ENV === 'production';
+export type Environment = {
+  basename: String,
+  apiUrl: String,
+  isProduction: Boolean
+};
 
-export const BASENAME = isProduction
-  ? '/' // Possibly: Run under a subdomain on production
-  : '/';
+let environment: Environment = null;
 
-export const API_URL = isProduction
-  ? 'http://localhost:8080/api'
-  : 'http://localhost:8000/api';
+export const initializeEnvironment = (env: Environment) => {
+  environment = env;
+};
+
+export const apiUrl = () => environment.apiUrl;

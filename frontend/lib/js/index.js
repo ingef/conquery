@@ -8,16 +8,18 @@ import React                           from 'react';
 import ReactDOM                        from 'react-dom';
 import { AppContainer as HotReloader } from 'react-hot-loader';
 
-import './localization'; // To initialize locales
 import './app/actions'; //  To initialize parameterized actions
 import {makeStore, browserHistory }    from './store'
 import AppRoot                         from "./AppRoot";
 
+import {
+  initializeEnvironment,
+  type Environment,
+}                                 from './environment';
+
 require('es6-promise').polyfill();
 
 require('font-awesome-webpack');
-require('../styles/styles.sass');
-require('../images/favicon.png');
 
 // TODO: OG image required?
 // require('../../images/og.png');
@@ -38,9 +40,10 @@ const renderRoot = (forms: Object) => {
   );
 };
 
-export default function conquery(forms: Object) {
+export default function conquery(environment: Environment, forms: Object) {
+  initializeEnvironment(environment);
   renderRoot(forms);
 
   if (module.hot)
     module.hot.accept('./AppRoot', () => renderRoot(forms));
-}
+};

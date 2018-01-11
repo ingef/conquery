@@ -32,8 +32,21 @@ module.exports = {
       ...commonConfig.module.rules,
       {
         test: /\.sass$/,
-        loader: "style-loader!css-loader!postcss-loader!sass-loader?indentedSyntax"
-      }
+        loaders: [
+          'style-loader',
+          'css-loader',
+          'postcss-loader',
+          'resolve-url-loader',
+          {
+            loader: 'sass-loader',
+            options: {
+              indentedSyntax: true,
+              sourceMap: true, // Necessary for resolve-url
+              includePaths: [path.join(__dirname, 'node_modules/conquery/dist/styles')]
+            }
+          }
+        ]
+      },
     ]
   },
   node: {
