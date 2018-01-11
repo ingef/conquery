@@ -2,7 +2,7 @@
   "name": "conquery",
   "version": "0.0.3",
   "description": "conquery",
-  "main": "app/server.js",
+  "main": "dist/js/index.js",
   "private": false,
   "license": "MIT",
   "engines": {
@@ -12,14 +12,18 @@
   "scripts": {
     "start": "node app/server",
     "start-production": "NODE_ENV=production PORT=8000 node app/server > webapp.log 2> webapp-err.log &",
-    "build": "cd app && rimraf dist && NODE_ENV=production webpack --config ./webpack.production.config.js --progress --profile --colors",
     "lint": "eslint --ext=js lib/js test app/src/js",
+    "build": "rimraf dist && gulp",
+    "build-app": "cd app && rimraf dist && NODE_ENV=production webpack --config ./webpack.production.config.js --progress --profile --colors",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "test": "rimraf coverage && nyc _mocha test",
     "test-watch": "mocha test --watch",
     "debug-test": "node-debug --debug-brk --hidden node_modules _mocha test",
     "prepush": "npm run lint"
   },
+  "files": [
+    "/dist"
+  ],
   "dependencies": {
     "classnames": "^2.2.5",
     "create-react-class": "^15.5.3",
@@ -86,6 +90,8 @@
     "flow-typed": "^2.1.5",
     "flux-standard-action": "^0.6.1",
     "font-awesome-webpack": "^0.0.5-beta.2",
+    "gulp": "^3.9.1",
+    "gulp-babel": "^7.0.0",
     "html-webpack-plugin": "^2.28.0",
     "husky": "^0.14.3",
     "jsdom": "^11.3.0",
