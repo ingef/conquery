@@ -14,7 +14,6 @@ import {
 import { Provider }               from 'react-redux';
 import createHistory              from 'history/createBrowserHistory';
 
-import './localization'; // To initialize locales
 import './app/actions'; //  To initialize parameterized actions
 
 import { BASENAME, isProduction } from './environment';
