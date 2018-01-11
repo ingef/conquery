@@ -1,21 +1,15 @@
 import {applyMiddleware, compose, createStore}   from "redux";
-import createHistory                             from 'history/createBrowserHistory';
 
 import buildAppReducer                           from './app/reducers';
-import {BASENAME, isProduction}                  from "./environment";
+import {isProduction}                            from "./environment";
 import createMiddleware                          from "./middleware";
 
-// Redux Router setup
-export const browserHistory = createHistory({
-  basename: BASENAME
-});
+export function makeStore(initialState: Object, browserHistory: Object, forms: Object) {
+  const middleware = applyMiddleware(...createMiddleware(browserHistory));
 
-const middleware = applyMiddleware(...createMiddleware(browserHistory));
-
-export function makeStore(initialState: Object, forms: Object) {
   let enhancer;
 
-  if (!isProduction)
+  if (!isProduction())
     enhancer = compose(
       middleware,
       // Use the Redux devtools extention, but only in development

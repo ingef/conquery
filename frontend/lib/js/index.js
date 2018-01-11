@@ -7,15 +7,17 @@ import './fixEdge';
 import React                           from 'react';
 import ReactDOM                        from 'react-dom';
 import { AppContainer as HotReloader } from 'react-hot-loader';
+import createHistory                   from 'history/createBrowserHistory';
 
 import './app/actions'; //  To initialize parameterized actions
-import {makeStore, browserHistory }    from './store'
+import {makeStore}                     from './store'
 import AppRoot                         from "./AppRoot";
 
 import {
   initializeEnvironment,
   type Environment,
-}                                 from './environment';
+  basename,
+}                                      from './environment';
 
 require('es6-promise').polyfill();
 
@@ -26,11 +28,15 @@ require('font-awesome-webpack');
 // Required for isomophic-fetch
 
 let store;
+let browserHistory;
 const initialState = {};
 
 // Render the App including Hot Module Replacement
 const renderRoot = (forms: Object) => {
-  store = store || makeStore(initialState, forms);
+  browserHistory = browserHistory || createHistory({
+    basename: basename()
+  });
+  store = store || makeStore(initialState, browserHistory, forms);
 
   ReactDOM.render(
     <HotReloader>
