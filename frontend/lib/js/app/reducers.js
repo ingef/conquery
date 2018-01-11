@@ -30,7 +30,7 @@ import { reducer as previousQueriesFilter }    from '../previous-queries/filter'
 import { reducer as uploadQueryResults }       from '../previous-queries/upload';
 import { reducer as deletePreviousQueryModal } from '../previous-queries/delete-modal';
 import { reducer as timebasedQuery }           from '../timebased-query-editor';
-import { reducer as externalForms }            from '../external-forms';
+import { buildExternalFormsReducer }           from '../external-forms';
 import { reducer as uploadConceptListModal }   from '../upload-concept-list-modal';
 
 import { createQueryRunnerReducer }            from '../query-runner';
@@ -43,7 +43,7 @@ export type StateType = {
   panes: PanesStateType,
 };
 
-export default combineReducers({
+ const buildAppReducer = (availableForms) => combineReducers({
   categoryTrees,
   query,
   uploadConceptListModal,
@@ -60,5 +60,7 @@ export default combineReducers({
   uploadQueryResults,
   deletePreviousQueryModal,
   timebasedQuery,
-  externalForms,
+  externalForms: buildExternalFormsReducer(availableForms),
 });
+
+export default buildAppReducer;
