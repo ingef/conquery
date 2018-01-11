@@ -9,18 +9,10 @@ import {
 import {
   isEmpty,
   stripObject,
+  toUpperCaseUnderscore,
 } from '../common/helpers';
 
-import {
-  TOGGLE_STANDARD_TABLE,
-  SET_STANDARD_FILTER_VALUE,
-  RESET_STANDARD_ALL_FILTERS,
-  SWITCH_STANDARD_FILTER_MODE,
-  TOGGLE_STANDARD_TIMESTAMPS,
-  LOAD_STANDARD_FILTER_SUGGESTIONS_START,
-  LOAD_STANDARD_FILTER_SUGGESTIONS_SUCCESS,
-  LOAD_STANDARD_FILTER_SUGGESTIONS_ERROR
-} from '../query-node-modal/actionTypes';
+import { createActionTypes } from '../query-node-modal/actionTypes';
 
 import {
   QUERY_GROUP_MODAL_SET_MIN_DATE,
@@ -61,6 +53,17 @@ import type {
   StandardQueryType
 } from './types';
 
+
+const {
+  TOGGLE_TABLE,
+  SET_FILTER_VALUE,
+  RESET_ALL_FILTERS,
+  SWITCH_FILTER_MODE,
+  TOGGLE_TIMESTAMPS,
+  LOAD_FILTER_SUGGESTIONS_START,
+  LOAD_FILTER_SUGGESTIONS_SUCCESS,
+  LOAD_FILTER_SUGGESTIONS_ERROR
+} = createActionTypes(toUpperCaseUnderscore('standard'));
 
 const initialState: StandardQueryType = [];
 
@@ -681,15 +684,15 @@ const query = (
       return loadQuery(state, action);
     case CLEAR_QUERY:
       return initialState;
-    case TOGGLE_STANDARD_TABLE:
+    case TOGGLE_TABLE:
       return toggleNodeTable(state, action);
-    case SET_STANDARD_FILTER_VALUE:
+    case SET_FILTER_VALUE:
       return setNodeFilterValue(state, action);
-    case RESET_STANDARD_ALL_FILTERS:
+    case RESET_ALL_FILTERS:
       return resetNodeAllFilters(state, action);
-    case SWITCH_STANDARD_FILTER_MODE:
+    case SWITCH_FILTER_MODE:
       return switchNodeFilterMode(state, action);
-    case TOGGLE_STANDARD_TIMESTAMPS:
+    case TOGGLE_TIMESTAMPS:
       return toggleTimestamps(state, action);
     case QUERY_GROUP_MODAL_SET_MIN_DATE:
       return setGroupDate(state, action, 'min');
@@ -711,11 +714,11 @@ const query = (
       return loadPreviousQueryError(state, action);
     case RENAME_PREVIOUS_QUERY_SUCCESS:
       return renamePreviousQuery(state, action)
-    case LOAD_STANDARD_FILTER_SUGGESTIONS_START:
+    case LOAD_FILTER_SUGGESTIONS_START:
       return loadFilterSuggestionsStart(state, action);
-    case LOAD_STANDARD_FILTER_SUGGESTIONS_SUCCESS:
+    case LOAD_FILTER_SUGGESTIONS_SUCCESS:
       return loadFilterSuggestionsSuccess(state, action);
-    case LOAD_STANDARD_FILTER_SUGGESTIONS_ERROR:
+    case LOAD_FILTER_SUGGESTIONS_ERROR:
       return loadFilterSuggestionsError(state, action);
     case UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);

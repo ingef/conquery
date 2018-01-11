@@ -46,7 +46,7 @@ const RightPane = (props: PropsType) => {
       case 'externalForms':
         return [
           <ExternalFormsNavigation key={0} />,
-          <ExternalFormsContainer key={1} />,
+          <ExternalFormsContainer datasetId={selectedDatasetId} key={1} />,
           <ExternalFormsQueryRunner datasetId={selectedDatasetId} key={2} />,
         ]
       default:

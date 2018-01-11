@@ -4,23 +4,21 @@ import './exampleForm.sass'
 
 import React                from 'react';
 import { Field, reduxForm } from 'redux-form';
-import T                    from 'i18n-react';
-
-import {
-  EXAMPLE_FORM
-} from '../externalFormTypes';
+import { T }                from '../../../../../lib/js/localization';
 
 import {
   InputWithLabel
-} from '../../form-components';
+} from '../../../../../lib/js/form-components';
 
 import {
   validateRequired
-} from '../validators';
+} from '../../../../../lib/js/external-forms/validators';
 
 import {
   selectReduxFormState
-} from '../stateSelectors';
+} from '../../../../../lib/js/external-forms/stateSelectors';
+
+import { type } from './formType';
 
 type PropsType = {
   onSubmit: Function,
@@ -43,10 +41,10 @@ const ExampleForm = (props: PropsType) => {
 };
 
 export default reduxForm({
-  form: EXAMPLE_FORM,
+  form: type,
   getFormState: selectReduxFormState,
   initialValues: {
-    text: 0,
+    text: '',
   },
   validate: (values) => ({
     text: validateRequired(values.text),
