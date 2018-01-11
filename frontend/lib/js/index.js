@@ -14,7 +14,6 @@ import {
 import { Provider }               from 'react-redux';
 import createHistory              from 'history/createBrowserHistory';
 
-import './localization'; // To initialize locales
 import './app/actions'; //  To initialize parameterized actions
 
 import {
@@ -30,8 +29,6 @@ import buildAppReducer            from './app/reducers';
 require('es6-promise').polyfill();
 
 require('font-awesome-webpack');
-require('../styles/styles.sass');
-require('../images/favicon.png');
 
 // TODO: OG image required?
 // require('../../images/og.png');
