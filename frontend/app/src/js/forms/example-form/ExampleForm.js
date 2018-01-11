@@ -4,7 +4,7 @@ import './exampleForm.sass'
 
 import React                from 'react';
 import { Field, reduxForm } from 'redux-form';
-import T                    from 'i18n-react';
+import { T }                from '../../../../../lib/js/localization';
 
 import {
   InputWithLabel
