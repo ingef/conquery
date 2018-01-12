@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const StatsPlugin = require('stats-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const commonConfig = require('./webpack.common.config.js');
 
@@ -23,10 +23,7 @@ module.exports = {
         screw_ie8: true
       }
     }),
-    new StatsPlugin('webpack.stats.json', {
-      source: false,
-      modules: false
-    }),
+    new BundleAnalyzerPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
     })
