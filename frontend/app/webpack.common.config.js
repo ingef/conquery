@@ -24,7 +24,7 @@ module.exports = {
       loader: 'json-loader!yaml-loader'
     }, {
       test: /\.(ttf|eot|svg|png|jpg|woff(2)?)(\?.*$|$)/,
-      loader: "file-loader?name=[name].[ext]"
+      loader: 'file-loader?name=[name].[ext]'
     }]
   }
 };
