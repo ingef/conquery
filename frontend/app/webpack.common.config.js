@@ -9,7 +9,8 @@ module.exports = {
       inject: 'body',
       filename: 'index.html'
     }),
-    new webpack.NoEmitOnErrorsPlugin()
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
   ],
   module: {
     rules: [{
