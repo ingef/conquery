@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const CompressionPlugin = require("compression-webpack-plugin")
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const commonConfig = require('./webpack.common.config.js');
@@ -25,6 +26,7 @@ module.exports = env => {
           screw_ie8: true
         }
       }),
+      new CompressionPlugin(),
       new BundleAnalyzerPlugin({
         generateStatsFile: true,
         analyzerMode: 'disabled' // Set to 'server' to analyze
