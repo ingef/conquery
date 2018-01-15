@@ -1,7 +1,7 @@
 
 
 # conquery 
-<a href="https://travis-ci.com/bakdata/conquery"><img src="https://travis-ci.com/bakdata/conquery.svg?token=V3UsbJRMTByqnvaHyKGT&branch=master" alt="Build Status"></a>
+[![Build Status](https://travis-ci.com/bakdata/conquery.svg?token=Nx7o1qzgASvy9ay54szq&branch=master)](https://travis-ci.com/bakdata/conquery)
 
 ![conquery Screenshot](images/screenshot.png)
 
