@@ -27,5 +27,6 @@ $ yarn start
 
 This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com).
 
-[<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=100>](http://www.ingef.de/)
-[<img alt="bakdata GmbH" src="images/bakdata_logo.svg" height=100>](http://www.bakdata.com)
+[<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=100 align="top">](http://www.ingef.de/)
+&emsp;
+[<img alt="bakdata GmbH" src="images/bakdata_logo.svg" height=73 align="top">](http://www.bakdata.com)
