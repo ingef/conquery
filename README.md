@@ -1,6 +1,6 @@
 
 
-# conquery 
+# conquery
 [![Build Status](https://travis-ci.com/bakdata/conquery.svg?token=Nx7o1qzgASvy9ay54szq&branch=master)](https://travis-ci.com/bakdata/conquery)
 
 ![conquery Screenshot](images/screenshot.png)
@@ -25,7 +25,7 @@ $ yarn start
 
 ## Acknowledgements
 
-This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with the [bakdata GmbH](http://www.bakdata.com).
+This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com).
 
-[<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="http://www.ingef.de/wp-content/themes/ojala/assets/img/ingef-logo-einzeilig.svg" height=100>](http://www.ingef.de/)
+[<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=100>](http://www.ingef.de/)
 [<img alt="bakdata GmbH" src="images/bakdata_logo.svg" height=100>](http://www.bakdata.com)
