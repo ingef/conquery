@@ -1,6 +1,8 @@
 
 
-# conquery
+# Conquery
+*fast & efficient Analysis*
+
 [![Build Status](https://travis-ci.com/bakdata/conquery.svg?token=Nx7o1qzgASvy9ay54szq&branch=master)](https://travis-ci.com/bakdata/conquery)
 
 ![conquery Screenshot](images/screenshot.png)
@@ -17,16 +19,16 @@ This repository includes the Conquery frontend along with a non-functional backe
 
 The demo can be started using the following commands, provided that node.js (version 8.x LTS) and yarn are already installed:
 
-```
-$ cd frontend/
-$ yarn install
-$ yarn start
+```sh
+cd frontend/
+yarn install
+yarn start
 ```
 
 ## Acknowledgements
 
 This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com).
 
-[<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=100 align="top">](http://www.ingef.de/)
+[<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=50 align="top">](http://www.ingef.de/)
 &emsp;
-[<img alt="bakdata GmbH" src="images/bakdata_logo.svg" height=73 align="top">](http://www.bakdata.com)
+[<img alt="bakdata GmbH" src="images/bakdata_logo.svg" height=37 align="top">](http://www.bakdata.com)
