@@ -19,12 +19,14 @@ type PropsType = {
   history: Object
 };
 
+const AppWithAuthToken = WithAuthToken(App);
+
 const AppRouter = (props: PropsType) => {
   return (
     <Router history={props.history}>
       <Switch>
         <Route path="/unauthorized" component={Unauthorized} />
-        <Route path="/*" component={WithAuthToken(App)} />
+        <Route path="/*" component={AppWithAuthToken} />
       </Switch>
     </Router>
   );
