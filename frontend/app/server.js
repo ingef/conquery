@@ -19,7 +19,7 @@ if (isDeveloping) {
 
   var compiler   = webpack(config);
   var middleware = webpackMiddleware(compiler, {
-    publicPath: config.output.publicPath,
+    publicPath: '/',
     contentBase: 'src',
     stats: {
       colors: true,
@@ -38,13 +38,15 @@ if (isDeveloping) {
   app.use(middleware);
   app.use(webpackHotMiddleware(compiler));
   app.get('*', function response(req, res) {
-    res.write(middleware.fileSystem.readFileSync(path.join(__dirname, 'dist/index.html')));
+    const lang = req.acceptsLanguages('de', 'en') || 'en';
+    res.write(middleware.fileSystem.readFileSync(path.join(__dirname, `dist/index.${lang}.html`)));
     res.end();
   });
 } else {
   app.use(express.static(__dirname + '/dist'));
   app.get('*', function response(req, res) {
-    res.sendFile(path.join(__dirname, 'dist/index.html'));
+    const lang = req.acceptsLanguages('de', 'en') || 'en';
+    res.sendFile(path.join(__dirname, `dist/index.${lang}.html`));
   });
 }
 

@@ -4,31 +4,32 @@ const ExtractTextPlugin = require('extract-text-webpack-plugin');
 
 const commonConfig = require('./webpack.common.config.js');
 
-module.exports = {
-  ...commonConfig,
+module.exports = ['en', 'de'].map(lang => ({
+  ...commonConfig[lang],
+  name: lang,
   devtool: 'source-map',
   entry: {
     main: [
       'webpack-hot-middleware/client?reload=true',
-      path.join(__dirname, 'src/js/main.js')
+      path.join(__dirname, `src/js/main.${lang}.js`)
     ]
   },
   output: {
     path: path.join(__dirname, 'dist/'),
-    filename: '[name].js',
+    filename: `[name].${lang}.js`,
     publicPath: '/'
   },
   plugins: [
-    ...commonConfig.plugins,
+    ...commonConfig[lang].plugins,
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development')
     }),
   ],
   module: {
-    ...commonConfig.module,
+    ...commonConfig[lang].module,
     rules: [
-      ...commonConfig.module.rules,
+      ...commonConfig[lang].module.rules,
       {
         test: /\.sass$/,
         loaders: [
@@ -51,4 +52,4 @@ module.exports = {
   node: {
     fs: "empty"
   }
-};
+}));
