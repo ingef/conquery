@@ -20,27 +20,15 @@ module.exports = function (app, port) {
   app.post('/api/datasets/:datasetId/queries', function response(req, res) {
     setTimeout(() => {
       res.setHeader('Content-Type', 'application/json');
-
-      if (Math.random() > 0.2) {
-        res.status(201);
-        res.send(JSON.stringify({ id: 1 }));
-      } else {
-        res.status(404);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      }
+      res.status(201);
+      res.send(JSON.stringify({ id: 1 }));
     }, 300)
   });
 
   app.delete('/api/datasets/:datasetId/queries/:id', function response(req, res) {
     setTimeout(() => {
       res.setHeader('Content-Type', 'application/json');
-
-      if (Math.random() > 0.2) {
-        res.send(JSON.stringify({ id: 1 }));
-      } else {
-        res.status(404);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      }
+      res.send(JSON.stringify({ id: 1 }));
     }, 300)
   });
 
@@ -50,19 +38,15 @@ module.exports = function (app, port) {
 
       const dice = Math.random();
 
-      if (dice > 0.1 && dice <= 0.6) {
+      if (dice > 0.1 && dice <= 0.6)
         res.send(JSON.stringify({ id: 1, status: "RUNNING" }));
-      } else if (dice > 0.6) {
+      else
         res.send(JSON.stringify({
           id: 1,
           status: "DONE",
           numberOfResults: 5,
           resultUrl: `/api/results/results.csv`
         }));
-      } else {
-        res.status(422);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      }
     }, 500)
   });
 
@@ -125,40 +109,20 @@ module.exports = function (app, port) {
 
   app.get('/api/datasets/:datasetId/stored-queries/:id', function response(req, res) {
     setTimeout(() => {
-      const dice = Math.random();
-
-      if (dice < 0.1) {
-        res.status(422);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      } else {
-        res.sendFile(path.join(__dirname, './stored-queries/25.json'))
-      }
+      res.sendFile(path.join(__dirname, './stored-queries/25.json'))
     }, 500)
   });
 
   app.patch('/api/datasets/:datasetId/stored-queries/:id', function response(req, res) {
     setTimeout(() => {
-      const dice = Math.random();
-
-      if (dice < 0.1) {
-        res.status(422);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      } else {
-        res.send(JSON.stringify({}));
-      }
+      res.send(JSON.stringify({}));
     }, 500)
   });
 
   app.delete('/api/datasets/:datasetId/stored-queries/:id', function response(req, res) {
     setTimeout(() => {
       res.setHeader('Content-Type', 'application/json');
-
-      if (Math.random() > 0.2) {
-        res.send(JSON.stringify({ id: 1 }));
-      } else {
-        res.status(404);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      }
+      res.send(JSON.stringify({ id: 1 }));
     }, 300)
   });
 
@@ -169,27 +133,15 @@ module.exports = function (app, port) {
   app.post('/api/datasets/:datasetId/form-queries', function response(req, res) {
     setTimeout(() => {
       res.setHeader('Content-Type', 'application/json');
-
-      if (Math.random() > 0.2) {
-        res.status(201);
-        res.send(JSON.stringify({ id: 1 }));
-      } else {
-        res.status(404);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      }
+      res.status(201);
+      res.send(JSON.stringify({ id: 1 }));
     }, 300)
   });
 
   app.delete('/api/datasets/:datasetId/form-queries/:id', function response(req, res) {
     setTimeout(() => {
       res.setHeader('Content-Type', 'application/json');
-
-      if (Math.random() > 0.2) {
-        res.send(JSON.stringify({ id: 1 }));
-      } else {
-        res.status(404);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      }
+      res.send(JSON.stringify({ id: 1 }));
     }, 300)
   });
 
@@ -199,42 +151,26 @@ module.exports = function (app, port) {
 
       const dice = Math.random();
 
-      if (dice > 0.1 && dice <= 0.6) {
+      if (dice > 0.1 && dice <= 0.6)
         res.send(JSON.stringify({ id: 1, status: "RUNNING" }));
-      } else if (dice > 0.6) {
+      else
         res.send(JSON.stringify({
           id: 1,
           status: "DONE",
           numberOfResults: 5,
           resultUrl: `/api/results/results.csv`
         }));
-      } else {
-        res.status(422);
-        res.send(JSON.stringify({ message: "Something went wrong" }));
-      }
     }, 500)
   });
 
   app.post('/api/datasets/:datasetId/import', function response(req, res) {
     setTimeout(() => {
       res.setHeader('Content-Type', 'application/json');
-
-      const dice = Math.random();
-
-      if (dice < 0.5) {
-        res.status(201);
-        res.send(JSON.stringify({
-          successful: 1 + Math.floor(Math.random() * 200),
-          unsuccessful: 586,
-        }));
-      } else {
-        res.status(422);
-        res.send(JSON.stringify({
-          message: "Couldn't parse a single row",
-          successful: 0,
-          unsuccessful: 586,
-        }));
-      }
+      res.status(201);
+      res.send(JSON.stringify({
+        successful: 1 + Math.floor(Math.random() * 200),
+        unsuccessful: 586,
+      }));
     }, 500)
   });
 

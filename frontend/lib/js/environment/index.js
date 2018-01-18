@@ -13,3 +13,5 @@ export const initializeEnvironment = (env: Environment) => {
 };
 
 export const apiUrl = () => environment.apiUrl;
+export const basename = () => environment.basename;
+export const isProduction = () => environment.isProduction;
