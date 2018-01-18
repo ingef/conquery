@@ -1,8 +1,8 @@
-import {applyMiddleware, compose, createStore}   from "redux";
+import { applyMiddleware, compose, createStore } from 'redux';
 
 import buildAppReducer                           from './app/reducers';
-import { isProduction }                          from "./environment";
-import createMiddleware                          from "./middleware";
+import { isProduction }                          from './environment';
+import createMiddleware                          from './middleware';
 
 export function makeStore(initialState: Object, browserHistory: Object, forms: Object) {
   const middleware = applyMiddleware(...createMiddleware(browserHistory));
