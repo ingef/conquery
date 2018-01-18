@@ -71,7 +71,6 @@
     "babel-register": "^6.24.0",
     "body-parser": "^1.17.2",
     "chai": "^3.5.0",
-    "compression-webpack-plugin": "^1.1.3",
     "css-loader": "^0.27.0",
     "dirty-chai": "^1.2.2",
     "eslint": "^3.18.0",
