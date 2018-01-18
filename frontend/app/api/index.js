@@ -93,7 +93,7 @@ module.exports = function (app, port) {
 
       for (var i = 25600; i < 35600; i++) ids.push({
         id: i,
-        label: Math.random() > 0.7 ? "Gespeicherte Anfrage" : null,
+        label: Math.random() > 0.7 ? "Saved Query" : null,
         numberOfResults: Math.floor(Math.random() * 500000),
         tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
         createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000)).toISOString(),
