@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const StatsPlugin = require('stats-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const commonConfig = require('./webpack.common.config.js');
 
@@ -16,16 +16,16 @@ module.exports = {
   },
   plugins: [
     ...commonConfig.plugins,
-    new ExtractTextPlugin({ filename: "[name]-[hash].min.css", allChunks: true }),
+    new ExtractTextPlugin({ filename: '[name]-[hash].min.css', allChunks: true }),
     new webpack.optimize.UglifyJsPlugin({
       compressor: {
         warnings: false,
         screw_ie8: true
       }
     }),
-    new StatsPlugin('webpack.stats.json', {
-      source: false,
-      modules: false
+    new BundleAnalyzerPlugin({
+      generateStatsFile: true,
+      analyzerMode: 'disabled' // Set to 'server' to analyze
     }),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
@@ -38,7 +38,7 @@ module.exports = {
       {
         test: /\.sass$/,
         loader: ExtractTextPlugin.extract({
-          fallback: "style-loader",
+          fallback: 'style-loader',
           use: [
             'css-loader',
             'postcss-loader',
