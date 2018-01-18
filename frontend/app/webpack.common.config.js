@@ -10,7 +10,8 @@ module.exports = Object.assign({}, ...['en', 'de'].map(lang => ({
         inject: 'body',
         filename: `index.${lang}.html`
       }),
-      new webpack.NoEmitOnErrorsPlugin()
+      new webpack.NoEmitOnErrorsPlugin(),
+      new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /de/)
     ],
     module: {
       rules: [{
