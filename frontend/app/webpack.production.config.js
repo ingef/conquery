@@ -16,7 +16,7 @@ module.exports = {
   },
   plugins: [
     ...commonConfig.plugins,
-    new ExtractTextPlugin({filename: '[name]-[hash].min.css', allChunks: true}),
+    new ExtractTextPlugin({ filename: '[name]-[hash].min.css', allChunks: true }),
     new webpack.optimize.UglifyJsPlugin({
       compressor: {
         warnings: false,
