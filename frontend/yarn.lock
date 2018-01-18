@@ -6197,7 +6197,7 @@ react-router@^4.2.0:
     prop-types "^15.5.4"
     warning "^3.0.0"
 
-react-select@^1.1.0:
+react-select@^1.2.0:
   version "1.2.0"
   resolved "https://registry.yarnpkg.com/react-select/-/react-select-1.2.0.tgz#4f91df941c4ecdb94701faca2533b60e31d7508e"
   dependencies:
