@@ -1,7 +1,7 @@
 import {applyMiddleware, compose, createStore}   from "redux";
 
 import buildAppReducer                           from './app/reducers';
-import {isProduction}                            from "./environment";
+import { isProduction }                          from "./environment";
 import createMiddleware                          from "./middleware";
 
 export function makeStore(initialState: Object, browserHistory: Object, forms: Object) {
