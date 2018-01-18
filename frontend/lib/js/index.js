@@ -4,27 +4,20 @@ import 'babel-polyfill';
 
 import './fixEdge';
 
-import React                      from 'react';
-import ReactDOM                   from 'react-dom';
-import {
-  compose,
-  applyMiddleware,
-  createStore,
-}                                 from 'redux';
-import { Provider }               from 'react-redux';
-import createHistory              from 'history/createBrowserHistory';
+import React                           from 'react';
+import ReactDOM                        from 'react-dom';
+import { AppContainer as HotReloader } from 'react-hot-loader';
+import createHistory                   from 'history/createBrowserHistory';
 
 import './app/actions'; //  To initialize parameterized actions
+import { makeStore }                   from './store'
+import AppRoot                         from "./AppRoot";
 
 import {
   initializeEnvironment,
   type Environment,
-}                                 from './environment';
-import createMiddleware           from './middleware';
-
-import AppRouter                  from './app/AppRouter';
-import buildAppReducer            from './app/reducers';
-
+  basename,
+}                                      from './environment';
 
 require('es6-promise').polyfill();
 
@@ -34,43 +27,29 @@ require('font-awesome-webpack');
 // require('../../images/og.png');
 // Required for isomophic-fetch
 
+let store;
+let browserHistory;
+const initialState = {};
 
-function makeStore(initialState: Object, middleware, forms: Object, isProduction: Boolean) {
-  let enhancer;
+// Render the App including Hot Module Replacement
+const renderRoot = (forms: Object) => {
+  browserHistory = browserHistory || createHistory({
+    basename: basename()
+  });
+  store = store || makeStore(initialState, browserHistory, forms);
 
-  if (!isProduction)
-    enhancer = compose(
-      middleware,
-      // Use the Redux devtools extension, but only in development
-      window.devToolsExtension ? window.devToolsExtension() : f => f,
-    );
-  else
-    enhancer = compose(middleware);
-
-  return createStore(buildAppReducer(forms), initialState, enhancer);
-}
+  ReactDOM.render(
+    <HotReloader>
+      <AppRoot store={store} browserHistory={browserHistory} forms={forms} />
+    </HotReloader>,
+    document.getElementById('root')
+  );
+};
 
 export default function conquery(environment: Environment, forms: Object) {
   initializeEnvironment(environment);
+  renderRoot(forms);
 
-  const initialState = {};
-
-  // Redux Router setup
-  const browserHistory = createHistory({
-    basename: environment.basename
-  });
-
-  const middleware = applyMiddleware(...createMiddleware(browserHistory));
-
-  const store = makeStore(initialState, middleware, forms, environment.isProduction);
-
-  // ---------------------
-  // RENDER
-  // ---------------------
-  ReactDOM.render(
-    <Provider store={store}>
-      <AppRouter history={browserHistory} />
-    </Provider>,
-    document.getElementById('root')
-  );
+  if (module.hot)
+    module.hot.accept('./AppRoot', () => renderRoot(forms));
 };
