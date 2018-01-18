@@ -17,7 +17,10 @@ if (isDeveloping) {
   var simulateDevApi       = require('./api');
   var bodyParser           = require('body-parser');
 
-  var compiler   = webpack(config);
+  var lang = 'en';
+
+  // We will only use the english version during development
+  var compiler   = webpack(config.filter(x => x.name == lang));
   var middleware = webpackMiddleware(compiler, {
     publicPath: '/',
     contentBase: 'src',
@@ -38,7 +41,6 @@ if (isDeveloping) {
   app.use(middleware);
   app.use(webpackHotMiddleware(compiler));
   app.get('*', function response(req, res) {
-    const lang = req.acceptsLanguages('de', 'en') || 'en';
     res.write(middleware.fileSystem.readFileSync(path.join(__dirname, `dist/index.${lang}.html`)));
     res.end();
   });
