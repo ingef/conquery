@@ -10,7 +10,7 @@ module.exports = {
       filename: 'index.html'
     }),
     new webpack.NoEmitOnErrorsPlugin(),
-    new webpack.IgnorePlugin(/^\.\/locale$/, /moment$/)
+    new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /de/)
   ],
   module: {
     rules: [{
