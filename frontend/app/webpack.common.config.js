@@ -9,7 +9,8 @@ module.exports = {
       inject: 'body',
       filename: 'index.html'
     }),
-    new webpack.NoEmitOnErrorsPlugin()
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /de/)
   ],
   module: {
     rules: [{
@@ -24,7 +25,7 @@ module.exports = {
       loader: 'json-loader!yaml-loader'
     }, {
       test: /\.(ttf|eot|svg|png|jpg|woff(2)?)(\?.*$|$)/,
-      loader: "file-loader?name=[name].[ext]"
+      loader: 'file-loader?name=[name].[ext]'
     }]
   }
 };

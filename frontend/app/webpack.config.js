@@ -1,12 +1,12 @@
 const path = require('path');
 const webpack = require('webpack');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 
 const commonConfig = require('./webpack.common.config.js');
 
 module.exports = {
   ...commonConfig,
-  devtool: 'source-map',
+  devtool: 'eval-source-map',
   entry: {
     main: [
       'react-hot-loader/patch',
@@ -21,6 +21,7 @@ module.exports = {
   },
   plugins: [
     ...commonConfig.plugins,
+    new ProgressBarPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development')
@@ -50,6 +51,6 @@ module.exports = {
     ]
   },
   node: {
-    fs: "empty"
+    fs: 'empty'
   }
 };
