@@ -2,17 +2,17 @@
   "env": {
     "development": {
       "presets": [
-        ["es2015", {"modules": false}],
-        "stage-0",
+        ["env", {"modules": false}],
+        "stage-q",
         "react"
       ],
       "plugins": ["react-hot-loader/babel"]
     },
     "test": {
-      "presets": ["es2015", "stage-0", "react" ]
+      "presets": ["env", "stage-1", "react" ]
     },
     "production": {
-      "presets": ["es2015", "stage-0", "react" ]
+      "presets": ["env", "stage-1", "react" ]
     }
   }
 }
