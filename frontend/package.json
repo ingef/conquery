@@ -19,7 +19,7 @@
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "test": "rimraf coverage && NODE_ENV=test nyc _mocha test",
     "test-watch": "NODE_ENV=test mocha test --watch",
-    "debug-test": "node-debug --debug-brk --hidden node_modules _mocha test",
+    "debug-test": "NODE_ENV=test node-debug --debug-brk --hidden node_modules _mocha test",
     "prepush": "npm run lint"
   },
   "files": [
