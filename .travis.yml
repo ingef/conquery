@@ -7,18 +7,12 @@ cache:
 services:
 - docker
 deploy:
-  # Deploy the file(s) to the github release (other targets like amazon-aws or npm can be found here: http://docs.travis-ci.com/user/deployment/ )
-  provider: releases
-  # The oauth token for github (used by travis to upload the file(s) to github)
+  provider: npm
   api_key:
-    secure: gpPCpR86xGuPdNwEdoVnxC7E7krmN6na0NoEOlB143BDm2oMZ1ozESOTY8O528H1cJC9pd28MGfeZhataBkD6vmwalX6XVh42oWsn8DVlLkh5gT10JW3leX45a3sN2npUnwd24Ldlca+Y+lRe+FhMy/mftlOgLtdT3BR3n7oVHXMC6Ff+6CGJY1fqLvsaC4R9B9KdRAL+qJKrvzXMf9oLgUVBwlWuXqAsSkyhUxU2tlgl2Rb4ySsHBT9vNXORCwLY5TbRN3a33cL0VsfGuz3BR+lOkxVIllQ36jyJK3Hv1bBOVR3i897FCx7uU2VEu/3ptw6e5g59BKzM/zvKh7Vp3xudob0sN3udhBatAe2nv/QI7iD2UdpOu/bIynW7AMlvLGlPSycQX1k875qvJ38gNCvVYLc0wzGZBleENMgtJYZCzfPfILhtw50ws8uALR/6F168hDmJqLwlY25FVfOTa6Hd1ksMGsFbPBAeWK4jbUoBSKGdYO4b0BkKX3ENa/rW7mdAsBsSHQ0gSk3tlvKinOJlQQ4aMEd5e95hG8J1sfqtU+w+jAtwCRIrI2wmrJtnFjDjX7zEdqHXjvUDQBCkqYDMY6nD+DBj4BA39BXlm+9IiajnHEH+T+hiUsls1xWJrYvD3NQaNwJJJoNW5a5jGrj4OqOisdJuF//bCl3syg=
+    secure: J7Ex3ckORAy9SwZigYqR8Dn4h75ZAtx+yR64g36EbHZA4Od8i+tRKF7Li1KZjYBfqfk/ZOEf6eWDFMo2w50DKJjdmRwAtLkhgEMrNIuTdreKcPAlagD6dhdVaz6e9VwlirRQBY/2fc5NJvIBWHxWueapVH2RAt2/vz8OFfIRkzh3Ga8d2JiJhDot1naxgf1PzDRsFQMAwnzjnk11vN2Ge/ZA9xqcdjw2MhggVAqf5gwsdKKuzjYRZkq2/ef3yyE6lZds6GMhmzKfkQevObGoppWMUCEhu1yjEwwCDGNXGWXmmh8A+Y4hglAKW9Q66Gry0p3ly3yBq6BOd9aVNnYam++TK+jxKdbN0iuEpuLuFNF4Bp7+cO7kgfI0+bS0etKAWmB9zLfHm2VVAfCl5mh4Z97XgbRE8Qm35nh5f1E+tmyV21DAaJm8k0nwoHaEu9RTBM2CTV5Xx0qTPJsk2OEw74L6WAfLPUIoV/L5qcsH0Cm3HfaLl+tZlwlR8Alu/uf/53EmFyBtGnxDvJcyBiS+CXxAD9VF594amVdrDBQbILRVbQV9vRg/43L2KWJcHTRGq+N73R/KvP8ibTYyxDZImP3VlKjGo6itRhfbwzzFoZXbX//UtY510UgAZRT2Ld43bQjqm0rPuoe66s4XavKgJT8yeK0t64t1QXQ5n4BJ5Ag=
   file_glob: true
-  file: ${TRAVIS_BUILD_DIR}/frontend/conquery-*.tgz
-  # do not delete the files we're trying to upload
+  file: "${TRAVIS_BUILD_DIR}/frontend/conquery-*.tgz"
   skip_cleanup: true
-  # only deploy if
   on:
-    # we are on this repo
     repo: bakdata/conquery
-    # and we are building a tag
     tags: true
