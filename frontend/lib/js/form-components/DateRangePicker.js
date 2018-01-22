@@ -12,7 +12,7 @@ import { dateTypes }  from '../common/constants';
 
 const {
   DATE_FORMAT,
-  LOCALIZED_DATE_FORMAT,
+  localizedDateFormat,
 } = dateTypes;
 
 type PropsType = FieldPropsType & {
@@ -73,7 +73,7 @@ const DateRangePicker = (props: PropsType) => {
               "query-group-modal__datepicker--has-value": !!props.input.value.minDate
             })}
             locale="de"
-            dateFormat={LOCALIZED_DATE_FORMAT}
+            dateFormat={localizedDateFormat()}
             selected={convertToDate(props.input.value.minDate)}
             placeholderText={T.translate('queryGroupModal.datePlaceholder')}
             isClearable={true}
@@ -95,7 +95,7 @@ const DateRangePicker = (props: PropsType) => {
               "query-group-modal__datepicker--has-value": !!props.input.value.maxDate
             })}
             locale="de"
-            dateFormat={LOCALIZED_DATE_FORMAT}
+            dateFormat={localizedDateFormat()}
             selected={convertToDate(props.input.value.maxDate)}
             placeholderText={T.translate('queryGroupModal.datePlaceholder')}
             isClearable={true}

@@ -20,7 +20,7 @@ import {
 
 const {
   DATE_FORMAT,
-  LOCALIZED_DATE_FORMAT,
+  localizedDateFormat,
 } = dateTypes;
 
 
@@ -91,7 +91,7 @@ const QueryGroupModal = (props) => {
                 "query-group-modal__datepicker--has-value": !!minDate
               })}
               locale="de"
-              dateFormat={LOCALIZED_DATE_FORMAT}
+              dateFormat={localizedDateFormat()}
               selected={minDate}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
               onChange={(date) => props.onSetMinDate(formatDate(date))}
@@ -110,7 +110,7 @@ const QueryGroupModal = (props) => {
                 "query-group-modal__datepicker--has-value": !!maxDate
               })}
               locale="de"
-              dateFormat={LOCALIZED_DATE_FORMAT}
+              dateFormat={localizedDateFormat()}
               selected={maxDate}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
               onChange={(date) => props.onSetMaxDate(formatDate(date))}
