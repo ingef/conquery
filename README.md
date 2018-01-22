@@ -1,6 +1,6 @@
 # Conquery
 *fast & efficient Analysis*
-<a target=“_blank” href="https://travis-ci.com/bakdata/conquery"><img align="right" alt="Build Status" src ="https://travis-ci.com/bakdata/conquery.svg?token=Nx7o1qzgASvy9ay54szq&branch=master"></a>
+<a target=“_blank” href="https://travis-ci.org/bakdata/conquery"><img align="right" alt="Build Status" src ="https://travis-ci.org/bakdata/conquery.svg?branch=master"></a>
 
 ![conquery Screenshot](images/screenshot.png)
 

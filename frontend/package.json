@@ -15,6 +15,7 @@
     "lint": "eslint --ext=js lib/js test app/src/js",
     "build": "rimraf dist && gulp",
     "build-app": "cd app && rimraf dist && NODE_ENV=production webpack --config ./webpack.production.config.js --progress --profile --colors",
+    "heroku-postbuild": "yarn run build-app",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "test": "rimraf coverage && nyc _mocha test",
     "test-watch": "mocha test --watch",

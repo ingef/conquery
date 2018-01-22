@@ -3,19 +3,22 @@
 // -----------
 var path         = require('path');
 var express      = require('express');
+var bodyParser   = require('body-parser');
+var mountApi     = require('./api');
 
 var isDeveloping = process.env.NODE_ENV !== 'production';
 var port         = isDeveloping ? 8000 : process.env.PORT;
 var app          = express();
 
+// body parser must be set up before routes are attached
+app.use(bodyParser.json());
+mountApi(app, port);
 
 if (isDeveloping) {
   var webpack              = require('webpack');
   var webpackMiddleware    = require('webpack-dev-middleware');
   var webpackHotMiddleware = require('webpack-hot-middleware');
   var config               = require('./webpack.config.js');
-  var simulateDevApi       = require('./api');
-  var bodyParser           = require('body-parser');
 
   var lang = 'en';
 
@@ -33,10 +36,6 @@ if (isDeveloping) {
       modules: false
     }
   });
-
-  // body parser must be set up before routes are attached
-  app.use(bodyParser.json());
-  simulateDevApi(app, port);
 
   app.use(middleware);
   app.use(webpackHotMiddleware(compiler));
