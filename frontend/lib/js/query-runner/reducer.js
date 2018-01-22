@@ -1,7 +1,8 @@
 // @flow
 
-import T                from 'i18n-react';
-import * as actionTypes from './actionTypes';
+import T                         from 'i18n-react';
+import { toUpperCaseUnderscore } from '../common/helpers';
+import * as actionTypes          from './actionTypes';
 
 type APICallType = {
   loading?: boolean,
@@ -26,7 +27,7 @@ export default function createQueryRunnerReducer(type: string): Function {
     queryResult: Object,
   };
 
-  const capitalType = type.toUpperCase();
+  const capitalType = toUpperCaseUnderscore(type);
 
   // Example1: START_STANDARD_QUERY_START
   // Example2: START_TIMEBASED_QUERY_START
