@@ -5,19 +5,19 @@ const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPl
 
 const commonConfig = require('./webpack.common.config.js');
 
-module.exports = {
-  ...commonConfig,
+module.exports = ['en', 'de'].map(lang => ({
+  ...commonConfig[lang],
+  name: lang,
   entry: {
-    main: path.join(__dirname, 'src/js/main.js')
+    main: path.join(__dirname, `src/js/main.${lang}.js`)
   },
   output: {
     path: path.join(__dirname, '/dist/'),
-    filename: '[name]-[hash].min.js',
-    publicPath: '/'
+    filename: `[name]-[hash].${lang}.min.js`
   },
   plugins: [
-    ...commonConfig.plugins,
-    new ExtractTextPlugin({ filename: '[name]-[hash].min.css', allChunks: true }),
+    ...commonConfig[lang].plugins,
+    new ExtractTextPlugin({ filename: `[name]-[hash].${lang}.min.css`, allChunks: true }),
     new webpack.optimize.UglifyJsPlugin({
       compressor: {
         warnings: false,
@@ -33,9 +33,9 @@ module.exports = {
     })
   ],
   module: {
-    ...commonConfig.module,
+    ...commonConfig[lang].module,
     rules: [
-      ...commonConfig.module.rules,
+      ...commonConfig[lang].module.rules,
       {
         test: /\.sass$/,
         loader: ExtractTextPlugin.extract({
@@ -56,4 +56,4 @@ module.exports = {
       }
     ]
   }
-};
+}));

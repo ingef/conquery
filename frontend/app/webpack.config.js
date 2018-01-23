@@ -4,23 +4,24 @@ const ProgressBarPlugin = require('progress-bar-webpack-plugin');
 
 const commonConfig = require('./webpack.common.config.js');
 
-module.exports = {
-  ...commonConfig,
+module.exports = ['en', 'de'].map(lang => ({
+  ...commonConfig[lang],
+  name: lang,
   devtool: 'eval-source-map',
   entry: {
     main: [
       'react-hot-loader/patch',
       'webpack-hot-middleware/client?reload=true',
-      path.join(__dirname, 'src/js/main.js')
+      path.join(__dirname, `src/js/main.${lang}.js`)
     ]
   },
   output: {
     path: path.join(__dirname, 'dist/'),
-    filename: '[name].js',
+    filename: `[name].${lang}.js`,
     publicPath: '/'
   },
   plugins: [
-    ...commonConfig.plugins,
+    ...commonConfig[lang].plugins,
     new ProgressBarPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
@@ -28,9 +29,9 @@ module.exports = {
     }),
   ],
   module: {
-    ...commonConfig.module,
+    ...commonConfig[lang].module,
     rules: [
-      ...commonConfig.module.rules,
+      ...commonConfig[lang].module.rules,
       {
         test: /\.sass$/,
         loaders: [
@@ -53,4 +54,4 @@ module.exports = {
   node: {
     fs: 'empty'
   }
-};
+}));
