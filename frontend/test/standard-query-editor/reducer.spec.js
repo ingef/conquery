@@ -25,6 +25,20 @@ const createQueryStateWithOneBigMultiSelect = () => ([{
 }]);
 
 describe('standard query editor', () => {
+  describe('clearing a filter\'s value', () => {
+    it('sets the filter value to undefined', () => {
+      const state = createQueryStateWithOneBigMultiSelect();
+      state[0].elements[0].tables[0].filters[0].options = [{value: 1, label: '1'}];
+      state[0].elements[0].tables[0].filters[0].value = [1];
+
+      const { setStandardFilterValue } = createQueryNodeModalActions('standard');
+      const action = setStandardFilterValue(0, 0, 0, 0, []);
+      const updatedState = reducer(state, action);
+
+      expect(updatedState[0].elements[0].tables[0].filters[0].value).to.equal(undefined);
+    });
+  });
+
   describe('receiving a list of autocomplete suggestions', () => {
     it('updates the filter\'s options list', () => {
       const state = createQueryStateWithOneBigMultiSelect();

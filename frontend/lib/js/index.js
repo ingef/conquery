@@ -11,7 +11,7 @@ import createHistory                   from 'history/createBrowserHistory';
 
 import './app/actions'; //  To initialize parameterized actions
 import { makeStore }                   from './store'
-import AppRoot                         from "./AppRoot";
+import AppRoot                         from './AppRoot';
 
 import {
   initializeEnvironment,
