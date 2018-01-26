@@ -107,6 +107,7 @@
               "type": "SELECT",
               "description": "The original picture format",
               "defaultValue": "hdtv",
+              "value": "hdtv",
               "options": [
                 {
                   "value": "sdtv",

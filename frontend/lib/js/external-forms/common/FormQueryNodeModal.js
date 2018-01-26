@@ -63,7 +63,7 @@ const findActiveFilters = (concept) => (
   concept.tables.some(table =>
     table.exclude || (table.filters && table.filters.some(filter =>
       // multi select filters create an array that is not nulled when empty
-      filter.value && Object.keys(filter.value).length > 0
+      filter.value && filter.value !== filter.defaultValue && Object.keys(filter.value).length > 0
     ))
   )
 );
