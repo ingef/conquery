@@ -45,6 +45,14 @@ export const loadTrees = (datasetId: DatasetIdType) => {
         r => {
           dispatch(loadTreesSuccess(r));
 
+          // Assign default select filter values
+          Object.values(r.concepts).forEach(concept => concept.tables.forEach(table =>
+            table.filters.forEach(filter => {
+              if (filter.defaultValue)
+                filter.value = filter.defaultValue
+            })
+          ));
+
           // In the future: Data could be cached, version could be checked and
           // further data only loaded when necessary
           if (r.version > -1) {
