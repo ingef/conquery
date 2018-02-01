@@ -208,5 +208,12 @@ module.exports = function (app, port) {
         });
       }, 500);
     }
-  )
+  );
+
+  /*
+    VERSION
+  */
+  app.get('/api/version', function(req, res) {
+    res.sendFile(path.join(__dirname, './version.json'))
+  });
 };
