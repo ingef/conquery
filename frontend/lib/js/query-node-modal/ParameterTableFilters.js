@@ -47,6 +47,7 @@ const ParameterTableFilters = (props: PropsType) => (
                 return (
                   <InputSelect
                     input={{
+                      clearable: filter.value !== filter.defaultValue,
                       value: filter.value,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}

@@ -49,7 +49,7 @@ export const loadTrees = (datasetId: DatasetIdType) => {
           Object.values(r.concepts).forEach(concept => concept.tables.forEach(table =>
             table.filters.forEach(filter => {
               if (filter.defaultValue)
-                filter.value = filter.defaultValue
+                filter.value = filter.defaultValue;
             })
           ));
 
