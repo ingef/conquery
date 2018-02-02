@@ -20,7 +20,7 @@ export const version = (state: StateType = initialState, action: Object): StateT
       return {
         ...state,
         loading: false,
-        development: action.payload.data.development,
+        isDevelopment: action.payload.data.isDevelopment,
         version: action.payload.data.version
       };
       case LOAD_VERSION_ERROR:

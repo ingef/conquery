@@ -18,7 +18,7 @@ class Header extends React.Component {
         />
         <span className="header__spacer" />
         <h1 className="header__headline">{T.translate('headline')}</h1>
-        {this.props.development && <h1 className="header__version">{this.props.version}</h1>}
+        {this.props.isDevelopment && <h1 className="header__version">{this.props.version}</h1>}
       </header>
     );
   }
@@ -26,14 +26,14 @@ class Header extends React.Component {
 
 Header.propTypes = {
   version: PropTypes.string,
-  development: PropTypes.bool,
+  isDevelopment: PropTypes.bool,
   loadVersion: PropTypes.func
 };
 
 const mapStateToProps = (state, ownProps) => {
   return {
     version: state.version ? state.version.version : '',
-    development: state.version ? state.version.development : false,
+    isDevelopment: state.version ? state.version.isDevelopment : false,
   }
 };
 
