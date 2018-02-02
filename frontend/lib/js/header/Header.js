@@ -1,14 +1,20 @@
-import React        from 'react';
-import PropTypes    from 'prop-types';
-import T            from 'i18n-react';
-import { connect }  from "react-redux";
+import React           from 'react';
+import PropTypes       from 'prop-types';
+import T               from 'i18n-react';
+import { connect }     from 'react-redux';
+import { loadVersion } from './actions';
 
 class Header extends React.Component {
+  componentDidMount() {
+    this.props.loadVersion();
+  }
+
   render() {
     return (
       <header className="header">
         <div
           className="header__logo"
+          title={this.props.version}
         />
         <span className="header__spacer" />
         <h1 className="header__headline">{T.translate('headline')}</h1>
@@ -20,12 +26,21 @@ class Header extends React.Component {
 
 Header.propTypes = {
   version: PropTypes.string,
-  development: PropTypes.bool
+  development: PropTypes.bool,
+  loadVersion: PropTypes.func
 };
 
-const mapStateToProps = (state, ownProps) => ({
-  version: '1.6-RC4',
-  development: true,
-});
+const mapStateToProps = (state, ownProps) => {
+  return {
+    version: state.version ? state.version.version : '',
+    development: state.version ? state.version.development : false,
+  }
+};
 
-export default connect(mapStateToProps)(Header);
+const mapDispatchToProps = (dispatch) => {
+  return {
+    loadVersion: () => dispatch(loadVersion()),
+  };
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Header);
