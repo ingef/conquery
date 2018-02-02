@@ -1,0 +1,100 @@
+{
+  "id": 25,
+  "status": "DONE",
+  "numberOfResults": 5,
+  "resultUrl": "/api/results/1234-123123123-123123-1231.csv",
+  "createdAt": "2016-12-02T14:19:09Z",
+  "version": 0,
+  "tags": [
+    "Fun"
+  ],
+  "query": {
+    "groups": [
+      {
+        "exclude": true,
+        "dateRange": {
+          "min": "1969-12-01",
+          "max": "2012-01-31"
+        },
+        "elements": [
+          {
+            "id": 25602,
+            "type": "QUERY",
+            "label": "Example query",
+            "createdAt": "2016-12-02T14:19:09Z",
+            "status": "DONE",
+            "numberOfResults": 2465,
+            "resultUrl": "/api/results/1234-123123123-123123-1231.csv"
+          },
+          {
+            "id": "action_movies",
+            "type": "CONCEPT",
+            "tables": [
+              {
+                "id": "feature_films"
+              },
+              {
+                "id": "tv_series"
+              }
+            ]
+          },
+          {
+            "id": "horror_movies",
+            "type": "CONCEPT",
+            "tables": [
+              {
+                "id": "feature_films",
+                "filters": [
+                  {
+                    "id": "studio",
+                    "value": "universal"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "elements": [
+          {
+            "id": "best_actor_award",
+            "type": "CONCEPT",
+            "tables": [
+              {
+                "id": "awards",
+                "filters": [
+                  {
+                    "id": "award_type",
+                    "type": "MULTI_SELECT",
+                    "value": [
+                      "won"
+                    ]
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "id": "best_actress_award",
+            "type": "CONCEPT",
+            "tables": [
+              {
+                "id": "awards",
+                "filters": [
+                  {
+                    "id": "award_type",
+                    "type": "MULTI_SELECT",
+                    "value": [
+                      "won"
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

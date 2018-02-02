@@ -1,6 +1,7 @@
 # Tmp / invisibles
 .DS_Store
 *.log
+*.tgz
 
 # Libraries
 node_modules
@@ -10,4 +11,11 @@ node_modules
 coverage
 dist
 bin
+app/dist
+conquery-*.tgz
+package-lock.json
+
+# JetBrains WebStorm
+.idea
+
 *.tgz

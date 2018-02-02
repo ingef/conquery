@@ -1,0 +1,78 @@
+.tooltip
+  background-color: $col-bg
+  padding: 10px 20px
+  display: table
+  width: 100%
+  height: 100%
+  position: relative
+
+  &--activate
+    padding: 0 20px
+
+  &__headline
+    font-size: $font-sm
+    margin: 5px 0 5px
+
+  &__left, &__right
+    display: table-cell
+    vertical-align: middle
+
+  &__right
+    width: 35%
+
+  &__placeholder
+    color: $col-gray
+    margin: 0
+
+  &__btn
+    position: absolute
+    top: 0
+    right: 20px
+    border-top: 0
+    border-top-left-radius: 0
+    border-top-right-radius: 0
+
+.tooltip-info
+  margin: 5px 0
+  border-left: 3px solid $col-blue-gray-dark
+  padding-left: 10px
+  &__key, &__value
+    font-size: $font-xs
+    margin: 0
+
+.tooltip-entries
+  padding-left: 20px
+
+  &--zero
+    .tooltip-entries
+      &__number, &__text
+        color: $col-red
+
+  &__number
+    margin: 0
+    font-size: $font-md
+
+  &__date-container
+    display: inline-block
+
+  &__date
+    margin: 0
+    padding-right: 6px
+    font-size: $font-sm
+
+  &__container
+    display: table
+
+  &__info, &__icon
+    display: inline-block
+    vertical-align: middle
+
+  &__icon
+    padding-right: 15px
+
+  &__text
+    margin: 0 0 5px
+    font-size: $font-xs
+
+  &__digits
+    padding-right: 2px

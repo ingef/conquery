@@ -1,3 +1,5 @@
+// @flow
+
 import { expect }                 from 'chai';
 import thunk                      from 'redux-thunk';
 import configureMockStore         from 'redux-mock-store'
@@ -9,9 +11,9 @@ import {
   resolveConceptsStart,
   resolveConceptsSuccess,
   resolveConceptsError
-} from '../../../src/js/upload-concept-list-modal/actions';
+} from '../../../lib/js/upload-concept-list-modal/actions';
 
-import { API_URL }                from '../../../src/js/environment'
+import { apiUrl }                 from '../../../lib/js/environment'
 
 const middlewares = [thunk];
 const mockStore = configureMockStore(middlewares);
@@ -27,7 +29,7 @@ describe('upload concepts dialog', () => {
         unresolved: conceptCodes.slice(1)
       }
 
-      nock(API_URL)
+      nock(apiUrl())
         .post(
           `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
           { concepts: conceptCodes }
@@ -60,7 +62,7 @@ describe('upload concepts dialog', () => {
       const conceptId = 4711;
       const conceptCodes = ['foo', 'bar'];
 
-      nock(API_URL)
+      nock(apiUrl())
         .post(
           `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
           { concepts: conceptCodes }

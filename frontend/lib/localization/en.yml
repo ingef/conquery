@@ -1,0 +1,219 @@
+headline: "Queries and Analyses"
+leftPane:
+  categoryTrees: "Concepts"
+  previousQueries: "Queries"
+
+rightPane:
+  queryEditor: "Editor"
+  timebasedQueryEditor: "Timebased Editor"
+  externalForms: "Forms"
+
+categoryTreeList:
+  loading: "Loading Concept Tree: {tree}"
+  error: "Could not load Concept Tree {tree}."
+
+queryRunner:
+  start: "Start Query"
+  stop: "Stop Query"
+  stopSuccess: "Query was successfully stopped."
+  stopError: "Failed to stop the query."
+  startSuccess: "Query was successfully started."
+  endSuccess: "Query finished successfully."
+  startError: "Failed to start the query."
+  resultError: "Could not load the query result."
+  resultCount: "{count} results found."
+  queryFailed: "The query failed."
+  queryCanceled: "The query was canceled."
+  downloadResults: "Download results (CSV)"
+
+queryEditor:
+  couldNotExpandNode: "Could not find node"
+  couldNotInsertConceptList: "Could not insert the Concept List"
+  filter: "Filter"
+  exclude: "Exclude"
+  date: "Date"
+  expand: "Expand"
+  details: "Details"
+  previousQuery: "Query"
+  conceptList: "Concept List"
+  loadingPreviousQuery: "Loading Query Details"
+
+dropzone:
+  dragElementPlease: "Drag a concept or a query into this area"
+  dragElementPleaseShort: "Add an element"
+  dragQuery: "Add a query"
+
+datasetSelector:
+  pleaseChoose: "Choose a data set"
+  error: "Could not load data sets"
+
+queryNodeModal:
+  resetAll: "Reset all"
+  explanation: "Configure Input Tables"
+  excludeTimestamps: "Exclude from time calculation"
+
+queryGroupModal:
+  explanation: "Set time frame"
+  datePlaceholder: "Choose a date"
+  today: "Today"
+  dateMinLabel: "From"
+  dateMaxLabel: "To"
+  headlineStart: "Elements:"
+  dateFormat: "MM/DD/YYYY"
+
+deletePreviousQueryModal:
+  areYouSure: "Really delete this Query?"
+
+common:
+  any: "Any"
+  save: "Save"
+  edit: "Edit"
+  cancel: "Cancel"
+  delete: "Delete"
+  done: "Done"
+  and: "AND"
+  or: "OR"
+  clear: "Clear"
+  timeUnitDays: "days"
+  title: "Title"
+  description: "Description"
+  clearAll: "Clear all"
+  clearValue: "Clear value"
+
+tooltip:
+  entriesFound:
+    1: "entry found"
+    _: "entries found"
+
+  placeholder: "More information about a concept node ..."
+  hide: "Hide"
+  show: "Show more details"
+  date:
+    daterange: "Date Range"
+    from: "From"
+    to: "To"
+
+reactSelect:
+  placeholder: "Choose ..."
+  tagPlaceholder: "Tag ..."
+  searchPlaceholder: "Search ..."
+  backspaceToRemove: "Press Backspace to remove"
+  noResults: "No values found"
+  createTag: "Create tag: {label}"
+  searchFor: "Search for: {label}"
+  clearAll: "Clear all"
+  clearValue: "Clear value"
+
+inputRange:
+  range: "Range"
+  exact: "Equals"
+  exactLabel: "Exact"
+  minLabel: "min"
+  maxLabel: "max"
+
+previousQueries:
+  loading: "Loading Queries"
+  error: "Could not load Queries"
+  results: "results"
+  noQueriesFound: "No Queries found"
+
+previousQuery:
+  addTag: "Add Tag"
+  share: "Share"
+  shared: "Shared"
+  loadError: "Could not load query"
+  renameError: "Could not rename query"
+  retagError: "Could not save tags"
+  shareError: "Could not share query"
+  deleteError: "Could not delete query"
+
+previousQueriesFilter:
+  all: "All"
+  own: "Own"
+  shared: "Shared"
+  system: "SYSTEM"
+
+timebasedQueryEditor:
+  headline: "Anfragen in Relation"
+  opBefore: "BEFORE"
+  opBeforeOrSame: "BEFORE OR SAME"
+  opDays: "DAYS BEFORE"
+  opSame: "SAME"
+  opDaysOrNoEventBefore: "DAYS OR NO EVENT BEFORE"
+  timestampFirst: "FISRT"
+  timestampLast: "LAST"
+  timestampRandom: "RANDOM"
+  timestamp: "Timestamp"
+  condition: "Condition"
+  timestampResultsFrom: "Use as result timestamp"
+  addCondition: "Add condition"
+  minDaysLabel: "Min. days"
+  maxDaysLabel: "Max. days"
+
+externalForms:
+  forms: "Forms"
+  formValidation:
+    isRequired: "is required"
+    invalidDateRange: "End date is smaller than start date"
+
+  common:
+    relativeToIndex: "Relative to index date"
+    timespan: "Time span"
+    dateMinLabel: "From"
+    dateMaxLabel: "To"
+    timeInterval: "Time interval"
+    indexDate:
+      label: "index date"
+      before: "BEFORE"
+      neutral: "SAME"
+      after: "AFTER"
+    timeUnit:
+      label: "Time unit"
+      days: "Days"
+      quarters: "Quarters"
+      years: "Years"
+      complete: "All time"
+    timestamp:
+      label: "Timestamp"
+      first: "FIRST"
+      last: "LAST"
+      random: "RANDOM"
+    filter: "Filter"
+
+uploadQueryResultsModal:
+  headline: "Upload a Query Result"
+  dropzone: "Drop a CSV file here"
+  upload: "Upload"
+  uploadFailed: "Could not upload file"
+  uploadSucceeded: "File was successfully uploaded"
+  previousQueryCreated: "Previous query was successfully uploaded"
+  formatInfo:
+    text: "File should contain one result per row with comma-separated values"
+
+uploadConceptListModal:
+  headline: "Upload Concept List"
+  label: "Name of the Concept List"
+  selectConceptRootNode: "Choose a Concept Tree root"
+  insertNode: "Insert node"
+  result: "Result"
+  resolvedCodes:
+    1: "One concept code could be resolved."
+    _: "{context} concept codes could not be resolved."
+  unknownCodes:
+    1: "The following concept code could not be resolved:"
+    _: "The following {context} concept codes could not be resolved:"
+  error: "An error occurred when resolving the concept codes."
+
+conceptListDetailsModal:
+  conceptTreeRoot: "Concept Tree"
+  conceptCodes: "Concept Codes"
+
+uploadReport:
+  successful: "{count} rows successfully imported"
+  unsuccessful: "{count} rows ignored"
+
+uploadQueryResults:
+  uploadResults: "Upload Query Result"
+
+authorization:
+  unauthorized: "Authentitcation failed. An authentication token is missing or expired"
