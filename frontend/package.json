@@ -113,7 +113,7 @@
     "rimraf": "^2.5.4",
     "sass-loader": "^6.0.3",
     "style-loader": "^0.13.2",
-    "timekeeper": "^0.1.1",
+    "timekeeper": "^2.0.0",
     "url-loader": "^0.6.2",
     "webpack": "^3.10.0",
     "webpack-bundle-analyzer": "^2.10.0",
