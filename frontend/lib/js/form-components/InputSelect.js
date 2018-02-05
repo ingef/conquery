@@ -43,6 +43,7 @@ const InputSelect = (props: PropsType) => {
             ? props.input.onChange(field.value)
             : props.input.onChange(null)
         }
+        clearable={props.input.clearable}
         disabled={!!props.disabled}
         placeholder={T.translate('reactSelect.placeholder')}
         backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}

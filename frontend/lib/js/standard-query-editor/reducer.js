@@ -110,7 +110,7 @@ const setElementProperties = (node, andIdx, orIdx, properties) => {
   };
 
   return setGroupProperties(node, andIdx, groupProperties);
-}
+};
 
 const setAllElementsProperties = (node, properties) => {
   return node.map(group => ({
@@ -120,11 +120,11 @@ const setAllElementsProperties = (node, properties) => {
       ...properties
     }))
   }));
-}
+};
 
 const nodeHasActiveFilters = (node, tables = node.tables) => {
   return node.excludeTimestamps || nodeHasActiveTableFilters(tables);
-}
+};
 
 const dropAndNode = (state, action) => {
   const group = state[state.length - 1];
@@ -220,7 +220,7 @@ const nodeHasActiveTableFilters = (tables) => {
   const hasTableValue = tables
     .some(table =>
       table.filters &&
-      table.filters.some(filter => !isEmpty(filter.value))
+      table.filters.some(filter => !isEmpty(filter.value) && filter.value !== filter.defaultValue)
     );
 
   const hasExcludedTable = tables.some(table => table.exclude);
@@ -245,7 +245,7 @@ const updateNodeTables = (state, andIdx, orIdx, tables) => {
   const properties = {
     tables,
     hasActiveFilters: nodeHasActiveFilters(node, tables)
-  }
+  };
 
   return setElementProperties(state, andIdx, orIdx, properties);
 };
@@ -293,6 +293,9 @@ const setNodeFilterProperties = (state, action, obj) => {
         []
       );
   }
+
+  if (properties.value === undefined && filter.defaultValue)
+      properties.value = filter.defaultValue;
 
   const newTable = {
     ...table,
@@ -342,7 +345,7 @@ const resetNodeAllFilters = (state, action) => {
       // $FlowFixMe
       ? table.filters.map((filter) => ({
           ...filter,
-          value: null
+          value: filter.defaultValue
         }))
       : null;
 
