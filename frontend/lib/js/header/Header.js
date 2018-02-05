@@ -14,7 +14,7 @@ class Header extends React.Component {
       <header className="header">
         <div
           className="header__logo"
-          title={this.props.version}
+          title={'Conquery ' + this.props.version}
         />
         <span className="header__spacer" />
         <h1 className="header__headline">{T.translate('headline')}</h1>
