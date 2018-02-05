@@ -70,7 +70,7 @@
     "babel-preset-react": "^6.24.1",
     "babel-preset-stage-1": "^6.24.1",
     "babel-register": "^6.26.0",
-    "body-parser": "^1.17.2",
+    "body-parser": "^1.18.2",
     "chai": "^3.5.0",
     "css-loader": "^0.27.0",
     "dirty-chai": "^1.2.2",
