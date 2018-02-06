@@ -1,24 +1,12 @@
-sudo: required
 language: java
+
 cache:
   directories:
   - "$HOME/.m2"
-  - "${TRAVIS_BUILD_DIR}/frontend/node_modules"
-services:
-- docker
+  - "$TRAVIS_BUILD_DIR/frontend/node_modules"
+  
 deploy:
-  # Deploy the file(s) to the github release (other targets like amazon-aws or npm can be found here: http://docs.travis-ci.com/user/deployment/ )
-  provider: releases
-  # The oauth token for github (used by travis to upload the file(s) to github)
-  api_key:
-    secure: gpPCpR86xGuPdNwEdoVnxC7E7krmN6na0NoEOlB143BDm2oMZ1ozESOTY8O528H1cJC9pd28MGfeZhataBkD6vmwalX6XVh42oWsn8DVlLkh5gT10JW3leX45a3sN2npUnwd24Ldlca+Y+lRe+FhMy/mftlOgLtdT3BR3n7oVHXMC6Ff+6CGJY1fqLvsaC4R9B9KdRAL+qJKrvzXMf9oLgUVBwlWuXqAsSkyhUxU2tlgl2Rb4ySsHBT9vNXORCwLY5TbRN3a33cL0VsfGuz3BR+lOkxVIllQ36jyJK3Hv1bBOVR3i897FCx7uU2VEu/3ptw6e5g59BKzM/zvKh7Vp3xudob0sN3udhBatAe2nv/QI7iD2UdpOu/bIynW7AMlvLGlPSycQX1k875qvJ38gNCvVYLc0wzGZBleENMgtJYZCzfPfILhtw50ws8uALR/6F168hDmJqLwlY25FVfOTa6Hd1ksMGsFbPBAeWK4jbUoBSKGdYO4b0BkKX3ENa/rW7mdAsBsSHQ0gSk3tlvKinOJlQQ4aMEd5e95hG8J1sfqtU+w+jAtwCRIrI2wmrJtnFjDjX7zEdqHXjvUDQBCkqYDMY6nD+DBj4BA39BXlm+9IiajnHEH+T+hiUsls1xWJrYvD3NQaNwJJJoNW5a5jGrj4OqOisdJuF//bCl3syg=
-  file_glob: true
-  file: ${TRAVIS_BUILD_DIR}/frontend/conquery-*.tgz
-  # do not delete the files we're trying to upload
-  skip_cleanup: true
-  # only deploy if
+  provider: script
+  script: frontend/scripts/deploy-npm.sh
   on:
-    # we are on this repo
-    repo: bakdata/conquery
-    # and we are building a tag
     tags: true
