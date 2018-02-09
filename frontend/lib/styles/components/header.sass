@@ -3,6 +3,9 @@
   color: white
   padding: 0 20px
   overflow: hidden
+  display: flex
+  justify-content: space-between
+  align-items: center
 
   // Fix, so content can expand to 100% and scroll
   position: absolute
@@ -11,16 +14,12 @@
   top: 0
   left: 0
 
-  &__headline, &__logo, &__spacer
-    display: inline-block
-    vertical-align: middle
-
   &__spacer
     margin: 0 10px
     height: 20px
 
   &__headline
-    margin: 0
+    margin: 0 auto 0 0
     line-height: 2
     font-size: $font-sm
     font-style: italic
@@ -33,3 +32,7 @@
     background-repeat: no-repeat
     background-position-y: 50%
     background-size: $img-logo-background-size
+
+  &__version
+    font-size: $font-sm
+    margin-left: auto
