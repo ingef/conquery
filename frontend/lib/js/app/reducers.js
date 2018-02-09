@@ -13,6 +13,11 @@ import {
 } from '../dataset';
 
 import {
+  version,
+  type StateType as VersionStateType
+} from '../header/reducer'
+
+import {
   reducer as tooltip,
   type StateType as TooltipStateType
 } from '../tooltip';
@@ -41,9 +46,10 @@ export type StateType = {
   datasets: DatasetsStateType,
   tooltip: TooltipStateType,
   panes: PanesStateType,
+  version: VersionStateType,
 };
 
- const buildAppReducer = (availableForms) => combineReducers({
+const buildAppReducer = (availableForms) => combineReducers({
   categoryTrees,
   query,
   uploadConceptListModal,
@@ -60,6 +66,7 @@ export type StateType = {
   uploadQueryResults,
   deletePreviousQueryModal,
   timebasedQuery,
+  version,
   externalForms: buildExternalFormsReducer(availableForms),
 });
 
