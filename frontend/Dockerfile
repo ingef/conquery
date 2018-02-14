@@ -3,7 +3,6 @@ FROM node:8.9-alpine
 EXPOSE 8000
 
 RUN npm set progress=false && \
-    npm install -g yarn && \
     mkdir conquery
 
 COPY ./package.json ./yarn.lock /conquery/
