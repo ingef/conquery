@@ -6,7 +6,7 @@
 Branch | Travis CI  | Heroku
 ------ | ---------- | ------
 master  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=master)](https://travis-ci.org/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery)](https://conquery.herokuapp.com/) | 
-dev  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=develop)](https://travis-ci.org/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev)](https://conquery-dev.herokuapp.com/) |
+develop  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=develop)](https://travis-ci.org/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev)](https://conquery-dev.herokuapp.com/) |
 
 Conquery provides a powerful web-based platform to compose and execute queries against large event-like data sets.
 
