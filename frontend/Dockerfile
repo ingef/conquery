@@ -9,6 +9,6 @@ RUN yarn --no-progress
 COPY . .
 RUN yarn run build-app
 
-CMD yarn run start-production && tail -f webapp.log webapp-err.log
+CMD NODE_ENV=production node app/server
 
 EXPOSE 8000
