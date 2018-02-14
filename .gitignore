@@ -25,3 +25,4 @@ hs_err_pid*
 /frontend/target/
 /frontend/node/
 /frontend/cfp-*
+nbactions.xml
