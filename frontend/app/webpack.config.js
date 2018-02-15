@@ -10,6 +10,7 @@ module.exports = ['en', 'de'].map(lang => ({
   devtool: 'eval-source-map',
   entry: {
     main: [
+      'babel-polyfill',
       'react-hot-loader/patch',
       'webpack-hot-middleware/client?reload=true',
       path.join(__dirname, `src/js/main.${lang}.js`)
