@@ -46,7 +46,7 @@ module.exports = ['en', 'de'].map(lang => ({
           fallback: 'style-loader',
           use: [
             'css-loader',
-            'postcss-loader',
+            { loader: 'postcss-loader', options: { sourceMap: true } },
             'resolve-url-loader',
             {
               loader: 'sass-loader',
