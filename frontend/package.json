@@ -60,7 +60,7 @@
     "redux-thunk": "^2.1.0"
   },
   "devDependencies": {
-    "autoprefixer": "^7.2.5",
+    "autoprefixer": "^8.0.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
     "babel-eslint": "^7.2.3",
@@ -116,7 +116,7 @@
     "url-loader": "^0.6.2",
     "webpack": "^3.11.0",
     "webpack-bundle-analyzer": "^2.10.0",
-    "webpack-dev-middleware": "^2.0.4",
+    "webpack-dev-middleware": "^2.0.5",
     "webpack-hot-middleware": "^2.21.0",
     "yaml-loader": "^0.5.0"
   },
