@@ -13,9 +13,17 @@ cache:
   directories:
   - "$HOME/.m2"
   - "$TRAVIS_BUILD_DIR/frontend/node_modules"
-  
+
 deploy:
-  provider: script
-  script: frontend/scripts/deploy-npm.sh
-  on:
-    tags: true
+  - provider: script
+    script: frontend/scripts/deploy-npm.sh
+    on:
+      tags: true
+  - provider: script
+    script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
+    on:
+      branch: develop
+  - provider: script
+    script: bash frontend/scripts/deploy-heroku-docker.sh conquery
+    on:
+      branch: master

@@ -1,16 +1,14 @@
 FROM node:8.9-alpine
 
+RUN mkdir /conquery
+WORKDIR /conquery
+
+COPY ./package.json ./yarn.lock ./
+RUN yarn --no-progress
+
+COPY . .
+RUN yarn run build-app
+
+CMD NODE_ENV=production node app/server
+
 EXPOSE 8000
-
-RUN npm set progress=false && \
-    npm install -g yarn && \
-    mkdir conquery
-
-COPY ./package.json ./yarn.lock /conquery/
-RUN cd /conquery && \
-    yarn
-
-COPY . /conquery
-RUN cd /conquery && yarn run build-app
-
-CMD cd /conquery && yarn run start-production && tail -f /dev/null
