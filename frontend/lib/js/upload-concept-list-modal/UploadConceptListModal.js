@@ -15,6 +15,8 @@ import { ScrollableList }        from '../scrollable-list'
 
 import type { StateType }        from '../app/reducers';
 
+import { DatasetIdType } from "../dataset/reducer";
+
 import {
   uploadConceptListModalUpdateLabel,
   selectConceptRootNodeAndResolveCodes,
@@ -31,6 +33,9 @@ type PropsType = {
   label: String,
   availableConceptRootNodes: Array,
   selectedConceptRootNode: Object,
+  selectConceptRootNode: Function,
+  selectedDatasetId: DatasetIdType,
+  conceptCodesFromFile: Array<String>,
   updateLabel: Function,
   resolved: Object,
   hasResolvedItems: boolean,
