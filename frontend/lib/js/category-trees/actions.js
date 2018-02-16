@@ -48,7 +48,7 @@ export const loadTrees = (datasetId: DatasetIdType) => {
           // Assign default select filter values
           for (const concept of Object.values(r.concepts))
             for (const table of concept.tables || [])
-              for (let filter of table.filters || [])
+              for (const filter of table.filters || [])
                 if (filter.defaultValue)
                   filter.value = filter.defaultValue;
 
