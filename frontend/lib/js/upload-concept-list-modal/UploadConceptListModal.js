@@ -11,11 +11,10 @@ import {
   InputSelect,
   InputWithLabel
 }                                from '../form-components';
-import { ScrollableList }        from '../scrollable-list'
+import { ScrollableList }        from '../scrollable-list';
 
 import type { StateType }        from '../app/reducers';
-
-import { DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdType }    from '../dataset/reducer';
 
 import {
   uploadConceptListModalUpdateLabel,
