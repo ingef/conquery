@@ -6,7 +6,6 @@ import './fixEdge';
 
 import React                           from 'react';
 import ReactDOM                        from 'react-dom';
-import { AppContainer as HotReloader } from 'react-hot-loader';
 import createHistory                   from 'history/createBrowserHistory';
 
 import './app/actions'; //  To initialize parameterized actions
@@ -39,9 +38,7 @@ const renderRoot = (forms: Object) => {
   store = store || makeStore(initialState, browserHistory, forms);
 
   ReactDOM.render(
-    <HotReloader>
-      <AppRoot store={store} browserHistory={browserHistory} forms={forms} />
-    </HotReloader>,
+    <AppRoot store={store} browserHistory={browserHistory} forms={forms} />,
     document.getElementById('root')
   );
 };
@@ -49,7 +46,4 @@ const renderRoot = (forms: Object) => {
 export default function conquery(environment: Environment, forms: Object) {
   initializeEnvironment(environment);
   renderRoot(forms);
-
-  if (module.hot)
-    module.hot.accept('./AppRoot', () => renderRoot(forms));
 };
