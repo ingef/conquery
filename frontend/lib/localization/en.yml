@@ -4,13 +4,13 @@ leftPane:
   previousQueries: "Queries"
 
 rightPane:
-  queryEditor: "Editor"
+  queryEditor: "Group Editor"
   timebasedQueryEditor: "Timebased Editor"
   externalForms: "Forms"
 
 categoryTreeList:
-  loading: "Loading Concept Tree: {tree}"
-  error: "Could not load Concept Tree {tree}."
+  loading: "Loading Concept: {tree}"
+  error: "Could not load Concept: {tree}."
 
 queryRunner:
   start: "Start Query"
@@ -62,7 +62,7 @@ queryGroupModal:
   dateFormat: "MM/DD/YYYY"
 
 deletePreviousQueryModal:
-  areYouSure: "Really delete this Query?"
+  areYouSure: "Should this query be deleted?"
 
 common:
   any: "Any"
@@ -85,7 +85,7 @@ tooltip:
     1: "entry found"
     _: "entries found"
 
-  placeholder: "More information about a concept node ..."
+  placeholder: "More information about a concept ..."
   hide: "Hide"
   show: "Show more details"
   date:
@@ -108,8 +108,8 @@ inputRange:
   range: "Range"
   exact: "Equals"
   exactLabel: "Exact"
-  minLabel: "min"
-  maxLabel: "max"
+  minLabel: "Min"
+  maxLabel: "Max"
 
 previousQueries:
   loading: "Loading Queries"

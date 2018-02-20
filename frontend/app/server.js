@@ -7,7 +7,7 @@ var bodyParser   = require('body-parser');
 var mountApi     = require('./api');
 
 var isDeveloping = process.env.NODE_ENV !== 'production';
-var port         = isDeveloping ? 8000 : process.env.PORT;
+var port         = (process.env.PORT || 8000);
 var app          = express();
 
 // body parser must be set up before routes are attached
