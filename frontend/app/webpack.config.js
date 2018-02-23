@@ -37,6 +37,7 @@ module.exports = ['en', 'de'].map(lang => ({
     ifProduction(new ExtractTextPlugin({
       filename: `[name]-[hash].${lang}.min.css`, allChunks: true
     })),
+    ifProduction(new webpack.optimize.ModuleConcatenationPlugin()),
     ifProduction(new webpack.optimize.UglifyJsPlugin({
       compressor: {
         warnings: false,
