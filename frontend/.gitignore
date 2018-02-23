@@ -7,7 +7,7 @@
 node_modules
 
 # Artifacts
-.babel_cache
+.babel_loader_cache
 .nyc_output
 coverage
 dist

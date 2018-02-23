@@ -58,7 +58,7 @@ module.exports = ['en', 'de'].map(lang => ({
         test: /\.js$/,
         exclude: path.join(__dirname, '../node_modules/'),
         loader: 'babel-loader',
-        options: { cacheDirectory: '../.babel_cache' }
+        options: { cacheDirectory: '../.babel_loader_cache' }
       }, {
         test: /\.json$/,
         loader: 'json-loader'
