@@ -13,12 +13,17 @@ class Header extends React.Component {
     return (
       <header className="header">
         <div
-          className="header__logo"
+          className="header__logo"t
           title={'Conquery ' + this.props.version}
         />
         <span className="header__spacer" />
         <h1 className="header__headline">{T.translate('headline')}</h1>
-        {this.props.isDevelopment && <h1 className="header__version">{this.props.version}</h1>}
+        {
+          this.props.isDevelopment &&
+          <h1 title={'Conquery ' + this.props.version} className="header__version">
+            {this.props.version}
+          </h1>
+        }
       </header>
     );
   }
