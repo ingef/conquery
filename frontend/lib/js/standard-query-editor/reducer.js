@@ -8,11 +8,12 @@ import {
 
 import {
   isEmpty,
-  stripObject,
-  toUpperCaseUnderscore,
+  stripObject
 } from '../common/helpers';
 
-import { createActionTypes } from '../query-node-modal/actionTypes';
+import {
+  resetAllFiltersInTables
+} from '../model/table';
 
 import {
   QUERY_GROUP_MODAL_SET_MIN_DATE,
@@ -36,6 +37,10 @@ import {
 } from '../form-components';
 
 import {
+  nodeHasActiveFilters
+} from '../model/node';
+
+import {
   DROP_AND_NODE,
   DROP_OR_NODE,
   DELETE_NODE,
@@ -46,15 +51,8 @@ import {
   EXPAND_PREVIOUS_QUERY,
   SHOW_CONCEPT_LIST_DETAILS,
   HIDE_CONCEPT_LIST_DETAILS,
-} from './actionTypes';
-
-import type {
-  ElementType, QueryGroupType,
-  StandardQueryType
-} from './types';
-
-
-const {
+  SELECT_NODE_FOR_EDITING,
+  DESELECT_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
   RESET_ALL_FILTERS,
@@ -62,8 +60,15 @@ const {
   TOGGLE_TIMESTAMPS,
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
-  LOAD_FILTER_SUGGESTIONS_ERROR
-} = createActionTypes(toUpperCaseUnderscore('standard'));
+  LOAD_FILTER_SUGGESTIONS_ERROR,
+} from './actionTypes';
+
+import type
+{
+  ElementType, QueryGroupType,
+  StandardQueryType
+} from './types';
+
 
 const initialState: StandardQueryType = [];
 
@@ -73,6 +78,8 @@ const filterItem = (item: ElementType) => {
     id: item.id,
     label: item.label,
     description: item.description,
+    tree: item.tree,
+    nodes: item.nodes,
     tables: item.tables,
     additionalInfos: item.additionalInfos,
     matchingEntries: item.matchingEntries,
@@ -120,10 +127,6 @@ const setAllElementsProperties = (node, properties) => {
       ...properties
     }))
   }));
-};
-
-const nodeHasActiveFilters = (node, tables = node.tables) => {
-  return node.excludeTimestamps || nodeHasActiveTableFilters(tables);
 };
 
 const dropAndNode = (state, action) => {
@@ -213,21 +216,6 @@ const loadQuery = (state, action) => {
   return action.payload.query;
 };
 
-const nodeHasActiveTableFilters = (tables) => {
-  if (!tables) return false;
-
-  // Check if there is any value in any of the filters
-  const hasTableValue = tables
-    .some(table =>
-      table.filters &&
-      table.filters.some(filter => !isEmpty(filter.value) && filter.value !== filter.defaultValue)
-    );
-
-  const hasExcludedTable = tables.some(table => table.exclude);
-
-  return hasTableValue || hasExcludedTable;
-};
-
 const updateNodeTable = (state, andIdx, orIdx, tableIdx, table) => {
   const node = state[andIdx].elements[orIdx];
   const tables = [
@@ -251,7 +239,12 @@ const updateNodeTables = (state, andIdx, orIdx, tables) => {
 };
 
 const toggleNodeTable = (state, action) => {
-  const { andIdx, orIdx, tableIdx, isExcluded } = action.payload;
+  const { tableIdx, isExcluded } = action.payload;
+
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const {andIdx, orIdx} = nodePosition;
   const node = state[andIdx].elements[orIdx];
   const table = {
     ...node.tables[tableIdx],
@@ -261,9 +254,23 @@ const toggleNodeTable = (state, action) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, table);
 };
 
+const selectEditedNode = (state) => {
+  const selectedNodes = state
+    .reduce((acc, group, andIdx) =>
+      [...acc, ...group.elements.map((element, orIdx) => ({andIdx, orIdx, element}))], [])
+    .filter(({element}) => element.isEditing)
+    .map(({andIdx, orIdx}) => ({andIdx, orIdx}));
+
+  return selectedNodes.length ? selectedNodes[0] : null;
+}
 
 const setNodeFilterProperties = (state, action, obj) => {
-  const { andIdx, orIdx, tableIdx, filterIdx } = action.payload;
+  const { tableIdx, filterIdx } = action.payload;
+
+  const node = selectEditedNode(state);
+  if (!node) return state;
+
+  const { andIdx, orIdx } = node;
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
   const { filters } = table;
 
@@ -328,7 +335,10 @@ const switchNodeFilterMode = (state, action) => {
 };
 
 const resetNodeAllFilters = (state, action) => {
-  const { andIdx, orIdx } = action.payload;
+  const nodeIdx = selectEditedNode(state);
+  if (!nodeIdx) return state;
+
+  const { andIdx, orIdx } = nodeIdx;
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
@@ -338,24 +348,7 @@ const resetNodeAllFilters = (state, action) => {
 
   if (!node.tables) return newState;
 
-  const tables = node.tables.map(table => {
-    const filters = table.filters
-      // It's actually a FilterType, but flow can't decide which one
-      // of the intersections it is
-      // $FlowFixMe
-      ? table.filters.map((filter) => ({
-          ...filter,
-          value: filter.defaultValue
-        }))
-      : null;
-
-    return {
-      ...table,
-      filters,
-      exclude: false,
-    };
-  });
-
+  const tables = resetAllFiltersInTables(node.tables);
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
@@ -563,11 +556,16 @@ const renamePreviousQuery = (state, action) => {
 };
 
 const toggleTimestamps = (state, action) => {
-  const { andIdx, orIdx, isExcluded } = action.payload;
+  const { isExcluded } = action.payload;
+
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const {andIdx, orIdx} = nodePosition;
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    hasActiveFilters: isExcluded || nodeHasActiveTableFilters(node.tables),
+    hasActiveFilters: nodeHasActiveFilters(node),
     excludeTimestamps: isExcluded
   });
 };
@@ -638,6 +636,14 @@ const insertUploadedConceptList = (state, action) => {
   return dropAndNode(state, { payload: { item: queryElement, dateRange: queryContext.dateRange } });
 };
 
+const selectNodeForEditing = (state, {payload: { andIdx, orIdx }}) => {
+  return setElementProperties(state, andIdx, orIdx, { isEditing: true });
+}
+
+const deselectNode = (state) => {
+  return setAllElementsProperties(state, { isEditing: false });
+}
+
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
 // like `dateRange` or `exclude`.
@@ -690,6 +696,10 @@ const query = (
       return loadQuery(state, action);
     case CLEAR_QUERY:
       return initialState;
+    case SELECT_NODE_FOR_EDITING:
+      return selectNodeForEditing(state, action);
+    case DESELECT_NODE:
+      return deselectNode(state, action);
     case TOGGLE_TABLE:
       return toggleNodeTable(state, action);
     case SET_FILTER_VALUE:

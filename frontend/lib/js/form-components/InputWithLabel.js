@@ -24,7 +24,8 @@ const InputWithLabel = (props: PropsType) => {
       props.className,
       'input',
       {
-        'input--value-changed': !isEmpty(props.input.value),
+        'input--value-changed':
+          !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue,
         'input--full-width': !!props.fullWidth,
       }
     )}>

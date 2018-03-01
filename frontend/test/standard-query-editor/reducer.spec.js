@@ -3,8 +3,8 @@
 import { expect } from 'chai';
 
 import {
-  default as createQueryNodeModalActions
-} from '../../lib/js/query-node-modal/actions';
+  default as createQueryNodeEditorActions
+} from '../../lib/js/query-node-editor/actions';
 
 import { default as reducer } from '../../lib/js/standard-query-editor/reducer';
 
@@ -31,7 +31,7 @@ describe('standard query editor', () => {
       state[0].elements[0].tables[0].filters[0].options = [{value: 1, label: '1'}];
       state[0].elements[0].tables[0].filters[0].value = [1];
 
-      const { setStandardFilterValue } = createQueryNodeModalActions('standard');
+      const { setStandardFilterValue } = createQueryNodeEditorActions('standard');
       const action = setStandardFilterValue(0, 0, 0, 0, []);
       const updatedState = reducer(state, action);
 
@@ -48,7 +48,7 @@ describe('standard query editor', () => {
         { value: "1", label: "1" },
         { value: "2", label: "2" },
       ];
-      const { loadStandardFilterSuggestionsSuccess } = createQueryNodeModalActions('standard');
+      const { loadStandardFilterSuggestionsSuccess } = createQueryNodeEditorActions('standard');
       const action = loadStandardFilterSuggestionsSuccess(options, 0, 0, 0, 0);
       const updatedState = reducer(state, action);
 
@@ -69,7 +69,7 @@ describe('standard query editor', () => {
         { value: "4", label: "4" },
         { value: "5", label: "5" },
       ];
-      const { loadStandardFilterSuggestionsSuccess } = createQueryNodeModalActions('standard');
+      const { loadStandardFilterSuggestionsSuccess } = createQueryNodeEditorActions('standard');
       const action = loadStandardFilterSuggestionsSuccess(newOptions, 0, 0, 0, 0);
       const updatedState = reducer(state, action);
 
@@ -87,7 +87,7 @@ describe('standard query editor', () => {
       state[0].elements[0].tables[0].filters[0].options = options;
 
       const newOptions = [];
-      const { loadStandardFilterSuggestionsSuccess } = createQueryNodeModalActions('standard');
+      const { loadStandardFilterSuggestionsSuccess } = createQueryNodeEditorActions('standard');
       const action = loadStandardFilterSuggestionsSuccess(newOptions, 0, 0, 0, 0);
       const updatedState = reducer(state, action);
 

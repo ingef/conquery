@@ -60,6 +60,7 @@ export type ElementType = {
   query?: PreviousQuery,
   loading?: boolean,
   error?: string,
+  isEditing?: boolean
 };
 
 export type QueryGroupType = {
