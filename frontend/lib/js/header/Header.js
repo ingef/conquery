@@ -13,7 +13,7 @@ class Header extends React.Component {
     return (
       <header className="header">
         <div
-          className="header__logo"t
+          className="header__logo"
           title={'Conquery ' + this.props.version}
         />
         <span className="header__spacer" />
