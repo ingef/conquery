@@ -78,8 +78,6 @@ const filterItem = (item: ElementType) => {
     id: item.id,
     label: item.label,
     description: item.description,
-    tree: item.tree,
-    nodes: item.nodes,
     tables: item.tables,
     additionalInfos: item.additionalInfos,
     matchingEntries: item.matchingEntries,

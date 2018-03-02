@@ -30,7 +30,6 @@ const mapStateToProps = (state) => {
     editorState: state.queryNodeEditor,
     showTables,
     isExcludeTimestampsPossible: true,
-    // TODO: Suggestions
   };
 }
 
