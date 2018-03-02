@@ -48,6 +48,8 @@ datasetSelector:
   error: "Could not load data sets"
 
 queryNodeEditor:
+  conceptNode: "Concept Node"
+  conceptNodeTables: "Input Tables"
   resetAll: "Reset all"
   explanation: "Configure Input Tables"
   excludeTimestamps: "Exclude from time calculation"

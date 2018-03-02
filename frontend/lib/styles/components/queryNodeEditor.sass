@@ -1,30 +1,82 @@
 .query-node-editor
+  padding: 20px 0 10px
+  width: 800px
+  height: 600px
 
-  &__headline
-    margin: 10px
-    text-align: center
+  display: flex
 
-  &__description
-    margin: 10px 10px 20px
+  &__column
+    height: 100%
+    border: 1px solid $col-gray-light
+    border-right: none
+    display: flex
+    flex-direction: column
 
-  &__explanation
-    margin: 10px
-    font-size: $font-sm
+  &__column:last-child
+    height: 100%
+    border-right: 1px solid $col-gray-light
+
+  &__fixed_column
+    flex-basis: 225px
+
+  &__large_column
+    flex: 1
+
+  &__column_content
+    flex: 1
+    overflow-y: auto
+    padding: 10px
+
+  &__row
+    margin-bottom: 10px
+
+  &__category_header
+    padding-left: 10px
+    line-height: 32px
+    font-size: $font-xs
     text-transform: uppercase
     font-weight: 700
+    color: $col-black
 
-  &__reset-all
-    padding: 8px 12px
-    font-size: $font-sm
-    cursor: pointer
-    color: $col-blue-gray-dark
+  &__category_element
+    font-size: $font-md
     font-weight: 700
+    color: $col-black
+    width: 100%
+    text-align: left
 
-  &__tables
-    text-align: center
+  &__category_element_active
+    background: $col-blue-gray-light
 
-  &__toggle-timestamps
-    margin-left: 5px
+    &:hover
+      background: $col-blue-gray-light
+
+  &__exclude_icon
+    margin-right: 10px
+
+    &:hover
+      color: $col-blue-gray-light
+
+  &__category_element_active > &__exclude_icon:hover
+    color: $col-gray-very-light
+
+  &__exclude_icon_disabled
+    margin-right: 10px
+    color: $col-black
+    cursor: not-allowed
+
+  &__description
+    font-size: $font-sm
+    color: $col-black
+
+  h4
+    margin: 0px 4px
+    padding: 0px 10px
+    border-bottom: 1px solid $col-gray-light
+    line-height: 37px
+    font-size: $font-md
+    font-weight: 700
+    color: $col-black
 
   .input--value-changed
     .Select

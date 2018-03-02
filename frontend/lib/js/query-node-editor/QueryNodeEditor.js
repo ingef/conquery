@@ -1,18 +1,27 @@
 // @flow
 
-import React                from 'react';
-import type { Dispatch }    from 'redux-thunk';
-import { connect }          from 'react-redux';
-import T                    from 'i18n-react';
-import classnames           from 'classnames';
+import React                 from 'react';
+import type { Dispatch }     from 'redux-thunk';
+import { connect }           from 'react-redux';
+import T                     from 'i18n-react';
+import classnames            from 'classnames';
 
-import { Modal }            from '../modal';
-import ParameterTable       from './ParameterTable';
+import { EditableText }      from '../form-components';
+import { ScrollableList }    from '../scrollable-list';
+import { Modal }             from '../modal';
+import { isEmpty }           from '../common/helpers';
+import ParameterTableFilters from './ParameterTableFilters';
 
-// import { createQueryNodeEditorActions } from './actions';
+import { createQueryNodeEditorActions } from './actions';
 
 type QueryNodeEditorState = {
-  // In the future: define QueryNodeEditor-internal state here
+  detailsViewActive: boolean,
+  selectedInputTableIdx: number,
+  selectedInput: number,
+  editingName: boolean,
+  onSelectDetailsView: Function,
+  onSelectInputTableView: Function,
+  onShowDescription: Function,
 }
 
 export type PropsType = {
@@ -33,106 +42,234 @@ export type PropsType = {
 };
 
 const QueryNodeEditor = (props: PropsType) => {
-  const {
-    node,
-    // In the future: use QueryNodeEditor-internal state from here
-    // editorState
-  } = props;
+  const { node, editorState } = props;
 
   if (!node) return null;
+
+  const selectedTable = editorState.selectedInputTableIdx != null ? node.tables[editorState.selectedInputTableIdx] : null;
+  const onlyOneTableIncluded = node.tables.filter(table => !table.exclude).length === 1;
+  const allowToggleTables = node.tables.map(table => table.exclude || !onlyOneTableIncluded);
 
   return (
     <Modal closeModal={props.onCloseModal} doneButton>
       <div className="query-node-editor">
-        <h3 className="query-node-editor__headline">{node.label}</h3>
-        {
-          node.description &&
-          <p className="query-node-editor__description">{node.description}</p>
-        }
-        <p className="query-node-editor__explanation">
-          { T.translate('queryNodeEditor.explanation') }
-          {
-            node.hasActiveFilters &&
-            <span
-              className="query-node-editor__reset-all"
-              onClick={props.onResetAllFilters}
-            >
-              <i className="fa fa-undo" /> {T.translate('queryNodeEditor.resetAll')}
-            </span>
-          }
-        </p>
-        {
-          props.isExcludeTimestampsPossible &&
+        <div className="query-node-editor__fixed_column query-node-editor__column">
+          <div className="query-node-editor__category_header">
+            {T.translate('queryNodeEditor.conceptNode')}
+          </div>
           <button
-            type="button"
-            className="query-node-editor__toggle-timestamps btn btn--header-transparent"
-            onClick={() => props.onToggleTimestamps(!node.excludeTimestamps)}
+            className={classnames(
+              'query-node-editor__category_element',
+              'btn', 'btn--header-transparent',
+              {'query-node-editor__category_element_active': editorState.detailsViewActive})}
+            onClick={editorState.onSelectDetailsView}
           >
-            <i className={classnames(
-              'parameter-table__exclude-icon',
-              'fa',
-              {
-                'fa-square-o': !node.excludeTimestamps,
-                'fa-check-square-o': node.excludeTimestamps
-              }
-            )} /> {T.translate('queryNodeEditor.excludeTimestamps')}
+            {node.label}
           </button>
-        }
-        <div className="query-node-editor__tables">
           {
-            props.showTables && node.tables.map((table, tableIdx) => (
-              <ParameterTable
-                table={table}
-                key={tableIdx}
-                allowToggleTable={node.tables.length > 1}
-                onToggleTable={() => props.onToggleTable(
-                  tableIdx,
-                  !table.exclude
-                )}
+            props.showTables &&
+              <div>
+                <div className="query-node-editor__category_header">
+                  {T.translate('queryNodeEditor.conceptNodeTables')}
+                </div>
+                { node.tables.map((table, tableIdx) => (
+                    <button
+                      key={tableIdx}
+                      className={classnames(
+                        'query-node-editor__category_element',
+                        'btn',
+                        'btn--header-transparent',
+                        {
+                          'query-node-editor__category_element_active':
+                            editorState.selectedInputTableIdx === tableIdx && !editorState.detailsViewActive
+                        }
+                      )}
+                      onClick={() => editorState.onSelectInputTableView(tableIdx)}
+                      >
+                      <i
+                        className={classnames(
+                          'fa', {
+                            'fa-square-o': !!table.exclude,
+                            'fa-check-square-o': !table.exclude,
+                            'query-node-editor__exclude_icon': allowToggleTables[tableIdx],
+                            'query-node-editor__exclude_icon_disabled': !allowToggleTables[tableIdx],
+                          }
+                        )}
+                        onClick={event => {
+                          event.stopPropagation();
+                          if (allowToggleTables[tableIdx])
+                            props.onToggleTable(tableIdx, !table.exclude);
+                        }}
+                      />
+                      {table.label}
+                    </button>
+                  ))
+                }
+              </div>
+          }
+        </div>
+
+        {
+          editorState.detailsViewActive &&
+          <div className="query-node-editor__large_column query-node-editor__column">
+            <h4>Details</h4>
+            <div className="query-node-editor__column_content">
+              <div className="query-node-editor__row">
+                <label className={classnames('input')}>
+                  <span className={classnames("input-label")}>
+                    {"Name"}
+                  </span>
+                  <EditableText
+                    loading={false}
+                    text={node.label}
+                    selectTextOnMount={true}
+                    editing={editorState.editingName}
+                    onSubmit={editorState.onChangeName}
+                    onToggleEdit={editorState.onToggleEditName}
+                  />
+                </label>
+              </div>
+              {
+                props.isExcludeTimestampsPossible &&
+                  <div className="query-node-editor__row">
+                    <button
+                      type="button"
+                      className="query-node-editor__toggle-timestamps btn btn--header-transparent"
+                      onClick={() => props.onToggleTimestamps(!node.excludeTimestamps)}
+                    >
+                      <i className={classnames(
+                        'parameter-table__exclude-icon',
+                        'fa',
+                        {
+                          'fa-square-o': !node.excludeTimestamps,
+                          'fa-check-square-o': node.excludeTimestamps
+                        }
+                      )} /> {T.translate('queryNodeEditor.excludeTimestamps')}
+                    </button>
+                  </div>
+              }
+              <div className="query-node-editor__row">
+                <label className={classnames('input')}>
+                  <span className={classnames("input-label")}>
+                    {"Konzeptbaum"}
+                  </span>
+                  <ScrollableList items={[node.tree.label]} />
+                </label>
+              </div>
+              <div className="query-node-editor__row">
+                <label className={classnames('input')}>
+                  <span className={classnames("input-label")}>
+                    {"Konzeptcodes"}
+                  </span>
+                  <ScrollableList items={node.concepts.map(x => x.description ? `${x.label - x.description}` : x.label)} />
+                </label>
+              </div>
+            </div>
+          </div>
+        }
+        {
+          !editorState.detailsViewActive && selectedTable != null &&
+          <div className="query-node-editor__large_column query-node-editor__column">
+            <h4>Filter</h4>
+            <div className="query-node-editor__column_content">
+              <ParameterTableFilters
+                key={editorState.selectedInputTableIdx}
+                filters={selectedTable.filters}
                 onSetFilterValue={(filterIdx, value) => props.onSetFilterValue(
-                  tableIdx,
+                  editorState.selectedInputTableIdx,
                   filterIdx,
                   value
                 )}
                 onSwitchFilterMode={(filterIdx, mode) => props.onSwitchFilterMode(
-                  tableIdx,
+                  editorState.selectedInputTableIdx,
                   filterIdx,
                   mode
                 )}
                 onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
                   props.onLoadFilterSuggestions(
                     props.datasetId,
-                    tableIdx,
-                    node.tables[tableIdx].id,
+                    editorState.selectedInputTableIdx,
+                    selectedTable.id,
                     node.id,
                     filterIdx,
                     filterId,
                     prefix
                 )}
-                suggestions={props.suggestions && props.suggestions[tableIdx]}
+                suggestions={props.suggestions && props.suggestions[editorState.selectedInputTableIdx]}
+                onShowDescription={editorState.onShowDescription}
               />
-            ))
-          }
-        </div>
+            </div>
+          </div>
+        }
+        {
+          !editorState.detailsViewActive &&
+          <div className="query-node-editor__fixed_column query-node-editor__column">
+            <h4>Description</h4>
+            <div className="query-node-editor__column_content">
+              <div className="query-node-editor__description">
+                { selectedTable != null &&
+                  editorState.selectedInput != null &&
+                  !isEmpty(selectedTable.filters[editorState.selectedInput].description) &&
+
+                  <span>{selectedTable.filters[editorState.selectedInput].description}</span>
+                }
+                { selectedTable !== null && editorState.selectedInput !== null && isEmpty(selectedTable.filters[editorState.selectedInput].description) &&
+                  <span>No description provided.</span>
+                }
+                { editorState.selectedInput === null &&
+                  <span>Select a filter to see its description here.</span>
+                }
+              </div>
+            </div>
+          </div>
+        }
       </div>
     </Modal>
   );
 };
 
 export const createConnectedQueryNodeEditor = (
-  type: string, mapStateToProps: Function,
+  type: string,
+  mapStateToProps: Function,
   mapDispatchToProps: Function,
   mergeProps: Function
 ) => {
-  // In the future: import QueryNodeEditor-internal actions here
-  // const { } = createQueryNodeEditorActions(type);
+  const {
+    setDetailsViewActive,
+    toggleEditName,
+    setInputTableViewActive,
+    setFocusedInput,
+  } = createQueryNodeEditorActions(type);
 
-  function mapDispatchToPropsInternal(dispatch: Dispatch, ownProps) {
+  const mapDispatchToPropsInternal = (dispatch: Dispatch, ownProps) => {
+    const externalDispatchProps = (mapDispatchToProps ? mapDispatchToProps(dispatch, ownProps) : {});
+
     return {
-      ...(mapDispatchToProps ? mapDispatchToProps(dispatch, ownProps) : {})
-      // In the future: dispatch QueryNodeEditor-internal actions here
+      ...externalDispatchProps,
+      editorState: {
+        ...(externalDispatchProps.editorState || {}),
+        onSelectDetailsView: () => dispatch(setDetailsViewActive()),
+        onToggleEditName: () => dispatch(toggleEditName()),
+        onChangeName: () => {}, // TODO: Define as external
+        onSelectInputTableView: (tableIdx) => dispatch(setInputTableViewActive(tableIdx)),
+        onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
+      }
     };
   }
 
-  return connect(mapStateToProps, mapDispatchToPropsInternal, mergeProps)(QueryNodeEditor);
+  const mergePropsInternal = (stateProps, dispatchProps, ownProps) => {
+    const externalMergedProps = mergeProps
+      ? mergeProps(stateProps, dispatchProps, ownProps)
+      : { ...ownProps, ...stateProps, ...dispatchProps };
+
+    return {
+      ...externalMergedProps,
+      editorState: {
+        ...(stateProps.editorState || {}),
+        ...(dispatchProps.editorState || {}),
+      }
+    };
+  };
+
+  return connect(mapStateToProps, mapDispatchToPropsInternal, mergePropsInternal)(QueryNodeEditor);
 };
