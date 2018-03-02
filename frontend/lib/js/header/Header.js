@@ -18,7 +18,12 @@ class Header extends React.Component {
         />
         <span className="header__spacer" />
         <h1 className="header__headline">{T.translate('headline')}</h1>
-        {this.props.isDevelopment && <h1 className="header__version">{this.props.version}</h1>}
+        {
+          this.props.isDevelopment &&
+          <h1 title={'Conquery ' + this.props.version} className="header__version">
+            {this.props.version}
+          </h1>
+        }
       </header>
     );
   }
