@@ -1,5 +1,5 @@
 {
-  "name": "@bakdata/conquery",
+  "name": "conquery",
   "version": "1.7.0",
   "description": "conquery",
   "main": "dist/js/index.js",
