@@ -26,13 +26,17 @@ import {
   selectReduxFormState
 } from '../../../../../lib/js/external-forms/stateSelectors';
 
+import type {
+  ExternalFormPropsType
+} from '../../../../../lib/js/external-forms/types';
+
 import { type } from './formType';
 
 type PropsType = {
   onSubmit: Function,
 };
 
-const ExampleForm = (props: PropsType) => {
+const ExampleForm = (props: ExternalFormPropsType | PropsType) => {
   return (
     <form className="example-form">
       <h3>{T.translate('externalForms.exampleForm.headline')}</h3>
@@ -60,7 +64,7 @@ const ExampleForm = (props: PropsType) => {
           label: T.translate('externalForms.exampleForm.exampleConcepts'),
           conceptDropzoneText: T.translate('externalForms.exampleForm.exampleConceptDropzone'),
           attributeDropzoneText: T.translate('externalForms.exampleForm.exampleAttributeDropzone'),
-          datasetId: 'imdb',
+          datasetId: props.selectedDatasetId,
           formType: type,
           newValue: { concepts: [] }
         }}
