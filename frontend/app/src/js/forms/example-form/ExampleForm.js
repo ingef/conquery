@@ -11,6 +11,14 @@ import {
 } from '../../../../../lib/js/form-components';
 
 import {
+  FormQueryDropzone
+} from '../../../../../lib/js/external-forms/form-query-dropzone';
+
+import {
+  FormConceptGroup
+} from '../../../../../lib/js/external-forms/form-concept-group';
+
+import {
   validateRequired
 } from '../../../../../lib/js/external-forms/validators';
 
@@ -36,6 +44,27 @@ const ExampleForm = (props: PropsType) => {
           label: T.translate('common.title'),
         }}
       />
+      <Field
+        name="example_query"
+        component={FormQueryDropzone}
+        props={{
+          label: T.translate('externalForms.exampleForm.exampleQuery'),
+          dropzoneText: T.translate('externalForms.exampleForm.exampleQueryDropzone'),
+        }}
+      />
+      <Field
+        name="example_concepts"
+        component={FormConceptGroup}
+        props={{
+          name: 'example_concepts',
+          label: T.translate('externalForms.exampleForm.exampleConcepts'),
+          conceptDropzoneText: T.translate('externalForms.exampleForm.exampleConceptDropzone'),
+          attributeDropzoneText: T.translate('externalForms.exampleForm.exampleAttributeDropzone'),
+          datasetId: 'imdb',
+          formType: type,
+          newValue: { concepts: [] }
+        }}
+      />
     </form>
   );
 };
@@ -45,6 +74,8 @@ export default reduxForm({
   getFormState: selectReduxFormState,
   initialValues: {
     text: '',
+    example_query: null,
+    example_concepts: []
   },
   validate: (values) => ({
     text: validateRequired(values.text),
