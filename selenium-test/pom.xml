@@ -8,9 +8,9 @@
     
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bakdata.conquery</groupId>
-    <artifactId>tests</artifactId>
+    <artifactId>selenium-test</artifactId>
     
-    <name>Conquery Tests</name>
+    <name>Conquery Selenium Test</name>
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -31,7 +31,7 @@
         </dependency>
     </dependencies>
     <build>
-        <finalName>conquery-tests</finalName>
+        <finalName>conquery-selenium-tests</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
