@@ -17,7 +17,7 @@
     
     <modules>
         <module>frontend</module>
-        <module>tests</module>
+        <module>selenium-test</module>
     </modules>
     
     <build>
