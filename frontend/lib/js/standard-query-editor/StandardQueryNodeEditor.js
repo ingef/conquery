@@ -4,6 +4,7 @@ import { createConnectedQueryNodeEditor } from '../query-node-editor';
 
 import {
   deselectNode,
+  updateNodeLabel,
   toggleTable,
   setFilterValue,
   switchFilterMode,
@@ -35,6 +36,7 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => ({
   onCloseModal: () => dispatch(deselectNode()),
+  onUpdateLabel: (label) => dispatch(updateNodeLabel(label)),
   onToggleTable: (tableIdx, isExcluded) =>
     dispatch(toggleTable(
       tableIdx,

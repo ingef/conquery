@@ -18,10 +18,11 @@ type QueryNodeEditorState = {
   detailsViewActive: boolean,
   selectedInputTableIdx: number,
   selectedInput: number,
-  editingName: boolean,
+  editingLabel: boolean,
   onSelectDetailsView: Function,
   onSelectInputTableView: Function,
   onShowDescription: Function,
+  onToggleEditLabel: Function,
 }
 
 export type PropsType = {
@@ -31,6 +32,7 @@ export type PropsType = {
   showTables: boolean,
   isExcludeTimestampsPossible: boolean,
   onCloseModal: Function,
+  onUpdateLabel: Function,
   onToggleTable: Function,
   onSetFilterValue: Function,
   onResetAllFilters: Function,
@@ -123,9 +125,9 @@ const QueryNodeEditor = (props: PropsType) => {
                     loading={false}
                     text={node.label}
                     selectTextOnMount={true}
-                    editing={editorState.editingName}
-                    onSubmit={editorState.onChangeName}
-                    onToggleEdit={editorState.onToggleEditName}
+                    editing={editorState.editingLabel}
+                    onSubmit={(value) => { props.onUpdateLabel(value); editorState.onToggleEditLabel(); }}
+                    onToggleEdit={editorState.onToggleEditLabel}
                   />
                 </label>
               </div>
@@ -213,10 +215,12 @@ const QueryNodeEditor = (props: PropsType) => {
 
                   <span>{selectedTable.filters[editorState.selectedInput].description}</span>
                 }
-                { selectedTable !== null && editorState.selectedInput !== null && isEmpty(selectedTable.filters[editorState.selectedInput].description) &&
+                { selectedTable != null &&
+                  editorState.selectedInput != null &&
+                  isEmpty(selectedTable.filters[editorState.selectedInput].description) &&
                   <span>No description provided.</span>
                 }
-                { editorState.selectedInput === null &&
+                { editorState.selectedInput == null &&
                   <span>Select a filter to see its description here.</span>
                 }
               </div>
@@ -236,7 +240,7 @@ export const createConnectedQueryNodeEditor = (
 ) => {
   const {
     setDetailsViewActive,
-    toggleEditName,
+    toggleEditLabel,
     setInputTableViewActive,
     setFocusedInput,
   } = createQueryNodeEditorActions(type);
@@ -249,8 +253,7 @@ export const createConnectedQueryNodeEditor = (
       editorState: {
         ...(externalDispatchProps.editorState || {}),
         onSelectDetailsView: () => dispatch(setDetailsViewActive()),
-        onToggleEditName: () => dispatch(toggleEditName()),
-        onChangeName: () => {}, // TODO: Define as external
+        onToggleEditLabel: () => dispatch(toggleEditLabel()),
         onSelectInputTableView: (tableIdx) => dispatch(setInputTableViewActive(tableIdx)),
         onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
       }

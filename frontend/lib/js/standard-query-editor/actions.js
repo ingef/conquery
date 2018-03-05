@@ -33,6 +33,7 @@ import {
   EXPAND_PREVIOUS_QUERY,
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
+  UPDATE_NODE_LABEL,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
   RESET_ALL_FILTERS,
@@ -150,6 +151,8 @@ export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
 });
 
 export const deselectNode = () => ({ type: DESELECT_NODE });
+
+export const updateNodeLabel = (label) => ({ type: UPDATE_NODE_LABEL, label });
 
 export const toggleTable = (tableIdx, isExcluded) => ({
   type: TOGGLE_TABLE,

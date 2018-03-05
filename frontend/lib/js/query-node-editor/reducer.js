@@ -5,14 +5,14 @@ export const createQueryNodeEditorReducer = (type: string) => {
     detailsViewActive: true,
     selectedInputTableIdx: 0,
     selectedInput: null,
-    editingName: false
+    editingLabel: false
    };
 
   const {
     SET_DETAILS_VIEW_ACTIVE,
     SET_INPUT_TABLE_VIEW_ACTIVE,
     SET_FOCUSED_INPUT,
-    TOGGLE_EDIT_NAME,
+    TOGGLE_EDIT_LABEL,
   } = createActionTypes(type);
 
   return (state = initialState, action) => {
@@ -34,10 +34,10 @@ export const createQueryNodeEditorReducer = (type: string) => {
           ...state,
           selectedInput: action.filterIdx
         }
-      case TOGGLE_EDIT_NAME:
+      case TOGGLE_EDIT_LABEL:
         return {
           ...state,
-          editingName: !state.editingName
+          editingLabel: !state.editingLabel
         };
       default:
         return state;

@@ -15,6 +15,7 @@ export const CLEAR_QUERY = "query-editor/CLEAR_QUERY";
 
 export const SELECT_NODE_FOR_EDITING = "query-editor/SELECT_NODE_FOR_EDITING";
 export const DESELECT_NODE = "query-editor/DESELECT_NODE";
+export const UPDATE_NODE_LABEL = "query-editor/UPDATE_NODE_LABEL";
 export const TOGGLE_TABLE =  "query-editor/TOGGLE_TABLE";
 export const SET_FILTER_VALUE =  "query-editor/SET_FILTER_VALUE";
 export const RESET_ALL_FILTERS =  "query-editor/RESET_ALL_FILTERS";
