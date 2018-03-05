@@ -53,7 +53,6 @@ queryNodeEditor:
   conceptNodes: "Concept Nodes"
   conceptNodeTables: "Input Tables"
   resetAll: "Reset all"
-  explanation: "Configure Input Tables"
   excludeTimestamps: "Exclude from time calculation"
   description: "Description"
   noDescriptionProvided: "No description provided."

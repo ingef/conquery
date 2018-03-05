@@ -36,6 +36,8 @@
 
   &__large_column
     flex: 1
+    min-width: 225px
+    overflow: auto
 
   &__column_content
     flex: 1
@@ -59,15 +61,39 @@
     color: $col-black
     width: 100%
     text-align: left
-    text-overflow: ellipsis
-    white-space: nowrap
-    overflow: hidden
+    display: inline-flex
+    flex-direction: row
+
+    > span
+      flex: 1
+      flex-shrink: 1
+      display: block
+      overflow: hidden
+      white-space: nowrap
+      text-overflow: ellipsis
+
+    > *
+      line-height: 21px
 
   &__category_element_active
     background: $col-blue-gray-light
 
     &:hover
       background: $col-blue-gray-light
+
+  &__category_action
+    line-height: 32px
+    font-size: $font-xs
+    font-weight: 700
+    text-transform: uppercase
+
+    i
+      padding-left: 15px
+      padding-right: 5px
+
+  &__reset-all
+    cursor: pointer
+    color: $col-blue-gray-dark
 
   &__exclude_icon
     margin-right: 10px
@@ -82,6 +108,13 @@
     margin-right: 10px
     color: $col-black
     cursor: not-allowed
+
+  &__filter_icon
+    margin-left: 10px
+    color: $col-blue-gray-light
+
+  &__category_element_active > &__filter_icon
+    color: $col-black
 
   &__description
     font-size: $font-sm
@@ -98,6 +131,8 @@
     > p
       margin: 0
       line-height: inherit
+    button
+      line-height: normal // Special care for IE
 
   .input--value-changed
     .Select

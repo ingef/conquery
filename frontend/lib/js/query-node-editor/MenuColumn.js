@@ -1,10 +1,12 @@
 // @flow
 
-import React              from 'react';
-import T                  from 'i18n-react';
-import classnames         from 'classnames';
+import React                     from 'react';
+import T                         from 'i18n-react';
+import classnames                from 'classnames';
 
-import type { PropsType } from './QueryNodeEditor';
+import { tableHasActiveFilters } from '../model/table';
+
+import type { PropsType }        from './QueryNodeEditor';
 
 export const MenuColumn = (props: PropsType) => {
   const { node, editorState } = props;
@@ -33,7 +35,7 @@ export const MenuColumn = (props: PropsType) => {
             {T.translate('queryNodeEditor.conceptNodeTables')}
           </div>
           {node.tables.map((table, tableIdx) => (
-            <button
+            <div
               key={tableIdx}
               className={classnames(
                 'query-node-editor__category_element',
@@ -44,7 +46,7 @@ export const MenuColumn = (props: PropsType) => {
                     editorState.selectedInputTableIdx === tableIdx && !editorState.detailsViewActive
                 }
               )}
-              onClick={(e) => { e.preventDefault(); editorState.onSelectInputTableView(tableIdx); }}
+              onClick={() => { editorState.onSelectInputTableView(tableIdx); }}
             >
               <i
                 className={classnames(
@@ -61,9 +63,24 @@ export const MenuColumn = (props: PropsType) => {
                     props.onToggleTable(tableIdx, !table.exclude);
                 }}
               />
-              {table.label}
-            </button>
+              <span>{table.label}</span>
+              {
+                tableHasActiveFilters(table) &&
+                <i className="fa fa-filter query-node-editor__filter_icon" />
+              }
+            </div>
           ))
+          }
+          {
+            node.hasActiveFilters &&
+            <div className="query-node-editor__category_action">
+              <span
+                className="query-node-editor__reset-all"
+                onClick={() => props.onResetAllFilters()}
+              >
+                <i className="fa fa-undo" /> {T.translate('queryNodeEditor.resetAll')}
+              </span>
+            </div>
           }
         </div>
       }

@@ -53,7 +53,6 @@ queryNodeEditor:
   conceptNodes: "Konzeptknoten"
   conceptNodeTables: "Anfragetabellen"
   resetAll: "Alle zurücksetzen"
-  explanation: "Anfragetabellen konfigurieren"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
   description: "Beschreibung"
   noDescriptionProvided: "Keine Beschreibung verfügbar."
