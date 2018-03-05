@@ -256,6 +256,11 @@ export const FormConceptGroup = (props: PropsType) => {
             setConceptProperties(props.input.value, valueIdx, conceptIdx, { isEditing: false })
           )
         }
+        onUpdateLabel={(valueIdx, conceptIdx, label) =>
+          props.input.onChange(
+            setConceptProperties(props.input.value, valueIdx, conceptIdx, { label })
+          )
+        }
         onToggleTable={(valueIdx, conceptIdx, tableIdx, isExcluded) =>
           props.input.onChange(
             toggleTable(props.input.value, valueIdx, conceptIdx, tableIdx, isExcluded)

@@ -22,7 +22,7 @@ export const MenuColumn = (props: PropsType) => {
           'query-node-editor__category_element',
           'btn', 'btn--header-transparent',
           { 'query-node-editor__category_element_active': editorState.detailsViewActive })}
-        onClick={editorState.onSelectDetailsView}
+        onClick={(e) => { e.preventDefault(); editorState.onSelectDetailsView() }}
       >
         {node.label}
       </button>
@@ -44,7 +44,7 @@ export const MenuColumn = (props: PropsType) => {
                     editorState.selectedInputTableIdx === tableIdx && !editorState.detailsViewActive
                 }
               )}
-              onClick={() => editorState.onSelectInputTableView(tableIdx)}
+              onClick={(e) => { e.preventDefault(); editorState.onSelectInputTableView(tableIdx); }}
             >
               <i
                 className={classnames(

@@ -23,6 +23,7 @@ export type PropsType = {
   suggestions: ?Object,
   datasetId: number,
   onCloseModal: Function,
+  onUpdateLabel: Function,
   onToggleTable: Function,
   onSetFilterValue: Function,
   onSwitchFilterMode: Function,
@@ -65,6 +66,7 @@ export const createConnectedFormQueryNodeEditor = (formType: string, fieldName: 
 
       onToggleTimestamps: () => {},
       onCloseModal: () => ownProps.onCloseModal(andIdx, orIdx),
+      onUpdateLabel: (label) => ownProps.onUpdateLabel(andIdx, orIdx, label),
       onToggleTable: (...props) => ownProps.onToggleTable(andIdx, orIdx, ...props),
       onSetFilterValue: (...props) => ownProps.onSetFilterValue(andIdx, orIdx, ...props),
       onSwitchFilterMode: (...props) => ownProps.onSwitchFilterMode(andIdx, orIdx, ...props),
