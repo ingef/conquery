@@ -1,15 +1,14 @@
 // @flow
 
-import React                 from 'react';
-import type { Dispatch }     from 'redux-thunk';
-import { connect }           from 'react-redux';
+import React                            from 'react';
+import type { Dispatch }                from 'redux-thunk';
+import { connect }                      from 'react-redux';
+import T                                from 'i18n-react';
 
-import { Modal }             from '../modal';
-
-import { MenuColumn }        from './MenuColumn';
-import { NodeDetailsView }   from './NodeDetailsView';
-import { TableFilterView }   from './TableFilterView';
-import { DescriptionColumn } from './DescriptionColumn';
+import { MenuColumn }                   from './MenuColumn';
+import { NodeDetailsView }              from './NodeDetailsView';
+import { TableFilterView }              from './TableFilterView';
+import { DescriptionColumn }            from './DescriptionColumn';
 
 import { createQueryNodeEditorActions } from './actions';
 
@@ -52,10 +51,9 @@ const QueryNodeEditor = (props: PropsType) => {
     : null;
 
   return (
-    <Modal closeModal={props.onCloseModal} doneButton>
       <div className="query-node-editor">
-        <MenuColumn {...props} />
-        <div className="query-node-editor__large_column query-node-editor__column">
+        <div className="query-node-editor__wrapper">
+          <MenuColumn {...props} />
           {
             editorState.detailsViewActive &&
             <NodeDetailsView {...props} />
@@ -64,13 +62,19 @@ const QueryNodeEditor = (props: PropsType) => {
             !editorState.detailsViewActive && selectedTable != null &&
             <TableFilterView {...props} />
           }
+          {
+            !editorState.detailsViewActive &&
+            <DescriptionColumn {...props} />
+          }
+          <button
+            type="button"
+            className="query-node-editor__close-button btn btn--transparent btn--small"
+            onClick={props.onCloseModal}
+          >
+            { T.translate('common.done') }
+          </button>
         </div>
-        {
-          !editorState.detailsViewActive &&
-          <DescriptionColumn {...props} />
-        }
       </div>
-    </Modal>
   );
 };
 

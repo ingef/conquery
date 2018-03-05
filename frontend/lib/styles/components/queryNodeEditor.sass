@@ -1,20 +1,33 @@
 .query-node-editor
-  padding: 20px 0 10px
-  width: 800px
-  height: 600px
-
+  padding: 0 10px
+  left: 0
+  top: 0
+  right: 0
+  bottom: 0
+  position: absolute
   display: flex
+  background: rgb(249, 249, 249)
+  z-index: 1
+
+  &__wrapper
+    border: 1px solid $col-blue-gray-dark
+    display: flex
+    width: 100%
+    height: 100%
+
+  &__close-button
+    border: 1px solid $col-blue-gray-dark
+    position: absolute
+    bottom: 10px
+    right: 20px
 
   &__column
     height: 100%
-    border: 1px solid $col-gray-light
-    border-right: none
     display: flex
     flex-direction: column
 
-  &__column:last-child
-    height: 100%
-    border-right: 1px solid $col-gray-light
+  &__column + &__column
+    border-left: 1px solid $col-gray-light
 
   &__fixed_column
     flex-basis: 225px

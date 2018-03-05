@@ -11,7 +11,7 @@ export const TableFilterView = (props: PropsType) => {
   const selectedTable = node.tables[editorState.selectedInputTableIdx];
 
   return (
-    <div>
+    <div className="query-node-editor__large_column query-node-editor__column">
       <h4>Filter</h4>
       <div className="query-node-editor__column_content">
         <ParameterTableFilters

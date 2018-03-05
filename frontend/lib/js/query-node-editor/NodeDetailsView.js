@@ -13,7 +13,7 @@ export const NodeDetailsView = (props: PropsType) => {
   const { node, editorState } = props;
 
   return (
-    <div>
+    <div className="query-node-editor__large_column query-node-editor__column">
       <h4>
         <EditableText
           loading={false}

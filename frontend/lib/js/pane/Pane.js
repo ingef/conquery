@@ -13,7 +13,9 @@ const Pane = (props: PropsType) => {
     <div className={`pane pane--${props.type}`}>
       <div className="pane__container">
         <PaneTabNavigation paneType={props.type} />
-        { props.children }
+        <div className="pane__body">
+          { props.children }
+        </div>
       </div>
     </div>
   );
