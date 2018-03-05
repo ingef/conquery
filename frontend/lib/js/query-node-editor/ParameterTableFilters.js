@@ -152,7 +152,7 @@ const ParameterTableFilters = (props: PropsType) => (
           .map((input, filterIdx) => (
             <div
               key={filterIdx}
-              className="query-node-modal__row"
+              className="query-node-editor__row"
               onFocusCapture={() => props.onShowDescription(filterIdx)}
             >
               {input}
