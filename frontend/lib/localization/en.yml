@@ -48,11 +48,16 @@ datasetSelector:
   error: "Could not load data sets"
 
 queryNodeEditor:
-  conceptNode: "Concept Node"
+  conceptTree: "Concept Tree"
+  queryNode: "Query Node"
+  conceptNodes: "Concept Nodes"
   conceptNodeTables: "Input Tables"
   resetAll: "Reset all"
   explanation: "Configure Input Tables"
   excludeTimestamps: "Exclude from time calculation"
+  description: "Description"
+  noDescriptionProvided: "No description provided."
+  selectAFilter: "Select a filter to see its description here."
 
 queryGroupModal:
   explanation: "Set time frame"

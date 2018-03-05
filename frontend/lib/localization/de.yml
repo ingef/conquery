@@ -48,9 +48,16 @@ datasetSelector:
   error: "Konnte Datenbanken nicht laden"
 
 queryNodeEditor:
+  conceptTree: "Konzeptbaum"
+  queryNode: "Abfrageknoten"
+  conceptNodes: "Konzeptknoten"
+  conceptNodeTables: "Anfragetabellen"
   resetAll: "Alle zurücksetzen"
   explanation: "Anfragetabellen konfigurieren"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
+  description: "Beschreibung"
+  noDescriptionProvided: "Keine Beschreibung verfügbar."
+  selectAFilter: "Kein Filter ausgewählt."
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
