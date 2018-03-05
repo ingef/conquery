@@ -21,6 +21,7 @@ type QueryNodeEditorState = {
   onSelectInputTableView: Function,
   onShowDescription: Function,
   onToggleEditLabel: Function,
+  onReset: Function,
 }
 
 export type PropsType = {
@@ -69,7 +70,7 @@ const QueryNodeEditor = (props: PropsType) => {
           <button
             type="button"
             className="query-node-editor__close-button btn btn--transparent btn--small"
-            onClick={props.onCloseModal}
+            onClick={() => { editorState.onReset(); props.onCloseModal() }}
           >
             { T.translate('common.done') }
           </button>
@@ -89,6 +90,7 @@ export const createConnectedQueryNodeEditor = (
     toggleEditLabel,
     setInputTableViewActive,
     setFocusedInput,
+    reset,
   } = createQueryNodeEditorActions(type);
 
   const mapDispatchToPropsInternal = (dispatch: Dispatch, ownProps) => {
@@ -102,6 +104,7 @@ export const createConnectedQueryNodeEditor = (
         onToggleEditLabel: () => dispatch(toggleEditLabel()),
         onSelectInputTableView: (tableIdx) => dispatch(setInputTableViewActive(tableIdx)),
         onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
+        onReset: () => dispatch(reset()),
       }
     };
   }
