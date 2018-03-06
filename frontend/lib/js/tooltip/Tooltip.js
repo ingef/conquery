@@ -42,7 +42,9 @@ const Tooltip = (props: PropsType) => {
             label
           } {
             description &&
-            <span> - <Markdown source={description} /></span>
+            <span>{' - '}
+              <Markdown className="category-tree-node__text--markdown" source={description} />
+            </span>
           }
         </h3>
         {

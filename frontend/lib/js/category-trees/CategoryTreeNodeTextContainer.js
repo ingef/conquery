@@ -2,6 +2,7 @@
 
 import React                       from 'react'
 import { DragSource }              from 'react-dnd';
+import Markdown                    from 'react-markdown';
 import classnames                  from 'classnames';
 
 import { AdditionalInfoHoverable } from '../tooltip';
@@ -57,7 +58,10 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
         </span>
         {
           props.node.description &&
-          <span> - { props.node.description }</span>
+          <span> {' - '}
+            <Markdown className="category-tree-node__text--markdown"
+            source={props.node.description} />
+          </span>
         }
       </p>
     </div>

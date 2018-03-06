@@ -2,26 +2,31 @@
   "action_movies": {
     "parent": "movie_appearances",
     "label": "Action Movies",
+    "description": "[See See Top 100 on IMDb on IMDb](http://www.imdb.com/search/title?count=100&genres=action&release_date=2017,2017&title_type=feature)",
     "matchingEntries": 8234
   },
   "fantasy_movies": {
     "parent": "movie_appearances",
     "label": "Fantasy Movies",
+    "description": "[See Top 100 on IMDb](http://www.imdb.com/search/title?count=100&genres=fantasy&release_date=2017,2017&title_type=feature)",
     "matchingEntries": 9374
   },
   "comedies": {
     "parent": "movie_appearances",
     "label": "Comedies",
+    "description": "[See Top 100 on IMDb](http://www.imdb.com/search/title?count=100&genres=comedy&release_date=2017,2017&title_type=feature)",
     "matchingEntries": 2135
   },
   "horror_movies": {
     "parent": "movie_appearances",
     "label": "Horror Movies",
+    "description": "[See Top 100 on IMDb](http://www.imdb.com/search/title?count=100&genres=horror&release_date=2017,2017&title_type=feature)",
     "matchingEntries": 24093
   },
   "family_movies": {
     "parent": "movie_appearances",
     "label": "Family Movies",
+    "description": "[See Top 100 on IMDb](http://www.imdb.com/search/title?count=100&genres=family&release_date=2017,2017&title_type=feature)",
     "matchingEntries": 8431
   },
   "independent_movies": {
