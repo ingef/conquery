@@ -26,7 +26,7 @@ public class GroupEditor {
     @FindBy(xpath = XPATH_GROUP_EDITOR)
     private WebElement rootContext;
 
-    @FindBy(xpath = XPATH_GROUP_EDITOR + "//div[@class='query-runner-button']")
+    @FindBy(xpath = "//div[@class='query-runner']//button[@class='query-runner-button']")
     private WebElement button;
 
     private final WebDriver driver;

@@ -53,10 +53,10 @@ public class ConceptTree {
         String xpathNode = open 
                 ? XPATH_TREE + "//p[contains(.,'%s')]/i" 
                 : XPATH_TREE + "//p[contains(.,'%s')]";
-        WebElement node = driver.findElement(By.xpath(String.format(xpathNode, name)));
-        new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(node));
+        By xpath = By.xpath(String.format(xpathNode, name));
+        new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(xpath));
         
-        return node;
+        return driver.findElement(xpath);
     }
     
 }
