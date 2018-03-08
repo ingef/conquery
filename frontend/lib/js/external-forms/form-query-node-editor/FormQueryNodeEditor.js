@@ -5,17 +5,14 @@ import { createConnectedQueryNodeEditor }  from '../../query-node-editor';
 import {
   selectFormState,
   selectReduxFormState,
+  selectEditedConceptPosition,
+  selectEditedConcept,
+  selectSuggestions,
 }                                          from '../../external-forms/stateSelectors';
 
 import { toUpperCaseUnderscore }           from '../../common/helpers';
 
 import { createFormSuggestionActions }     from '../form-suggestions/actions';
-
-import {
-  selectEditedConceptPosition,
-  selectEditedConcept,
-  selectSuggestions,
-} from '../selectors';
 
 export type PropsType = {
   name: string,

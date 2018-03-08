@@ -5,7 +5,8 @@ import { type FieldPropsType }    from 'redux-form';
 
 import {
   resetAllFiltersInTables
-} from '../../model/table';
+}                                 from '../../model/table';
+import { nodeHasActiveFilters }   from '../../model/node';
 
 import {
   DynamicInputGroup,
@@ -15,8 +16,6 @@ import {
 import {
   CATEGORY_TREE_NODE
 }                                 from '../../common/constants/dndTypes';
-
-import { nodeHasActiveFilters }   from '../../model/node';
 
 import {
   createConnectedFormQueryNodeEditor
