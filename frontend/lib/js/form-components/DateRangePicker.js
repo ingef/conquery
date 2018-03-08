@@ -6,6 +6,8 @@ import classnames     from 'classnames';
 import DatePicker     from 'react-datepicker';
 import moment         from 'moment';
 
+import 'react-datepicker/dist/react-datepicker.css';
+
 import { type FieldPropsType } from 'redux-form';
 
 import { dateTypes }  from '../common/constants';
