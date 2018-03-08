@@ -28,7 +28,7 @@ import {
   deleteGroup,
   toggleExcludeGroup,
   expandPreviousQuery,
-  setStandardNode,
+  selectNodeForEditing,
   showConceptListDetails,
   hideConceptListDetails,
 }                                 from './actions'
@@ -53,7 +53,7 @@ type PropsType = {
   showConceptListDetails: Function,
   hideConceptListDetails: Function,
   loadPreviousQuery: Function,
-  setStandardNode: Function,
+  selectNodeForEditing: Function,
   queryGroupModalSetNode: Function,
   dateRange: Object,
   selectedConceptListDetails: Object,
@@ -85,7 +85,7 @@ const Query = (props: PropsType) => {
                 onDropFiles={item => props.dropOrConceptListFile(item, andIdx)}
                 onDeleteNode={orIdx => props.deleteNode(andIdx, orIdx)}
                 onDeleteGroup={() => props.deleteGroup(andIdx)}
-                onFilterClick={orIdx => props.setStandardNode(andIdx, orIdx)}
+                onFilterClick={orIdx => props.selectNodeForEditing(andIdx, orIdx)}
                 onExpandClick={props.expandPreviousQuery}
                 onDetailsClick={props.showConceptListDetails}
                 onExcludeClick={() => props.toggleExcludeGroup(andIdx)}
@@ -146,8 +146,8 @@ function mapDispatchToProps(dispatch: Dispatch<*>) {
     deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
     deleteGroup: (andIdx) => dispatch(deleteGroup(andIdx)),
     toggleExcludeGroup: (andIdx) => dispatch(toggleExcludeGroup(andIdx)),
-    setStandardNode: (andIdx, orIdx) =>
-      dispatch(setStandardNode(andIdx, orIdx)),
+    selectNodeForEditing: (andIdx, orIdx) =>
+      dispatch(selectNodeForEditing(andIdx, orIdx)),
     queryGroupModalSetNode: (andIdx) =>
       dispatch(queryGroupModalSetNode(andIdx)),
     expandPreviousQuery: (datasetId, rootConcepts, groups, queryId) => {

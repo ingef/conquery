@@ -1,18 +1,25 @@
 // @flow
 
 import React                from 'react';
+import type { Dispatch }    from 'redux-thunk';
+import { connect }          from 'react-redux';
 import T                    from 'i18n-react';
 import classnames           from 'classnames';
 
 import { Modal }            from '../modal';
 import ParameterTable       from './ParameterTable';
 
-type PropsType = {
+// import { createQueryNodeEditorActions } from './actions';
+
+type QueryNodeEditorState = {
+  // In the future: define QueryNodeEditor-internal state here
+}
+
+export type PropsType = {
   name: string,
+  editorState: QueryNodeEditorState,
   node: ?Object,
   showTables: boolean,
-  andIdx: number,
-  orIdx: number,
   isExcludeTimestampsPossible: boolean,
   onCloseModal: Function,
   onToggleTable: Function,
@@ -25,28 +32,32 @@ type PropsType = {
   suggestions: ?Object,
 };
 
-const QueryNodeModal = (props: PropsType) => {
-  const { node } = props;
+const QueryNodeEditor = (props: PropsType) => {
+  const {
+    node,
+    // In the future: use QueryNodeEditor-internal state from here
+    // editorState
+  } = props;
 
   if (!node) return null;
 
   return (
     <Modal closeModal={props.onCloseModal} doneButton>
-      <div className="query-node-modal">
-        <h3 className="query-node-modal__headline">{node.label}</h3>
+      <div className="query-node-editor">
+        <h3 className="query-node-editor__headline">{node.label}</h3>
         {
           node.description &&
-          <p className="query-node-modal__description">{node.description}</p>
+          <p className="query-node-editor__description">{node.description}</p>
         }
-        <p className="query-node-modal__explanation">
-          { T.translate('queryNodeModal.explanation') }
+        <p className="query-node-editor__explanation">
+          { T.translate('queryNodeEditor.explanation') }
           {
             node.hasActiveFilters &&
             <span
-              className="query-node-modal__reset-all"
-              onClick={() => props.onResetAllFilters(props.andIdx, props.orIdx)}
+              className="query-node-editor__reset-all"
+              onClick={props.onResetAllFilters}
             >
-              <i className="fa fa-undo" /> {T.translate('queryNodeModal.resetAll')}
+              <i className="fa fa-undo" /> {T.translate('queryNodeEditor.resetAll')}
             </span>
           }
         </p>
@@ -54,12 +65,8 @@ const QueryNodeModal = (props: PropsType) => {
           props.isExcludeTimestampsPossible &&
           <button
             type="button"
-            className="query-node-modal__toggle-timestamps btn btn--header-transparent"
-            onClick={() => props.onToggleTimestamps(
-              props.andIdx,
-              props.orIdx,
-              !node.excludeTimestamps
-            )}
+            className="query-node-editor__toggle-timestamps btn btn--header-transparent"
+            onClick={() => props.onToggleTimestamps(!node.excludeTimestamps)}
           >
             <i className={classnames(
               'parameter-table__exclude-icon',
@@ -68,10 +75,10 @@ const QueryNodeModal = (props: PropsType) => {
                 'fa-square-o': !node.excludeTimestamps,
                 'fa-check-square-o': node.excludeTimestamps
               }
-            )} /> {T.translate('queryNodeModal.excludeTimestamps')}
+            )} /> {T.translate('queryNodeEditor.excludeTimestamps')}
           </button>
         }
-        <div className="query-node-modal__tables">
+        <div className="query-node-editor__tables">
           {
             props.showTables && node.tables.map((table, tableIdx) => (
               <ParameterTable
@@ -79,21 +86,15 @@ const QueryNodeModal = (props: PropsType) => {
                 key={tableIdx}
                 allowToggleTable={node.tables.length > 1}
                 onToggleTable={() => props.onToggleTable(
-                  props.andIdx,
-                  props.orIdx,
                   tableIdx,
                   !table.exclude
                 )}
                 onSetFilterValue={(filterIdx, value) => props.onSetFilterValue(
-                  props.andIdx,
-                  props.orIdx,
                   tableIdx,
                   filterIdx,
                   value
                 )}
                 onSwitchFilterMode={(filterIdx, mode) => props.onSwitchFilterMode(
-                  props.andIdx,
-                  props.orIdx,
                   tableIdx,
                   filterIdx,
                   mode
@@ -101,8 +102,6 @@ const QueryNodeModal = (props: PropsType) => {
                 onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
                   props.onLoadFilterSuggestions(
                     props.datasetId,
-                    props.andIdx,
-                    props.orIdx,
                     tableIdx,
                     node.tables[tableIdx].id,
                     node.id,
@@ -120,5 +119,20 @@ const QueryNodeModal = (props: PropsType) => {
   );
 };
 
+export const createConnectedQueryNodeEditor = (
+  type: string, mapStateToProps: Function,
+  mapDispatchToProps: Function,
+  mergeProps: Function
+) => {
+  // In the future: import QueryNodeEditor-internal actions here
+  // const { } = createQueryNodeEditorActions(type);
 
-export default QueryNodeModal;
+  function mapDispatchToPropsInternal(dispatch: Dispatch, ownProps) {
+    return {
+      ...(mapDispatchToProps ? mapDispatchToProps(dispatch, ownProps) : {})
+      // In the future: dispatch QueryNodeEditor-internal actions here
+    };
+  }
+
+  return connect(mapStateToProps, mapDispatchToPropsInternal, mergeProps)(QueryNodeEditor);
+};

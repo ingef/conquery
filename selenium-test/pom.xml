@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.bakdata.conquery</groupId>
+        <artifactId>parent</artifactId>
+        <version>1.7.0-SNAPSHOT</version>
+    </parent>
+    
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bakdata.conquery</groupId>
-    <artifactId>tests</artifactId>
-    <version>1.6.0</version>
+    <artifactId>selenium-test</artifactId>
     
-    <name>Conquery Tests</name>
+    <name>Conquery Selenium Test</name>
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -26,7 +31,7 @@
         </dependency>
     </dependencies>
     <build>
-        <finalName>conquery-tests</finalName>
+        <finalName>conquery-selenium-tests</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -99,7 +104,7 @@
                     </execution>  
                 </executions>  
             </plugin>
-<!--            <plugin>
+            <plugin>
                 <groupId>com.dkanejs.maven.plugins</groupId>
                 <artifactId>docker-compose-maven-plugin</artifactId>
                 <version>1.0.1</version>
@@ -127,7 +132,7 @@
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>-->
+            </plugin>
         </plugins>
     </build>
 </project>

@@ -4,7 +4,6 @@ import React      from 'react';
 import classnames from 'classnames';
 
 import {
-  isEmpty,
   includes,
 } from '../common/helpers';
 
@@ -12,9 +11,11 @@ import {
   SUPPORTED_FILTERS,
 } from '../form-components';
 
-import type { TableType } from '../standard-query-editor/types';
+import { tableHasActiveFilters } from '../model/table';
 
-import ParameterTableFilters from './ParameterTableFilters';
+import type { TableType }        from '../standard-query-editor/types';
+
+import ParameterTableFilters     from './ParameterTableFilters';
 
 
 type PropsType = {
@@ -30,10 +31,7 @@ type PropsType = {
 const ParameterTable = (props: PropsType) => {
   const tableClass = "parameter-table";
   const isExcluded = !!props.table.exclude;
-  const hasFilterValues = (
-    props.table.filters &&
-    props.table.filters.some(f => !isEmpty(f.value))
-  );
+  const hasFilterValues = tableHasActiveFilters(props.table);
 
   const hasFilters = props.table.filters &&
                      props.table.filters.some(

@@ -9,11 +9,15 @@ module.exports = ['en', 'de'].map(lang => ({
   ...commonConfig[lang],
   name: lang,
   entry: {
-    main: path.join(__dirname, `src/js/main.${lang}.js`)
+    main: [
+      'babel-polyfill',
+      path.join(__dirname, `src/js/main.${lang}.js`)
+    ]
   },
   output: {
     path: path.join(__dirname, '/dist/'),
-    filename: `[name]-[hash].${lang}.min.js`
+    filename: `[name]-[hash].${lang}.min.js`,
+    publicPath: '/'
   },
   plugins: [
     ...commonConfig[lang].plugins,
@@ -42,7 +46,7 @@ module.exports = ['en', 'de'].map(lang => ({
           fallback: 'style-loader',
           use: [
             'css-loader',
-            'postcss-loader',
+            { loader: 'postcss-loader', options: { sourceMap: true } },
             'resolve-url-loader',
             {
               loader: 'sass-loader',

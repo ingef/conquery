@@ -48,6 +48,7 @@ const ParameterTableFilters = (props: PropsType) => (
                   <InputSelect
                     input={{
                       clearable: filter.value !== filter.defaultValue,
+                      defaultValue: filter.defaultValue,
                       value: filter.value,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}
@@ -62,6 +63,7 @@ const ParameterTableFilters = (props: PropsType) => (
                   <InputMultiSelect
                     input={{
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
+                      defaultValue: filter.defaultValue,
                       value: filter.value
                     }}
                     label={filter.label}
@@ -75,6 +77,7 @@ const ParameterTableFilters = (props: PropsType) => (
                   <AsyncInputMultiSelect
                     input={{
                       value: filter.value,
+                      defaultValue: filter.defaultValue,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}
                     label={filter.label}
@@ -98,6 +101,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     inputType="number"
                     input={{
                       value: filter.value,
+                      defaultValue: filter.defaultValue,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}
                     limits={{ min: filter.min, max: filter.max }}
@@ -116,6 +120,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     inputType="number"
                     input={{
                       value: filter.value,
+                      defaultValue: filter.defaultValue,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}
                     limits={{ min: filter.min, max: filter.max }}
@@ -135,6 +140,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     inputType="text"
                     input={{
                       value: filter.value || "",
+                      defaultValue: filter.defaultValue,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value)
                     }}
                     placeholder="-"

@@ -11,9 +11,10 @@ import {
   InputSelect,
   InputWithLabel
 }                                from '../form-components';
-import { ScrollableList }        from '../scrollable-list'
+import { ScrollableList }        from '../scrollable-list';
 
 import type { StateType }        from '../app/reducers';
+import type { DatasetIdType }    from '../dataset/reducer';
 
 import {
   uploadConceptListModalUpdateLabel,
@@ -31,6 +32,9 @@ type PropsType = {
   label: String,
   availableConceptRootNodes: Array,
   selectedConceptRootNode: Object,
+  selectConceptRootNode: Function,
+  selectedDatasetId: DatasetIdType,
+  conceptCodesFromFile: Array<String>,
   updateLabel: Function,
   resolved: Object,
   hasResolvedItems: boolean,
