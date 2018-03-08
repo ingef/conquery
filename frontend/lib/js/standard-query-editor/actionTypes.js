@@ -1,3 +1,5 @@
+// @flow
+
 export const DROP_AND_NODE = "query-editor/DROP_AND_NODE";
 export const LOAD_FILES_START = "query-editor/LOAD_FILES_START";
 export const LOAD_FILES_SUCCESS = "query-editor/LOAD_FILES_SUCCESS";
@@ -13,3 +15,14 @@ export const HIDE_CONCEPT_LIST_DETAILS = "query-editor/HIDE_CONCEPT_LIST_DETAILS
 
 export const LOAD_QUERY = "query-editor/LOAD_QUERY";
 export const CLEAR_QUERY = "query-editor/CLEAR_QUERY";
+
+export const SELECT_NODE_FOR_EDITING = "query-editor/SELECT_NODE_FOR_EDITING";
+export const DESELECT_NODE = "query-editor/DESELECT_NODE";
+export const TOGGLE_TABLE =  "query-editor/TOGGLE_TABLE";
+export const SET_FILTER_VALUE =  "query-editor/SET_FILTER_VALUE";
+export const RESET_ALL_FILTERS =  "query-editor/RESET_ALL_FILTERS";
+export const SWITCH_FILTER_MODE =  "query-editor/SWITCH_FILTER_MODE";
+export const TOGGLE_TIMESTAMPS =  "query-editor/TOGGLE_TIMESTAMPS";
+export const LOAD_FILTER_SUGGESTIONS_START =  "query-editor/LOAD_FILTER_SUGGESTIONS_START";
+export const LOAD_FILTER_SUGGESTIONS_SUCCESS =  "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS";
+export const LOAD_FILTER_SUGGESTIONS_ERROR =  "query-editor/LOAD_FILTER_SUGGESTIONS_ERROR";

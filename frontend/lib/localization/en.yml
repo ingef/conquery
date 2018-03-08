@@ -47,7 +47,7 @@ datasetSelector:
   pleaseChoose: "Choose a data set"
   error: "Could not load data sets"
 
-queryNodeModal:
+queryNodeEditor:
   resetAll: "Reset all"
   explanation: "Configure Input Tables"
   excludeTimestamps: "Exclude from time calculation"
