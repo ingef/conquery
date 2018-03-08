@@ -45,10 +45,15 @@ export const numberToThreeDigitArray = (number: number) => {
 
 export const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
-export const toUpperCaseUnderscore = (str: string) => str.replace(
-  /[A-Z]/g,
-  (upperCaseChar) => '_' + upperCaseChar.toLowerCase()
-).toUpperCase();
+export const toUpperCaseUnderscore = (str: string) => {
+  if (str.toUpperCase() === str)
+    return str;
+
+  return str.replace(
+    /[A-Z]/g,
+    (upperCaseChar) => '_' + upperCaseChar.toLowerCase()
+  ).toUpperCase();
+}
 
 export const isObject = (item: any) =>
   item && typeof item === 'object' && !Array.isArray(item);
