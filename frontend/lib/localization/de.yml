@@ -29,7 +29,7 @@ queryRunner:
 queryEditor:
   couldNotExpandNode: "Knoten nicht gefunden"
   couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
-  filter: "Filter"
+  filter: "Bearbeiten"
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
