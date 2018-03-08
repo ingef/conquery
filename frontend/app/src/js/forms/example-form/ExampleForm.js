@@ -81,6 +81,7 @@ export default reduxForm({
     example_query: null,
     example_concepts: []
   },
+  destroyOnUnmount: false,
   validate: (values) => ({
     text: validateRequired(values.text),
   })
