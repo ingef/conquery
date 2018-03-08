@@ -27,6 +27,10 @@ module.exports = Object.assign({}, ...['en', 'de'].map(lang => ({
       }, {
         test: /\.(ttf|eot|svg|png|jpg|woff(2)?)(\?.*$|$)/,
         loader: "file-loader?name=[name].[ext]"
+      }, {
+        test: /\.css$/,
+        loaders: ['style-loader', 'css-loader'],
+        include: /(\/node_modules\/)/
       }]
     }
   }
