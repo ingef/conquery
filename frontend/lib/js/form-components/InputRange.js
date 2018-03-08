@@ -60,8 +60,8 @@ const InputRange = (props: PropsType) => {
       // SET ENTIRE VALUE TO NULL IF POSSIBLE
       if (
         nextValue === null && (
-          (value && value.min === null && type === 'max') ||
-          (value && value.max === null && type === 'min')
+          (value && value.min == null && type === 'max') ||
+          (value && value.max == null && type === 'min')
         )
       )
         props.input.onChange(null);
