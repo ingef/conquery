@@ -1,6 +1,6 @@
 {
   "name": "conquery",
-  "version": "1.2.0",
+  "version": "1.7.0",
   "description": "conquery",
   "main": "dist/js/index.js",
   "private": false,
@@ -133,5 +133,22 @@
       "text",
       "lcov"
     ]
-  }
+  },
+  "directories": {
+    "lib": "lib",
+    "test": "test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bakdata/conquery"
+  },
+  "keywords": [
+    "conquery",
+    "visual",
+    "interactive",
+    "queries",
+    "big",
+    "databases"
+  ],
+  "author": "bakdata GmbH"
 }
