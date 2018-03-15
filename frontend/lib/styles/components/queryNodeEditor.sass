@@ -47,6 +47,30 @@
   &__row
     margin-bottom: 10px
 
+  &__concept
+    border-left: 3px solid $col-blue-gray-dark
+    padding-left: 10px
+    display: flex
+    flex-direction: row
+    margin-top: 10px
+
+    > div
+      flex: 1
+
+    h6
+      margin: 10px 0 10px 0
+      font-size: $font-sm
+      font-weight: 400
+
+    p
+      font-size: $font-xs
+      margin: -10px 0 10px 0
+
+    .btn
+      float: right
+      display: block
+      border: none
+
   &__category_header
     padding-left: 10px
     line-height: 32px
@@ -133,6 +157,10 @@
       line-height: inherit
     button
       line-height: normal // Special care for IE
+
+  h5
+    margin: 0 0 10px 0
+    font-size: $font-sm
 
   .input--value-changed
     .Select

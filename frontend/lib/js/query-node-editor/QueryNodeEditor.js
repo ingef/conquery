@@ -32,6 +32,8 @@ export type PropsType = {
   isExcludeTimestampsPossible: boolean,
   onCloseModal: Function,
   onUpdateLabel: Function,
+  onDropConcept: Function,
+  onRemoveConcept: Function,
   onToggleTable: Function,
   onSetFilterValue: Function,
   onResetAllFilters: Function,

@@ -53,6 +53,8 @@ import {
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
   UPDATE_NODE_LABEL,
+  ADD_CONCEPT_TO_NODE,
+  REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
   RESET_ALL_FILTERS,
@@ -653,6 +655,30 @@ const updateNodeLabel = (state, action) => {
   return setElementProperties(state, andIdx, orIdx, { label: action.label });
 }
 
+const addConceptToNode = (state, action) => {
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const { andIdx, orIdx } = nodePosition;
+  const node = state[andIdx].elements[orIdx];
+  return setElementProperties(state, andIdx, orIdx, {
+    ids: [...action.concept.ids, ...node.ids],
+    concepts: [...action.concept.concepts, ...node.concepts]
+  });
+}
+
+const removeConceptFromNode = (state, action) => {
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const { andIdx, orIdx } = nodePosition;
+  const node = state[andIdx].elements[orIdx];
+  return setElementProperties(state, andIdx, orIdx, {
+    ids: node.ids.filter(id => id !== action.conceptId),
+    concepts: node.concepts.filter(concept => concept.id !== action.conceptId)
+  });
+}
+
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
 // like `dateRange` or `exclude`.
@@ -711,6 +737,10 @@ const query = (
       return deselectNode(state, action);
     case UPDATE_NODE_LABEL:
       return updateNodeLabel(state, action);
+    case ADD_CONCEPT_TO_NODE:
+      return addConceptToNode(state, action);
+    case REMOVE_CONCEPT_FROM_NODE:
+      return removeConceptFromNode(state, action);
     case TOGGLE_TABLE:
       return toggleNodeTable(state, action);
     case SET_FILTER_VALUE:

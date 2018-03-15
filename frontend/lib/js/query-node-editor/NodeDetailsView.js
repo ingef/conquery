@@ -3,14 +3,76 @@
 import React              from 'react';
 import classnames         from 'classnames';
 import T                  from 'i18n-react';
+import { DropTarget }     from 'react-dnd';
+import { dndTypes }       from '../common/constants';
 
+import { AdditionalInfoHoverable } from '../tooltip';
 import { EditableText }   from '../form-components';
-import { ScrollableList } from '../scrollable-list';
+import { IconButton } from '../button';
 
 import type { PropsType } from './QueryNodeEditor';
 
+const ConceptEntry = AdditionalInfoHoverable(
+  ({ node, canRemoveConcepts, onRemoveConcept, conceptId }) => (
+    <div className="query-node-editor__concept">
+      <div>
+        <h6>{node.label}</h6>
+        {
+          node.description &&
+          <p>{node.description}</p>
+        }
+      </div>
+      {
+        canRemoveConcepts &&
+        <IconButton
+          onClick={() => onRemoveConcept(conceptId)}
+          className="btn--small btn--transparent"
+          iconClassName="fa-trash-o"
+        />
+      }
+    </div>
+  )
+);
+
+const dropzoneTarget = {
+  drop(props, monitor) {
+    const item = monitor.getItem();
+    props.onDropConcept(item);
+  },
+
+  canDrop({ node }, monitor) {
+    const item = monitor.getItem();
+    return item.tree === node.tree && !node.concepts.some(concept => concept.id === item.id);
+  }
+};
+
+const collect = (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget(),
+  isOver: monitor.isOver(),
+  canDrop: monitor.canDrop(),
+});
+
+const ConceptDropzone =
+  DropTarget(dndTypes.CATEGORY_TREE_NODE, dropzoneTarget, collect)(
+    (props) => props.connectDropTarget(
+      <div className="query-editor-dropzone">
+        <div className={classnames(
+          'dropzone', {
+            'dropzone--over': props.isOver && props.canDrop,
+            'dropzone--disallowed': props.isOver && !props.canDrop,
+          }
+        )}>
+          <p className="dropzone__text">
+            Drop another concept here
+          </p>
+        </div>
+      </div>
+    )
+);
+
 export const NodeDetailsView = (props: PropsType) => {
   const { node, editorState } = props;
+  const canRemoveConcepts = node.concepts.length > 1;
 
   return (
     <div className="query-node-editor__large_column query-node-editor__column">
@@ -46,22 +108,23 @@ export const NodeDetailsView = (props: PropsType) => {
         }
 
         <div className="query-node-editor__row">
-          <label className={classnames('input')}>
-            <span className={classnames('input-label')}>
-              {T.translate('queryNodeEditor.conceptTree')}
-            </span>
-            <ScrollableList items={[node.tree.label]} />
-          </label>
-        </div>
-        <div className="query-node-editor__row">
-          <label className={classnames('input')}>
-            <span className={classnames('input-label')}>
-              {T.translate('queryNodeEditor.conceptNodes')}
-            </span>
-            <ScrollableList
-              items={node.concepts.map(x => x.description ? `${x.label - x.description}` : x.label)}
-            />
-          </label>
+          <h5>{[node.tree.label]}</h5>
+          <div>
+            <ConceptDropzone node={node} onDropConcept={props.onDropConcept} />
+          </div>
+          <div>
+            {
+              node.concepts.map(concept => (
+                <ConceptEntry
+                  key={concept.id}
+                  node={concept}
+                  canRemoveConcepts={canRemoveConcepts}
+                  onRemoveConcept={props.onRemoveConcept}
+                  conceptId={concept.id}
+                />
+              ))
+            }
+          </div>
         </div>
       </div>
     </div>

@@ -73,6 +73,11 @@ const QueryNode = (props: PropsType) => {
   );
 };
 
+
+type DragPropsType = {
+  node: ElementType
+};
+
 /**
  * Implements the drag source contract.
  */

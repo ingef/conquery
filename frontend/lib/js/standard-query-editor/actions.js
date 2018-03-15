@@ -34,6 +34,8 @@ import {
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
   UPDATE_NODE_LABEL,
+  ADD_CONCEPT_TO_NODE,
+  REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
   RESET_ALL_FILTERS,
@@ -153,6 +155,8 @@ export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
 export const deselectNode = () => ({ type: DESELECT_NODE });
 
 export const updateNodeLabel = (label) => ({ type: UPDATE_NODE_LABEL, label });
+export const addConceptToNode = (concept) => ({ type: ADD_CONCEPT_TO_NODE, concept });
+export const removeConceptFromNode = (conceptId) => ({ type: REMOVE_CONCEPT_FROM_NODE, conceptId });
 
 export const toggleTable = (tableIdx, isExcluded) => ({
   type: TOGGLE_TABLE,
