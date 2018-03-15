@@ -31,11 +31,6 @@ const AdditionalInfoHoverable = (Component: any) => {
 
       dispatch(actions.displayAdditionalInfos(additionalInfos))
     },
-    onHideAdditionalInfos: () => {
-      if (!ownProps.node.additionalInfos && isEmpty(ownProps.node.matchingEntries)) return;
-
-      dispatch(actions.hideAdditionalInfos());
-    },
   });
 
   return connect(mapStateToProps, mapDispatchToProps)(HoverableBase(Component));
