@@ -5,6 +5,7 @@ import T                         from 'i18n-react';
 import classnames                from 'classnames';
 
 import { tableHasActiveFilters } from '../model/table';
+import { nodeHasActiveFilters }  from '../model/node';
 
 import type { PropsType }        from './QueryNodeEditor';
 
@@ -72,7 +73,7 @@ export const MenuColumn = (props: PropsType) => {
           ))
           }
           {
-            node.hasActiveFilters &&
+            nodeHasActiveFilters(node) &&
             <div className="query-node-editor__category_action">
               <span
                 className="query-node-editor__reset-all"
