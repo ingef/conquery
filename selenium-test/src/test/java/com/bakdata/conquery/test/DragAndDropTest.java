@@ -23,7 +23,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  *
  * @author Marcus Baitz
  */
-public class DrapAndDropTest {
+public class DragAndDropTest {
 
     private WebDriver driver;
     private GroupEditor groupEditor;
