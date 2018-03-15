@@ -48,8 +48,8 @@ const Tooltip = (props: PropsType) => {
         {
           infos && infos.map((info, i) => (
             <div className="tooltip-info" key={i}>
-              <Markdown className="tooltip-info__key" source={info.key} />
-              <Markdown className="tooltip-info__value"  source={info.value} />
+              <h3 className="tooltip-info__key" >{info.key}</h3>
+              <Markdown className="tooltip-info__value" source={info.value} />
             </div>
           ))
         }

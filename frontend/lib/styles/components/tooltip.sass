@@ -36,12 +36,21 @@
   margin: 5px 0
   border-left: 3px solid $col-blue-gray-dark
   padding-left: 10px
+  
+  h1, h2, h3, h4, h5, h6
+    color: $col-blue-gray-dark
+    text-transform: capitalize
+    padding: 0
+    font-size: $font-sm
+
   &__key, &__value
     font-size: $font-xs
     margin: 0
     a, a:visited, a:active
-      color: #0000EE
+      color: $col-blue-gray-dark
       text-decoration: underline
+  &__value
+    padding: 0 10px
 
 .tooltip-entries
   padding-left: 20px
