@@ -39,7 +39,7 @@ import { buildExternalFormsReducer }           from '../external-forms';
 import { reducer as uploadConceptListModal }   from '../upload-concept-list-modal';
 
 import { createQueryRunnerReducer }            from '../query-runner';
-import { createQueryNodeModalReducer }         from '../query-node-modal';
+import { createQueryNodeEditorReducer }        from '../query-node-editor';
 
 export type StateType = {
   categoryTrees: CategoryTreesStateType,
@@ -55,7 +55,7 @@ const buildAppReducer = (availableForms) => combineReducers({
   uploadConceptListModal,
   standardQueryRunner: createQueryRunnerReducer('standard'),
   timebasedQueryRunner: createQueryRunnerReducer('timebased'),
-  queryNodeModal: createQueryNodeModalReducer('standard'),
+  queryNodeEditor: createQueryNodeEditorReducer('standard'),
   queryGroupModal,
   datasets,
   tooltip,

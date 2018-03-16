@@ -5,6 +5,7 @@ import classnames               from 'classnames';
 import type { Dispatch }        from 'redux-thunk';
 import T                        from 'i18n-react';
 import { connect }              from 'react-redux';
+import Markdown                 from 'react-markdown';
 import { IconButton }           from '../button';
 
 import ActivateTooltip          from './ActivateTooltip';
@@ -47,8 +48,8 @@ const Tooltip = (props: PropsType) => {
         {
           infos && infos.map((info, i) => (
             <div className="tooltip-info" key={i}>
-              <h3 className="tooltip-info__key">{info.key}</h3>
-              <p className="tooltip-info__value">{info.value}</p>
+              <h3 className="tooltip-info__key" >{info.key}</h3>
+              <Markdown className="tooltip-info__value" source={info.value} />
             </div>
           ))
         }
