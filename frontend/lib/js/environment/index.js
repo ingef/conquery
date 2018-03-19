@@ -1,17 +1,17 @@
 // @flow
 
 export type Environment = {
-  basename: String,
-  apiUrl: String,
-  isProduction: Boolean
+  basename: string,
+  apiUrl: string,
+  isProduction: boolean
 };
 
-let environment: Environment = null;
+let environment: ?Environment = null;
 
 export const initializeEnvironment = (env: Environment) => {
   environment = env;
 };
 
-export const apiUrl = () => environment.apiUrl;
-export const basename = () => environment.basename;
-export const isProduction = () => environment.isProduction;
+export const apiUrl = () => environment ? environment.apiUrl : "";
+export const basename = () => environment ? environment.basename : "";
+export const isProduction = () => environment ? environment.isProduction : true;
