@@ -15,7 +15,6 @@ type PropsType = {
   onDeleteNode: Function,
   onFilterClick: Function,
   onExpandClick: Function,
-  onDetailsClick: Function,
 };
 
 const QueryNodeActions = (props: PropsType) => {
@@ -57,15 +56,6 @@ const QueryNodeActions = (props: PropsType) => {
               className={`btn--icon ${base}__action`}
             >
               <i className="fa fa-expand" /> {T.translate('queryEditor.expand')}
-            </span>
-          }
-          {
-            props.hasDetails &&
-            <span
-              onClick={props.onDetailsClick}
-              className={`btn--icon ${base}__action`}
-            >
-              <i className="fa fa-list-alt" /> {T.translate('queryEditor.details')}
             </span>
           }
         </div>
