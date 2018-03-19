@@ -10,21 +10,19 @@ export type SelectOptionType = {
 
 export type SelectOptionsType = SelectOptionType[];
 
-export type DateRangeType = {
-}
+export type DateRangeType = ?{ min?: string, max?: string }
 
 export type InfoType = {
   key: string,
   value: string,
 }
 
-type RangeFilterValueType = { min?: number, max?: number, exact?: number }
+export type RangeFilterValueType = { min?: number, max?: number, exact?: number }
 export type RangeFilterType = {
   id: number,
   label: string,
   description?: string,
   type: 'INTEGER_RANGE' | 'REAL_RANGE',
-//   value: ?RangeFilterValueType,
   unit?: string,
   mode: 'range' | 'exact',
   precision?: number,
@@ -33,25 +31,23 @@ export type RangeFilterType = {
   defaultValue: ?RangeFilterValueType
 }
 
-type MultiSelectFilterValueType = (string | number)[];
+export type MultiSelectFilterValueType = (string | number)[];
 export type MultiSelectFilterType = {
   id: number,
   label: string,
   description?: string,
   type: 'MULTI_SELECT',
-//   value: ?MultiSelectFilterValueType,
   unit?: string,
   options: SelectOptionsType,
   defaultValue: ?MultiSelectFilterValueType
 }
 
-type SelectFilterValueType = string | number;
+export type SelectFilterValueType = string | number;
 export type SelectFilterType = {
   id: number,
   label: string,
   description?: string,
   type: 'SELECT',
-//   value: ?SelectFilterValueType,
   unit?: string,
   options: SelectOptionsType,
   defaultValue: ?SelectFilterValueType

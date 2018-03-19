@@ -72,32 +72,23 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
     : props.connectDragSource(render);
 };
 
-
-
 /**
  * Implements the drag source contract.
  */
 const nodeSource = {
   beginDrag(props: PropsType): DraggedNodeType {
     // Return the data describing the dragged item
-    // by creating a concept list
-    return {
-      ids: [props.node.id],
-      label: props.node.label,
-      tables: props.node.tables
-    };
+    return props.createQueryElement();
   }
 };
 
 /**
  * Specifies the props to inject into your component.
  */
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
-  };
-}
+const collect = (connect, monitor) => ({
+  connectDragSource: connect.dragSource(),
+  isDragging: monitor.isDragging()
+});
 
 const DraggableCategoryTreeNodeTextContainer = DragSource(
   dndTypes.CATEGORY_TREE_NODE,

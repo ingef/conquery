@@ -8,11 +8,8 @@ import {
   type DateRangeType,
   type NodeType
 }                                    from '../common/types/backend';
-import {
-  type DraggedNodeType,
-  type ConceptType,
-  type TableType
-}                                    from '../standard-query-editor/types';
+
+import { type DraggedNodeType }      from '../standard-query-editor/types';
 
 import { getConceptById }            from './globalTreeStoreHelper';
 
@@ -53,32 +50,6 @@ const selectTreeNodeData = (concept: NodeType, tree: TreeNodeIdType) => ({
   tree,
 });
 
-// Converts a tree item into a concept that will be used as part of a Query Node in the editor
-const conceptFromTreeNodeData =
-  (conceptId: TreeNodeIdType, treeItem: TreeNodeData) : ConceptType => ({
-    id: conceptId,
-    label: treeItem.label,
-    description: treeItem.description,
-    matchingEntries: treeItem.matchingEntries,
-    dateRange: treeItem.dateRange,
-    additionalInfos: treeItem.additionalInfos,
-    hasChildren: !!treeItem.children,
-  });
-
-// Creates node from a given concept that can be dragged on the editor
-const createNode = (
-  concept: ConceptType,
-  label: string,
-  tables: Array<TableType>,
-  tree: TreeNodeIdType
-) : DraggedNodeType => ({
-  ids: [concept.id],
-  label: concept.label,
-  tables: tables,
-  tree,
-  concepts: [concept]
-});
-
 class CategoryTreeNode extends React.Component<PropsType> {
   _onToggleOpen() {
     if (!this.props.data.children) return;
@@ -99,12 +70,17 @@ class CategoryTreeNode extends React.Component<PropsType> {
             matchingEntries: data.matchingEntries,
             dateRange: data.dateRange,
             additionalInfos: data.additionalInfos,
-            hasChildren: !!data.children,
+            hasChildren: !!data.children && data.children.length > 0,
+
           }}
-          createQueryElement={() => {
-            const concept = conceptFromTreeNodeData(id, data);
+          createQueryElement={() : DraggedNodeType => {
             const tables = getConceptById(data.tree).tables;
-            return createNode(concept, concept.label, tables, data.tree);
+            return {
+              ids: [id],
+              label: data.label,
+              tables: tables,
+              tree: data.tree
+            };
           }}
           open={open}
           depth={depth}

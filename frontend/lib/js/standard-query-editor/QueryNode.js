@@ -2,7 +2,10 @@
 
 import React                       from 'react';
 import T                           from 'i18n-react';
-import { DragSource, type ConnectDragSource }              from 'react-dnd';
+import {
+  DragSource,
+  type ConnectDragSource
+}                                  from 'react-dnd';
 
 import { dndTypes }                from '../common/constants';
 import { AdditionalInfoHoverable } from '../tooltip';
@@ -11,7 +14,11 @@ import { nodeHasActiveFilters }    from '../model/node';
 
 import QueryNodeActions            from './QueryNodeActions';
 
-import type { QueryNodeType, DraggedNodeType, DraggedQueryType }        from './types';
+import type {
+  QueryNodeType,
+  DraggedNodeType,
+  DraggedQueryType
+}                                  from './types';
 
 type PropsType =  {
   node: QueryNodeType,
@@ -101,7 +108,6 @@ const nodeSource = {
       return {
         ...draggedNode,
         ids: node.ids,
-        concepts: node.concepts,
         tree: node.tree,
         tables: node.tables,
       }
@@ -111,13 +117,10 @@ const nodeSource = {
 /**
  * Specifies the dnd-related props to inject into the component.
  */
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
-  };
-}
-
+const collect = (connect, monitor) => ({
+  connectDragSource: connect.dragSource(),
+  isDragging: monitor.isDragging()
+});
 
 const DraggableQueryNode = DragSource(
   dndTypes.QUERY_NODE,

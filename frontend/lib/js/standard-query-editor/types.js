@@ -3,7 +3,13 @@
 import type {
   TreeNodeIdType,
   QueryIdType,
-  FilterType
+  DateRangeType,
+  RangeFilterType,
+  RangeFilterValueType,
+  MultiSelectFilterType,
+  MultiSelectFilterValueType,
+  SelectFilterType,
+  SelectFilterValueType
 } from '../common/types/backend';
 
 // A concept that is part of a query node in the editor
@@ -14,11 +20,41 @@ export type ConceptType =  {
   matchingEntries?: number
 };
 
-export type TableType = {
+
+export type SelectOptionType = {
+  label: string,
+  value: number | string,
+};
+
+export type SelectOptionsType = SelectOptionType[];
+
+export type InfoType = {
+  key: string,
+  value: string,
+}
+
+export type RangeFilterWithValueType = RangeFilterType & {
+  value?: RangeFilterValueType,
+}
+
+export type MultiSelectFilterWithValueType = MultiSelectFilterType & {
+  value?: MultiSelectFilterValueType,
+}
+
+export type SelectFilterWithValueType = SelectFilterType & {
+  value?: SelectFilterValueType,
+}
+
+export type FilterWithValueType =
+  SelectFilterWithValueType
+  | MultiSelectFilterWithValueType
+  | RangeFilterWithValueType;
+
+export type TableWithFilterValueType = {
   id: number,
   label: string,
   exclude?: boolean,
-  filters: ?FilterType[],
+  filters: ?FilterWithValueType[],
 };
 
 export type DraggedFileType = {
@@ -47,8 +83,7 @@ export type DraggedQueryType = {
 // Corresponds to CATEGORY_TREE_NODE and QUERY_NODE drag-and-drop types.
 export type DraggedNodeType = {
   ids: Array<TreeNodeIdType>,
-  concepts: Array<ConceptType>,
-  tables: Array<TableType>,
+  tables: Array<TableWithFilterValueType>,
   tree: TreeNodeIdType,
   label: string,
   excludeTimestamps?: boolean,
@@ -65,8 +100,7 @@ export type DraggedNodeType = {
 
 export type ConceptQueryNodeType = {
   ids: Array<TreeNodeIdType>,
-  concepts: Array<ConceptType>,
-  tables: TableType[],
+  tables: TableWithFilterValueType[],
   tree: TreeNodeIdType,
 
   label: string,
@@ -75,7 +109,7 @@ export type ConceptQueryNodeType = {
   error?: string,
 
   isEditing?: boolean,
-  isPreviousQuery: void | false,
+  isPreviousQuery?: void | false,
 }
 
 export type PreviousQueryQueryNodeType = {
@@ -91,8 +125,6 @@ export type PreviousQueryQueryNodeType = {
 }
 
 export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;
-
-export type DateRangeType = ?{ min?: string, max?: string }
 
 export type QueryGroupType = {
   elements: QueryNodeType[],

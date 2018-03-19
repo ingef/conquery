@@ -10,11 +10,9 @@ import {
   LOAD_TREE_SUCCESS,
   LOAD_TREE_ERROR,
   CLEAR_TREES,
-} from './actionTypes';
+}                       from './actionTypes';
 
-import {
-  setTree
-} from './globalTreeStoreHelper';
+import { setTree }      from './globalTreeStoreHelper';
 
 export type TreesType = { [treeId: string]: NodeType }
 

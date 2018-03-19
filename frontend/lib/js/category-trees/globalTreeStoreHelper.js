@@ -46,13 +46,6 @@ export function setTree(
 //
 // GETTER
 //
-// export function getTreeById(treeId?: TreeNodeIdType): NodeType {
-//   return window.categoryTrees[treeId];
-// }
-
-//
-// GETTER
-//
 export function getConceptById(conceptId?: TreeNodeIdType): ?NodeType {
   const keys: TreeNodeIdType[] = Object.keys(window.categoryTrees);
 

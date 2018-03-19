@@ -3,7 +3,10 @@
 import React                  from 'react';
 import classnames             from 'classnames';
 import T                      from 'i18n-react';
-import { DropTarget, type ConnectDropTarget }         from 'react-dnd';
+import {
+  DropTarget,
+  type ConnectDropTarget
+}                             from 'react-dnd';
 import { NativeTypes }        from 'react-dnd-html5-backend';
 import { dndTypes }           from '../common/constants';
 import type { QueryIdType }   from '../common/types/backend';

@@ -6,6 +6,8 @@ import api                             from '../api';
 
 import { uploadConceptListModalOpen }  from '../upload-concept-list-modal/actions';
 
+import { type DateRangeType }          from '../common/types/backend';
+
 import {
   defaultSuccess,
   defaultError
@@ -13,7 +15,8 @@ import {
 
 import type {
   DraggedNodeType,
-  DraggedQueryType
+  DraggedQueryType,
+  DraggedFileType
 }                                      from './types';
 
 import {
@@ -39,10 +42,12 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
 } from './actionTypes';
-import { type DateRange, DraggedFileType } from './types';
 
 
-export const dropAndNode = (item: DraggedNodeType | DraggedQueryType, dateRange: ?DateRange) => ({
+export const dropAndNode = (
+  item: DraggedNodeType | DraggedQueryType,
+  dateRange: ?DateRangeType
+) => ({
   type: DROP_AND_NODE,
   payload: { item, dateRange }
 });

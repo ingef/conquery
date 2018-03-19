@@ -11,10 +11,9 @@ import {
   stripObject
 } from '../common/helpers';
 
-import type {
-  TreeNodeIdType,
-  NodeType
-} from '../common/types/backend';
+import {
+  type DateRangeType
+} from '../common/types/backend'
 
 import {
   resetAllFiltersInTables
@@ -34,7 +33,8 @@ import {
 } from '../previous-queries/list/actionTypes';
 
 import {
-  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT, type UploadConceptListModalResultType
+  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
+  type UploadConceptListModalResultType
 } from '../upload-concept-list-modal/actionTypes'
 
 import {
@@ -64,13 +64,11 @@ import {
 
 import type
 {
-  DateRangeType,
   QueryNodeType,
   QueryGroupType,
   StandardQueryType,
   DraggedNodeType,
-  DraggedQueryType,
-  ConceptType
+  DraggedQueryType
 } from './types';
 
 
@@ -97,7 +95,6 @@ const filterItem = (item: DraggedNodeType | DraggedQueryType): QueryNodeType => 
   else
     return {
       ids: item.ids,
-      concepts: item.concepts,
       tables: item.tables,
       tree: item.tree,
 
@@ -454,7 +451,7 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
   return groups.map((group) => {
     return {
       ...group,
-      elements: group.elements.map((element: QueryNodeType) => {
+      elements: group.elements.map((element) => {
         if (element.type === 'QUERY') {
           return {
             ...element,
@@ -481,7 +478,7 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
             label,
             ids,
             tables,
-            concepts: lookupResult.concepts,
+            tree: lookupResult.root
           };
         }
       })
@@ -579,16 +576,6 @@ const loadFilterSuggestionsSuccess = (state, action) =>
 const loadFilterSuggestionsError = (state, action) =>
   setNodeFilterProperties(state, action, { isLoading: false, options: [] });
 
-const selectConceptFromNodeData = (concept: NodeType & { id: TreeNodeIdType }) : ConceptType => ({
-  id: concept.id,
-  label: concept.label,
-  description: concept.description,
-  matchingEntries: concept.matchingEntries,
-  dateRange: concept.dateRange,
-  additionalInfos: concept.additionalInfos,
-  hasChildren: !!concept.children,
-});
-
 const createQueryNodeFromConceptListUploadResult = (
     result: UploadConceptListModalResultType
   ) : DraggedNodeType => {
@@ -602,8 +589,7 @@ const createQueryNodeFromConceptListUploadResult = (
         label,
         ids: resolutionResult.conceptList,
         tables: lookupResult.tables,
-        tree: lookupResult.root,
-        concepts: lookupResult.concepts.map(concept => selectConceptFromNodeData(concept))
+        tree: lookupResult.root
       };
   } else if (resolutionResult.filter) {
     const [conceptRoot] =
@@ -625,8 +611,7 @@ const createQueryNodeFromConceptListUploadResult = (
       label,
       ids: [conceptRoot.id],
       tables,
-      tree: conceptRoot.id,
-      concepts: [selectConceptFromNodeData(conceptRoot)],
+      tree: conceptRoot.id
     };
   }
 
