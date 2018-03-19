@@ -1,5 +1,7 @@
 // @flow
 
+import { type TreeNodeIdType } from '../common/types/backend';
+
 export const UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL =
   "upload-concept-list-modal/UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL";
 
@@ -15,3 +17,21 @@ export const UPLOAD_CONCEPT_LIST_MODAL_CLOSE  =
   "upload-concept-list-modal/UPLOAD_CONCEPT_LIST_MODAL_CLOSE";
 export const UPLOAD_CONCEPT_LIST_MODAL_ACCEPT =
   "upload-concept-list-modal/UPLOAD_CONCEPT_LIST_MODAL_ACCEPT";
+
+export type UploadConceptListModalResultType = {
+  label: string,
+  rootConcepts: any,
+  resolutionResult: {
+    conceptList?: string[],
+    filter?: {
+      filterId: string,
+      tableId: string,
+      value: {
+      label: string,
+      value: string
+      }[]
+    },
+    selectedRoot: TreeNodeIdType
+  },
+  queryContext: any
+}

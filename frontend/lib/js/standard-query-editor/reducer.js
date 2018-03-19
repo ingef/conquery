@@ -11,6 +11,11 @@ import {
   stripObject
 } from '../common/helpers';
 
+import type {
+  TreeNodeIdType,
+  NodeType
+} from '../common/types/backend';
+
 import {
   resetAllFiltersInTables
 } from '../model/table';
@@ -29,7 +34,7 @@ import {
 } from '../previous-queries/list/actionTypes';
 
 import {
-  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT
+  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT, type UploadConceptListModalResultType
 } from '../upload-concept-list-modal/actionTypes'
 
 import {
@@ -64,7 +69,8 @@ import type
   QueryGroupType,
   StandardQueryType,
   DraggedNodeType,
-  DraggedQueryType
+  DraggedQueryType,
+  ConceptType
 } from './types';
 
 
@@ -140,7 +146,15 @@ const setAllElementsProperties = (node, properties) => {
   }));
 };
 
-const dropAndNode = (state, action: { payload: { item: DraggedNodeType | DraggedQueryType, dateRange?: DateRangeType } }) => {
+const dropAndNode = (
+  state,
+  action: {
+    payload: {
+      item: DraggedNodeType | DraggedQueryType,
+      dateRange?: DateRangeType
+    }
+  }
+) => {
   const group = state[state.length - 1];
   const dateRangeOfLastGroup = (group ? group.dateRange : null);
   const {item, dateRange = dateRangeOfLastGroup} = action.payload;
@@ -158,7 +172,15 @@ const dropAndNode = (state, action: { payload: { item: DraggedNodeType | Dragged
     : nextState;
 };
 
-const dropOrNode = (state, action: { payload: { item: DraggedNodeType | DraggedQueryType, andIdx: number } }) => {
+const dropOrNode = (
+  state,
+  action: {
+    payload: {
+      item: DraggedNodeType | DraggedQueryType,
+      andIdx: number
+    }
+  }
+) => {
   const { item, andIdx } = action.payload;
 
   const nextState = [
@@ -557,21 +579,31 @@ const loadFilterSuggestionsSuccess = (state, action) =>
 const loadFilterSuggestionsError = (state, action) =>
   setNodeFilterProperties(state, action, { isLoading: false, options: [] });
 
-const insertUploadedConceptList = (state, action) => {
-  const { label, rootConcepts, resolutionResult, queryContext } = action.data;
+const selectConceptFromNodeData = (concept: NodeType & { id: TreeNodeIdType }) : ConceptType => ({
+  id: concept.id,
+  label: concept.label,
+  description: concept.description,
+  matchingEntries: concept.matchingEntries,
+  dateRange: concept.dateRange,
+  additionalInfos: concept.additionalInfos,
+  hasChildren: !!concept.children,
+});
 
-  let queryElement = { error: T.translate('queryEditor.couldNotInsertConceptList') };
+const createQueryNodeFromConceptListUploadResult = (
+    result: UploadConceptListModalResultType
+  ) : DraggedNodeType => {
+  const { label, rootConcepts, resolutionResult } = result;
 
   if (resolutionResult.conceptList) {
     const lookupResult = getConceptsByIdsWithTables(resolutionResult.conceptList, rootConcepts);
 
     if (lookupResult)
-      queryElement = {
+      return {
         label,
         ids: resolutionResult.conceptList,
         tables: lookupResult.tables,
         tree: lookupResult.root,
-        concepts: lookupResult.concepts
+        concepts: lookupResult.concepts.map(concept => selectConceptFromNodeData(concept))
       };
   } else if (resolutionResult.filter) {
     const [conceptRoot] =
@@ -589,13 +621,31 @@ const insertUploadedConceptList = (state, action) => {
       filters: mergeFiltersFromSavedConcept(resolvedTable, table)
     }));
 
-    queryElement = {
-      ...filterItem(conceptRoot),
-      tables
+    return {
+      label,
+      ids: [conceptRoot.id],
+      tables,
+      tree: conceptRoot.id,
+      concepts: [selectConceptFromNodeData(conceptRoot)],
     };
   }
 
-  if (queryContext.andIdx !== undefined && queryContext.andIdx !== null)
+  return {
+    label: label,
+    ids: [],
+    tables: [],
+    tree: '',
+    concepts: [],
+
+    error: T.translate('queryEditor.couldNotInsertConceptList')
+  };
+}
+
+const insertUploadedConceptList = (state, action: { data: UploadConceptListModalResultType }) => {
+  const { queryContext } = action.data;
+  const queryElement = createQueryNodeFromConceptListUploadResult(action.data);
+
+  if (queryContext.andIdx != null)
     return dropOrNode(state, { payload: { item: queryElement, andIdx: queryContext.andIdx } });
 
   return dropAndNode(state, { payload: { item: queryElement, dateRange: queryContext.dateRange } });

@@ -27,7 +27,10 @@ export type AdditionalInfoHoverableNodeType = {
 const AdditionalInfoHoverable = (Component: any) => {
   const mapStateToProps = () => ({});
 
-  const mapDispatchToProps = (dispatch: Dispatch, ownProps: { node: AdditionalInfoHoverableNodeType }) => ({
+  const mapDispatchToProps = (
+    dispatch: Dispatch,
+    ownProps: { node: AdditionalInfoHoverableNodeType }
+  ) => ({
     onDisplayAdditionalInfos: () => {
       const node = ownProps.node;
 

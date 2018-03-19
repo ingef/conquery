@@ -2,19 +2,19 @@
 
 import React                         from 'react';
 
-<<<<<<< HEAD
-import { getConceptById }            from './globalTreeStoreHelper';
-=======
 import {
   type TreeNodeIdType,
   type InfoType,
   type DateRangeType,
   type NodeType
 }                                    from '../common/types/backend';
-import { type DraggedNodeType, type ConceptType, type TableType } from '../standard-query-editor/types';
+import {
+  type DraggedNodeType,
+  type ConceptType,
+  type TableType
+}                                    from '../standard-query-editor/types';
 
-import { getConceptById } from './globalTreeStoreHelper';
->>>>>>> d25d186... Refactor types around ConceptTrees, DnD, Standard Editor Nodes
+import { getConceptById }            from './globalTreeStoreHelper';
 
 import Openable                      from './Openable';
 import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
@@ -54,18 +54,24 @@ const selectTreeNodeData = (concept: NodeType, tree: TreeNodeIdType) => ({
 });
 
 // Converts a tree item into a concept that will be used as part of a Query Node in the editor
-const conceptFromTreeNodeData = (conceptId: TreeNodeIdType, treeItem: TreeNodeData): ConceptType => ({
-  id: conceptId,
-  label: treeItem.label,
-  description: treeItem.description,
-  matchingEntries: treeItem.matchingEntries,
-  dateRange: treeItem.dateRange,
-  additionalInfos: treeItem.additionalInfos,
-  hasChildren: !!treeItem.children,
-});
+const conceptFromTreeNodeData =
+  (conceptId: TreeNodeIdType, treeItem: TreeNodeData) : ConceptType => ({
+    id: conceptId,
+    label: treeItem.label,
+    description: treeItem.description,
+    matchingEntries: treeItem.matchingEntries,
+    dateRange: treeItem.dateRange,
+    additionalInfos: treeItem.additionalInfos,
+    hasChildren: !!treeItem.children,
+  });
 
 // Creates node from a given concept that can be dragged on the editor
-const createNode = (concept: ConceptType, label: string, tables: Array<TableType>, tree: TreeNodeIdType) : DraggedNodeType => ({
+const createNode = (
+  concept: ConceptType,
+  label: string,
+  tables: Array<TableType>,
+  tree: TreeNodeIdType
+) : DraggedNodeType => ({
   ids: [concept.id],
   label: concept.label,
   tables: tables,

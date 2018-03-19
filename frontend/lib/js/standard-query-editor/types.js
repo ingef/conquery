@@ -1,13 +1,17 @@
 // @flow
 
-import type { TreeNodeIdType, QueryIdType } from "../common/types/backend";
+import type {
+  TreeNodeIdType,
+  QueryIdType,
+  FilterType
+} from '../common/types/backend';
 
 // A concept that is part of a query node in the editor
 export type ConceptType =  {
   id: string,
   label: string,
-  description: string,
-  matchingEntries: number
+  description?: string,
+  matchingEntries?: number
 };
 
 export type TableType = {
@@ -59,7 +63,7 @@ export type DraggedNodeType = {
   isPreviousQuery?: void,
 };
 
-type ConceptQueryNodeType = {
+export type ConceptQueryNodeType = {
   ids: Array<TreeNodeIdType>,
   concepts: Array<ConceptType>,
   tables: TableType[],
@@ -74,7 +78,7 @@ type ConceptQueryNodeType = {
   isPreviousQuery: void | false,
 }
 
-type PreviousQueryQueryNodeType = {
+export type PreviousQueryQueryNodeType = {
   label: string,
   excludeTimestamps?: boolean,
   loading?: boolean,

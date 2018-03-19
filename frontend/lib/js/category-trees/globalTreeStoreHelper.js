@@ -1,14 +1,15 @@
 // @flow
 
 import { includes } from '../common/helpers';
-import {
-  type NodeType
+import type {
+  NodeType,
+  TableType,
+  TreeNodeIdType
 }                   from '../common/types/backend';
-import {
-  type TreeNodeType,
-  type TreeNodeIdType,
-  type TreesType,
-} from './reducer';
+
+import type {
+  TreesType
+}                   from './reducer';
 
 // Globally store the huge (1-5 MB) trees for read only
 // - keeps the redux store free from huge data
@@ -29,9 +30,9 @@ export function resetAllTrees() {
 // SETTER
 //
 export function setTree(
-  rootConcept: TreeNodeType,
+  rootConcept: TreeNodeIdType,
   treeId: TreeNodeIdType,
-  tree: TreeNodeType
+  tree: NodeType
 ): void {
   // This replaces the root concept with the one loaded initially (at /concepts)
   const concepts = {
@@ -67,7 +68,7 @@ export function getConceptById(conceptId?: TreeNodeIdType): ?NodeType {
 //
 // GETTER including parent tables all the way to the root concept
 //
-const findParentConcepts = (concepts: TreeNodeType[]): TreeNodeType[] => {
+const findParentConcepts = (concepts: NodeType[]): NodeType[] => {
   // Get parent from first concept
   const parentId = concepts[0].parent;
   const parentConcept = getConceptById(parentId);
@@ -87,11 +88,15 @@ const findParentConcepts = (concepts: TreeNodeType[]): TreeNodeType[] => {
 export const getConceptsByIdsWithTables = (
   conceptIds: TreeNodeIdType[],
   rootConcepts: TreesType
-) => {
+) : ?{
+  concepts: (NodeType & {id: TreeNodeIdType})[],
+  root: TreeNodeIdType,
+  tables: TableType[]
+} => {
   const concepts = conceptIds.map(c => {
     const concept = getConceptById(c);
 
-    return concept !== null ?  {...concept, id: c} : null;
+    return concept !== null ? {...concept, id: c} : null;
   }).filter(c => !!c);
 
   if (concepts.length !== conceptIds.length) return null;
@@ -105,7 +110,7 @@ export const getConceptsByIdsWithTables = (
       includes(parentConceptIds, id) &&
       !!rootConcepts[id].tables
     )
-    .map(id => rootConcepts[id]);
+    .map(id => ({id, concept: rootConcepts[id]}));
 
   // There should only be one exact root node that has table information
   // If it's more or less than one, something went wrong
@@ -113,7 +118,7 @@ export const getConceptsByIdsWithTables = (
 
   return {
     concepts,
-    root: parentConceptsWithTables[0],
-    tables: parentConceptsWithTables[0].tables
+    root: parentConceptsWithTables[0].id,
+    tables: parentConceptsWithTables[0].concept.tables
   };
 }

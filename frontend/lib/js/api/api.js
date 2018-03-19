@@ -8,7 +8,8 @@ import { apiUrl }              from '../environment';
 import { type DatasetIdType }  from '../dataset/reducer';
 import type {
   RootType,
-  TreeNodeIdType
+  TreeNodeIdType,
+  ConceptListResolutionResultType
 }                              from '../common/types/backend';
 
 import {
@@ -203,19 +204,6 @@ export function postPrefixForSuggestions(
       body: { text },
     }
   );
-};
-
-export type ConceptListResolutionResultType = {
-  resolvedConcepts?: String[],
-  unknownCodes?: String[],
-  resolvedFilter?: {
-    filterId: String,
-    tableId: String,
-    value: {
-      label: String,
-      value: String
-    }[]
-  }
 };
 
 export function postConceptsListToResolve(

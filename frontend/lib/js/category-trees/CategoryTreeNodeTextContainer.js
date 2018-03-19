@@ -8,9 +8,10 @@ import { AdditionalInfoHoverable } from '../tooltip';
 import { isEmpty }                 from '../common/helpers';
 import { dndTypes }                from '../common/constants';
 
-import { type DraggedNodeType }    from '../model/node';
-import { type TreeNodeIdType }     from '../common/types/backend';
-import { type AdditionalInfoHoverableNodeType } from '../tooltip/AdditionalInfoHoverable';
+import {
+  type AdditionalInfoHoverableNodeType
+}                                  from '../tooltip/AdditionalInfoHoverable';
+import { type DraggedNodeType }    from '../standard-query-editor/types';
 
 type PropsType = {
   node: AdditionalInfoHoverableNodeType & {

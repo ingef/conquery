@@ -7,10 +7,7 @@ import type { StateType }   from '../app/reducers';
 
 import { getConceptById }   from './globalTreeStoreHelper';
 
-import {
-  type TreeNodeType,
-  type TreesType
-}   from './reducer';
+import { type TreesType }   from './reducer';
 
 import CategoryTree         from './CategoryTree';
 import CategoryTreeFolder   from './CategoryTreeFolder';
@@ -20,7 +17,7 @@ type PropsType = {
   activeTab: string,
 };
 
-class CategoryTreeList extends React.Component {
+class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {

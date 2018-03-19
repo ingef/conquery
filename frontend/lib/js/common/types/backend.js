@@ -87,3 +87,16 @@ export type RootType = {
   concepts: Map<TreeNodeIdType, NodeType>,
   version: number
 };
+
+export type ConceptListResolutionResultType = {
+  resolvedConcepts?: string[],
+  unknownCodes?: string[],
+  resolvedFilter?: {
+    filterId: string,
+    tableId: string,
+    value: {
+    label: string,
+    value: string
+    }[]
+  }
+};

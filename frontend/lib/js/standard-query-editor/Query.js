@@ -30,7 +30,13 @@ import {
   expandPreviousQuery,
   selectNodeForEditing,
 }                                 from './actions'
-import type { StandardQueryType, DateRangeType, DraggedNodeType, DraggedQueryType, DraggedFileType } from './types';
+import type {
+  StandardQueryType,
+  DateRangeType,
+  DraggedNodeType,
+  DraggedQueryType,
+  DraggedFileType
+}                                 from './types';
 
 import { QueryEditorDropzone }    from './QueryEditorDropzone';
 import QueryGroup                 from './QueryGroup';

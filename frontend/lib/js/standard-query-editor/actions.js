@@ -6,12 +6,15 @@ import api                             from '../api';
 
 import { uploadConceptListModalOpen }  from '../upload-concept-list-modal/actions';
 
-import type { DraggedNodeType, DraggedQueryType }        from './types';
-
 import {
   defaultSuccess,
   defaultError
-} from '../common/actions';
+}                                      from '../common/actions';
+
+import type {
+  DraggedNodeType,
+  DraggedQueryType
+}                                      from './types';
 
 import {
   DROP_AND_NODE,
@@ -101,7 +104,8 @@ export const dropConceptListFile = (item: DraggedFileType, queryContext: Object 
   }
 };
 
-export const dropOrConceptListFile = (item: DraggedFileType, andIdx: number) => dropConceptListFile(item, { andIdx });
+export const dropOrConceptListFile = (item: DraggedFileType, andIdx: number) =>
+  dropConceptListFile(item, { andIdx });
 
 export const dropOrNode = (item: DraggedNodeType | DraggedQueryType, andIdx: number) => ({
   type: DROP_OR_NODE,
