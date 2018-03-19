@@ -2,8 +2,7 @@
 
 import {
   TOGGLE_DISPLAY_TOOLTIP,
-  DISPLAY_ADDITIONAL_INFOS,
-  HIDE_ADDITIONAL_INFOS,
+  DISPLAY_ADDITIONAL_INFOS
 } from './actionTypes';
 
 type InfoType = {
@@ -51,7 +50,6 @@ const setAdditionalInfos = (state, action) => {
 const tooltip = (state: StateType = initialState, action: Object): StateType => {
   switch (action.type) {
     case DISPLAY_ADDITIONAL_INFOS:
-    case HIDE_ADDITIONAL_INFOS:
       return setAdditionalInfos(state, action);
     case TOGGLE_DISPLAY_TOOLTIP:
       return {
