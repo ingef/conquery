@@ -4,15 +4,16 @@ import React                from 'react';
 import T                    from 'i18n-react';
 
 import { ErrorMessage }     from '../error-message';
-import { type TreeNodeIdType } from '../common/types/backend';
+import type {
+  NodeType,
+  TreeNodeIdType
+}                           from '../common/types/backend';
 
 import CategoryTreeNode     from './CategoryTreeNode';
 
-import type { TreeNodeType }     from './reducer';
-
 type PropsType = {
   id: TreeNodeIdType,
-  tree: TreeNodeType,
+  tree: NodeType,
   treeId: TreeNodeIdType,
   label: string,
   depth: number,

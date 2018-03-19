@@ -2,21 +2,21 @@
 
 import React                         from 'react';
 
+import type {
+  NodeType,
+  TreeNodeIdType
+}                                    from '../common/types/backend';
+
 import { getConceptById }            from './globalTreeStoreHelper';
 
 import Openable                      from './Openable';
 import CategoryTree                  from './CategoryTree';
 import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
 
-import {
-  type TreeNodeType,
-  type TreeNodeIdType,
-} from './reducer';
-
 type PropsType = {
   depth: number,
   trees: Object,
-  tree: TreeNodeType,
+  tree: NodeType,
   treeId: TreeNodeIdType,
   active: boolean,
   open?: boolean,
