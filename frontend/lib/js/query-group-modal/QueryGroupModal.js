@@ -6,7 +6,6 @@ import classnames           from 'classnames';
 import T                    from 'i18n-react';
 import { connect }          from 'react-redux';
 import DatePicker           from 'react-datepicker';
-import ie                   from 'ie-version';
 import moment               from 'moment';
 
 import { dateTypes }        from '../common/constants';
@@ -81,9 +80,7 @@ const QueryGroupModal = (props) => {
             </span>
           }
         </p>
-        <div className={
-            `query-group-modal__dates ${ie.version && ie.version === 11 ? ' ie11' : ''}`
-          }>
+        <div className="query-group-modal__dates">
           <div className="query-group-modal__input-group">
             <label className="input-label" htmlFor="datepicker-min">
               {T.translate('queryGroupModal.dateMinLabel')}
