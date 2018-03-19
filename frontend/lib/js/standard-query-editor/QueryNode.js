@@ -2,24 +2,26 @@
 
 import React                       from 'react';
 import T                           from 'i18n-react';
-import { DragSource }              from 'react-dnd';
+import { DragSource, type ConnectDragSource }              from 'react-dnd';
 
 import { dndTypes }                from '../common/constants';
 import { AdditionalInfoHoverable } from '../tooltip';
 import { ErrorMessage }            from '../error-message';
+import { nodeHasActiveFilters }    from '../model/node';
 
 import QueryNodeActions            from './QueryNodeActions';
 
-import type { ElementType }        from './types';
+import type { QueryNodeType, DraggedNodeType, DraggedQueryType }        from './types';
 
 type PropsType =  {
-  node: ElementType,
+  node: QueryNodeType,
   onDeleteNode: Function,
   onFilterClick: Function,
   onExpandClick: Function,
   connectDragSource: Function,
   andIdx: number,
   orIdx: number,
+  connectDragSource: ConnectDragSource
 };
 
 const QueryNode = (props: PropsType) => {
@@ -28,10 +30,10 @@ const QueryNode = (props: PropsType) => {
   return props.connectDragSource(
     <div className="query-node">
       <QueryNodeActions
-        hasActiveFilters={node.hasActiveFilters}
+        hasActiveFilters={nodeHasActiveFilters(node)}
         onFilterClick={props.onFilterClick}
         onDeleteNode={props.onDeleteNode}
-        isExpandable={!!node.query}
+        isExpandable={node.isPreviousQuery}
         onExpandClick={() => {
           if (!node.query) return;
 
@@ -68,34 +70,41 @@ const QueryNode = (props: PropsType) => {
  * Implements the drag source contract.
  */
 const nodeSource = {
-  beginDrag(props) {
+  beginDrag(props: PropsType): DraggedNodeType | DraggedQueryType {
     // Return the data describing the dragged item
     // NOT using `...node` since that would also spread `children` in.
     // This item may stem from either:
     // 1) A concept (dragged from CategoryTreeNode)
-    // 2) A previous query (dragged from PreviouQueries)
+    // 2) A previous query (dragged from PreviousQueries)
     const { node, andIdx, orIdx } = props;
 
-    return {
+    const draggedNode = {
+      moved: true,
       andIdx,
       orIdx,
-      id: node.id,
-      label: node.label,
-      description: node.description,
-      tables: node.tables,
-      additionalInfos: node.additionalInfos,
-      matchingEntries: node.matchingEntries,
-      hasActiveFilters: node.hasActiveFilters,
-      excludeTimestamps: node.excludeTimestamps,
-      isPreviousQuery: node.isPreviousQuery,
 
-      ids: node.ids,
+      label: node.label,
+      excludeTimestamps: node.excludeTimestamps,
 
       loading: node.loading,
       error: node.error,
-      query: node.query,
-      moved: true,
     };
+
+    if (node.isPreviousQuery)
+      return {
+        ...draggedNode,
+        id: node.id,
+        query: node.query,
+        isPreviousQuery: true
+      }
+    else
+      return {
+        ...draggedNode,
+        ids: node.ids,
+        concepts: node.concepts,
+        tree: node.tree,
+        tables: node.tables,
+      }
   }
 };
 

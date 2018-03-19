@@ -1,12 +1,6 @@
 // @flow
 
-import {
-  type TableType,
-} from '../standard-query-editor/types'
-
-import {
-  type AdditionalInfosType,
-} from '../tooltip';
+import { type NodeType } from '../common/types/backend';
 
 import {
   LOAD_TREES_START,
@@ -17,27 +11,12 @@ import {
   LOAD_TREE_ERROR,
   CLEAR_TREES,
 } from './actionTypes';
+
 import {
   setTree
 } from './globalTreeStoreHelper';
 
-export type TreeNodeIdType = string;
-
-export type TreeNodeType = {
-  id: TreeNodeIdType,
-  label: string,
-  description?: string,
-  loading?: boolean,
-  error?: string,
-  parent?: TreeNodeIdType,
-  active?: boolean,
-  children?: [TreeNodeIdType],
-  tables?: TableType[],
-  additionalInfos?: AdditionalInfosType,
-  matchingEntries?: number,
-};
-
-export type TreesType = { [treeId: string]: TreeNodeType }
+export type TreesType = { [treeId: string]: NodeType }
 
 export type StateType = {
   loading: boolean,

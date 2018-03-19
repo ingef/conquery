@@ -30,19 +30,19 @@ import {
   expandPreviousQuery,
   selectNodeForEditing,
 }                                 from './actions'
-import type { StandardQueryType } from './types';
+import type { StandardQueryType, DateRangeType, DraggedNodeType, DraggedQueryType, DraggedFileType } from './types';
 
-import QueryEditorDropzone        from './QueryEditorDropzone';
+import { QueryEditorDropzone }    from './QueryEditorDropzone';
 import QueryGroup                 from './QueryGroup';
 
 
 type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
-  dropAndNode: Function,
-  dropConceptListFile: Function,
-  dropOrNode: Function,
-  dropOrConceptListFile: Function,
+  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
+  dropConceptListFile: (DraggedFileType, ?DateRangeType) => void,
+  dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
+  dropOrConceptListFile: (DraggedFileType, number) => void,
   deleteNode: Function,
   deleteGroup: Function,
   toggleExcludeGroup: Function,
@@ -61,7 +61,7 @@ const Query = (props: PropsType) => {
         // Render a large Dropzone
         <QueryEditorDropzone
           isInitial
-          onDropNode={props.dropAndNode}
+          onDropNode={item => props.dropAndNode(item, null)}
           onDropFiles={props.dropConceptListFile}
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
@@ -117,30 +117,28 @@ function mapStateToProps(state) {
   };
 }
 
-function mapDispatchToProps(dispatch: Dispatch<*>) {
-  return {
-    dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
-    dropConceptListFile: (item, dateRange) => dispatch(dropConceptListFile(item, { dateRange })),
-    dropOrConceptListFile: (item, andIdx) => dispatch(dropOrConceptListFile(item, andIdx)),
-    dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
-    deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
-    deleteGroup: (andIdx) => dispatch(deleteGroup(andIdx)),
-    toggleExcludeGroup: (andIdx) => dispatch(toggleExcludeGroup(andIdx)),
-    selectNodeForEditing: (andIdx, orIdx) =>
-      dispatch(selectNodeForEditing(andIdx, orIdx)),
-    queryGroupModalSetNode: (andIdx) =>
-      dispatch(queryGroupModalSetNode(andIdx)),
-    expandPreviousQuery: (datasetId, rootConcepts, groups, queryId) => {
-      dispatch(expandPreviousQuery(rootConcepts, groups));
+const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
+  dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
+  dropConceptListFile: (item, dateRange) => dispatch(dropConceptListFile(item, { dateRange })),
+  dropOrConceptListFile: (item, andIdx) => dispatch(dropOrConceptListFile(item, andIdx)),
+  dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
+  deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
+  deleteGroup: (andIdx) => dispatch(deleteGroup(andIdx)),
+  toggleExcludeGroup: (andIdx) => dispatch(toggleExcludeGroup(andIdx)),
+  selectNodeForEditing: (andIdx, orIdx) =>
+    dispatch(selectNodeForEditing(andIdx, orIdx)),
+  queryGroupModalSetNode: (andIdx) =>
+    dispatch(queryGroupModalSetNode(andIdx)),
+  expandPreviousQuery: (datasetId, rootConcepts, groups, queryId) => {
+    dispatch(expandPreviousQuery(rootConcepts, groups));
 
-      dispatch(loadAllPreviousQueriesInGroups(groups, datasetId));
+    dispatch(loadAllPreviousQueriesInGroups(groups, datasetId));
 
-      dispatch(replace(toQuery(datasetId, queryId)));
-    },
-    loadPreviousQuery: (datasetId, queryId) =>
-      dispatch(loadPreviousQuery(datasetId, queryId)),
-  };
-}
+    dispatch(replace(toQuery(datasetId, queryId)));
+  },
+  loadPreviousQuery: (datasetId, queryId) =>
+    dispatch(loadPreviousQuery(datasetId, queryId)),
+});
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,

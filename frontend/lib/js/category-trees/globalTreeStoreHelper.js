@@ -2,6 +2,9 @@
 
 import { includes } from '../common/helpers';
 import {
+  type NodeType
+}                   from '../common/types/backend';
+import {
   type TreeNodeType,
   type TreeNodeIdType,
   type TreesType,
@@ -42,7 +45,14 @@ export function setTree(
 //
 // GETTER
 //
-export function getConceptById(conceptId?: TreeNodeIdType): ?TreeNodeType {
+// export function getTreeById(treeId?: TreeNodeIdType): NodeType {
+//   return window.categoryTrees[treeId];
+// }
+
+//
+// GETTER
+//
+export function getConceptById(conceptId?: TreeNodeIdType): ?NodeType {
   const keys: TreeNodeIdType[] = Object.keys(window.categoryTrees);
 
   for (let i = 0; i < keys.length; i++) {

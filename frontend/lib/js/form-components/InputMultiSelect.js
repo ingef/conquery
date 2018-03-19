@@ -6,7 +6,7 @@ import Select                  from 'react-select';
 import classnames              from 'classnames';
 import { type FieldPropsType } from 'redux-form';
 
-import { type SelectOptionsType } from '../common/types';
+import { type SelectOptionsType } from '../common/types/backend';
 import { isEmpty }                from '../common/helpers';
 
 import InfoTooltip from '../tooltip/InfoTooltip';

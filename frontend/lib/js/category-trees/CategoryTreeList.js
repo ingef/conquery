@@ -43,7 +43,7 @@ class CategoryTreeList extends React.Component {
             .filter(treeId => !this.props.trees[treeId].parent)
             .map((treeId, i) => {
               const tree = this.props.trees[treeId];
-              const rootConcept: ?TreeNodeType = getConceptById(treeId);
+              const rootConcept = getConceptById(treeId);
 
               return tree.detailsAvailable
                 ? <CategoryTree
@@ -51,6 +51,7 @@ class CategoryTreeList extends React.Component {
                     id={treeId}
                     label={tree.label}
                     tree={rootConcept}
+                    treeId={treeId}
                     loading={!!tree.loading}
                     error={tree.error}
                     depth={0}

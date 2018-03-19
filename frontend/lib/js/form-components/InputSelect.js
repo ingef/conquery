@@ -9,7 +9,7 @@ import { type FieldPropsType }    from 'redux-form';
 import 'react-select/dist/react-select.css';
 
 import { isEmpty }                from '../common/helpers';
-import { type SelectOptionsType } from '../common/types';
+import { type SelectOptionsType } from '../common/types/backend';
 import InfoTooltip                from '../tooltip/InfoTooltip';
 
 type PropsType = FieldPropsType & {

@@ -10,6 +10,7 @@ type InfoType = {
   value: string,
 };
 
+// TODO: Deprecate?
 export type AdditionalInfosType = {
   label: ?string,
   description: ?string,
