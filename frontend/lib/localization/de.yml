@@ -52,6 +52,7 @@ queryNodeEditor:
   queryNode: "Abfrageknoten"
   conceptNodes: "Konzeptknoten"
   conceptNodeTables: "Anfragetabellen"
+  properties: "Eigenschaften"
   resetAll: "Alle zurücksetzen"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
   description: "Beschreibung"

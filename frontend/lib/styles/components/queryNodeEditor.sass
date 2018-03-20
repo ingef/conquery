@@ -152,11 +152,23 @@
     font-size: $font-md
     font-weight: 700
     color: $col-black
+
     > p
       margin: 0
       line-height: inherit
-    button
-      line-height: normal // Special care for IE
+
+    .editable-text-form
+      display: flex
+      padding: 5px 0
+
+      input
+        flex: 1
+        font-size: $font-md
+        height: 27px
+        padding: 0 8px
+
+      button
+        line-height: normal // Special care for IE
 
   h5
     margin: 0 0 10px 0

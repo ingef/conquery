@@ -50,6 +50,7 @@ queryNodeEditor:
   queryNode: "Query Node"
   conceptNodes: "Concept Nodes"
   conceptNodeTables: "Input Tables"
+  properties: "Properties"
   resetAll: "Reset all"
   excludeTimestamps: "Exclude from time calculation"
   description: "Description"

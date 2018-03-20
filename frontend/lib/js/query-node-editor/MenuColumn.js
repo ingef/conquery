@@ -27,7 +27,7 @@ export const MenuColumn = (props: PropsType) => {
           { 'query-node-editor__category_element_active': editorState.detailsViewActive })}
         onClick={(e) => { e.preventDefault(); editorState.onSelectDetailsView() }}
       >
-        {node.label}
+        {T.translate('queryNodeEditor.properties')}
       </button>
       {
         props.showTables &&
