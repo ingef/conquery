@@ -201,7 +201,7 @@ const toggleExcludeGroup = (state, action) => {
     ...state.slice(0, andIdx),
     {
       ...state[andIdx],
-      exclude: state[andIdx].exclude ? null : true
+      exclude: state[andIdx].exclude ? undefined : true
     },
     ...state.slice(andIdx + 1)
   ];
