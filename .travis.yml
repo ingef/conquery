@@ -19,7 +19,7 @@ script:
 
 deploy:
   - provider: script
-    script: frontend/scripts/deploy-npm.sh
+    script: bash frontend/scripts/deploy-npm.sh
     on:
       tags: true
   - provider: script
