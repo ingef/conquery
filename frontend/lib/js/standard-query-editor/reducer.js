@@ -663,7 +663,6 @@ const addConceptToNode = (state, action) => {
   const node = state[andIdx].elements[orIdx];
   return setElementProperties(state, andIdx, orIdx, {
     ids: [...action.concept.ids, ...node.ids],
-    concepts: [...action.concept.concepts, ...node.concepts]
   });
 }
 
@@ -674,8 +673,7 @@ const removeConceptFromNode = (state, action) => {
   const { andIdx, orIdx } = nodePosition;
   const node = state[andIdx].elements[orIdx];
   return setElementProperties(state, andIdx, orIdx, {
-    ids: node.ids.filter(id => id !== action.conceptId),
-    concepts: node.concepts.filter(concept => concept.id !== action.conceptId)
+    ids: node.ids.filter(id => id !== action.conceptId)
   });
 }
 

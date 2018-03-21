@@ -12,8 +12,12 @@ import type { PropsType }        from './QueryNodeEditor';
 export const MenuColumn = (props: PropsType) => {
   const { node, editorState } = props;
 
-  const onlyOneTableIncluded = node.tables.filter(table => !table.exclude).length === 1;
-  const allowToggleTables = node.tables.map(table => table.exclude || !onlyOneTableIncluded);
+  const onlyOneTableIncluded = !node.isPreviousQuery
+    ? node.tables.filter(table => !table.exclude).length === 1
+    : undefined;
+  const allowToggleTables = !node.isPreviousQuery
+    ? node.tables.map(table => table.exclude || !onlyOneTableIncluded)
+    : undefined;
 
   return (
     <div className="query-node-editor__fixed_column query-node-editor__column">
@@ -30,6 +34,7 @@ export const MenuColumn = (props: PropsType) => {
         {T.translate('queryNodeEditor.properties')}
       </button>
       {
+        !node.isPreviousQuery &&
         props.showTables &&
         <div>
           <div className="query-node-editor__category_header">

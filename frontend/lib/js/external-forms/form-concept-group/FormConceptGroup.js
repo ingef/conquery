@@ -265,8 +265,7 @@ export const FormConceptGroup = (props: PropsType) => {
           const node = props.input.value[valueIdx].concepts[conceptIdx];
           props.input.onChange(
             setConceptProperties(props.input.value, valueIdx, conceptIdx, {
-              ids: [...concept.ids, ...node.ids],
-              concepts: [...concept.concepts, ...node.concepts]
+              ids: [...concept.ids, ...node.ids]
             })
           )
         }}
@@ -274,8 +273,7 @@ export const FormConceptGroup = (props: PropsType) => {
           const node = props.input.value[valueIdx].concepts[conceptIdx];
           props.input.onChange(
             setConceptProperties(props.input.value, valueIdx, conceptIdx, {
-              ids: node.ids.filter(id => id !== conceptId),
-              concepts: node.concepts.filter(concept => concept.id !== conceptId)
+              ids: node.ids.filter(id => id !== conceptId)
             })
           )
         }}

@@ -10,6 +10,8 @@ import { AdditionalInfoHoverable } from '../tooltip';
 import { EditableText }   from '../form-components';
 import { IconButton } from '../button';
 
+import { getConceptById } from '../category-trees/globalTreeStoreHelper';
+
 import type { PropsType } from './QueryNodeEditor';
 
 const ConceptEntry = AdditionalInfoHoverable(
@@ -42,7 +44,7 @@ const dropzoneTarget = {
 
   canDrop({ node }, monitor) {
     const item = monitor.getItem();
-    return item.tree === node.tree && !node.concepts.some(concept => concept.id === item.id);
+    return item.tree === node.tree && !node.ids.some(id => id === item.id);
   }
 };
 
@@ -72,19 +74,25 @@ const ConceptDropzone =
 
 export const NodeDetailsView = (props: PropsType) => {
   const { node, editorState } = props;
-  const canRemoveConcepts = node.concepts.length > 1;
 
   return (
     <div className="query-node-editor__large_column query-node-editor__column">
       <h4>
-        <EditableText
-          loading={false}
-          text={node.label}
-          selectTextOnMount={true}
-          editing={editorState.editingLabel}
-          onSubmit={(value) => { props.onUpdateLabel(value); editorState.onToggleEditLabel(); }}
-          onToggleEdit={editorState.onToggleEditLabel}
-        />
+        {
+          !node.isPreviousQuery &&
+          <EditableText
+            loading={false}
+            text={node.label}
+            selectTextOnMount={true}
+            editing={editorState.editingLabel}
+            onSubmit={(value) => { props.onUpdateLabel(value); editorState.onToggleEditLabel(); }}
+            onToggleEdit={editorState.onToggleEditLabel}
+          />
+        }
+        {
+          node.isPreviousQuery &&
+          (node.label || node.id)
+        }
       </h4>
       <div className="query-node-editor__column_content">
         {
@@ -107,25 +115,28 @@ export const NodeDetailsView = (props: PropsType) => {
           </div>
         }
 
-        <div className="query-node-editor__row">
-          <h5>{[node.tree.label]}</h5>
-          <div>
-            <ConceptDropzone node={node} onDropConcept={props.onDropConcept} />
+        {
+          !node.isPreviousQuery &&
+          <div className="query-node-editor__row">
+            <h5>{[getConceptById(node.tree).label]}</h5>
+            <div>
+              <ConceptDropzone node={node} onDropConcept={props.onDropConcept} />
+            </div>
+            <div>
+              {
+                node.ids.map(conceptId => (
+                  <ConceptEntry
+                    key={conceptId}
+                    node={getConceptById(conceptId)}
+                    canRemoveConcepts={node.ids.length > 1}
+                    onRemoveConcept={props.onRemoveConcept}
+                    conceptId={conceptId}
+                  />
+                ))
+              }
+            </div>
           </div>
-          <div>
-            {
-              node.concepts.map(concept => (
-                <ConceptEntry
-                  key={concept.id}
-                  node={concept}
-                  canRemoveConcepts={canRemoveConcepts}
-                  onRemoveConcept={props.onRemoveConcept}
-                  conceptId={concept.id}
-                />
-              ))
-            }
-          </div>
-        </div>
+        }
       </div>
     </div>
   );

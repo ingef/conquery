@@ -5,6 +5,8 @@ import type { Dispatch }                from 'redux-thunk';
 import { connect }                      from 'react-redux';
 import T                                from 'i18n-react';
 
+import { type QueryNodeType }           from '../standard-query-editor/types';
+
 import { MenuColumn }                   from './MenuColumn';
 import { NodeDetailsView }              from './NodeDetailsView';
 import { TableFilterView }              from './TableFilterView';
@@ -27,7 +29,7 @@ type QueryNodeEditorState = {
 export type PropsType = {
   name: string,
   editorState: QueryNodeEditorState,
-  node: ?Object,
+  node: QueryNodeType,
   showTables: boolean,
   isExcludeTimestampsPossible: boolean,
   onCloseModal: Function,
@@ -49,7 +51,7 @@ const QueryNodeEditor = (props: PropsType) => {
 
   if (!node) return null;
 
-  const selectedTable = editorState.selectedInputTableIdx != null
+  const selectedTable = !node.isPreviousQuery && editorState.selectedInputTableIdx != null
     ? node.tables[editorState.selectedInputTableIdx]
     : null;
 
