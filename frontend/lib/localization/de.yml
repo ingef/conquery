@@ -112,8 +112,11 @@ inputRange:
   maxLabel: 'max'
 
 moneyRange:
-  pattern: ""
   factor: "100"
+  thousandSeparator: "."
+  decimalSeparator: ","
+  decimalScale: "2"
+  prefix: "€"
 
 previousQueries:
   loading: "Lade Anfragen"
