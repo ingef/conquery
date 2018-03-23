@@ -89,10 +89,11 @@ const QueryNodeEditor = (props: PropsType) => {
                   tableIdx,
                   !table.exclude
                 )}
-                onSetFilterValue={(filterIdx, value) => props.onSetFilterValue(
+                onSetFilterValue={(filterIdx, value, formattedValue) => props.onSetFilterValue(
                   tableIdx,
                   filterIdx,
-                  value
+                  value,
+                  formattedValue
                 )}
                 onSwitchFilterMode={(filterIdx, mode) => props.onSwitchFilterMode(
                   tableIdx,

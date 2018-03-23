@@ -1,6 +1,7 @@
 // @flow
 
 import React from 'react';
+import T     from 'i18n-react';
 
 import {
   includes,
@@ -19,6 +20,7 @@ import {
   REAL_RANGE,
   STRING,
   BIG_MULTI_SELECT,
+  MONEY_RANGE,
 } from '../form-components';
 
 import {
@@ -101,7 +103,6 @@ const ParameterTableFilters = (props: PropsType) => (
                     inputType="number"
                     input={{
                       value: filter.value,
-                      defaultValue: filter.defaultValue,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}
                     limits={{ min: filter.min, max: filter.max }}
@@ -120,7 +121,6 @@ const ParameterTableFilters = (props: PropsType) => (
                     inputType="number"
                     input={{
                       value: filter.value,
-                      defaultValue: filter.defaultValue,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}
                     limits={{ min: filter.min, max: filter.max }}
@@ -128,6 +128,24 @@ const ParameterTableFilters = (props: PropsType) => (
                     label={filter.label}
                     mode={filter.mode || 'range'}
                     stepSize={filter.precision || 0.1}
+                    disabled={!!props.excludeTable}
+                    onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
+                    placeholder="-"
+                    tooltip={filter.description}
+                  />
+                );
+              case MONEY_RANGE:
+                return (
+                  <InputRange
+                    inputType="text"
+                    valueType={MONEY_RANGE}
+                    input={{
+                      value: filter.value || "",
+                      formattedValue: filter.formattedValue,
+                      onChange: (value, formattedValue) => props.onSetFilterValue(filterIdx, value, formattedValue),
+                    }}
+                    label={filter.label}
+                    mode={filter.mode || 'range'}
                     disabled={!!props.excludeTable}
                     onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
                     placeholder="-"

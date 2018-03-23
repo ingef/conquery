@@ -58,6 +58,7 @@
     "redux-thunk": "^2.1.0"
   },
   "devDependencies": {
+    "accounting": "^0.4.1",
     "autoprefixer": "^8.0.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
@@ -109,6 +110,7 @@
     "raw-loader": "^0.5.1",
     "react-hot-loader": "^4.0.0-rc.0",
     "react-markdown": "^3.3.0",
+    "react-number-format": "^3.3.0",
     "redux-logger": "^3.0.6",
     "redux-mock-store": "^1.5.1",
     "resolve-url-loader": "^2.2.1",

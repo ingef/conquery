@@ -111,6 +111,10 @@ inputRange:
   minLabel: 'min'
   maxLabel: 'max'
 
+moneyRange:
+  pattern: ""
+  factor: "100"
+
 previousQueries:
   loading: "Lade Anfragen"
   error: "Konnte Anfragen nicht laden"

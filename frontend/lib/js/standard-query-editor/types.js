@@ -1,13 +1,15 @@
 // @flow
 import { type SelectOptionsType } from '../common/types';
 
-type RangeFilterValueType = { min?: number, max?: number, exact?: number }
+export type RangeFilterValueType = { min?: number, max?: number, exact?: number }
+export type RangeFilterFormattedValueType = { min?: number, max?: number, exact?: number }
 export type RangeFilterType = {
   id: number,
   label: string,
   description?: string,
-  type: 'INTEGER_RANGE' | 'REAL_RANGE',
+  type: 'INTEGER_RANGE' | 'REAL_RANGE' | 'MONEY_RANGE',
   value: ?RangeFilterValueType,
+  formattedValue: ?RangeFilterFormattedValueType,
   unit?: string,
   mode: 'range' | 'exact',
   precision?: number,

@@ -11,6 +11,7 @@ import InputRangeHeader        from './InputRangeHeader';
 
 type PropsType = FieldPropsType & {
   inputType: string,
+  valueType?: string,
   label: string,
   unit?: string,
   limits?: {
@@ -30,6 +31,11 @@ type PropsType = FieldPropsType & {
       min?: number,
       max?: number
     },
+    formattedValue: ?{
+      exact?: string,
+      min?: string,
+      max?: string
+    }
   }
 };
 
@@ -48,7 +54,8 @@ const InputRange = (props: PropsType) => {
 
   const onChangeValue = (type, newValue) => {
     const { value } = props.input;
-    const nextValue = newValue || null;
+    const {formattedValue, raw} = newValue || null;
+    const nextValue = raw;
 
     if (type === 'exact')
       // SET ENTIRE VALUE TO NULL IF POSSIBLE
@@ -70,6 +77,11 @@ const InputRange = (props: PropsType) => {
           min: value ? value.min : null,
           max: value ? value.max : null,
           [type]: nextValue
+        },
+        {
+          min: props.input.formattedValue ? props.input.formattedValue.min : null,
+          max: props.input.formattedValue ? props.input.formattedValue.max : null,
+          [type]: formattedValue
         });
     else
       props.input.onChange(null);
@@ -102,6 +114,7 @@ const InputRange = (props: PropsType) => {
         <div className="input-range__input-container">
           <InputWithLabel
             inputType={props.inputType}
+            valueType={props.valueType}
             className="input-range__input-with-label"
             placeholder="-"
             label={T.translate('inputRange.exactLabel')}
@@ -119,18 +132,21 @@ const InputRange = (props: PropsType) => {
         <div className="input-range__input-container">
           <InputWithLabel
             inputType={props.inputType}
+            valueType={props.valueType}
             className="input-range__input-with-label"
             placeholder={props.placeholder}
             label={T.translate('inputRange.minLabel')}
             tinyLabel={props.smallLabel || true}
             input={{
               value: minValue,
+              formattedValue: props.input.formattedValue ? props.input.formattedValue.min : '',
               onChange: value => onChangeValue('min', value),
             }}
             inputProps={inputProps}
           />
           <InputWithLabel
             inputType={props.inputType}
+            valueType={props.valueType}
             className="input-range__input-with-label"
             placeholder={props.placeholder}
             label={T.translate('inputRange.maxLabel')}

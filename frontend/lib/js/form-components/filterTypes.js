@@ -6,6 +6,7 @@ export const INTEGER_RANGE = 'INTEGER_RANGE';
 export const REAL_RANGE = 'REAL_RANGE';
 export const STRING = 'STRING';
 export const BIG_MULTI_SELECT = 'BIG_MULTI_SELECT';
+export const MONEY_RANGE = 'MONEY_RANGE';
 
 export const SUPPORTED_FILTERS = {
   SELECT: SELECT,
@@ -14,6 +15,7 @@ export const SUPPORTED_FILTERS = {
   REAL_RANGE: REAL_RANGE,
   STRING: STRING,
   BIG_MULTI_SELECT: BIG_MULTI_SELECT,
+  MONEY_RANGE: MONEY_RANGE,
   // Maybe later:
   // 'MONEY_RANGE'
   // 'DATE_RANGE'
