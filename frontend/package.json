@@ -58,7 +58,6 @@
     "redux-thunk": "^2.1.0"
   },
   "devDependencies": {
-    "accounting": "^0.4.1",
     "autoprefixer": "^8.0.0",
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.0",
