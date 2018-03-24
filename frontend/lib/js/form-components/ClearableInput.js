@@ -26,7 +26,7 @@ const ClearableInput = (props: PropsType) => {
             prefix={T.translate('moneyRange.prefix')}
             thousandSeparator={T.translate('moneyRange.thousandSeparator')}
             decimalSeparator={T.translate('moneyRange.decimalSeparator')}
-            decimalScale={T.translate('moneyRange.decimalScale')}
+            decimalScale={parseInt(T.translate('moneyRange.decimalScale'))}
             className="clearable-input__input"
             placeholder={props.placeholder}
             type={props.inputType}

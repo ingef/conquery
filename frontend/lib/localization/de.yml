@@ -115,7 +115,7 @@ moneyRange:
   factor: 100
   thousandSeparator: "."
   decimalSeparator: ","
-  decimalScale: 2
+  decimalScale: "2"
   prefix: "€"
 
 previousQueries:
