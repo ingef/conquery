@@ -204,8 +204,8 @@ module.exports = function (app, port) {
         res.setHeader('Content-Type', 'application/json');
 
         res.send({
-          resolvedConcepts: req.body.concepts.slice(0, 1),
-          unknownConcepts: req.body.concepts.slice(1)
+          unknownConcepts: req.body.concepts.slice(0, 1),
+          resolvedConcepts: req.body.concepts.slice(1),
         });
       }, 500);
     }
