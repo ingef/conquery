@@ -23,8 +23,6 @@ import {
   LOAD_QUERY,
   CLEAR_QUERY,
   EXPAND_PREVIOUS_QUERY,
-  SHOW_CONCEPT_LIST_DETAILS,
-  HIDE_CONCEPT_LIST_DETAILS,
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
   TOGGLE_TABLE,
@@ -133,11 +131,6 @@ export const expandPreviousQuery = (rootConcepts, groups) => ({
   type: EXPAND_PREVIOUS_QUERY,
   payload: { rootConcepts, groups }
 });
-
-export const showConceptListDetails = (andIdx, orIdx) =>
-  ({ type: SHOW_CONCEPT_LIST_DETAILS, payload: { andIdx, orIdx } });
-
-export const hideConceptListDetails = () => ({ type: HIDE_CONCEPT_LIST_DETAILS });
 
 export const selectNodeForEditing = (andIdx, orIdx) => ({
   type: SELECT_NODE_FOR_EDITING,

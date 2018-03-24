@@ -29,14 +29,11 @@ import {
   toggleExcludeGroup,
   expandPreviousQuery,
   selectNodeForEditing,
-  showConceptListDetails,
-  hideConceptListDetails,
 }                                 from './actions'
 import type { StandardQueryType } from './types';
 
 import QueryEditorDropzone        from './QueryEditorDropzone';
 import QueryGroup                 from './QueryGroup';
-import ConceptListDetailsModal    from './ConceptListDetailsModal';
 
 
 type PropsType = {
@@ -50,13 +47,10 @@ type PropsType = {
   deleteGroup: Function,
   toggleExcludeGroup: Function,
   expandPreviousQuery: Function,
-  showConceptListDetails: Function,
-  hideConceptListDetails: Function,
   loadPreviousQuery: Function,
   selectNodeForEditing: Function,
   queryGroupModalSetNode: Function,
   dateRange: Object,
-  selectedConceptListDetails: Object,
 };
 
 const Query = (props: PropsType) => {
@@ -87,12 +81,13 @@ const Query = (props: PropsType) => {
                 onDeleteGroup={() => props.deleteGroup(andIdx)}
                 onFilterClick={orIdx => props.selectNodeForEditing(andIdx, orIdx)}
                 onExpandClick={props.expandPreviousQuery}
-                onDetailsClick={props.showConceptListDetails}
                 onExcludeClick={() => props.toggleExcludeGroup(andIdx)}
                 onDateClick={() => props.queryGroupModalSetNode(andIdx)}
                 onLoadPreviousQuery={props.loadPreviousQuery}
               />,
-              <p className="query-group-connector">{T.translate('common.and')}</p>
+              <p key={`${andIdx}.and`} className="query-group-connector">
+                {T.translate('common.and')}
+              </p>
             ])).concat(
               <div
                 className="dropzone-wrap"
@@ -108,18 +103,6 @@ const Query = (props: PropsType) => {
             )
         }
       </div>
-      {
-        props.selectedConceptListDetails &&
-        <ConceptListDetailsModal
-          onCloseModal={props.hideConceptListDetails}
-          headline={props.selectedConceptListDetails.label}
-          conceptTreeRoot={props.selectedConceptListDetails.conceptListMetadata.root}
-          items={
-            props.selectedConceptListDetails.conceptListMetadata.concepts
-              .map(({ label }) => label)
-          }
-        />
-      }
     </div>
   );
 };
@@ -128,9 +111,6 @@ function mapStateToProps(state) {
   return {
     query: state.query,
     isEmptyQuery: state.query.length === 0,
-    selectedConceptListDetails: state.query.map(x => x.elements)
-      .reduce((a, b) => a.concat(b), [])
-      .find(x => x.showDetails),
 
     // only used by other actions
     rootConcepts: state.categoryTrees.trees,
@@ -157,8 +137,6 @@ function mapDispatchToProps(dispatch: Dispatch<*>) {
 
       dispatch(replace(toQuery(datasetId, queryId)));
     },
-    showConceptListDetails: (andIdx, orIdx) => dispatch(showConceptListDetails(andIdx, orIdx)),
-    hideConceptListDetails: () => dispatch(hideConceptListDetails()),
     loadPreviousQuery: (datasetId, queryId) =>
       dispatch(loadPreviousQuery(datasetId, queryId)),
   };

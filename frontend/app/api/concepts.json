@@ -4,6 +4,7 @@
     "movie_appearances": {
       "label": "Movie Appearances",
       "active": true,
+      "codeListResolvable": true,
       "children": [
         "action_movies",
         "fantasy_movies",
