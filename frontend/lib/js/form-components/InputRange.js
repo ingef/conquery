@@ -40,11 +40,15 @@ type PropsType = FieldPropsType & {
 };
 
 const InputRange = (props: PropsType) => {
-  const { value } = props.input;
+  const { value, formattedValue } = props.input;
   // Make sure undefined / null is never set as a value, but an empty string instead
   const minValue = (value && value.min) || '';
   const maxValue = (value && value.max) || '';
   const exactValue = (value && value.exact) || '';
+  const minFormattedValue = ((formattedValue && formattedValue.min) || minValue) || '';
+  const maxFormattedValue = ((formattedValue && formattedValue.max) || maxValue) || '';
+  const exactFormattedValue = ((formattedValue && formattedValue.exact) || exactValue) || '';
+
   const isRangeMode = props.mode === 'range';
   const inputProps = {
     step: props.stepSize || null,
@@ -54,7 +58,7 @@ const InputRange = (props: PropsType) => {
 
   const onChangeValue = (type, newValue) => {
     const { value } = props.input;
-    const {formattedValue, raw} = newValue || null;
+    const {formattedValue, raw} = newValue;
     const nextValue = raw;
 
     if (type === 'exact')
@@ -62,7 +66,10 @@ const InputRange = (props: PropsType) => {
       if (nextValue === null)
         props.input.onChange(null);
       else
-        props.input.onChange({ exact: nextValue });
+        props.input.onChange(
+          {exact: nextValue},
+          {exact: formattedValue}
+        );
     else if (type === 'min' || type === 'max')
       // SET ENTIRE VALUE TO NULL IF POSSIBLE
       if (
@@ -121,6 +128,7 @@ const InputRange = (props: PropsType) => {
             tinyLabel={props.smallLabel || true}
             input={{
               value: exactValue,
+              formattedValue: exactFormattedValue,
               onChange: (value) => onChangeValue('exact', value)
             }}
             inputProps={inputProps}
@@ -139,7 +147,7 @@ const InputRange = (props: PropsType) => {
             tinyLabel={props.smallLabel || true}
             input={{
               value: minValue,
-              formattedValue: props.input.formattedValue ? props.input.formattedValue.min : '',
+              formattedValue: minFormattedValue,
               onChange: value => onChangeValue('min', value),
             }}
             inputProps={inputProps}
@@ -153,6 +161,7 @@ const InputRange = (props: PropsType) => {
             tinyLabel={props.smallLabel || true}
             input={{
               value: maxValue,
+              formattedValue: maxFormattedValue,
               onChange: value => onChangeValue('max', value),
             }}
             inputProps={inputProps}
