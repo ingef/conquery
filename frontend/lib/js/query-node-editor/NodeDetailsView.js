@@ -6,9 +6,11 @@ import T                  from 'i18n-react';
 import { DropTarget }     from 'react-dnd';
 import { dndTypes }       from '../common/constants';
 
-import { AdditionalInfoHoverable } from '../tooltip';
+import {
+  AdditionalInfoHoverable
+}                         from '../tooltip';
 import { EditableText }   from '../form-components';
-import { IconButton } from '../button';
+import { IconButton }     from '../button';
 
 import { getConceptById } from '../category-trees/globalTreeStoreHelper';
 
@@ -114,7 +116,6 @@ export const NodeDetailsView = (props: PropsType) => {
             </button>
           </div>
         }
-
         {
           !node.isPreviousQuery &&
           <div className="query-node-editor__row">
