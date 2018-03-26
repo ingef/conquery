@@ -17,6 +17,7 @@ import {
   MULTI_SELECT,
   INTEGER_RANGE,
   REAL_RANGE,
+  MONEY_RANGE,
   STRING,
   BIG_MULTI_SELECT,
 } from '../form-components';
@@ -125,6 +126,24 @@ const ParameterTableFilters = (props: PropsType) => (
                     label={filter.label}
                     mode={filter.mode || 'range'}
                     stepSize={filter.precision || 0.1}
+                    disabled={!!props.excludeTable}
+                    onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
+                    placeholder="-"
+                  />
+                );
+              case MONEY_RANGE:
+                return (
+                  <InputRange
+                    inputType="text"
+                    valueType={MONEY_RANGE}
+                    input={{
+                      value: filter.value || "",
+                      formattedValue: filter.formattedValue,
+                      onChange: (value, formattedValue) =>
+                        props.onSetFilterValue(filterIdx, value, formattedValue),
+                    }}
+                    label={filter.label}
+                    mode={filter.mode || 'range'}
                     disabled={!!props.excludeTable}
                     onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
                     placeholder="-"

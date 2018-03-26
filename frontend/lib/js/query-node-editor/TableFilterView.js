@@ -17,10 +17,11 @@ export const TableFilterView = (props: PropsType) => {
         <ParameterTableFilters
           key={editorState.selectedInputTableIdx}
           filters={selectedTable.filters}
-          onSetFilterValue={(filterIdx, value) => props.onSetFilterValue(
+          onSetFilterValue={(filterIdx, value, formattedValue) => props.onSetFilterValue(
             editorState.selectedInputTableIdx,
             filterIdx,
-            value
+            value,
+            formattedValue
           )}
           onSwitchFilterMode={(filterIdx, mode) => props.onSwitchFilterMode(
             editorState.selectedInputTableIdx,
