@@ -8,20 +8,23 @@ import { AdditionalInfoHoverable } from '../tooltip';
 import { isEmpty }                 from '../common/helpers';
 import { dndTypes }                from '../common/constants';
 
+import {
+  type AdditionalInfoHoverableNodeType
+}                                  from '../tooltip/AdditionalInfoHoverable';
+import { type DraggedNodeType }    from '../standard-query-editor/types';
+
 type PropsType = {
-  node: {
-    id: number | string,
+  node: AdditionalInfoHoverableNodeType & {
     label: string,
     hasChildren: boolean,
     description?: string,
-    tables?: [],
     matchingEntries?: number,
-    additionalInfos?: [],
   },
   open: boolean,
   depth: number,
   active?: boolean,
   onTextClick?: Function,
+  createQueryElement: () => DraggedNodeType,
   connectDragSource: Function,
 };
 
@@ -69,38 +72,28 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
     : props.connectDragSource(render);
 };
 
-
-const HoverableCategoryTreeNodeTextContainer = AdditionalInfoHoverable(
-  CategoryTreeNodeTextContainer
-);
-
 /**
  * Implements the drag source contract.
  */
 const nodeSource = {
-  beginDrag(props) {
+  beginDrag(props: PropsType): DraggedNodeType {
     // Return the data describing the dragged item
-    // by creating a concept list
-    return {
-      ids: [props.node.id],
-      label: props.node.label,
-      tables: props.node.tables
-    };
+    return props.createQueryElement();
   }
 };
 
 /**
  * Specifies the props to inject into your component.
  */
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
-  };
-}
+const collect = (connect, monitor) => ({
+  connectDragSource: connect.dragSource(),
+  isDragging: monitor.isDragging()
+});
 
-export default DragSource(
+const DraggableCategoryTreeNodeTextContainer = DragSource(
   dndTypes.CATEGORY_TREE_NODE,
   nodeSource,
   collect
-)(HoverableCategoryTreeNodeTextContainer);
+)(CategoryTreeNodeTextContainer);
+
+export default AdditionalInfoHoverable(DraggableCategoryTreeNodeTextContainer);

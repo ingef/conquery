@@ -3,7 +3,7 @@
 import React                      from 'react';
 import { type FieldPropsType }    from 'redux-form';
 
-import { type SelectOptionsType } from '../common/types';
+import { type SelectOptionsType } from '../common/types/backend';
 import InputMultiSelect           from './InputMultiSelect';
 
 type PropsType = FieldPropsType & {

@@ -12,6 +12,10 @@ import {
 } from '../common/helpers';
 
 import {
+  type DateRangeType
+} from '../common/types/backend'
+
+import {
   resetAllFiltersInTables
 } from '../model/table';
 
@@ -29,16 +33,13 @@ import {
 } from '../previous-queries/list/actionTypes';
 
 import {
-  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT
+  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
+  type UploadConceptListModalResultType
 } from '../upload-concept-list-modal/actionTypes'
 
 import {
   INTEGER_RANGE
 } from '../form-components';
-
-import {
-  nodeHasActiveFilters
-} from '../model/node';
 
 import {
   DROP_AND_NODE,
@@ -63,28 +64,47 @@ import {
 
 import type
 {
-  ElementType, QueryGroupType,
-  StandardQueryType
+  QueryNodeType,
+  QueryGroupType,
+  StandardQueryType,
+  DraggedNodeType,
+  DraggedQueryType
 } from './types';
 
 
 const initialState: StandardQueryType = [];
 
 
-const filterItem = (item: ElementType) => {
-  return {
-    id: item.id,
-    label: item.label,
-    description: item.description,
-    tables: item.tables,
-    additionalInfos: item.additionalInfos,
-    matchingEntries: item.matchingEntries,
-    hasActiveFilters: item.hasActiveFilters,
-    excludeTimestamps: item.excludeTimestamps,
-    isPreviousQuery: item.isPreviousQuery,
+const filterItem = (item: DraggedNodeType | DraggedQueryType): QueryNodeType => {
+  // This sort of mapping might be a problem when adding new optional properties to
+  // either Nodes or Queries: Flow won't complain when we omit those optional
+  // properties here. But we can't use a spread operator either...
 
-    ids: item.ids,
-  };
+  if (item.isPreviousQuery)
+    return {
+      label: item.label,
+      excludeTimestamps: item.excludeTimestamps,
+      loading: item.loading,
+      error: item.error,
+
+      id: item.id,
+      // eslint-disable-next-line no-use-before-define
+      query: item.query,
+      isPreviousQuery: item.isPreviousQuery,
+    };
+  else
+    return {
+      ids: item.ids,
+      tables: item.tables,
+      tree: item.tree,
+
+      label: item.label,
+      excludeTimestamps: item.excludeTimestamps,
+      loading: item.loading,
+      error: item.error,
+
+      isPreviousQuery: item.isPreviousQuery,
+    }
 };
 
 const setGroupProperties = (node, andIdx, properties) => {
@@ -123,7 +143,15 @@ const setAllElementsProperties = (node, properties) => {
   }));
 };
 
-const dropAndNode = (state, action) => {
+const dropAndNode = (
+  state,
+  action: {
+    payload: {
+      item: DraggedNodeType | DraggedQueryType,
+      dateRange?: DateRangeType
+    }
+  }
+) => {
   const group = state[state.length - 1];
   const dateRangeOfLastGroup = (group ? group.dateRange : null);
   const {item, dateRange = dateRangeOfLastGroup} = action.payload;
@@ -141,7 +169,15 @@ const dropAndNode = (state, action) => {
     : nextState;
 };
 
-const dropOrNode = (state, action) => {
+const dropOrNode = (
+  state,
+  action: {
+    payload: {
+      item: DraggedNodeType | DraggedQueryType,
+      andIdx: number
+    }
+  }
+) => {
   const { item, andIdx } = action.payload;
 
   const nextState = [
@@ -156,7 +192,6 @@ const dropOrNode = (state, action) => {
     ...state.slice(andIdx + 1)
   ];
 
-
   return item.moved
     ? item.andIdx === andIdx
       ? deleteNode(nextState, { payload: { andIdx: item.andIdx, orIdx: item.orIdx + 1 } })
@@ -165,7 +200,7 @@ const dropOrNode = (state, action) => {
 };
 
 // Delete a single Node (concept inside a group)
-const deleteNode = (state, action) => {
+const deleteNode = (state, action: { payload: { andIdx: number, orIdx: number } }) => {
   const { andIdx, orIdx } = action.payload;
 
   return [
@@ -222,14 +257,7 @@ const updateNodeTable = (state, andIdx, orIdx, tableIdx, table) => {
 };
 
 const updateNodeTables = (state, andIdx, orIdx, tables) => {
-  const node = state[andIdx].elements[orIdx];
-
-  const properties = {
-    tables,
-    hasActiveFilters: nodeHasActiveFilters(node, tables)
-  };
-
-  return setElementProperties(state, andIdx, orIdx, properties);
+  return setElementProperties(state, andIdx, orIdx, { tables });
 };
 
 const toggleNodeTable = (state, action) => {
@@ -335,10 +363,7 @@ const resetNodeAllFilters = (state, action) => {
   const { andIdx, orIdx } = nodeIdx;
   const node = state[andIdx].elements[orIdx];
 
-  const newState = setElementProperties(state, andIdx, orIdx, {
-    excludeTimestamps: false,
-    hasActiveFilters: false,
-  });
+  const newState = setElementProperties(state, andIdx, orIdx, { excludeTimestamps: false });
 
   if (!node.tables) return newState;
 
@@ -420,13 +445,13 @@ const mergeTablesFromSavedConcept = (savedConcept, concept) => {
 // a) merge elements with concept data from category trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (state, action) => {
+const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[] } }) => {
   const { rootConcepts, groups } = action.payload;
 
-  return groups.map((group: QueryGroupType) => {
+  return groups.map((group) => {
     return {
       ...group,
-      elements: group.elements.map((element: ElementType) => {
+      elements: group.elements.map((element) => {
         if (element.type === 'QUERY') {
           return {
             ...element,
@@ -453,8 +478,7 @@ const expandPreviousQuery = (state, action) => {
             label,
             ids,
             tables,
-            concepts: lookupResult.concepts,
-            hasActiveFilters: nodeHasActiveFilters(element, tables),
+            tree: lookupResult.root
           };
         }
       })
@@ -533,12 +557,8 @@ const toggleTimestamps = (state, action) => {
   if (!nodePosition) return state;
 
   const {andIdx, orIdx} = nodePosition;
-  const node = state[andIdx].elements[orIdx];
 
-  return setElementProperties(state, andIdx, orIdx, {
-    hasActiveFilters: nodeHasActiveFilters(node),
-    excludeTimestamps: isExcluded
-  });
+  return setElementProperties(state, andIdx, orIdx, { excludeTimestamps: isExcluded });
 };
 
 const loadFilterSuggestionsStart = (state, action) =>
@@ -556,19 +576,20 @@ const loadFilterSuggestionsSuccess = (state, action) =>
 const loadFilterSuggestionsError = (state, action) =>
   setNodeFilterProperties(state, action, { isLoading: false, options: [] });
 
-const insertUploadedConceptList = (state, action) => {
-  const { label, rootConcepts, resolutionResult, queryContext } = action.data;
-
-  let queryElement = { error: T.translate('queryEditor.couldNotInsertConceptList') };
+const createQueryNodeFromConceptListUploadResult = (
+    result: UploadConceptListModalResultType
+  ) : DraggedNodeType => {
+  const { label, rootConcepts, resolutionResult } = result;
 
   if (resolutionResult.conceptList) {
     const lookupResult = getConceptsByIdsWithTables(resolutionResult.conceptList, rootConcepts);
 
     if (lookupResult)
-      queryElement = {
+      return {
         label,
         ids: resolutionResult.conceptList,
         tables: lookupResult.tables,
+        tree: lookupResult.root
       };
   } else if (resolutionResult.filter) {
     const [conceptRoot] =
@@ -586,14 +607,30 @@ const insertUploadedConceptList = (state, action) => {
       filters: mergeFiltersFromSavedConcept(resolvedTable, table)
     }));
 
-    queryElement = {
-      ...filterItem(conceptRoot),
+    return {
+      label,
+      ids: [conceptRoot.id],
       tables,
-      hasActiveFilters: true
+      tree: conceptRoot.id
     };
   }
 
-  if (queryContext.andIdx !== undefined && queryContext.andIdx !== null)
+  return {
+    label: label,
+    ids: [],
+    tables: [],
+    tree: '',
+    concepts: [],
+
+    error: T.translate('queryEditor.couldNotInsertConceptList')
+  };
+}
+
+const insertUploadedConceptList = (state, action: { data: UploadConceptListModalResultType }) => {
+  const { queryContext } = action.data;
+  const queryElement = createQueryNodeFromConceptListUploadResult(action.data);
+
+  if (queryContext.andIdx != null)
     return dropOrNode(state, { payload: { item: queryElement, andIdx: queryContext.andIdx } });
 
   return dropAndNode(state, { payload: { item: queryElement, dateRange: queryContext.dateRange } });
@@ -603,7 +640,7 @@ const selectNodeForEditing = (state, {payload: { andIdx, orIdx }}) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 }
 
-const deselectNode = (state) => {
+const deselectNode = (state, action) => {
   return setAllElementsProperties(state, { isEditing: false });
 }
 

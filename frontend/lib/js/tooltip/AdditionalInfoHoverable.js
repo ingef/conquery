@@ -3,9 +3,22 @@
 import { connect }          from 'react-redux';
 import { type Dispatch }    from 'redux-thunk';
 
+import type {
+  DateRangeType,
+  InfoType
+}                           from '../common/types/backend';
+
 import { isEmpty }          from '../common/helpers';
 import * as actions         from './actions';
 import HoverableBase        from './HoverableBase';
+
+export type AdditionalInfoHoverableNodeType = {
+  label: string,
+  description: string,
+  matchingEntries: number,
+  dateRange: DateRangeType,
+  additionalInfos: Array<InfoType>
+}
 
 // Decorates a component with a hoverable node.
 // On mouse enter, additional infos about the component are saved in the state
@@ -14,7 +27,10 @@ import HoverableBase        from './HoverableBase';
 const AdditionalInfoHoverable = (Component: any) => {
   const mapStateToProps = () => ({});
 
-  const mapDispatchToProps = (dispatch: Dispatch, ownProps) => ({
+  const mapDispatchToProps = (
+    dispatch: Dispatch,
+    ownProps: { node: AdditionalInfoHoverableNodeType }
+  ) => ({
     onDisplayAdditionalInfos: () => {
       const node = ownProps.node;
 

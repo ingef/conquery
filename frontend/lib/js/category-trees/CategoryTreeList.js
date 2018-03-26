@@ -7,10 +7,7 @@ import type { StateType }   from '../app/reducers';
 
 import { getConceptById }   from './globalTreeStoreHelper';
 
-import {
-  type TreeNodeType,
-  type TreesType
-}   from './reducer';
+import { type TreesType }   from './reducer';
 
 import CategoryTree         from './CategoryTree';
 import CategoryTreeFolder   from './CategoryTreeFolder';
@@ -20,7 +17,7 @@ type PropsType = {
   activeTab: string,
 };
 
-class CategoryTreeList extends React.Component {
+class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
@@ -43,7 +40,7 @@ class CategoryTreeList extends React.Component {
             .filter(treeId => !this.props.trees[treeId].parent)
             .map((treeId, i) => {
               const tree = this.props.trees[treeId];
-              const rootConcept: ?TreeNodeType = getConceptById(treeId);
+              const rootConcept = getConceptById(treeId);
 
               return tree.detailsAvailable
                 ? <CategoryTree
@@ -51,6 +48,7 @@ class CategoryTreeList extends React.Component {
                     id={treeId}
                     label={tree.label}
                     tree={rootConcept}
+                    treeId={treeId}
                     loading={!!tree.loading}
                     error={tree.error}
                     depth={0}
