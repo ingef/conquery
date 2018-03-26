@@ -59,10 +59,20 @@
             {
               "id": "budget",
               "label": "Budget",
-              "type": "INTEGER_RANGE",
+              "type": "MONEY_RANGE",
               "unit": "1K USD",
               "description": "The movie's total budget",
-              "min": 1
+              "min": 1,
+              "value": {
+                "min": "10.050,32",
+                "max": 133700,
+                "exact": 9999
+              },
+              "defaultValue": {
+                "min": 4455,
+                "max": "11.222,33",
+                "exact": "9991"
+              }
             }
           ]
         },

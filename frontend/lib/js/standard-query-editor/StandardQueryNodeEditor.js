@@ -40,11 +40,12 @@ const mapDispatchToProps = (dispatch) => ({
       tableIdx,
       isExcluded
     )),
-  onSetFilterValue: (tableIdx, filterIdx, value) =>
+  onSetFilterValue: (tableIdx, filterIdx, value, formattedValue) =>
     dispatch(setFilterValue(
       tableIdx,
       filterIdx,
-      value
+      value,
+      formattedValue
     )),
   onSwitchFilterMode: (tableIdx, filterIdx, mode) =>
     dispatch(switchFilterMode(

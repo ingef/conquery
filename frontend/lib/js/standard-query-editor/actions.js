@@ -144,9 +144,9 @@ export const toggleTable = (tableIdx, isExcluded) => ({
   payload: { tableIdx, isExcluded }
 });
 
-export const setFilterValue = (tableIdx, filterIdx, value) => ({
+export const setFilterValue = (tableIdx, filterIdx, value, formattedValue) => ({
   type: SET_FILTER_VALUE,
-  payload: { tableIdx, filterIdx, value }
+  payload: { tableIdx, filterIdx, value, formattedValue }
 });
 
 export const resetAllFilters = (andIdx, orIdx) => ({
