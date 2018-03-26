@@ -12,22 +12,6 @@ import type {
   SelectFilterValueType
 } from '../common/types/backend';
 
-export type RangeFilterValueType = { min?: number, max?: number, exact?: number }
-export type RangeFilterFormattedValueType = { min?: number, max?: number, exact?: number }
-export type RangeFilterType = {
-  id: number,
-  label: string,
-  description?: string,
-  type: 'INTEGER_RANGE' | 'REAL_RANGE' | 'MONEY_RANGE',
-  value: ?RangeFilterValueType,
-  formattedValue: ?RangeFilterFormattedValueType,
-  unit?: string,
-  mode: 'range' | 'exact',
-  precision?: number,
-  min?: number,
-  max?: number,
-}
-
 // A concept that is part of a query node in the editor
 export type ConceptType =  {
   id: string,
