@@ -19,8 +19,7 @@ export const resetAllFiltersInTables = (tables: TableType[]) => {
       // $FlowFixMe
       ? table.filters.map((filter) => ({
           ...filter,
-          value: filter.defaultValue,
-          formattedValue: filter.defaultValue
+          value: filter.defaultValue
         }))
       : null;
 

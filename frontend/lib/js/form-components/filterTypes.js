@@ -17,7 +17,6 @@ export const SUPPORTED_FILTERS = {
   BIG_MULTI_SELECT: BIG_MULTI_SELECT,
   MONEY_RANGE: MONEY_RANGE,
   // Maybe later:
-  // 'MONEY_RANGE'
   // 'DATE_RANGE'
   // 'BOOLEAN'
 };

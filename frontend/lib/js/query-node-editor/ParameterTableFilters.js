@@ -103,6 +103,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     inputType="number"
                     input={{
                       value: filter.value,
+                      defaultValue: filter.defaultValue,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}
                     limits={{ min: filter.min, max: filter.max }}
@@ -121,6 +122,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     inputType="number"
                     input={{
                       value: filter.value,
+                      defaultValue: filter.defaultValue,
                       onChange: (value) => props.onSetFilterValue(filterIdx, value),
                     }}
                     limits={{ min: filter.min, max: filter.max }}

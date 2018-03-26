@@ -24,7 +24,7 @@
     "comma-dangle": 0, // May be there, helps better diffs and easier maintainability
     "indent": 0,                 // We indent how we like. (sometimes a custom indentation is great)
     "jsx-quotes": [2, "prefer-double"],
-    "max-len": [2, 100],
+    "max-len": [2, 120],
     "no-console": 2,
     "key-spacing": 0, // It's ok to have spacing and align object key value pairs
     "react/jsx-no-bind": 0, // We allow .bind(this) in JSX - aware of performance issues

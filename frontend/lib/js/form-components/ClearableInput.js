@@ -5,7 +5,7 @@ import T                    from 'i18n-react';
 import NumberFormat         from 'react-number-format';
 
 import { isEmpty }          from '../common/helpers';
-import { MONEY_RANGE }      from '.';
+import { MONEY_RANGE }      from './filterTypes';
 
 type PropsType = {
   inputType: string,
@@ -15,6 +15,12 @@ type PropsType = {
   formattedValue?: string,
   inputProps?: Object,
   onChange: Function,
+};
+
+type NumberFormatValueType = {
+  floatValue:number,
+  formattedValue: string,
+  value: string
 };
 
 const ClearableInput = (props: PropsType) => {
@@ -30,7 +36,7 @@ const ClearableInput = (props: PropsType) => {
             className="clearable-input__input"
             placeholder={props.placeholder}
             type={props.inputType}
-            onValueChange={(values) => { // values: {floatValue, formattedValue, value}
+            onValueChange={(values: NumberFormatValueType) => {
               const { formattedValue, floatValue } = values;
               props.onChange({
                 formattedValue,

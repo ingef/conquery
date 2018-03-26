@@ -112,7 +112,7 @@ inputRange:
   maxLabel: 'max'
 
 moneyRange:
-  factor: 100
+  factor: "100"
   thousandSeparator: "."
   decimalSeparator: ","
   decimalScale: "2"

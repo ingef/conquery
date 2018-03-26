@@ -1,13 +1,13 @@
 // @flow
 
-import React                   from 'react';
-import T                       from 'i18n-react';
-import classnames              from 'classnames';
+import React from 'react';
+import T from 'i18n-react';
+import classnames from 'classnames';
 import { type FieldPropsType } from 'redux-form';
 
-import InputWithLabel          from './InputWithLabel';
-import ToggleButton            from './ToggleButton';
-import InputRangeHeader        from './InputRangeHeader';
+import InputWithLabel from './InputWithLabel';
+import ToggleButton from './ToggleButton';
+import InputRangeHeader from './InputRangeHeader';
 
 type PropsType = FieldPropsType & {
   inputType: string,
@@ -45,9 +45,11 @@ const InputRange = (props: PropsType) => {
   const minValue = (value && value.min) || '';
   const maxValue = (value && value.max) || '';
   const exactValue = (value && value.exact) || '';
-  const minFormattedValue = ((formattedValue && formattedValue.min) || minValue) || '';
-  const maxFormattedValue = ((formattedValue && formattedValue.max) || maxValue) || '';
-  const exactFormattedValue = ((formattedValue && formattedValue.exact) || exactValue) || '';
+
+  const factor = T.translate('moneyRange.factor') || 1;
+  const minFormattedValue = ((formattedValue && formattedValue.min) || (parseInt(minValue) / factor)) || '';
+  const maxFormattedValue = ((formattedValue && formattedValue.max) || (parseInt(maxValue) / factor)) || '';
+  const exactFormattedValue = ((formattedValue && formattedValue.exact) || (parseInt(exactValue) / factor)) || '';
 
   const isRangeMode = props.mode === 'range';
   const inputProps = {
@@ -58,28 +60,14 @@ const InputRange = (props: PropsType) => {
 
   const onChangeValue = (type, newValue) => {
     const { value } = props.input;
-    const {formattedValue, raw} = newValue;
-    const nextValue = raw;
+    const { formattedValue, raw } = newValue;
+    const nextValue = raw || null;
 
     if (type === 'exact')
-      // SET ENTIRE VALUE TO NULL IF POSSIBLE
-      if (nextValue === null)
-        props.input.onChange(null);
-      else
-        props.input.onChange(
-          {exact: nextValue},
-          {exact: formattedValue}
-        );
+        props.input.onChange({
+          exact: nextValue
+        });
     else if (type === 'min' || type === 'max')
-      // SET ENTIRE VALUE TO NULL IF POSSIBLE
-      if (
-        nextValue === null && (
-          (value && value.min == null && type === 'max') ||
-          (value && value.max == null && type === 'min')
-        )
-      )
-        props.input.onChange(null);
-      else
         props.input.onChange({
           min: value ? value.min : null,
           max: value ? value.max : null,
