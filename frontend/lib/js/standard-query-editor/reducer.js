@@ -342,9 +342,9 @@ const setNodeFilterProperties = (state, action, obj) => {
 };
 
 const setNodeFilterValue = (state, action) => {
-  const { value } = action.payload;
+  const { value, formattedValue } = action.payload;
 
-  return setNodeFilterProperties(state, action, { value });
+  return setNodeFilterProperties(state, action, { value, formattedValue });
 };
 
 const switchNodeFilterMode = (state, action) => {

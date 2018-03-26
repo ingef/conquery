@@ -20,7 +20,6 @@ export type ConceptType =  {
   matchingEntries?: number
 };
 
-
 export type SelectOptionType = {
   label: string,
   value: number | string,
