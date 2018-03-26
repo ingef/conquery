@@ -111,7 +111,15 @@ const toggleTable = (value, valueIdx, conceptIdx, tableIdx, isExcluded) => {
   ];
 };
 
-const setFilterValue = (value, valueIdx, conceptIdx, tableIdx, filterIdx, filterValue) => {
+const setFilterValue = (
+  value,
+   valueIdx,
+   conceptIdx,
+   tableIdx,
+   filterIdx,
+   filterValue,
+   formattedFilterValue
+) => {
   const concepts = value[valueIdx].concepts;
   const tables = concepts[conceptIdx].tables;
   const filters = tables[tableIdx].filters;
@@ -125,7 +133,8 @@ const setFilterValue = (value, valueIdx, conceptIdx, tableIdx, filterIdx, filter
           ...filters.slice(0, filterIdx),
           {
             ...filters[filterIdx],
-            value: filterValue
+            value: filterValue,
+            formattedValue: formattedFilterValue,
           },
           ...filters.slice(filterIdx + 1),
         ]
@@ -282,7 +291,14 @@ export const FormConceptGroup = (props: PropsType) => {
             toggleTable(props.input.value, valueIdx, conceptIdx, tableIdx, isExcluded)
           )
         }
-        onSetFilterValue={(valueIdx, conceptIdx, tableIdx, filterIdx, filterValue) =>
+        onSetFilterValue={(
+          valueIdx,
+          conceptIdx,
+          tableIdx,
+          filterIdx,
+          filterValue,
+          formattedFilterValue
+        ) =>
           props.input.onChange(
             setFilterValue(
               props.input.value,
@@ -290,7 +306,8 @@ export const FormConceptGroup = (props: PropsType) => {
               conceptIdx,
               tableIdx,
               filterIdx,
-              filterValue
+              filterValue,
+              formattedFilterValue
             )
           )
         }
