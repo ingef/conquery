@@ -3,18 +3,49 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bakdata.conquery</groupId>
     <artifactId>parent</artifactId>
-    <version>1.6.0</version>
+    <version>1.7.3</version>
     
     <packaging>pom</packaging>
     <name>Conquery Parent</name>
         
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>1.8</maven.compiler.source>
+        <maven.compiler.target>1.8</maven.compiler.target>
+        <version.jgitflow>1.0-m5.1</version.jgitflow>
     </properties>
     
     <modules>
         <module>frontend</module>
-        <!--<module>tests</module>-->
+        <module>selenium-test</module>
     </modules>
+    
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>external.atlassian.jgitflow</groupId>
+                <artifactId>jgitflow-maven-plugin</artifactId>
+                <version>${version.jgitflow}</version>
+                <!-- https://bitbucket.org/atlassian/jgit-flow/wiki/goals.wiki -->
+                <configuration>
+                    <flowInitContext>
+                        <masterBranchName>master</masterBranchName>
+                        <developBranchName>develop</developBranchName>
+                        <featureBranchPrefix>feature/</featureBranchPrefix>
+                        <releaseBranchPrefix>release/</releaseBranchPrefix>
+                        <hotfixBranchPrefix>hotfix/</hotfixBranchPrefix>
+                        <versionTagPrefix>version/</versionTagPrefix>
+                    </flowInitContext>
+                    <!--<pushReleases>true</pushReleases>-->
+                    <!--<pushFeatures>true</pushFeatures>-->
+                    <!--<pushHotfixes>true</pushHotfixes>-->
+                    <autoVersionSubmodules>true</autoVersionSubmodules>
+                    <enableSshAgent>true</enableSshAgent>
+                    <noDeploy>true</noDeploy>
+                    <scmCommentPrefix>[RELEASE]</scmCommentPrefix>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     
 </project>

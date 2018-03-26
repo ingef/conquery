@@ -1,18 +1,29 @@
-sudo: required
 language: java
+
+env:
+  - DOCKER_COMPOSE_VERSION=1.18.0
+
+before_install:
+  - sudo rm /usr/local/bin/docker-compose
+  - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
+  - chmod +x docker-compose
+  - sudo mv docker-compose /usr/local/bin
+
 cache:
   directories:
   - "$HOME/.m2"
-  - "${TRAVIS_BUILD_DIR}/frontend/node_modules"
-services:
-- docker
+  - "$TRAVIS_BUILD_DIR/frontend/node_modules"
+
 deploy:
-  provider: npm
-  api_key:
-    secure: J7Ex3ckORAy9SwZigYqR8Dn4h75ZAtx+yR64g36EbHZA4Od8i+tRKF7Li1KZjYBfqfk/ZOEf6eWDFMo2w50DKJjdmRwAtLkhgEMrNIuTdreKcPAlagD6dhdVaz6e9VwlirRQBY/2fc5NJvIBWHxWueapVH2RAt2/vz8OFfIRkzh3Ga8d2JiJhDot1naxgf1PzDRsFQMAwnzjnk11vN2Ge/ZA9xqcdjw2MhggVAqf5gwsdKKuzjYRZkq2/ef3yyE6lZds6GMhmzKfkQevObGoppWMUCEhu1yjEwwCDGNXGWXmmh8A+Y4hglAKW9Q66Gry0p3ly3yBq6BOd9aVNnYam++TK+jxKdbN0iuEpuLuFNF4Bp7+cO7kgfI0+bS0etKAWmB9zLfHm2VVAfCl5mh4Z97XgbRE8Qm35nh5f1E+tmyV21DAaJm8k0nwoHaEu9RTBM2CTV5Xx0qTPJsk2OEw74L6WAfLPUIoV/L5qcsH0Cm3HfaLl+tZlwlR8Alu/uf/53EmFyBtGnxDvJcyBiS+CXxAD9VF594amVdrDBQbILRVbQV9vRg/43L2KWJcHTRGq+N73R/KvP8ibTYyxDZImP3VlKjGo6itRhfbwzzFoZXbX//UtY510UgAZRT2Ld43bQjqm0rPuoe66s4XavKgJT8yeK0t64t1QXQ5n4BJ5Ag=
-  file_glob: true
-  file: "${TRAVIS_BUILD_DIR}/frontend/conquery-*.tgz"
-  skip_cleanup: true
-  on:
-    repo: bakdata/conquery
-    tags: true
+  - provider: script
+    script: bash frontend/scripts/deploy-npm.sh
+    on:
+      tags: true
+  - provider: script
+    script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
+    on:
+      branch: develop
+  - provider: script
+    script: bash frontend/scripts/deploy-heroku-docker.sh conquery
+    on:
+      branch: master

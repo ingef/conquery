@@ -6,6 +6,7 @@ import classnames           from 'classnames';
 import T                    from 'i18n-react';
 import { connect }          from 'react-redux';
 import DatePicker           from 'react-datepicker';
+import ie                   from 'ie-version';
 import moment               from 'moment';
 
 import { dateTypes }        from '../common/constants';
@@ -68,19 +69,21 @@ const QueryGroupModal = (props) => {
             ]))
           }
         </h3>
-        <p className="query-node-modal__explanation">
+        <p className="query-node-editor__explanation">
           { T.translate('queryGroupModal.explanation') }
           {
             hasActiveDate &&
             <span
-              className="query-node-modal__reset-all"
+              className="query-node-editor__reset-all"
               onClick={props.onResetAllDates}
             >
-              <i className="fa fa-undo" /> {T.translate('queryNodeModal.resetAll')}
+              <i className="fa fa-undo" /> {T.translate('queryNodeEditor.resetAll')}
             </span>
           }
         </p>
-        <div className="query-group-modal__dates">
+        <div className={
+            `query-group-modal__dates ${ie.version && ie.version === 11 ? ' ie11' : ''}`
+          }>
           <div className="query-group-modal__input-group">
             <label className="input-label" htmlFor="datepicker-min">
               {T.translate('queryGroupModal.dateMinLabel')}

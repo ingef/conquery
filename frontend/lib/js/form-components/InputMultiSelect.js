@@ -24,7 +24,8 @@ type PropsType = FieldPropsType & {
 const InputMultiSelect = (props: PropsType) => (
   <label className={classnames(
     'input', {
-      'input--value-changed': !isEmpty(props.input.value)
+      'input--value-changed':
+        !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue
     }
   )}>
     <p className={classnames(

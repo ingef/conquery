@@ -47,7 +47,7 @@ datasetSelector:
   pleaseChoose: "Datenbank auswählen"
   error: "Konnte Datenbanken nicht laden"
 
-queryNodeModal:
+queryNodeEditor:
   resetAll: "Alle zurücksetzen"
   explanation: "Anfragetabellen konfigurieren"
   excludeTimestamps: "Von Zeitberechnung ausschließen"

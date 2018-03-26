@@ -6,6 +6,8 @@ import Select                     from 'react-select';
 import classnames                 from 'classnames';
 import { type FieldPropsType }    from 'redux-form';
 
+import 'react-select/dist/react-select.css';
+
 import { isEmpty }                from '../common/helpers';
 import { type SelectOptionsType } from '../common/types';
 import InfoTooltip                from '../tooltip/InfoTooltip';
@@ -22,7 +24,8 @@ const InputSelect = (props: PropsType) => {
   return (
     <label className={classnames(
       'input', {
-        'input--value-changed': !isEmpty(props.input.value)
+        'input--value-changed':
+          !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue
       }
     )}>
       <p className={classnames(
@@ -43,6 +46,7 @@ const InputSelect = (props: PropsType) => {
             ? props.input.onChange(field.value)
             : props.input.onChange(null)
         }
+        clearable={props.input.clearable}
         disabled={!!props.disabled}
         placeholder={T.translate('reactSelect.placeholder')}
         backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}

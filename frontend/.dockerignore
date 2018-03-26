@@ -1,4 +1,9 @@
 node_modules
+dist
 .coverage
 .nyc_output
+node
+
 *.log
+pom.xml
+README.md

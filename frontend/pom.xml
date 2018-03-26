@@ -1,9 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <groupId>com.bakdata.conquery</groupId>
+        <artifactId>parent</artifactId>
+        <version>1.7.3</version>
+    </parent>
+
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bakdata.conquery</groupId>
     <artifactId>frontend</artifactId>
-    <version>1.6.0</version>
 
     <name>Conquery Frontend</name>
 
@@ -11,7 +16,6 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <test></test>
     </properties>
 
     <build>
@@ -41,7 +45,10 @@
                         <phase>generate-resources</phase>
 
                         <configuration>
-                            <arguments></arguments>
+                            <!-- If you need reproducible dependencies, which is usually 
+                            the case with the continuous integration systems, 
+                            you should pass frozen-lockfile flag. -->
+                            <arguments>--frozen-lockfile</arguments>
                         </configuration>
                     </execution>
                     <execution>
@@ -56,14 +63,14 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>yarn pack</id>
+                        <id>yarn test</id>
                         <goals>
                             <goal>yarn</goal>
                         </goals>
-                        <phase>generate-resources</phase>
+                        <phase>test</phase>
 
                         <configuration>
-                            <arguments>pack</arguments>
+                            <arguments>test</arguments>
                         </configuration>
                     </execution>
                 </executions>

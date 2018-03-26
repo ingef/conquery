@@ -13,6 +13,11 @@ import {
 } from '../dataset';
 
 import {
+  version,
+  type StateType as VersionStateType
+} from '../header/reducer'
+
+import {
   reducer as tooltip,
   type StateType as TooltipStateType
 } from '../tooltip';
@@ -34,22 +39,23 @@ import { buildExternalFormsReducer }           from '../external-forms';
 import { reducer as uploadConceptListModal }   from '../upload-concept-list-modal';
 
 import { createQueryRunnerReducer }            from '../query-runner';
-import { createQueryNodeModalReducer }         from '../query-node-modal';
+import { createQueryNodeEditorReducer }        from '../query-node-editor';
 
 export type StateType = {
   categoryTrees: CategoryTreesStateType,
   datasets: DatasetsStateType,
   tooltip: TooltipStateType,
   panes: PanesStateType,
+  version: VersionStateType,
 };
 
- const buildAppReducer = (availableForms) => combineReducers({
+const buildAppReducer = (availableForms) => combineReducers({
   categoryTrees,
   query,
   uploadConceptListModal,
   standardQueryRunner: createQueryRunnerReducer('standard'),
   timebasedQueryRunner: createQueryRunnerReducer('timebased'),
-  queryNodeModal: createQueryNodeModalReducer('standard'),
+  queryNodeEditor: createQueryNodeEditorReducer('standard'),
   queryGroupModal,
   datasets,
   tooltip,
@@ -60,6 +66,7 @@ export type StateType = {
   uploadQueryResults,
   deletePreviousQueryModal,
   timebasedQuery,
+  version,
   externalForms: buildExternalFormsReducer(availableForms),
 });
 

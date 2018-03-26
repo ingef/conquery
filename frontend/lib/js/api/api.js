@@ -62,6 +62,10 @@ function fetchJson(url: string, request?: RequestType, rawBody?: boolean = false
   return fetchJsonUnauthorized(url, finalRequest, rawBody);
 }
 
+export function getVersion() {
+  return fetchJson(apiUrl() + '/version')
+}
+
 export function getDatasets() {
   return fetchJson(apiUrl() + `/datasets`);
 }

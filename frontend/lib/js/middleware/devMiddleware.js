@@ -1,5 +1,5 @@
-import createLogger   from 'redux-logger';
-import prodMiddleware from './prodMiddleware';
+import { createLogger }  from 'redux-logger';
+import prodMiddleware    from './prodMiddleware';
 
 export default function(browserHistory) {
   const reduxLogger = createLogger({
