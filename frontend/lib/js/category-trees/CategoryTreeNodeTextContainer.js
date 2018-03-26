@@ -80,7 +80,12 @@ const HoverableCategoryTreeNodeTextContainer = AdditionalInfoHoverable(
 const nodeSource = {
   beginDrag(props) {
     // Return the data describing the dragged item
-    return props.node;
+    // by creating a concept list
+    return {
+      ids: [props.node.id],
+      label: props.node.label,
+      tables: props.node.tables
+    };
   }
 };
 

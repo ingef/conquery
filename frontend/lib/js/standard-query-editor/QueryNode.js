@@ -17,7 +17,6 @@ type PropsType =  {
   onDeleteNode: Function,
   onFilterClick: Function,
   onExpandClick: Function,
-  onDetailsClick: Function,
   connectDragSource: Function,
   andIdx: number,
   orIdx: number,
@@ -33,16 +32,10 @@ const QueryNode = (props: PropsType) => {
         onFilterClick={props.onFilterClick}
         onDeleteNode={props.onDeleteNode}
         isExpandable={!!node.query}
-        hasDetails={node.isConceptList}
         onExpandClick={() => {
           if (!node.query) return;
 
           props.onExpandClick(node.query.groups, node.id);
-        }}
-        onDetailsClick={() => {
-          if (!node.isConceptList) return;
-
-          props.onDetailsClick();
         }}
         previousQueryLoading={node.loading}
         error={node.error}
@@ -51,12 +44,6 @@ const QueryNode = (props: PropsType) => {
         node.isPreviousQuery &&
         <p className="query-node__previous-query">
           {T.translate('queryEditor.previousQuery')}
-        </p>
-      }
-      {
-        node.isConceptList &&
-        <p className="query-node__concept-list">
-          {T.translate('queryEditor.conceptList')}
         </p>
       }
       {
@@ -103,8 +90,6 @@ const nodeSource = {
       isPreviousQuery: node.isPreviousQuery,
 
       ids: node.ids,
-      isConceptList: node.isConceptList,
-      conceptListMetadata: node.conceptListMetadata,
 
       loading: node.loading,
       error: node.error,

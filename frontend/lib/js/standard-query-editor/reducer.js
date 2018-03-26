@@ -49,8 +49,6 @@ import {
   LOAD_QUERY,
   CLEAR_QUERY,
   EXPAND_PREVIOUS_QUERY,
-  SHOW_CONCEPT_LIST_DETAILS,
-  HIDE_CONCEPT_LIST_DETAILS,
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
   TOGGLE_TABLE,
@@ -86,8 +84,6 @@ const filterItem = (item: ElementType) => {
     isPreviousQuery: item.isPreviousQuery,
 
     ids: item.ids,
-    isConceptList: item.isConceptList,
-    conceptListMetadata: item.conceptListMetadata,
   };
 };
 
@@ -436,28 +432,10 @@ const expandPreviousQuery = (state, action) => {
             ...element,
             isPreviousQuery: true
           };
-        } else if (element.type === 'CONCEPT_LIST') {
-          const lookupResult = getConceptsByIdsWithTables(element.ids, rootConcepts);
-
-          if (!lookupResult)
-            return {
-              ...element,
-              error: T.translate('queryEditor.couldNotInsertConceptList')
-            };
-
-          const tables = mergeTablesFromSavedConcept(lookupResult, element);
-
-          return {
-            isConceptList: true,
-            label: element.label,
-            conceptListMetadata:
-              buildConceptListMetadata(lookupResult.root, lookupResult.concepts),
-            ids: element.ids,
-            hasActiveFilters: nodeHasActiveFilters(element, tables),
-            tables
-          };
         } else {
-          const lookupResult = getConceptsByIdsWithTables([element.id], rootConcepts);
+          const convertConceptToConceptList = element.type === 'CONCEPT';
+          const ids = convertConceptToConceptList ? [element.id] : element.ids;
+          const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
 
           if (!lookupResult)
             return {
@@ -467,27 +445,22 @@ const expandPreviousQuery = (state, action) => {
 
           const tables = mergeTablesFromSavedConcept(lookupResult, element);
 
+          const label = convertConceptToConceptList
+            ? lookupResult.concepts[0].label
+            : element.label;
+
           return {
-            ...lookupResult.concepts[0],
-            ...element,
+            label,
+            ids,
+            tables,
+            concepts: lookupResult.concepts,
             hasActiveFilters: nodeHasActiveFilters(element, tables),
-            tables
-          }
+          };
         }
       })
     }
   });
 };
-
-const showConceptListDetails = (state, action) => {
-  const { andIdx, orIdx } = action.payload;
-
-  return setElementProperties(state, andIdx, orIdx, { showDetails: true });
-}
-
-const hideConceptListDetails = (state, action) => {
-  return setAllElementsProperties(state, { showDetails: false });
-}
 
 const findPreviousQueries = (state, action) => {
   // Find all nodes that are previous queries and have the correct id
@@ -583,11 +556,6 @@ const loadFilterSuggestionsSuccess = (state, action) =>
 const loadFilterSuggestionsError = (state, action) =>
   setNodeFilterProperties(state, action, { isLoading: false, options: [] });
 
-const buildConceptListMetadata = (root, concepts) => ({
-  root: root.label,
-  concepts: concepts.map(c => ({ label: c.label, description: c.description }))
-});
-
 const insertUploadedConceptList = (state, action) => {
   const { label, rootConcepts, resolutionResult, queryContext } = action.data;
 
@@ -599,11 +567,8 @@ const insertUploadedConceptList = (state, action) => {
     if (lookupResult)
       queryElement = {
         label,
-        conceptListMetadata:
-          buildConceptListMetadata(lookupResult.root, lookupResult.concepts),
         ids: resolutionResult.conceptList,
         tables: lookupResult.tables,
-        isConceptList: true
       };
   } else if (resolutionResult.filter) {
     const [conceptRoot] =
@@ -715,11 +680,7 @@ const query = (
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
       return resetGroupDates(state, action);
     case EXPAND_PREVIOUS_QUERY:
-      return expandPreviousQuery(state, action)
-    case SHOW_CONCEPT_LIST_DETAILS:
-      return showConceptListDetails(state, action);
-    case HIDE_CONCEPT_LIST_DETAILS:
-      return hideConceptListDetails(state);
+      return expandPreviousQuery(state, action);
     case LOAD_PREVIOUS_QUERY_START:
       return loadPreviousQueryStart(state, action);
     case LOAD_PREVIOUS_QUERY_SUCCESS:
