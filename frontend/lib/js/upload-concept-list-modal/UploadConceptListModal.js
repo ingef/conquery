@@ -34,7 +34,7 @@ type PropsType = {
   selectedConceptRootNode: Object,
   selectConceptRootNode: Function,
   selectedDatasetId: DatasetIdType,
-  conceptCodesFromFile: Array<String>,
+  conceptCodesFromFile: Array<string>,
   updateLabel: Function,
   resolved: Object,
   hasResolvedItems: boolean,

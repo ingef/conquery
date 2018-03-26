@@ -11,6 +11,10 @@ import {
 } from '../common/actions';
 
 import {
+  type TreeNodeIdType
+} from '../common/types/backend';
+
+import {
   resetAllTrees
 } from './globalTreeStoreHelper';
 
@@ -23,8 +27,6 @@ import {
   LOAD_TREE_ERROR,
   CLEAR_TREES
 } from './actionTypes';
-
-import { type TreeNodeIdType }    from './reducer';
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 

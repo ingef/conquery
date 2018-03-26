@@ -2,21 +2,21 @@
 
 import React                         from 'react';
 
+import type {
+  NodeType,
+  TreeNodeIdType
+}                                    from '../common/types/backend';
+
 import { getConceptById }            from './globalTreeStoreHelper';
 
 import Openable                      from './Openable';
 import CategoryTree                  from './CategoryTree';
 import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
 
-import {
-  type TreeNodeType,
-  type TreeNodeIdType,
-} from './reducer';
-
 type PropsType = {
   depth: number,
   trees: Object,
-  tree: TreeNodeType,
+  tree: NodeType,
   treeId: TreeNodeIdType,
   active: boolean,
   open?: boolean,
@@ -46,10 +46,14 @@ const CategoryTreeFolder = (props: PropsType) => {
           id: props.treeId,
           label: props.tree.label,
           description: props.tree.description,
-          tables: props.tree.tables,
           matchingEntries: matchingEntries,
+          dateRange: props.tree.dateRange,
           additionalInfos: props.tree.additionalInfos,
           hasChildren: !!props.tree.children && props.tree.children.length > 0,
+        }}
+        createQueryElement={() => {
+          // We don't have to implement this since CategoryTreeFolders should never be
+          // dragged into the editor, hence they're 'active: false' and thus not draggable
         }}
         open={props.open || false}
         depth={props.depth}
@@ -69,6 +73,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 id={treeId}
                 label={tree.label}
                 tree={rootConcept}
+                treeId={treeId}
                 loading={tree.loading}
                 error={tree.error}
                 depth={props.depth + 1}

@@ -6,7 +6,7 @@ import ReactList                 from 'react-list';
 
 type PropsType = {
   items: Array,
-  maxVisibleItems?: Number,
+  maxVisibleItems?: number,
   fullWidth?: boolean,
   minWidth?: boolean
 };
@@ -20,7 +20,7 @@ const ScrollableList = (props: PropsType) => {
     );
   }
 
-  const itemHeight = '34'; // pixels, as defined in scrollableList.sass
+  const itemHeight = 34; // pixels, as defined in scrollableList.sass
 
   // If the number of visible items is specified here,
   // make an additional element half-visible at the end to indicate

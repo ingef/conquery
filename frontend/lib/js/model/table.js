@@ -14,9 +14,6 @@ export const tableHasActiveFilters = (table: TableType) =>
 export const resetAllFiltersInTables = (tables: TableType[]) => {
   return (tables || []).map(table => {
     const filters = table.filters
-      // It's actually a FilterType, but flow can't decide which one
-      // of the intersections it is
-      // $FlowFixMe
       ? table.filters.map((filter) => ({
           ...filter,
           value: filter.defaultValue

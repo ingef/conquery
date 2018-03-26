@@ -2,22 +2,55 @@
 
 import React                         from 'react';
 
+import {
+  type TreeNodeIdType,
+  type InfoType,
+  type DateRangeType,
+  type NodeType
+}                                    from '../common/types/backend';
+
+import { type DraggedNodeType }      from '../standard-query-editor/types';
+
 import { getConceptById }            from './globalTreeStoreHelper';
 
 import Openable                      from './Openable';
 import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
 
+// Concept data that is necessary to display tree nodes. Includes additional infos
+// for the tooltip as well as the id of the corresponding tree
+type TreeNodeData = {
+  label: string,
+  description: string,
+  active: boolean,
+  matchingEntries: number,
+  dateRange: DateRangeType,
+  additionalInfos: Array<InfoType>,
+  children: Array<TreeNodeIdType>,
+
+  tree: TreeNodeIdType,
+}
+
 type PropsType = {
-  id: string | number,
-  data: Object,
+  id: TreeNodeIdType,
+  data: TreeNodeData,
   depth: number,
   open: boolean,
-  onToggleOpen: Function,
+  onToggleOpen: () => void,
 };
 
-class CategoryTreeNode extends React.Component {
-  props: PropsType;
+const selectTreeNodeData = (concept: NodeType, tree: TreeNodeIdType) => ({
+  label: concept.label,
+  description: concept.description,
+  active: concept.active,
+  matchingEntries: concept.matchingEntries,
+  dateRange: concept.dateRange,
+  additionalInfos: concept.additionalInfos,
+  children: concept.children,
 
+  tree,
+});
+
+class CategoryTreeNode extends React.Component<PropsType> {
   _onToggleOpen() {
     if (!this.props.data.children) return;
 
@@ -34,11 +67,20 @@ class CategoryTreeNode extends React.Component {
             id,
             label: data.label,
             description: data.description,
-            tables: data.tables,
             matchingEntries: data.matchingEntries,
             dateRange: data.dateRange,
             additionalInfos: data.additionalInfos,
-            hasChildren: !!data.children,
+            hasChildren: !!data.children && data.children.length > 0,
+
+          }}
+          createQueryElement={() : DraggedNodeType => {
+            const tables = getConceptById(data.tree).tables;
+            return {
+              ids: [id],
+              label: data.label,
+              tables: tables,
+              tree: data.tree
+            };
           }}
           open={open}
           depth={depth}
@@ -52,19 +94,14 @@ class CategoryTreeNode extends React.Component {
               data.children.map((childId, i) => {
                 const child = getConceptById(childId);
 
-                const childWithTables = {
-                  ...child,
-                  tables: data.tables
-                };
-
-                return (
+                return child ? (
                   <OpenableCategoryTreeNode
                     key={i}
                     id={childId}
-                    data={childWithTables}
+                    data={selectTreeNodeData(child, data.tree)}
                     depth={this.props.depth + 1}
                   />
-                );
+                ) : null;
               })
             }
           </div>
