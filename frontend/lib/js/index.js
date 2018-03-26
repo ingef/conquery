@@ -1,6 +1,5 @@
 // @flow
 
-// TODO: Fixme
 import 'babel-polyfill';
 
 import './fixEdge';
