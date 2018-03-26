@@ -52,6 +52,9 @@ import {
   EXPAND_PREVIOUS_QUERY,
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
+  UPDATE_NODE_LABEL,
+  ADD_CONCEPT_TO_NODE,
+  REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
   RESET_ALL_FILTERS,
@@ -644,6 +647,36 @@ const deselectNode = (state, action) => {
   return setAllElementsProperties(state, { isEditing: false });
 }
 
+const updateNodeLabel = (state, action) => {
+  const node = selectEditedNode(state);
+  if (!node) return state;
+
+  const { andIdx, orIdx } = node;
+  return setElementProperties(state, andIdx, orIdx, { label: action.label });
+}
+
+const addConceptToNode = (state, action) => {
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const { andIdx, orIdx } = nodePosition;
+  const node = state[andIdx].elements[orIdx];
+  return setElementProperties(state, andIdx, orIdx, {
+    ids: [...action.concept.ids, ...node.ids],
+  });
+}
+
+const removeConceptFromNode = (state, action) => {
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const { andIdx, orIdx } = nodePosition;
+  const node = state[andIdx].elements[orIdx];
+  return setElementProperties(state, andIdx, orIdx, {
+    ids: node.ids.filter(id => id !== action.conceptId)
+  });
+}
+
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
 // like `dateRange` or `exclude`.
@@ -700,6 +733,12 @@ const query = (
       return selectNodeForEditing(state, action);
     case DESELECT_NODE:
       return deselectNode(state, action);
+    case UPDATE_NODE_LABEL:
+      return updateNodeLabel(state, action);
+    case ADD_CONCEPT_TO_NODE:
+      return addConceptToNode(state, action);
+    case REMOVE_CONCEPT_FROM_NODE:
+      return removeConceptFromNode(state, action);
     case TOGGLE_TABLE:
       return toggleNodeTable(state, action);
     case SET_FILTER_VALUE:

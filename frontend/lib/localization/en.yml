@@ -29,13 +29,11 @@ queryRunner:
 queryEditor:
   couldNotExpandNode: "Could not find node"
   couldNotInsertConceptList: "Could not insert the Concept List"
-  filter: "Filter"
+  filter: "Edit"
   exclude: "Exclude"
   date: "Date"
   expand: "Expand"
-  details: "Details"
   previousQuery: "Query"
-  conceptList: "Concept List"
   loadingPreviousQuery: "Loading Query Details"
 
 dropzone:
@@ -48,9 +46,16 @@ datasetSelector:
   error: "Could not load data sets"
 
 queryNodeEditor:
+  conceptTree: "Concept Tree"
+  queryNode: "Query Node"
+  conceptNodes: "Concept Nodes"
+  conceptNodeTables: "Input Tables"
+  properties: "Properties"
   resetAll: "Reset all"
-  explanation: "Configure Input Tables"
   excludeTimestamps: "Exclude from time calculation"
+  description: "Description"
+  noDescriptionProvided: "No description provided."
+  selectAFilter: "Select a filter to see its description here."
 
 queryGroupModal:
   explanation: "Set time frame"

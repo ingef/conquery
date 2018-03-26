@@ -4,6 +4,9 @@ import { createConnectedQueryNodeEditor } from '../query-node-editor';
 
 import {
   deselectNode,
+  updateNodeLabel,
+  addConceptToNode,
+  removeConceptFromNode,
   toggleTable,
   setFilterValue,
   switchFilterMode,
@@ -35,6 +38,9 @@ const mapStateToProps = (state) => {
 
 const mapDispatchToProps = (dispatch) => ({
   onCloseModal: () => dispatch(deselectNode()),
+  onUpdateLabel: (label) => dispatch(updateNodeLabel(label)),
+  onDropConcept: (concept) => dispatch(addConceptToNode(concept)),
+  onRemoveConcept: (conceptId) => dispatch(removeConceptFromNode(conceptId)),
   onToggleTable: (tableIdx, isExcluded) =>
     dispatch(toggleTable(
       tableIdx,

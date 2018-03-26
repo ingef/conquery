@@ -256,6 +256,27 @@ export const FormConceptGroup = (props: PropsType) => {
             setConceptProperties(props.input.value, valueIdx, conceptIdx, { isEditing: false })
           )
         }
+        onUpdateLabel={(valueIdx, conceptIdx, label) =>
+          props.input.onChange(
+            setConceptProperties(props.input.value, valueIdx, conceptIdx, { label })
+          )
+        }
+        onDropConcept={(valueIdx, conceptIdx, concept) => {
+          const node = props.input.value[valueIdx].concepts[conceptIdx];
+          props.input.onChange(
+            setConceptProperties(props.input.value, valueIdx, conceptIdx, {
+              ids: [...concept.ids, ...node.ids]
+            })
+          )
+        }}
+        onRemoveConcept={(valueIdx, conceptIdx, conceptId) => {
+          const node = props.input.value[valueIdx].concepts[conceptIdx];
+          props.input.onChange(
+            setConceptProperties(props.input.value, valueIdx, conceptIdx, {
+              ids: node.ids.filter(id => id !== conceptId)
+            })
+          )
+        }}
         onToggleTable={(valueIdx, conceptIdx, tableIdx, isExcluded) =>
           props.input.onChange(
             toggleTable(props.input.value, valueIdx, conceptIdx, tableIdx, isExcluded)

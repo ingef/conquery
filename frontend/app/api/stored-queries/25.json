@@ -35,7 +35,6 @@
                 "filters": [
                   {
                     "id": "budget",
-                    "type": "MONEY_RANGE",
                     "value": {
                       "min": 10000000,
                       "max": 150000000
