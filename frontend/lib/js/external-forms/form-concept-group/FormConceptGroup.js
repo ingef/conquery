@@ -111,12 +111,12 @@ const toggleTable = (value, valueIdx, conceptIdx, tableIdx, isExcluded) => {
 
 const setFilterValue = (
   value,
-   valueIdx,
-   conceptIdx,
-   tableIdx,
-   filterIdx,
-   filterValue,
-   formattedFilterValue
+  valueIdx,
+  conceptIdx,
+  tableIdx,
+  filterIdx,
+  filterValue,
+  formattedFilterValue
 ) => {
   const concepts = value[valueIdx].concepts;
   const tables = concepts[conceptIdx].tables;
