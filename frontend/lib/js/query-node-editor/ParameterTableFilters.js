@@ -142,6 +142,7 @@ const ParameterTableFilters = (props: PropsType) => (
                       onChange: (value, formattedValue) =>
                         props.onSetFilterValue(filterIdx, value, formattedValue),
                     }}
+                    unit={filter.unit}
                     label={filter.label}
                     mode={filter.mode || 'range'}
                     disabled={!!props.excludeTable}
