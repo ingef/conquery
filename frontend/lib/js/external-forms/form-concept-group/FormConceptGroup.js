@@ -173,7 +173,8 @@ const switchFilterMode = (value, valueIdx, conceptIdx, tableIdx, filterIdx, mode
                 {
                   ...filters[filterIdx],
                   mode: mode,
-                  value: null
+                  value: null,
+                  formattedValue: null,
                 },
                 ...filters.slice(filterIdx + 1),
               ]

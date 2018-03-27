@@ -355,7 +355,8 @@ const switchNodeFilterMode = (state, action) => {
 
   return setNodeFilterProperties(state, action, {
     mode,
-    value: null
+    value: null,
+    formattedValue: null,
   });
 };
 
