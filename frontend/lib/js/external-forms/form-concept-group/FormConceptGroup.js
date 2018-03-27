@@ -17,9 +17,7 @@ import {
   CATEGORY_TREE_NODE
 }                                 from '../../common/constants/dndTypes';
 
-import {
-  createConnectedFormQueryNodeEditor
-}                                 from '../form-query-node-editor';
+import { FormQueryNodeEditor }    from '../form-query-node-editor';
 
 import FormConceptNode            from './FormConceptNode';
 import FormConceptNodeDropzone    from './FormConceptNodeDropzone';
@@ -111,7 +109,15 @@ const toggleTable = (value, valueIdx, conceptIdx, tableIdx, isExcluded) => {
   ];
 };
 
-const setFilterValue = (value, valueIdx, conceptIdx, tableIdx, filterIdx, filterValue) => {
+const setFilterValue = (
+  value,
+  valueIdx,
+  conceptIdx,
+  tableIdx,
+  filterIdx,
+  filterValue,
+  formattedFilterValue
+) => {
   const concepts = value[valueIdx].concepts;
   const tables = concepts[conceptIdx].tables;
   const filters = tables[tableIdx].filters;
@@ -125,7 +131,8 @@ const setFilterValue = (value, valueIdx, conceptIdx, tableIdx, filterIdx, filter
           ...filters.slice(0, filterIdx),
           {
             ...filters[filterIdx],
-            value: filterValue
+            value: filterValue,
+            formattedValue: formattedFilterValue,
           },
           ...filters.slice(filterIdx + 1),
         ]
@@ -166,7 +173,8 @@ const switchFilterMode = (value, valueIdx, conceptIdx, tableIdx, filterIdx, mode
                 {
                   ...filters[filterIdx],
                   mode: mode,
-                  value: null
+                  value: null,
+                  formattedValue: null,
                 },
                 ...filters.slice(filterIdx + 1),
               ]
@@ -181,109 +189,136 @@ const switchFilterMode = (value, valueIdx, conceptIdx, tableIdx, filterIdx, mode
   ];
 }
 
-export const FormConceptGroup = (props: PropsType) => {
-  const FormQueryNodeEditor = createConnectedFormQueryNodeEditor(props.formType, props.name);
+export const FormConceptGroup = (props: PropsType) => (
+  <div className="externalForms__concept-group">
+    <DropzoneList
+      label={props.label}
+      className="externalForms__dropzone-list"
+      itemClassName="externalForms__dropzone-list__item"
+      dropzoneClassName="externalForms__dropzone"
+      dropzoneText={props.attributeDropzoneText}
+      acceptedDropTypes={[CATEGORY_TREE_NODE]}
+      onDelete={(i) => props.input.onChange(removeValue(props.input.value, i))}
+      onDrop={(dropzoneProps, monitor) => {
+        const item = monitor.getItem();
 
-  return (
-    <div className="externalForms__concept-group">
-      <DropzoneList
-        label={props.label}
-        className="externalForms__dropzone-list"
-        itemClassName="externalForms__dropzone-list__item"
-        dropzoneClassName="externalForms__dropzone"
-        dropzoneText={props.attributeDropzoneText}
-        acceptedDropTypes={[CATEGORY_TREE_NODE]}
-        onDelete={(i) => props.input.onChange(removeValue(props.input.value, i))}
-        onDrop={(dropzoneProps, monitor) => {
-          const item = monitor.getItem();
+        return props.input.onChange(
+          addConcept(
+            addValue(props.input.value, props.newValue),
+            props.input.value.length, // Assuming the last index has increased after addValue
+            item
+          )
+        );
+      }}
+      items={
+        props.input.value.map((row, i) =>
+          <div>
+            { props.renderRowPrefix ? props.renderRowPrefix(props.input, row, i) : null }
+            <DynamicInputGroup
+              className="externalForms__concept-group__input-group"
+              key={i}
+              onAddClick={() => props.input.onChange(addConcept(props.input.value, i, null))}
+              onRemoveClick={j => props.input.onChange(
+                props.input.value && props.input.value[i].concepts.length === 1
+                ? removeValue(props.input.value, i)
+                : removeConcept(props.input.value, i, j))
+              }
+              items={
+                row.concepts.map((concept, j) =>
+                  concept
+                  ? <FormConceptNode
+                      key={j}
+                      valueIdx={i}
+                      conceptIdx={j}
+                      conceptNode={concept}
+                      name={props.name}
+                      hasActiveFilters={nodeHasActiveFilters(concept)}
+                      onFilterClick={() =>
+                        props.input.onChange(
+                          setConceptProperties(props.input.value, i, j, { isEditing: true })
+                        )
+                      }
+                    />
+                  : <FormConceptNodeDropzone
+                      dropzoneText={props.conceptDropzoneText}
+                      onDrop={(dropzoneProps, monitor) => {
+                        const item = monitor.getItem();
 
-          return props.input.onChange(
-            addConcept(
-              addValue(props.input.value, props.newValue),
-              props.input.value.length, // Assuming the last index has increased after addValue
-              item
-            )
-          );
-        }}
-        items={
-          props.input.value.map((row, i) =>
-            <div>
-              { props.renderRowPrefix ? props.renderRowPrefix(props.input, row, i) : null }
-              <DynamicInputGroup
-                className="externalForms__concept-group__input-group"
-                key={i}
-                onAddClick={() => props.input.onChange(addConcept(props.input.value, i, null))}
-                onRemoveClick={j => props.input.onChange(
-                  props.input.value && props.input.value[i].concepts.length === 1
-                  ? removeValue(props.input.value, i)
-                  : removeConcept(props.input.value, i, j))
-                }
-                items={
-                  row.concepts.map((concept, j) =>
-                    concept
-                    ? <FormConceptNode
-                        key={j}
-                        valueIdx={i}
-                        conceptIdx={j}
-                        conceptNode={concept}
-                        name={props.name}
-                        hasActiveFilters={nodeHasActiveFilters(concept)}
-                        onFilterClick={() =>
-                          props.input.onChange(
-                            setConceptProperties(props.input.value, i, j, { isEditing: true })
-                          )
-                        }
-                      />
-                    : <FormConceptNodeDropzone
-                        dropzoneText={props.conceptDropzoneText}
-                        onDrop={(dropzoneProps, monitor) => {
-                          const item = monitor.getItem();
-
-                          return props.input.onChange(setConcept(props.input.value, i, j, item));
-                        }}
-                      />
-                  )
-                }
-              />
-            </div>
+                        return props.input.onChange(setConcept(props.input.value, i, j, item));
+                      }}
+                    />
+                )
+              }
+            />
+          </div>
+        )
+      }
+    />
+    <FormQueryNodeEditor
+      formType={props.formType}
+      fieldName={props.name}
+      datasetId={props.datasetId}
+      onCloseModal={(valueIdx, conceptIdx) =>
+        props.input.onChange(
+          setConceptProperties(props.input.value, valueIdx, conceptIdx, { isEditing: false })
+        )
+      }
+      onUpdateLabel={(valueIdx, conceptIdx, label) =>
+        props.input.onChange(
+          setConceptProperties(props.input.value, valueIdx, conceptIdx, { label })
+        )
+      }
+      onDropConcept={(valueIdx, conceptIdx, concept) => {
+        const node = props.input.value[valueIdx].concepts[conceptIdx];
+        props.input.onChange(
+          setConceptProperties(props.input.value, valueIdx, conceptIdx, {
+            ids: [...concept.ids, ...node.ids]
+          })
+        )
+      }}
+      onRemoveConcept={(valueIdx, conceptIdx, conceptId) => {
+        const node = props.input.value[valueIdx].concepts[conceptIdx];
+        props.input.onChange(
+          setConceptProperties(props.input.value, valueIdx, conceptIdx, {
+            ids: node.ids.filter(id => id !== conceptId)
+          })
+        )
+      }}
+      onToggleTable={(valueIdx, conceptIdx, tableIdx, isExcluded) =>
+        props.input.onChange(
+          toggleTable(props.input.value, valueIdx, conceptIdx, tableIdx, isExcluded)
+        )
+      }
+      onSetFilterValue={(
+        valueIdx,
+        conceptIdx,
+        tableIdx,
+        filterIdx,
+        filterValue,
+        formattedFilterValue
+      ) =>
+        props.input.onChange(
+          setFilterValue(
+            props.input.value,
+            valueIdx,
+            conceptIdx,
+            tableIdx,
+            filterIdx,
+            filterValue,
+            formattedFilterValue
           )
-        }
-      />
-      <FormQueryNodeEditor
-        datasetId={props.datasetId}
-        onCloseModal={(valueIdx, conceptIdx) =>
-          props.input.onChange(
-            setConceptProperties(props.input.value, valueIdx, conceptIdx, { isEditing: false })
-          )
-        }
-        onToggleTable={(valueIdx, conceptIdx, tableIdx, isExcluded) =>
-          props.input.onChange(
-            toggleTable(props.input.value, valueIdx, conceptIdx, tableIdx, isExcluded)
-          )
-        }
-        onSetFilterValue={(valueIdx, conceptIdx, tableIdx, filterIdx, filterValue) =>
-          props.input.onChange(
-            setFilterValue(
-              props.input.value,
-              valueIdx,
-              conceptIdx,
-              tableIdx,
-              filterIdx,
-              filterValue
-            )
-          )
-        }
-        onSwitchFilterMode={(valueIdx, conceptIdx, tableIdx, filterIdx, mode) =>
-          props.input.onChange(
-            switchFilterMode(props.input.value, valueIdx, conceptIdx, tableIdx, filterIdx, mode)
-          )
-        }
-        onResetAllFilters={(valueIdx, conceptIdx) =>
-          props.input.onChange(
-            resetAllFilters(props.input.value, valueIdx, conceptIdx)
-          )
-        }
-      />
-    </div>
-  );
-};
+        )
+      }
+      onSwitchFilterMode={(valueIdx, conceptIdx, tableIdx, filterIdx, mode) =>
+        props.input.onChange(
+          switchFilterMode(props.input.value, valueIdx, conceptIdx, tableIdx, filterIdx, mode)
+        )
+      }
+      onResetAllFilters={(valueIdx, conceptIdx) =>
+        props.input.onChange(
+          resetAllFilters(props.input.value, valueIdx, conceptIdx)
+        )
+      }
+    />
+  </div>
+);

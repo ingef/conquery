@@ -4,7 +4,7 @@ RUN mkdir /conquery
 WORKDIR /conquery
 
 COPY ./package.json ./yarn.lock ./
-RUN yarn --no-progress
+RUN yarn --no-progress --frozen-lockfile
 
 COPY . .
 RUN yarn run build-app

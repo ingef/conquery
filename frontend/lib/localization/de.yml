@@ -29,7 +29,7 @@ queryRunner:
 queryEditor:
   couldNotExpandNode: "Knoten nicht gefunden"
   couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
-  filter: "Filter"
+  filter: "Bearbeiten"
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
@@ -48,9 +48,17 @@ datasetSelector:
   error: "Konnte Datenbanken nicht laden"
 
 queryNodeEditor:
+  conceptTree: "Konzeptbaum"
+  queryNode: "Abfrageknoten"
+  conceptNodes: "Konzeptknoten"
+  conceptNodeTables: "Anfragetabellen"
+  properties: "Eigenschaften"
   resetAll: "Alle zurücksetzen"
-  explanation: "Anfragetabellen konfigurieren"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
+  description: "Beschreibung"
+  noDescriptionProvided: "Keine Beschreibung verfügbar."
+  selectAFilter: "Kein Filter ausgewählt."
+  dropConcept: "Füge ein weiteres Konzept hinzu"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
