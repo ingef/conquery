@@ -1,5 +1,7 @@
 // @flow
 
+import React                              from 'react';
+
 import { createConnectedQueryNodeEditor } from '../query-node-editor';
 
 import {
@@ -74,6 +76,8 @@ const mapDispatchToProps = (dispatch) => ({
         filterId,
         prefix
     )),
-})
+});
 
-export default createConnectedQueryNodeEditor('standard', mapStateToProps, mapDispatchToProps);
+const QueryNodeEditor = createConnectedQueryNodeEditor(mapStateToProps, mapDispatchToProps);
+
+export default (props) => <QueryNodeEditor type="standard" {...props} />;
