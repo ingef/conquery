@@ -84,21 +84,20 @@ const QueryNodeEditor = (props: PropsType) => {
 };
 
 export const createConnectedQueryNodeEditor = (
-  type: string,
   mapStateToProps: Function,
   mapDispatchToProps: Function,
   mergeProps: Function
 ) => {
-  const {
-    setDetailsViewActive,
-    toggleEditLabel,
-    setInputTableViewActive,
-    setFocusedInput,
-    reset,
-  } = createQueryNodeEditorActions(type);
-
   const mapDispatchToPropsInternal = (dispatch: Dispatch, ownProps) => {
     const externalDispatchProps = mapDispatchToProps ? mapDispatchToProps(dispatch, ownProps) : {};
+
+    const {
+      setDetailsViewActive,
+      toggleEditLabel,
+      setInputTableViewActive,
+      setFocusedInput,
+      reset,
+    } = createQueryNodeEditorActions(ownProps.type);
 
     return {
       ...externalDispatchProps,

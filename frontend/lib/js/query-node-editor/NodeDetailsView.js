@@ -67,7 +67,7 @@ const ConceptDropzone =
           }
         )}>
           <p className="dropzone__text">
-            Drop another concept here
+            {T.translate('queryNodeEditor.dropConcept')}
           </p>
         </div>
       </div>

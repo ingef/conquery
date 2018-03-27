@@ -49,8 +49,9 @@ export const transformElementsToApi = (conceptGroup) => conceptGroup.map(concept
     : [];
 
   return {
-    id: concept.id,
-    type: 'CONCEPT',
+    ids: concept.ids,
+    type: 'CONCEPT_LIST',
+    label: concept.label,
     tables,
   };
 });
