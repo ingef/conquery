@@ -18,6 +18,7 @@ import {
   MULTI_SELECT,
   INTEGER_RANGE,
   REAL_RANGE,
+  MONEY_RANGE,
   STRING,
   BIG_MULTI_SELECT,
   MONEY_RANGE,
@@ -34,12 +35,13 @@ type PropsType = {
   onSwitchFilterMode: Function,
   onSetFilterValue: Function,
   onLoadFilterSuggestions: Function,
+  onShowDescription: Function,
   suggestions: ?Object,
 };
 
 const ParameterTableFilters = (props: PropsType) => (
   props.filters
-    ? <div className={props.className}>
+    ? <div>
       {
         props.filters
           .filter(f => includes(Object.keys(SUPPORTED_FILTERS), f.type))
@@ -57,7 +59,6 @@ const ParameterTableFilters = (props: PropsType) => (
                     label={filter.label}
                     options={filter.options}
                     disabled={props.excludeTable}
-                    tooltip={filter.description}
                   />
                 );
               case MULTI_SELECT:
@@ -71,7 +72,6 @@ const ParameterTableFilters = (props: PropsType) => (
                     label={filter.label}
                     options={filter.options}
                     disabled={props.excludeTable}
-                    tooltip={filter.description}
                   />
                 );
               case BIG_MULTI_SELECT:
@@ -93,7 +93,6 @@ const ParameterTableFilters = (props: PropsType) => (
                     }
                     startLoadingThreshold={filter.threshold || 1}
                     onLoad={(prefix) => props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)}
-                    tooltip={filter.description}
                     disabled={!!props.excludeTable}
                   />
                 );
@@ -113,7 +112,6 @@ const ParameterTableFilters = (props: PropsType) => (
                     disabled={!!props.excludeTable}
                     onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
                     placeholder="-"
-                    tooltip={filter.description}
                   />
                 );
               case REAL_RANGE:
@@ -133,7 +131,25 @@ const ParameterTableFilters = (props: PropsType) => (
                     disabled={!!props.excludeTable}
                     onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
                     placeholder="-"
-                    tooltip={filter.description}
+                  />
+                );
+              case MONEY_RANGE:
+                return (
+                  <InputRange
+                    inputType="text"
+                    valueType={MONEY_RANGE}
+                    input={{
+                      value: filter.value || "",
+                      formattedValue: filter.formattedValue,
+                      onChange: (value, formattedValue) =>
+                        props.onSetFilterValue(filterIdx, value, formattedValue),
+                    }}
+                    unit={filter.unit}
+                    label={filter.label}
+                    mode={filter.mode || 'range'}
+                    disabled={!!props.excludeTable}
+                    onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
+                    placeholder="-"
                   />
                 );
               case MONEY_RANGE:
@@ -165,7 +181,6 @@ const ParameterTableFilters = (props: PropsType) => (
                     }}
                     placeholder="-"
                     label={filter.label}
-                    tooltip={filter.description}
                   />
                 );
               default:
@@ -177,7 +192,8 @@ const ParameterTableFilters = (props: PropsType) => (
           .map((input, filterIdx) => (
             <div
               key={filterIdx}
-              className="parameter-table__filter"
+              className="query-node-editor__row"
+              onFocusCapture={() => props.onShowDescription(filterIdx)}
             >
               {input}
             </div>

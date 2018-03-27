@@ -38,10 +38,7 @@ const ClearableInput = (props: PropsType) => {
             type={props.inputType}
             onValueChange={(values: NumberFormatValueType) => {
               const { formattedValue, floatValue } = values;
-              props.onChange({
-                formattedValue,
-                raw: floatValue * (T.translate('moneyRange.factor') || 1)
-              });
+              props.onChange(floatValue * (T.translate('moneyRange.factor') || 1), formattedValue);
             }}
             value={props.formattedValue}
             {...props.inputProps}
