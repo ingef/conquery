@@ -48,11 +48,11 @@ const InputRange = (props: PropsType) => {
 
   const factor = T.translate('moneyRange.factor') || 1;
   const minFormattedValue =
-    (formattedValue && formattedValue.min) || (parseInt(minValue) / factor) || '';
+    (formattedValue && formattedValue.min) || (parseInt(minValue) / factor) || null;
   const maxFormattedValue =
-    (formattedValue && formattedValue.max) || (parseInt(maxValue) / factor) || '';
+    (formattedValue && formattedValue.max) || (parseInt(maxValue) / factor) || null;
   const exactFormattedValue =
-    (formattedValue && formattedValue.exact) || (parseInt(exactValue) / factor) || '';
+    (formattedValue && formattedValue.exact) || (parseInt(exactValue) / factor) || null;
 
   const isRangeMode = props.mode === 'range';
   const inputProps = {
@@ -61,16 +61,30 @@ const InputRange = (props: PropsType) => {
     max: (props.limits && props.limits.max) || null,
   };
 
-  const onChangeValue = (type, newValue) => {
+  const onChangeValue = (type, newValue, newFormattedValue) => {
     const { value } = props.input;
-    const { formattedValue, raw } = newValue;
-    const nextValue = raw || null;
+    const nextValue = newValue || null;
+    const nextFormattedValue = newFormattedValue || null;
 
     if (type === 'exact')
+      // SET ENTIRE VALUE TO NULL IF POSSIBLE
+      if (nextValue === null)
+        props.input.onChange(null, null);
+      else
         props.input.onChange({
           exact: nextValue
+        }, {
+          exact: nextFormattedValue
         });
     else if (type === 'min' || type === 'max')
+    if (
+      nextValue === null && (
+        (value && value.min == null && type === 'max') ||
+        (value && value.max == null && type === 'min')
+      )
+    )
+      props.input.onChange(null, null);
+    else
         props.input.onChange({
           min: value ? value.min : null,
           max: value ? value.max : null,
@@ -79,10 +93,10 @@ const InputRange = (props: PropsType) => {
         {
           min: props.input.formattedValue ? props.input.formattedValue.min : null,
           max: props.input.formattedValue ? props.input.formattedValue.max : null,
-          [type]: formattedValue
+          [type]: nextFormattedValue
         });
     else
-      props.input.onChange(null);
+      props.input.onChange(null, null);
   };
 
   return (
@@ -120,7 +134,7 @@ const InputRange = (props: PropsType) => {
             input={{
               value: exactValue,
               formattedValue: exactFormattedValue,
-              onChange: (value) => onChangeValue('exact', value)
+              onChange: (value, formattedValue) => onChangeValue('exact', value, formattedValue)
             }}
             inputProps={inputProps}
           />
@@ -139,7 +153,7 @@ const InputRange = (props: PropsType) => {
             input={{
               value: minValue,
               formattedValue: minFormattedValue,
-              onChange: value => onChangeValue('min', value),
+              onChange: (value, formattedValue) => onChangeValue('min', value, formattedValue),
             }}
             inputProps={inputProps}
           />
@@ -153,7 +167,7 @@ const InputRange = (props: PropsType) => {
             input={{
               value: maxValue,
               formattedValue: maxFormattedValue,
-              onChange: value => onChangeValue('max', value),
+              onChange: (value, formattedValue) => onChangeValue('max', value, formattedValue),
             }}
             inputProps={inputProps}
           />

@@ -16,7 +16,8 @@ export const resetAllFiltersInTables = (tables: TableType[]) => {
     const filters = table.filters
       ? table.filters.map((filter) => ({
           ...filter,
-          value: filter.defaultValue
+          value: filter.defaultValue,
+          formattedValue: undefined
         }))
       : null;
 
