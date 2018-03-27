@@ -58,6 +58,7 @@ queryNodeEditor:
   description: "Beschreibung"
   noDescriptionProvided: "Keine Beschreibung verfügbar."
   selectAFilter: "Kein Filter ausgewählt."
+  dropConcept: "Füge ein weiteres Konzept hinzu"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
