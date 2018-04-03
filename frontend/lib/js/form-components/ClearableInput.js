@@ -55,7 +55,7 @@ const ClearableInput = (props: PropsType) => {
       {
         !isEmpty(props.value) &&
         <span
-          className="clearable-input__clear-zone Select-clear-zone"
+          className="clearable-input__clear-zone"
           title={T.translate('common.clearValue')}
           aria-label={T.translate('common.clearValue')}
           onClick={() => props.onChange('')}
