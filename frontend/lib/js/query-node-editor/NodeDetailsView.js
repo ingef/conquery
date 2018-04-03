@@ -46,7 +46,10 @@ const dropzoneTarget = {
 
   canDrop({ node }, monitor) {
     const item = monitor.getItem();
-    return item.tree === node.tree && !node.ids.some(id => id === item.id);
+    // The dragged item should contain exactly one id
+    // since it was dragged from the tree
+    const conceptId = item.ids[0];
+    return item.tree === node.tree && !node.ids.some(id => id === conceptId);
   }
 };
 
