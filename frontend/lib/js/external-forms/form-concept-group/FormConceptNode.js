@@ -24,7 +24,7 @@ const FormConceptNode = (props: PropsType) => {
       props.className
     )}>
       <IconButton
-        label={T.translate('externalForms.common.filter')}
+        label={T.translate('externalForms.common.edit')}
         className={classnames(
           "btn--link-like",
           { "query-node-actions__action--active": props.hasActiveFilters }

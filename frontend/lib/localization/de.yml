@@ -193,7 +193,7 @@ externalForms:
       first: "ERSTES"
       last: "LETZTES"
       random: "ZUFÄLLIG"
-    filter: "Filter"
+    edit: "Bearbeiten"
 
 uploadQueryResultsModal:
   headline: "Lade ein Anfrageergebnis hoch"

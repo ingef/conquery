@@ -191,7 +191,7 @@ externalForms:
       first: "FIRST"
       last: "LAST"
       random: "RANDOM"
-    filter: "Filter"
+    edit: "Edit"
 
 uploadQueryResultsModal:
   headline: "Upload a Query Result"
