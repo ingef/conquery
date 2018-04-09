@@ -60,7 +60,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
   }
 
   _matchedSearch(treeId, search: SearchType, searchCurTree: []): boolean {
-    if (search.words.length > 0)
+    if (search && search.words.length > 0)
       return Object.keys(search.result).some(key => search.result[key].includes(treeId))
     return true;
   }
