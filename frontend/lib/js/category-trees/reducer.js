@@ -21,7 +21,7 @@ import {
   SEARCH_TREES,
 } from './actionTypes';
 import {
-  setTree,
+  setTree
 } from './globalTreeStoreHelper';
 
 export type TreeNodeIdType = string;
@@ -38,7 +38,6 @@ export type TreeNodeType = {
   tables?: TableType[],
   additionalInfos?: AdditionalInfosType,
   matchingEntries?: number,
-  matched?: boolean,
 };
 
 export type TreesType = { [treeId: string]: TreeNodeType }

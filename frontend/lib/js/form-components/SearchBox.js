@@ -1,9 +1,9 @@
-import React                           from 'react';
-import PropTypes                       from 'prop-types';
-import T                               from 'i18n-react';
-import { Creatable as Select }         from 'react-select';
-import { isEmpty } from '../common/helpers';
-import ClearableInput from './ClearableInput';
+import React                    from 'react';
+import PropTypes                from 'prop-types';
+import T                        from 'i18n-react';
+import { Creatable as Select }  from 'react-select';
+import { isEmpty }              from '../common/helpers';
+import ClearableInput           from './ClearableInput';
 
 const SearchBox = (props) => {
   return isEmpty(props.mode)
@@ -34,7 +34,7 @@ const SearchBox = (props) => {
         <ClearableInput
           inputType="text"
           placeholder={T.translate('reactSelect.searchPlaceholder')}
-          value={props.searchStr}
+          value={props.searchStr  || ""}
           onChange={(values) => props.onSearch(values)}
         />
       </div>
@@ -45,8 +45,7 @@ SearchBox.propTypes = {
   searchStr: PropTypes.string,
   onSearch: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string),
-  mode: PropTypes.string,
-  placeholder: PropTypes.string,
+  mode: PropTypes.string
 };
 
 export default SearchBox;
