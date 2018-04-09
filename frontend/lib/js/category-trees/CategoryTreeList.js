@@ -1,20 +1,24 @@
 // @flow
 
-import React                from 'react';
-import { connect }          from 'react-redux';
+import React              from 'react';
+import { connect }        from 'react-redux';
 
-import type { StateType }   from '../app/reducers';
+import type { StateType } from '../app/reducers';
 
-import { getConceptById }   from './globalTreeStoreHelper';
+import { getConceptById } from './globalTreeStoreHelper';
 
-import { type TreesType }   from './reducer';
+import {
+  type TreesType,
+  type SearchType
+}                         from './reducer';
 
-import CategoryTree         from './CategoryTree';
-import CategoryTreeFolder   from './CategoryTreeFolder';
+import CategoryTree       from './CategoryTree';
+import CategoryTreeFolder from './CategoryTreeFolder';
 
 type PropsType = {
   trees: TreesType,
   activeTab: string,
+  search: SearchType,
 };
 
 class CategoryTreeList extends React.Component<PropsType> {
@@ -52,6 +56,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                     loading={!!tree.loading}
                     error={tree.error}
                     depth={0}
+                    search={this.props.search}
                   />
                 : <CategoryTreeFolder
                     key={i}
@@ -73,6 +78,7 @@ const mapStateToProps = (state: StateType) => {
   return {
     trees: state.categoryTrees.trees,
     activeTab: state.panes.left.activeTab,
+    search: state.categoryTrees.search
   };
 };
 

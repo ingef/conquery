@@ -25,7 +25,8 @@ import {
   LOAD_TREE_START,
   LOAD_TREE_SUCCESS,
   LOAD_TREE_ERROR,
-  CLEAR_TREES
+  CLEAR_TREES,
+  SEARCH_TREES,
 } from './actionTypes';
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
@@ -90,3 +91,4 @@ export const loadTree = (datasetId: DatasetIdType, treeId: TreeNodeIdType) => {
       );
   };
 };
+export const searchTrees = (query: string) => ({type: SEARCH_TREES, payload: { query }});

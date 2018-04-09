@@ -10,6 +10,7 @@ import type {
 }                           from '../common/types/backend';
 
 import CategoryTreeNode     from './CategoryTreeNode';
+import { SearchType }       from './reducer';
 
 type PropsType = {
   id: TreeNodeIdType,
@@ -19,6 +20,7 @@ type PropsType = {
   depth: number,
   loading: boolean,
   error: ?string,
+  search?: SearchType,
 };
 
 const CategoryTree = (props: PropsType) => {
@@ -47,6 +49,7 @@ const CategoryTree = (props: PropsType) => {
           id={props.id}
           data={{...props.tree, tree: props.treeId }}
           depth={props.depth}
+          search={props.search}
         />
       </div>
     );
