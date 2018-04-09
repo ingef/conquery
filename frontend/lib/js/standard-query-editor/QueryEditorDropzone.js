@@ -1,35 +1,32 @@
+// @flow
+
 import React                  from 'react';
-import PropTypes              from 'prop-types';
 import classnames             from 'classnames';
 import T                      from 'i18n-react';
-import { DropTarget }         from 'react-dnd';
+import {
+  DropTarget,
+  type ConnectDropTarget
+}                             from 'react-dnd';
 import { NativeTypes }        from 'react-dnd-html5-backend';
 import { dndTypes }           from '../common/constants';
+import type { QueryIdType }   from '../common/types/backend';
+import type { DraggedNodeType, DraggedQueryType, DraggedFileType } from './types';
 
+type PropsType = {
+  isInitial: ?boolean,
+  isAnd: ?boolean,
+  onDropNode: (DraggedNodeType | DraggedQueryType) => void,
+  onDropFiles: (DraggedFileType) => void,
+  onLoadPreviousQuery: (QueryIdType) => void,
 
-const dropzoneTarget = {
-  drop(props, monitor) {
-    const item = monitor.getItem();
-
-    if (item.files)
-      props.onDropFiles(item);
-    else
-      props.onDropNode(item);
-
-    if (item.isPreviousQuery)
-      props.onLoadPreviousQuery(item.id);
-  }
+  connectDropTarget: ConnectDropTarget,
+  isOver: boolean
 };
 
-function collect(connect, monitor) {
-  return {
-    connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver()
-  };
-}
-
-const QueryEditorDropzone = (props) => {
-  return props.connectDropTarget(
+const InnerQueryEditorDropzone =
+  // When instantiating the QueryEditorDropzone, flow doesn't recognize that
+  // connectDropTarget and isOver are being injected by react-dnd :(
+  (props: PropsType) => props.connectDropTarget(
     <div className={classnames(
       'query-editor-dropzone', {
         'query-editor-dropzone--initial': props.isInitial,
@@ -51,19 +48,27 @@ const QueryEditorDropzone = (props) => {
       </div>
     </div>
   );
+
+const dropzoneTarget = {
+  drop(props: PropsType, monitor) {
+    const item: DraggedNodeType | DraggedQueryType | DraggedFileType = monitor.getItem();
+
+    if (item.files) {
+      props.onDropFiles(item);
+    } else {
+      props.onDropNode(item);
+      if (item.isPreviousQuery)
+        props.onLoadPreviousQuery(item.id);
+    }
+  }
 };
 
-QueryEditorDropzone.propTypes = {
-  isInitial: PropTypes.bool,
-  isAnd: PropTypes.bool,
-  connectDropTarget: PropTypes.func.isRequired,
-  isOver: PropTypes.bool.isRequired,
-  onDropNode: PropTypes.func.isRequired,
-  onDropFiles: PropTypes.func.isRequired,
-  onLoadPreviousQuery: PropTypes.func.isRequired,
-};
+const collect = (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget(),
+  isOver: monitor.isOver()
+});
 
-export default DropTarget(
+export const QueryEditorDropzone = DropTarget(
   [
     dndTypes.CATEGORY_TREE_NODE,
     dndTypes.QUERY_NODE,
@@ -72,4 +77,4 @@ export default DropTarget(
   ],
   dropzoneTarget,
   collect
-)(QueryEditorDropzone);
+)(InnerQueryEditorDropzone);

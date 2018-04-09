@@ -8,15 +8,28 @@
     padding: 0 0 0 5px
 
   &__dates
-    display: table
-    table-layout: fixed
+    display: flex
+    align-items: center
+    justify-content: center
     margin: 0 auto
 
   &__input-group
-    display: table-cell
     vertical-align: top
     padding: 10px
 
   &__datepicker
     &--has-value
       border: 1px solid $col-blue-gray-dark
+
+  &__explanation
+    margin: 10px
+    font-size: $font-sm
+    text-transform: uppercase
+    font-weight: 700
+
+  &__reset-all
+    padding: 8px 12px
+    font-size: $font-sm
+    cursor: pointer
+    color: $col-blue-gray-dark
+    font-weight: 700

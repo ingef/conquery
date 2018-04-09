@@ -1,11 +1,17 @@
 // @flow
 
 import fetch                   from 'isomorphic-fetch';
-import { type DatasetIdType }  from '../dataset/reducer';
-import { type TreeNodeIdType } from '../category-trees/reducer';
-import { getStoredAuthToken }  from '../authorization';
 
+import { getStoredAuthToken }  from '../authorization';
 import { apiUrl }              from '../environment';
+
+import { type DatasetIdType }  from '../dataset/reducer';
+import type {
+  RootType,
+  TreeNodeIdType,
+  ConceptListResolutionResultType
+}                              from '../common/types/backend';
+
 import {
   transformQueryToApi,
 } from './apiHelper';
@@ -94,11 +100,17 @@ export function postResults(datasetId: DatasetIdType, file: any) {
   });
 };
 
-export function getConcepts(datasetId: DatasetIdType) {
+export const getConcepts = (datasetId: DatasetIdType) : Promise<RootType> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts`);
 }
 
-export function getConcept(datasetId: DatasetIdType, conceptId: TreeNodeIdType) {
+export type ConceptElementType = {
+  children: Array<TreeNodeIdType>,
+};
+
+export const getConcept =
+  (datasetId: DatasetIdType, conceptId: TreeNodeIdType)
+    : Promise<Map<TreeNodeIdType, ConceptElementType>> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}`);
 }
 
@@ -192,19 +204,6 @@ export function postPrefixForSuggestions(
       body: { text },
     }
   );
-};
-
-export type ConceptListResolutionResultType = {
-  resolvedConcepts?: String[],
-  unknownCodes?: String[],
-  resolvedFilter?: {
-    filterId: String,
-    tableId: String,
-    value: {
-      label: String,
-      value: String
-    }[]
-  }
 };
 
 export function postConceptsListToResolve(

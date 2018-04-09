@@ -26,6 +26,10 @@ import {
 }                           from '../delete-modal/actions'
 
 import {
+  type DraggedQueryType
+}                           from '../../standard-query-editor/types';
+
+import {
   sharePreviousQuery,
   renamePreviousQuery,
   retagPreviousQuery,
@@ -36,7 +40,7 @@ import {
 import PreviousQueryTags    from './PreviousQueryTags';
 
 const nodeSource = {
-  beginDrag(props) {
+  beginDrag(props): DraggedQueryType {
     // Return the data describing the dragged item
     return {
       id: props.query.id,
@@ -68,8 +72,9 @@ const PreviousQuery = (props) => {
   const executedAt = moment(query.createdAt).fromNow();
   const label = query.label || query.id.toString();
   const mayEditQuery = query.own || query.shared;
+  const isNotEditing = !(query.editingLabel || query.editingTags);
 
-  return props.connectDragSource(
+  const content = (
     <div className={classnames('previous-query', {
       'previous-query--own': !!query.own,
       'previous-query--shared': !!query.shared,
@@ -168,6 +173,7 @@ const PreviousQuery = (props) => {
       }
     </div>
   );
+  return isNotEditing ? props.connectDragSource(content) : content;
 };
 
 PreviousQuery.propTypes = {

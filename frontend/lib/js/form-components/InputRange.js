@@ -1,16 +1,17 @@
 // @flow
 
-import React                   from 'react';
-import T                       from 'i18n-react';
-import classnames              from 'classnames';
+import React from 'react';
+import T from 'i18n-react';
+import classnames from 'classnames';
 import { type FieldPropsType } from 'redux-form';
 
-import InputWithLabel          from './InputWithLabel';
-import ToggleButton            from './ToggleButton';
-import InputRangeHeader        from './InputRangeHeader';
+import InputWithLabel from './InputWithLabel';
+import ToggleButton from './ToggleButton';
+import InputRangeHeader from './InputRangeHeader';
 
 type PropsType = FieldPropsType & {
   inputType: string,
+  valueType?: string,
   label: string,
   unit?: string,
   limits?: {
@@ -30,15 +31,29 @@ type PropsType = FieldPropsType & {
       min?: number,
       max?: number
     },
+    formattedValue: ?{
+      exact?: string,
+      min?: string,
+      max?: string
+    }
   }
 };
 
 const InputRange = (props: PropsType) => {
-  const { value } = props.input;
+  const { value, formattedValue } = props.input;
   // Make sure undefined / null is never set as a value, but an empty string instead
   const minValue = (value && value.min) || '';
   const maxValue = (value && value.max) || '';
   const exactValue = (value && value.exact) || '';
+
+  const factor = T.translate('moneyRange.factor') || 1;
+  const minFormattedValue =
+    (formattedValue && formattedValue.min) || (parseInt(minValue) / factor) || null;
+  const maxFormattedValue =
+    (formattedValue && formattedValue.max) || (parseInt(maxValue) / factor) || null;
+  const exactFormattedValue =
+    (formattedValue && formattedValue.exact) || (parseInt(exactValue) / factor) || null;
+
   const isRangeMode = props.mode === 'range';
   const inputProps = {
     step: props.stepSize || null,
@@ -46,33 +61,42 @@ const InputRange = (props: PropsType) => {
     max: (props.limits && props.limits.max) || null,
   };
 
-  const onChangeValue = (type, newValue) => {
+  const onChangeValue = (type, newValue, newFormattedValue) => {
     const { value } = props.input;
     const nextValue = newValue || null;
+    const nextFormattedValue = newFormattedValue || null;
 
     if (type === 'exact')
       // SET ENTIRE VALUE TO NULL IF POSSIBLE
       if (nextValue === null)
-        props.input.onChange(null);
+        props.input.onChange(null, null);
       else
-        props.input.onChange({ exact: nextValue });
+        props.input.onChange({
+          exact: nextValue
+        }, {
+          exact: nextFormattedValue
+        });
     else if (type === 'min' || type === 'max')
-      // SET ENTIRE VALUE TO NULL IF POSSIBLE
-      if (
-        nextValue === null && (
-          (value && value.min === null && type === 'max') ||
-          (value && value.max === null && type === 'min')
-        )
+    if (
+      nextValue === null && (
+        (value && value.min == null && type === 'max') ||
+        (value && value.max == null && type === 'min')
       )
-        props.input.onChange(null);
-      else
+    )
+      props.input.onChange(null, null);
+    else
         props.input.onChange({
           min: value ? value.min : null,
           max: value ? value.max : null,
           [type]: nextValue
+        },
+        {
+          min: props.input.formattedValue ? props.input.formattedValue.min : null,
+          max: props.input.formattedValue ? props.input.formattedValue.max : null,
+          [type]: nextFormattedValue
         });
     else
-      props.input.onChange(null);
+      props.input.onChange(null, null);
   };
 
   return (
@@ -102,13 +126,15 @@ const InputRange = (props: PropsType) => {
         <div className="input-range__input-container">
           <InputWithLabel
             inputType={props.inputType}
+            valueType={props.valueType}
             className="input-range__input-with-label"
             placeholder="-"
             label={T.translate('inputRange.exactLabel')}
             tinyLabel={props.smallLabel || true}
             input={{
               value: exactValue,
-              onChange: (value) => onChangeValue('exact', value)
+              formattedValue: exactFormattedValue,
+              onChange: (value, formattedValue) => onChangeValue('exact', value, formattedValue)
             }}
             inputProps={inputProps}
           />
@@ -119,25 +145,29 @@ const InputRange = (props: PropsType) => {
         <div className="input-range__input-container">
           <InputWithLabel
             inputType={props.inputType}
+            valueType={props.valueType}
             className="input-range__input-with-label"
             placeholder={props.placeholder}
             label={T.translate('inputRange.minLabel')}
             tinyLabel={props.smallLabel || true}
             input={{
               value: minValue,
-              onChange: value => onChangeValue('min', value),
+              formattedValue: minFormattedValue,
+              onChange: (value, formattedValue) => onChangeValue('min', value, formattedValue),
             }}
             inputProps={inputProps}
           />
           <InputWithLabel
             inputType={props.inputType}
+            valueType={props.valueType}
             className="input-range__input-with-label"
             placeholder={props.placeholder}
             label={T.translate('inputRange.maxLabel')}
             tinyLabel={props.smallLabel || true}
             input={{
               value: maxValue,
-              onChange: value => onChangeValue('max', value),
+              formattedValue: maxFormattedValue,
+              onChange: (value, formattedValue) => onChangeValue('max', value, formattedValue),
             }}
             inputProps={inputProps}
           />

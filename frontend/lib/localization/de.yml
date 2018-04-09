@@ -29,7 +29,7 @@ queryRunner:
 queryEditor:
   couldNotExpandNode: "Knoten nicht gefunden"
   couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
-  filter: "Filter"
+  filter: "Bearbeiten"
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
@@ -47,10 +47,18 @@ datasetSelector:
   pleaseChoose: "Datenbank auswählen"
   error: "Konnte Datenbanken nicht laden"
 
-queryNodeModal:
+queryNodeEditor:
+  conceptTree: "Konzeptbaum"
+  queryNode: "Abfrageknoten"
+  conceptNodes: "Konzeptknoten"
+  conceptNodeTables: "Anfragetabellen"
+  properties: "Eigenschaften"
   resetAll: "Alle zurücksetzen"
-  explanation: "Anfragetabellen konfigurieren"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
+  description: "Beschreibung"
+  noDescriptionProvided: "Keine Beschreibung verfügbar."
+  selectAFilter: "Kein Filter ausgewählt."
+  dropConcept: "Füge ein weiteres Konzept hinzu"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
@@ -110,6 +118,13 @@ inputRange:
   exactLabel: 'exakt'
   minLabel: 'min'
   maxLabel: 'max'
+
+moneyRange:
+  factor: "100"
+  thousandSeparator: "."
+  decimalSeparator: ","
+  decimalScale: "2"
+  prefix: "€"
 
 previousQueries:
   loading: "Lade Anfragen"
@@ -178,7 +193,7 @@ externalForms:
       first: "ERSTES"
       last: "LETZTES"
       random: "ZUFÄLLIG"
-    filter: "Filter"
+    edit: "Bearbeiten"
 
 uploadQueryResultsModal:
   headline: "Lade ein Anfrageergebnis hoch"

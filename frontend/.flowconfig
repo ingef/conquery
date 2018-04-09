@@ -17,4 +17,4 @@ module.name_mapper='.*\(.yml\)' -> 'empty/object'
 ; suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
 
 [version]
-0.65.0
+0.66.0

@@ -11,6 +11,7 @@ import ClearableInput          from './ClearableInput';
 type PropsType = FieldPropsType & {
   label: string,
   inputType: string,
+  valueType?: string,
   className?: string,
   placeholder?: string,
   tinyLabel?: boolean,
@@ -24,7 +25,8 @@ const InputWithLabel = (props: PropsType) => {
       props.className,
       'input',
       {
-        'input--value-changed': !isEmpty(props.input.value),
+        'input--value-changed':
+          !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue,
         'input--full-width': !!props.fullWidth,
       }
     )}>
@@ -37,8 +39,10 @@ const InputWithLabel = (props: PropsType) => {
       </span>
       <ClearableInput
         inputType={props.inputType}
+        valueType={props.valueType}
         placeholder={props.placeholder}
         value={props.input.value || ""}
+        formattedValue={props.input.formattedValue || ""}
         onChange={props.input.onChange}
         inputProps={props.inputProps}
       />

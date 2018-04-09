@@ -1,0 +1,181 @@
+.query-node-editor
+  padding: 0 10px
+  left: 0
+  top: 0
+  right: 0
+  bottom: 0
+  position: absolute
+  display: flex
+  background: rgb(249, 249, 249)
+  z-index: 1
+
+  &__wrapper
+    border: 1px solid $col-blue-gray-dark
+    display: flex
+    width: 100%
+    height: 100%
+    overflow: hidden
+
+  &__close-button
+    border: 1px solid $col-blue-gray-dark
+    position: absolute
+    bottom: 10px
+    right: 20px
+
+  &__column
+    height: 100%
+    display: flex
+    flex-direction: column
+
+  &__column + &__column
+    border-left: 1px solid $col-gray-light
+
+  &__fixed_column
+    flex-basis: 225px
+    min-width: 150px
+
+  &__large_column
+    flex: 1
+    min-width: 225px
+    overflow: auto
+
+  &__column_content
+    flex: 1
+    overflow-y: auto
+    padding: 10px
+
+  &__row
+    margin-bottom: 10px
+
+  &__concept
+    border-left: 3px solid $col-blue-gray-dark
+    padding-left: 10px
+    display: flex
+    flex-direction: row
+    margin-top: 10px
+
+    > div
+      flex: 1
+
+    h6
+      margin: 10px 0 10px 0
+      font-size: $font-sm
+      font-weight: 400
+
+    p
+      font-size: $font-xs
+      margin: -10px 0 10px 0
+
+    .btn
+      float: right
+      display: block
+      border: none
+
+  &__category_header
+    padding-left: 10px
+    line-height: 32px
+    font-size: $font-xs
+    text-transform: uppercase
+    font-weight: 700
+    color: $col-black
+
+  &__category_element
+    font-size: $font-md
+    font-weight: 700
+    color: $col-black
+    width: 100%
+    text-align: left
+    display: inline-flex
+    flex-direction: row
+
+    > span
+      flex: 1
+      flex-shrink: 1
+      display: block
+      overflow: hidden
+      white-space: nowrap
+      text-overflow: ellipsis
+
+    > *
+      line-height: 21px
+
+  &__category_element_active
+    background: $col-blue-gray-light
+
+    &:hover
+      background: $col-blue-gray-light
+
+  &__category_action
+    line-height: 32px
+    font-size: $font-xs
+    font-weight: 700
+    text-transform: uppercase
+
+    i
+      padding-left: 15px
+      padding-right: 5px
+
+  &__reset-all
+    cursor: pointer
+    color: $col-blue-gray-dark
+
+  &__exclude_icon
+    margin-right: 10px
+
+    &:hover
+      color: $col-blue-gray-light
+
+  &__category_element_active > &__exclude_icon:hover
+    color: $col-gray-very-light
+
+  &__exclude_icon_disabled
+    margin-right: 10px
+    color: $col-black
+    cursor: not-allowed
+
+  &__filter_icon
+    margin-left: 10px
+    color: $col-blue-gray-light
+
+  &__category_element_active > &__filter_icon
+    color: $col-black
+
+  &__description
+    font-size: $font-sm
+    color: $col-black
+
+  h4
+    margin: 0px 4px
+    padding: 0px 10px
+    border-bottom: 1px solid $col-gray-light
+    line-height: 37px
+    font-size: $font-md
+    font-weight: 700
+    color: $col-black
+
+    > p
+      margin: 0
+      line-height: inherit
+
+    .editable-text-form
+      display: flex
+      padding: 5px 0
+
+      input
+        flex: 1
+        font-size: $font-md
+        height: 27px
+        padding: 0 8px
+
+      button
+        line-height: normal // Special care for IE
+
+  h5
+    margin: 0 0 10px 0
+    font-size: $font-sm
+
+  .input--value-changed
+    .Select
+      &:not(.is-disabled)
+        .Select-control
+          border: 1px solid $col-blue-gray-dark !important // To override any is-focused styles
