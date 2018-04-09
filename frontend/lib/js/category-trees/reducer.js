@@ -18,7 +18,12 @@ import { setTree }        from './globalTreeStoreHelper';
 
 export type TreesType = { [treeId: string]: NodeType }
 
-export type SearchType = { trees: TreesType, words: Array<string>, result: TreesType }
+export type SearchType = {
+  trees: TreesType,
+  searchStr: string,
+  words: Array<string>,
+  result: TreesType
+}
 
 export type StateType = {
   loading: boolean,
@@ -35,17 +40,22 @@ const initialState: StateType = {
 };
 
 const searchTrees = (state: StateType, action: Object): StateType => {
-  const query = action.payload.query;
-  var search = { trees: state.trees, words: query ? query.split(' ') : [], result: {} };
+  const searchStr = action.payload.searchStr;
+  var search = {
+    trees: state.trees,
+    searchStr: searchStr,
+    words: searchStr ? searchStr.split(' ') : [],
+    result: {}
+  };
 
-  if (isEmpty(query))
+  if (isEmpty(searchStr))
     return {
       ...state,
       search
     };
 
   const categoryTrees = window.categoryTrees;
-  search.result = searching(categoryTrees, query);
+  search.result = searching(categoryTrees, searchStr);
 
 return {
     ...state,
@@ -53,16 +63,16 @@ return {
   };
 };
 
-const searching = (categoryTrees: TreesType, query) => {
+const searching = (categoryTrees: TreesType, searchStr) => {
   return Object.assign({}, ...Object.entries(categoryTrees).map(([treeId, treeNode]) => ({
-    [treeId]: findTreeNodes(treeId, treeNode, query)
+    [treeId]: findTreeNodes(treeId, treeNode, searchStr)
   })));
 }
 
-const findTreeNodes = (treeId: string, treeNode: NodeType, query: string) => {
+const findTreeNodes = (treeId: string, treeNode: NodeType, searchStr: string) => {
   const node = treeNode[treeId];
   const children = node.children || [];
-  const result = children.map(child => findTreeNodes(child, treeNode, query))
+  const result = children.map(child => findTreeNodes(child, treeNode, searchStr))
     .reduce((agg, cur) => [...agg, ...cur], []);
 
   const label = node.label || '';
@@ -72,18 +82,18 @@ const findTreeNodes = (treeId: string, treeNode: NodeType, query: string) => {
     : '';
 
   if ((result.length ||
-      (fuzzyMatch(label, query).length > 0) ||
-      (fuzzyMatch(description, query).length > 0) ||
-      (fuzzyMatch(additionalInfos, query).length > 0)))
+      (fuzzyMatch(label, searchStr).length > 0) ||
+      (fuzzyMatch(description, searchStr).length > 0) ||
+      (fuzzyMatch(additionalInfos, searchStr).length > 0)))
         return [treeId, ...result];
 
   return [];
 }
 
-const fuzzyMatch = (text: string, search: string) => {
+const fuzzyMatch = (text: string, searchStr: string) => {
     if (!text) return '';
 
-    search = search.replace(/ /g, '').toLowerCase();
+    var search = searchStr.replace(/ /g, '').toLowerCase();
     var tokens = [];
     var searchPosition = 0;
 

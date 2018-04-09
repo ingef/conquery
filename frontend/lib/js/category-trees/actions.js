@@ -91,4 +91,4 @@ export const loadTree = (datasetId: DatasetIdType, treeId: TreeNodeIdType) => {
       );
   };
 };
-export const searchTrees = (query: string) => ({type: SEARCH_TREES, payload: { query }});
+export const searchTrees = (searchStr: string) => ({type: SEARCH_TREES, payload: { searchStr }});
