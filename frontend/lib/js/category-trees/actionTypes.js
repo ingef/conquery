@@ -10,3 +10,5 @@ export const CLEAR_TREES = "category-trees/CLEAR_TREES";
 export const LOAD_TREE_START = "category-trees/LOAD_TREE_START";
 export const LOAD_TREE_SUCCESS = "category-trees/LOAD_TREE_SUCCESS";
 export const LOAD_TREE_ERROR = "category-trees/LOAD_TREE_ERROR";
+
+export const SEARCH_TREES = "category-trees/SEARCH_TREES";

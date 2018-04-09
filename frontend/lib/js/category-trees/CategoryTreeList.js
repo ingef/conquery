@@ -9,7 +9,8 @@ import { getConceptById }   from './globalTreeStoreHelper';
 
 import {
   type TreeNodeType,
-  type TreesType
+  type TreesType,
+  type SearchType
 }   from './reducer';
 
 import CategoryTree         from './CategoryTree';
@@ -18,6 +19,7 @@ import CategoryTreeFolder   from './CategoryTreeFolder';
 type PropsType = {
   trees: TreesType,
   activeTab: string,
+  search: SearchType,
 };
 
 class CategoryTreeList extends React.Component {
@@ -54,6 +56,7 @@ class CategoryTreeList extends React.Component {
                     loading={!!tree.loading}
                     error={tree.error}
                     depth={0}
+                    search={this.props.search}
                   />
                 : <CategoryTreeFolder
                     key={i}
@@ -75,6 +78,7 @@ const mapStateToProps = (state: StateType) => {
   return {
     trees: state.categoryTrees.trees,
     activeTab: state.panes.left.activeTab,
+    search: state.categoryTrees.search
   };
 };
 

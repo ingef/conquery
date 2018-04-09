@@ -1,13 +1,10 @@
 // @flow
 
-import React                from 'react';
-import T                    from 'i18n-react';
-
-import { ErrorMessage }     from '../error-message';
-
-import CategoryTreeNode     from './CategoryTreeNode';
-
-import type { TreeNodeType }     from './reducer';
+import React                              from 'react';
+import T                                  from 'i18n-react';
+import { ErrorMessage }                   from '../error-message';
+import CategoryTreeNode                   from './CategoryTreeNode';
+import type { TreeNodeType, SearchType }  from './reducer';
 
 type PropsType = {
   id: string | number,
@@ -16,6 +13,7 @@ type PropsType = {
   depth: number,
   loading: boolean,
   error: ?string,
+  search?: SearchType,
 };
 
 const CategoryTree = (props: PropsType) => {
@@ -44,6 +42,7 @@ const CategoryTree = (props: PropsType) => {
           id={props.id}
           data={props.tree}
           depth={props.depth}
+          search={props.search}
         />
       </div>
     );

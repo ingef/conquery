@@ -4,7 +4,10 @@ import React                        from 'react';
 import { Route }                    from 'react-router';
 
 import { Pane }                     from '../pane';
-import { CategoryTreeList }         from '../category-trees';
+import {
+  CategoryTreeList,
+  CategoryTreeSearchBox
+} from '../category-trees';
 import { DatasetSelector }          from '../dataset';
 import { DeletePreviousQueryModal } from '../previous-queries/delete-modal';
 import { PreviousQueriesSearchBox } from '../previous-queries/search';
@@ -24,6 +27,10 @@ const LeftPane = (props: PropsType) => (
     return (
       <Pane type="left">
         <DatasetSelector selectedDatasetId={selectedDatasetId} />
+        {
+          props.activeTab === 'categoryTrees' &&
+            <CategoryTreeSearchBox mode="simple" />
+        }
         <CategoryTreeList />
         {
           props.activeTab === 'previousQueries' &&

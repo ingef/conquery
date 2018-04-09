@@ -1,11 +1,10 @@
 // @flow
 
-import React                         from 'react';
-
-import { getConceptById }            from './globalTreeStoreHelper';
-
-import Openable                      from './Openable';
-import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
+import React                          from 'react';
+import { getConceptById }             from './globalTreeStoreHelper';
+import Openable                       from './Openable';
+import CategoryTreeNodeTextContainer  from './CategoryTreeNodeTextContainer';
+import { type SearchType }            from './reducer';
 
 type PropsType = {
   id: string | number,
@@ -13,6 +12,7 @@ type PropsType = {
   depth: number,
   open: boolean,
   onToggleOpen: Function,
+  search: SearchType
 };
 
 class CategoryTreeNode extends React.Component {
@@ -24,10 +24,17 @@ class CategoryTreeNode extends React.Component {
     this.props.onToggleOpen();
   }
 
-  render() {
-    const { id, data, depth, open } = this.props;
+  _matchedSearch(treeId, search: SearchType, searchCurTree: []): boolean {
+    if (search.words.length > 0)
+      return Object.keys(search.result).some(key => search.result[key].includes(treeId))
+    return true;
+  }
 
-    return (
+  render() {
+    const { id, data, depth, open, search } = this.props;
+    const searching = search && search.words.length > 0;
+
+    return this._matchedSearch(id, search) && (
       <div className="category-tree-node">
         <CategoryTreeNodeTextContainer
           node={{
@@ -44,9 +51,10 @@ class CategoryTreeNode extends React.Component {
           depth={depth}
           active={data.active}
           onTextClick={this._onToggleOpen.bind(this)}
+          search={search}
         />
         {
-          !!data.children && open &&
+          !!data.children && (open || searching) &&
           <div className="category-tree-node__children">
             {
               data.children.map((childId, i) => {
@@ -63,6 +71,7 @@ class CategoryTreeNode extends React.Component {
                     id={childId}
                     data={childWithTables}
                     depth={this.props.depth + 1}
+                    search={this.props.search}
                   />
                 );
               })

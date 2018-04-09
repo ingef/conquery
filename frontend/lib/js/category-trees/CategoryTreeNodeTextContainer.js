@@ -1,12 +1,14 @@
 // @flow
 
-import React                       from 'react'
-import { DragSource }              from 'react-dnd';
-import classnames                  from 'classnames';
+import React                        from 'react'
+import { DragSource }               from 'react-dnd';
+import Highlighter                  from 'react-highlight-words';
+import classnames                   from 'classnames';
 
-import { AdditionalInfoHoverable } from '../tooltip';
-import { isEmpty }                 from '../common/helpers';
-import { dndTypes }                from '../common/constants';
+import { AdditionalInfoHoverable }  from '../tooltip';
+import { isEmpty }                  from '../common/helpers';
+import { dndTypes }                 from '../common/constants';
+import { type SearchType }          from './reducer';
 
 type PropsType = {
   node: {
@@ -23,10 +25,12 @@ type PropsType = {
   active?: boolean,
   onTextClick?: Function,
   connectDragSource: Function,
+  search?: SearchType,
 };
 
 const CategoryTreeNodeTextContainer = (props: PropsType) => {
   const zeroEntries = !isEmpty(props.node.matchingEntries) && props.node.matchingEntries === 0;
+  const searching = props.search && props.search.words.length > 0;
 
   const render = (
     <div
@@ -47,17 +51,30 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
           <i className={classnames(
             'category-tree-node__icon',
             'fa', {
-              'fa-folder-open': !!props.open,
-              'fa-folder': !props.open
+              'fa-folder-open': !!props.open || searching,
+              'fa-folder': !props.open || !searching
             }
           )} />
         }
         <span>
-          { props.node.label }
+          {
+            searching
+            ? (<Highlighter
+                searchWords={props.search.words}
+                autoEscape={true}
+                textToHighlight={props.node.label}
+              />)
+            : (props.node.label)
+          }
         </span>
         {
-          props.node.description &&
-          <span> - { props.node.description }</span>
+          searching && props.node.description
+          ? (<Highlighter
+              searchWords={props.search.words}
+              autoEscape={true}
+              textToHighlight={props.node.description}
+            />)
+          : (props.node.description)
         }
       </p>
     </div>
