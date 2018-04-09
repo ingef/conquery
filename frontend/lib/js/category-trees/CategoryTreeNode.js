@@ -12,7 +12,7 @@ type PropsType = {
   depth: number,
   open: boolean,
   onToggleOpen: Function,
-  search: SearchType
+  search?: SearchType
 };
 
 class CategoryTreeNode extends React.Component {
