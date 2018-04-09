@@ -3914,6 +3914,10 @@ icss-utils@^2.1.0:
   dependencies:
     postcss "^6.0.1"
 
+ie-version@^0.1.0:
+  version "0.1.0"
+  resolved "https://registry.yarnpkg.com/ie-version/-/ie-version-0.1.0.tgz#9a05a6865ce4f8440a36bae52b40fcfc2798d6da"
+
 ieee754@^1.1.4:
   version "1.1.8"
   resolved "https://registry.yarnpkg.com/ieee754/-/ieee754-1.1.8.tgz#be33d40ac10ef1926701f6f08a2d86fbfd1ad3e4"

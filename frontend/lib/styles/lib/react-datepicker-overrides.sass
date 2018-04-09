@@ -15,11 +15,18 @@
 .react-datepicker__day--selected:hover, .react-datepicker__day--in-selecting-range:hover, .react-datepicker__day--in-range:hover
   background-color: rgba($col-blue-gray-dark, 0.9)
 
-// Temporary IE 11 fix
-// https://github.com/Hacker0x01/react-datepicker/issues/1226
-.react-datepicker__month-read-view--down-arrow,
-.react-datepicker__month-year-read-view--down-arrow,
-.react-datepicker__year-read-view--down-arrow
+// IE 11 fix
+.query-group-modal__dates.ie11 .react-datepicker__month-read-view--down-arrow,
+.query-group-modal__dates.ie11 .react-datepicker__month-year-read-view--down-arrow,
+.query-group-modal__dates.ie11 .react-datepicker__year-read-view--down-arrow 
   margin-left: -20px
   left: 20px
   top: 4px
+
+.query-group-modal__dates.ie11 .query-group-modal__input-group:nth-child(1) .react-datepicker-popper
+  left: 35px !important
+  top: 95px !important
+
+.query-group-modal__dates.ie11 .query-group-modal__input-group:nth-child(2) .react-datepicker-popper
+  left: 250px !important
+  top: 95px !important

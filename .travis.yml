@@ -3,7 +3,7 @@ language: java
 env:
   - DOCKER_COMPOSE_VERSION=1.18.0
 
-before_script:
+before_install:
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
@@ -13,9 +13,6 @@ cache:
   directories:
   - "$HOME/.m2"
   - "$TRAVIS_BUILD_DIR/frontend/node_modules"
-
-script:
-  - mvn test -B -DskipDockerTests=false
 
 deploy:
   - provider: script
