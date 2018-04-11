@@ -61,8 +61,12 @@ return {
 }
 
 const searchingTrees = (trees: TreesType, searchStr) => {
+  const regex = new RegExp(searchStr
+    .replace(/[\\[\]\\{}()+*?.$^|]/g,
+    function (match) { return '\\' + match }), "i");
+
   return Object.assign({}, ...Object.entries(trees).map(([treeId, treeNode]) => ({
-    [treeId]: findTreeNodes(treeId, treeNode, searchStr)
+    [treeId]: findTreeNodes(treeId, treeNode, regex)
   })).filter(r => { return Object.keys(r).some(k => r[k].length > 0) }));
 }
 
@@ -81,12 +85,9 @@ const findTreeNodes = (treeId: string, treeNode: NodeType, searchStr: string) =>
     : '';
 
   if (result.length ||
-      label.toLowerCase().includes(searchStr.toLowerCase()) ||
-      description.toLowerCase().includes(searchStr.toLowerCase()) ||
-      additionalInfos.toLowerCase().includes(searchStr.toLowerCase()))
-      // (fuzzyMatch(label, searchStr).length > 0) ||
-      // (fuzzyMatch(description, searchStr).length > 0) ||
-      // (fuzzyMatch(additionalInfos, searchStr).length > 0))
+      label.match(searchStr) ||
+      description.match(searchStr) ||
+      additionalInfos.match(searchStr))
         return [treeId, ...result];
 
   return [];
