@@ -41,7 +41,7 @@ const SearchBox = (props) => {
 };
 
 SearchBox.propTypes = {
-  search: PropTypes.arrayOf(PropTypes.string).isRequired,
+  search: PropTypes.arrayOf(PropTypes.string),
   searchStr: PropTypes.string,
   onSearch: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string),

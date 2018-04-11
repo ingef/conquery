@@ -8,15 +8,15 @@ import api                    from '../api';
 import {
   defaultSuccess,
   defaultError,
-} from '../common/actions';
+}                             from '../common/actions';
 
 import {
   type TreeNodeIdType
-} from '../common/types/backend';
+}                             from '../common/types/backend';
 
 import {
   resetAllTrees
-} from './globalTreeStoreHelper';
+}                             from './globalTreeStoreHelper';
 
 import {
   LOAD_TREES_START,
@@ -26,8 +26,9 @@ import {
   LOAD_TREE_SUCCESS,
   LOAD_TREE_ERROR,
   CLEAR_TREES,
-  SEARCH_TREES,
-} from './actionTypes';
+  SEARCH_TREES_START,
+  SEARCH_TREES_END,
+}                             from './actionTypes';
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
@@ -91,4 +92,8 @@ export const loadTree = (datasetId: DatasetIdType, treeId: TreeNodeIdType) => {
       );
   };
 };
-export const searchTrees = (searchStr: string) => ({type: SEARCH_TREES, payload: { searchStr }});
+
+export const searchTreesStart = (searchStr: string) =>
+  ({type: SEARCH_TREES_START, payload: { searchStr }});
+export const searchTreesEnd = (searchStr: string, result: any) =>
+  ({type: SEARCH_TREES_END, payload: { searchStr, result }});

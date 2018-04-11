@@ -12,7 +12,10 @@ import {
 
 import { type DraggedNodeType }      from '../standard-query-editor/types';
 
-import { getConceptById }            from './globalTreeStoreHelper';
+import {
+  getConceptById,
+  matchedSearch
+}                                    from './globalTreeStoreHelper';
 
 import Openable                      from './Openable';
 import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
@@ -59,17 +62,11 @@ class CategoryTreeNode extends React.Component<PropsType> {
     this.props.onToggleOpen();
   }
 
-  _matchedSearch(treeId, search: SearchType, searchCurTree: []): boolean {
-    if (search && search.words.length > 0)
-      return Object.keys(search.result).some(key => search.result[key].includes(treeId))
-    return true;
-  }
-
   render() {
     const { id, data, depth, open, search } = this.props;
-    const searching = search && search.words.length > 0;
+    const searching = search && search.searching
 
-    return this._matchedSearch(id, search) && (
+    return matchedSearch(data.tree, id, search) && (
       <div className="category-tree-node">
         <CategoryTreeNodeTextContainer
           node={{

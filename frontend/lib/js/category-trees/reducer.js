@@ -1,7 +1,6 @@
 // @flow
 
 import { type NodeType }  from '../common/types/backend';
-import { isEmpty }        from '../common/helpers';
 
 import {
   LOAD_TREES_START,
@@ -11,15 +10,16 @@ import {
   LOAD_TREE_SUCCESS,
   LOAD_TREE_ERROR,
   CLEAR_TREES,
-  SEARCH_TREES,
-}                         from './actionTypes';
+  SEARCH_TREES_START,
+  SEARCH_TREES_END,
+}                                         from './actionTypes';
 
-import { setTree }        from './globalTreeStoreHelper';
+import { setTree, getConceptById }        from './globalTreeStoreHelper';
 
 export type TreesType = { [treeId: string]: NodeType }
 
 export type SearchType = {
-  trees: TreesType,
+  searching: boolean,
   searchStr: string,
   words: Array<string>,
   result: TreesType
@@ -36,55 +36,57 @@ const initialState: StateType = {
   loading: false,
   version: null,
   trees: {},
-  search: { trees: {}, words: [], result: {} }
+  search: { searching: false, words: [], result: {} }
 };
 
-const searchTrees = (state: StateType, action: Object): StateType => {
-  const searchStr = action.payload.searchStr;
-  var search = {
-    trees: state.trees,
-    searchStr: searchStr,
-    words: searchStr ? searchStr.split(' ') : [],
-    result: {}
-  };
+const searchTreesEnd = (state: StateType, action: Object): StateType => {
+  return {
+    ...state
+  }
+}
 
-  if (isEmpty(searchStr))
-    return {
-      ...state,
-      search
-    };
-
-  const categoryTrees = window.categoryTrees;
-  search.result = searching(categoryTrees, searchStr);
+const searchTreesStart = (state: StateType, action: Object): StateType => {
+  const { searchStr } = action.payload;
+  const searching = searchStr.length > 2;
 
 return {
     ...state,
-    search
-  };
-};
+    search: {
+      searching: searching,
+      searchStr: searchStr,
+      words: searchStr ? searchStr.split(' ') : [],
+      result: searching ? searchingTrees(state.trees, searchStr) : {}
+    }
+  }
+}
 
-const searching = (categoryTrees: TreesType, searchStr) => {
-  return Object.assign({}, ...Object.entries(categoryTrees).map(([treeId, treeNode]) => ({
+const searchingTrees = (trees: TreesType, searchStr) => {
+  return Object.assign({}, ...Object.entries(trees).map(([treeId, treeNode]) => ({
     [treeId]: findTreeNodes(treeId, treeNode, searchStr)
-  })));
+  })).filter(r => { return Object.keys(r).some(k => r[k].length > 0) }));
 }
 
 const findTreeNodes = (treeId: string, treeNode: NodeType, searchStr: string) => {
-  const node = treeNode[treeId];
-  const children = node.children || [];
-  const result = children.map(child => findTreeNodes(child, treeNode, searchStr))
+  if (treeNode === null)
+    treeNode = getConceptById(treeId);
+
+  const children = treeNode.children || [];
+  const result = children.map(child => findTreeNodes(child, null, searchStr))
     .reduce((agg, cur) => [...agg, ...cur], []);
 
-  const label = node.label || '';
-  const description = node.description || '';
-  const additionalInfos = node.additionalInfos
-    ? node.additionalInfos.map(t => { return t.key + " " + t.value   }).join('')
+  const label = treeNode.label || '';
+  const description = treeNode.description || '';
+  const additionalInfos = treeNode.additionalInfos
+    ? treeNode.additionalInfos.map(t => { return t.key + " " + t.value   }).join('')
     : '';
 
-  if ((result.length ||
-      (fuzzyMatch(label, searchStr).length > 0) ||
-      (fuzzyMatch(description, searchStr).length > 0) ||
-      (fuzzyMatch(additionalInfos, searchStr).length > 0)))
+  if (result.length ||
+      label.toLowerCase().includes(searchStr.toLowerCase()) ||
+      description.toLowerCase().includes(searchStr.toLowerCase()) ||
+      additionalInfos.toLowerCase().includes(searchStr.toLowerCase()))
+      // (fuzzyMatch(label, searchStr).length > 0) ||
+      // (fuzzyMatch(description, searchStr).length > 0) ||
+      // (fuzzyMatch(additionalInfos, searchStr).length > 0))
         return [treeId, ...result];
 
   return [];
@@ -174,8 +176,10 @@ const categoryTrees = (
       return setTreeSuccess(state, action);
     case LOAD_TREE_ERROR:
       return setTreeError(state, action);
-    case SEARCH_TREES:
-      return searchTrees(state, action);
+    case SEARCH_TREES_START:
+      return searchTreesStart(state, action);
+    case SEARCH_TREES_END:
+      return searchTreesEnd(state, action);
     case CLEAR_TREES:
       return initialState;
     default:

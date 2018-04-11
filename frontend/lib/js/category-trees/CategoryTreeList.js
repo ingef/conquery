@@ -66,6 +66,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                     depth={0}
                     active={tree.active}
                     openInitially
+                    search={this.props.search}
                   />;
             })
         }

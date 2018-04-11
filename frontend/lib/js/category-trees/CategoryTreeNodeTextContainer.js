@@ -33,8 +33,8 @@ type PropsType = {
 
 const CategoryTreeNodeTextContainer = (props: PropsType) => {
   const zeroEntries = !isEmpty(props.node.matchingEntries) && props.node.matchingEntries === 0;
-  const searching = props.search && props.search.words.length > 0;
-
+  const searching = props.search && props.search.searching;
+  
   const render = (
     <div
       className="category-tree-node__text-container"

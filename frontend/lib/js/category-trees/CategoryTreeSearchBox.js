@@ -1,6 +1,6 @@
 import { connect } from 'react-redux';
 import { SearchBox } from '../form-components';
-import { searchTrees } from './actions';
+import { searchTreesStart } from './actions';
 
 const mapStateToProps = (state) => ({
   searchStr: state.categoryTrees.search.searchStr,
@@ -8,7 +8,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  onSearch: (values) => dispatch(searchTrees(values)),
+  onSearch: (values) => dispatch(searchTreesStart(values)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchBox);

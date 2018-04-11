@@ -8,7 +8,8 @@ import type {
 }                   from '../common/types/backend';
 
 import type {
-  TreesType
+  TreesType,
+  SearchType
 }                   from './reducer';
 
 // Globally store the huge (1-5 MB) trees for read only
@@ -114,4 +115,14 @@ export const getConceptsByIdsWithTables = (
     root: parentConceptsWithTables[0].id,
     tables: parentConceptsWithTables[0].concept.tables
   };
+}
+
+export function matchedSearch(treeId, id, search: SearchType): boolean {
+  if (search && search.searching) {
+    const result = search.result[treeId];
+    if (id === null) return !!result; // render structur nodes
+
+    return result ? result.includes(id) : false;
+  }
+  return true;
 }

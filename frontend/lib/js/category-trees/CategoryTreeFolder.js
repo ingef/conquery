@@ -7,11 +7,15 @@ import type {
   TreeNodeIdType
 }                                    from '../common/types/backend';
 
-import { getConceptById }            from './globalTreeStoreHelper';
+import {
+  getConceptById,
+  matchedSearch
+}                                    from './globalTreeStoreHelper';
 
 import Openable                      from './Openable';
 import CategoryTree                  from './CategoryTree';
 import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
+import { SearchType }                from './reducer';
 
 type PropsType = {
   depth: number,
@@ -21,6 +25,7 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
+  search: SearchType,
 };
 
 const sumMatchingEntries = (children, initSum) => {
@@ -39,7 +44,9 @@ const CategoryTreeFolder = (props: PropsType) => {
     ? null
     : sumMatchingEntries(props.tree.children, props.tree.matchingEntries);
 
-  return (
+  const search = props.search;
+
+  return matchedSearch(props.treeId, null, search) && (
     <div className="category-tree-folder category-tree-node">
       <CategoryTreeNodeTextContainer
         node={{
@@ -77,6 +84,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 loading={tree.loading}
                 error={tree.error}
                 depth={props.depth + 1}
+                search={search}
               />
             );
           } else {
