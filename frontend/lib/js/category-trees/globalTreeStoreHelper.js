@@ -1,16 +1,13 @@
 // @flow
 
-import { includes } from '../common/helpers';
+import { includes }       from '../common/helpers';
 import type {
   NodeType,
   TableType,
   TreeNodeIdType
-}                   from '../common/types/backend';
+}                         from '../common/types/backend';
 
-import type {
-  TreesType,
-  SearchType
-}                   from './reducer';
+import type { TreesType } from './reducer';
 
 // Globally store the huge (1-5 MB) trees for read only
 // - keeps the redux store free from huge data
