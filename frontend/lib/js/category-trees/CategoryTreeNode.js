@@ -9,16 +9,12 @@ import {
   type NodeType,
   type SearchType
 }                                    from '../common/types/backend';
-
 import { type DraggedNodeType }      from '../standard-query-editor/types';
 
-import {
-  getConceptById,
-  matchedSearch
-}                                    from './globalTreeStoreHelper';
-
+import { getConceptById }            from './globalTreeStoreHelper';
 import Openable                      from './Openable';
 import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
+import { isTreeNodeInSearchResult }  from './selectors';
 
 // Concept data that is necessary to display tree nodes. Includes additional infos
 // for the tooltip as well as the id of the corresponding tree
@@ -66,7 +62,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
     const { id, data, depth, open, search } = this.props;
     const searching = search && search.searching
 
-    return matchedSearch(data.tree, id, search) && (
+    return isTreeNodeInSearchResult(data.tree, id, search) && (
       <div className="category-tree-node">
         <CategoryTreeNodeTextContainer
           node={{

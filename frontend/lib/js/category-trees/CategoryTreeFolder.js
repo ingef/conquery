@@ -1,21 +1,18 @@
 // @flow
 
-import React                         from 'react';
+import React                          from 'react';
 
 import type {
   NodeType,
   TreeNodeIdType
-}                                    from '../common/types/backend';
+}                                     from '../common/types/backend';
 
-import {
-  getConceptById,
-  matchedSearch
-}                                    from './globalTreeStoreHelper';
-
-import Openable                      from './Openable';
-import CategoryTree                  from './CategoryTree';
-import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
-import { SearchType }                from './reducer';
+import { getConceptById }             from './globalTreeStoreHelper';
+import Openable                       from './Openable';
+import CategoryTree                   from './CategoryTree';
+import CategoryTreeNodeTextContainer  from './CategoryTreeNodeTextContainer';
+import { SearchType }                 from './reducer';
+import { isTreeNodeInSearchResult }   from './selectors';
 
 type PropsType = {
   depth: number,
@@ -45,7 +42,7 @@ const CategoryTreeFolder = (props: PropsType) => {
     ? null
     : sumMatchingEntries(tree.children, tree.matchingEntries);
 
-  return matchedSearch(treeId, null, search) && (
+  return isTreeNodeInSearchResult(treeId, null, search) && (
     <div className="category-tree-folder category-tree-node">
       <CategoryTreeNodeTextContainer
         node={{

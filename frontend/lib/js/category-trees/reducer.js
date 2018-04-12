@@ -1,6 +1,6 @@
 // @flow
 
-import { type NodeType }  from '../common/types/backend';
+import { type NodeType }                  from '../common/types/backend';
 
 import {
   LOAD_TREES_START,
@@ -62,9 +62,10 @@ return {
 
 const searchingTrees = (trees: TreesType, query: string) => {
   // escape all special characters and set case insensitive
-  const regex = new RegExp(query
-    .replace(/[\\[\]\\{}()+*?.$^|]/g,
-    function (match) { return '\\' + match }), "i");
+  const regex = new RegExp(
+    query.replace(/[\\[\]\\{}()+*?.$^|]/g, match => { return '\\' + match }),
+    "i"
+  );
 
   return Object.assign({}, ...Object.entries(trees).map(([treeId, treeNode]) => ({
     [treeId]: findTreeNodes(treeId, treeNode, regex)
