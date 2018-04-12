@@ -34,7 +34,7 @@ const SearchBox = (props) => {
         <ClearableInput
           inputType="text"
           placeholder={T.translate('reactSelect.searchPlaceholder')}
-          value={props.searchStr || ""}
+          value={props.qry || ""}
           onChange={(values) => props.onSearch(values)}
         />
       </div>
@@ -42,7 +42,7 @@ const SearchBox = (props) => {
 
 SearchBox.propTypes = {
   search: PropTypes.arrayOf(PropTypes.string),
-  searchStr: PropTypes.string,
+  qry: PropTypes.string,
   onSearch: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string),
   mode: PropTypes.string

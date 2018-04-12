@@ -2,7 +2,7 @@
 
 import React                       from 'react'
 import { DragSource }              from 'react-dnd';
-import Highlighter                 from "react-highlight-words";
+import Highlighter                 from 'react-highlight-words';
 import classnames                  from 'classnames';
 
 import { AdditionalInfoHoverable } from '../tooltip';
@@ -13,7 +13,7 @@ import {
   type AdditionalInfoHoverableNodeType
 }                                  from '../tooltip/AdditionalInfoHoverable';
 import { type DraggedNodeType }    from '../standard-query-editor/types';
-import { SearchType }              from './reducer';
+import { type SearchType }         from './reducer';
 
 type PropsType = {
   node: AdditionalInfoHoverableNodeType & {
@@ -55,7 +55,7 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
             'category-tree-node__icon',
             'fa', {
               'fa-folder-open': !!props.open || searching,
-              'fa-folder': !props.open || !searching
+              'fa-folder': !props.open && !searching
             }
           )} />
         }
@@ -75,7 +75,7 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
           ? (<Highlighter
               searchWords={props.search.words}
               autoEscape={true}
-              textToHighlight={props.node.description}
+              textToHighlight={`' - ${props.node.description}'`}
             />)
           : (props.node.description)
         }

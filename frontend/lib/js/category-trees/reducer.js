@@ -20,7 +20,7 @@ export type TreesType = { [treeId: string]: NodeType }
 
 export type SearchType = {
   searching: boolean,
-  searchStr: string,
+  query: string,
   words: Array<string>,
   result: TreesType
 }
@@ -36,7 +36,7 @@ const initialState: StateType = {
   loading: false,
   version: null,
   trees: {},
-  search: { searching: false, words: [], result: {} }
+  search: { searching: false, query: null, words: [], result: {} }
 };
 
 const searchTreesEnd = (state: StateType, action: Object): StateType => {
@@ -46,22 +46,23 @@ const searchTreesEnd = (state: StateType, action: Object): StateType => {
 }
 
 const searchTreesStart = (state: StateType, action: Object): StateType => {
-  const { searchStr } = action.payload;
-  const searching = searchStr.length > 2;
+  const { query } = action.payload;
+  const searching = query.length > 2;
 
 return {
     ...state,
     search: {
       searching: searching,
-      searchStr: searchStr,
-      words: searchStr ? searchStr.split(' ') : [],
-      result: searching ? searchingTrees(state.trees, searchStr) : {}
+      query: query,
+      words: query ? query.split(' ') : [],
+      result: searching ? searchingTrees(state.trees, query) : {}
     }
   }
 }
 
-const searchingTrees = (trees: TreesType, searchStr) => {
-  const regex = new RegExp(searchStr
+const searchingTrees = (trees: TreesType, query: string) => {
+  // escape all special characters and set case insensitive
+  const regex = new RegExp(query
     .replace(/[\\[\]\\{}()+*?.$^|]/g,
     function (match) { return '\\' + match }), "i");
 
@@ -70,12 +71,12 @@ const searchingTrees = (trees: TreesType, searchStr) => {
   })).filter(r => { return Object.keys(r).some(k => r[k].length > 0) }));
 }
 
-const findTreeNodes = (treeId: string, treeNode: NodeType, searchStr: string) => {
+const findTreeNodes = (treeId: string, treeNode: NodeType, query: string) => {
   if (treeNode === null)
     treeNode = getConceptById(treeId);
 
   const children = treeNode.children || [];
-  const result = children.map(child => findTreeNodes(child, null, searchStr))
+  const result = children.map(child => findTreeNodes(child, null, query))
     .reduce((agg, cur) => [...agg, ...cur], []);
 
   const label = treeNode.label || '';
@@ -85,19 +86,19 @@ const findTreeNodes = (treeId: string, treeNode: NodeType, searchStr: string) =>
     : '';
 
   if (result.length ||
-      label.match(searchStr) ||
-      description.match(searchStr) ||
-      additionalInfos.match(searchStr))
+      label.match(query) ||
+      description.match(query) ||
+      additionalInfos.match(query))
         return [treeId, ...result];
 
   return [];
 }
 
-const fuzzyMatch = (text: string, searchStr: string) => {
+const fuzzyMatch = (text: string, query: string) => {
     if (!text) return '';
 
-    var search = searchStr.replace(/ /g, '').toLowerCase();
-    var tokens = [];
+    const search = query.replace(/ /g, '').toLowerCase();
+    const tokens = [];
     var searchPosition = 0;
 
     // Go through each character in the text

@@ -93,7 +93,7 @@ export const loadTree = (datasetId: DatasetIdType, treeId: TreeNodeIdType) => {
   };
 };
 
-export const searchTreesStart = (searchStr: string) =>
-  ({type: SEARCH_TREES_START, payload: { searchStr }});
-export const searchTreesEnd = (searchStr: string, result: any) =>
-  ({type: SEARCH_TREES_END, payload: { searchStr, result }});
+export const searchTreesStart = (query: string) =>
+  ({type: SEARCH_TREES_START, payload: { query }});
+export const searchTreesEnd = (query: string, result: any) =>
+  ({type: SEARCH_TREES_END, payload: { query, result }});
