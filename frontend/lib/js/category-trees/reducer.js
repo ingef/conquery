@@ -94,29 +94,29 @@ const findTreeNodes = (treeId: string, treeNode: NodeType, query: string) => {
   return [];
 }
 
-const fuzzyMatch = (text: string, query: string) => {
-    if (!text) return '';
+// const fuzzyMatch = (text: string, query: string) => {
+//     if (!text) return '';
 
-    const search = query.replace(/ /g, '').toLowerCase();
-    const tokens = [];
-    var searchPosition = 0;
+//     const search = query.replace(/ /g, '').toLowerCase();
+//     const tokens = [];
+//     var searchPosition = 0;
 
-    // Go through each character in the text
-    for (var n = 0; n < text.length; n++) {
-        var textChar = text[n];
-        if (searchPosition < search.length &&
-          textChar && textChar.toLowerCase() === search[searchPosition])
-            searchPosition += 1;
+//     // Go through each character in the text
+//     for (var n = 0; n < text.length; n++) {
+//         var textChar = text[n];
+//         if (searchPosition < search.length &&
+//           textChar && textChar.toLowerCase() === search[searchPosition])
+//             searchPosition += 1;
 
-        tokens.push(textChar);
-    }
-    // If are characters remaining in the search text,
-    // return an empty string to indicate no match
-    if (searchPosition !== search.length)
-      return '';
+//         tokens.push(textChar);
+//     }
+//     // If are characters remaining in the search text,
+//     // return an empty string to indicate no match
+//     if (searchPosition !== search.length)
+//       return '';
 
-    return tokens.join('');
-}
+//     return tokens.join('');
+// }
 
 const updateTree = (state: StateType, action: Object, attributes: Object): StateType => {
   return {
