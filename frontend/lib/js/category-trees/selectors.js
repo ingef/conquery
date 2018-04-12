@@ -2,7 +2,8 @@
 
 import { SearchType } from "./reducer";
 
-export const isTreeNodeInSearchResult = (treeId, id, search: SearchType): boolean => {
+export const isTreeNodeInSearchResult =
+    (treeId: string, id: string, search: SearchType): boolean => {
     if (search && search.searching) {
         const result = search.result[treeId];
         if (id === null) return !!result; // render structure nodes

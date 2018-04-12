@@ -1,6 +1,6 @@
 // @flow
 
-import { type NodeType }                  from '../common/types/backend';
+import type { NodeType, TreeNodeIdType }  from '../common/types/backend';
 
 import {
   LOAD_TREES_START,
@@ -22,7 +22,7 @@ export type SearchType = {
   searching: boolean,
   query: string,
   words: Array<string>,
-  result: TreesType
+  result: { [treeId: string]: Array<TreeNodeIdType>}
 }
 
 export type StateType = {
@@ -55,12 +55,12 @@ return {
       searching: searching,
       query: query,
       words: query ? query.split(' ') : [],
-      result: searching ? searchingTrees(state.trees, query) : {}
+      result: searching ? buildSearchResult(state.trees, query) : {}
     }
   }
 }
 
-const searchingTrees = (trees: TreesType, query: string) => {
+const buildSearchResult = (trees: TreesType, query: string) => {
   // escape all special characters and set case insensitive
   const regex = new RegExp(
     query.replace(/[\\[\]\\{}()+*?.$^|]/g, match => { return '\\' + match }),
@@ -83,7 +83,7 @@ const findTreeNodes = (treeId: string, treeNode: NodeType, query: string) => {
   const label = treeNode.label || '';
   const description = treeNode.description || '';
   const additionalInfos = treeNode.additionalInfos
-    ? treeNode.additionalInfos.map(t => { return t.key + " " + t.value   }).join('')
+    ? treeNode.additionalInfos.map(t => { return t.key + " " + t.value   })
     : '';
 
   if (result.length ||

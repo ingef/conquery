@@ -5,7 +5,7 @@ import { SearchBox }        from '../form-components';
 import { searchTreesStart } from './actions';
 
 const mapStateToProps = (state) => ({
-  searchStr: state.categoryTrees.search.query,
+  qry: state.categoryTrees.search.query,
   onSearch: state.onSearch,
 });
 
