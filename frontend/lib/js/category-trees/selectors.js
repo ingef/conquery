@@ -1,3 +1,5 @@
+// @flow
+
 import { SearchType } from "./reducer";
 
 export const isTreeNodeInSearchResult = (treeId, id, search: SearchType): boolean => {
