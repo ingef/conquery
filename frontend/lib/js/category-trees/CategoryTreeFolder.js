@@ -40,13 +40,12 @@ const sumMatchingEntries = (children, initSum) => {
 };
 
 const CategoryTreeFolder = (props: PropsType) => {
-  const matchingEntries = !props.tree.children || !props.tree.matchingEntries
+  const { tree, treeId, search } = props;
+  const matchingEntries = !tree.children || !tree.matchingEntries
     ? null
-    : sumMatchingEntries(props.tree.children, props.tree.matchingEntries);
+    : sumMatchingEntries(tree.children, tree.matchingEntries);
 
-  const search = props.search;
-
-  return matchedSearch(props.treeId, null, search) && (
+  return matchedSearch(treeId, null, search) && (
     <div className="category-tree-folder category-tree-node">
       <CategoryTreeNodeTextContainer
         node={{
