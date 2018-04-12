@@ -25,7 +25,7 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
-  search: SearchType,
+  search?: SearchType,
 };
 
 const sumMatchingEntries = (children, initSum) => {

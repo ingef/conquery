@@ -18,7 +18,7 @@ import CategoryTreeFolder from './CategoryTreeFolder';
 type PropsType = {
   trees: TreesType,
   activeTab: string,
-  search: SearchType,
+  search?: SearchType,
 };
 
 class CategoryTreeList extends React.Component<PropsType> {
