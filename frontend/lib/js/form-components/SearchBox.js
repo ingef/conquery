@@ -1,12 +1,11 @@
-import React                           from 'react';
-import PropTypes                       from 'prop-types';
-import T                               from 'i18n-react';
-import { Creatable as Select }         from 'react-select';
-import { isEmpty } from '../common/helpers';
-import ClearableInput from './ClearableInput';
+import React                    from 'react';
+import PropTypes                from 'prop-types';
+import T                        from 'i18n-react';
+import { Creatable as Select }  from 'react-select';
+import ClearableInput           from './ClearableInput';
 
 const SearchBox = (props) => {
-  return isEmpty(props.mode)
+  return props.isMulti
     ? <div className="search-box">
         <Select
           name="input"
@@ -29,8 +28,7 @@ const SearchBox = (props) => {
           noResultsText={T.translate('reactSelect.noResults')}
         />
       </div>
-    : props.mode === 'simple' &&
-      <div className="search-box input--full-width">
+    : <div className="search-box input--full-width">
         <ClearableInput
           inputType="text"
           placeholder={T.translate('reactSelect.searchPlaceholder')}
@@ -45,7 +43,7 @@ SearchBox.propTypes = {
   qry: PropTypes.string,
   onSearch: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string),
-  mode: PropTypes.string
+  isMulti: PropTypes.string
 };
 
 export default SearchBox;

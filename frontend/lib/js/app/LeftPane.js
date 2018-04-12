@@ -29,14 +29,14 @@ const LeftPane = (props: PropsType) => (
         <DatasetSelector selectedDatasetId={selectedDatasetId} />
         {
           props.activeTab === 'categoryTrees' &&
-          <CategoryTreeSearchBox mode="simple" />
+          <CategoryTreeSearchBox />
         }
         <CategoryTreeList />
         {
           props.activeTab === 'previousQueries' &&
           [
             <PreviousQueriesFilter key={0} />,
-            <PreviousQueriesSearchBox key={1} />,
+            <PreviousQueriesSearchBox key={1} isMulti />,
             <UploadQueryResults datasetId={selectedDatasetId} key={2} />,
             <PreviousQueriesContainer datasetId={selectedDatasetId} key={3} />,
             <DeletePreviousQueryModal datasetId={selectedDatasetId} key={4} />,
