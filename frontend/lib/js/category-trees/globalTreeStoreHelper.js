@@ -1,13 +1,14 @@
 // @flow
+import SearchApi, { INDEX_MODES }         from 'js-worker-search'
 
-import { includes }       from '../common/helpers';
+import { includes }                       from '../common/helpers';
 import type {
   NodeType,
   TableType,
   TreeNodeIdType
-}                         from '../common/types/backend';
+}                                         from '../common/types/backend';
 
-import type { TreesType } from './reducer';
+import type { TreesType }                 from './reducer';
 
 // Globally store the huge (1-5 MB) trees for read only
 // - keeps the redux store free from huge data
@@ -112,4 +113,20 @@ export const getConceptsByIdsWithTables = (
     root: parentConceptsWithTables[0].id,
     tables: parentConceptsWithTables[0].concept.tables
   };
+}
+
+export const SEARCH_API = new SearchApi({ indexMode: INDEX_MODES.PREFIXES })
+
+export const createTreeSearchIndex = (tree: any) => {
+  Object.keys(tree).forEach(key => {
+    const node = tree[key];
+    const label = node.label || '';
+    const description = node.description || '';
+    const additionalInfos = node.additionalInfos
+      ? node.additionalInfos.map(({key, value}) => `${key} ${value}`).join('')
+      : '';
+    const text = label.concat(' ').concat(description).concat(' ').concat(additionalInfos);
+    if (node.parent)
+      SEARCH_API.indexDocument(node.parent, text);
+  })
 }

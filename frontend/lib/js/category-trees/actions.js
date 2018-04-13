@@ -15,7 +15,7 @@ import {
 }                             from '../common/types/backend';
 
 import {
-  resetAllTrees
+  resetAllTrees, SEARCH_API
 }                             from './globalTreeStoreHelper';
 
 import {
@@ -97,3 +97,12 @@ export const searchTreesStart = (query: string) =>
   ({type: SEARCH_TREES_START, payload: { query }});
 export const searchTreesEnd = (query: string, result: any) =>
   ({type: SEARCH_TREES_END, payload: { query, result }});
+
+export const searchTrees = (query: string) => {
+  return (dispatch: Dispatch) => {
+    dispatch(searchTreesStart(query))
+
+    return SEARCH_API.search(query)
+    .then(r => dispatch(searchTreesEnd(query, r)));
+  }
+}

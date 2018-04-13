@@ -14,7 +14,10 @@ import {
   SEARCH_TREES_END,
 }                                         from './actionTypes';
 
-import { setTree, getConceptById }        from './globalTreeStoreHelper';
+import {
+    setTree,
+    createTreeSearchIndex
+}                                         from './globalTreeStoreHelper';
 
 export type TreesType = { [treeId: string]: NodeType }
 
@@ -40,84 +43,33 @@ const initialState: StateType = {
 };
 
 const searchTreesEnd = (state: StateType, action: Object): StateType => {
+  const { query, result } = action.payload;
+
   return {
-    ...state
+    ...state,
+    search: {
+      searching: true,
+      query: query,
+      words: query ? query.split(' ') : [],
+      result: result
+    }
   }
 }
 
 const searchTreesStart = (state: StateType, action: Object): StateType => {
   const { query } = action.payload;
-  const searching = query.length > 2;
 
-return {
+  return {
     ...state,
     search: {
-      searching: searching,
+      searching: false,
       query: query,
       words: query ? query.split(' ') : [],
-      result: searching ? buildSearchResult(state.trees, query) : {}
+      result: []
     }
   }
 }
 
-const buildSearchResult = (trees: TreesType, query: string) => {
-  // escape all special characters and set case insensitive
-  const regex = new RegExp(
-    query.replace(/[\\[\]\\{}()+*?.$^|]/g, match => { return '\\' + match }),
-    "i"
-  );
-
-  return Object.assign({}, ...Object.entries(trees).map(([treeId, treeNode]) => ({
-    [treeId]: findTreeNodes(treeId, treeNode, regex)
-  })).filter(r => { return Object.keys(r).some(k => r[k].length > 0) }));
-}
-
-const findTreeNodes = (treeId: string, treeNode: NodeType, query: string) => {
-  if (treeNode === null)
-    treeNode = getConceptById(treeId);
-
-  const children = treeNode.children || [];
-  const result = children.map(child => findTreeNodes(child, null, query))
-    .reduce((agg, cur) => [...agg, ...cur], []);
-
-  const label = treeNode.label || '';
-  const description = treeNode.description || '';
-  const additionalInfos = treeNode.additionalInfos
-    ? treeNode.additionalInfos.map(t => { return t.key + " " + t.value   })
-    : '';
-
-  if (result.length ||
-      label.match(query) ||
-      description.match(query) ||
-      additionalInfos.match(query))
-        return [treeId, ...result];
-
-  return [];
-}
-
-// const fuzzyMatch = (text: string, query: string) => {
-//     if (!text) return '';
-
-//     const search = query.replace(/ /g, '').toLowerCase();
-//     const tokens = [];
-//     var searchPosition = 0;
-
-//     // Go through each character in the text
-//     for (var n = 0; n < text.length; n++) {
-//         var textChar = text[n];
-//         if (searchPosition < search.length &&
-//           textChar && textChar.toLowerCase() === search[searchPosition])
-//             searchPosition += 1;
-
-//         tokens.push(textChar);
-//     }
-//     // If are characters remaining in the search text,
-//     // return an empty string to indicate no match
-//     if (searchPosition !== search.length)
-//       return '';
-
-//     return tokens.join('');
-// }
 
 const updateTree = (state: StateType, action: Object, attributes: Object): StateType => {
   return {
@@ -146,6 +98,7 @@ const setTreeSuccess = (state: StateType, action: Object): StateType => {
   const rootConcept = newState.trees[treeId];
 
   setTree(rootConcept, treeId, data);
+  createTreeSearchIndex(data);
 
   return newState;
 };

@@ -12,7 +12,6 @@ import Openable                       from './Openable';
 import CategoryTree                   from './CategoryTree';
 import CategoryTreeNodeTextContainer  from './CategoryTreeNodeTextContainer';
 import { SearchType }                 from './reducer';
-import { isTreeNodeInSearchResult }   from './selectors';
 
 type PropsType = {
   depth: number,
@@ -37,12 +36,14 @@ const sumMatchingEntries = (children, initSum) => {
 };
 
 const CategoryTreeFolder = (props: PropsType) => {
-  const { tree, treeId, search } = props;
+  const { tree, search } = props;
   const matchingEntries = !tree.children || !tree.matchingEntries
     ? null
     : sumMatchingEntries(tree.children, tree.matchingEntries);
 
-  return isTreeNodeInSearchResult(treeId, null, search) && (
+  const searching = search && search.searching
+  const render = searching && tree.children ? search.result.includes(props.treeId) : true;
+  return render && (
     <div className="category-tree-folder category-tree-node">
       <CategoryTreeNodeTextContainer
         node={{

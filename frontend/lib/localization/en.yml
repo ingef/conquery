@@ -230,3 +230,6 @@ uploadQueryResults:
 
 authorization:
   unauthorized: "Authentitcation failed. An authentication token is missing or expired"
+
+search:
+  placeholder: "Search ..."
