@@ -2,7 +2,7 @@ import React                    from 'react';
 import PropTypes                from 'prop-types';
 import T                        from 'i18n-react';
 import { Creatable as Select }  from 'react-select';
-import ClearableInput           from './ClearableInput';
+import { DelayInput }           from 'react-delay-input';
 
 const SearchBox = (props) => {
   return props.isMulti
@@ -29,11 +29,11 @@ const SearchBox = (props) => {
         />
       </div>
     : <div className="search-box input--full-width">
-        <ClearableInput
-          inputType="text"
+        <DelayInput
+          delayTimeout={600}
           placeholder={T.translate('search.placeholder')}
           value={props.qry || ""}
-          onChange={(values) => props.onSearch(values)}
+          onChange={e => props.onSearch(e.target.value)}
         />
       </div>
 };

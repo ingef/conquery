@@ -25,7 +25,7 @@ export type SearchType = {
   searching: boolean,
   query: string,
   words: Array<string>,
-  result: { [treeId: string]: Array<TreeNodeIdType>}
+  result: Array<TreeNodeIdType>
 }
 
 export type StateType = {
@@ -39,19 +39,25 @@ const initialState: StateType = {
   loading: false,
   version: null,
   trees: {},
-  search: { searching: false, query: null, words: [], result: {} }
+  search: { searching: false, query: '', words: [], result: [] }
 };
 
 const searchTreesEnd = (state: StateType, action: Object): StateType => {
   const { query, result } = action.payload;
+  const limit = [];
+
+  for (var i = 0; i < result.length; i++) {
+    limit.push(result[i]);
+    if (i >= (parseInt(process.env.SEARCH_RESULT_LIMIT) || 50)) break;
+  }
 
   return {
     ...state,
     search: {
-      searching: true,
+      searching: query && query.length > 0,
       query: query,
       words: query ? query.split(' ') : [],
-      result: result
+      result: limit
     }
   }
 }

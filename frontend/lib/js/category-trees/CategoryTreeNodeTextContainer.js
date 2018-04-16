@@ -34,6 +34,7 @@ type PropsType = {
 const CategoryTreeNodeTextContainer = (props: PropsType) => {
   const zeroEntries = !isEmpty(props.node.matchingEntries) && props.node.matchingEntries === 0;
   const searching = props.search && props.search.searching;
+  const description = ` - ${props.node.description}`;
 
   const render = (
     <div
@@ -63,21 +64,21 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
           {
             searching
             ? (<Highlighter
-                searchWords={props.search.words}
+                searchWords={props.search && props.search.words}
                 autoEscape={true}
                 textToHighlight={props.node.label}
               />)
-            : (props.node.label)
+            : props.node.label
           }
         </span>
         {
           searching && props.node.description
           ? (<Highlighter
-              searchWords={props.search.words}
+              searchWords={props.search && props.search.words}
               autoEscape={true}
-              textToHighlight={`' - ${props.node.description}'`}
+              textToHighlight={description}
             />)
-          : (props.node.description)
+          : props.node.description && description
         }
       </p>
     </div>

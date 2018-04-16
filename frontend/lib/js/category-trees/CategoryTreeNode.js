@@ -57,14 +57,26 @@ class CategoryTreeNode extends React.Component<PropsType> {
     this.props.onToggleOpen();
   }
 
+  _isInSearchResult(id: TreeNodeIdType, search: SearchType) {
+    if (!search || !search.result) return false;
+    const result = search.result;
+
+    for (var i = 0; i < result.length; i++) {
+      const resultId = result[i];
+      if (resultId.indexOf(id) >= 0)
+        return true;
+    }
+    return false;
+  }
+
   render() {
     const { id, data, depth, open, search } = this.props;
     const searching = search && search.searching
 
-    // const render = searching && data.children
-    // ? data.children.some(child => child in search.result)
-    // : true;
-    const render = true;
+    const render = searching
+    ? this._isInSearchResult(id, search)
+    : true;
+
     return render && (
       <div className="category-tree-node">
         <CategoryTreeNodeTextContainer
