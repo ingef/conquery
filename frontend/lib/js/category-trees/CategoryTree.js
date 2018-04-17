@@ -10,7 +10,7 @@ import type {
 }                           from '../common/types/backend';
 
 import CategoryTreeNode     from './CategoryTreeNode';
-import { type SearchType }       from './reducer';
+import { type SearchType }  from './reducer';
 
 type PropsType = {
   id: TreeNodeIdType,
