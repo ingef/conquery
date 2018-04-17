@@ -5,6 +5,8 @@ import { Creatable as Select }  from 'react-select';
 import { DelayInput }           from 'react-delay-input';
 
 const SearchBox = (props) => {
+  const { searchResult } = props;
+
   return props.isMulti
     ? <div className="search-box">
         <Select
@@ -32,18 +34,28 @@ const SearchBox = (props) => {
         <DelayInput
           delayTimeout={600}
           placeholder={T.translate('search.placeholder')}
-          value={props.qry || ""}
+          value={searchResult.query || ""}
           onChange={e => props.onSearch(e.target.value)}
         />
+        {searchResult.resultCount > 0 &&
+          <span className="input input-label--disabled input-label--tiny">
+            {
+              T.translate('search.resultLabel', {
+                limit: searchResult.limit,
+                resultCount: searchResult.resultCount
+              })
+            }
+          </span>
+        }
       </div>
 };
 
 SearchBox.propTypes = {
   search: PropTypes.arrayOf(PropTypes.string),
-  qry: PropTypes.string,
   onSearch: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string),
-  isMulti: PropTypes.string
+  isMulti: PropTypes.string,
+  searchResult: PropTypes.object
 };
 
 export default SearchBox;

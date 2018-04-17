@@ -2,10 +2,10 @@
 
 import { connect }          from 'react-redux';
 import { SearchBox }        from '../form-components';
-import { searchTrees } from './actions';
+import { searchTrees }      from './actions';
 
 const mapStateToProps = (state) => ({
-  qry: state.categoryTrees.search.query,
+  searchResult: state.categoryTrees.search,
   onSearch: state.onSearch,
 });
 

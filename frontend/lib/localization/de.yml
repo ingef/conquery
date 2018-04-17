@@ -235,3 +235,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
+  resultLabel: "{limit} von {resultCount} Ergebnisse"

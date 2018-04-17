@@ -233,3 +233,4 @@ authorization:
 
 search:
   placeholder: "Search ..."
+  resultLabel: "{limit} of {resultCount} results"

@@ -29,6 +29,7 @@ import {
   SEARCH_TREES_START,
   SEARCH_TREES_END,
 }                             from './actionTypes';
+import { isEmpty }            from '../common/helpers';
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
@@ -101,6 +102,8 @@ export const searchTreesEnd = (query: string, result: any) =>
 export const searchTrees = (query: string) => {
   return (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query))
+
+    if (isEmpty(query)) return;
 
     return SEARCH_API.search(query)
     .then(r => dispatch(searchTreesEnd(query, r)));

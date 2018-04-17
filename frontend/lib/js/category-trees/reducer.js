@@ -39,16 +39,17 @@ const initialState: StateType = {
   loading: false,
   version: null,
   trees: {},
-  search: { searching: false, query: '', words: [], result: [] }
+  search: { searching: false, query: '', words: [], result: [], limit: 0, resultCount: 0}
 };
 
 const searchTreesEnd = (state: StateType, action: Object): StateType => {
   const { query, result } = action.payload;
-  const limit = [];
+  const maxResult = [];
+  const limit = parseInt(process.env.SEARCH_RESULT_LIMIT);
 
   for (var i = 0; i < result.length; i++) {
-    limit.push(result[i]);
-    if (i >= (parseInt(process.env.SEARCH_RESULT_LIMIT) || 50)) break;
+    maxResult.push(result[i]);
+    if (i >= (limit || 50)) break;
   }
 
   return {
@@ -57,7 +58,9 @@ const searchTreesEnd = (state: StateType, action: Object): StateType => {
       searching: query && query.length > 0,
       query: query,
       words: query ? query.split(' ') : [],
-      result: limit
+      result: maxResult,
+      limit: result.length <= limit ? result.length : limit,
+      resultCount: result.length
     }
   }
 }
