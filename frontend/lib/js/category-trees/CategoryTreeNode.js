@@ -34,7 +34,7 @@ type PropsType = {
   data: TreeNodeData,
   depth: number,
   open: boolean,
-  search: SearchType,
+  search?: SearchType,
   onToggleOpen: () => void,
 };
 
