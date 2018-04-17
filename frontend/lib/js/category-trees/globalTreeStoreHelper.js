@@ -125,8 +125,11 @@ export const createTreeSearchIndex = (tree: any) => {
     const additionalInfos = node.additionalInfos
       ? node.additionalInfos.map(({key, value}) => `${key} ${value}`).join('')
       : '';
+
     SEARCH_API.indexDocument(key, label);
-    SEARCH_API.indexDocument(key, description);
-    SEARCH_API.indexDocument(key, additionalInfos);
+    if (description !== '')
+      SEARCH_API.indexDocument(key, description);
+    if (additionalInfos !== '')
+      SEARCH_API.indexDocument(key, additionalInfos);
   })
 }
