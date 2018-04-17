@@ -1,6 +1,6 @@
 // @flow
 
-import React                         from 'react';
+import React                          from 'react';
 
 import {
   type TreeNodeIdType,
@@ -8,12 +8,13 @@ import {
   type DateRangeType,
   type NodeType,
   type SearchType
-}                                    from '../common/types/backend';
-import { type DraggedNodeType }      from '../standard-query-editor/types';
+}                                     from '../common/types/backend';
+import { type DraggedNodeType }       from '../standard-query-editor/types';
 
-import { getConceptById }            from './globalTreeStoreHelper';
-import Openable                      from './Openable';
-import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
+import { getConceptById }             from './globalTreeStoreHelper';
+import Openable                       from './Openable';
+import CategoryTreeNodeTextContainer  from './CategoryTreeNodeTextContainer';
+import { isInSearchResult }           from './selectors';
 
 // Concept data that is necessary to display tree nodes. Includes additional infos
 // for the tooltip as well as the id of the corresponding tree
@@ -57,24 +58,12 @@ class CategoryTreeNode extends React.Component<PropsType> {
     this.props.onToggleOpen();
   }
 
-  _isInSearchResult(id: TreeNodeIdType, search: SearchType) {
-    if (!search || !search.result) return false;
-    const result = search.result;
-
-    for (var i = 0; i < result.length; i++) {
-      const resultId = result[i];
-      if (resultId.indexOf(id) >= 0)
-        return true;
-    }
-    return false;
-  }
-
   render() {
     const { id, data, depth, open, search } = this.props;
     const searching = search && search.searching
 
     const render = searching
-    ? this._isInSearchResult(id, search)
+    ? isInSearchResult(id, data.children, search)
     : true;
 
     return render && (

@@ -35,32 +35,13 @@ const sumMatchingEntries = (children, initSum) => {
   }, initSum);
 };
 
-const isSearchResultInChildren = (children: TreeNodeIdType[], search?: SearchType) => {
-  if (!search || !search.result) return false;
-  const result = search.result;
-
-  for (var i = 0; i < result.length; i++) {
-    const id = result[i];
-    for (var j = 0; j < children.length; j++) {
-      const childId = children[j];
-      if (id.indexOf(childId) >= 0)
-        return true;
-    }
-  }
-  return false;
-}
-
 const CategoryTreeFolder = (props: PropsType) => {
   const { tree, search } = props;
   const matchingEntries = !tree.children || !tree.matchingEntries
     ? null
     : sumMatchingEntries(tree.children, tree.matchingEntries);
 
-  const searching = search && search.searching
-  const render = searching && tree.children
-  ? isSearchResultInChildren(tree.children, search)
-  : true;
-  return render && (
+  return (
     <div className="category-tree-folder category-tree-node">
       <CategoryTreeNodeTextContainer
         node={{

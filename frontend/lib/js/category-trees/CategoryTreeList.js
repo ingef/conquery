@@ -1,19 +1,18 @@
 // @flow
 
-import React              from 'react';
-import { connect }        from 'react-redux';
+import React                        from 'react';
+import { connect }                  from 'react-redux';
 
-import type { StateType } from '../app/reducers';
+import type { StateType }           from '../app/reducers';
 
-import { getConceptById } from './globalTreeStoreHelper';
-
+import { getConceptById }           from './globalTreeStoreHelper';
 import {
   type TreesType,
   type SearchType
-}                         from './reducer';
-
-import CategoryTree       from './CategoryTree';
-import CategoryTreeFolder from './CategoryTreeFolder';
+}                                   from './reducer';
+import CategoryTree                 from './CategoryTree';
+import CategoryTreeFolder           from './CategoryTreeFolder';
+import { isSearchResultInChildren } from './selectors';
 
 type PropsType = {
   trees: TreesType,
@@ -25,6 +24,7 @@ class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
+    const { search } = this.props;
     return (
       <div className="category-tree-list" style={{
         // Only hide the category trees when the tab is not selected
@@ -45,6 +45,13 @@ class CategoryTreeList extends React.Component<PropsType> {
             .map((treeId, i) => {
               const tree = this.props.trees[treeId];
               const rootConcept = getConceptById(treeId);
+
+              const searching = search && search.searching
+              const render = searching && tree.children
+              ? isSearchResultInChildren(tree.children, search)
+              : true;
+
+              if (!render) return null;
 
               return tree.detailsAvailable
                 ? <CategoryTree
