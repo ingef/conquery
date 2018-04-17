@@ -3,6 +3,7 @@ import PropTypes                from 'prop-types';
 import T                        from 'i18n-react';
 import { Creatable as Select }  from 'react-select';
 import { DelayInput }           from 'react-delay-input';
+import { isEmpty }              from '../common/helpers';
 
 const SearchBox = (props) => {
   const { searchResult } = props;
@@ -32,21 +33,36 @@ const SearchBox = (props) => {
       </div>
     : <div className="search-box input--full-width">
         <DelayInput
+          className="search-box__delay-input"
           delayTimeout={600}
           placeholder={T.translate('search.placeholder')}
           value={searchResult.query || ""}
           onChange={e => props.onSearch(e.target.value)}
         />
-        {searchResult.resultCount > 0 &&
-          <span className="input input-label--disabled input-label--tiny">
-            {
-              T.translate('search.resultLabel', {
-                limit: searchResult.limit,
-                resultCount: searchResult.resultCount
-              })
-            }
-          </span>
+        {
+          searchResult.loading
+          ? <i className="fa fa-spinner" />
+          : searchResult.searching && searchResult.resultCount >= 0 &&
+            <span className="input input-label--disabled input-label--tiny">
+              {
+                T.translate('search.resultLabel', {
+                  limit: searchResult.limit,
+                  resultCount: searchResult.resultCount
+                })
+              }
+            </span>
         }
+        {
+        !isEmpty(searchResult.query) &&
+        <span
+          className="search-box__clear-zone"
+          title={T.translate('common.clearValue')}
+          aria-label={T.translate('common.clearValue')}
+          onClick={() => props.onSearch('')}
+        >
+          ×
+        </span>
+      }
       </div>
 };
 
@@ -54,7 +70,7 @@ SearchBox.propTypes = {
   search: PropTypes.arrayOf(PropTypes.string),
   onSearch: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string),
-  isMulti: PropTypes.string,
+  isMulti: PropTypes.object,
   searchResult: PropTypes.object
 };
 

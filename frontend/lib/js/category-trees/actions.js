@@ -103,8 +103,6 @@ export const searchTrees = (query: string) => {
   return (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query))
 
-    if (isEmpty(query)) return;
-
     return SEARCH_API.search(query)
     .then(r => dispatch(searchTreesEnd(query, r)));
   }

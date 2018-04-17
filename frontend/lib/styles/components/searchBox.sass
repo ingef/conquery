@@ -1,3 +1,24 @@
 .search-box
   margin-bottom: 5px
   padding: 0 10px 0 20px
+
+  &__clear-zone
+    position: absolute
+    top: 52px
+    right: 22px
+    cursor: pointer
+    color: $col-gray
+
+  &__delay-input
+    &::-moz-placeholder
+      color: $col-gray
+      opacity: 1
+
+    &:-ms-input-placeholder
+      color: $col-gray
+
+    &::-webkit-input-placeholder
+      color: $col-gray
+
+    &::placeholder
+      color: $col-gray

@@ -25,7 +25,8 @@ class CategoryTreeList extends React.Component<PropsType> {
 
   render() {
     const { search } = this.props;
-    return (
+    const searching = search && search.searching
+    return !search.loading && (
       <div className="category-tree-list" style={{
         // Only hide the category trees when the tab is not selected
         // Because mount / unmount would reset the open states
@@ -46,8 +47,7 @@ class CategoryTreeList extends React.Component<PropsType> {
               const tree = this.props.trees[treeId];
               const rootConcept = getConceptById(treeId);
 
-              const searching = search && search.searching
-              const render = searching && tree.children
+              const render = searching
               ? isSearchResultInChildren(tree.children, search)
               : true;
 

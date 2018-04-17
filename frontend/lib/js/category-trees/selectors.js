@@ -1,10 +1,10 @@
 // @flow
 
-import { TreeNodeIdType }   from "../common/types/backend";
-import { SearchType }       from "./reducer";
+import { type TreeNodeIdType }   from "../common/types/backend";
+import { type SearchType }       from "./reducer";
 
-export const isSearchResultInChildren = (children: TreeNodeIdType[], search?: SearchType) => {
-    if (!search || !search.result) return false;
+export const isSearchResultInChildren = (children?: [], search?: SearchType) => {
+    if (!search || !search.result || !children) return false;
     const result = search.result;
 
     for (var i = 0; i < result.length; i++) {
@@ -18,7 +18,7 @@ export const isSearchResultInChildren = (children: TreeNodeIdType[], search?: Se
     return false;
 }
 
-export const isInSearchResult = (id: TreeNodeIdType, children: [], search: SearchType) => {
+export const isInSearchResult = (id: TreeNodeIdType, children?: [], search?: SearchType) => {
     if (!search || !search.result) return false;
     const result = search.result;
 
