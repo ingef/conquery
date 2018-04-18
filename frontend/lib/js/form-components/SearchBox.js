@@ -2,7 +2,6 @@ import React                    from 'react';
 import PropTypes                from 'prop-types';
 import T                        from 'i18n-react';
 import { Creatable as Select }  from 'react-select';
-import { DelayInput }           from 'react-delay-input';
 import { isEmpty }              from '../common/helpers';
 
 const SearchBox = (props) => {
@@ -32,9 +31,8 @@ const SearchBox = (props) => {
         />
       </div>
     : <div className="search-box input--full-width">
-        <DelayInput
-          className="search-box__delay-input"
-          delayTimeout={600}
+        <input
+          className="search-box__input"
           placeholder={T.translate('search.placeholder')}
           value={searchResult.query || ""}
           onChange={e => props.onSearch(e.target.value)}
@@ -53,16 +51,16 @@ const SearchBox = (props) => {
             </span>
         }
         {
-        !isEmpty(searchResult.query) &&
-        <span
-          className="search-box__clear-zone"
-          title={T.translate('common.clearValue')}
-          aria-label={T.translate('common.clearValue')}
-          onClick={() => props.onSearch('')}
-        >
-          ×
-        </span>
-      }
+          !isEmpty(searchResult.query) &&
+          <span
+            className="search-box__clear-zone"
+            title={T.translate('common.clearValue')}
+            aria-label={T.translate('common.clearValue')}
+            onClick={() => props.onSearch('')}
+          >
+            ×
+          </span>
+        }
       </div>
 };
 

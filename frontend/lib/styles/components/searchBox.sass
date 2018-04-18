@@ -9,16 +9,23 @@
     cursor: pointer
     color: $col-gray
 
-  &__delay-input
-    &::-moz-placeholder
-      color: $col-gray
+  &__input
+    &::-webkit-input-placeholder    /* WebKit, Blink, Edge */
+      color: $col-gray-medium-light
+
+    &::-moz-placeholder             /* Mozilla Firefox 19+ */
+      color: $col-gray-medium-light
       opacity: 1
 
-    &:-ms-input-placeholder
-      color: $col-gray
+    &:-moz-placeholder              /* Mozilla Firefox 4 to 18 */
+      color: $col-gray-medium-light
+      opacity: 1
 
-    &::-webkit-input-placeholder
-      color: $col-gray
+    &::-ms-input-placeholder        /* Microsoft Edge */
+      color: $col-gray-medium-light
 
-    &::placeholder
-      color: $col-gray
+    &:-ms-input-placeholder         /* Internet Explorer 10-11 */
+      color: $col-gray-medium-light
+
+    &::placeholder                  /* Most modern browsers support this now. */
+      color: $col-gray-medium-light
