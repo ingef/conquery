@@ -28,8 +28,8 @@ import {
   CLEAR_TREES,
   SEARCH_TREES_START,
   SEARCH_TREES_END,
+  SEARCH_INDEXING_READY,
 }                             from './actionTypes';
-import { isEmpty }            from '../common/helpers';
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
@@ -60,12 +60,11 @@ export const loadTrees = (datasetId: DatasetIdType) => {
           // In the future: Data could be cached, version could be checked and
           // further data only loaded when necessary
           if (r.version > -1) {
-            Object
+            Promise.all(Object
               .keys(r.concepts)
-              .forEach(conceptId => {
-                if (r.concepts[conceptId].detailsAvailable)
-                  dispatch(loadTree(datasetId, conceptId));
-              });
+              .filter(conceptId => r.concepts[conceptId].detailsAvailable)
+              .map(conceptId => dispatch(loadTree(datasetId, conceptId))
+              )).then(r => dispatch(searchTreesIndexing()));
 
             return r.concepts;
           }
@@ -98,6 +97,8 @@ export const searchTreesStart = (query: string) =>
   ({type: SEARCH_TREES_START, payload: { query }});
 export const searchTreesEnd = (query: string, result: any) =>
   ({type: SEARCH_TREES_END, payload: { query, result }});
+export const searchTreesIndexingReady = (result: any) =>
+  ({type: SEARCH_INDEXING_READY, payload: { result }});
 
 export const searchTrees = (query: string) => {
   return (dispatch: Dispatch) => {
@@ -105,5 +106,12 @@ export const searchTrees = (query: string) => {
 
     return SEARCH_API.search(query)
     .then(r => dispatch(searchTreesEnd(query, r)));
+  }
+}
+
+export const searchTreesIndexing = () => {
+  return (dispatch: Dispatch) => {
+    return SEARCH_API.search("!@#$%^&*(*)_")
+    .then(r => dispatch(searchTreesIndexingReady(r)));
   }
 }

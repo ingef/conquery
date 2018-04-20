@@ -1,8 +1,10 @@
 import React                    from 'react';
+import { Dot }                  from 'react-animated-dots';
 import PropTypes                from 'prop-types';
 import T                        from 'i18n-react';
 import { Creatable as Select }  from 'react-select';
 import { isEmpty }              from '../common/helpers';
+import { DelayInput }           from 'react-delay-input';
 
 const SearchBox = (props) => {
   const { searchResult } = props;
@@ -31,15 +33,17 @@ const SearchBox = (props) => {
         />
       </div>
     : <div className="search-box input--full-width">
-        <input
+        <DelayInput
+          delayTimeout={500}
           className="search-box__input"
-          placeholder={T.translate('search.placeholder')}
+          disabled={!searchResult.active}
+          placeholder={T.translate(searchResult.active ? 'search.placeholder.default' : 'search.placeholder.indexing')}
           value={searchResult.query || ""}
           onChange={e => props.onSearch(e.target.value)}
         />
         {
-          searchResult.loading
-          ? <i className="fa fa-spinner" />
+          searchResult.loading || !searchResult.active
+          ? <span className="dots"><Dot>.</Dot><Dot>.</Dot><Dot>.</Dot></span>
           : searchResult.searching && searchResult.resultCount >= 0 &&
             <span className="input input-label--disabled input-label--tiny">
               {

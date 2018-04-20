@@ -13,3 +13,4 @@ export const LOAD_TREE_ERROR = "category-trees/LOAD_TREE_ERROR";
 
 export const SEARCH_TREES_START = "category-trees/SEARCH_TREES_START";
 export const SEARCH_TREES_END = "category-trees/SEARCH_TREES_END";
+export const SEARCH_INDEXING_READY = "category-trees/SEARCH_INDEXING_READY";

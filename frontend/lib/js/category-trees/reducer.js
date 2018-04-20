@@ -12,6 +12,7 @@ import {
   CLEAR_TREES,
   SEARCH_TREES_START,
   SEARCH_TREES_END,
+  SEARCH_INDEXING_READY,
 }                                         from './actionTypes';
 
 import {
@@ -40,10 +41,28 @@ const initialState: StateType = {
   loading: false,
   version: null,
   trees: {},
-  search: { searching: false, query: '', words: [], result: [], limit: 0, resultCount: 0}
+  search: {
+    active: false,
+    searching: false,
+    loading: false,
+    query: '',
+    words: [],
+    result: [],
+    limit: 0,
+    resultCount: 0
+  }
 };
 
-const searchTreesEnd = (state: StateType, action: Object): StateType => {
+const setSearchIndexing = (state: StateType, action: Object) => {
+  return {
+    ...state,
+    search: {
+      active: true
+    }
+  }
+}
+
+const setSearchTreesEnd = (state: StateType, action: Object): StateType => {
   const { query, result } = action.payload;
   const searching = query && query.length > 0;
   const maxResult = [];
@@ -58,6 +77,7 @@ const searchTreesEnd = (state: StateType, action: Object): StateType => {
     ...state,
     search: {
       searching: searching,
+      active: true,
       loading: false,
       query: query,
       words: query ? query.split(' ') : [],
@@ -68,13 +88,14 @@ const searchTreesEnd = (state: StateType, action: Object): StateType => {
   }
 }
 
-const searchTreesStart = (state: StateType, action: Object): StateType => {
+const setSearchTreesStart = (state: StateType, action: Object): StateType => {
   const { query } = action.payload;
 
   return {
     ...state,
     search: {
       searching: false,
+      active: true,
       loading: true,
       query: query,
       words: query ? query.split(' ') : [],
@@ -122,6 +143,15 @@ const setTreeError = (state: StateType, action: Object): StateType => {
   return updateTree(state, action, { loading: false, error: action.payload.message });
 };
 
+const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
+  return {
+    ...state,
+    loading: false,
+    version: action.payload.data.version,
+    trees: action.payload.data.concepts
+  };
+}
+
 const categoryTrees = (
   state: StateType = initialState,
   action: Object
@@ -129,14 +159,13 @@ const categoryTrees = (
   switch (action.type) {
     // All trees
     case LOAD_TREES_START:
-      return { ...state, loading: true };
-    case LOAD_TREES_SUCCESS:
       return {
         ...state,
-        loading: false,
-        version: action.payload.data.version,
-        trees: action.payload.data.concepts
+        search: { active: false },
+        loading: true
       };
+    case LOAD_TREES_SUCCESS:
+      return setLoadTreesSuccess(state, action);
     case LOAD_TREES_ERROR:
       return { ...state, loading: false, error: action.payload.message };
 
@@ -148,9 +177,11 @@ const categoryTrees = (
     case LOAD_TREE_ERROR:
       return setTreeError(state, action);
     case SEARCH_TREES_START:
-      return searchTreesStart(state, action);
+      return setSearchTreesStart(state, action);
     case SEARCH_TREES_END:
-      return searchTreesEnd(state, action);
+      return setSearchTreesEnd(state, action);
+    case SEARCH_INDEXING_READY:
+      return setSearchIndexing(state, action);
     case CLEAR_TREES:
       return initialState;
     default:
