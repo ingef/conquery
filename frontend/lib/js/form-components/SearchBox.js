@@ -3,8 +3,8 @@ import { Dot }                  from 'react-animated-dots';
 import PropTypes                from 'prop-types';
 import T                        from 'i18n-react';
 import { Creatable as Select }  from 'react-select';
-import { isEmpty }              from '../common/helpers';
 import { DelayInput }           from 'react-delay-input';
+import { isEmpty, duration }    from '../common/helpers';
 
 const SearchBox = (props) => {
   const { searchResult } = props;
@@ -36,20 +36,24 @@ const SearchBox = (props) => {
         <DelayInput
           delayTimeout={500}
           className="search-box__input"
-          disabled={!searchResult.active}
-          placeholder={T.translate(searchResult.active ? 'search.placeholder.default' : 'search.placeholder.indexing')}
+          placeholder={T.translate('search.placeholder')}
           value={searchResult.query || ""}
-          onChange={e => props.onSearch(e.target.value)}
+          onChange={e => props.onSearch(props.datasetId, e.target.value)}
         />
         {
-          searchResult.loading || !searchResult.active
+          searchResult.loading
           ? <span className="dots"><Dot>.</Dot><Dot>.</Dot><Dot>.</Dot></span>
           : searchResult.searching && searchResult.resultCount >= 0 &&
             <span className="input input-label--disabled input-label--tiny">
               {
                 T.translate('search.resultLabel', {
                   limit: searchResult.limit,
-                  resultCount: searchResult.resultCount
+                  resultCount: searchResult.resultCount,
+                  duration: duration(
+                      searchResult.duration,
+                      "milliseconds",
+                      T.translate("search.durationFormat")
+                    )
                 })
               }
             </span>
@@ -73,7 +77,8 @@ SearchBox.propTypes = {
   onSearch: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string),
   isMulti: PropTypes.object,
-  searchResult: PropTypes.object
+  searchResult: PropTypes.object,
+  datasetId: PropTypes.string
 };
 
 export default SearchBox;

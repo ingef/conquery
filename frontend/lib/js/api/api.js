@@ -216,3 +216,10 @@ export function postConceptsListToResolve(
     body: { concepts },
   });
 };
+
+export const searchConcepts = (datasetId: DatasetIdType, query: string) => {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/search`, {
+    method: 'POST',
+    body: { text: query }
+  });
+}

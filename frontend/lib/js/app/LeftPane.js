@@ -29,7 +29,7 @@ const LeftPane = (props: PropsType) => (
         <DatasetSelector selectedDatasetId={selectedDatasetId} />
         {
           props.activeTab === 'categoryTrees' &&
-          <CategoryTreeSearchBox />
+          <CategoryTreeSearchBox datasetId={selectedDatasetId} />
         }
         <CategoryTreeList />
         {

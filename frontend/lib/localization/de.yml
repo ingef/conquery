@@ -234,7 +234,6 @@ authorization:
   unauthorized: "Authorisierung fehlgeschlagen. Ein Authorisierungs-Token fehlt, oder ist abgelaufen"
 
 search:
-  placeholder: 
-    default: "Suchen ..."
-    indexing: "Es wird indiziert ..."
-  resultLabel: "{limit} von {resultCount} Ergebnisse"
+  placeholder: "Suchen ..."
+  resultLabel: "{limit} von {resultCount} Ergebnisse ({duration} Sekunden)"
+  durationFormat: "s,SS"

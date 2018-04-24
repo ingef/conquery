@@ -232,7 +232,6 @@ authorization:
   unauthorized: "Authentitcation failed. An authentication token is missing or expired"
 
 search:
-  placeholder:
-    default: "Search ..."
-    indexing: "Indexing is running ..."
-  resultLabel: "{limit} of {resultCount} results"
+  placeholder: "Search ..."
+  resultLabel: "{limit} of {resultCount} results ({duration} Seconds)"
+  durationFormat: "s,SS"

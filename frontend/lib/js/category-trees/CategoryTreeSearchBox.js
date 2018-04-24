@@ -10,7 +10,7 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  onSearch: (query) => dispatch(searchTrees(query)),
+  onSearch: (datasetId, query) => dispatch(searchTrees(datasetId, query)),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps)(SearchBox);

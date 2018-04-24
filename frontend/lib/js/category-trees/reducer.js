@@ -12,7 +12,7 @@ import {
   CLEAR_TREES,
   SEARCH_TREES_START,
   SEARCH_TREES_END,
-  SEARCH_INDEXING_READY,
+  SEARCH_TREES_ERROR,
 }                                         from './actionTypes';
 
 import {
@@ -42,25 +42,16 @@ const initialState: StateType = {
   version: null,
   trees: {},
   search: {
-    active: false,
     searching: false,
     loading: false,
     query: '',
     words: [],
     result: [],
     limit: 0,
-    resultCount: 0
+    resultCount: 0,
+    duration: 0
   }
 };
-
-const setSearchIndexing = (state: StateType, action: Object) => {
-  return {
-    ...state,
-    search: {
-      active: true
-    }
-  }
-}
 
 const setSearchTreesEnd = (state: StateType, action: Object): StateType => {
   const { query, result } = action.payload;
@@ -77,13 +68,13 @@ const setSearchTreesEnd = (state: StateType, action: Object): StateType => {
     ...state,
     search: {
       searching: searching,
-      active: true,
       loading: false,
       query: query,
       words: query ? query.split(' ') : [],
       result: maxResult,
       limit: result.length <= limit ? result.length : limit,
-      resultCount: searching ? result.length : 0
+      resultCount: searching ? result.length : 0,
+      duration: (Date.now() - state.search.duration)
     }
   }
 }
@@ -95,13 +86,13 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
     ...state,
     search: {
       searching: false,
-      active: true,
       loading: true,
       query: query,
       words: query ? query.split(' ') : [],
       result: [],
       limit: 0,
-      resultCount: 0
+      resultCount: 0,
+      duration: Date.now()
     }
   }
 }
@@ -161,7 +152,6 @@ const categoryTrees = (
     case LOAD_TREES_START:
       return {
         ...state,
-        search: { active: false },
         loading: true
       };
     case LOAD_TREES_SUCCESS:
@@ -180,8 +170,8 @@ const categoryTrees = (
       return setSearchTreesStart(state, action);
     case SEARCH_TREES_END:
       return setSearchTreesEnd(state, action);
-    case SEARCH_INDEXING_READY:
-      return setSearchIndexing(state, action);
+    case SEARCH_TREES_ERROR:
+      return { ...state, search: {loading: false}, error: action.payload.message };
     case CLEAR_TREES:
       return initialState;
     default:
