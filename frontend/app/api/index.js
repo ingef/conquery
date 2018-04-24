@@ -222,4 +222,31 @@ module.exports = function (app, port) {
       isDevelopment: process.env.NODE_ENV !== 'production'
     })
   });
+
+  /*
+    SEARCH
+  */
+  app.post('/api/datasets/:datasetId/concepts/search',
+    function response (req, res) {
+      setTimeout(() => {
+        res.setHeader('Content-Type', 'application/json');
+
+        const result = [];
+        const awards = require('./concepts/awards');
+        const movieAppearance = require('./concepts/movie_appearances');
+
+        result.push(...findConcepts(awards, req.body.text))
+        result.push(...findConcepts(movieAppearance, req.body.text))
+
+        res.send(result);
+      }, 500);
+    }
+  );
 };
+
+const findConcepts = (concepts, query) => {
+  return Object.keys(concepts)
+    .map(key => ({id: key, label: concepts[key].label}))
+    .filter(res => res.label.toLowerCase().includes(query.toLowerCase()))
+    .map(res => res.id);
+}
