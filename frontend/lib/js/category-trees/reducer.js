@@ -14,11 +14,7 @@ import {
   SEARCH_TREES_END,
   SEARCH_TREES_ERROR,
 }                                         from './actionTypes';
-
-import {
-    setTree,
-    createTreeSearchIndex
-}                                         from './globalTreeStoreHelper';
+import { setTree }                        from './globalTreeStoreHelper';
 
 export type TreesType = { [treeId: string]: NodeType }
 
@@ -27,7 +23,10 @@ export type SearchType = {
   loading: boolean,
   query: string,
   words: Array<string>,
-  result: Array<TreeNodeIdType>
+  result: Array<TreeNodeIdType>,
+  limit: number,
+  resultCount: number,
+  duration: number
 }
 
 export type StateType = {
@@ -43,7 +42,7 @@ const initialState: StateType = {
   trees: {},
   search: {
     searching: false,
-    loading: false,
+    loading: true,
     query: '',
     words: [],
     result: [],
@@ -125,7 +124,6 @@ const setTreeSuccess = (state: StateType, action: Object): StateType => {
   const rootConcept = newState.trees[treeId];
 
   setTree(rootConcept, treeId, data);
-  createTreeSearchIndex(data);
 
   return newState;
 };
@@ -150,10 +148,7 @@ const categoryTrees = (
   switch (action.type) {
     // All trees
     case LOAD_TREES_START:
-      return {
-        ...state,
-        loading: true
-      };
+      return { ...state, loading: true };
     case LOAD_TREES_SUCCESS:
       return setLoadTreesSuccess(state, action);
     case LOAD_TREES_ERROR:
