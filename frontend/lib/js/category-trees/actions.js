@@ -30,6 +30,7 @@ import {
   SEARCH_TREES_END,
   SEARCH_TREES_ERROR
 }                             from './actionTypes';
+import { isEmpty }            from '../common/helpers';
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
@@ -104,6 +105,8 @@ export const searchTreesError = (query: string, err: any) =>
 export const searchTrees = (datasetId: DatasetIdType, query: string) => {
   return (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query))
+
+    if (isEmpty(query)) return;
 
     return api.searchConcepts(datasetId, query)
       .then(

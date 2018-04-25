@@ -1,7 +1,7 @@
 // @flow
 
-import { type TreeNodeIdType }   from "../common/types/backend";
-import { type SearchType }       from "./reducer";
+import { type TreeNodeIdType }   from '../common/types/backend';
+import { type SearchType }       from './reducer';
 
 export const isSearchResultInChildren = (children?: [], search?: SearchType) => {
     if (!search || !search.result || !children) return false;

@@ -50,10 +50,10 @@ const SearchBox = (props) => {
                   limit: searchResult.limit,
                   resultCount: searchResult.resultCount,
                   duration: duration(
-                      searchResult.duration,
-                      "milliseconds",
-                      T.translate("search.durationFormat")
-                    )
+                    searchResult.duration,
+                    "milliseconds",
+                    T.translate("search.durationFormat")
+                  )
                 })
               }
             </span>

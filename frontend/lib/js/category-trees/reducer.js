@@ -85,7 +85,7 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
     ...state,
     search: {
       searching: false,
-      loading: true,
+      loading: query && query.length > 0,
       query: query,
       words: query ? query.split(' ') : [],
       result: [],
