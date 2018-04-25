@@ -42,7 +42,7 @@ const initialState: StateType = {
   trees: {},
   search: {
     searching: false,
-    loading: true,
+    loading: false,
     query: '',
     words: [],
     result: [],
