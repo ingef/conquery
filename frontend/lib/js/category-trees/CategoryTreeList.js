@@ -1,27 +1,32 @@
 // @flow
 
-import React                from 'react';
-import { connect }          from 'react-redux';
+import React                        from 'react';
+import { connect }                  from 'react-redux';
 
-import type { StateType }   from '../app/reducers';
+import type { StateType }           from '../app/reducers';
 
-import { getConceptById }   from './globalTreeStoreHelper';
-
-import { type TreesType }   from './reducer';
-
-import CategoryTree         from './CategoryTree';
-import CategoryTreeFolder   from './CategoryTreeFolder';
+import { getConceptById }           from './globalTreeStoreHelper';
+import {
+  type TreesType,
+  type SearchType
+}                                   from './reducer';
+import CategoryTree                 from './CategoryTree';
+import CategoryTreeFolder           from './CategoryTreeFolder';
+import { isSearchResultInChildren } from './selectors';
 
 type PropsType = {
   trees: TreesType,
   activeTab: string,
+  search?: SearchType,
 };
 
 class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
-    return (
+    const { search } = this.props;
+    const searching = search && search.searching
+    return !search.loading && (
       <div className="category-tree-list" style={{
         // Only hide the category trees when the tab is not selected
         // Because mount / unmount would reset the open states
@@ -42,6 +47,12 @@ class CategoryTreeList extends React.Component<PropsType> {
               const tree = this.props.trees[treeId];
               const rootConcept = getConceptById(treeId);
 
+              const render = searching
+              ? isSearchResultInChildren(tree.children, search)
+              : true;
+
+              if (!render) return null;
+
               return tree.detailsAvailable
                 ? <CategoryTree
                     key={i}
@@ -52,6 +63,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                     loading={!!tree.loading}
                     error={tree.error}
                     depth={0}
+                    search={this.props.search}
                   />
                 : <CategoryTreeFolder
                     key={i}
@@ -61,6 +73,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                     depth={0}
                     active={tree.active}
                     openInitially
+                    search={this.props.search}
                   />;
             })
         }
@@ -73,6 +86,7 @@ const mapStateToProps = (state: StateType) => {
   return {
     trees: state.categoryTrees.trees,
     activeTab: state.panes.left.activeTab,
+    search: state.categoryTrees.search
   };
 };
 
