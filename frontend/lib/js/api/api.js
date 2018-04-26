@@ -217,9 +217,12 @@ export function postConceptsListToResolve(
   });
 };
 
-export const searchConcepts = (datasetId: DatasetIdType, query: string) => {
+export const searchConcepts = (datasetId: DatasetIdType, query: string, limit?: number) => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/search`, {
     method: 'POST',
-    body: { text: query }
+    body: {
+      query: query,
+      limit: limit || 500
+    }
   });
 }
