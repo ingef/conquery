@@ -55,7 +55,7 @@ const initialState: StateType = {
 const setSearchTreesEnd = (state: StateType, action: Object): StateType => {
   const { query, searchResult } = action.payload;
   const searching = query && query.length > 0;
-  const result = searchResult.result;
+  const result = searchResult.result || [];
   const limit = searchResult.limit;
   const size = searchResult.size;
 
