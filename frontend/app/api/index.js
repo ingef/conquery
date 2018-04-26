@@ -235,10 +235,11 @@ module.exports = function (app, port) {
         const awards = require('./concepts/awards');
         const movieAppearance = require('./concepts/movie_appearances');
 
-        result.push(...findConcepts(awards, req.body.text))
-        result.push(...findConcepts(movieAppearance, req.body.text))
+        result.push(...findConcepts(awards, req.body.query))
+        result.push(...findConcepts(movieAppearance, req.body.query))
 
-        res.send(result);
+        // see type SearchResult
+        res.send({ result: result, limit: 20, size: result.length });
       }, 500);
     }
   );
