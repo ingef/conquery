@@ -54,8 +54,15 @@ export const selectConceptRootNodeAndResolveCodes = (
 export const uploadConceptListModalUpdateLabel = (label) =>
   ({ type: UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL, label });
 
-export const uploadConceptListModalOpen = (data) =>
-  ({ type: UPLOAD_CONCEPT_LIST_MODAL_OPEN, data });
+export const uploadConceptListModalOpen = (data) => {
+  if (data.queryContext.treeId) {
+    const datasetId = data.queryContext.datasetId;
+    const conceptId = data.queryContext.treeId;
+    const conceptCodes = data.conceptCodes;
+    return selectConceptRootNodeAndResolveCodes(datasetId, conceptId, conceptCodes);
+  }
+  return ({ type: UPLOAD_CONCEPT_LIST_MODAL_OPEN, data });
+}
 
 export const uploadConceptListModalClose = () =>
   ({ type: UPLOAD_CONCEPT_LIST_MODAL_CLOSE });

@@ -35,6 +35,7 @@ type PropsType = {
   onLoadFilterSuggestions: Function,
   onShowDescription: Function,
   suggestions: ?Object,
+  onDropFiles: Function,
 };
 
 const ParameterTableFilters = (props: PropsType) => (
@@ -91,6 +92,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     }
                     startLoadingThreshold={filter.threshold || 1}
                     onLoad={(prefix) => props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)}
+                    onDropFiles={(files) => props.onDropFiles(filterIdx, files)}
                     disabled={!!props.excludeTable}
                   />
                 );
