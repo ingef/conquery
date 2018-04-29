@@ -1,6 +1,6 @@
 {
   "name": "conquery",
-  "version": "1.8.0-RC6",
+  "version": "1.8.0-RC7",
   "description": "conquery",
   "main": "dist/js/index.js",
   "private": false,
