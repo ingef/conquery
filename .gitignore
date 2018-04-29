@@ -1,3 +1,9 @@
+# maven
+*.xml.versionsBackup
+
+# vscode
+launch.json
+
 # Compiled class file
 *.class
 
