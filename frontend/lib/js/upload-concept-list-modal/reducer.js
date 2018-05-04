@@ -2,7 +2,7 @@
 
 import {
   type ConceptListResolutionResultType
-} from '../api/api';
+} from '../common/types/backend';
 
 import {
   UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
@@ -22,9 +22,9 @@ type QueryContextType = {
 export type StateType = {
   isModalOpen: boolean,
   queryContext: QueryContextType,
-  label: String,
-  conceptCodesFromFile: String[],
-  selectedConceptRootNode: String,
+  label: string,
+  conceptCodesFromFile: string[],
+  selectedConceptRootNode: string,
   loading: boolean,
   resolved: ConceptListResolutionResultType,
   error: Error
@@ -32,25 +32,25 @@ export type StateType = {
 
 const initialState: StateType = {
   isModalOpen: false,
-  queryContext: null,
-  label: null,
+  queryContext: {},
+  label: '',
   conceptCodesFromFile: [],
-  selectedConceptRootNode: null,
+  selectedConceptRootNode: '',
   loading: false,
-  resolved: null,
+  resolved: {},
   error: null,
 }
 
-const uploadConcepts = (state = initialState, action) => {
+const uploadConcepts = (state: StateType = initialState, action: Object) => {
   switch (action.type) {
     case UPLOAD_CONCEPT_LIST_MODAL_OPEN:
-      const { fileName, conceptCodes, queryContext } = action.data;
+      const { parameters } = action.data;
       return {
         ...state,
         isModalOpen: true,
-        queryContext,
-        label: fileName.replace(/\.[^/.]+$/, ""), // Strip extension from file name
-        conceptCodesFromFile: conceptCodes,
+        context,
+        label: parameters.fileName.replace(/\.[^/.]+$/, ""), // Strip extension from file name
+        conceptCodesFromFile: parameters.conceptCodes,
         selectedConceptRootNode: null,
         resolved: null
       };

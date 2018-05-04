@@ -260,8 +260,8 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   onCloseModal: () => dispatch(uploadConceptListModalClose()),
   onAccept: (label, rootConcepts, concepts, queryContext) =>
     dispatch(acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts, queryContext)),
-  selectConceptRootNode: (datasetId, conceptId, conceptCodesFromFile) =>
-    dispatch(selectConceptRootNodeAndResolveCodes(datasetId, conceptId, conceptCodesFromFile)),
+  selectConceptRootNode: (datasetId, treeId, conceptCodes) =>
+    dispatch(selectConceptRootNodeAndResolveCodes({ datasetId, treeId, conceptCodes })),
   updateLabel: (label) => dispatch(uploadConceptListModalUpdateLabel(label))
 });
 

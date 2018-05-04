@@ -216,3 +216,21 @@ export function postConceptsListToResolve(
     body: { concepts },
   });
 };
+
+export function postConceptFilterValuesResolve(
+  datasetId: DatasetIdType,
+  conceptId: string,
+  tableId: string,
+  filterId: string,
+  values: string,
+) {
+  return fetchJson(
+    apiUrl() +
+    `/datasets/${datasetId}/concepts/${conceptId}` +
+    `/tables/${tableId}/filters/${filterId}/resolve`,
+    {
+      method: 'POST',
+      body: { values },
+    }
+  );
+};

@@ -110,8 +110,7 @@ export const createConnectedQueryNodeEditor = (
         onSelectInputTableView: (tableIdx) => dispatch(setInputTableViewActive(tableIdx)),
         onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
         onReset: () => dispatch(reset()),
-        onDropFiles: (datasetId, treeId, tableId, filterIdx, files) =>
-          dispatch(onDropFiles(datasetId, treeId, tableId, filterIdx, files))
+        onDropFiles: (...params) => dispatch(onDropFiles(...params))
       }
     };
   }
@@ -121,17 +120,12 @@ export const createConnectedQueryNodeEditor = (
       ? mergeProps(stateProps, dispatchProps, ownProps)
       : { ...ownProps, ...stateProps, ...dispatchProps };
 
-    const datasetId = externalMergedProps.datasetId;
-    const treeId = externalMergedProps.node.tree;
-    const tableId = externalMergedProps.editorState.selectedInputTableIdx;
-
     return {
       ...externalMergedProps,
       editorState: {
         ...(stateProps.editorState || {}),
         ...(dispatchProps.editorState || {}),
-        onDropFiles: (filterIdx, files) =>
-          dispatchProps.editorState.onDropFiles(datasetId, treeId, tableId, filterIdx, files)
+        onDropFiles: (...params) => dispatchProps.editorState.onDropFiles(...params)
       }
     };
   };

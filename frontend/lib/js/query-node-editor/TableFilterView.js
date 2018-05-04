@@ -33,14 +33,23 @@ export const TableFilterView = (props: PropsType) => {
               props.datasetId,
               editorState.selectedInputTableIdx,
               selectedTable.id,
-              node.id,
+              node.tree,
               filterIdx,
               filterId,
               prefix
             )}
           suggestions={props.suggestions && props.suggestions[editorState.selectedInputTableIdx]}
           onShowDescription={editorState.onShowDescription}
-          onDropFiles={editorState.onDropFiles}
+          onDropFiles={(filterIdx, filterId, files) =>
+            editorState.onDropFiles(
+              props.datasetId,
+              node.tree,
+              editorState.selectedInputTableIdx,
+              selectedTable.id,
+              filterIdx,
+              filterId,
+              files
+            )}
         />
       </div>
     </div>

@@ -6,23 +6,25 @@ import type { Dispatch }          from 'redux';
 import T                          from 'i18n-react';
 import { replace }                from 'react-router-redux';
 
-
 import { toQuery }                from '../routes'
-
-
 import {
   queryGroupModalSetNode,
 }                                 from '../query-group-modal/actions';
-
 import {
   loadPreviousQuery,
   loadAllPreviousQueriesInGroups,
 }                                 from '../previous-queries/list/actions';
+import {
+  dropConceptFile,
+  dropOrConceptFile
+}                                 from '../file-dnd/actions';
+import type {
+  DraggedFileType
+}                                 from '../file-dnd/types';
+import type { DateRangeType }     from '../common/types/backend'
 
 import {
   dropAndNode,
-  dropConceptListFile,
-  dropOrConceptListFile,
   dropOrNode,
   deleteNode,
   deleteGroup,
@@ -32,12 +34,9 @@ import {
 }                                 from './actions'
 import type {
   StandardQueryType,
-  DateRangeType,
   DraggedNodeType,
-  DraggedQueryType,
-  DraggedFileType
+  DraggedQueryType
 }                                 from './types';
-
 import { QueryEditorDropzone }    from './QueryEditorDropzone';
 import QueryGroup                 from './QueryGroup';
 
@@ -46,9 +45,9 @@ type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
   dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
-  dropConceptListFile: (DraggedFileType, ?DateRangeType) => void,
+  dropConceptFile: (DraggedFileType, DraggedFileType | ?DateRangeType) => void,
   dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
-  dropOrConceptListFile: (DraggedFileType, number) => void,
+  dropOrConceptFile: (DraggedFileType, DraggedFileType | ?number) => void,
   deleteNode: Function,
   deleteGroup: Function,
   toggleExcludeGroup: Function,
@@ -68,7 +67,7 @@ const Query = (props: PropsType) => {
         <QueryEditorDropzone
           isInitial
           onDropNode={item => props.dropAndNode(item, null)}
-          onDropFiles={props.dropConceptListFile}
+          onDropFiles={props.dropConceptFile}
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
       }
@@ -82,9 +81,9 @@ const Query = (props: PropsType) => {
                 group={group}
                 andIdx={andIdx}
                 onDropNode={item => props.dropOrNode(item, andIdx)}
-                onDropFiles={item => props.dropOrConceptListFile(item, andIdx)}
+                onDropFiles={item => props.dropOrConceptFile(item, andIdx)}
                 onDeleteNode={orIdx => props.deleteNode(andIdx, orIdx)}
-                onDeleteGroup={() => props.deleteGroup(andIdx)}
+                onDeleteGroup={orIdx => props.deleteGroup(andIdx, orIdx)}
                 onFilterClick={orIdx => props.selectNodeForEditing(andIdx, orIdx)}
                 onExpandClick={props.expandPreviousQuery}
                 onExcludeClick={() => props.toggleExcludeGroup(andIdx)}
@@ -102,7 +101,7 @@ const Query = (props: PropsType) => {
                 <QueryEditorDropzone
                   isAnd
                   onDropNode={item => props.dropAndNode(item, props.dateRange)}
-                  onDropFiles={item => props.dropConceptListFile(item, props.dateRange)}
+                  onDropFiles={item => props.dropConceptFile(item, props.dateRange)}
                   onLoadPreviousQuery={props.loadPreviousQuery}
                 />
               </div>
@@ -125,11 +124,11 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
-  dropConceptListFile: (item, dateRange) => dispatch(dropConceptListFile(item, { dateRange })),
-  dropOrConceptListFile: (item, andIdx) => dispatch(dropOrConceptListFile(item, andIdx)),
+  dropConceptFile: (item, dateRange) => dispatch(dropConceptFile(item, dateRange)),
+  dropOrConceptFile: (item, andIdx) => dispatch(dropOrConceptFile(item, andIdx)),
   dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
   deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
-  deleteGroup: (andIdx) => dispatch(deleteGroup(andIdx)),
+  deleteGroup: (andIdx, orIdx) => dispatch(deleteGroup(andIdx, orIdx)),
   toggleExcludeGroup: (andIdx) => dispatch(toggleExcludeGroup(andIdx)),
   selectNodeForEditing: (andIdx, orIdx) =>
     dispatch(selectNodeForEditing(andIdx, orIdx)),
