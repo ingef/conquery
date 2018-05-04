@@ -73,6 +73,17 @@
                             <arguments>test</arguments>
                         </configuration>
                     </execution>
+                    <execution>
+                        <id>yarn codacy-coverage</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>test</phase>
+
+                        <configuration>
+                            <arguments>codacy-coverage</arguments>
+                        </configuration>
+                    </execution>
                 </executions>
             </plugin>
         </plugins>
