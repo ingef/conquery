@@ -22,8 +22,7 @@ export const isInSearchResult = (id: TreeNodeIdType, children?: [], search?: Sea
     if (!search || !search.result) return false;
     const result = search.result;
 
-    if (result.includes(id))
-        return true;
+    if (result.includes(id)) return true;
 
     if (children && children.length > 0)
         return isSearchResultInChildren(children, search);
