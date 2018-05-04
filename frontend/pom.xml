@@ -74,11 +74,11 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>yarn codacy-coverage</id>
+                        <id>codacy-coverage</id>
                         <goals>
                             <goal>yarn</goal>
                         </goals>
-                        <phase>test</phase>
+						<phase>none</phase>
 
                         <configuration>
                             <arguments>codacy-coverage</arguments>

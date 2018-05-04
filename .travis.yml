@@ -16,6 +16,7 @@ cache:
 
 script:
   - mvn test -B -DskipDockerTests=false
+  - cd frontend & mvn com.github.eirslett:frontend-maven-plugin:yarn@codacy-coverage & cd ..
 
 deploy:
   - provider: script
