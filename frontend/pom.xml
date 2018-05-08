@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <parent>
         <groupId>com.bakdata.conquery</groupId>
         <artifactId>parent</artifactId>
@@ -45,9 +47,9 @@
                         <phase>generate-resources</phase>
 
                         <configuration>
-                            <!-- If you need reproducible dependencies, which is usually
-                            the case with the continuous integration systems,
-                            you should pass frozen-lockfile flag. -->
+                            <!-- If you need reproducible dependencies, which is usually the case 
+                                with the continuous integration systems, you should pass frozen-lockfile 
+                                flag. -->
                             <arguments>--frozen-lockfile</arguments>
                         </configuration>
                     </execution>
@@ -73,19 +75,35 @@
                             <arguments>test</arguments>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>codacy-coverage</id>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-						<phase>none</phase>
-
-                        <configuration>
-                            <arguments>codacy-coverage</arguments>
-                        </configuration>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <profile>
+            <id>reportCoverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>com.github.eirslett</groupId>
+                        <artifactId>frontend-maven-plugin</artifactId>
+                        <version>1.6</version>
+                        <executions>
+                            <execution>
+                                <id>codacy-coverage</id>
+                                <goals>
+                                    <goal>yarn</goal>
+                                </goals>
+                                <phase>test</phase>
+                                <configuration>
+                                    <arguments>codacy-coverage</arguments>
+                                </configuration>
+                            </execution>
+                        </executions>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>

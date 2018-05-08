@@ -15,8 +15,7 @@ cache:
   - "$TRAVIS_BUILD_DIR/frontend/node_modules"
 
 script:
-  - mvn test -B -DskipDockerTests=false
-  - cd frontend & mvn com.github.eirslett:frontend-maven-plugin:yarn@codacy-coverage & cd ..
+  - mvn test -B -DskipDockerTests=false -P reportCoverage
 
 deploy:
   - provider: script
