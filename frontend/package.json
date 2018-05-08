@@ -21,7 +21,7 @@
     "test-watch": "cross-env NODE_ENV=test mocha test --watch",
     "debug-test": "cross-env NODE_ENV=test node-debug --debug-brk _mocha test",
     "prepush": "npm run lint",
-    "codacy-coverage": "codacy-coverage ./coverage/lcov.info"
+    "codacy-coverage": "codacy-coverage < ./coverage/lcov.info"
   },
   "files": [
     "/dist"
