@@ -13,8 +13,7 @@ export const createQueryNodeEditorReducer = (type: string) => {
     SET_INPUT_TABLE_VIEW_ACTIVE,
     SET_FOCUSED_INPUT,
     TOGGLE_EDIT_LABEL,
-    RESET,
-    ON_DROP_FILE
+    RESET
   } = createActionTypes(type);
 
   return (state = initialState, action) => {
@@ -41,10 +40,6 @@ export const createQueryNodeEditorReducer = (type: string) => {
           ...state,
           editingLabel: !state.editingLabel
         };
-      case ON_DROP_FILE:
-        return {
-          ...state,
-        }
       case RESET:
         return initialState;
       default:

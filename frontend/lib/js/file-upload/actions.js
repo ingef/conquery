@@ -11,19 +11,19 @@ import {
   defaultSuccess,
   defaultError
 }                                       from "../common/actions";
+import type { DateRangeType }           from "../common/types/backend";
 import {
-  uploadConceptListModalOpen,
-  selectConceptRootNodeAndResolveCodes
-}                                       from '../upload-concept-list-modal/actions';
-
+  uploadConceptListModalOpen
+}                                       from "../upload-concept-list-modal/actions";
 import {
   DROP_FILES_START,
   DROP_FILES_SUCCESS,
   DROP_FILES_ERROR
 }                                       from "./actionTypes";
-import type {
+import type
+{
   DraggedFileType,
-  ConceptFileType
+  GenericFileType
 }                                       from "./types";
 
 export const loadFilesStart = () =>
@@ -33,15 +33,15 @@ export const loadFilesSuccess = (res: any) =>
 export const loadFilesError = (err: any) =>
   defaultError(DROP_FILES_ERROR, err);
 
-export const dropConceptFile = (item: DraggedFileType, conceptFile: ConceptFileType) => {
+export const dropFiles = (item: DraggedFileType, type: GenericFileType) => {
   return (dispatch: Dispatch) => {
     dispatch(loadFilesStart());
 
+    if (!type.callback)
+      return dispatch(loadFilesError("callback method not defined ..."));
+
     // Ignore all dropped files except the first
     const file = item[0];
-
-    // default callback
-    conceptFile['callback'] = conceptFile.callback || selectConceptRootNodeAndResolveCodes;
 
     if (!checkFileType(file))
       return dispatch(loadFilesError(new Error("Invalid concept list file")));
@@ -49,13 +49,13 @@ export const dropConceptFile = (item: DraggedFileType, conceptFile: ConceptFileT
     return readFileAsText(file).then(
       r => {
         const values = cleanFileContent(r);
-        conceptFile.parameters['values'] = values;
-        conceptFile.parameters['fileName'] = file.name;
+        type.parameters['values'] = values;
+        type.parameters['fileName'] = file.name;
 
         if (values.length)
           return dispatch([
-            loadFilesSuccess(),
-            uploadConceptListModalOpen(conceptFile)
+            loadFilesSuccess(r),
+            type.callback(type)
           ]);
 
         return dispatch(loadFilesError(new Error('An empty file was dropped')));
@@ -65,5 +65,8 @@ export const dropConceptFile = (item: DraggedFileType, conceptFile: ConceptFileT
   }
 };
 
-export const dropOrConceptFile = (item: DraggedFileType, andIdx: number) =>
-  dropConceptFile(item, { parameters: { andIdx } });
+export const dropFilesAndIdx = (item: DraggedFileType, andIdx: number) =>
+  dropFiles(item, { parameters: { andIdx }, callback: uploadConceptListModalOpen });
+
+export const dropFilesDateRangeType = (item: DraggedFileType, dateRange: DateRangeType) =>
+  dropFiles(item, { parameters: { dateRange }, callback: uploadConceptListModalOpen });

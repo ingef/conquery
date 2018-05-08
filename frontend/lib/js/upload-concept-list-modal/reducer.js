@@ -41,6 +41,33 @@ const initialState: StateType = {
   error: null,
 }
 
+const resolveConceptsSuccess = (state: StateType, action: Object) => {
+  const { data, treeId, parameters } = action.payload;
+  const hasUnresolvedCodes = data.unknownCodes && data.unknownCodes.length > 0;
+  const hasResolvedItems = data.conceptCodes && data.conceptCodes.length > 0;
+
+  if (hasUnresolvedCodes)
+    return {
+      ...state,
+      isModalOpen: hasUnresolvedCodes,
+      loading: false,
+      label: parameters.fileName.replace(/\.[^/.]+$/, ""), // Strip extension from file name
+      conceptCodesFromFile: data.conceptCodes,
+      selectedConceptRootNode: treeId,
+      resolved: data,
+      hasUnresolvedCodes: hasUnresolvedCodes,
+      hasResolvedItems: hasResolvedItems,
+      parameters: parameters
+    };
+
+  return {
+    ...state,
+    loading: false,
+    error: null,
+    resolved: action.payload.data
+  };
+}
+
 const uploadConcepts = (state: StateType = initialState, action: Object) => {
   switch (action.type) {
     case UPLOAD_CONCEPT_LIST_MODAL_OPEN:
@@ -79,12 +106,7 @@ const uploadConcepts = (state: StateType = initialState, action: Object) => {
         error: action.payload
       };
     case RESOLVE_CONCEPTS_SUCCESS:
-      return {
-        ...state,
-        loading: false,
-        error: null,
-        resolved: action.payload.data
-      };
+      return resolveConceptsSuccess(state, action);
     case UPLOAD_CONCEPT_LIST_MODAL_CLOSE:
       return initialState;
     default:

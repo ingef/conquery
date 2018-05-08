@@ -222,7 +222,7 @@ export function postConceptFilterValuesResolve(
   conceptId: string,
   tableId: string,
   filterId: string,
-  values: string,
+  values: string[],
 ) {
   return fetchJson(
     apiUrl() +

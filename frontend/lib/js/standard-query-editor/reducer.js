@@ -41,6 +41,8 @@ import {
   INTEGER_RANGE
 } from '../form-components';
 
+import type { StateType } from '../query-runner/reducer';
+
 import {
   DROP_AND_NODE,
   DROP_OR_NODE,
@@ -63,6 +65,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
+  SET_RESOLVED_FILTER_VALUES,
 } from './actionTypes';
 
 import type
@@ -678,6 +681,20 @@ const removeConceptFromNode = (state, action) => {
   });
 }
 
+const setResolvedFilterValue = (state: StateType, action: Object) => {
+  const { resolutionResult, parameters } = action.data;
+  const value = resolutionResult.filter.value.map(v => {
+    return {label: v.label || v.value, value: v.value}
+  });
+  return setNodeFilterValue(state, {
+    payload: {
+      value: value,
+      tableIdx: parameters.tableIdx,
+      filterIdx: parameters.filterIdx
+    }
+  });
+}
+
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
 // like `dateRange` or `exclude`.
@@ -774,6 +791,8 @@ const query = (
       return loadFilterSuggestionsError(state, action);
     case UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
+    case SET_RESOLVED_FILTER_VALUES:
+      return setResolvedFilterValue(state, action);
     default:
       return state;
   }

@@ -5,7 +5,8 @@ export type DraggedFileType = {
     isPreviousQuery?: void,
 }
 
-export type ConceptFileType = {
+export type GenericFileType = {
     parameters: Object,
-    callback?: Function
+    callback?: Function,
+    actionType?: string
 }

@@ -9,7 +9,7 @@ import {
 }                                      from '../common/actions';
 import { isEmpty }                     from '../common/helpers';
 import { type TreeNodeIdType }         from '../common/types/backend';
-import { type ConceptFileType }        from '../file-dnd/types';
+import { type GenericFileType }        from '../file-upload/types';
 
 import {
   UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
@@ -24,8 +24,8 @@ import {
 
 export const resolveConceptsStart = () =>
   ({ type: RESOLVE_CONCEPTS_START });
-export const resolveConceptsSuccess = (res: any) =>
-  defaultSuccess(RESOLVE_CONCEPTS_SUCCESS, res);
+export const resolveConceptsSuccess = (res: any, payload?: Object) =>
+  defaultSuccess(RESOLVE_CONCEPTS_SUCCESS, res, payload);
 export const resolveConceptsError = (err: any) =>
   defaultError(RESOLVE_CONCEPTS_ERROR, err);
 
@@ -53,17 +53,19 @@ export const selectConceptRootNodeAndResolveCodes = (parameters: Object) => {
   }
 };
 
-export const conceptFilterValuesResolve = (parameters: Object) => {
-  const datasetId = parameters['datasetId'];
-  const treeId = parameters['treeId'];
-  const tableId = parameters['tableId'];
-  const filterId = parameters['filterId'];
-  const values = parameters['values'];
+export const conceptFilterValuesResolve = (fileType: GenericFileType) => {
+  const datasetId = fileType.parameters['datasetId'];
+  const treeId = fileType.parameters['treeId'];
+  const tableId = fileType.parameters['tableId'];
+  const filterId = fileType.parameters['filterId'];
+  const values = fileType.parameters['values'];
 
   return (dispatch: Dispatch<*>) => {
+    dispatch(resolveConceptsStart());
+
     return api.postConceptFilterValuesResolve(datasetId, treeId, tableId, filterId, values)
       .then(
-        r => dispatch(resolveConceptsSuccess(r)),
+        r => dispatch(resolveConceptsSuccess(r, {...fileType})),
         e => dispatch(resolveConceptsError(e))
     );
   }
@@ -72,10 +74,11 @@ export const conceptFilterValuesResolve = (parameters: Object) => {
 export const uploadConceptListModalUpdateLabel = (label: string) =>
   ({ type: UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL, label });
 
-export const uploadConceptListModalOpen = (data: ConceptFileType) => {
-  if (data.parameters['treeId'])
-    return data.callback && data.callback(data.parameters);
+export const uploadConceptListModalOpen = (fileType: GenericFileType) => {
+  if (fileType.parameters['treeId'])
+    return fileType.callback && fileType.callback(fileType.parameters);
 
+  const data = fileType.parameters;
   return ({ type: UPLOAD_CONCEPT_LIST_MODAL_OPEN, data });
 }
 
@@ -86,21 +89,23 @@ export const uploadConceptListModalAccept = (
   label,
   rootConcepts,
   resolutionResult,
-  queryContext
+  queryContext,
+  parameters
 ) => ({
-    type: UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
-    data: { label, rootConcepts, resolutionResult, queryContext }
+    type: parameters.actionType || UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
+    data: { label, rootConcepts, resolutionResult, queryContext, parameters }
   });
 
 export const acceptAndCloseUploadConceptListModal = (
   label,
   rootConcepts,
   resolutionResult,
-  queryContext
+  queryContext,
+  parameters
 ) => {
   return (dispatch) => {
     dispatch([
-      uploadConceptListModalAccept(label, rootConcepts, resolutionResult, queryContext),
+      uploadConceptListModalAccept(label, rootConcepts, resolutionResult, queryContext, parameters),
       uploadConceptListModalClose()
     ]);
   }

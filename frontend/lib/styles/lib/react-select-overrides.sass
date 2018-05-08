@@ -47,6 +47,14 @@
 
     .Select-multi-value-wrapper
       display: table-cell
+      height: 100%
+      width: 98%
+      overflow: auto
+      position: absolute
+      padding-right: 30px
+      -ms-overflow-style: none // IE 10+
+      &::-webkit-scrollbar
+        display: none
 
   .Select-option
     &.is-selected

@@ -40,7 +40,8 @@ type PropsType = {
   hasResolvedItems: boolean,
   hasUnresolvedCodes: boolean,
   numberOfResolvedItems: Number,
-  error: Object
+  error: Object,
+  parameters: Object
 };
 
 const UploadConceptListModal = (props: PropsType) => {
@@ -183,7 +184,8 @@ const UploadConceptListModal = (props: PropsType) => {
                 filter: props.resolved.resolvedFilter,
                 selectedRoot: props.selectedConceptRootNode
               },
-              props.queryContext
+              props.queryContext,
+              props.parameters
             )}
           >
             { T.translate('uploadConceptListModal.insertNode') }
@@ -254,12 +256,13 @@ const mapStateToProps = (state: StateType) => ({
   numberOfResolvedItems: selectNumberOfResolvedItems(state),
   rootConcepts: state.categoryTrees.trees,
   error: state.uploadConceptListModal.error,
+  parameters: state.uploadConceptListModal.parameters
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onCloseModal: () => dispatch(uploadConceptListModalClose()),
-  onAccept: (label, rootConcepts, concepts, queryContext) =>
-    dispatch(acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts, queryContext)),
+  onAccept: (label, rootConcepts, concepts, queryContext, parameters) =>
+    dispatch(acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts, queryContext, parameters)),
   selectConceptRootNode: (datasetId, treeId, conceptCodes) =>
     dispatch(selectConceptRootNodeAndResolveCodes({ datasetId, treeId, conceptCodes })),
   updateLabel: (label) => dispatch(uploadConceptListModalUpdateLabel(label))
@@ -269,12 +272,13 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  onAccept: (fileName, concepts, queryContext) =>
+  onAccept: (fileName, concepts, queryContext, parameters) =>
     dispatchProps.onAccept(
       fileName,
       stateProps.rootConcepts,
       concepts,
-      queryContext
+      queryContext,
+      parameters
     ),
 });
 

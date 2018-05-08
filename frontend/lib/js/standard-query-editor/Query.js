@@ -15,12 +15,13 @@ import {
   loadAllPreviousQueriesInGroups,
 }                                 from '../previous-queries/list/actions';
 import {
-  dropConceptFile,
-  dropOrConceptFile
-}                                 from '../file-dnd/actions';
+  dropFiles,
+  dropOrFiles
+}                                 from '../file-upload/actions';
 import type {
-  DraggedFileType
-}                                 from '../file-dnd/types';
+  DraggedFileType,
+  GenericFileType
+}                                 from '../file-upload/types';
 import type { DateRangeType }     from '../common/types/backend'
 
 import {
@@ -45,9 +46,8 @@ type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
   dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
-  dropConceptFile: (DraggedFileType, DraggedFileType | ?DateRangeType) => void,
+  dropFiles: (DraggedFileType, ?DateRangeType | ?number | ?GenericFileType) => void,
   dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
-  dropOrConceptFile: (DraggedFileType, DraggedFileType | ?number) => void,
   deleteNode: Function,
   deleteGroup: Function,
   toggleExcludeGroup: Function,
@@ -67,7 +67,7 @@ const Query = (props: PropsType) => {
         <QueryEditorDropzone
           isInitial
           onDropNode={item => props.dropAndNode(item, null)}
-          onDropFiles={props.dropConceptFile}
+          onDropFiles={props.dropFiles}
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
       }
@@ -81,7 +81,7 @@ const Query = (props: PropsType) => {
                 group={group}
                 andIdx={andIdx}
                 onDropNode={item => props.dropOrNode(item, andIdx)}
-                onDropFiles={item => props.dropOrConceptFile(item, andIdx)}
+                onDropFiles={item => props.dropFiles(item, andIdx)}
                 onDeleteNode={orIdx => props.deleteNode(andIdx, orIdx)}
                 onDeleteGroup={orIdx => props.deleteGroup(andIdx, orIdx)}
                 onFilterClick={orIdx => props.selectNodeForEditing(andIdx, orIdx)}
@@ -101,7 +101,7 @@ const Query = (props: PropsType) => {
                 <QueryEditorDropzone
                   isAnd
                   onDropNode={item => props.dropAndNode(item, props.dateRange)}
-                  onDropFiles={item => props.dropConceptFile(item, props.dateRange)}
+                  onDropFiles={item => props.dropFiles(item, props.dateRange)}
                   onLoadPreviousQuery={props.loadPreviousQuery}
                 />
               </div>
@@ -124,8 +124,8 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
-  dropConceptFile: (item, dateRange) => dispatch(dropConceptFile(item, dateRange)),
-  dropOrConceptFile: (item, andIdx) => dispatch(dropOrConceptFile(item, andIdx)),
+  dropConceptFile: (item, dateRange) => dispatch(dropFiles(item, { dateRange })),
+  dropOrConceptFile: (item, andIdx) => dispatch(dropFiles(item, andIdx)),
   dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
   deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
   deleteGroup: (andIdx, orIdx) => dispatch(deleteGroup(andIdx, orIdx)),
