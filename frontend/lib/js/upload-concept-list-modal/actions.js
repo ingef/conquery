@@ -75,11 +75,11 @@ export const uploadConceptListModalUpdateLabel = (label: string) =>
   ({ type: UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL, label });
 
 export const uploadConceptListModalOpen = (fileType: GenericFileType) => {
-  if (fileType.parameters['treeId'])
-    return fileType.callback && fileType.callback(fileType.parameters);
+  const parameters = fileType.parameters;
+  if (parameters['treeId'])
+    return fileType.callback && fileType.callback(parameters);
 
-  const data = fileType.parameters;
-  return ({ type: UPLOAD_CONCEPT_LIST_MODAL_OPEN, data });
+  return ({ type: UPLOAD_CONCEPT_LIST_MODAL_OPEN, parameters });
 }
 
 export const uploadConceptListModalClose = () =>
@@ -89,25 +89,22 @@ export const uploadConceptListModalAccept = (
   label,
   rootConcepts,
   resolutionResult,
-  queryContext,
   parameters
 ) => ({
     type: parameters.actionType || UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
-    data: { label, rootConcepts, resolutionResult, queryContext, parameters }
+    data: { label, rootConcepts, resolutionResult, parameters }
   });
 
 export const acceptAndCloseUploadConceptListModal = (
   label,
   rootConcepts,
   resolutionResult,
-  queryContext,
   parameters
 ) => {
   return (dispatch) => {
     dispatch([
-      uploadConceptListModalAccept(label, rootConcepts, resolutionResult, queryContext, parameters),
+      uploadConceptListModalAccept(label, rootConcepts, resolutionResult, parameters),
       uploadConceptListModalClose()
     ]);
   }
 };
-

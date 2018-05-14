@@ -26,6 +26,11 @@ import type
   GenericFileType
 }                                       from "./types";
 
+const initialGenericFileType = {
+  parameters: {},
+  callback: uploadConceptListModalOpen
+}
+
 export const loadFilesStart = () =>
   ({ type: DROP_FILES_START });
 export const loadFilesSuccess = (res: any) =>
@@ -37,11 +42,10 @@ export const dropFiles = (item: DraggedFileType, type: GenericFileType) => {
   return (dispatch: Dispatch) => {
     dispatch(loadFilesStart());
 
-    if (!type.callback)
-      return dispatch(loadFilesError("callback method not defined ..."));
+    type = !type || !type['callback'] ? initialGenericFileType : type;
 
     // Ignore all dropped files except the first
-    const file = item[0];
+    const file = item[0] || item.files[0];
 
     if (!checkFileType(file))
       return dispatch(loadFilesError(new Error("Invalid concept list file")));

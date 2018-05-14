@@ -634,13 +634,13 @@ const createQueryNodeFromConceptListUploadResult = (
 }
 
 const insertUploadedConceptList = (state, action: { data: UploadConceptListModalResultType }) => {
-  const { queryContext } = action.data;
+  const { parameters } = action.data;
   const queryElement = createQueryNodeFromConceptListUploadResult(action.data);
 
-  if (queryContext.andIdx != null)
-    return dropOrNode(state, { payload: { item: queryElement, andIdx: queryContext.andIdx } });
+  if (parameters.andIdx != null)
+    return dropOrNode(state, { payload: { item: queryElement, andIdx: parameters.andIdx } });
 
-  return dropAndNode(state, { payload: { item: queryElement, dateRange: queryContext.dateRange } });
+  return dropAndNode(state, { payload: { item: queryElement, dateRange: parameters.dateRange } });
 };
 
 const selectNodeForEditing = (state, {payload: { andIdx, orIdx }}) => {

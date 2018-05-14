@@ -11,7 +11,7 @@ import { NativeTypes }        from 'react-dnd-html5-backend';
 
 import type {
   DraggedFileType
-}                             from '../file-dnd/types';
+}                             from '../file-upload/types';
 import { dndTypes }           from '../common/constants';
 import type { QueryIdType }   from '../common/types/backend';
 import type {

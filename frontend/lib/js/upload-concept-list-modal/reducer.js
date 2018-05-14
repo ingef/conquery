@@ -14,14 +14,10 @@ import {
   UPLOAD_CONCEPT_LIST_MODAL_CLOSE
 } from './actionTypes'
 
-type QueryContextType = {
-  andIdx?: Number,
-  dateRange?: any
-};
 
 export type StateType = {
   isModalOpen: boolean,
-  queryContext: QueryContextType,
+  parameters: Object,
   label: string,
   conceptCodesFromFile: string[],
   selectedConceptRootNode: string,
@@ -32,7 +28,7 @@ export type StateType = {
 
 const initialState: StateType = {
   isModalOpen: false,
-  queryContext: {},
+  parameters: {},
   label: '',
   conceptCodesFromFile: [],
   selectedConceptRootNode: '',
@@ -42,7 +38,7 @@ const initialState: StateType = {
 }
 
 const resolveConceptsSuccess = (state: StateType, action: Object) => {
-  const { data, treeId, parameters } = action.payload;
+  const { data, parameters } = action.payload;
   const hasUnresolvedCodes = data.unknownCodes && data.unknownCodes.length > 0;
   const hasResolvedItems = data.conceptCodes && data.conceptCodes.length > 0;
 
@@ -53,7 +49,7 @@ const resolveConceptsSuccess = (state: StateType, action: Object) => {
       loading: false,
       label: parameters.fileName.replace(/\.[^/.]+$/, ""), // Strip extension from file name
       conceptCodesFromFile: data.conceptCodes,
-      selectedConceptRootNode: treeId,
+      selectedConceptRootNode: parameters.treeId,
       resolved: data,
       hasUnresolvedCodes: hasUnresolvedCodes,
       hasResolvedItems: hasResolvedItems,
@@ -71,15 +67,15 @@ const resolveConceptsSuccess = (state: StateType, action: Object) => {
 const uploadConcepts = (state: StateType = initialState, action: Object) => {
   switch (action.type) {
     case UPLOAD_CONCEPT_LIST_MODAL_OPEN:
-      const { parameters } = action.data;
+      const { parameters } = action;
       return {
         ...state,
         isModalOpen: true,
-        context,
         label: parameters.fileName.replace(/\.[^/.]+$/, ""), // Strip extension from file name
-        conceptCodesFromFile: parameters.conceptCodes,
+        conceptCodesFromFile: parameters.values,
         selectedConceptRootNode: null,
-        resolved: null
+        resolved: null,
+        parameters
       };
     case UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL:
       return {

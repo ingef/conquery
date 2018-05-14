@@ -28,7 +28,7 @@ type PropsType = {
   onAccept: Function,
   loading: boolean,
   isModalOpen: boolean,
-  queryContext: Object,
+  parameters: Object,
   label: String,
   availableConceptRootNodes: Array,
   selectedConceptRootNode: Object,
@@ -41,7 +41,6 @@ type PropsType = {
   hasUnresolvedCodes: boolean,
   numberOfResolvedItems: Number,
   error: Object,
-  parameters: Object
 };
 
 const UploadConceptListModal = (props: PropsType) => {
@@ -184,7 +183,6 @@ const UploadConceptListModal = (props: PropsType) => {
                 filter: props.resolved.resolvedFilter,
                 selectedRoot: props.selectedConceptRootNode
               },
-              props.queryContext,
               props.parameters
             )}
           >
@@ -244,7 +242,7 @@ const selectAvailableConceptRootNodes = (state) => {
 
 const mapStateToProps = (state: StateType) => ({
   isModalOpen: state.uploadConceptListModal.isModalOpen,
-  queryContext: state.uploadConceptListModal.queryContext,
+  parameters: state.uploadConceptListModal.parameters,
   label: state.uploadConceptListModal.label,
   conceptCodesFromFile: state.uploadConceptListModal.conceptCodesFromFile,
   availableConceptRootNodes: selectAvailableConceptRootNodes(state),
@@ -256,13 +254,12 @@ const mapStateToProps = (state: StateType) => ({
   numberOfResolvedItems: selectNumberOfResolvedItems(state),
   rootConcepts: state.categoryTrees.trees,
   error: state.uploadConceptListModal.error,
-  parameters: state.uploadConceptListModal.parameters
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onCloseModal: () => dispatch(uploadConceptListModalClose()),
-  onAccept: (label, rootConcepts, concepts, queryContext, parameters) =>
-    dispatch(acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts, queryContext, parameters)),
+  onAccept: (label, rootConcepts, concepts, parameters) =>
+    dispatch(acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts, parameters)),
   selectConceptRootNode: (datasetId, treeId, conceptCodes) =>
     dispatch(selectConceptRootNodeAndResolveCodes({ datasetId, treeId, conceptCodes })),
   updateLabel: (label) => dispatch(uploadConceptListModalUpdateLabel(label))
@@ -272,12 +269,11 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  onAccept: (fileName, concepts, queryContext, parameters) =>
+  onAccept: (fileName, concepts, parameters) =>
     dispatchProps.onAccept(
       fileName,
       stateProps.rootConcepts,
       concepts,
-      queryContext,
       parameters
     ),
 });

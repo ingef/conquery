@@ -7,6 +7,5 @@ export type DraggedFileType = {
 
 export type GenericFileType = {
     parameters: Object,
-    callback?: Function,
-    actionType?: string
+    callback?: Function
 }

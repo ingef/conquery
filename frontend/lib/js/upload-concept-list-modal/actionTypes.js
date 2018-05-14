@@ -33,5 +33,5 @@ export type UploadConceptListModalResultType = {
     },
     selectedRoot: TreeNodeIdType
   },
-  queryContext: any
+  parameters: any
 }
