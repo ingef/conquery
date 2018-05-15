@@ -44,7 +44,7 @@ describe('upload concepts dialog', () => {
       const store = mockStore({});
 
       return store.dispatch(
-        selectConceptRootNodeAndResolveCodes(datasetId, conceptId, conceptCodes)
+        selectConceptRootNodeAndResolveCodes({datasetId, conceptId, conceptCodes})
       ).then(() => {
           const [ setConceptRootNode, startApiRequest, completeApiRequest ] = store.getActions();
 
@@ -77,7 +77,7 @@ describe('upload concepts dialog', () => {
       const store = mockStore({});
 
       return store.dispatch(
-        selectConceptRootNodeAndResolveCodes(datasetId, conceptId, conceptCodes)
+        selectConceptRootNodeAndResolveCodes({datasetId, conceptId, conceptCodes})
       ).then(() => {
           expect(store.getActions()).to.deep.equal(expectedActions);
         });
