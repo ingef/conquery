@@ -42,7 +42,7 @@ export const dropFiles = (item: DraggedFileType, type: GenericFileType) => {
   return (dispatch: Dispatch) => {
     dispatch(loadFilesStart());
 
-    type = !type || !type['callback'] ? initialGenericFileType : type;
+    type = !type || !type.callback ? initialGenericFileType : type;
 
     // Ignore all dropped files except the first
     const file = item[0] || item.files[0];
@@ -53,8 +53,8 @@ export const dropFiles = (item: DraggedFileType, type: GenericFileType) => {
     return readFileAsText(file).then(
       r => {
         const values = cleanFileContent(r);
-        type.parameters['values'] = values;
-        type.parameters['fileName'] = file.name;
+        type.parameters.values = values;
+        type.parameters.fileName = file.name;
 
         if (values.length)
           return dispatch([

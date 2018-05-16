@@ -22,3 +22,7 @@ export const cleanFileContent = (fileContent: string) => {
 export const checkFileType = (file: File, type?: string) => {
     return file.type === type || "text/plain";
 };
+
+export const stripFileName = (fileName: string) => {
+    return fileName.replace(/\.[^/.]+$/, "");
+}

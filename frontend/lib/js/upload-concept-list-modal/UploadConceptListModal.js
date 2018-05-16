@@ -53,8 +53,12 @@ const UploadConceptListModal = (props: PropsType) => {
     hasResolvedItems,
     hasUnresolvedCodes,
     numberOfResolvedItems,
-    error
+    error,
+    parameters
   } = props;
+
+  if (!isModalOpen && resolved.resolvedFilter)
+    props.onAccept(props.label, {filter: resolved.resolvedFilter}, parameters);
 
   if (!isModalOpen) return null;
 

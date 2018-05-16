@@ -683,12 +683,10 @@ const removeConceptFromNode = (state, action) => {
 
 const setResolvedFilterValue = (state: StateType, action: Object) => {
   const { resolutionResult, parameters } = action.data;
-  const value = resolutionResult.filter.value.map(v => {
-    return {label: v.label || v.value, value: v.value}
-  });
+
   return setNodeFilterValue(state, {
     payload: {
-      value: value,
+      value: resolutionResult.filter.value,
       tableIdx: parameters.tableIdx,
       filterIdx: parameters.filterIdx
     }

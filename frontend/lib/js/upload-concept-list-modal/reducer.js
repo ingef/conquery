@@ -2,7 +2,8 @@
 
 import {
   type ConceptListResolutionResultType
-} from '../common/types/backend';
+}                                       from '../common/types/backend';
+import { stripFileName }                from '../common/helpers';
 
 import {
   UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
@@ -11,8 +12,10 @@ import {
   RESOLVE_CONCEPTS_SUCCESS,
   RESOLVE_CONCEPTS_ERROR,
   UPLOAD_CONCEPT_LIST_MODAL_OPEN,
-  UPLOAD_CONCEPT_LIST_MODAL_CLOSE
-} from './actionTypes'
+  UPLOAD_CONCEPT_LIST_MODAL_CLOSE,
+  RESOLVE_FILTER_VALUES_SUCCESS,
+  RESOLVE_FILTER_VALUES_ERROR
+}                                       from './actionTypes'
 
 
 export type StateType = {
@@ -42,25 +45,17 @@ const resolveConceptsSuccess = (state: StateType, action: Object) => {
   const hasUnresolvedCodes = data.unknownCodes && data.unknownCodes.length > 0;
   const hasResolvedItems = data.conceptCodes && data.conceptCodes.length > 0;
 
-  if (hasUnresolvedCodes)
-    return {
-      ...state,
-      isModalOpen: hasUnresolvedCodes,
-      loading: false,
-      label: parameters.fileName.replace(/\.[^/.]+$/, ""), // Strip extension from file name
-      conceptCodesFromFile: data.conceptCodes,
-      selectedConceptRootNode: parameters.treeId,
-      resolved: data,
-      hasUnresolvedCodes: hasUnresolvedCodes,
-      hasResolvedItems: hasResolvedItems,
-      parameters: parameters
-    };
-
   return {
     ...state,
+    isModalOpen: hasUnresolvedCodes,
     loading: false,
-    error: null,
-    resolved: action.payload.data
+    label: stripFileName(parameters.fileName),
+    conceptCodesFromFile: data.conceptCodes,
+    selectedConceptRootNode: parameters.treeId,
+    resolved: data,
+    hasUnresolvedCodes: hasUnresolvedCodes,
+    hasResolvedItems: hasResolvedItems,
+    parameters: parameters
   };
 }
 
@@ -71,7 +66,7 @@ const uploadConcepts = (state: StateType = initialState, action: Object) => {
       return {
         ...state,
         isModalOpen: true,
-        label: parameters.fileName.replace(/\.[^/.]+$/, ""), // Strip extension from file name
+        label: stripFileName(parameters.fileName),
         conceptCodesFromFile: parameters.values,
         selectedConceptRootNode: null,
         resolved: null,
@@ -102,7 +97,21 @@ const uploadConcepts = (state: StateType = initialState, action: Object) => {
         error: action.payload
       };
     case RESOLVE_CONCEPTS_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        error: null,
+        resolved: action.payload.data
+      };
+    case RESOLVE_FILTER_VALUES_SUCCESS:
       return resolveConceptsSuccess(state, action);
+    case RESOLVE_FILTER_VALUES_ERROR:
+      return {
+        ...state,
+        loading: false,
+        resolved: null,
+        error: action.payload
+      }
     case UPLOAD_CONCEPT_LIST_MODAL_CLOSE:
       return initialState;
     default:
