@@ -30,29 +30,31 @@ const Tooltip = (props: PropsType) => {
 
   return (
     <div className="tooltip">
-      <div className="tooltip__left">
-        {
-          !label && !description &&
-          <p className="tooltip__placeholder">
-            { T.translate('tooltip.placeholder') }
-          </p>
-        }
-        <h3 className="tooltip__headline">
+      <div className="tooltip__left--scroll">
+        <div className="tooltip__left">
           {
-            label
-          } {
-            description &&
-            <span> - {description}</span>
+            !label && !description &&
+            <p className="tooltip__placeholder">
+              { T.translate('tooltip.placeholder') }
+            </p>
           }
-        </h3>
-        {
-          infos && infos.map((info, i) => (
-            <div className="tooltip-info" key={i}>
-              <h3 className="tooltip-info__key" >{info.key}</h3>
-              <Markdown className="tooltip-info__value" source={info.value} />
-            </div>
-          ))
-        }
+          <h3 className="tooltip__headline">
+            {
+              label
+            } {
+              description &&
+              <span> - {description}</span>
+            }
+          </h3>
+          {
+            infos && infos.map((info, i) => (
+              <div className="tooltip-info" key={i}>
+                <h3 className="tooltip-info__key" >{info.key}</h3>
+                <Markdown className="tooltip-info__value" source={info.value} />
+              </div>
+            ))
+          }
+        </div>
       </div>
       <TooltipEntries
         className="tooltip__right"
