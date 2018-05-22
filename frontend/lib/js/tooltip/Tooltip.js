@@ -30,8 +30,8 @@ const Tooltip = (props: PropsType) => {
 
   return (
     <div className="tooltip">
-      <div className="tooltip__left--scroll">
-        <div className="tooltip__left">
+      <div className="tooltip__left">
+        <div>
           {
             !label && !description &&
             <p className="tooltip__placeholder">
