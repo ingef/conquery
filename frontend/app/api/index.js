@@ -222,4 +222,32 @@ module.exports = function (app, port) {
       isDevelopment: process.env.NODE_ENV !== 'production'
     })
   });
+
+  /*
+    For DND File see ./app/api/autocomplete
+  */
+  app.post(
+    '/api/datasets/:datasetId/concepts/:conceptId/tables/:tableId/filters/:filterId/resolve',
+    function response (req, res) {
+      setTimeout(() => {
+        res.setHeader('Content-Type', 'application/json');
+
+        if (req.params.filterId !== 'production_country') return null;
+
+        const countries = require('./autocomplete/countries');
+        const unknownCodes = req.body.values.filter(val => !countries.includes(val));
+        const values = req.body.values.filter(val => countries.includes(val));
+
+
+        res.send({
+          unknownCodes: unknownCodes,
+          resolvedFilter: {
+            tableId: req.params.tableId,
+            filterId: req.params.filterId,
+            value: values.map(val => ({label: val, value: val}))
+          }
+        });
+      }, 500);
+    }
+  );
 };

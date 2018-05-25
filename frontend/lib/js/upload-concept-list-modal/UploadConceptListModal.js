@@ -40,7 +40,7 @@ type PropsType = {
   hasResolvedItems: boolean,
   hasUnresolvedCodes: boolean,
   numberOfResolvedItems: Number,
-  error: Object,
+  error: Object
 };
 
 const UploadConceptListModal = (props: PropsType) => {
@@ -58,7 +58,7 @@ const UploadConceptListModal = (props: PropsType) => {
     parameters
   } = props;
 
-  if (!isModalOpen && resolved.resolvedFilter)
+  if (!isModalOpen && resolved && resolved.resolvedFilter)
     props.onAccept(props.label, {filter: resolved.resolvedFilter}, parameters);
 
   if (!isModalOpen) return null;
