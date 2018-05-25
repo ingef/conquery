@@ -348,9 +348,9 @@ const setNodeFilterProperties = (state, action, obj) => {
 };
 
 const setNodeFilterValue = (state, action) => {
-  const { value, formattedValue } = action.payload;
+  const { value, formattedValue, options } = action.payload;
 
-  return setNodeFilterProperties(state, action, { value, formattedValue });
+  return setNodeFilterProperties(state, action, { value, formattedValue, options });
 };
 
 const switchNodeFilterMode = (state, action) => {
@@ -681,14 +681,15 @@ const removeConceptFromNode = (state, action) => {
   });
 }
 
-const setResolvedFilterValue = (state: StateType, action: Object) => {
+const setResolvedFilterValues = (state: StateType, action: Object) => {
   const { resolutionResult, parameters } = action.data;
 
   return setNodeFilterValue(state, {
     payload: {
       value: resolutionResult.filter.value,
       tableIdx: parameters.tableIdx,
-      filterIdx: parameters.filterIdx
+      filterIdx: parameters.filterIdx,
+      options: resolutionResult.filter.value
     }
   });
 }
@@ -790,7 +791,7 @@ const query = (
     case UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
     case SET_RESOLVED_FILTER_VALUES:
-      return setResolvedFilterValue(state, action);
+      return setResolvedFilterValues(state, action);
     default:
       return state;
   }

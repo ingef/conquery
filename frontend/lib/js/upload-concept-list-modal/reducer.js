@@ -40,21 +40,17 @@ const initialState: StateType = {
   error: null,
 }
 
-const resolveConceptsSuccess = (state: StateType, action: Object) => {
+const resolveFilterValuesSuccess = (state: StateType, action: Object) => {
   const { data, parameters } = action.payload;
   const hasUnresolvedCodes = data.unknownCodes && data.unknownCodes.length > 0;
-  const hasResolvedItems = data.conceptCodes && data.conceptCodes.length > 0;
 
   return {
     ...state,
     isModalOpen: hasUnresolvedCodes,
+    showDetails: false,
     loading: false,
     label: stripFileName(parameters.fileName),
-    conceptCodesFromFile: data.conceptCodes,
-    selectedConceptRootNode: parameters.treeId,
     resolved: data,
-    hasUnresolvedCodes: hasUnresolvedCodes,
-    hasResolvedItems: hasResolvedItems,
     parameters: parameters
   };
 }
@@ -104,7 +100,7 @@ const uploadConcepts = (state: StateType = initialState, action: Object) => {
         resolved: action.payload.data
       };
     case RESOLVE_FILTER_VALUES_SUCCESS:
-      return resolveConceptsSuccess(state, action);
+      return resolveFilterValuesSuccess(state, action);
     case RESOLVE_FILTER_VALUES_ERROR:
       return {
         ...state,
