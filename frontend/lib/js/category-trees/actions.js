@@ -1,23 +1,22 @@
 // @flow
 
 import { type Dispatch }      from 'redux-thunk';
+
 import { type DatasetIdType } from '../dataset/reducer';
-
 import api                    from '../api';
-
 import {
   defaultSuccess,
   defaultError,
-} from '../common/actions';
-
-import {
-  type TreeNodeIdType
-} from '../common/types/backend';
+}                             from '../common/actions';
+import type {
+  TreeNodeIdType,
+  SearchResult
+}                             from '../common/types/backend';
+import { isEmpty }            from '../common/helpers';
 
 import {
   resetAllTrees
-} from './globalTreeStoreHelper';
-
+}                             from './globalTreeStoreHelper';
 import {
   LOAD_TREES_START,
   LOAD_TREES_SUCCESS,
@@ -25,8 +24,11 @@ import {
   LOAD_TREE_START,
   LOAD_TREE_SUCCESS,
   LOAD_TREE_ERROR,
-  CLEAR_TREES
-} from './actionTypes';
+  CLEAR_TREES,
+  SEARCH_TREES_START,
+  SEARCH_TREES_END,
+  SEARCH_TREES_ERROR
+}                             from './actionTypes';
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
@@ -90,3 +92,26 @@ export const loadTree = (datasetId: DatasetIdType, treeId: TreeNodeIdType) => {
       );
   };
 };
+
+export const searchTreesStart = (query: string) =>
+  ({type: SEARCH_TREES_START, payload: { query }});
+export const searchTreesEnd = (query: string, searchResult: SearchResult) =>
+  ({type: SEARCH_TREES_END, payload: { query, searchResult }});
+export const searchTreesError = (query: string, err: any) =>
+  defaultError(SEARCH_TREES_ERROR, err, { query });
+
+export const searchTrees = (datasetId: DatasetIdType, query: string) => {
+  return (dispatch: Dispatch) => {
+    dispatch(searchTreesStart(query))
+
+    if (isEmpty(query)) return;
+
+    const limit = parseInt(process.env.SEARCH_RESULT_LIMIT);
+
+    return api.searchConcepts(datasetId, query, limit)
+      .then(
+        r => dispatch(searchTreesEnd(query, r)),
+        e => dispatch(searchTreesError(query, e))
+      );
+  }
+}

@@ -33,7 +33,8 @@ module.exports = ['en', 'de'].map(lang => ({
       analyzerMode: 'disabled' // Set to 'server' to analyze
     }),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV)
+      'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+      'process.env.SEARCH_RESULT_LIMIT': 50
     })
   ],
   module: {

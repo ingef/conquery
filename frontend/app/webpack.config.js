@@ -25,7 +25,8 @@ module.exports = ['en', 'de'].map(lang => ({
     new ProgressBarPlugin(),
     new webpack.HotModuleReplacementPlugin(),
     new webpack.DefinePlugin({
-      'process.env.NODE_ENV': JSON.stringify('development')
+      'process.env.NODE_ENV': JSON.stringify('development'),
+      'process.env.SEARCH_RESULT_LIMIT': 50
     }),
   ],
   module: {

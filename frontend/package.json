@@ -20,7 +20,8 @@
     "test": "rimraf coverage && cross-env NODE_ENV=test nyc _mocha test",
     "test-watch": "cross-env NODE_ENV=test mocha test --watch",
     "debug-test": "cross-env NODE_ENV=test node-debug --debug-brk _mocha test",
-    "prepush": "npm run lint"
+    "prepush": "npm run lint",
+    "codacy-coverage": "codacy-coverage < ./coverage/lcov.info"
   },
   "files": [
     "/dist"
@@ -35,10 +36,12 @@
     "isomorphic-fetch": "^2.2.1",
     "less": "^3.0.1",
     "moment": "^2.17.0",
+    "moment-duration-format": "^2.2.2",
     "prop-types": "^15.6.0",
     "query-string": "^5.1.0",
     "react": "^16.2.0",
     "react-addons-test-utils": "^15.3.1",
+    "react-animated-dots": "^1.0.0",
     "react-datepicker": "1.2.1",
     "react-dnd": "^2.5.4",
     "react-dnd-html5-backend": "^2.5.4",
@@ -70,6 +73,7 @@
     "babel-register": "^6.26.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
+    "codacy-coverage": "^3.0.0",
     "cross-env": "^5.1.3",
     "css-loader": "^0.28.9",
     "dirty-chai": "^2.0.1",
@@ -107,6 +111,8 @@
     "postcss-loader": "^2.1.0",
     "progress-bar-webpack-plugin": "^1.11.0",
     "raw-loader": "^0.5.1",
+    "react-delay-input": "^4.0.4",
+    "react-highlight-words": "^0.11.0",
     "react-hot-loader": "^4.0.0-rc.0",
     "react-markdown": "^3.3.0",
     "react-number-format": "^3.3.0",

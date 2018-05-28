@@ -98,3 +98,9 @@ export type ConceptListResolutionResultType = {
     }[]
   }
 };
+
+export type SearchResult = {
+  result: string[],
+  limit: number,
+  size: number,
+};
