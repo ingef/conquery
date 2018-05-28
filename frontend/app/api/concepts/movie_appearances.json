@@ -3,6 +3,7 @@
     "parent": "movie_appearances",
     "label": "Action Movies",
     "matchingEntries": 8234,
+    "dateRange":{"lowerEndpoint":"2009-12-07","lowerBoundType":"CLOSED","upperEndpoint":"2018-03-20","upperBoundType":"CLOSED"},
     "additionalInfos": [
       {
           "key": "Action film",

@@ -12,7 +12,7 @@ import {
 }                                   from './reducer';
 import CategoryTree                 from './CategoryTree';
 import CategoryTreeFolder           from './CategoryTreeFolder';
-import { isSearchResultInChildren } from './selectors';
+import { isInSearchResult }         from './selectors';
 
 type PropsType = {
   trees: TreesType,
@@ -48,7 +48,7 @@ class CategoryTreeList extends React.Component<PropsType> {
               const rootConcept = getConceptById(treeId);
 
               const render = searching
-              ? isSearchResultInChildren(tree.children, search)
+              ? isInSearchResult(treeId, tree.children, search)
               : true;
 
               if (!render) return null;
