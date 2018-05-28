@@ -83,11 +83,15 @@ const ParameterTableFilters = (props: PropsType) => (
                     label={filter.label}
                     options={
                       filter.options ||
-                      (props.suggestions && props.suggestions[filterIdx].options)
+                      (props.suggestions &&
+                        props.suggestions[filterIdx] &&
+                        props.suggestions[filterIdx].options)
                     }
                     isLoading={
                       filter.isLoading ||
-                      (props.suggestions && props.suggestions[filterIdx].isLoading)
+                      (props.suggestions &&
+                        props.suggestions[filterIdx] &&
+                        props.suggestions[filterIdx].isLoading)
                     }
                     startLoadingThreshold={filter.threshold || 1}
                     onLoad={(prefix) => props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)}

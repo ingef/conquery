@@ -24,7 +24,7 @@ queryRunner:
   resultCount: "{count} Ergebnisse gefunden"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
-  downloadResults: "Ergebnisse herunterladen (CSV)"
+  downloadResults: "Ergebnisse herunterladen"
 
 queryEditor:
   couldNotExpandNode: "Knoten nicht gefunden"

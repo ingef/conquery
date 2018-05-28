@@ -10,6 +10,6 @@ export const initializeLocalization = (language, ...texts) => {
   T.setTexts(mergeDeep(...texts));
 
   // Set moment locale
-  moment.locale(language);
   momentDurationFormatSetup(moment);
+  moment.locale(language);
 };
