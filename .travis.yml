@@ -20,7 +20,7 @@ script:
 deploy:
   - provider: script
     skip_cleanup: true
-    script: frontend/scripts/deploy-npm.sh
+    script: chmod +x frontend/scripts/deploy-npm.sh && sh frontend/scripts/deploy-npm.sh
     on:
       tags: true
   - provider: script
