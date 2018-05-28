@@ -19,7 +19,8 @@ script:
 
 deploy:
   - provider: script
-    script: bash frontend/scripts/deploy-npm.sh
+    skip_cleanup: true
+    script: frontend/scripts/deploy-npm.sh
     on:
       tags: true
   - provider: script
