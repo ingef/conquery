@@ -40,19 +40,17 @@ export const selectConceptRootNode = (conceptId: TreeNodeIdType) =>
   ({ type: SELECT_CONCEPT_ROOT_NODE, conceptId });
 
 export const selectConceptRootNodeAndResolveCodes = (parameters: Object) => {
-  const conceptId = parameters.treeId;
-  const datasetId = parameters.datasetId;
-  const conceptCodes = parameters.conceptCodes;
+  const { treeId, datasetId, conceptCodes } = parameters;
 
   return (dispatch: Dispatch<*>) => {
-    if (isEmpty(conceptId))
+    if (isEmpty(treeId))
       return dispatch(selectConceptRootNode(''));
     else
-      dispatch(selectConceptRootNode(conceptId));
+      dispatch(selectConceptRootNode(treeId));
 
     dispatch(resolveConceptsStart());
 
-    return api.postConceptsListToResolve(datasetId, conceptId, conceptCodes)
+    return api.postConceptsListToResolve(datasetId, treeId, conceptCodes)
       .then(
         r => dispatch(resolveConceptsSuccess(r)),
         e => dispatch(resolveConceptsError(e))
