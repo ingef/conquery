@@ -7,7 +7,6 @@
     </parent>
     
     <modelVersion>4.0.0</modelVersion>
-    <groupId>com.bakdata.conquery</groupId>
     <artifactId>selenium-test</artifactId>
     
     <name>Conquery Selenium Tests</name>
@@ -120,7 +119,7 @@
             <plugin>
                 <groupId>com.dkanejs.maven.plugins</groupId>
                 <artifactId>docker-compose-maven-plugin</artifactId>
-                <version>1.0.3</version>
+                <version>1.0.5</version>
                 <executions>
                     <execution>
                         <id>up</id>
