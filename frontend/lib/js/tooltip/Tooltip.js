@@ -31,7 +31,7 @@ const Tooltip = (props: PropsType) => {
 
   const { additionalInfos, toggleDisplayTooltip } = props;
   const { label, description, infos, matchingEntries, dateRange } = additionalInfos;
-  const hlInfos = (text) =>
+  const searchHighlight = (text) =>
     <Highlighter searchWords={props.search.words} autoEscape={true} textToHighlight={text} />;
 
   return (
@@ -46,20 +46,20 @@ const Tooltip = (props: PropsType) => {
           }
           <h3 className="tooltip__headline">
             {
-              hlInfos(label)
+              searchHighlight(label)
             } {
               description &&
-              <span> - {hlInfos(description)}</span>
+              <span> - {searchHighlight(description)}</span>
             }
           </h3>
           {
             infos && infos.map((info, i) => (
               <div className="tooltip-info" key={i}>
-                <h3 className="tooltip-info__key" >{hlInfos(info.key)}</h3>
+                <h3 className="tooltip-info__key" >{searchHighlight(info.key)}</h3>
                 <Markdown className="tooltip-info__value"
                   source={info.value}
                   escapeHtml={true}
-                  renderers={{text: hlInfos}}
+                  renderers={{text: searchHighlight}}
                 />
               </div>
             ))
