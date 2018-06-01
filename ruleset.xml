@@ -7,7 +7,11 @@
 	<description>
 		This ruleset checks my code for bad stuff
 	</description>
-
+	
+	<!-- only include java files since we use other linters for other languages -->
+	<exclude-pattern>.*</exclude-pattern>
+	<include-pattern>.*\.java</include-pattern>
+	
 	<!-- include all Java rules except some specifically selected ones -->
 	<rule ref="category/java/bestpractices.xml"/>
 	<rule ref="category/java/codestyle.xml">
