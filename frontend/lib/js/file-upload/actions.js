@@ -26,10 +26,10 @@ import type
   GenericFileType
 }                                       from "./types";
 
-const initialGenericFileType = {
-  parameters: {},
+const initialGenericFileType = (type?: GenericFileType) => ({
+  parameters: type ? type.parameters : {},
   callback: uploadConceptListModalOpen
-}
+})
 
 export const loadFilesStart = () =>
   ({ type: DROP_FILES_START });
@@ -38,11 +38,11 @@ export const loadFilesSuccess = (res: any) =>
 export const loadFilesError = (err: any) =>
   defaultError(DROP_FILES_ERROR, err);
 
-export const dropFiles = (item: DraggedFileType, type: GenericFileType) => {
+export const dropFiles = (item: DraggedFileType, type?: GenericFileType) => {
   return (dispatch: Dispatch) => {
     dispatch(loadFilesStart());
 
-    type = !type || !type.callback ? initialGenericFileType : type;
+    type = !type || !type.callback ? initialGenericFileType(type) : type;
 
     // Ignore all dropped files except the first
     const file = item[0] || item.files[0];

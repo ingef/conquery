@@ -4,6 +4,8 @@ import './exampleForm.sass'
 
 import React                from 'react';
 import { Field, reduxForm } from 'redux-form';
+import { connect }          from 'react-redux';
+import { dropFiles }        from '../../../../../lib/js/file-upload/actions';
 import { T }                from '../../../../../lib/js/localization';
 
 import {
@@ -34,6 +36,7 @@ import { type } from './formType';
 
 type PropsType = {
   onSubmit: Function,
+  onDropFiles: Function,
 };
 
 const ExampleForm = (props: ExternalFormPropsType | PropsType) => {
@@ -66,14 +69,31 @@ const ExampleForm = (props: ExternalFormPropsType | PropsType) => {
           attributeDropzoneText: T.translate('externalForms.exampleForm.exampleAttributeDropzone'),
           datasetId: props.selectedDatasetId,
           formType: type,
-          newValue: { concepts: [] }
+          newValue: { concepts: [] },
+          onDropFiles: (files, value) =>
+            props.onDropFiles(files, value, props.selectedDatasetId, type, 'example_concepts')
         }}
       />
     </form>
   );
 };
 
-export default reduxForm({
+const mapStateToProps = state => ({});
+
+const mapDispatchToProps = (dispatch: Dispatch) => ({
+  onDropFiles: (files, value, datasetId, formType, field) => dispatch(dropFiles(files, {
+    parameters: {
+      datasetId,
+      form: {
+        formType,
+        field,
+        value
+      }
+    }
+  }))
+});
+
+export default connect(mapStateToProps, mapDispatchToProps)(reduxForm({
   form: type,
   getFormState: selectReduxFormState,
   initialValues: {
@@ -85,4 +105,4 @@ export default reduxForm({
   validate: (values) => ({
     text: validateRequired(values.text),
   })
-})(ExampleForm);
+})(ExampleForm));

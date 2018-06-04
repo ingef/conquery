@@ -2,6 +2,7 @@
 
 import React                      from 'react';
 import { type FieldPropsType }    from 'redux-form';
+import { NativeTypes }            from 'react-dnd-html5-backend';
 
 import {
   resetAllFiltersInTables
@@ -18,6 +19,7 @@ import {
 }                                 from '../../common/constants/dndTypes';
 
 import { FormQueryNodeEditor }    from '../form-query-node-editor';
+import { getConceptById }         from '../../category-trees/globalTreeStoreHelper';
 
 import FormConceptNode            from './FormConceptNode';
 import FormConceptNodeDropzone    from './FormConceptNodeDropzone';
@@ -26,6 +28,7 @@ type PropsType = FieldPropsType & {
   name: string,
   label: string,
   datasetId: string,
+  onDropFiles: Function,
 };
 
 const addValue = (value, newValue) => [ ...value, newValue ];
@@ -36,6 +39,22 @@ const removeValue = (value, valueIdx) => {
     ...value.slice(valueIdx + 1),
   ];
 };
+
+export const addConceptFromFile = (resolved: Object, value: [] = [{ concepts: [] }]) => {
+  const { selectedRoot, conceptList } = resolved;
+  const rootConcept = getConceptById(selectedRoot);
+
+  return addConcept(
+    addValue(value, { concepts: [] }),
+    value.length,
+    {
+      ids: conceptList || [selectedRoot],
+      label: rootConcept.label,
+      tables: rootConcept.tables,
+      tree: selectedRoot
+    }
+  )
+}
 
 const addConcept = (value, valueIdx, item) => ([
   ...value.slice(0, valueIdx),
@@ -197,10 +216,13 @@ export const FormConceptGroup = (props: PropsType) => (
       itemClassName="externalForms__dropzone-list__item"
       dropzoneClassName="externalForms__dropzone"
       dropzoneText={props.attributeDropzoneText}
-      acceptedDropTypes={[CATEGORY_TREE_NODE]}
+      acceptedDropTypes={[CATEGORY_TREE_NODE, NativeTypes.FILE]}
       onDelete={(i) => props.input.onChange(removeValue(props.input.value, i))}
       onDrop={(dropzoneProps, monitor) => {
         const item = monitor.getItem();
+
+        if (item.files)
+          return props.onDropFiles(item.files, props.input.value)
 
         return props.input.onChange(
           addConcept(

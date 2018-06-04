@@ -1,7 +1,9 @@
 // @flow
 
-import React                from 'react';
-import { connect }          from 'react-redux';
+import React                    from 'react';
+import { connect }              from 'react-redux';
+
+import UploadConceptListModal   from '../upload-concept-list-modal/UploadConceptListModal';
 
 type PropsType = {
   availableForms: Object,
@@ -18,6 +20,7 @@ const ExternalFormsContainer = (props: PropsType) => {
   return (
     <div className="external-forms-container">
       { form }
+      <UploadConceptListModal selectedDatasetId={props.datasetId} />
     </div>
   );
 };

@@ -19,7 +19,8 @@ type PropsType = FieldPropsType & {
   onInputChange?: Function,
   isLoading?: boolean,
   className?: string,
-  onDropFiles: Function,
+  onDropFiles?: Function,
+  isOver: boolean
 };
 
 const InputMultiSelect = (props: PropsType) => (
@@ -39,7 +40,9 @@ const InputMultiSelect = (props: PropsType) => (
     </p>
     <Dropzone
       disableClick
-      style={{position: "relative"}}
+      style={{position: "relative", display: "block"}}
+      activeClassName={'dropzone--over'}
+      className={'dropzone'}
       onDrop={props.onDropFiles}
     >
       <Select
