@@ -224,7 +224,7 @@ module.exports = function (app, port) {
   });
 
   /*
-    For DND File see ./app/api/autocomplete
+    For DND File see ./app/api/dnd
   */
   app.post(
     '/api/datasets/:datasetId/concepts/:conceptId/tables/:tableId/filters/:filterId/resolve',
