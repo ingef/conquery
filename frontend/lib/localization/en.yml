@@ -100,9 +100,10 @@ tooltip:
     to: "To"
 
 reactSelect:
-  placeholder: "Choose or drop File ..."
+  placeholder: "Choose ..."
   tagPlaceholder: "Tag ..."
   searchPlaceholder: "Search ..."
+  dndPlaceholder: "Choose or drop File ..."
   backspaceToRemove: "Press Backspace to remove"
   noResults: "No values found"
   createTag: "Create tag: {label}"

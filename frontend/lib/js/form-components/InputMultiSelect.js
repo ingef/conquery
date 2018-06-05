@@ -53,7 +53,7 @@ const InputMultiSelect = (props: PropsType) => (
         disabled={props.disabled}
         searchable
         multi
-        placeholder={T.translate('reactSelect.placeholder')}
+        placeholder={T.translate('reactSelect.dndPlaceholder')}
         backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
         clearAllText={T.translate('reactSelect.clearAll')}
         clearValueText={T.translate('reactSelect.clearValue')}

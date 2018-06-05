@@ -102,9 +102,10 @@ tooltip:
     to: "Bis"
 
 reactSelect:
-  placeholder: "Auswählen oder Datei hochladen ..."
+  placeholder: "Auswählen ..."
   tagPlaceholder: "Tag ..."
   searchPlaceholder: "Suchen ..."
+  dndPlaceholder: "Auswählen oder Datei hochladen ..."
   backspaceToRemove: "Backspace zum Entfernen drücken"
   noResults: "Keine Werte gefunden"
   createTag: "Tag erstellen: {label}"
