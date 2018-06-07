@@ -29,34 +29,34 @@ import {
   toggleExcludeGroup,
   expandPreviousQuery,
   selectNodeForEditing,
-  showConceptListDetails,
-  hideConceptListDetails,
 }                                 from './actions'
-import type { StandardQueryType } from './types';
+import type {
+  StandardQueryType,
+  DateRangeType,
+  DraggedNodeType,
+  DraggedQueryType,
+  DraggedFileType
+}                                 from './types';
 
-import QueryEditorDropzone        from './QueryEditorDropzone';
+import { QueryEditorDropzone }    from './QueryEditorDropzone';
 import QueryGroup                 from './QueryGroup';
-import ConceptListDetailsModal    from './ConceptListDetailsModal';
 
 
 type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
-  dropAndNode: Function,
-  dropConceptListFile: Function,
-  dropOrNode: Function,
-  dropOrConceptListFile: Function,
+  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
+  dropConceptListFile: (DraggedFileType, ?DateRangeType) => void,
+  dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
+  dropOrConceptListFile: (DraggedFileType, number) => void,
   deleteNode: Function,
   deleteGroup: Function,
   toggleExcludeGroup: Function,
   expandPreviousQuery: Function,
-  showConceptListDetails: Function,
-  hideConceptListDetails: Function,
   loadPreviousQuery: Function,
   selectNodeForEditing: Function,
   queryGroupModalSetNode: Function,
   dateRange: Object,
-  selectedConceptListDetails: Object,
 };
 
 const Query = (props: PropsType) => {
@@ -67,7 +67,7 @@ const Query = (props: PropsType) => {
         // Render a large Dropzone
         <QueryEditorDropzone
           isInitial
-          onDropNode={props.dropAndNode}
+          onDropNode={item => props.dropAndNode(item, null)}
           onDropFiles={props.dropConceptListFile}
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
@@ -87,12 +87,13 @@ const Query = (props: PropsType) => {
                 onDeleteGroup={() => props.deleteGroup(andIdx)}
                 onFilterClick={orIdx => props.selectNodeForEditing(andIdx, orIdx)}
                 onExpandClick={props.expandPreviousQuery}
-                onDetailsClick={props.showConceptListDetails}
                 onExcludeClick={() => props.toggleExcludeGroup(andIdx)}
                 onDateClick={() => props.queryGroupModalSetNode(andIdx)}
                 onLoadPreviousQuery={props.loadPreviousQuery}
               />,
-              <p className="query-group-connector">{T.translate('common.and')}</p>
+              <p key={`${andIdx}.and`} className="query-group-connector">
+                {T.translate('common.and')}
+              </p>
             ])).concat(
               <div
                 className="dropzone-wrap"
@@ -108,18 +109,6 @@ const Query = (props: PropsType) => {
             )
         }
       </div>
-      {
-        props.selectedConceptListDetails &&
-        <ConceptListDetailsModal
-          onCloseModal={props.hideConceptListDetails}
-          headline={props.selectedConceptListDetails.label}
-          conceptTreeRoot={props.selectedConceptListDetails.conceptListMetadata.root}
-          items={
-            props.selectedConceptListDetails.conceptListMetadata.concepts
-              .map(({ label }) => label)
-          }
-        />
-      }
     </div>
   );
 };
@@ -128,41 +117,34 @@ function mapStateToProps(state) {
   return {
     query: state.query,
     isEmptyQuery: state.query.length === 0,
-    selectedConceptListDetails: state.query.map(x => x.elements)
-      .reduce((a, b) => a.concat(b), [])
-      .find(x => x.showDetails),
 
     // only used by other actions
     rootConcepts: state.categoryTrees.trees,
   };
 }
 
-function mapDispatchToProps(dispatch: Dispatch<*>) {
-  return {
-    dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
-    dropConceptListFile: (item, dateRange) => dispatch(dropConceptListFile(item, { dateRange })),
-    dropOrConceptListFile: (item, andIdx) => dispatch(dropOrConceptListFile(item, andIdx)),
-    dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
-    deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
-    deleteGroup: (andIdx) => dispatch(deleteGroup(andIdx)),
-    toggleExcludeGroup: (andIdx) => dispatch(toggleExcludeGroup(andIdx)),
-    selectNodeForEditing: (andIdx, orIdx) =>
-      dispatch(selectNodeForEditing(andIdx, orIdx)),
-    queryGroupModalSetNode: (andIdx) =>
-      dispatch(queryGroupModalSetNode(andIdx)),
-    expandPreviousQuery: (datasetId, rootConcepts, groups, queryId) => {
-      dispatch(expandPreviousQuery(rootConcepts, groups));
+const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
+  dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
+  dropConceptListFile: (item, dateRange) => dispatch(dropConceptListFile(item, { dateRange })),
+  dropOrConceptListFile: (item, andIdx) => dispatch(dropOrConceptListFile(item, andIdx)),
+  dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
+  deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
+  deleteGroup: (andIdx) => dispatch(deleteGroup(andIdx)),
+  toggleExcludeGroup: (andIdx) => dispatch(toggleExcludeGroup(andIdx)),
+  selectNodeForEditing: (andIdx, orIdx) =>
+    dispatch(selectNodeForEditing(andIdx, orIdx)),
+  queryGroupModalSetNode: (andIdx) =>
+    dispatch(queryGroupModalSetNode(andIdx)),
+  expandPreviousQuery: (datasetId, rootConcepts, groups, queryId) => {
+    dispatch(expandPreviousQuery(rootConcepts, groups));
 
-      dispatch(loadAllPreviousQueriesInGroups(groups, datasetId));
+    dispatch(loadAllPreviousQueriesInGroups(groups, datasetId));
 
-      dispatch(replace(toQuery(datasetId, queryId)));
-    },
-    showConceptListDetails: (andIdx, orIdx) => dispatch(showConceptListDetails(andIdx, orIdx)),
-    hideConceptListDetails: () => dispatch(hideConceptListDetails()),
-    loadPreviousQuery: (datasetId, queryId) =>
-      dispatch(loadPreviousQuery(datasetId, queryId)),
-  };
-}
+    dispatch(replace(toQuery(datasetId, queryId)));
+  },
+  loadPreviousQuery: (datasetId, queryId) =>
+    dispatch(loadPreviousQuery(datasetId, queryId)),
+});
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,

@@ -3,31 +3,40 @@
     <parent>
         <groupId>com.bakdata.conquery</groupId>
         <artifactId>parent</artifactId>
-        <version>1.7.3</version>
+        <version>1.8.3</version>
     </parent>
     
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.bakdata.conquery</groupId>
     <artifactId>selenium-test</artifactId>
     
-    <name>Conquery Selenium Test</name>
+    <name>Conquery Selenium Tests</name>
     
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
+        <skipDockerTests>true</skipDockerTests>
+        <testLocal>false</testLocal>
     </properties>
     
     <dependencies>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>3.6.0</version>
+            <version>3.9.1</version>
         </dependency>
         <dependency>
-            <groupId>org.testng</groupId>
-            <artifactId>testng</artifactId>
-            <version>6.11</version>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.6</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
@@ -68,9 +77,13 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>2.20</version>
                 <configuration>  
-                    <skip>true</skip> 
-                    <skipTests>true</skipTests>
-                    <trimStackTrace>false</trimStackTrace>  
+                    <skip>${skipDockerTests}</skip> 
+                    <skipTests>${skipDockerTests}</skipTests>
+                    <trimStackTrace>false</trimStackTrace>
+                    <systemPropertyVariables>
+                        <skipDockerTests>${skipDockerTests}</skipDockerTests>
+                        <testLocal>${testLocal}</testLocal>
+                    </systemPropertyVariables>
                 </configuration>  
                 <executions>  
                     <execution>  
@@ -107,17 +120,18 @@
             <plugin>
                 <groupId>com.dkanejs.maven.plugins</groupId>
                 <artifactId>docker-compose-maven-plugin</artifactId>
-                <version>1.0.1</version>
+                <version>1.0.3</version>
                 <executions>
                     <execution>
                         <id>up</id>
-                        <phase>process-test-resources</phase>
+                        <phase>generate-test-resources</phase>
                         <goals>
                             <goal>up</goal>
                         </goals>
                         <configuration>
                             <composeFile>${project.basedir}/docker-compose.yml</composeFile>
                             <detachedMode>true</detachedMode>
+                            <skip>${skipDockerTests}</skip>
                         </configuration>
                     </execution>
                     <execution>
@@ -129,6 +143,7 @@
                         <configuration>
                             <composeFile>${project.basedir}/docker-compose.yml</composeFile>
                             <removeVolumes>true</removeVolumes>
+                            <skip>${skipDockerTests}</skip>
                         </configuration>
                     </execution>
                 </executions>

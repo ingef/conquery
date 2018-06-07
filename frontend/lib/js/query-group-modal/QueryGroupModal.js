@@ -69,12 +69,12 @@ const QueryGroupModal = (props) => {
             ]))
           }
         </h3>
-        <p className="query-node-editor__explanation">
+        <p className="query-group-modal__explanation">
           { T.translate('queryGroupModal.explanation') }
           {
             hasActiveDate &&
             <span
-              className="query-node-editor__reset-all"
+              className="query-group-modal__reset-all"
               onClick={props.onResetAllDates}
             >
               <i className="fa fa-undo" /> {T.translate('queryNodeEditor.resetAll')}

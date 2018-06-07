@@ -12,6 +12,10 @@ import {
 } from '../common/helpers';
 
 import {
+  type DateRangeType
+} from '../common/types/backend'
+
+import {
   resetAllFiltersInTables
 } from '../model/table';
 
@@ -29,7 +33,8 @@ import {
 } from '../previous-queries/list/actionTypes';
 
 import {
-  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT
+  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
+  type UploadConceptListModalResultType
 } from '../upload-concept-list-modal/actionTypes'
 
 import {
@@ -49,10 +54,11 @@ import {
   LOAD_QUERY,
   CLEAR_QUERY,
   EXPAND_PREVIOUS_QUERY,
-  SHOW_CONCEPT_LIST_DETAILS,
-  HIDE_CONCEPT_LIST_DETAILS,
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
+  UPDATE_NODE_LABEL,
+  ADD_CONCEPT_TO_NODE,
+  REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
   RESET_ALL_FILTERS,
@@ -65,30 +71,47 @@ import {
 
 import type
 {
-  ElementType, QueryGroupType,
-  StandardQueryType
+  QueryNodeType,
+  QueryGroupType,
+  StandardQueryType,
+  DraggedNodeType,
+  DraggedQueryType
 } from './types';
 
 
 const initialState: StandardQueryType = [];
 
 
-const filterItem = (item: ElementType) => {
-  return {
-    id: item.id,
-    label: item.label,
-    description: item.description,
-    tables: item.tables,
-    additionalInfos: item.additionalInfos,
-    matchingEntries: item.matchingEntries,
-    hasActiveFilters: item.hasActiveFilters,
-    excludeTimestamps: item.excludeTimestamps,
-    isPreviousQuery: item.isPreviousQuery,
+const filterItem = (item: DraggedNodeType | DraggedQueryType): QueryNodeType => {
+  // This sort of mapping might be a problem when adding new optional properties to
+  // either Nodes or Queries: Flow won't complain when we omit those optional
+  // properties here. But we can't use a spread operator either...
 
-    ids: item.ids,
-    isConceptList: item.isConceptList,
-    conceptListMetadata: item.conceptListMetadata,
-  };
+  if (item.isPreviousQuery)
+    return {
+      label: item.label,
+      excludeTimestamps: item.excludeTimestamps,
+      loading: item.loading,
+      error: item.error,
+
+      id: item.id,
+      // eslint-disable-next-line no-use-before-define
+      query: item.query,
+      isPreviousQuery: item.isPreviousQuery,
+    };
+  else
+    return {
+      ids: item.ids,
+      tables: item.tables,
+      tree: item.tree,
+
+      label: item.label,
+      excludeTimestamps: item.excludeTimestamps,
+      loading: item.loading,
+      error: item.error,
+
+      isPreviousQuery: item.isPreviousQuery,
+    }
 };
 
 const setGroupProperties = (node, andIdx, properties) => {
@@ -127,7 +150,15 @@ const setAllElementsProperties = (node, properties) => {
   }));
 };
 
-const dropAndNode = (state, action) => {
+const dropAndNode = (
+  state,
+  action: {
+    payload: {
+      item: DraggedNodeType | DraggedQueryType,
+      dateRange?: DateRangeType
+    }
+  }
+) => {
   const group = state[state.length - 1];
   const dateRangeOfLastGroup = (group ? group.dateRange : null);
   const {item, dateRange = dateRangeOfLastGroup} = action.payload;
@@ -145,7 +176,15 @@ const dropAndNode = (state, action) => {
     : nextState;
 };
 
-const dropOrNode = (state, action) => {
+const dropOrNode = (
+  state,
+  action: {
+    payload: {
+      item: DraggedNodeType | DraggedQueryType,
+      andIdx: number
+    }
+  }
+) => {
   const { item, andIdx } = action.payload;
 
   const nextState = [
@@ -160,7 +199,6 @@ const dropOrNode = (state, action) => {
     ...state.slice(andIdx + 1)
   ];
 
-
   return item.moved
     ? item.andIdx === andIdx
       ? deleteNode(nextState, { payload: { andIdx: item.andIdx, orIdx: item.orIdx + 1 } })
@@ -169,7 +207,7 @@ const dropOrNode = (state, action) => {
 };
 
 // Delete a single Node (concept inside a group)
-const deleteNode = (state, action) => {
+const deleteNode = (state, action: { payload: { andIdx: number, orIdx: number } }) => {
   const { andIdx, orIdx } = action.payload;
 
   return [
@@ -226,14 +264,7 @@ const updateNodeTable = (state, andIdx, orIdx, tableIdx, table) => {
 };
 
 const updateNodeTables = (state, andIdx, orIdx, tables) => {
-  const node = state[andIdx].elements[orIdx];
-
-  const properties = {
-    tables,
-    hasActiveFilters: nodeHasActiveFilters(node, tables)
-  };
-
-  return setElementProperties(state, andIdx, orIdx, properties);
+  return setElementProperties(state, andIdx, orIdx, { tables });
 };
 
 const toggleNodeTable = (state, action) => {
@@ -318,9 +349,9 @@ const setNodeFilterProperties = (state, action, obj) => {
 };
 
 const setNodeFilterValue = (state, action) => {
-  const { value } = action.payload;
+  const { value, formattedValue } = action.payload;
 
-  return setNodeFilterProperties(state, action, { value });
+  return setNodeFilterProperties(state, action, { value, formattedValue });
 };
 
 const switchNodeFilterMode = (state, action) => {
@@ -328,7 +359,8 @@ const switchNodeFilterMode = (state, action) => {
 
   return setNodeFilterProperties(state, action, {
     mode,
-    value: null
+    value: null,
+    formattedValue: null,
   });
 };
 
@@ -339,10 +371,7 @@ const resetNodeAllFilters = (state, action) => {
   const { andIdx, orIdx } = nodeIdx;
   const node = state[andIdx].elements[orIdx];
 
-  const newState = setElementProperties(state, andIdx, orIdx, {
-    excludeTimestamps: false,
-    hasActiveFilters: false,
-  });
+  const newState = setElementProperties(state, andIdx, orIdx, { excludeTimestamps: false });
 
   if (!node.tables) return newState;
 
@@ -424,40 +453,22 @@ const mergeTablesFromSavedConcept = (savedConcept, concept) => {
 // a) merge elements with concept data from category trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (state, action) => {
+const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[] } }) => {
   const { rootConcepts, groups } = action.payload;
 
-  return groups.map((group: QueryGroupType) => {
+  return groups.map((group) => {
     return {
       ...group,
-      elements: group.elements.map((element: ElementType) => {
+      elements: group.elements.map((element) => {
         if (element.type === 'QUERY') {
           return {
             ...element,
             isPreviousQuery: true
           };
-        } else if (element.type === 'CONCEPT_LIST') {
-          const lookupResult = getConceptsByIdsWithTables(element.ids, rootConcepts);
-
-          if (!lookupResult)
-            return {
-              ...element,
-              error: T.translate('queryEditor.couldNotInsertConceptList')
-            };
-
-          const tables = mergeTablesFromSavedConcept(lookupResult, element);
-
-          return {
-            isConceptList: true,
-            label: element.label,
-            conceptListMetadata:
-              buildConceptListMetadata(lookupResult.root, lookupResult.concepts),
-            ids: element.ids,
-            hasActiveFilters: nodeHasActiveFilters(element, tables),
-            tables
-          };
         } else {
-          const lookupResult = getConceptsByIdsWithTables([element.id], rootConcepts);
+          const convertConceptToConceptList = element.type === 'CONCEPT';
+          const ids = element.ids || [element.id];
+          const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
 
           if (!lookupResult)
             return {
@@ -467,27 +478,21 @@ const expandPreviousQuery = (state, action) => {
 
           const tables = mergeTablesFromSavedConcept(lookupResult, element);
 
+          const label = convertConceptToConceptList
+            ? lookupResult.concepts[0].label
+            : element.label;
+
           return {
-            ...lookupResult.concepts[0],
-            ...element,
-            hasActiveFilters: nodeHasActiveFilters(element, tables),
-            tables
-          }
+            label,
+            ids,
+            tables,
+            tree: lookupResult.root
+          };
         }
       })
     }
   });
 };
-
-const showConceptListDetails = (state, action) => {
-  const { andIdx, orIdx } = action.payload;
-
-  return setElementProperties(state, andIdx, orIdx, { showDetails: true });
-}
-
-const hideConceptListDetails = (state, action) => {
-  return setAllElementsProperties(state, { showDetails: false });
-}
 
 const findPreviousQueries = (state, action) => {
   // Find all nodes that are previous queries and have the correct id
@@ -560,12 +565,8 @@ const toggleTimestamps = (state, action) => {
   if (!nodePosition) return state;
 
   const {andIdx, orIdx} = nodePosition;
-  const node = state[andIdx].elements[orIdx];
 
-  return setElementProperties(state, andIdx, orIdx, {
-    hasActiveFilters: nodeHasActiveFilters(node),
-    excludeTimestamps: isExcluded
-  });
+  return setElementProperties(state, andIdx, orIdx, { excludeTimestamps: isExcluded });
 };
 
 const loadFilterSuggestionsStart = (state, action) =>
@@ -583,27 +584,20 @@ const loadFilterSuggestionsSuccess = (state, action) =>
 const loadFilterSuggestionsError = (state, action) =>
   setNodeFilterProperties(state, action, { isLoading: false, options: [] });
 
-const buildConceptListMetadata = (root, concepts) => ({
-  root: root.label,
-  concepts: concepts.map(c => ({ label: c.label, description: c.description }))
-});
-
-const insertUploadedConceptList = (state, action) => {
-  const { label, rootConcepts, resolutionResult, queryContext } = action.data;
-
-  let queryElement = { error: T.translate('queryEditor.couldNotInsertConceptList') };
+const createQueryNodeFromConceptListUploadResult = (
+    result: UploadConceptListModalResultType
+  ) : DraggedNodeType => {
+  const { label, rootConcepts, resolutionResult } = result;
 
   if (resolutionResult.conceptList) {
     const lookupResult = getConceptsByIdsWithTables(resolutionResult.conceptList, rootConcepts);
 
     if (lookupResult)
-      queryElement = {
+      return {
         label,
-        conceptListMetadata:
-          buildConceptListMetadata(lookupResult.root, lookupResult.concepts),
         ids: resolutionResult.conceptList,
         tables: lookupResult.tables,
-        isConceptList: true
+        tree: lookupResult.root
       };
   } else if (resolutionResult.filter) {
     const [conceptRoot] =
@@ -621,14 +615,30 @@ const insertUploadedConceptList = (state, action) => {
       filters: mergeFiltersFromSavedConcept(resolvedTable, table)
     }));
 
-    queryElement = {
-      ...filterItem(conceptRoot),
+    return {
+      label,
+      ids: [conceptRoot.id],
       tables,
-      hasActiveFilters: true
+      tree: conceptRoot.id
     };
   }
 
-  if (queryContext.andIdx !== undefined && queryContext.andIdx !== null)
+  return {
+    label: label,
+    ids: [],
+    tables: [],
+    tree: '',
+    concepts: [],
+
+    error: T.translate('queryEditor.couldNotInsertConceptList')
+  };
+}
+
+const insertUploadedConceptList = (state, action: { data: UploadConceptListModalResultType }) => {
+  const { queryContext } = action.data;
+  const queryElement = createQueryNodeFromConceptListUploadResult(action.data);
+
+  if (queryContext.andIdx != null)
     return dropOrNode(state, { payload: { item: queryElement, andIdx: queryContext.andIdx } });
 
   return dropAndNode(state, { payload: { item: queryElement, dateRange: queryContext.dateRange } });
@@ -638,8 +648,38 @@ const selectNodeForEditing = (state, {payload: { andIdx, orIdx }}) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 }
 
-const deselectNode = (state) => {
+const deselectNode = (state, action) => {
   return setAllElementsProperties(state, { isEditing: false });
+}
+
+const updateNodeLabel = (state, action) => {
+  const node = selectEditedNode(state);
+  if (!node) return state;
+
+  const { andIdx, orIdx } = node;
+  return setElementProperties(state, andIdx, orIdx, { label: action.label });
+}
+
+const addConceptToNode = (state, action) => {
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const { andIdx, orIdx } = nodePosition;
+  const node = state[andIdx].elements[orIdx];
+  return setElementProperties(state, andIdx, orIdx, {
+    ids: [...action.concept.ids, ...node.ids],
+  });
+}
+
+const removeConceptFromNode = (state, action) => {
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const { andIdx, orIdx } = nodePosition;
+  const node = state[andIdx].elements[orIdx];
+  return setElementProperties(state, andIdx, orIdx, {
+    ids: node.ids.filter(id => id !== action.conceptId)
+  });
 }
 
 // Query is an array of "groups" (a AND b and c)
@@ -698,6 +738,12 @@ const query = (
       return selectNodeForEditing(state, action);
     case DESELECT_NODE:
       return deselectNode(state, action);
+    case UPDATE_NODE_LABEL:
+      return updateNodeLabel(state, action);
+    case ADD_CONCEPT_TO_NODE:
+      return addConceptToNode(state, action);
+    case REMOVE_CONCEPT_FROM_NODE:
+      return removeConceptFromNode(state, action);
     case TOGGLE_TABLE:
       return toggleNodeTable(state, action);
     case SET_FILTER_VALUE:
@@ -715,11 +761,7 @@ const query = (
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
       return resetGroupDates(state, action);
     case EXPAND_PREVIOUS_QUERY:
-      return expandPreviousQuery(state, action)
-    case SHOW_CONCEPT_LIST_DETAILS:
-      return showConceptListDetails(state, action);
-    case HIDE_CONCEPT_LIST_DETAILS:
-      return hideConceptListDetails(state);
+      return expandPreviousQuery(state, action);
     case LOAD_PREVIOUS_QUERY_START:
       return loadPreviousQueryStart(state, action);
     case LOAD_PREVIOUS_QUERY_SUCCESS:

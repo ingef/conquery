@@ -49,8 +49,9 @@ export const transformElementsToApi = (conceptGroup) => conceptGroup.map(concept
     : [];
 
   return {
-    id: concept.id,
-    type: 'CONCEPT',
+    ids: concept.ids,
+    type: 'CONCEPT_LIST',
+    label: concept.label,
     tables,
   };
 });
@@ -69,7 +70,7 @@ const transformStandardQueryToApi = (query, version) =>  {
             type: 'QUERY',
             excludeTimestamps: element.excludeTimestamps,
           };
-        } else if (element.isConceptList) {
+        } else {
           const tables = element.tables
             ? transformTablesToApi(element.tables)
             : [];
@@ -81,17 +82,6 @@ const transformStandardQueryToApi = (query, version) =>  {
             tables,
             excludeTimestamps: element.excludeTimestamps
           }
-        } else {
-          const tables = element.tables
-            ? transformTablesToApi(element.tables)
-            : [];
-
-          return {
-            id: element.id,
-            type: 'CONCEPT',
-            tables,
-            excludeTimestamps: element.excludeTimestamps,
-          };
         }
       })
     }))

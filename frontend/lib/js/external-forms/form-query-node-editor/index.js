@@ -1,3 +1,3 @@
 // @flow
-export { createConnectedFormQueryNodeEditor } from './FormQueryNodeEditor';
+export { FormQueryNodeEditor }                from './FormQueryNodeEditor';
 export { createFormQueryNodeEditorReducer }   from './reducer';

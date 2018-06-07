@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.bakdata.conquery</groupId>
         <artifactId>parent</artifactId>
-        <version>1.7.3</version>
+        <version>1.8.3</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
@@ -45,8 +45,8 @@
                         <phase>generate-resources</phase>
 
                         <configuration>
-                            <!-- If you need reproducible dependencies, which is usually 
-                            the case with the continuous integration systems, 
+                            <!-- If you need reproducible dependencies, which is usually
+                            the case with the continuous integration systems,
                             you should pass frozen-lockfile flag. -->
                             <arguments>--frozen-lockfile</arguments>
                         </configuration>

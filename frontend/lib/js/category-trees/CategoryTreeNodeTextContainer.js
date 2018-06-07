@@ -2,31 +2,39 @@
 
 import React                       from 'react'
 import { DragSource }              from 'react-dnd';
+import Highlighter                 from 'react-highlight-words';
 import classnames                  from 'classnames';
 
 import { AdditionalInfoHoverable } from '../tooltip';
 import { isEmpty }                 from '../common/helpers';
 import { dndTypes }                from '../common/constants';
 
+import {
+  type AdditionalInfoHoverableNodeType
+}                                  from '../tooltip/AdditionalInfoHoverable';
+import { type DraggedNodeType }    from '../standard-query-editor/types';
+import { type SearchType }         from './reducer';
+
 type PropsType = {
-  node: {
-    id: number | string,
+  node: AdditionalInfoHoverableNodeType & {
     label: string,
     hasChildren: boolean,
     description?: string,
-    tables?: [],
     matchingEntries?: number,
-    additionalInfos?: [],
   },
   open: boolean,
   depth: number,
   active?: boolean,
   onTextClick?: Function,
+  createQueryElement: () => DraggedNodeType,
   connectDragSource: Function,
+  search?: SearchType,
 };
 
 const CategoryTreeNodeTextContainer = (props: PropsType) => {
   const zeroEntries = !isEmpty(props.node.matchingEntries) && props.node.matchingEntries === 0;
+  const searching = props.search && props.search.searching;
+  const description = ` - ${props.node.description}`;
 
   const render = (
     <div
@@ -47,17 +55,30 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
           <i className={classnames(
             'category-tree-node__icon',
             'fa', {
-              'fa-folder-open': !!props.open,
-              'fa-folder': !props.open
+              'fa-folder-open': !!props.open || searching,
+              'fa-folder': !props.open && !searching
             }
           )} />
         }
         <span>
-          { props.node.label }
+          {
+            searching
+            ? (<Highlighter
+                searchWords={props.search && props.search.words}
+                autoEscape={true}
+                textToHighlight={props.node.label}
+              />)
+            : props.node.label
+          }
         </span>
         {
-          props.node.description &&
-          <span> - { props.node.description }</span>
+          searching && props.node.description
+          ? (<Highlighter
+              searchWords={props.search && props.search.words}
+              autoEscape={true}
+              textToHighlight={description}
+            />)
+          : props.node.description && description
         }
       </p>
     </div>
@@ -69,33 +90,28 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
     : props.connectDragSource(render);
 };
 
-
-const HoverableCategoryTreeNodeTextContainer = AdditionalInfoHoverable(
-  CategoryTreeNodeTextContainer
-);
-
 /**
  * Implements the drag source contract.
  */
 const nodeSource = {
-  beginDrag(props) {
+  beginDrag(props: PropsType): DraggedNodeType {
     // Return the data describing the dragged item
-    return props.node;
+    return props.createQueryElement();
   }
 };
 
 /**
  * Specifies the props to inject into your component.
  */
-function collect(connect, monitor) {
-  return {
-    connectDragSource: connect.dragSource(),
-    isDragging: monitor.isDragging()
-  };
-}
+const collect = (connect, monitor) => ({
+  connectDragSource: connect.dragSource(),
+  isDragging: monitor.isDragging()
+});
 
-export default DragSource(
+const DraggableCategoryTreeNodeTextContainer = DragSource(
   dndTypes.CATEGORY_TREE_NODE,
   nodeSource,
   collect
-)(HoverableCategoryTreeNodeTextContainer);
+)(CategoryTreeNodeTextContainer);
+
+export default AdditionalInfoHoverable(DraggableCategoryTreeNodeTextContainer);

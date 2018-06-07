@@ -26,6 +26,10 @@ import {
 }                           from '../delete-modal/actions'
 
 import {
+  type DraggedQueryType
+}                           from '../../standard-query-editor/types';
+
+import {
   sharePreviousQuery,
   renamePreviousQuery,
   retagPreviousQuery,
@@ -36,7 +40,7 @@ import {
 import PreviousQueryTags    from './PreviousQueryTags';
 
 const nodeSource = {
-  beginDrag(props) {
+  beginDrag(props): DraggedQueryType {
     // Return the data describing the dragged item
     return {
       id: props.query.id,

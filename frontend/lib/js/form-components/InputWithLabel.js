@@ -11,6 +11,7 @@ import ClearableInput          from './ClearableInput';
 type PropsType = FieldPropsType & {
   label: string,
   inputType: string,
+  valueType?: string,
   className?: string,
   placeholder?: string,
   tinyLabel?: boolean,
@@ -38,8 +39,10 @@ const InputWithLabel = (props: PropsType) => {
       </span>
       <ClearableInput
         inputType={props.inputType}
+        valueType={props.valueType}
         placeholder={props.placeholder}
         value={props.input.value || ""}
+        formattedValue={props.input.formattedValue || ""}
         onChange={props.input.onChange}
         inputProps={props.inputProps}
       />

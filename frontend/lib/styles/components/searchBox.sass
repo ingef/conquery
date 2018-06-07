@@ -1,3 +1,31 @@
 .search-box
   margin-bottom: 5px
   padding: 0 10px 0 20px
+
+  &__clear-zone
+    position: absolute
+    top: 52px
+    right: 22px
+    cursor: pointer
+    color: $col-gray
+
+  &__input
+    &::-webkit-input-placeholder    /* WebKit, Blink, Edge */
+      color: $col-gray-medium-light
+
+    &::-moz-placeholder             /* Mozilla Firefox 19+ */
+      color: $col-gray-medium-light
+      opacity: 1
+
+    &:-moz-placeholder              /* Mozilla Firefox 4 to 18 */
+      color: $col-gray-medium-light
+      opacity: 1
+
+    &::-ms-input-placeholder        /* Microsoft Edge */
+      color: $col-gray-medium-light
+
+    &:-ms-input-placeholder         /* Internet Explorer 10-11 */
+      color: $col-gray-medium-light
+
+    &::placeholder                  /* Most modern browsers support this now. */
+      color: $col-gray-medium-light

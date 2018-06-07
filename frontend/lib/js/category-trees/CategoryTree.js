@@ -4,18 +4,23 @@ import React                from 'react';
 import T                    from 'i18n-react';
 
 import { ErrorMessage }     from '../error-message';
+import type {
+  NodeType,
+  TreeNodeIdType
+}                           from '../common/types/backend';
 
 import CategoryTreeNode     from './CategoryTreeNode';
-
-import type { TreeNodeType }     from './reducer';
+import { type SearchType }  from './reducer';
 
 type PropsType = {
-  id: string | number,
-  tree: ?TreeNodeType,
+  id: TreeNodeIdType,
+  tree: NodeType,
+  treeId: TreeNodeIdType,
   label: string,
   depth: number,
   loading: boolean,
   error: ?string,
+  search?: SearchType,
 };
 
 const CategoryTree = (props: PropsType) => {
@@ -42,8 +47,9 @@ const CategoryTree = (props: PropsType) => {
       <div className="category-tree">
         <CategoryTreeNode
           id={props.id}
-          data={props.tree}
+          data={{...props.tree, tree: props.treeId }}
           depth={props.depth}
+          search={props.search}
         />
       </div>
     );

@@ -6,10 +6,18 @@ import api                             from '../api';
 
 import { uploadConceptListModalOpen }  from '../upload-concept-list-modal/actions';
 
+import { type DateRangeType }          from '../common/types/backend';
+
 import {
   defaultSuccess,
   defaultError
-} from '../common/actions';
+}                                      from '../common/actions';
+
+import type {
+  DraggedNodeType,
+  DraggedQueryType,
+  DraggedFileType
+}                                      from './types';
 
 import {
   DROP_AND_NODE,
@@ -23,10 +31,11 @@ import {
   LOAD_QUERY,
   CLEAR_QUERY,
   EXPAND_PREVIOUS_QUERY,
-  SHOW_CONCEPT_LIST_DETAILS,
-  HIDE_CONCEPT_LIST_DETAILS,
   SELECT_NODE_FOR_EDITING,
   DESELECT_NODE,
+  UPDATE_NODE_LABEL,
+  ADD_CONCEPT_TO_NODE,
+  REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
   RESET_ALL_FILTERS,
@@ -38,7 +47,10 @@ import {
 } from './actionTypes';
 
 
-export const dropAndNode = (item, dateRange) => ({
+export const dropAndNode = (
+  item: DraggedNodeType | DraggedQueryType,
+  dateRange: ?DateRangeType
+) => ({
   type: DROP_AND_NODE,
   payload: { item, dateRange }
 });
@@ -69,8 +81,8 @@ const parseConceptListFile = (fileContents) => {
     .filter(row => row.length > 0);
 };
 
-export const dropConceptListFile = (item, queryContext = {}) => {
-  return (dispatch) => {
+export const dropConceptListFile = (item: DraggedFileType, queryContext: Object = {}) => {
+  return (dispatch: Dispatch) => {
     dispatch(loadFilesStart());
 
     // Ignore all dropped files except the first
@@ -100,24 +112,25 @@ export const dropConceptListFile = (item, queryContext = {}) => {
   }
 };
 
-export const dropOrConceptListFile = (item, andIdx) => dropConceptListFile(item, { andIdx });
+export const dropOrConceptListFile = (item: DraggedFileType, andIdx: number) =>
+  dropConceptListFile(item, { andIdx });
 
-export const dropOrNode = (item, andIdx) => ({
+export const dropOrNode = (item: DraggedNodeType | DraggedQueryType, andIdx: number) => ({
   type: DROP_OR_NODE,
   payload: { item, andIdx }
 });
 
-export const deleteNode = (andIdx, orIdx) => ({
+export const deleteNode = (andIdx: number, orIdx: number) => ({
   type: DELETE_NODE,
   payload: { andIdx, orIdx }
 });
 
-export const deleteGroup = (andIdx, orIdx) => ({
+export const deleteGroup = (andIdx: number, orIdx: number) => ({
   type: DELETE_GROUP,
   payload: { andIdx, orIdx }
 });
 
-export const toggleExcludeGroup = (andIdx) => ({
+export const toggleExcludeGroup = (andIdx: number) => ({
   type: TOGGLE_EXCLUDE_GROUP,
   payload: { andIdx }
 });
@@ -134,29 +147,28 @@ export const expandPreviousQuery = (rootConcepts, groups) => ({
   payload: { rootConcepts, groups }
 });
 
-export const showConceptListDetails = (andIdx, orIdx) =>
-  ({ type: SHOW_CONCEPT_LIST_DETAILS, payload: { andIdx, orIdx } });
-
-export const hideConceptListDetails = () => ({ type: HIDE_CONCEPT_LIST_DETAILS });
-
-export const selectNodeForEditing = (andIdx, orIdx) => ({
+export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
   type: SELECT_NODE_FOR_EDITING,
   payload: { andIdx, orIdx }
 });
 
 export const deselectNode = () => ({ type: DESELECT_NODE });
 
+export const updateNodeLabel = (label) => ({ type: UPDATE_NODE_LABEL, label });
+export const addConceptToNode = (concept) => ({ type: ADD_CONCEPT_TO_NODE, concept });
+export const removeConceptFromNode = (conceptId) => ({ type: REMOVE_CONCEPT_FROM_NODE, conceptId });
+
 export const toggleTable = (tableIdx, isExcluded) => ({
   type: TOGGLE_TABLE,
   payload: { tableIdx, isExcluded }
 });
 
-export const setFilterValue = (tableIdx, filterIdx, value) => ({
+export const setFilterValue = (tableIdx, filterIdx, value, formattedValue) => ({
   type: SET_FILTER_VALUE,
-  payload: { tableIdx, filterIdx, value }
+  payload: { tableIdx, filterIdx, value, formattedValue }
 });
 
-export const resetAllFilters = (andIdx, orIdx) => ({
+export const resetAllFilters = (andIdx: number, orIdx: number) => ({
   type: RESET_ALL_FILTERS,
   payload: { andIdx, orIdx }
 });

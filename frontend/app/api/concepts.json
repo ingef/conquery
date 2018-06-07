@@ -4,6 +4,7 @@
     "movie_appearances": {
       "label": "Movie Appearances",
       "active": true,
+      "codeListResolvable": true,
       "children": [
         "action_movies",
         "fantasy_movies",
@@ -58,8 +59,8 @@
             {
               "id": "budget",
               "label": "Budget",
-              "type": "INTEGER_RANGE",
-              "unit": "1K USD",
+              "type": "MONEY_RANGE",
+              "unit": "EUR",
               "description": "The movie's total budget",
               "min": 1
             }

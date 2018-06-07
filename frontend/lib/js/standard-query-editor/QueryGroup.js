@@ -3,7 +3,9 @@
 import React                   from 'react';
 import T                       from 'i18n-react';
 
-import QueryEditorDropzone     from './QueryEditorDropzone';
+import { type DraggedNodeType } from '../model/node';
+
+import { QueryEditorDropzone } from './QueryEditorDropzone';
 import QueryNode               from './QueryNode';
 import QueryGroupActions       from './QueryGroupActions';
 import type { QueryGroupType } from './types';
@@ -11,7 +13,7 @@ import type { QueryGroupType } from './types';
 type PropsType = {
   group: QueryGroupType,
   andIdx: number,
-  onDropNode: Function,
+  onDropNode: (DraggedNodeType) => void,
   onDropFiles: Function,
   onDeleteNode: Function,
   onFilterClick: Function,
@@ -20,7 +22,6 @@ type PropsType = {
   onDateClick: Function,
   onDeleteGroup: Function,
   onLoadPreviousQuery: Function,
-  onDetailsClick: Function,
 };
 
 const QueryGroup = (props: PropsType) => {
@@ -62,7 +63,6 @@ const QueryGroup = (props: PropsType) => {
                 onDeleteNode={() => props.onDeleteNode(orIdx)}
                 onFilterClick={() => props.onFilterClick(orIdx)}
                 onExpandClick={props.onExpandClick}
-                onDetailsClick={() => props.onDetailsClick(props.andIdx, orIdx)}
               />,
               orIdx !== props.group.elements.length - 1
                 ? <p className="query-or-connector">{T.translate('common.or')}</p>

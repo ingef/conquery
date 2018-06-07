@@ -31,7 +31,16 @@
             "type": "CONCEPT",
             "tables": [
               {
-                "id": "feature_films"
+                "id": "feature_films",
+                "filters": [
+                  {
+                    "id": "budget",
+                    "value": {
+                      "min": 10000000,
+                      "max": 150000000
+                    }
+                  }
+                ]
               },
               {
                 "id": "tv_series"

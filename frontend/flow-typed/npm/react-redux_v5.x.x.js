@@ -1,98 +1,98 @@
-// flow-typed signature: 8db7b853f57c51094bf0ab8b2650fd9c
-// flow-typed version: ab8db5f14d/react-redux_v5.x.x/flow_>=v0.30.x
+// flow-typed signature: a2c406bd25fca4586c361574e555202d
+// flow-typed version: dcd1531faf/react-redux_v5.x.x/flow_>=v0.62.0
 
-import type { Dispatch, Store } from 'redux'
+import type { Dispatch, Store } from "redux";
 
-declare module 'react-redux' {
+declare module "react-redux" {
+  import type { ComponentType, ElementConfig } from 'react';
+
+  declare export class Provider<S, A> extends React$Component<{
+    store: Store<S, A>,
+    children?: any
+  }> {}
+
+  declare export function createProvider(
+    storeKey?: string,
+    subKey?: string
+  ): Provider<*, *>;
 
   /*
 
-    S = State
-    A = Action
-    OP = OwnProps
-    SP = StateProps
-    DP = DispatchProps
-
+  S = State
+  A = Action
+  OP = OwnProps
+  SP = StateProps
+  DP = DispatchProps
+  MP = Merge props
+  MDP = Map dispatch to props object
+  RSP = Returned state props
+  RDP = Returned dispatch props
+  RMP = Returned merge props
+  Com = React Component
   */
 
-  declare type MapStateToProps<S, OP: Object, SP: Object> = (state: S, ownProps: OP) => SP | MapStateToProps<S, OP, SP>;
+  declare type MapStateToProps<SP: Object, RSP: Object> = (state: Object, props: SP) => RSP;
 
-  declare type MapDispatchToProps<A, OP: Object, DP: Object> = ((dispatch: Dispatch<A>, ownProps: OP) => DP) | DP;
+  declare type MapDispatchToProps<A, OP: Object, RDP: Object> = (dispatch: Dispatch<A>, ownProps: OP) => RDP;
 
-  declare type MergeProps<SP, DP: Object, OP: Object, P: Object> = (stateProps: SP, dispatchProps: DP, ownProps: OP) => P;
+  declare type MergeProps<SP: Object, DP: Object, MP: Object, RMP: Object> = (
+    stateProps: SP,
+    dispatchProps: DP,
+    ownProps: MP
+  ) => RMP;
 
-  declare type Context = { store: Store<*, *> };
-
-  declare type StatelessComponent<P> = (props: P, context: Context) => ?React$Element<any>;
-
-  declare class ConnectedComponent<OP, P, Def, St> extends React$Component<void, OP, void> {
-    static WrappedComponent: Class<React$Component<Def, P, St>>;
-    getWrappedInstance(): React$Component<Def, P, St>;
-    static defaultProps: void;
-    props: OP;
-    state: void;
-  }
-
-  declare type ConnectedComponentClass<OP, P, Def, St> = Class<ConnectedComponent<OP, P, Def, St>>;
-
-  declare type Connector<OP, P> = {
-    (component: StatelessComponent<P>): ConnectedComponentClass<OP, P, void, void>;
-    <Def, St>(component: Class<React$Component<Def, P, St>>): ConnectedComponentClass<OP, P, Def, St>;
-  };
-
-  declare class Provider<S, A> extends React$Component<void, { store: Store<S, A>, children?: any }, void> { }
-
-  declare type ConnectOptions = {
+  declare type ConnectOptions<S: Object, OP: Object, RSP: Object, RMP: Object> = {|
     pure?: boolean,
-    withRef?: boolean
-  };
+    withRef?: boolean,
+    areStatesEqual?: (next: S, prev: S) => boolean,
+    areOwnPropsEqual?: (next: OP, prev: OP) => boolean,
+    areStatePropsEqual?: (next: RSP, prev: RSP) => boolean,
+    areMergedPropsEqual?: (next: RMP, prev: RMP) => boolean,
+    storeKey?: string
+  |};
 
-  declare type Null = null | void;
+  declare type OmitDispatch<Component> = $Diff<Component, {dispatch: Dispatch<*>}>;
 
-  declare function connect<A, OP>(
-    ...rest: Array<void> // <= workaround for https://github.com/facebook/flow/issues/2360
-  ): Connector<OP, $Supertype<{ dispatch: Dispatch<A> } & OP>>;
+  declare export function connect<Com: ComponentType<*>, DP: Object, RSP: Object>(
+    mapStateToProps: MapStateToProps<DP, RSP>,
+    mapDispatchToProps?: null
+  ): (component: Com) => ComponentType<$Diff<OmitDispatch<ElementConfig<Com>>, RSP> & DP>;
 
-  declare function connect<A, OP>(
-    mapStateToProps: Null,
-    mapDispatchToProps: Null,
-    mergeProps: Null,
-    options: ConnectOptions
-  ): Connector<OP, $Supertype<{ dispatch: Dispatch<A> } & OP>>;
+  declare export function connect<Com: ComponentType<*>>(
+    mapStateToProps?: null,
+    mapDispatchToProps?: null
+  ): (component: Com) => ComponentType<OmitDispatch<ElementConfig<Com>>>;
 
-  declare function connect<S, A, OP, SP>(
-    mapStateToProps: MapStateToProps<S, OP, SP>,
-    mapDispatchToProps: Null,
-    mergeProps: Null,
-    options?: ConnectOptions
-  ): Connector<OP, $Supertype<SP & { dispatch: Dispatch<A> } & OP>>;
+  declare export function connect<Com: ComponentType<*>, A, DP: Object, SP: Object, RSP: Object, RDP: Object>(
+    mapStateToProps: MapStateToProps<SP, RSP>,
+    mapDispatchToProps: MapDispatchToProps<A, DP, RDP>
+  ): (component: Com) => ComponentType<$Diff<$Diff<ElementConfig<Com>, RSP>, RDP> & SP & DP>;
 
-  declare function connect<A, OP, DP>(
-    mapStateToProps: Null,
-    mapDispatchToProps: MapDispatchToProps<A, OP, DP>,
-    mergeProps: Null,
-    options?: ConnectOptions
-  ): Connector<OP, $Supertype<DP & OP>>;
+  declare export function connect<Com: ComponentType<*>, A, OP: Object, DP: Object,PR: Object>(
+    mapStateToProps?: null,
+    mapDispatchToProps: MapDispatchToProps<A, OP, DP>
+  ): (Com) => ComponentType<$Diff<ElementConfig<Com>, DP> & OP>;
 
-  declare function connect<S, A, OP, SP, DP>(
-    mapStateToProps: MapStateToProps<S, OP, SP>,
-    mapDispatchToProps: MapDispatchToProps<A, OP, DP>,
-    mergeProps: Null,
-    options?: ConnectOptions
-  ): Connector<OP, $Supertype<SP & DP & OP>>;
+  declare export function connect<Com: ComponentType<*>, MDP: Object>(
+    mapStateToProps?: null,
+    mapDispatchToProps: MDP
+  ): (component: Com) => ComponentType<$Diff<ElementConfig<Com>, MDP>>;
 
-  declare function connect<S, A, OP, SP, DP, P>(
-    mapStateToProps: MapStateToProps<S, OP, SP>,
-    mapDispatchToProps: Null,
-    mergeProps: MergeProps<SP, DP, OP, P>,
-    options?: ConnectOptions
-  ): Connector<OP, P>;
+  declare export function connect<Com: ComponentType<*>, SP: Object, RSP: Object, MDP: Object>(
+    mapStateToProps: MapStateToProps<SP, RSP>,
+    mapDispatchToPRops: MDP
+  ): (component: Com) => ComponentType<$Diff<$Diff<ElementConfig<Com>, RSP>, MDP> & SP>;
 
-  declare function connect<S, A, OP, SP, DP, P>(
-    mapStateToProps: MapStateToProps<S, OP, SP>,
-    mapDispatchToProps: MapDispatchToProps<A, OP, DP>,
-    mergeProps: MergeProps<SP, DP, OP, P>,
-    options?: ConnectOptions
-  ): Connector<OP, P>;
+  declare export function connect<Com: ComponentType<*>, A, DP: Object, SP: Object, RSP: Object, RDP: Object, MP: Object, RMP: Object>(
+    mapStateToProps: MapStateToProps<SP, RSP>,
+    mapDispatchToProps: ?MapDispatchToProps<A, DP, RDP>,
+    mergeProps: MergeProps<RSP, RDP, MP, RMP>
+  ): (component: Com) => ComponentType<$Diff<ElementConfig<Com>, RMP> & SP & DP & MP>;
 
+  declare export function connect<Com: ComponentType<*>, A, DP: Object, SP: Object, RSP: Object, RDP: Object, MP: Object, RMP: Object>(
+    mapStateToProps: ?MapStateToProps<SP, RSP>,
+    mapDispatchToProps: ?MapDispatchToProps<A, DP, RDP>,
+    mergeProps: ?MergeProps<RSP, RDP, MP, RMP>,
+    options: ConnectOptions<*, SP & DP & MP, RSP, RMP>
+  ): (component: Com) => ComponentType<$Diff<ElementConfig<Com>, RMP> & SP & DP & MP>;
 }
