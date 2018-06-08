@@ -41,8 +41,23 @@ const removeValue = (value, valueIdx) => {
 };
 
 export const addConceptFromFile = (resolved: Object, value: [] = [{ concepts: [] }]) => {
-  const { selectedRoot, conceptList } = resolved;
+  const { selectedRoot, conceptList, filter } = resolved;
   const rootConcept = getConceptById(selectedRoot);
+
+  if (!rootConcept) return null;
+
+  const tables = (rootConcept.tables || []).map(table => {
+    const filters = table.filters
+      ? table.filters.map((f) => ({
+          ...f,
+          value: f.id === filter.filterId ? filter.value : f.value || null,
+        }))
+      : null;
+    return {
+      ...table,
+      filters
+    }
+  })
 
   return addConcept(
     addValue(value, { concepts: [] }),
@@ -50,7 +65,7 @@ export const addConceptFromFile = (resolved: Object, value: [] = [{ concepts: []
     {
       ids: conceptList || [selectedRoot],
       label: rootConcept.label,
-      tables: rootConcept.tables,
+      tables: tables,
       tree: selectedRoot
     }
   )
