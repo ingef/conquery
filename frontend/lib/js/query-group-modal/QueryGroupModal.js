@@ -142,7 +142,7 @@ function findGroup(query, andIdx) {
 
 const mapStateToProps = (state) => ({
   group: findGroup(
-    state.query,
+    state.panes.right.tabs.queryEditor.query,
     state.queryGroupModal.andIdx,
   ),
   andIdx: state.queryGroupModal.andIdx,

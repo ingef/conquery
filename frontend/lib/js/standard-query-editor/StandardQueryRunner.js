@@ -14,21 +14,21 @@ const {
 function isButtonEnabled(state, ownProps) {
   return !!( // Return true or false even if all are undefined / null
     ownProps.datasetId !== null &&
-    !state.standardQueryRunner.startQuery.loading &&
-    !state.standardQueryRunner.stopQuery.loading &&
-    state.query.length > 0
+    !state.panes.right.tabs.queryEditor.queryRunner.startQuery.loading &&
+    !state.panes.right.tabs.queryEditor.queryRunner.stopQuery.loading &&
+    state.panes.right.tabs.queryEditor.query.length > 0
   );
 }
 
 
 const mapStateToProps = (state, ownProps) => ({
-  queryRunner: state.standardQueryRunner,
+  queryRunner: state.panes.right.tabs.queryEditor.queryRunner,
   isButtonEnabled: isButtonEnabled(state, ownProps),
-  isQueryRunning: !!state.standardQueryRunner.runningQuery,
+  isQueryRunning: !!state.panes.right.tabs.queryEditor.queryRunner.runningQuery,
   // Following ones only needed in dispatch functions
-  queryId: state.standardQueryRunner.runningQuery,
+  queryId: state.panes.right.tabs.queryEditor.queryRunner.runningQuery,
   version: state.categoryTrees.version,
-  query: state.query,
+  query: state.panes.right.tabs.queryEditor.query,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
@@ -53,4 +53,5 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(QueryRunner);
+export const StandardQueryRunner =
+  connect(mapStateToProps, mapDispatchToProps, mergeProps)(QueryRunner);

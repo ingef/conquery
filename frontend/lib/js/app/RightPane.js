@@ -5,66 +5,26 @@ import { Route }     from 'react-router';
 
 import { Pane }      from '../pane';
 import { templates } from '../routes';
-import {
-  QueryEditor,
-  StandardQueryRunner,
-  QueryClearButton,
-} from '../standard-query-editor';
-
-import {
-  TimebasedQueryEditor,
-  TimebasedQueryRunner,
-  TimebasedQueryClearButton,
-} from '../timebased-query-editor'
-
-import {
-  ExternalFormsQueryRunner,
-  ExternalFormsNavigation,
-  ExternalFormsContainer,
-} from '../external-forms';
-
 
 type PropsType = {
-  activeTab: string
+  activeTab: string,
+  tabs: Object
 };
 
-const RightPane = (props: PropsType) => {
-  const rightPaneContent = (activeTab, selectedDatasetId) => {
-    switch (props.activeTab) {
-      case 'queryEditor':
-        return [
-          <QueryClearButton key={0} />,
-          <QueryEditor selectedDatasetId={selectedDatasetId} key={1} />,
-          <StandardQueryRunner datasetId={selectedDatasetId} key={2} />,
-        ];
-      case 'timebasedQueryEditor':
-        return [
-          <TimebasedQueryClearButton key={0} />,
-          <TimebasedQueryEditor key={1} />,
-          <TimebasedQueryRunner datasetId={selectedDatasetId} key={2} />,
-        ]
-      case 'externalForms':
-        return [
-          <ExternalFormsNavigation key={0} />,
-          <ExternalFormsContainer datasetId={selectedDatasetId} key={1} />,
-          <ExternalFormsQueryRunner datasetId={selectedDatasetId} key={2} />,
-        ]
-      default:
-        return null;
-    }
-  };
+const RightPane = (props: PropsType) =>
+  <Route path={templates.toDataset} children={({ match }) => {
+    const selectedDatasetId = match && match.params ? match.params.datasetId : null;
 
-  return (
-    <Route path={templates.toDataset} children={({ match }) => {
-      const selectedDatasetId = match && match.params ? match.params.datasetId : null;
+    const tab = React.createElement(
+      props.tabs[props.activeTab].component,
+      { selectedDatasetId }
+    );
 
-      return (
-        <Pane type="right">
-          { rightPaneContent(props.activeTab, selectedDatasetId) }
-        </Pane>
-      );
-    }} />
-  )
-};
+    return (
+      <Pane type="right">
+        { tab }
+      </Pane>
+    );
+  }} />;
 
 export default RightPane;
