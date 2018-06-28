@@ -17,8 +17,8 @@ const environment = {
 };
 
 const tabs = {
-  [StandardQueryEditorTab.key]: StandardQueryEditorTab,
-  [TimebasedQueryEditorTab.key]: TimebasedQueryEditorTab,
+  [StandardQueryEditorTab.description.key]: StandardQueryEditorTab,
+  [TimebasedQueryEditorTab.description.key]: TimebasedQueryEditorTab,
 };
 
 conquery(environment, tabs);

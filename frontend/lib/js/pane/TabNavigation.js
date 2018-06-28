@@ -15,9 +15,9 @@ const TabNavigation = (props: PropsType) => {
   return (
     <div className="tab-navigation">
       {
-        Object.values(props.tabs).map(({ label, key }, i) => (
+        Object.values(props.tabs).map(({ label, key }) => (
           <h2
-            key={i}
+            key={key}
             className={classnames(
               'tab-navigation__tab',
               {

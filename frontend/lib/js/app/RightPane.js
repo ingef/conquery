@@ -5,6 +5,9 @@ import { Route }     from 'react-router';
 
 import { Pane }      from '../pane';
 import { templates } from '../routes';
+import {
+  getRightPaneTabComponent
+}                    from '../pane/reducer';
 
 type PropsType = {
   activeTab: string,
@@ -16,7 +19,7 @@ const RightPane = (props: PropsType) =>
     const selectedDatasetId = match && match.params ? match.params.datasetId : null;
 
     const tab = React.createElement(
-      props.tabs[props.activeTab].component,
+      getRightPaneTabComponent(props.activeTab),
       { selectedDatasetId }
     );
 

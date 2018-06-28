@@ -16,11 +16,15 @@ import TimebasedQueryRunner      from './TimebasedQueryRunner';
 
 const timebasedQueryRunnerReducer = createQueryRunnerReducer('timebased');
 
-export const TimebasedQueryEditorTab = {
+const timebasedQueryEditorTabDescription = {
   key: 'timebasedQueryEditor',
   label: 'rightPane.timebasedQueryEditor',
-  order: 100,
-  reducer: (state = TimebasedQueryEditorTab, action) => ({
+  order: 100
+};
+
+export const TimebasedQueryEditorTab = {
+  description: timebasedQueryEditorTabDescription,
+  reducer: (state = timebasedQueryEditorTabDescription, action) => ({
     ...state,
     timebasedQuery: timebasedQueryReducer(state.timebasedQuery, action),
     timebasedQueryRunner: timebasedQueryRunnerReducer(state.timebasedQueryRunner, action)

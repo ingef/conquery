@@ -20,11 +20,15 @@ const StandardQueryEditor = (props: TabPropsType) =>
 
 const queryRunnerReducer = createQueryRunnerReducer('standard');
 
-export const StandardQueryEditorTab = {
+const standardQueryEditorTabDescription = {
   key: 'queryEditor',
   label: 'rightPane.queryEditor',
-  order: 0,
-  reducer: (state = StandardQueryEditorTab, action) => ({
+  order: 0
+};
+
+export const StandardQueryEditorTab = {
+  description: standardQueryEditorTabDescription,
+  reducer: (state = standardQueryEditorTabDescription, action) => ({
     ...state,
     query: queryReducer(state.query, action),
     queryRunner: queryRunnerReducer(state.queryRunner, action)

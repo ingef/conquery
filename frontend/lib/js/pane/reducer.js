@@ -1,8 +1,8 @@
 // @flow
 
-import { combineReducers }              from 'redux';
+import { combineReducers }  from 'redux';
 
-import { CLICK_PANE_TAB }  from './actionTypes';
+import { CLICK_PANE_TAB }   from './actionTypes';
 
 export type TabType = {
   label: string,
@@ -15,19 +15,39 @@ export type StateType = {
     tabs: TabType[]
   },
   right: {
-    activeTab: 'queryEditor' | 'timebasedQueryEditor' | 'externalForms',
-    tabs: TabType[]
+    activeTab: string,
+    tabs: Object
   }
 };
+
+// Keep a map of React components for the available tabs outside the Redux state
+const registerRightPaneTabComponents = (components) => {
+  window.rightPaneTabComponents = components;
+};
+
+export const getRightPaneTabComponent = (tab) => {
+  return window.rightPaneTabComponents[tab] || null;
+}
 
 export const buildPanesReducer = (availableTabs) => {
   const tabs = Object.values(availableTabs);
 
-  // collect reducers from form extension
-  const tabsReducers =
-    Object.assign({}, ...tabs.map(tab => ({[tab.key]: tab.reducer})));
+  // Collect reducers
+  const tabsReducers = Object.assign(
+    {},
+    ...tabs.map(tab => ({[tab.description.key]: tab.reducer}))
+  );
 
-  const defaultTab = tabs.length ? tabs.sort((a, b) => a.order - b.order)[0] : null;
+  // Collect components
+  const tabsComponents = Object.assign(
+    {},
+    ...tabs.map(tab => ({[tab.description.key]: tab.component}))
+  );
+  registerRightPaneTabComponents(tabsComponents);
+
+  const defaultTab = tabs.length
+    ? tabs.sort((a, b) => a.description.order - b.description.order)[0]
+    : null;
 
   const initialState: StateType = {
     left: {
@@ -38,19 +58,11 @@ export const buildPanesReducer = (availableTabs) => {
       ]
     },
     right: {
-      activeTab: defaultTab.key,
-      // tabs: [
-      //   { label: 'rightPane.queryEditor', tab: 'queryEditor' },
-      //   { label: 'rightPane.timebasedQueryEditor', tab: 'timebasedQueryEditor' },
-      //   { label: 'rightPane.externalForms', tab: 'externalForms' },
-      // ]
+      activeTab: defaultTab.description.key
     }
   };
 
-  const rightPaneTabsReducer = combineReducers({
-    // availableTabs: (state = availableTabs) => state,
-    ...tabsReducers
-  });
+  const rightPaneTabsReducer = combineReducers(tabsReducers);
 
   return (state: StateType = initialState, action: Object): StateType => {
     switch (action.type) {
