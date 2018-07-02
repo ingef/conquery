@@ -15,18 +15,18 @@ const TabNavigation = (props: PropsType) => {
   return (
     <div className="tab-navigation">
       {
-        props.tabs.map(({ label, tab }, i) => (
+        Object.values(props.tabs).map(({ label, key }) => (
           <h2
-            key={i}
+            key={key}
             className={classnames(
               'tab-navigation__tab',
               {
-                'tab-navigation__tab--active': props.activeTab === tab,
+                'tab-navigation__tab--active': props.activeTab === key,
               }
             )}
             onClick={() => {
-              if (tab !== props.activeTab)
-                props.onClickTab(tab);
+              if (key !== props.activeTab)
+                props.onClickTab(key);
             }}
           >
             {T.translate(label)}

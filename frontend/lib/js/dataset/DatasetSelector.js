@@ -54,7 +54,7 @@ const DatasetSelector = (props: PropsType) => (
 const mapStateToProps = (state) => ({
   datasets: state.datasets.data,
   error: state.datasets.error,
-  query: state.query,
+  query: state.panes.right.tabs.queryEditor.query,
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
