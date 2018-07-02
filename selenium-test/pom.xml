@@ -16,8 +16,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <skipDockerTests>false</skipDockerTests>
-        <testLocal>true</testLocal>
+        <skipDockerTests>true</skipDockerTests>
+        <testLocal>false</testLocal>
     </properties>
     
     <dependencies>
