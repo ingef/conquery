@@ -31,19 +31,19 @@ let browserHistory;
 const initialState = {};
 
 // Render the App including Hot Module Replacement
-const renderRoot = (forms: Object) => {
+const renderRoot = (tabs: Object) => {
   browserHistory = browserHistory || createHistory({
     basename: basename()
   });
-  store = store || makeStore(initialState, browserHistory, forms);
+  store = store || makeStore(initialState, browserHistory, tabs);
 
   ReactDOM.render(
-    <AppRoot store={store} browserHistory={browserHistory} forms={forms} />,
+    <AppRoot store={store} browserHistory={browserHistory} tabs={tabs} />,
     document.getElementById('root')
   );
 };
 
-export default function conquery(environment: Environment, forms: Object) {
+export default function conquery(environment: Environment, tabs: Object) {
   initializeEnvironment(environment);
-  renderRoot(forms);
+  renderRoot(tabs);
 };

@@ -48,11 +48,11 @@ const InputRange = (props: PropsType) => {
 
   const factor = T.translate('moneyRange.factor') || 1;
   const minFormattedValue =
-    (formattedValue && formattedValue.min) || (parseInt(minValue) / factor) || null;
+    (formattedValue && formattedValue.min) || (Math.round(minValue) / factor) || null;
   const maxFormattedValue =
-    (formattedValue && formattedValue.max) || (parseInt(maxValue) / factor) || null;
+    (formattedValue && formattedValue.max) || (Math.round(maxValue) / factor) || null;
   const exactFormattedValue =
-    (formattedValue && formattedValue.exact) || (parseInt(exactValue) / factor) || null;
+    (formattedValue && formattedValue.exact) || (Math.round(exactValue) / factor) || null;
 
   const isRangeMode = props.mode === 'range';
   const inputProps = {

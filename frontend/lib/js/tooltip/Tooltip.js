@@ -6,7 +6,10 @@ import type { Dispatch }        from 'redux-thunk';
 import T                        from 'i18n-react';
 import { connect }              from 'react-redux';
 import Markdown                 from 'react-markdown';
+import Highlighter              from 'react-highlight-words'
+
 import { IconButton }           from '../button';
+import { SearchType }           from '../category-trees/reducer';
 
 import ActivateTooltip          from './ActivateTooltip';
 import { toggleDisplayTooltip } from './actions';
@@ -20,6 +23,7 @@ type PropsType = {
   additionalInfos: AdditionalInfosType,
   displayTooltip: boolean,
   toggleDisplayTooltip: Function,
+  search: SearchType
 };
 
 const Tooltip = (props: PropsType) => {
@@ -27,6 +31,8 @@ const Tooltip = (props: PropsType) => {
 
   const { additionalInfos, toggleDisplayTooltip } = props;
   const { label, description, infos, matchingEntries, dateRange } = additionalInfos;
+  const searchHighlight = (text) =>
+    <Highlighter searchWords={props.search.words} autoEscape={true} textToHighlight={text} />;
 
   return (
     <div className="tooltip">
@@ -40,17 +46,21 @@ const Tooltip = (props: PropsType) => {
           }
           <h3 className="tooltip__headline">
             {
-              label
+              searchHighlight(label)
             } {
               description &&
-              <span> - {description}</span>
+              <span> - {searchHighlight(description)}</span>
             }
           </h3>
           {
             infos && infos.map((info, i) => (
               <div className="tooltip-info" key={i}>
-                <h3 className="tooltip-info__key" >{info.key}</h3>
-                <Markdown className="tooltip-info__value" source={info.value} />
+                <h3 className="tooltip-info__key" >{searchHighlight(info.key)}</h3>
+                <Markdown className="tooltip-info__value"
+                  source={info.value}
+                  escapeHtml={true}
+                  renderers={{text: searchHighlight}}
+                />
               </div>
             ))
           }
@@ -82,6 +92,7 @@ const mapStateToProps = (state) => {
   return {
     additionalInfos: state.tooltip.additionalInfos,
     displayTooltip: state.tooltip.displayTooltip,
+    search: state.categoryTrees.search
   };
 };
 
