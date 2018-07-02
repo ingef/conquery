@@ -91,7 +91,10 @@ const UploadConceptListModal = (props: PropsType) => {
                   value: selectedConceptRootNode,
                   onChange: (value) =>
                       props.selectConceptRootNode(
-                          props.selectedDatasetId, value, props.conceptCodesFromFile
+                          props.selectedDatasetId,
+                          value,
+                          props.conceptCodesFromFile,
+                          parameters
                       )
                 }}
                 options={
@@ -279,8 +282,10 @@ const mapDispatchToProps = (dispatch: Dispatch) => ({
   onCloseModal: () => dispatch(uploadConceptListModalClose()),
   onAccept: (label, rootConcepts, concepts, parameters) =>
     dispatch(acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts, parameters)),
-  selectConceptRootNode: (datasetId, treeId, conceptCodes) =>
-    dispatch(selectConceptRootNodeAndResolveCodes({ datasetId, treeId, conceptCodes })),
+  selectConceptRootNode: (datasetId, treeId, conceptCodes, parameters) =>
+    dispatch(selectConceptRootNodeAndResolveCodes(
+      { datasetId, treeId, conceptCodes, ...parameters }
+    )),
   updateLabel: (label) => dispatch(uploadConceptListModalUpdateLabel(label))
 });
 

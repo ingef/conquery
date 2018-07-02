@@ -1,20 +1,20 @@
 // @flow
 
-import React                         from 'react';
+import React                          from 'react';
 
 import {
   type TreeNodeIdType,
   type InfoType,
   type DateRangeType,
-  type NodeType
-}                                    from '../common/types/backend';
+  type NodeType,
+  type SearchType
+}                                     from '../common/types/backend';
+import { type DraggedNodeType }       from '../standard-query-editor/types';
 
-import { type DraggedNodeType }      from '../standard-query-editor/types';
-
-import { getConceptById }            from './globalTreeStoreHelper';
-
-import Openable                      from './Openable';
-import CategoryTreeNodeTextContainer from './CategoryTreeNodeTextContainer';
+import { getConceptById }             from './globalTreeStoreHelper';
+import Openable                       from './Openable';
+import CategoryTreeNodeTextContainer  from './CategoryTreeNodeTextContainer';
+import { isInSearchResult }           from './selectors';
 
 // Concept data that is necessary to display tree nodes. Includes additional infos
 // for the tooltip as well as the id of the corresponding tree
@@ -35,6 +35,7 @@ type PropsType = {
   data: TreeNodeData,
   depth: number,
   open: boolean,
+  search?: SearchType,
   onToggleOpen: () => void,
 };
 
@@ -58,9 +59,14 @@ class CategoryTreeNode extends React.Component<PropsType> {
   }
 
   render() {
-    const { id, data, depth, open } = this.props;
+    const { id, data, depth, open, search } = this.props;
+    const searching = search && search.searching
 
-    return (
+    const render = searching
+    ? isInSearchResult(id, data.children, search)
+    : true;
+
+    return render && (
       <div className="category-tree-node">
         <CategoryTreeNodeTextContainer
           node={{
@@ -86,9 +92,10 @@ class CategoryTreeNode extends React.Component<PropsType> {
           depth={depth}
           active={data.active}
           onTextClick={this._onToggleOpen.bind(this)}
+          search={search}
         />
         {
-          !!data.children && open &&
+          !!data.children && (open || searching) &&
           <div className="category-tree-node__children">
             {
               data.children.map((childId, i) => {
@@ -100,6 +107,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
                     id={childId}
                     data={selectTreeNodeData(child, data.tree)}
                     depth={this.props.depth + 1}
+                    search={this.props.search}
                   />
                 ) : null;
               })

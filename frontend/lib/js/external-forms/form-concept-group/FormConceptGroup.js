@@ -50,7 +50,9 @@ export const addConceptFromFile = (resolved: Object, value: [] = [{ concepts: []
     const filters = table.filters
       ? table.filters.map((f) => ({
           ...f,
-          value: f.id === filter.filterId ? filter.value : f.value || null,
+          value: (filter && filter.filterId && f.id === filter.filterId)
+            ? filter.value
+            : f.value || null,
         }))
       : null;
     return {

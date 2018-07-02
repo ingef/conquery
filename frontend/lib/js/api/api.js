@@ -229,8 +229,18 @@ export function postConceptFilterValuesResolve(
     `/datasets/${datasetId}/concepts/${conceptId}` +
     `/tables/${tableId}/filters/${filterId}/resolve`,
     {
-      method: 'POST',
+    method: 'POST',
       body: { values },
     }
   );
 };
+
+export const searchConcepts = (datasetId: DatasetIdType, query: string, limit?: number) => {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/search`, {
+    method: 'POST',
+    body: {
+      query: query,
+      limit: limit || 500
+    }
+  });
+}

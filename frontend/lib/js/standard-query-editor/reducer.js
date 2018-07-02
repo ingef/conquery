@@ -44,6 +44,10 @@ import {
 import type { StateType } from '../query-runner/reducer';
 
 import {
+  nodeHasActiveFilters
+} from '../model/node';
+
+import {
   DROP_AND_NODE,
   DROP_OR_NODE,
   DELETE_NODE,
@@ -466,7 +470,7 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
           };
         } else {
           const convertConceptToConceptList = element.type === 'CONCEPT';
-          const ids = convertConceptToConceptList ? [element.id] : element.ids;
+          const ids = element.ids || [element.id];
           const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
 
           if (!lookupResult)

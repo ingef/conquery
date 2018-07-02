@@ -35,6 +35,7 @@ export const selectEditedConcept = (state, formName, fieldName, {andIdx, orIdx})
 export const selectSuggestions = (state, fieldName, {andIdx, orIdx}) => {
   return state.suggestions &&
     state.suggestions[fieldName] &&
+    state.suggestions[fieldName][andIdx] &&
     state.suggestions[fieldName][andIdx][orIdx];
 };
 
