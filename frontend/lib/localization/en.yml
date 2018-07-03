@@ -206,7 +206,7 @@ uploadQueryResultsModal:
 
 uploadConceptListModal:
   headline: "Upload List"
-  label: "Name of the List"
+  label: "Name of the Concept"
   selectConceptRootNode: "Choose a Concept Tree root"
   insertNode: "Insert"
   result: "Result"
