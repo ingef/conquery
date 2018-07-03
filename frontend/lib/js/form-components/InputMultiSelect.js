@@ -40,7 +40,7 @@ const InputMultiSelect = (props: PropsType) => (
     </p>
     <Dropzone
       disableClick
-      style={{position: "relative", display: "block"}}
+      style={{position: "relative", display: "block", maxWidth: "300px"}}
       activeClassName={'dropzone--over'}
       className={'dropzone'}
       onDrop={props.onDropFiles}
