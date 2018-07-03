@@ -486,6 +486,7 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
             : element.label;
 
           return {
+            ...element,
             label,
             ids,
             tables,
