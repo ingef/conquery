@@ -44,10 +44,6 @@ import {
 import type { StateType } from '../query-runner/reducer';
 
 import {
-  nodeHasActiveFilters
-} from '../model/node';
-
-import {
   DROP_AND_NODE,
   DROP_OR_NODE,
   DELETE_NODE,

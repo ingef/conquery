@@ -80,7 +80,7 @@ const ExampleForm = (props: ExternalFormPropsType | PropsType) => {
 
 const mapStateToProps = state => ({});
 
-const mapDispatchToProps = (dispatch: Dispatch) => ({
+const mapDispatchToProps = (dispatch) => ({
   onDropFiles: (files, value, datasetId, formType, field) => dispatch(dropFiles(files, {
     parameters: {
       datasetId,
