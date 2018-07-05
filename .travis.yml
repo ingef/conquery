@@ -30,6 +30,8 @@ deploy:
       branch: develop
   - provider: script
     script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
+    on:
+      branch: feature/fix-heroku-deployments
   - provider: script
     script: bash frontend/scripts/deploy-heroku-docker.sh conquery
     on:
