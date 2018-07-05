@@ -8,6 +8,7 @@ before_script:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  - wget -qO- https://toolbelt.heroku.com/install.sh | sh
 
 cache:
   directories:
@@ -27,6 +28,8 @@ deploy:
     script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
     on:
       branch: develop
+  - provider: script
+    script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
   - provider: script
     script: bash frontend/scripts/deploy-heroku-docker.sh conquery
     on:
