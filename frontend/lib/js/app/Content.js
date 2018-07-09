@@ -16,7 +16,9 @@ import RightPane                    from './RightPane';
 type PropsType = {
   leftPaneActiveTab: string,
   rightPaneActiveTab: string,
+  rightPaneAvailableTabs: Object,
   displayTooltip: boolean,
+  rightPaneTabs: Object,
 };
 
 const Content = (props: PropsType) => {
@@ -38,7 +40,7 @@ const Content = (props: PropsType) => {
           defaultSize="50%"
         >
           <LeftPane activeTab={props.leftPaneActiveTab} />
-          <RightPane activeTab={props.rightPaneActiveTab} />
+          <RightPane activeTab={props.rightPaneActiveTab} tabs={props.rightPaneTabs} />
         </SplitPane>
         {
           props.displayTooltip
@@ -53,6 +55,7 @@ const Content = (props: PropsType) => {
 const mapStateToProps = (state, ownProps) => ({
   leftPaneActiveTab: state.panes.left.activeTab,
   rightPaneActiveTab: state.panes.right.activeTab,
+  rightPaneTabs: state.panes.right.tabs,
   displayTooltip: state.tooltip.displayTooltip,
 });
 

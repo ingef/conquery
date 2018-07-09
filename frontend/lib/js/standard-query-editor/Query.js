@@ -117,8 +117,8 @@ const Query = (props: PropsType) => {
 
 function mapStateToProps(state) {
   return {
-    query: state.query,
-    isEmptyQuery: state.query.length === 0,
+    query: state.panes.right.tabs.queryEditor.query,
+    isEmptyQuery: state.panes.right.tabs.queryEditor.query.length === 0,
 
     // only used by other actions
     rootConcepts: state.categoryTrees.trees,

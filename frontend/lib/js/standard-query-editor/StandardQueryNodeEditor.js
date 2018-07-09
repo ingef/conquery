@@ -23,7 +23,7 @@ const findNodeBeingEdited = (query) =>
     .find(element => element.isEditing);
 
 const mapStateToProps = (state) => {
-  const node = findNodeBeingEdited(state.query);
+  const node = findNodeBeingEdited(state.panes.right.tabs.queryEditor.query);
 
   const showTables = node && node.tables && (
     node.tables.length > 1 ||
