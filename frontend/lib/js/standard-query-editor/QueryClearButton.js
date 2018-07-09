@@ -26,11 +26,12 @@ QueryClearButton.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  isVisible: state.query.length !== 0,
+  isVisible: state.panes.right.tabs.queryEditor.query.length !== 0,
 });
 
 const mapDispatchToProps = (dispatch) => ({
   clearQuery: () => dispatch(clearQuery()),
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(QueryClearButton);
+const ConnectedQueryClearButton = connect(mapStateToProps, mapDispatchToProps)(QueryClearButton);
+export { ConnectedQueryClearButton as QueryClearButton };

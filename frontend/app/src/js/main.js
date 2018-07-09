@@ -1,7 +1,8 @@
 // @flow
 
-import conquery                   from '../../../lib/js';
-import exampleForm                from './forms/example-form';
+import conquery                    from '../../../lib/js';
+import { StandardQueryEditorTab }  from '../../../lib/js/standard-query-editor';
+import { TimebasedQueryEditorTab } from '../../../lib/js/timebased-query-editor';
 
 require('../styles/styles.sass');
 require('../images/favicon.png');
@@ -15,8 +16,9 @@ const environment = {
     apiUrl: '/api'
 };
 
-const forms = {
-  [exampleForm.type]: exampleForm
+const tabs = {
+  [StandardQueryEditorTab.description.key]: StandardQueryEditorTab,
+  [TimebasedQueryEditorTab.description.key]: TimebasedQueryEditorTab,
 };
 
-conquery(environment, forms);
+conquery(environment, tabs);
