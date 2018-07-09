@@ -18,7 +18,6 @@ import * as previousQueriesFilterActions    from '../previous-queries/filter/act
 import * as deletePreviousQueryModalActions from '../previous-queries/delete-modal/actions';
 import * as timebasedQueryEditorActions     from '../timebased-query-editor/actions';
 import * as queryEditorActions              from '../standard-query-editor/actions';
-import * as externalFormsActions            from '../external-forms/actions';
 
 import createQueryRunnerActions             from '../query-runner/actions';
 
@@ -41,5 +40,4 @@ export default {
   ...previousQueriesFilterActions,
   ...deletePreviousQueryModalActions,
   ...timebasedQueryEditorActions,
-  ...externalFormsActions,
 };

@@ -18,3 +18,4 @@ package-lock.json
 # JetBrains WebStorm
 .idea
 
+*.tgz

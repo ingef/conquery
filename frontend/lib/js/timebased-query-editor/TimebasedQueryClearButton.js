@@ -26,8 +26,8 @@ TimebasedQueryClearButton.propTypes = {
 };
 
 const mapStateToProps = (state) => ({
-  isEnabled: state.timebasedQuery.conditions.length > 1 ||
-    anyConditionFilled(state.timebasedQuery),
+  isEnabled: state.panes.right.tabs.timebasedQueryEditor.timebasedQuery.conditions.length > 1 ||
+    anyConditionFilled(state.panes.right.tabs.timebasedQueryEditor.timebasedQuery),
 });
 
 const mapDispatchToProps = (dispatch) => ({
