@@ -1,0 +1,5484 @@
+{
+  "6th_of_october_city": {
+    "parent": "egypt",
+    "label": "6th of October City"
+  },
+  "aba": {
+    "parent": "nigeria",
+    "label": "Aba"
+  },
+  "abeokuta": {
+    "parent": "nigeria",
+    "label": "Abeokuta"
+  },
+  "abidjan": {
+    "parent": "ivory_coast",
+    "label": "Abidjan"
+  },
+  "abu_dhabi": {
+    "parent": "united_arab_emirates",
+    "label": "Abu Dhabi"
+  },
+  "abuja": {
+    "parent": "nigeria",
+    "label": "Abuja"
+  },
+  "acapulco": {
+    "parent": "mexico",
+    "label": "Acapulco"
+  },
+  "accra": {
+    "parent": "ghana",
+    "label": "Accra"
+  },
+  "adana": {
+    "parent": "turkey",
+    "label": "Adana"
+  },
+  "addis_ababa": {
+    "parent": "ethiopia",
+    "label": "Addis Ababa"
+  },
+  "adelaide": {
+    "parent": "australia",
+    "label": "Adelaide"
+  },
+  "aden": {
+    "parent": "yemen",
+    "label": "Aden"
+  },
+  "afghanistan": {
+    "parent": "asia",
+    "label": "Afghanistan",
+    "children": [
+      "kabul"
+    ]
+  },
+  "africa": {
+    "parent": "place_of_birth",
+    "label": "Africa",
+    "children": [
+      "algeria",
+      "angola",
+      "burkina_faso",
+      "burundi",
+      "cameroon",
+      "central_african_republic",
+      "chad",
+      "democratic_republic_of_the_congo",
+      "djibouti",
+      "egypt",
+      "eritrea",
+      "ethiopia",
+      "gabon",
+      "ghana",
+      "guinea",
+      "ivory_coast",
+      "kenya",
+      "liberia",
+      "libya",
+      "madagascar",
+      "malawi",
+      "mauritania",
+      "morocco",
+      "mozambique",
+      "niger",
+      "nigeria",
+      "republic_of_the_congo",
+      "rwanda",
+      "senegal",
+      "sierra_leone",
+      "somalia",
+      "somaliland",
+      "south_africa",
+      "sudan",
+      "tanzania",
+      "togo",
+      "tunisia",
+      "uganda",
+      "zambia",
+      "zimbabwe"
+    ]
+  },
+  "agartala": {
+    "parent": "india",
+    "label": "Agartala"
+  },
+  "agra": {
+    "parent": "india",
+    "label": "Agra"
+  },
+  "aguascalientes_city": {
+    "parent": "mexico",
+    "label": "Aguascalientes City"
+  },
+  "ahmedabad": {
+    "parent": "india",
+    "label": "Ahmedabad"
+  },
+  "ahvaz": {
+    "parent": "iran",
+    "label": "Ahvaz"
+  },
+  "al_ain": {
+    "parent": "united_arab_emirates",
+    "label": "Al Ain"
+  },
+  "al_hudaydah": {
+    "parent": "yemen",
+    "label": "Al Hudaydah"
+  },
+  "albania": {
+    "parent": "europe",
+    "label": "Albania",
+    "children": [
+      "tirana"
+    ]
+  },
+  "albuquerque": {
+    "parent": "united_states_of_america",
+    "label": "Albuquerque"
+  },
+  "aleppo": {
+    "parent": "syria",
+    "label": "Aleppo"
+  },
+  "alexandria": {
+    "parent": "egypt",
+    "label": "Alexandria"
+  },
+  "algeria": {
+    "parent": "africa",
+    "label": "Algeria",
+    "children": [
+      "algiers",
+      "djelfa"
+    ]
+  },
+  "algiers": {
+    "parent": "algeria",
+    "label": "Algiers"
+  },
+  "aligarh": {
+    "parent": "india",
+    "label": "Aligarh"
+  },
+  "allahabad": {
+    "parent": "india",
+    "label": "Allahabad"
+  },
+  "almaty": {
+    "parent": "kazakhstan",
+    "label": "Almaty"
+  },
+  "amarah": {
+    "parent": "iraq",
+    "label": "Amarah"
+  },
+  "amman": {
+    "parent": "jordan",
+    "label": "Amman"
+  },
+  "amritsar": {
+    "parent": "india",
+    "label": "Amritsar"
+  },
+  "amsterdam": {
+    "parent": "netherlands",
+    "label": "Amsterdam"
+  },
+  "angola": {
+    "parent": "africa",
+    "label": "Angola",
+    "children": [
+      "huambo",
+      "luanda"
+    ]
+  },
+  "ankara": {
+    "parent": "turkey",
+    "label": "Ankara"
+  },
+  "anqing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Anqing"
+  },
+  "ansan": {
+    "parent": "south_korea",
+    "label": "Ansan"
+  },
+  "anshan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Anshan"
+  },
+  "anshun": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Anshun"
+  },
+  "antalya": {
+    "parent": "turkey",
+    "label": "Antalya"
+  },
+  "antananarivo": {
+    "parent": "madagascar",
+    "label": "Antananarivo"
+  },
+  "antipolo": {
+    "parent": "philippines",
+    "label": "Antipolo"
+  },
+  "antwerp": {
+    "parent": "belgium",
+    "label": "Antwerp"
+  },
+  "anyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Anyang"
+  },
+  "arequipa": {
+    "parent": "peru",
+    "label": "Arequipa"
+  },
+  "argentina": {
+    "parent": "south_america",
+    "label": "Argentina",
+    "children": [
+      "buenos_aires",
+      "córdoba",
+      "la_plata",
+      "mar_del_plata",
+      "san_miguel_de_tucumán"
+    ]
+  },
+  "armenia": {
+    "parent": "asia",
+    "label": "Armenia",
+    "children": [
+      "yerevan"
+    ]
+  },
+  "asansol": {
+    "parent": "india",
+    "label": "Asansol"
+  },
+  "ashgabat": {
+    "parent": "turkmenistan",
+    "label": "Ashgabat"
+  },
+  "asia": {
+    "parent": "place_of_birth",
+    "label": "Asia",
+    "children": [
+      "afghanistan",
+      "armenia",
+      "azerbaijan",
+      "bangladesh",
+      "cambodia",
+      "georgia",
+      "india",
+      "indonesia",
+      "iran",
+      "iraq",
+      "israel",
+      "japan",
+      "jordan",
+      "kazakhstan",
+      "kuwait",
+      "kyrgyzstan",
+      "laos",
+      "malaysia",
+      "mongolia",
+      "myanmar",
+      "nepal",
+      "new_delhi",
+      "north_korea",
+      "oman",
+      "pakistan",
+      "people\u0027s_republic_of_china",
+      "philippines",
+      "qatar",
+      "russia",
+      "saudi_arabia",
+      "singapore",
+      "south_korea",
+      "soviet_union",
+      "sri_lanka",
+      "state_of_palestine",
+      "syria",
+      "taiwan",
+      "tajikistan",
+      "thailand",
+      "turkey",
+      "turkmenistan",
+      "united_arab_emirates",
+      "uzbekistan",
+      "vietnam",
+      "yemen"
+    ]
+  },
+  "asmara": {
+    "parent": "eritrea",
+    "label": "Asmara"
+  },
+  "astana": {
+    "parent": "kazakhstan",
+    "label": "Astana"
+  },
+  "astrakhan": {
+    "parent": "russia",
+    "label": "Astrakhan"
+  },
+  "asunción": {
+    "parent": "paraguay",
+    "label": "Asunción"
+  },
+  "athens": {
+    "parent": "greece",
+    "label": "Athens"
+  },
+  "auckland": {
+    "parent": "new_zealand",
+    "label": "Auckland"
+  },
+  "aurangabad": {
+    "parent": "india",
+    "label": "Aurangabad"
+  },
+  "austin": {
+    "parent": "united_states_of_america",
+    "label": "Austin"
+  },
+  "australia": {
+    "parent": "place_of_birth",
+    "label": "Australia",
+    "children": [
+      "adelaide",
+      "brisbane",
+      "melbourne",
+      "perth",
+      "sydney"
+    ]
+  },
+  "austria": {
+    "parent": "europe",
+    "label": "Austria",
+    "children": [
+      "vienna"
+    ]
+  },
+  "azerbaijan": {
+    "parent": "asia",
+    "label": "Azerbaijan",
+    "children": [
+      "baku",
+      "ganja"
+    ]
+  },
+  "bacolod": {
+    "parent": "philippines",
+    "label": "Bacolod"
+  },
+  "bacoor": {
+    "parent": "philippines",
+    "label": "Bacoor"
+  },
+  "baghdad": {
+    "parent": "iraq",
+    "label": "Baghdad"
+  },
+  "baise": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Baise"
+  },
+  "baiyin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Baiyin"
+  },
+  "baku": {
+    "parent": "azerbaijan",
+    "label": "Baku"
+  },
+  "balıkesir": {
+    "parent": "turkey",
+    "label": "Balıkesir"
+  },
+  "baltimore": {
+    "parent": "united_states_of_america",
+    "label": "Baltimore"
+  },
+  "bangalore": {
+    "parent": "india",
+    "label": "Bangalore"
+  },
+  "bangkok": {
+    "parent": "thailand",
+    "label": "Bangkok"
+  },
+  "bangladesh": {
+    "parent": "asia",
+    "label": "Bangladesh",
+    "children": [
+      "chittagong",
+      "dhaka",
+      "khulna"
+    ]
+  },
+  "bangui": {
+    "parent": "central_african_republic",
+    "label": "Bangui"
+  },
+  "baoding": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Baoding"
+  },
+  "baoji": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Baoji"
+  },
+  "baoshan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Baoshan"
+  },
+  "baotou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Baotou"
+  },
+  "barcelona": {
+    "parent": "catalan_republic",
+    "label": "Barcelona"
+  },
+  "bareilly": {
+    "parent": "india",
+    "label": "Bareilly"
+  },
+  "barnaul": {
+    "parent": "russia",
+    "label": "Barnaul"
+  },
+  "barquisimeto": {
+    "parent": "venezuela",
+    "label": "Barquisimeto"
+  },
+  "barranquilla": {
+    "parent": "colombia",
+    "label": "Barranquilla"
+  },
+  "basra": {
+    "parent": "iraq",
+    "label": "Basra"
+  },
+  "bayannur": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Bayannur"
+  },
+  "bazhong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Bazhong"
+  },
+  "beihai": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Beihai"
+  },
+  "beijing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Beijing"
+  },
+  "bekasi": {
+    "parent": "indonesia",
+    "label": "Bekasi"
+  },
+  "belarus": {
+    "parent": "europe",
+    "label": "Belarus",
+    "children": [
+      "gomel",
+      "minsk"
+    ]
+  },
+  "belém": {
+    "parent": "brazil",
+    "label": "Belém"
+  },
+  "belgium": {
+    "parent": "europe",
+    "label": "Belgium",
+    "children": [
+      "antwerp",
+      "brussels"
+    ]
+  },
+  "belgrade": {
+    "parent": "serbia",
+    "label": "Belgrade"
+  },
+  "belo_horizonte": {
+    "parent": "brazil",
+    "label": "Belo Horizonte"
+  },
+  "bengbu": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Bengbu"
+  },
+  "benghazi": {
+    "parent": "libya",
+    "label": "Benghazi"
+  },
+  "benxi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Benxi"
+  },
+  "berlin": {
+    "parent": "germany",
+    "label": "Berlin"
+  },
+  "bhilai": {
+    "parent": "india",
+    "label": "Bhilai"
+  },
+  "bhiwandi": {
+    "parent": "india",
+    "label": "Bhiwandi"
+  },
+  "bhopal": {
+    "parent": "india",
+    "label": "Bhopal"
+  },
+  "bhubaneswar": {
+    "parent": "india",
+    "label": "Bhubaneswar"
+  },
+  "biên_hòa": {
+    "parent": "vietnam",
+    "label": "Biên Hòa"
+  },
+  "bijie": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Bijie"
+  },
+  "bikaner": {
+    "parent": "india",
+    "label": "Bikaner"
+  },
+  "binzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Binzhou"
+  },
+  "birmingham": {
+    "parent": "united_kingdom",
+    "label": "Birmingham"
+  },
+  "bishkek": {
+    "parent": "kyrgyzstan",
+    "label": "Bishkek"
+  },
+  "blantyre": {
+    "parent": "malawi",
+    "label": "Blantyre"
+  },
+  "bogotá": {
+    "parent": "colombia",
+    "label": "Bogotá"
+  },
+  "bolivia": {
+    "parent": "south_america",
+    "label": "Bolivia",
+    "children": [
+      "cochabamba",
+      "el_alto",
+      "la_paz",
+      "santa_cruz"
+    ]
+  },
+  "boston": {
+    "parent": "united_states_of_america",
+    "label": "Boston"
+  },
+  "bouaké": {
+    "parent": "ivory_coast",
+    "label": "Bouaké"
+  },
+  "bozhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Bozhou"
+  },
+  "brampton": {
+    "parent": "canada",
+    "label": "Brampton"
+  },
+  "brasília": {
+    "parent": "brazil",
+    "label": "Brasília"
+  },
+  "brazil": {
+    "parent": "south_america",
+    "label": "Brazil",
+    "children": [
+      "belém",
+      "belo_horizonte",
+      "brasília",
+      "campinas",
+      "curitiba",
+      "duque_de_caxias",
+      "fortaleza",
+      "goiânia",
+      "guarulhos",
+      "maceió",
+      "natal",
+      "osasco",
+      "porto_alegre",
+      "recife",
+      "ribeirão_preto",
+      "rio_de_janeiro",
+      "salvador",
+      "santo_andré",
+      "são_bernardo_do_campo",
+      "são_josé_dos_campos",
+      "são_luís",
+      "são_paulo",
+      "sorocaba",
+      "uberlândia"
+    ]
+  },
+  "brazzaville": {
+    "parent": "republic_of_the_congo",
+    "label": "Brazzaville"
+  },
+  "bremen": {
+    "parent": "germany",
+    "label": "Bremen"
+  },
+  "brisbane": {
+    "parent": "australia",
+    "label": "Brisbane"
+  },
+  "brussels": {
+    "parent": "belgium",
+    "label": "Brussels"
+  },
+  "bucharest": {
+    "parent": "romania",
+    "label": "Bucharest"
+  },
+  "bucheon": {
+    "parent": "south_korea",
+    "label": "Bucheon"
+  },
+  "budapest": {
+    "parent": "hungary",
+    "label": "Budapest"
+  },
+  "buenos_aires": {
+    "parent": "argentina",
+    "label": "Buenos Aires"
+  },
+  "bujumbura": {
+    "parent": "burundi",
+    "label": "Bujumbura"
+  },
+  "bulawayo": {
+    "parent": "zimbabwe",
+    "label": "Bulawayo"
+  },
+  "bulgaria": {
+    "parent": "europe",
+    "label": "Bulgaria",
+    "children": [
+      "sofia"
+    ]
+  },
+  "buraidah": {
+    "parent": "saudi_arabia",
+    "label": "Buraidah"
+  },
+  "burkina_faso": {
+    "parent": "africa",
+    "label": "Burkina Faso",
+    "children": [
+      "ouagadougou"
+    ]
+  },
+  "bursa": {
+    "parent": "turkey",
+    "label": "Bursa"
+  },
+  "burundi": {
+    "parent": "africa",
+    "label": "Burundi",
+    "children": [
+      "bujumbura"
+    ]
+  },
+  "busan": {
+    "parent": "south_korea",
+    "label": "Busan"
+  },
+  "cagayan_de_oro": {
+    "parent": "philippines",
+    "label": "Cagayan de Oro"
+  },
+  "cairo": {
+    "parent": "egypt",
+    "label": "Cairo"
+  },
+  "calgary": {
+    "parent": "canada",
+    "label": "Calgary"
+  },
+  "cali": {
+    "parent": "colombia",
+    "label": "Cali"
+  },
+  "caloocan": {
+    "parent": "philippines",
+    "label": "Caloocan"
+  },
+  "cambodia": {
+    "parent": "asia",
+    "label": "Cambodia",
+    "children": [
+      "phnom_penh"
+    ]
+  },
+  "cameroon": {
+    "parent": "africa",
+    "label": "Cameroon",
+    "children": [
+      "douala",
+      "yaounde"
+    ]
+  },
+  "campinas": {
+    "parent": "brazil",
+    "label": "Campinas"
+  },
+  "can_tho": {
+    "parent": "vietnam",
+    "label": "Can Tho"
+  },
+  "canada": {
+    "parent": "north_america",
+    "label": "Canada",
+    "children": [
+      "brampton",
+      "calgary",
+      "edmonton",
+      "hamilton",
+      "mississauga",
+      "montreal",
+      "ottawa",
+      "quebec_city",
+      "surrey",
+      "toronto",
+      "vancouver",
+      "winnipeg"
+    ]
+  },
+  "cancún": {
+    "parent": "mexico",
+    "label": "Cancún"
+  },
+  "cangzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Cangzhou"
+  },
+  "caracas": {
+    "parent": "venezuela",
+    "label": "Caracas"
+  },
+  "carrefour": {
+    "parent": "haiti",
+    "label": "Carrefour"
+  },
+  "cartagena": {
+    "parent": "colombia",
+    "label": "Cartagena"
+  },
+  "casablanca": {
+    "parent": "morocco",
+    "label": "Casablanca"
+  },
+  "catalan_republic": {
+    "parent": "europe",
+    "label": "Catalan Republic",
+    "children": [
+      "barcelona"
+    ]
+  },
+  "cebu_city": {
+    "parent": "philippines",
+    "label": "Cebu City"
+  },
+  "central_african_republic": {
+    "parent": "africa",
+    "label": "Central African Republic",
+    "children": [
+      "bangui"
+    ]
+  },
+  "chad": {
+    "parent": "africa",
+    "label": "Chad",
+    "children": [
+      "n\u0027djamena"
+    ]
+  },
+  "chamdo": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chamdo"
+  },
+  "chandigarh": {
+    "parent": "india",
+    "label": "Chandigarh"
+  },
+  "changchun": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Changchun"
+  },
+  "changde": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Changde"
+  },
+  "changsha": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Changsha"
+  },
+  "changwon": {
+    "parent": "south_korea",
+    "label": "Changwon"
+  },
+  "changzhi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Changzhi"
+  },
+  "changzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Changzhou"
+  },
+  "chaoyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chaoyang"
+  },
+  "chaozhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chaozhou"
+  },
+  "charlotte": {
+    "parent": "united_states_of_america",
+    "label": "Charlotte"
+  },
+  "chelyabinsk": {
+    "parent": "russia",
+    "label": "Chelyabinsk"
+  },
+  "chengde": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chengde"
+  },
+  "chengdu": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chengdu"
+  },
+  "chennai": {
+    "parent": "india",
+    "label": "Chennai"
+  },
+  "chenzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chenzhou"
+  },
+  "cheonan": {
+    "parent": "south_korea",
+    "label": "Cheonan"
+  },
+  "cheongju": {
+    "parent": "south_korea",
+    "label": "Cheongju"
+  },
+  "chiba": {
+    "parent": "japan",
+    "label": "Chiba"
+  },
+  "chicago": {
+    "parent": "united_states_of_america",
+    "label": "Chicago"
+  },
+  "chiclayo": {
+    "parent": "peru",
+    "label": "Chiclayo"
+  },
+  "chifeng": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chifeng"
+  },
+  "chihuahua": {
+    "parent": "mexico",
+    "label": "Chihuahua"
+  },
+  "chile": {
+    "parent": "south_america",
+    "label": "Chile",
+    "children": [
+      "santiago"
+    ]
+  },
+  "chișinău": {
+    "parent": "moldova",
+    "label": "Chișinău"
+  },
+  "chittagong": {
+    "parent": "bangladesh",
+    "label": "Chittagong"
+  },
+  "chizhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chizhou"
+  },
+  "chongqing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chongqing"
+  },
+  "chongzuo": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chongzuo"
+  },
+  "chuzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Chuzhou"
+  },
+  "ciudad_guayana": {
+    "parent": "venezuela",
+    "label": "Ciudad Guayana"
+  },
+  "ciudad_juárez": {
+    "parent": "mexico",
+    "label": "Ciudad Juárez"
+  },
+  "ciudad_nezahualcóyotl": {
+    "parent": "mexico",
+    "label": "Ciudad Nezahualcóyotl"
+  },
+  "cochabamba": {
+    "parent": "bolivia",
+    "label": "Cochabamba"
+  },
+  "coimbatore": {
+    "parent": "india",
+    "label": "Coimbatore"
+  },
+  "cologne": {
+    "parent": "germany",
+    "label": "Cologne"
+  },
+  "colombia": {
+    "parent": "south_america",
+    "label": "Colombia",
+    "children": [
+      "barranquilla",
+      "bogotá",
+      "cali",
+      "cartagena",
+      "cúcuta",
+      "medellín",
+      "santa_marta"
+    ]
+  },
+  "colombo": {
+    "parent": "sri_lanka",
+    "label": "Colombo"
+  },
+  "columbus": {
+    "parent": "united_states_of_america",
+    "label": "Columbus"
+  },
+  "comayaguela": {
+    "parent": "honduras",
+    "label": "Comayaguela"
+  },
+  "conakry": {
+    "parent": "guinea",
+    "label": "Conakry"
+  },
+  "copenhagen": {
+    "parent": "denmark",
+    "label": "Copenhagen"
+  },
+  "córdoba": {
+    "parent": "argentina",
+    "label": "Córdoba"
+  },
+  "croatia": {
+    "parent": "europe",
+    "label": "Croatia",
+    "children": [
+      "zagreb"
+    ]
+  },
+  "ctesiphon": {
+    "parent": "iraq",
+    "label": "Ctesiphon"
+  },
+  "cuba": {
+    "parent": "north_america",
+    "label": "Cuba",
+    "children": [
+      "havana"
+    ]
+  },
+  "cúcuta": {
+    "parent": "colombia",
+    "label": "Cúcuta"
+  },
+  "culiacán": {
+    "parent": "mexico",
+    "label": "Culiacán"
+  },
+  "curitiba": {
+    "parent": "brazil",
+    "label": "Curitiba"
+  },
+  "cuttack": {
+    "parent": "india",
+    "label": "Cuttack"
+  },
+  "czech_republic": {
+    "parent": "europe",
+    "label": "Czech Republic",
+    "children": [
+      "prague"
+    ]
+  },
+  "da_nang": {
+    "parent": "vietnam",
+    "label": "Da Nang"
+  },
+  "daegu": {
+    "parent": "south_korea",
+    "label": "Daegu"
+  },
+  "daejeon": {
+    "parent": "south_korea",
+    "label": "Daejeon"
+  },
+  "dakar": {
+    "parent": "senegal",
+    "label": "Dakar"
+  },
+  "dalian": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Dalian"
+  },
+  "dallas": {
+    "parent": "united_states_of_america",
+    "label": "Dallas"
+  },
+  "damascus": {
+    "parent": "syria",
+    "label": "Damascus"
+  },
+  "dammam": {
+    "parent": "saudi_arabia",
+    "label": "Dammam"
+  },
+  "dandong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Dandong"
+  },
+  "danzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Danzhou"
+  },
+  "daqing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Daqing"
+  },
+  "dar_es_salaam": {
+    "parent": "tanzania",
+    "label": "Dar es Salaam"
+  },
+  "dasmariñas": {
+    "parent": "philippines",
+    "label": "Dasmariñas"
+  },
+  "datong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Datong"
+  },
+  "davao_city": {
+    "parent": "philippines",
+    "label": "Davao City"
+  },
+  "dazhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Dazhou"
+  },
+  "dehradun": {
+    "parent": "india",
+    "label": "Dehradun"
+  },
+  "delhi": {
+    "parent": "india",
+    "label": "Delhi"
+  },
+  "democratic_republic_of_the_congo": {
+    "parent": "africa",
+    "label": "Democratic Republic of the Congo",
+    "children": [
+      "kananga",
+      "kinshasa",
+      "lubumbashi"
+    ]
+  },
+  "denizli": {
+    "parent": "turkey",
+    "label": "Denizli"
+  },
+  "denmark": {
+    "parent": "europe",
+    "label": "Denmark",
+    "children": [
+      "copenhagen"
+    ]
+  },
+  "denver": {
+    "parent": "united_states_of_america",
+    "label": "Denver"
+  },
+  "detroit": {
+    "parent": "united_states_of_america",
+    "label": "Detroit"
+  },
+  "deyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Deyang"
+  },
+  "dezhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Dezhou"
+  },
+  "dhaka": {
+    "parent": "bangladesh",
+    "label": "Dhaka"
+  },
+  "dingxi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Dingxi"
+  },
+  "djelfa": {
+    "parent": "algeria",
+    "label": "Djelfa"
+  },
+  "djibouti": {
+    "parent": "africa",
+    "label": "Djibouti"
+  },
+  "dnipro": {
+    "parent": "soviet_union",
+    "label": "Dnipro"
+  },
+  "doha": {
+    "parent": "qatar",
+    "label": "Doha"
+  },
+  "dominican_republic": {
+    "parent": "north_america",
+    "label": "Dominican Republic",
+    "children": [
+      "santiago_de_los_caballeros",
+      "santo_domingo"
+    ]
+  },
+  "donetsk": {
+    "parent": "ukraine",
+    "label": "Donetsk"
+  },
+  "dongguan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Dongguan"
+  },
+  "dongying": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Dongying"
+  },
+  "dortmund": {
+    "parent": "germany",
+    "label": "Dortmund"
+  },
+  "douala": {
+    "parent": "cameroon",
+    "label": "Douala"
+  },
+  "dresden": {
+    "parent": "germany",
+    "label": "Dresden"
+  },
+  "dubai": {
+    "parent": "united_arab_emirates",
+    "label": "Dubai"
+  },
+  "dublin": {
+    "parent": "ireland",
+    "label": "Dublin"
+  },
+  "duque_de_caxias": {
+    "parent": "brazil",
+    "label": "Duque de Caxias"
+  },
+  "durango": {
+    "parent": "mexico",
+    "label": "Durango"
+  },
+  "durban": {
+    "parent": "south_africa",
+    "label": "Durban"
+  },
+  "dushanbe": {
+    "parent": "tajikistan",
+    "label": "Dushanbe"
+  },
+  "düsseldorf": {
+    "parent": "germany",
+    "label": "Düsseldorf"
+  },
+  "duval_county": {
+    "parent": "united_states_of_america",
+    "label": "Duval County"
+  },
+  "ecatepec_de_morelos": {
+    "parent": "mexico",
+    "label": "Ecatepec de Morelos"
+  },
+  "ecuador": {
+    "parent": "south_america",
+    "label": "Ecuador",
+    "children": [
+      "guayaquil",
+      "quito"
+    ]
+  },
+  "edmonton": {
+    "parent": "canada",
+    "label": "Edmonton"
+  },
+  "egypt": {
+    "parent": "africa",
+    "label": "Egypt",
+    "children": [
+      "6th_of_october_city",
+      "alexandria",
+      "cairo",
+      "giza",
+      "helwan",
+      "port_said",
+      "shubra_el-kheima",
+      "zagazig"
+    ]
+  },
+  "el_alto": {
+    "parent": "bolivia",
+    "label": "El Alto"
+  },
+  "el_paso": {
+    "parent": "united_states_of_america",
+    "label": "El Paso"
+  },
+  "el_salvador": {
+    "parent": "north_america",
+    "label": "El Salvador",
+    "children": [
+      "san_salvador"
+    ]
+  },
+  "enugu": {
+    "parent": "nigeria",
+    "label": "Enugu"
+  },
+  "erbil": {
+    "parent": "iraq",
+    "label": "Erbil"
+  },
+  "eritrea": {
+    "parent": "africa",
+    "label": "Eritrea",
+    "children": [
+      "asmara"
+    ]
+  },
+  "eslamshahr": {
+    "parent": "iran",
+    "label": "Eslamshahr"
+  },
+  "essen": {
+    "parent": "germany",
+    "label": "Essen"
+  },
+  "ethiopia": {
+    "parent": "africa",
+    "label": "Ethiopia",
+    "children": [
+      "addis_ababa"
+    ]
+  },
+  "europe": {
+    "parent": "place_of_birth",
+    "label": "Europe",
+    "children": [
+      "albania",
+      "austria",
+      "belarus",
+      "belgium",
+      "bulgaria",
+      "catalan_republic",
+      "croatia",
+      "czech_republic",
+      "denmark",
+      "finland",
+      "france",
+      "germany",
+      "greece",
+      "hungary",
+      "ireland",
+      "italy",
+      "latvia",
+      "lithuania",
+      "macedonia",
+      "moldova",
+      "netherlands",
+      "norway",
+      "poland",
+      "portugal",
+      "romania",
+      "serbia",
+      "spain",
+      "sweden",
+      "ukraine",
+      "united_kingdom"
+    ]
+  },
+  "ezhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ezhou"
+  },
+  "faisalabad": {
+    "parent": "pakistan",
+    "label": "Faisalabad"
+  },
+  "fangchenggang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Fangchenggang"
+  },
+  "faridabad": {
+    "parent": "india",
+    "label": "Faridabad"
+  },
+  "fes": {
+    "parent": "morocco",
+    "label": "Fes"
+  },
+  "finland": {
+    "parent": "europe",
+    "label": "Finland",
+    "children": [
+      "helsinki"
+    ]
+  },
+  "fort_worth": {
+    "parent": "united_states_of_america",
+    "label": "Fort Worth"
+  },
+  "fortaleza": {
+    "parent": "brazil",
+    "label": "Fortaleza"
+  },
+  "foshan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Foshan"
+  },
+  "france": {
+    "parent": "europe",
+    "label": "France",
+    "children": [
+      "lyon",
+      "marseille",
+      "paris"
+    ]
+  },
+  "frankfurt": {
+    "parent": "germany",
+    "label": "Frankfurt"
+  },
+  "freetown": {
+    "parent": "sierra_leone",
+    "label": "Freetown"
+  },
+  "fukuoka": {
+    "parent": "japan",
+    "label": "Fukuoka"
+  },
+  "funabashi": {
+    "parent": "japan",
+    "label": "Funabashi"
+  },
+  "fushun": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Fushun"
+  },
+  "fuxin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Fuxin"
+  },
+  "fuyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Fuyang"
+  },
+  "fuzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Fuzhou"
+  },
+  "gabon": {
+    "parent": "africa",
+    "label": "Gabon",
+    "children": [
+      "libreville"
+    ]
+  },
+  "ganja": {
+    "parent": "azerbaijan",
+    "label": "Ganja"
+  },
+  "ganzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ganzhou"
+  },
+  "gaza_city": {
+    "parent": "state_of_palestine",
+    "label": "Gaza City"
+  },
+  "gaziantep": {
+    "parent": "turkey",
+    "label": "Gaziantep"
+  },
+  "general_santos": {
+    "parent": "philippines",
+    "label": "General Santos"
+  },
+  "genoa": {
+    "parent": "italy",
+    "label": "Genoa"
+  },
+  "george_town": {
+    "parent": "malaysia",
+    "label": "George Town"
+  },
+  "georgia": {
+    "parent": "asia",
+    "label": "Georgia",
+    "children": [
+      "tbilisi"
+    ]
+  },
+  "germany": {
+    "parent": "europe",
+    "label": "Germany",
+    "children": [
+      "berlin",
+      "bremen",
+      "cologne",
+      "dortmund",
+      "dresden",
+      "düsseldorf",
+      "essen",
+      "frankfurt",
+      "hamburg",
+      "hanover",
+      "leipzig",
+      "munich",
+      "nuremberg"
+    ]
+  },
+  "ghana": {
+    "parent": "africa",
+    "label": "Ghana",
+    "children": [
+      "accra",
+      "kumasi",
+      "sekondi-takoradi"
+    ]
+  },
+  "ghaziabad": {
+    "parent": "india",
+    "label": "Ghaziabad"
+  },
+  "gimhae": {
+    "parent": "south_korea",
+    "label": "Gimhae"
+  },
+  "giza": {
+    "parent": "egypt",
+    "label": "Giza"
+  },
+  "glasgow": {
+    "parent": "united_kingdom",
+    "label": "Glasgow"
+  },
+  "goiânia": {
+    "parent": "brazil",
+    "label": "Goiânia"
+  },
+  "gomel": {
+    "parent": "belarus",
+    "label": "Gomel"
+  },
+  "gorakhpur": {
+    "parent": "india",
+    "label": "Gorakhpur"
+  },
+  "gothenburg": {
+    "parent": "sweden",
+    "label": "Gothenburg"
+  },
+  "goyang": {
+    "parent": "south_korea",
+    "label": "Goyang"
+  },
+  "greater_tehran": {
+    "parent": "iran",
+    "label": "Greater Tehran"
+  },
+  "greece": {
+    "parent": "europe",
+    "label": "Greece",
+    "children": [
+      "athens"
+    ]
+  },
+  "guadalajara": {
+    "parent": "mexico",
+    "label": "Guadalajara"
+  },
+  "guadalupe": {
+    "parent": "mexico",
+    "label": "Guadalupe"
+  },
+  "guang\u0027an": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Guang\u0027an"
+  },
+  "guangyuan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Guangyuan"
+  },
+  "guangzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Guangzhou"
+  },
+  "guarulhos": {
+    "parent": "brazil",
+    "label": "Guarulhos"
+  },
+  "guatemala": {
+    "parent": "north_america",
+    "label": "Guatemala",
+    "children": [
+      "guatemala_city",
+      "quetzaltenango"
+    ]
+  },
+  "guatemala_city": {
+    "parent": "guatemala",
+    "label": "Guatemala City"
+  },
+  "guayaquil": {
+    "parent": "ecuador",
+    "label": "Guayaquil"
+  },
+  "gui​yang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Gui​yang"
+  },
+  "guigang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Guigang"
+  },
+  "guilin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Guilin"
+  },
+  "guinea": {
+    "parent": "africa",
+    "label": "Guinea",
+    "children": [
+      "conakry"
+    ]
+  },
+  "gujranwala": {
+    "parent": "pakistan",
+    "label": "Gujranwala"
+  },
+  "guntur": {
+    "parent": "india",
+    "label": "Guntur"
+  },
+  "gurgaon": {
+    "parent": "india",
+    "label": "Gurgaon"
+  },
+  "guwahati": {
+    "parent": "india",
+    "label": "Guwahati"
+  },
+  "guyuan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Guyuan"
+  },
+  "gwalior": {
+    "parent": "india",
+    "label": "Gwalior"
+  },
+  "gwangju": {
+    "parent": "south_korea",
+    "label": "Gwangju"
+  },
+  "hachiōji": {
+    "parent": "japan",
+    "label": "Hachiōji"
+  },
+  "haidong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Haidong"
+  },
+  "haikou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Haikou"
+  },
+  "haiphong": {
+    "parent": "vietnam",
+    "label": "Haiphong"
+  },
+  "haiti": {
+    "parent": "north_america",
+    "label": "Haiti",
+    "children": [
+      "carrefour",
+      "port-au-prince"
+    ]
+  },
+  "hamadan": {
+    "parent": "iran",
+    "label": "Hamadan"
+  },
+  "hamamatsu": {
+    "parent": "japan",
+    "label": "Hamamatsu"
+  },
+  "hamburg": {
+    "parent": "germany",
+    "label": "Hamburg"
+  },
+  "hamhung": {
+    "parent": "north_korea",
+    "label": "Hamhung"
+  },
+  "hamilton": {
+    "parent": "canada",
+    "label": "Hamilton"
+  },
+  "handan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Handan"
+  },
+  "hangzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hangzhou"
+  },
+  "hanoi": {
+    "parent": "vietnam",
+    "label": "Hanoi"
+  },
+  "hanover": {
+    "parent": "germany",
+    "label": "Hanover"
+  },
+  "hanzhong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hanzhong"
+  },
+  "harare": {
+    "parent": "zimbabwe",
+    "label": "Harare"
+  },
+  "harbin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Harbin"
+  },
+  "hargeisa": {
+    "parent": "somaliland",
+    "label": "Hargeisa"
+  },
+  "havana": {
+    "parent": "cuba",
+    "label": "Havana"
+  },
+  "hebi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hebi"
+  },
+  "hechi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hechi"
+  },
+  "hefei": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hefei"
+  },
+  "hegang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hegang"
+  },
+  "heihe": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Heihe"
+  },
+  "helsinki": {
+    "parent": "finland",
+    "label": "Helsinki"
+  },
+  "helwan": {
+    "parent": "egypt",
+    "label": "Helwan"
+  },
+  "hempstead": {
+    "parent": "united_states_of_america",
+    "label": "Hempstead"
+  },
+  "hengshui": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hengshui"
+  },
+  "hengyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hengyang"
+  },
+  "hermosillo": {
+    "parent": "mexico",
+    "label": "Hermosillo"
+  },
+  "heroica_matamoros": {
+    "parent": "mexico",
+    "label": "Heroica Matamoros"
+  },
+  "heyuan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Heyuan"
+  },
+  "heze": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Heze"
+  },
+  "hezhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hezhou"
+  },
+  "hillah": {
+    "parent": "iraq",
+    "label": "Hillah"
+  },
+  "himeji": {
+    "parent": "japan",
+    "label": "Himeji"
+  },
+  "hiroshima": {
+    "parent": "japan",
+    "label": "Hiroshima"
+  },
+  "hofuf": {
+    "parent": "saudi_arabia",
+    "label": "Hofuf"
+  },
+  "hohhot": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hohhot"
+  },
+  "homs": {
+    "parent": "syria",
+    "label": "Homs"
+  },
+  "honduras": {
+    "parent": "north_america",
+    "label": "Honduras",
+    "children": [
+      "comayaguela",
+      "san_pedro_sula",
+      "tegucigalpa"
+    ]
+  },
+  "hong_kong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hong Kong"
+  },
+  "honolulu_county": {
+    "parent": "united_states_of_america",
+    "label": "Honolulu County"
+  },
+  "houston": {
+    "parent": "united_states_of_america",
+    "label": "Houston"
+  },
+  "howrah": {
+    "parent": "india",
+    "label": "Howrah"
+  },
+  "huai\u0027an": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huai\u0027an"
+  },
+  "huaibei": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huaibei"
+  },
+  "huaihua": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huaihua"
+  },
+  "huainan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huainan"
+  },
+  "huambo": {
+    "parent": "angola",
+    "label": "Huambo"
+  },
+  "huanggang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huanggang"
+  },
+  "huangshan_city": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huangshan City"
+  },
+  "huangshi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huangshi"
+  },
+  "huaral": {
+    "parent": "peru",
+    "label": "Huaral"
+  },
+  "huizhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huizhou"
+  },
+  "huludao": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huludao"
+  },
+  "hulunbuir": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Hulunbuir"
+  },
+  "hungary": {
+    "parent": "europe",
+    "label": "Hungary",
+    "children": [
+      "budapest"
+    ]
+  },
+  "huzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Huzhou"
+  },
+  "hwaseong": {
+    "parent": "south_korea",
+    "label": "Hwaseong"
+  },
+  "hyderabad": {
+    "parent": "india",
+    "label": "Hyderabad"
+  },
+  "ife": {
+    "parent": "nigeria",
+    "label": "Ife"
+  },
+  "ilorin": {
+    "parent": "nigeria",
+    "label": "Ilorin"
+  },
+  "incheon": {
+    "parent": "south_korea",
+    "label": "Incheon"
+  },
+  "india": {
+    "parent": "asia",
+    "label": "India",
+    "children": [
+      "agartala",
+      "agra",
+      "ahmedabad",
+      "aligarh",
+      "allahabad",
+      "amritsar",
+      "asansol",
+      "aurangabad",
+      "bangalore",
+      "bareilly",
+      "bhilai",
+      "bhiwandi",
+      "bhopal",
+      "bhubaneswar",
+      "bikaner",
+      "chandigarh",
+      "chennai",
+      "coimbatore",
+      "cuttack",
+      "dehradun",
+      "delhi",
+      "faridabad",
+      "ghaziabad",
+      "gorakhpur",
+      "guntur",
+      "gurgaon",
+      "guwahati",
+      "gwalior",
+      "howrah",
+      "hyderabad",
+      "indore",
+      "jabalpur",
+      "jaipur",
+      "jalandhar",
+      "jammu",
+      "jamshedpur",
+      "jhansi",
+      "jodhpur",
+      "kadapa",
+      "kanpur",
+      "kochi",
+      "kolkata",
+      "kota",
+      "lucknow",
+      "madurai",
+      "mangalore",
+      "meerut",
+      "mira-bhayandar",
+      "mumbai",
+      "muradabad",
+      "mysore",
+      "nagpur",
+      "nashik",
+      "navi_mumbai",
+      "patna",
+      "pimpri-chinchwad",
+      "pune",
+      "raipur",
+      "rajkot",
+      "ranchi",
+      "saharanpur",
+      "salem",
+      "siliguri",
+      "solapur",
+      "srinagar",
+      "surat",
+      "thiruvananthapuram",
+      "trichy",
+      "ujjain",
+      "ulhasnagar",
+      "vadodara",
+      "varanasi",
+      "vasai-virar",
+      "vijayawada",
+      "visakhapatnam",
+      "warangal"
+    ]
+  },
+  "indianapolis": {
+    "parent": "united_states_of_america",
+    "label": "Indianapolis"
+  },
+  "indonesia": {
+    "parent": "asia",
+    "label": "Indonesia",
+    "children": [
+      "bekasi",
+      "jakarta",
+      "malang",
+      "medan",
+      "semarang",
+      "surabaya",
+      "surakarta"
+    ]
+  },
+  "indore": {
+    "parent": "india",
+    "label": "Indore"
+  },
+  "ipoh": {
+    "parent": "malaysia",
+    "label": "Ipoh"
+  },
+  "iran": {
+    "parent": "asia",
+    "label": "Iran",
+    "children": [
+      "ahvaz",
+      "eslamshahr",
+      "greater_tehran",
+      "hamadan",
+      "isfahan",
+      "karaj",
+      "kerman",
+      "kermanshah",
+      "mashhad",
+      "qom",
+      "rasht",
+      "shiraz",
+      "tabriz",
+      "tehran",
+      "urmia",
+      "zahedan"
+    ]
+  },
+  "iraq": {
+    "parent": "asia",
+    "label": "Iraq",
+    "children": [
+      "amarah",
+      "baghdad",
+      "basra",
+      "ctesiphon",
+      "erbil",
+      "hillah",
+      "karbala",
+      "kirkuk",
+      "mosul",
+      "najaf",
+      "nasiriyah",
+      "sulaymaniyah"
+    ]
+  },
+  "irbid": {
+    "parent": "jordan",
+    "label": "Irbid"
+  },
+  "ireland": {
+    "parent": "europe",
+    "label": "Ireland",
+    "children": [
+      "dublin"
+    ]
+  },
+  "irkutsk": {
+    "parent": "russia",
+    "label": "Irkutsk"
+  },
+  "isfahan": {
+    "parent": "iran",
+    "label": "Isfahan"
+  },
+  "islamabad": {
+    "parent": "pakistan",
+    "label": "Islamabad"
+  },
+  "israel": {
+    "parent": "asia",
+    "label": "Israel",
+    "children": [
+      "jerusalem"
+    ]
+  },
+  "istanbul": {
+    "parent": "turkey",
+    "label": "Istanbul"
+  },
+  "italy": {
+    "parent": "europe",
+    "label": "Italy",
+    "children": [
+      "genoa",
+      "milan",
+      "naples",
+      "palermo",
+      "rome",
+      "turin"
+    ]
+  },
+  "ivory_coast": {
+    "parent": "africa",
+    "label": "Ivory Coast",
+    "children": [
+      "abidjan",
+      "bouaké"
+    ]
+  },
+  "izhevsk": {
+    "parent": "russia",
+    "label": "Izhevsk"
+  },
+  "izmir": {
+    "parent": "turkey",
+    "label": "İzmir"
+  },
+  "jabalpur": {
+    "parent": "india",
+    "label": "Jabalpur"
+  },
+  "jacksonville": {
+    "parent": "united_states_of_america",
+    "label": "Jacksonville"
+  },
+  "jaipur": {
+    "parent": "india",
+    "label": "Jaipur"
+  },
+  "jakarta": {
+    "parent": "indonesia",
+    "label": "Jakarta"
+  },
+  "jalandhar": {
+    "parent": "india",
+    "label": "Jalandhar"
+  },
+  "jamaica": {
+    "parent": "north_america",
+    "label": "Jamaica",
+    "children": [
+      "kingston"
+    ]
+  },
+  "jammu": {
+    "parent": "india",
+    "label": "Jammu"
+  },
+  "jamshedpur": {
+    "parent": "india",
+    "label": "Jamshedpur"
+  },
+  "japan": {
+    "parent": "asia",
+    "label": "Japan",
+    "children": [
+      "chiba",
+      "fukuoka",
+      "funabashi",
+      "hachiōji",
+      "hamamatsu",
+      "himeji",
+      "hiroshima",
+      "kagoshima",
+      "kawaguchi",
+      "kawasaki",
+      "kitakyūshū",
+      "kōbe",
+      "kumamoto",
+      "kyoto",
+      "matsuyama",
+      "nagoya",
+      "niigata",
+      "okayama",
+      "ōsaka",
+      "sagamihara",
+      "saitama",
+      "sakai",
+      "sapporo",
+      "sendai",
+      "shizuoka",
+      "tokyo",
+      "utsunomiya",
+      "yokohama"
+    ]
+  },
+  "jeddah": {
+    "parent": "saudi_arabia",
+    "label": "Jeddah"
+  },
+  "jeonju": {
+    "parent": "south_korea",
+    "label": "Jeonju"
+  },
+  "jerusalem": {
+    "parent": "israel",
+    "label": "Jerusalem"
+  },
+  "jhansi": {
+    "parent": "india",
+    "label": "Jhansi"
+  },
+  "jiamusi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jiamusi"
+  },
+  "ji\u0027an": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ji\u0027an"
+  },
+  "jiangmen": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jiangmen"
+  },
+  "jiaozuo": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jiaozuo"
+  },
+  "jiaxing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jiaxing"
+  },
+  "jieyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jieyang"
+  },
+  "jilin_city": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jilin City"
+  },
+  "jincheng": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jincheng"
+  },
+  "jingdezhen": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jingdezhen"
+  },
+  "jingmen_city": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jingmen City"
+  },
+  "jingzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jingzhou"
+  },
+  "jinhua": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jinhua"
+  },
+  "jining": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jining"
+  },
+  "jinzhong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jinzhong"
+  },
+  "jinzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jinzhou"
+  },
+  "jiu​jiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jiu​jiang"
+  },
+  "jiuquan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jiuquan"
+  },
+  "jixi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Jixi"
+  },
+  "jodhpur": {
+    "parent": "india",
+    "label": "Jodhpur"
+  },
+  "johannesburg": {
+    "parent": "south_africa",
+    "label": "Johannesburg"
+  },
+  "jordan": {
+    "parent": "asia",
+    "label": "Jordan",
+    "children": [
+      "amman",
+      "irbid"
+    ]
+  },
+  "jos": {
+    "parent": "nigeria",
+    "label": "Jos"
+  },
+  "kabul": {
+    "parent": "afghanistan",
+    "label": "Kabul"
+  },
+  "kadapa": {
+    "parent": "india",
+    "label": "Kadapa"
+  },
+  "kaduna": {
+    "parent": "nigeria",
+    "label": "Kaduna"
+  },
+  "kagoshima": {
+    "parent": "japan",
+    "label": "Kagoshima"
+  },
+  "kaifeng": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Kaifeng"
+  },
+  "kampala": {
+    "parent": "uganda",
+    "label": "Kampala"
+  },
+  "kananga": {
+    "parent": "democratic_republic_of_the_congo",
+    "label": "Kananga"
+  },
+  "kano": {
+    "parent": "nigeria",
+    "label": "Kano"
+  },
+  "kanpur": {
+    "parent": "india",
+    "label": "Kanpur"
+  },
+  "kaohsiung_city": {
+    "parent": "taiwan",
+    "label": "Kaohsiung City"
+  },
+  "karachi": {
+    "parent": "pakistan",
+    "label": "Karachi"
+  },
+  "karaganda": {
+    "parent": "kazakhstan",
+    "label": "Karaganda"
+  },
+  "karaj": {
+    "parent": "iran",
+    "label": "Karaj"
+  },
+  "karbala": {
+    "parent": "iraq",
+    "label": "Karbala"
+  },
+  "kathmandu": {
+    "parent": "nepal",
+    "label": "Kathmandu"
+  },
+  "kawaguchi": {
+    "parent": "japan",
+    "label": "Kawaguchi"
+  },
+  "kawasaki": {
+    "parent": "japan",
+    "label": "Kawasaki"
+  },
+  "kayseri": {
+    "parent": "turkey",
+    "label": "Kayseri"
+  },
+  "kazakhstan": {
+    "parent": "asia",
+    "label": "Kazakhstan",
+    "children": [
+      "almaty",
+      "astana",
+      "karaganda",
+      "shymkent"
+    ]
+  },
+  "kazan": {
+    "parent": "russia",
+    "label": "Kazan"
+  },
+  "kemerovo": {
+    "parent": "russia",
+    "label": "Kemerovo"
+  },
+  "kenya": {
+    "parent": "africa",
+    "label": "Kenya",
+    "children": [
+      "mombasa",
+      "nairobi"
+    ]
+  },
+  "kerman": {
+    "parent": "iran",
+    "label": "Kerman"
+  },
+  "kermanshah": {
+    "parent": "iran",
+    "label": "Kermanshah"
+  },
+  "khabarovsk": {
+    "parent": "russia",
+    "label": "Khabarovsk"
+  },
+  "kharkiv": {
+    "parent": "ukraine",
+    "label": "Kharkiv"
+  },
+  "khartoum": {
+    "parent": "sudan",
+    "label": "Khartoum"
+  },
+  "khartoum_north": {
+    "parent": "sudan",
+    "label": "Khartoum North"
+  },
+  "khulna": {
+    "parent": "bangladesh",
+    "label": "Khulna"
+  },
+  "kigali": {
+    "parent": "rwanda",
+    "label": "Kigali"
+  },
+  "kingston": {
+    "parent": "jamaica",
+    "label": "Kingston"
+  },
+  "kinshasa": {
+    "parent": "democratic_republic_of_the_congo",
+    "label": "Kinshasa"
+  },
+  "kirkuk": {
+    "parent": "iraq",
+    "label": "Kirkuk"
+  },
+  "kirov": {
+    "parent": "russia",
+    "label": "Kirov"
+  },
+  "kitakyūshū": {
+    "parent": "japan",
+    "label": "Kitakyūshū"
+  },
+  "kitwe": {
+    "parent": "zambia",
+    "label": "Kitwe"
+  },
+  "klang": {
+    "parent": "malaysia",
+    "label": "Klang"
+  },
+  "kōbe": {
+    "parent": "japan",
+    "label": "Kōbe"
+  },
+  "kochi": {
+    "parent": "india",
+    "label": "Kochi"
+  },
+  "kolkata": {
+    "parent": "india",
+    "label": "Kolkata"
+  },
+  "kota": {
+    "parent": "india",
+    "label": "Kota"
+  },
+  "kraków": {
+    "parent": "poland",
+    "label": "Kraków"
+  },
+  "krasnodar": {
+    "parent": "russia",
+    "label": "Krasnodar"
+  },
+  "krasnoyarsk": {
+    "parent": "russia",
+    "label": "Krasnoyarsk"
+  },
+  "kryvyi_rih": {
+    "parent": "ukraine",
+    "label": "Kryvyi Rih"
+  },
+  "kuala_lumpur": {
+    "parent": "malaysia",
+    "label": "Kuala Lumpur"
+  },
+  "kuantan": {
+    "parent": "malaysia",
+    "label": "Kuantan"
+  },
+  "kumamoto": {
+    "parent": "japan",
+    "label": "Kumamoto"
+  },
+  "kumasi": {
+    "parent": "ghana",
+    "label": "Kumasi"
+  },
+  "kunming": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Kunming"
+  },
+  "kuwait": {
+    "parent": "asia",
+    "label": "Kuwait",
+    "children": [
+      "kuwait_city"
+    ]
+  },
+  "kuwait_city": {
+    "parent": "kuwait",
+    "label": "Kuwait City"
+  },
+  "kyiv": {
+    "parent": "ukraine",
+    "label": "Kyiv"
+  },
+  "kyoto": {
+    "parent": "japan",
+    "label": "Kyoto"
+  },
+  "kyrgyzstan": {
+    "parent": "asia",
+    "label": "Kyrgyzstan",
+    "children": [
+      "bishkek"
+    ]
+  },
+  "la_paz": {
+    "parent": "bolivia",
+    "label": "La Paz"
+  },
+  "la_plata": {
+    "parent": "argentina",
+    "label": "La Plata"
+  },
+  "lagos": {
+    "parent": "nigeria",
+    "label": "Lagos"
+  },
+  "lahore": {
+    "parent": "pakistan",
+    "label": "Lahore"
+  },
+  "laibin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Laibin"
+  },
+  "laiwu": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Laiwu"
+  },
+  "langfang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Langfang"
+  },
+  "lanzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Lanzhou"
+  },
+  "laos": {
+    "parent": "asia",
+    "label": "Laos",
+    "children": [
+      "vientiane"
+    ]
+  },
+  "las_piñas": {
+    "parent": "philippines",
+    "label": "Las Piñas"
+  },
+  "las_vegas": {
+    "parent": "united_states_of_america",
+    "label": "Las Vegas"
+  },
+  "latakia": {
+    "parent": "syria",
+    "label": "Latakia"
+  },
+  "latvia": {
+    "parent": "europe",
+    "label": "Latvia",
+    "children": [
+      "riga"
+    ]
+  },
+  "leeds": {
+    "parent": "united_kingdom",
+    "label": "Leeds"
+  },
+  "leipzig": {
+    "parent": "germany",
+    "label": "Leipzig"
+  },
+  "león": {
+    "parent": "mexico",
+    "label": "León"
+  },
+  "leshan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Leshan"
+  },
+  "lianyungang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Lianyungang"
+  },
+  "liaocheng": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Liaocheng"
+  },
+  "liaoyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Liaoyang"
+  },
+  "liberia": {
+    "parent": "africa",
+    "label": "Liberia",
+    "children": [
+      "monrovia"
+    ]
+  },
+  "libreville": {
+    "parent": "gabon",
+    "label": "Libreville"
+  },
+  "libya": {
+    "parent": "africa",
+    "label": "Libya",
+    "children": [
+      "benghazi",
+      "tripoli"
+    ]
+  },
+  "lijiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Lijiang"
+  },
+  "lilongwe": {
+    "parent": "malawi",
+    "label": "Lilongwe"
+  },
+  "lima": {
+    "parent": "peru",
+    "label": "Lima"
+  },
+  "lincang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Lincang"
+  },
+  "linfen": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Linfen"
+  },
+  "linyi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Linyi"
+  },
+  "lipetsk": {
+    "parent": "russia",
+    "label": "Lipetsk"
+  },
+  "lisbon": {
+    "parent": "portugal",
+    "label": "Lisbon"
+  },
+  "lishui": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Lishui"
+  },
+  "lithuania": {
+    "parent": "europe",
+    "label": "Lithuania",
+    "children": [
+      "vilnius"
+    ]
+  },
+  "liupanshui": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Liupanshui"
+  },
+  "liuzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Liuzhou"
+  },
+  "liverpool": {
+    "parent": "united_kingdom",
+    "label": "Liverpool"
+  },
+  "łódź": {
+    "parent": "poland",
+    "label": "Łódź"
+  },
+  "lomé": {
+    "parent": "togo",
+    "label": "Lomé"
+  },
+  "london": {
+    "parent": "united_kingdom",
+    "label": "London"
+  },
+  "longnan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Longnan"
+  },
+  "longyan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Longyan"
+  },
+  "los_angeles": {
+    "parent": "united_states_of_america",
+    "label": "Los Angeles"
+  },
+  "loudi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Loudi"
+  },
+  "louisville": {
+    "parent": "united_states_of_america",
+    "label": "Louisville"
+  },
+  "lu\u0027an": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Lu\u0027an"
+  },
+  "luanda": {
+    "parent": "angola",
+    "label": "Luanda"
+  },
+  "lubumbashi": {
+    "parent": "democratic_republic_of_the_congo",
+    "label": "Lubumbashi"
+  },
+  "lucknow": {
+    "parent": "india",
+    "label": "Lucknow"
+  },
+  "lüliang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Lüliang"
+  },
+  "luohe": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Luohe"
+  },
+  "luoyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Luoyang"
+  },
+  "lusaka": {
+    "parent": "zambia",
+    "label": "Lusaka"
+  },
+  "luzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Luzhou"
+  },
+  "lviv": {
+    "parent": "ukraine",
+    "label": "Lviv"
+  },
+  "lyon": {
+    "parent": "france",
+    "label": "Lyon"
+  },
+  "ma\u0027anshan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ma\u0027anshan"
+  },
+  "macau": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Macau"
+  },
+  "macedonia": {
+    "parent": "europe",
+    "label": "Macedonia",
+    "children": [
+      "skopje"
+    ]
+  },
+  "maceió": {
+    "parent": "brazil",
+    "label": "Maceió"
+  },
+  "madagascar": {
+    "parent": "africa",
+    "label": "Madagascar",
+    "children": [
+      "antananarivo"
+    ]
+  },
+  "madrid": {
+    "parent": "spain",
+    "label": "Madrid"
+  },
+  "madurai": {
+    "parent": "india",
+    "label": "Madurai"
+  },
+  "maiduguri": {
+    "parent": "nigeria",
+    "label": "Maiduguri"
+  },
+  "makati": {
+    "parent": "philippines",
+    "label": "Makati"
+  },
+  "makhachkala": {
+    "parent": "russia",
+    "label": "Makhachkala"
+  },
+  "málaga": {
+    "parent": "spain",
+    "label": "Málaga"
+  },
+  "malang": {
+    "parent": "indonesia",
+    "label": "Malang"
+  },
+  "malawi": {
+    "parent": "africa",
+    "label": "Malawi",
+    "children": [
+      "blantyre",
+      "lilongwe"
+    ]
+  },
+  "malaysia": {
+    "parent": "asia",
+    "label": "Malaysia",
+    "children": [
+      "george_town",
+      "ipoh",
+      "klang",
+      "kuala_lumpur",
+      "kuantan",
+      "petaling_jaya",
+      "shah_alam",
+      "subang_jaya"
+    ]
+  },
+  "managua": {
+    "parent": "nicaragua",
+    "label": "Managua"
+  },
+  "manchester": {
+    "parent": "united_kingdom",
+    "label": "Manchester"
+  },
+  "mandalay": {
+    "parent": "myanmar",
+    "label": "Mandalay"
+  },
+  "mangalore": {
+    "parent": "india",
+    "label": "Mangalore"
+  },
+  "manila": {
+    "parent": "philippines",
+    "label": "Manila"
+  },
+  "maoming": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Maoming"
+  },
+  "maputo": {
+    "parent": "mozambique",
+    "label": "Maputo"
+  },
+  "mar_del_plata": {
+    "parent": "argentina",
+    "label": "Mar del Plata"
+  },
+  "maracaibo": {
+    "parent": "venezuela",
+    "label": "Maracaibo"
+  },
+  "maracay": {
+    "parent": "venezuela",
+    "label": "Maracay"
+  },
+  "marrakesh": {
+    "parent": "morocco",
+    "label": "Marrakesh"
+  },
+  "marseille": {
+    "parent": "france",
+    "label": "Marseille"
+  },
+  "mashhad": {
+    "parent": "iran",
+    "label": "Mashhad"
+  },
+  "matola": {
+    "parent": "mozambique",
+    "label": "Matola"
+  },
+  "matsuyama": {
+    "parent": "japan",
+    "label": "Matsuyama"
+  },
+  "mauritania": {
+    "parent": "africa",
+    "label": "Mauritania",
+    "children": [
+      "nouakchott"
+    ]
+  },
+  "mawlamyine": {
+    "parent": "myanmar",
+    "label": "Mawlamyine"
+  },
+  "mecca": {
+    "parent": "saudi_arabia",
+    "label": "Mecca"
+  },
+  "medan": {
+    "parent": "indonesia",
+    "label": "Medan"
+  },
+  "medellín": {
+    "parent": "colombia",
+    "label": "Medellín"
+  },
+  "medina": {
+    "parent": "saudi_arabia",
+    "label": "Medina"
+  },
+  "meerut": {
+    "parent": "india",
+    "label": "Meerut"
+  },
+  "meishan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Meishan"
+  },
+  "meizhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Meizhou"
+  },
+  "meknes": {
+    "parent": "morocco",
+    "label": "Meknes"
+  },
+  "melbourne": {
+    "parent": "australia",
+    "label": "Melbourne"
+  },
+  "memphis": {
+    "parent": "united_states_of_america",
+    "label": "Memphis"
+  },
+  "mérida": {
+    "parent": "mexico",
+    "label": "Mérida"
+  },
+  "mexicali": {
+    "parent": "mexico",
+    "label": "Mexicali"
+  },
+  "mexico": {
+    "parent": "north_america",
+    "label": "Mexico",
+    "children": [
+      "acapulco",
+      "aguascalientes_city",
+      "cancún",
+      "chihuahua",
+      "ciudad_juárez",
+      "ciudad_nezahualcóyotl",
+      "culiacán",
+      "durango",
+      "ecatepec_de_morelos",
+      "guadalajara",
+      "guadalupe",
+      "hermosillo",
+      "heroica_matamoros",
+      "león",
+      "mérida",
+      "mexicali",
+      "mexico_city",
+      "monterrey",
+      "puebla_garcia",
+      "reynosa",
+      "san_luis_potosí",
+      "tlaquepaque",
+      "toluca",
+      "torreón",
+      "tultitlán_de_mariano_escobedo",
+      "tuxtla_gutiérrez",
+      "zapopan"
+    ]
+  },
+  "mexico_city": {
+    "parent": "mexico",
+    "label": "Mexico City"
+  },
+  "mianyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Mianyang"
+  },
+  "milan": {
+    "parent": "italy",
+    "label": "Milan"
+  },
+  "milwaukee": {
+    "parent": "united_states_of_america",
+    "label": "Milwaukee"
+  },
+  "minsk": {
+    "parent": "belarus",
+    "label": "Minsk"
+  },
+  "mira-bhayandar": {
+    "parent": "india",
+    "label": "Mira-Bhayandar"
+  },
+  "mississauga": {
+    "parent": "canada",
+    "label": "Mississauga"
+  },
+  "mogadishu": {
+    "parent": "somalia",
+    "label": "Mogadishu"
+  },
+  "moldova": {
+    "parent": "europe",
+    "label": "Moldova",
+    "children": [
+      "chișinău"
+    ]
+  },
+  "mombasa": {
+    "parent": "kenya",
+    "label": "Mombasa"
+  },
+  "mongolia": {
+    "parent": "asia",
+    "label": "Mongolia",
+    "children": [
+      "ulaanbaatar"
+    ]
+  },
+  "monrovia": {
+    "parent": "liberia",
+    "label": "Monrovia"
+  },
+  "monterrey": {
+    "parent": "mexico",
+    "label": "Monterrey"
+  },
+  "montevideo": {
+    "parent": "uruguay",
+    "label": "Montevideo"
+  },
+  "montreal": {
+    "parent": "canada",
+    "label": "Montreal"
+  },
+  "morocco": {
+    "parent": "africa",
+    "label": "Morocco",
+    "children": [
+      "casablanca",
+      "fes",
+      "marrakesh",
+      "meknes",
+      "rabat",
+      "salé",
+      "tangier"
+    ]
+  },
+  "moscow": {
+    "parent": "russia",
+    "label": "Moscow"
+  },
+  "mosul": {
+    "parent": "iraq",
+    "label": "Mosul"
+  },
+  "mozambique": {
+    "parent": "africa",
+    "label": "Mozambique",
+    "children": [
+      "maputo",
+      "matola"
+    ]
+  },
+  "mudanjiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Mudanjiang"
+  },
+  "multan": {
+    "parent": "pakistan",
+    "label": "Multan"
+  },
+  "mumbai": {
+    "parent": "india",
+    "label": "Mumbai"
+  },
+  "munich": {
+    "parent": "germany",
+    "label": "Munich"
+  },
+  "muntinlupa": {
+    "parent": "philippines",
+    "label": "Muntinlupa"
+  },
+  "muradabad": {
+    "parent": "india",
+    "label": "Muradabad"
+  },
+  "muscat": {
+    "parent": "oman",
+    "label": "Muscat"
+  },
+  "myanmar": {
+    "parent": "asia",
+    "label": "Myanmar",
+    "children": [
+      "mandalay",
+      "mawlamyine",
+      "naypyidaw",
+      "yangon"
+    ]
+  },
+  "mysore": {
+    "parent": "india",
+    "label": "Mysore"
+  },
+  "naberezhnye_chelny": {
+    "parent": "russia",
+    "label": "Naberezhnye Chelny"
+  },
+  "nagoya": {
+    "parent": "japan",
+    "label": "Nagoya"
+  },
+  "nagpur": {
+    "parent": "india",
+    "label": "Nagpur"
+  },
+  "nairobi": {
+    "parent": "kenya",
+    "label": "Nairobi"
+  },
+  "najaf": {
+    "parent": "iraq",
+    "label": "Najaf"
+  },
+  "namyangju": {
+    "parent": "south_korea",
+    "label": "Namyangju"
+  },
+  "nanchang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Nanchang"
+  },
+  "nanchong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Nanchong"
+  },
+  "nanjing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Nanjing"
+  },
+  "nanning": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Nanning"
+  },
+  "nanping": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Nanping"
+  },
+  "nantong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Nantong"
+  },
+  "nanyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Nanyang"
+  },
+  "naples": {
+    "parent": "italy",
+    "label": "Naples"
+  },
+  "nashik": {
+    "parent": "india",
+    "label": "Nashik"
+  },
+  "nashville": {
+    "parent": "united_states_of_america",
+    "label": "Nashville"
+  },
+  "nasiriyah": {
+    "parent": "iraq",
+    "label": "Nasiriyah"
+  },
+  "natal": {
+    "parent": "brazil",
+    "label": "Natal"
+  },
+  "navi_mumbai": {
+    "parent": "india",
+    "label": "Navi Mumbai"
+  },
+  "naypyidaw": {
+    "parent": "myanmar",
+    "label": "Naypyidaw"
+  },
+  "n\u0027djamena": {
+    "parent": "chad",
+    "label": "N\u0027Djamena"
+  },
+  "neijiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Neijiang"
+  },
+  "nepal": {
+    "parent": "asia",
+    "label": "Nepal",
+    "children": [
+      "kathmandu"
+    ]
+  },
+  "netherlands": {
+    "parent": "europe",
+    "label": "Netherlands",
+    "children": [
+      "amsterdam",
+      "rotterdam",
+      "the_hague"
+    ]
+  },
+  "new_delhi": {
+    "parent": "asia",
+    "label": "New Delhi"
+  },
+  "new_york_city": {
+    "parent": "united_states_of_america",
+    "label": "New York City"
+  },
+  "new_zealand": {
+    "parent": "oceania",
+    "label": "New Zealand",
+    "children": [
+      "auckland"
+    ]
+  },
+  "niamey": {
+    "parent": "niger",
+    "label": "Niamey"
+  },
+  "nicaragua": {
+    "parent": "north_america",
+    "label": "Nicaragua",
+    "children": [
+      "managua"
+    ]
+  },
+  "niger": {
+    "parent": "africa",
+    "label": "Niger",
+    "children": [
+      "niamey"
+    ]
+  },
+  "nigeria": {
+    "parent": "africa",
+    "label": "Nigeria",
+    "children": [
+      "aba",
+      "abeokuta",
+      "abuja",
+      "enugu",
+      "ife",
+      "ilorin",
+      "jos",
+      "kaduna",
+      "kano",
+      "lagos",
+      "maiduguri",
+      "ogbomosho",
+      "onitsha",
+      "port_harcourt"
+    ]
+  },
+  "niigata": {
+    "parent": "japan",
+    "label": "Niigata"
+  },
+  "ningbo": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ningbo"
+  },
+  "ningde": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ningde"
+  },
+  "nizhny_novgorod": {
+    "parent": "russia",
+    "label": "Nizhny Novgorod"
+  },
+  "north_america": {
+    "parent": "place_of_birth",
+    "label": "North America",
+    "children": [
+      "canada",
+      "cuba",
+      "dominican_republic",
+      "el_salvador",
+      "guatemala",
+      "haiti",
+      "honduras",
+      "jamaica",
+      "mexico",
+      "nicaragua",
+      "panama",
+      "united_states_of_america"
+    ]
+  },
+  "north_korea": {
+    "parent": "asia",
+    "label": "North Korea",
+    "children": [
+      "hamhung",
+      "pyongyang"
+    ]
+  },
+  "norway": {
+    "parent": "europe",
+    "label": "Norway",
+    "children": [
+      "oslo"
+    ]
+  },
+  "nouakchott": {
+    "parent": "mauritania",
+    "label": "Nouakchott"
+  },
+  "novokuznetsk": {
+    "parent": "russia",
+    "label": "Novokuznetsk"
+  },
+  "novosibirsk": {
+    "parent": "russia",
+    "label": "Novosibirsk"
+  },
+  "nuremberg": {
+    "parent": "germany",
+    "label": "Nuremberg"
+  },
+  "oceania": {
+    "parent": "place_of_birth",
+    "label": "Oceania",
+    "children": [
+      "new_zealand"
+    ]
+  },
+  "odessa": {
+    "parent": "ukraine",
+    "label": "Odessa"
+  },
+  "ogbomosho": {
+    "parent": "nigeria",
+    "label": "Ogbomosho"
+  },
+  "okayama": {
+    "parent": "japan",
+    "label": "Okayama"
+  },
+  "oklahoma_city": {
+    "parent": "united_states_of_america",
+    "label": "Oklahoma City"
+  },
+  "oman": {
+    "parent": "asia",
+    "label": "Oman",
+    "children": [
+      "muscat"
+    ]
+  },
+  "omdurman": {
+    "parent": "sudan",
+    "label": "Omdurman"
+  },
+  "omsk": {
+    "parent": "russia",
+    "label": "Omsk"
+  },
+  "onitsha": {
+    "parent": "nigeria",
+    "label": "Onitsha"
+  },
+  "ordos_city": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ordos City"
+  },
+  "orenburg": {
+    "parent": "russia",
+    "label": "Orenburg"
+  },
+  "ōsaka": {
+    "parent": "japan",
+    "label": "Ōsaka"
+  },
+  "osasco": {
+    "parent": "brazil",
+    "label": "Osasco"
+  },
+  "oslo": {
+    "parent": "norway",
+    "label": "Oslo"
+  },
+  "ottawa": {
+    "parent": "canada",
+    "label": "Ottawa"
+  },
+  "ouagadougou": {
+    "parent": "burkina_faso",
+    "label": "Ouagadougou"
+  },
+  "pakistan": {
+    "parent": "asia",
+    "label": "Pakistan",
+    "children": [
+      "faisalabad",
+      "gujranwala",
+      "islamabad",
+      "karachi",
+      "lahore",
+      "multan",
+      "peshawar",
+      "quetta",
+      "rawalpindi",
+      "sargodha",
+      "sialkot"
+    ]
+  },
+  "palermo": {
+    "parent": "italy",
+    "label": "Palermo"
+  },
+  "panama": {
+    "parent": "north_america",
+    "label": "Panama",
+    "children": [
+      "panama_city"
+    ]
+  },
+  "panama_city": {
+    "parent": "panama",
+    "label": "Panama City"
+  },
+  "panjin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Panjin"
+  },
+  "panzhihua": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Panzhihua"
+  },
+  "paraguay": {
+    "parent": "south_america",
+    "label": "Paraguay",
+    "children": [
+      "asunción"
+    ]
+  },
+  "parañaque": {
+    "parent": "philippines",
+    "label": "Parañaque"
+  },
+  "paris": {
+    "parent": "france",
+    "label": "Paris"
+  },
+  "pasig": {
+    "parent": "philippines",
+    "label": "Pasig"
+  },
+  "patna": {
+    "parent": "india",
+    "label": "Patna"
+  },
+  "penza": {
+    "parent": "russia",
+    "label": "Penza"
+  },
+  "people\u0027s_republic_of_china": {
+    "parent": "asia",
+    "label": "People\u0027s Republic of China",
+    "children": [
+      "anqing",
+      "anshan",
+      "anshun",
+      "anyang",
+      "baise",
+      "baiyin",
+      "baoding",
+      "baoji",
+      "baoshan",
+      "baotou",
+      "bayannur",
+      "bazhong",
+      "beihai",
+      "beijing",
+      "bengbu",
+      "benxi",
+      "bijie",
+      "binzhou",
+      "bozhou",
+      "cangzhou",
+      "chamdo",
+      "changchun",
+      "changde",
+      "changsha",
+      "changzhi",
+      "changzhou",
+      "chaoyang",
+      "chaozhou",
+      "chengde",
+      "chengdu",
+      "chenzhou",
+      "chifeng",
+      "chizhou",
+      "chongqing",
+      "chongzuo",
+      "chuzhou",
+      "dalian",
+      "dandong",
+      "danzhou",
+      "daqing",
+      "datong",
+      "dazhou",
+      "deyang",
+      "dezhou",
+      "dingxi",
+      "dongguan",
+      "dongying",
+      "ezhou",
+      "fangchenggang",
+      "foshan",
+      "fushun",
+      "fuxin",
+      "fuyang",
+      "fuzhou",
+      "ganzhou",
+      "guang\u0027an",
+      "guangyuan",
+      "guangzhou",
+      "gui​yang",
+      "guigang",
+      "guilin",
+      "guyuan",
+      "haidong",
+      "haikou",
+      "handan",
+      "hangzhou",
+      "hanzhong",
+      "harbin",
+      "hebi",
+      "hechi",
+      "hefei",
+      "hegang",
+      "heihe",
+      "hengshui",
+      "hengyang",
+      "heyuan",
+      "heze",
+      "hezhou",
+      "hohhot",
+      "hong_kong",
+      "huai\u0027an",
+      "huaibei",
+      "huaihua",
+      "huainan",
+      "huanggang",
+      "huangshan_city",
+      "huangshi",
+      "huizhou",
+      "huludao",
+      "hulunbuir",
+      "huzhou",
+      "jiamusi",
+      "ji\u0027an",
+      "jiangmen",
+      "jiaozuo",
+      "jiaxing",
+      "jieyang",
+      "jilin_city",
+      "jincheng",
+      "jingdezhen",
+      "jingmen_city",
+      "jingzhou",
+      "jinhua",
+      "jining",
+      "jinzhong",
+      "jinzhou",
+      "jiu​jiang",
+      "jiuquan",
+      "jixi",
+      "kaifeng",
+      "kunming",
+      "laibin",
+      "laiwu",
+      "langfang",
+      "lanzhou",
+      "leshan",
+      "lianyungang",
+      "liaocheng",
+      "liaoyang",
+      "lijiang",
+      "lincang",
+      "linfen",
+      "linyi",
+      "lishui",
+      "liupanshui",
+      "liuzhou",
+      "longnan",
+      "longyan",
+      "loudi",
+      "lu\u0027an",
+      "lüliang",
+      "luohe",
+      "luoyang",
+      "luzhou",
+      "ma\u0027anshan",
+      "macau",
+      "maoming",
+      "meishan",
+      "meizhou",
+      "mianyang",
+      "mudanjiang",
+      "nanchang",
+      "nanchong",
+      "nanjing",
+      "nanning",
+      "nanping",
+      "nantong",
+      "nanyang",
+      "neijiang",
+      "ningbo",
+      "ningde",
+      "ordos_city",
+      "panjin",
+      "panzhihua",
+      "pingdingshan",
+      "pingliang",
+      "pingxiang",
+      "pu\u0027er_city",
+      "putian",
+      "puyang",
+      "qingdao",
+      "qingyang",
+      "qingyuan",
+      "qinhuangdao",
+      "qinzhou",
+      "qiqihar",
+      "qitaihe",
+      "quanzhou",
+      "qujing",
+      "quzhou",
+      "rizhao",
+      "sanmenxia",
+      "sanming",
+      "shanghai",
+      "shangluo",
+      "shangqiu",
+      "shangrao",
+      "shantou",
+      "shanwei",
+      "shaoguan",
+      "shaoxing",
+      "shaoyang",
+      "shenyang",
+      "shenzhen",
+      "shigatse",
+      "shijiazhuang",
+      "shiyan",
+      "shizuishan",
+      "shuangyashan",
+      "shuozhou",
+      "siping",
+      "suihua",
+      "suining",
+      "suizhou",
+      "suqian",
+      "suzhou",
+      "tai\u0027an",
+      "taiyuan",
+      "taizhou",
+      "tangshan",
+      "tianjin",
+      "tianshui",
+      "tieling",
+      "tongchuan",
+      "tongliao",
+      "tongling",
+      "tongren",
+      "turpan",
+      "ulanqab",
+      "ürümqi",
+      "weifang",
+      "weihai",
+      "weinan",
+      "wenzhou",
+      "wuhan",
+      "wuhu",
+      "wuwei",
+      "wuxi",
+      "wuzhong",
+      "wuzhou",
+      "xiamen",
+      "xi\u0027an",
+      "xiangtan",
+      "xiangyang",
+      "xianning",
+      "xianyang",
+      "xiaogan",
+      "xining",
+      "xinxiang",
+      "xinyang",
+      "xinyu",
+      "xinzhou",
+      "xuancheng",
+      "xuchang",
+      "xuzhou",
+      "ya\u0027an",
+      "yan\u0027an",
+      "yancheng",
+      "yangjiang",
+      "yangquan",
+      "yangzhou",
+      "yantai",
+      "yibin",
+      "yichang",
+      "yichun",
+      "yinchuan",
+      "yingkou",
+      "yingtan",
+      "yiyang",
+      "yongzhou",
+      "yueyang",
+      "yulin",
+      "yuncheng",
+      "yunfu",
+      "yuxi",
+      "zaozhuang",
+      "zhangjiajie",
+      "zhangjiakou",
+      "zhangye",
+      "zhangzhou",
+      "zhanjiang",
+      "zhaoqing",
+      "zhaotong",
+      "zhengzhou",
+      "zhenjiang",
+      "zhongshan",
+      "zhongwei",
+      "zhoukou",
+      "zhoushan",
+      "zhuhai",
+      "zhumadian",
+      "zhuzhou",
+      "zibo",
+      "zigong",
+      "ziyang",
+      "zunyi"
+    ]
+  },
+  "perm": {
+    "parent": "russia",
+    "label": "Perm"
+  },
+  "perth": {
+    "parent": "australia",
+    "label": "Perth"
+  },
+  "peru": {
+    "parent": "south_america",
+    "label": "Peru",
+    "children": [
+      "arequipa",
+      "chiclayo",
+      "huaral",
+      "lima",
+      "trujillo",
+      "yurimaguas"
+    ]
+  },
+  "peshawar": {
+    "parent": "pakistan",
+    "label": "Peshawar"
+  },
+  "petaling_jaya": {
+    "parent": "malaysia",
+    "label": "Petaling Jaya"
+  },
+  "philadelphia": {
+    "parent": "united_states_of_america",
+    "label": "Philadelphia"
+  },
+  "philippines": {
+    "parent": "asia",
+    "label": "Philippines",
+    "children": [
+      "antipolo",
+      "bacolod",
+      "bacoor",
+      "cagayan_de_oro",
+      "caloocan",
+      "cebu_city",
+      "dasmariñas",
+      "davao_city",
+      "general_santos",
+      "las_piñas",
+      "makati",
+      "manila",
+      "muntinlupa",
+      "parañaque",
+      "pasig",
+      "quezon_city",
+      "san_jose_del_monte",
+      "taguig",
+      "valenzuela",
+      "zamboanga_city"
+    ]
+  },
+  "phnom_penh": {
+    "parent": "cambodia",
+    "label": "Phnom Penh"
+  },
+  "phoenix": {
+    "parent": "united_states_of_america",
+    "label": "Phoenix"
+  },
+  "pimpri-chinchwad": {
+    "parent": "india",
+    "label": "Pimpri-Chinchwad"
+  },
+  "pingdingshan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Pingdingshan"
+  },
+  "pingliang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Pingliang"
+  },
+  "pingxiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Pingxiang"
+  },
+  "pohang": {
+    "parent": "south_korea",
+    "label": "Pohang"
+  },
+  "poland": {
+    "parent": "europe",
+    "label": "Poland",
+    "children": [
+      "kraków",
+      "łódź",
+      "poznań",
+      "warsaw",
+      "wrocław"
+    ]
+  },
+  "port_harcourt": {
+    "parent": "nigeria",
+    "label": "Port Harcourt"
+  },
+  "port_said": {
+    "parent": "egypt",
+    "label": "Port Said"
+  },
+  "port-au-prince": {
+    "parent": "haiti",
+    "label": "Port-au-Prince"
+  },
+  "portland": {
+    "parent": "united_states_of_america",
+    "label": "Portland"
+  },
+  "porto_alegre": {
+    "parent": "brazil",
+    "label": "Porto Alegre"
+  },
+  "portugal": {
+    "parent": "europe",
+    "label": "Portugal",
+    "children": [
+      "lisbon"
+    ]
+  },
+  "poznań": {
+    "parent": "poland",
+    "label": "Poznań"
+  },
+  "prague": {
+    "parent": "czech_republic",
+    "label": "Prague"
+  },
+  "pretoria": {
+    "parent": "south_africa",
+    "label": "Pretoria"
+  },
+  "puebla_garcia": {
+    "parent": "mexico",
+    "label": "Puebla Garcia"
+  },
+  "pu\u0027er_city": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Pu\u0027er City"
+  },
+  "pune": {
+    "parent": "india",
+    "label": "Pune"
+  },
+  "putian": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Putian"
+  },
+  "puyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Puyang"
+  },
+  "pyongyang": {
+    "parent": "north_korea",
+    "label": "Pyongyang"
+  },
+  "qatar": {
+    "parent": "asia",
+    "label": "Qatar",
+    "children": [
+      "doha"
+    ]
+  },
+  "qingdao": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Qingdao"
+  },
+  "qingyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Qingyang"
+  },
+  "qingyuan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Qingyuan"
+  },
+  "qinhuangdao": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Qinhuangdao"
+  },
+  "qinzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Qinzhou"
+  },
+  "qiqihar": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Qiqihar"
+  },
+  "qitaihe": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Qitaihe"
+  },
+  "qom": {
+    "parent": "iran",
+    "label": "Qom"
+  },
+  "quanzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Quanzhou"
+  },
+  "quebec_city": {
+    "parent": "canada",
+    "label": "Quebec City"
+  },
+  "quetta": {
+    "parent": "pakistan",
+    "label": "Quetta"
+  },
+  "quetzaltenango": {
+    "parent": "guatemala",
+    "label": "Quetzaltenango"
+  },
+  "quezon_city": {
+    "parent": "philippines",
+    "label": "Quezon City"
+  },
+  "quito": {
+    "parent": "ecuador",
+    "label": "Quito"
+  },
+  "qujing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Qujing"
+  },
+  "quzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Quzhou"
+  },
+  "rabat": {
+    "parent": "morocco",
+    "label": "Rabat"
+  },
+  "raipur": {
+    "parent": "india",
+    "label": "Raipur"
+  },
+  "rajkot": {
+    "parent": "india",
+    "label": "Rajkot"
+  },
+  "ranchi": {
+    "parent": "india",
+    "label": "Ranchi"
+  },
+  "rasht": {
+    "parent": "iran",
+    "label": "Rasht"
+  },
+  "rawalpindi": {
+    "parent": "pakistan",
+    "label": "Rawalpindi"
+  },
+  "recife": {
+    "parent": "brazil",
+    "label": "Recife"
+  },
+  "republic_of_the_congo": {
+    "parent": "africa",
+    "label": "Republic of the Congo",
+    "children": [
+      "brazzaville"
+    ]
+  },
+  "reynosa": {
+    "parent": "mexico",
+    "label": "Reynosa"
+  },
+  "ribeirão_preto": {
+    "parent": "brazil",
+    "label": "Ribeirão Preto"
+  },
+  "riga": {
+    "parent": "latvia",
+    "label": "Riga"
+  },
+  "rio_de_janeiro": {
+    "parent": "brazil",
+    "label": "Rio de Janeiro"
+  },
+  "riyadh": {
+    "parent": "saudi_arabia",
+    "label": "Riyadh"
+  },
+  "rizhao": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Rizhao"
+  },
+  "romania": {
+    "parent": "europe",
+    "label": "Romania",
+    "children": [
+      "bucharest"
+    ]
+  },
+  "rome": {
+    "parent": "italy",
+    "label": "Rome"
+  },
+  "rostov-on-don": {
+    "parent": "russia",
+    "label": "Rostov-on-Don"
+  },
+  "rotterdam": {
+    "parent": "netherlands",
+    "label": "Rotterdam"
+  },
+  "russia": {
+    "parent": "asia",
+    "label": "Russia",
+    "children": [
+      "astrakhan",
+      "barnaul",
+      "chelyabinsk",
+      "irkutsk",
+      "izhevsk",
+      "kazan",
+      "kemerovo",
+      "khabarovsk",
+      "kirov",
+      "krasnodar",
+      "krasnoyarsk",
+      "lipetsk",
+      "makhachkala",
+      "moscow",
+      "naberezhnye_chelny",
+      "nizhny_novgorod",
+      "novokuznetsk",
+      "novosibirsk",
+      "omsk",
+      "orenburg",
+      "penza",
+      "perm",
+      "rostov-on-don",
+      "ryazan",
+      "saint_petersburg",
+      "samara",
+      "saratov",
+      "tolyatti",
+      "tomsk",
+      "tyumen",
+      "ufa",
+      "ulyanovsk",
+      "vladivostok",
+      "volgograd",
+      "voronezh",
+      "yaroslavl",
+      "yekaterinburg"
+    ]
+  },
+  "rwanda": {
+    "parent": "africa",
+    "label": "Rwanda",
+    "children": [
+      "kigali"
+    ]
+  },
+  "ryazan": {
+    "parent": "russia",
+    "label": "Ryazan"
+  },
+  "sagamihara": {
+    "parent": "japan",
+    "label": "Sagamihara"
+  },
+  "saharanpur": {
+    "parent": "india",
+    "label": "Saharanpur"
+  },
+  "saint_petersburg": {
+    "parent": "russia",
+    "label": "Saint Petersburg"
+  },
+  "saitama": {
+    "parent": "japan",
+    "label": "Saitama"
+  },
+  "sakai": {
+    "parent": "japan",
+    "label": "Sakai"
+  },
+  "salé": {
+    "parent": "morocco",
+    "label": "Salé"
+  },
+  "salem": {
+    "parent": "india",
+    "label": "Salem"
+  },
+  "salvador": {
+    "parent": "brazil",
+    "label": "Salvador"
+  },
+  "samara": {
+    "parent": "russia",
+    "label": "Samara"
+  },
+  "samarkand": {
+    "parent": "uzbekistan",
+    "label": "Samarkand"
+  },
+  "san_antonio": {
+    "parent": "united_states_of_america",
+    "label": "San Antonio"
+  },
+  "san_diego": {
+    "parent": "united_states_of_america",
+    "label": "San Diego"
+  },
+  "san_francisco": {
+    "parent": "united_states_of_america",
+    "label": "San Francisco"
+  },
+  "san_jose": {
+    "parent": "united_states_of_america",
+    "label": "San Jose"
+  },
+  "san_jose_del_monte": {
+    "parent": "philippines",
+    "label": "San Jose del Monte"
+  },
+  "san_luis_potosí": {
+    "parent": "mexico",
+    "label": "San Luis Potosí"
+  },
+  "san_miguel_de_tucumán": {
+    "parent": "argentina",
+    "label": "San Miguel de Tucumán"
+  },
+  "san_pedro_sula": {
+    "parent": "honduras",
+    "label": "San Pedro Sula"
+  },
+  "san_salvador": {
+    "parent": "el_salvador",
+    "label": "San Salvador"
+  },
+  "sana\u0027a": {
+    "parent": "yemen",
+    "label": "Sana\u0027a"
+  },
+  "sanmenxia": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Sanmenxia"
+  },
+  "sanming": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Sanming"
+  },
+  "santa_cruz": {
+    "parent": "bolivia",
+    "label": "Santa Cruz"
+  },
+  "santa_marta": {
+    "parent": "colombia",
+    "label": "Santa Marta"
+  },
+  "santiago": {
+    "parent": "chile",
+    "label": "Santiago"
+  },
+  "santiago_de_los_caballeros": {
+    "parent": "dominican_republic",
+    "label": "Santiago de los Caballeros"
+  },
+  "santo_andré": {
+    "parent": "brazil",
+    "label": "Santo André"
+  },
+  "santo_domingo": {
+    "parent": "dominican_republic",
+    "label": "Santo Domingo"
+  },
+  "são_bernardo_do_campo": {
+    "parent": "brazil",
+    "label": "São Bernardo do Campo"
+  },
+  "são_josé_dos_campos": {
+    "parent": "brazil",
+    "label": "São José dos Campos"
+  },
+  "são_luís": {
+    "parent": "brazil",
+    "label": "São Luís"
+  },
+  "são_paulo": {
+    "parent": "brazil",
+    "label": "São Paulo"
+  },
+  "sapporo": {
+    "parent": "japan",
+    "label": "Sapporo"
+  },
+  "saratov": {
+    "parent": "russia",
+    "label": "Saratov"
+  },
+  "sargodha": {
+    "parent": "pakistan",
+    "label": "Sargodha"
+  },
+  "saudi_arabia": {
+    "parent": "asia",
+    "label": "Saudi Arabia",
+    "children": [
+      "buraidah",
+      "dammam",
+      "hofuf",
+      "jeddah",
+      "mecca",
+      "medina",
+      "riyadh"
+    ]
+  },
+  "seattle": {
+    "parent": "united_states_of_america",
+    "label": "Seattle"
+  },
+  "sekondi-takoradi": {
+    "parent": "ghana",
+    "label": "Sekondi-Takoradi"
+  },
+  "semarang": {
+    "parent": "indonesia",
+    "label": "Semarang"
+  },
+  "sendai": {
+    "parent": "japan",
+    "label": "Sendai"
+  },
+  "senegal": {
+    "parent": "africa",
+    "label": "Senegal",
+    "children": [
+      "dakar"
+    ]
+  },
+  "seongnam": {
+    "parent": "south_korea",
+    "label": "Seongnam"
+  },
+  "seoul": {
+    "parent": "south_korea",
+    "label": "Seoul"
+  },
+  "serbia": {
+    "parent": "europe",
+    "label": "Serbia",
+    "children": [
+      "belgrade"
+    ]
+  },
+  "seville": {
+    "parent": "spain",
+    "label": "Seville"
+  },
+  "sfax": {
+    "parent": "tunisia",
+    "label": "Sfax"
+  },
+  "shah_alam": {
+    "parent": "malaysia",
+    "label": "Shah Alam"
+  },
+  "shanghai": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shanghai"
+  },
+  "shangluo": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shangluo"
+  },
+  "shangqiu": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shangqiu"
+  },
+  "shangrao": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shangrao"
+  },
+  "shantou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shantou"
+  },
+  "shanwei": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shanwei"
+  },
+  "shaoguan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shaoguan"
+  },
+  "shaoxing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shaoxing"
+  },
+  "shaoyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shaoyang"
+  },
+  "sharjah": {
+    "parent": "united_arab_emirates",
+    "label": "Sharjah"
+  },
+  "sheffield": {
+    "parent": "united_kingdom",
+    "label": "Sheffield"
+  },
+  "shenyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shenyang"
+  },
+  "shenzhen": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shenzhen"
+  },
+  "shigatse": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shigatse"
+  },
+  "shijiazhuang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shijiazhuang"
+  },
+  "shiraz": {
+    "parent": "iran",
+    "label": "Shiraz"
+  },
+  "shiyan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shiyan"
+  },
+  "shizuishan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shizuishan"
+  },
+  "shizuoka": {
+    "parent": "japan",
+    "label": "Shizuoka"
+  },
+  "shuangyashan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shuangyashan"
+  },
+  "shubra_el-kheima": {
+    "parent": "egypt",
+    "label": "Shubra El-Kheima"
+  },
+  "shuozhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Shuozhou"
+  },
+  "shymkent": {
+    "parent": "kazakhstan",
+    "label": "Shymkent"
+  },
+  "sialkot": {
+    "parent": "pakistan",
+    "label": "Sialkot"
+  },
+  "sierra_leone": {
+    "parent": "africa",
+    "label": "Sierra Leone",
+    "children": [
+      "freetown"
+    ]
+  },
+  "siliguri": {
+    "parent": "india",
+    "label": "Siliguri"
+  },
+  "singapore": {
+    "parent": "asia",
+    "label": "Singapore"
+  },
+  "siping": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Siping"
+  },
+  "skopje": {
+    "parent": "macedonia",
+    "label": "Skopje"
+  },
+  "sofia": {
+    "parent": "bulgaria",
+    "label": "Sofia"
+  },
+  "solapur": {
+    "parent": "india",
+    "label": "Solapur"
+  },
+  "somalia": {
+    "parent": "africa",
+    "label": "Somalia",
+    "children": [
+      "mogadishu"
+    ]
+  },
+  "somaliland": {
+    "parent": "africa",
+    "label": "Somaliland",
+    "children": [
+      "hargeisa"
+    ]
+  },
+  "sorocaba": {
+    "parent": "brazil",
+    "label": "Sorocaba"
+  },
+  "south_africa": {
+    "parent": "africa",
+    "label": "South Africa",
+    "children": [
+      "durban",
+      "johannesburg",
+      "pretoria"
+    ]
+  },
+  "south_america": {
+    "parent": "place_of_birth",
+    "label": "South America",
+    "children": [
+      "argentina",
+      "bolivia",
+      "brazil",
+      "chile",
+      "colombia",
+      "ecuador",
+      "paraguay",
+      "peru",
+      "uruguay",
+      "venezuela"
+    ]
+  },
+  "south_korea": {
+    "parent": "asia",
+    "label": "South Korea",
+    "children": [
+      "ansan",
+      "bucheon",
+      "busan",
+      "changwon",
+      "cheonan",
+      "cheongju",
+      "daegu",
+      "daejeon",
+      "gimhae",
+      "goyang",
+      "gwangju",
+      "hwaseong",
+      "incheon",
+      "jeonju",
+      "namyangju",
+      "pohang",
+      "seongnam",
+      "seoul",
+      "suwon",
+      "ulsan",
+      "yongin"
+    ]
+  },
+  "soviet_union": {
+    "parent": "asia",
+    "label": "Soviet Union",
+    "children": [
+      "dnipro"
+    ]
+  },
+  "spain": {
+    "parent": "europe",
+    "label": "Spain",
+    "children": [
+      "madrid",
+      "málaga",
+      "seville",
+      "valencia",
+      "zaragoza"
+    ]
+  },
+  "sri_lanka": {
+    "parent": "asia",
+    "label": "Sri Lanka",
+    "children": [
+      "colombo"
+    ]
+  },
+  "srinagar": {
+    "parent": "india",
+    "label": "Srinagar"
+  },
+  "state_of_palestine": {
+    "parent": "asia",
+    "label": "State of Palestine",
+    "children": [
+      "gaza_city"
+    ]
+  },
+  "stockholm": {
+    "parent": "sweden",
+    "label": "Stockholm"
+  },
+  "subang_jaya": {
+    "parent": "malaysia",
+    "label": "Subang Jaya"
+  },
+  "sudan": {
+    "parent": "africa",
+    "label": "Sudan",
+    "children": [
+      "khartoum",
+      "khartoum_north",
+      "omdurman"
+    ]
+  },
+  "suihua": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Suihua"
+  },
+  "suining": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Suining"
+  },
+  "suizhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Suizhou"
+  },
+  "sulaymaniyah": {
+    "parent": "iraq",
+    "label": "Sulaymaniyah"
+  },
+  "suqian": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Suqian"
+  },
+  "surabaya": {
+    "parent": "indonesia",
+    "label": "Surabaya"
+  },
+  "surakarta": {
+    "parent": "indonesia",
+    "label": "Surakarta"
+  },
+  "surat": {
+    "parent": "india",
+    "label": "Surat"
+  },
+  "surrey": {
+    "parent": "canada",
+    "label": "Surrey"
+  },
+  "suwon": {
+    "parent": "south_korea",
+    "label": "Suwon"
+  },
+  "suzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Suzhou"
+  },
+  "sweden": {
+    "parent": "europe",
+    "label": "Sweden",
+    "children": [
+      "gothenburg",
+      "stockholm"
+    ]
+  },
+  "sydney": {
+    "parent": "australia",
+    "label": "Sydney"
+  },
+  "syria": {
+    "parent": "asia",
+    "label": "Syria",
+    "children": [
+      "aleppo",
+      "damascus",
+      "homs",
+      "latakia"
+    ]
+  },
+  "tabriz": {
+    "parent": "iran",
+    "label": "Tabriz"
+  },
+  "taguig": {
+    "parent": "philippines",
+    "label": "Taguig"
+  },
+  "tai\u0027an": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tai\u0027an"
+  },
+  "tainan": {
+    "parent": "taiwan",
+    "label": "Tainan"
+  },
+  "taipei": {
+    "parent": "taiwan",
+    "label": "Taipei"
+  },
+  "taiwan": {
+    "parent": "asia",
+    "label": "Taiwan",
+    "children": [
+      "kaohsiung_city",
+      "tainan",
+      "taipei",
+      "taoyuan_district"
+    ]
+  },
+  "taiyuan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Taiyuan"
+  },
+  "taizhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Taizhou"
+  },
+  "ta\u0027izz": {
+    "parent": "yemen",
+    "label": "Ta\u0027izz"
+  },
+  "tajikistan": {
+    "parent": "asia",
+    "label": "Tajikistan",
+    "children": [
+      "dushanbe"
+    ]
+  },
+  "tangier": {
+    "parent": "morocco",
+    "label": "Tangier"
+  },
+  "tangshan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tangshan"
+  },
+  "tanzania": {
+    "parent": "africa",
+    "label": "Tanzania",
+    "children": [
+      "dar_es_salaam"
+    ]
+  },
+  "taoyuan_district": {
+    "parent": "taiwan",
+    "label": "Taoyuan District"
+  },
+  "tashkent": {
+    "parent": "uzbekistan",
+    "label": "Tashkent"
+  },
+  "tbilisi": {
+    "parent": "georgia",
+    "label": "Tbilisi"
+  },
+  "tegucigalpa": {
+    "parent": "honduras",
+    "label": "Tegucigalpa"
+  },
+  "tehran": {
+    "parent": "iran",
+    "label": "Tehran"
+  },
+  "thailand": {
+    "parent": "asia",
+    "label": "Thailand",
+    "children": [
+      "bangkok"
+    ]
+  },
+  "the_hague": {
+    "parent": "netherlands",
+    "label": "The Hague"
+  },
+  "thiruvananthapuram": {
+    "parent": "india",
+    "label": "Thiruvananthapuram"
+  },
+  "tianjin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tianjin"
+  },
+  "tianshui": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tianshui"
+  },
+  "tieling": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tieling"
+  },
+  "tirana": {
+    "parent": "albania",
+    "label": "Tirana"
+  },
+  "tlaquepaque": {
+    "parent": "mexico",
+    "label": "Tlaquepaque"
+  },
+  "togo": {
+    "parent": "africa",
+    "label": "Togo",
+    "children": [
+      "lomé"
+    ]
+  },
+  "tokyo": {
+    "parent": "japan",
+    "label": "Tokyo"
+  },
+  "toluca": {
+    "parent": "mexico",
+    "label": "Toluca"
+  },
+  "tolyatti": {
+    "parent": "russia",
+    "label": "Tolyatti"
+  },
+  "tomsk": {
+    "parent": "russia",
+    "label": "Tomsk"
+  },
+  "tongchuan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tongchuan"
+  },
+  "tongliao": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tongliao"
+  },
+  "tongling": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tongling"
+  },
+  "tongren": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Tongren"
+  },
+  "toronto": {
+    "parent": "canada",
+    "label": "Toronto"
+  },
+  "torreón": {
+    "parent": "mexico",
+    "label": "Torreón"
+  },
+  "trichy": {
+    "parent": "india",
+    "label": "Trichy"
+  },
+  "tripoli": {
+    "parent": "libya",
+    "label": "Tripoli"
+  },
+  "trujillo": {
+    "parent": "peru",
+    "label": "Trujillo"
+  },
+  "tucson": {
+    "parent": "united_states_of_america",
+    "label": "Tucson"
+  },
+  "tultitlán_de_mariano_escobedo": {
+    "parent": "mexico",
+    "label": "Tultitlán de Mariano Escobedo"
+  },
+  "tunis": {
+    "parent": "tunisia",
+    "label": "Tunis"
+  },
+  "tunisia": {
+    "parent": "africa",
+    "label": "Tunisia",
+    "children": [
+      "sfax",
+      "tunis"
+    ]
+  },
+  "turin": {
+    "parent": "italy",
+    "label": "Turin"
+  },
+  "turkey": {
+    "parent": "asia",
+    "label": "Turkey",
+    "children": [
+      "adana",
+      "ankara",
+      "antalya",
+      "balıkesir",
+      "bursa",
+      "denizli",
+      "gaziantep",
+      "istanbul",
+      "izmir",
+      "kayseri"
+    ]
+  },
+  "turkmenistan": {
+    "parent": "asia",
+    "label": "Turkmenistan",
+    "children": [
+      "ashgabat"
+    ]
+  },
+  "turpan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Turpan"
+  },
+  "tuxtla_gutiérrez": {
+    "parent": "mexico",
+    "label": "Tuxtla Gutiérrez"
+  },
+  "tyumen": {
+    "parent": "russia",
+    "label": "Tyumen"
+  },
+  "uberlândia": {
+    "parent": "brazil",
+    "label": "Uberlândia"
+  },
+  "ufa": {
+    "parent": "russia",
+    "label": "Ufa"
+  },
+  "uganda": {
+    "parent": "africa",
+    "label": "Uganda",
+    "children": [
+      "kampala"
+    ]
+  },
+  "ujjain": {
+    "parent": "india",
+    "label": "Ujjain"
+  },
+  "ukraine": {
+    "parent": "europe",
+    "label": "Ukraine",
+    "children": [
+      "donetsk",
+      "kharkiv",
+      "kryvyi_rih",
+      "kyiv",
+      "lviv",
+      "odessa",
+      "zaporizhzhia"
+    ]
+  },
+  "ulaanbaatar": {
+    "parent": "mongolia",
+    "label": "Ulaanbaatar"
+  },
+  "ulanqab": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ulanqab"
+  },
+  "ulhasnagar": {
+    "parent": "india",
+    "label": "Ulhasnagar"
+  },
+  "ulsan": {
+    "parent": "south_korea",
+    "label": "Ulsan"
+  },
+  "ulyanovsk": {
+    "parent": "russia",
+    "label": "Ulyanovsk"
+  },
+  "united_arab_emirates": {
+    "parent": "asia",
+    "label": "United Arab Emirates",
+    "children": [
+      "abu_dhabi",
+      "al_ain",
+      "dubai",
+      "sharjah"
+    ]
+  },
+  "united_kingdom": {
+    "parent": "europe",
+    "label": "United Kingdom",
+    "children": [
+      "birmingham",
+      "glasgow",
+      "leeds",
+      "liverpool",
+      "london",
+      "manchester",
+      "sheffield"
+    ]
+  },
+  "united_states_of_america": {
+    "parent": "north_america",
+    "label": "United States of America",
+    "children": [
+      "albuquerque",
+      "austin",
+      "baltimore",
+      "boston",
+      "charlotte",
+      "chicago",
+      "columbus",
+      "dallas",
+      "denver",
+      "detroit",
+      "duval_county",
+      "el_paso",
+      "fort_worth",
+      "hempstead",
+      "honolulu_county",
+      "houston",
+      "indianapolis",
+      "jacksonville",
+      "las_vegas",
+      "los_angeles",
+      "louisville",
+      "memphis",
+      "milwaukee",
+      "nashville",
+      "new_york_city",
+      "oklahoma_city",
+      "philadelphia",
+      "phoenix",
+      "portland",
+      "san_antonio",
+      "san_diego",
+      "san_francisco",
+      "san_jose",
+      "seattle",
+      "tucson",
+      "washington,_d.c."
+    ]
+  },
+  "urmia": {
+    "parent": "iran",
+    "label": "Urmia"
+  },
+  "uruguay": {
+    "parent": "south_america",
+    "label": "Uruguay",
+    "children": [
+      "montevideo"
+    ]
+  },
+  "ürümqi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ürümqi"
+  },
+  "utsunomiya": {
+    "parent": "japan",
+    "label": "Utsunomiya"
+  },
+  "uzbekistan": {
+    "parent": "asia",
+    "label": "Uzbekistan",
+    "children": [
+      "samarkand",
+      "tashkent"
+    ]
+  },
+  "vadodara": {
+    "parent": "india",
+    "label": "Vadodara"
+  },
+  "valencia": {
+    "parent": "spain",
+    "label": "Valencia"
+  },
+  "valenzuela": {
+    "parent": "philippines",
+    "label": "Valenzuela"
+  },
+  "vancouver": {
+    "parent": "canada",
+    "label": "Vancouver"
+  },
+  "varanasi": {
+    "parent": "india",
+    "label": "Varanasi"
+  },
+  "vasai-virar": {
+    "parent": "india",
+    "label": "Vasai-Virar"
+  },
+  "venezuela": {
+    "parent": "south_america",
+    "label": "Venezuela",
+    "children": [
+      "barquisimeto",
+      "caracas",
+      "ciudad_guayana",
+      "maracaibo",
+      "maracay"
+    ]
+  },
+  "vienna": {
+    "parent": "austria",
+    "label": "Vienna"
+  },
+  "vientiane": {
+    "parent": "laos",
+    "label": "Vientiane"
+  },
+  "vietnam": {
+    "parent": "asia",
+    "label": "Vietnam",
+    "children": [
+      "biên_hòa",
+      "can_tho",
+      "da_nang",
+      "haiphong",
+      "hanoi"
+    ]
+  },
+  "vijayawada": {
+    "parent": "india",
+    "label": "Vijayawada"
+  },
+  "vilnius": {
+    "parent": "lithuania",
+    "label": "Vilnius"
+  },
+  "visakhapatnam": {
+    "parent": "india",
+    "label": "Visakhapatnam"
+  },
+  "vladivostok": {
+    "parent": "russia",
+    "label": "Vladivostok"
+  },
+  "volgograd": {
+    "parent": "russia",
+    "label": "Volgograd"
+  },
+  "voronezh": {
+    "parent": "russia",
+    "label": "Voronezh"
+  },
+  "warangal": {
+    "parent": "india",
+    "label": "Warangal"
+  },
+  "warsaw": {
+    "parent": "poland",
+    "label": "Warsaw"
+  },
+  "washington,_d.c.": {
+    "parent": "united_states_of_america",
+    "label": "Washington, D.C."
+  },
+  "weifang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Weifang"
+  },
+  "weihai": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Weihai"
+  },
+  "weinan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Weinan"
+  },
+  "wenzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Wenzhou"
+  },
+  "winnipeg": {
+    "parent": "canada",
+    "label": "Winnipeg"
+  },
+  "wrocław": {
+    "parent": "poland",
+    "label": "Wrocław"
+  },
+  "wuhan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Wuhan"
+  },
+  "wuhu": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Wuhu"
+  },
+  "wuwei": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Wuwei"
+  },
+  "wuxi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Wuxi"
+  },
+  "wuzhong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Wuzhong"
+  },
+  "wuzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Wuzhou"
+  },
+  "xiamen": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xiamen"
+  },
+  "xi\u0027an": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xi\u0027an"
+  },
+  "xiangtan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xiangtan"
+  },
+  "xiangyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xiangyang"
+  },
+  "xianning": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xianning"
+  },
+  "xianyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xianyang"
+  },
+  "xiaogan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xiaogan"
+  },
+  "xining": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xining"
+  },
+  "xinxiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xinxiang"
+  },
+  "xinyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xinyang"
+  },
+  "xinyu": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xinyu"
+  },
+  "xinzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xinzhou"
+  },
+  "xuancheng": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xuancheng"
+  },
+  "xuchang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xuchang"
+  },
+  "xuzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Xuzhou"
+  },
+  "ya\u0027an": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ya\u0027an"
+  },
+  "yan\u0027an": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yan\u0027an"
+  },
+  "yancheng": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yancheng"
+  },
+  "yangjiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yangjiang"
+  },
+  "yangon": {
+    "parent": "myanmar",
+    "label": "Yangon"
+  },
+  "yangquan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yangquan"
+  },
+  "yangzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yangzhou"
+  },
+  "yantai": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yantai"
+  },
+  "yaounde": {
+    "parent": "cameroon",
+    "label": "Yaounde"
+  },
+  "yaroslavl": {
+    "parent": "russia",
+    "label": "Yaroslavl"
+  },
+  "yekaterinburg": {
+    "parent": "russia",
+    "label": "Yekaterinburg"
+  },
+  "yemen": {
+    "parent": "asia",
+    "label": "Yemen",
+    "children": [
+      "aden",
+      "al_hudaydah",
+      "sana\u0027a",
+      "ta\u0027izz"
+    ]
+  },
+  "yerevan": {
+    "parent": "armenia",
+    "label": "Yerevan"
+  },
+  "yibin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yibin"
+  },
+  "yichang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yichang"
+  },
+  "yichun": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yichun"
+  },
+  "yinchuan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yinchuan"
+  },
+  "yingkou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yingkou"
+  },
+  "yingtan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yingtan"
+  },
+  "yiyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yiyang"
+  },
+  "yokohama": {
+    "parent": "japan",
+    "label": "Yokohama"
+  },
+  "yongin": {
+    "parent": "south_korea",
+    "label": "Yongin"
+  },
+  "yongzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yongzhou"
+  },
+  "yueyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yueyang"
+  },
+  "yulin": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yulin"
+  },
+  "yuncheng": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yuncheng"
+  },
+  "yunfu": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yunfu"
+  },
+  "yurimaguas": {
+    "parent": "peru",
+    "label": "Yurimaguas"
+  },
+  "yuxi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Yuxi"
+  },
+  "zagazig": {
+    "parent": "egypt",
+    "label": "Zagazig"
+  },
+  "zagreb": {
+    "parent": "croatia",
+    "label": "Zagreb"
+  },
+  "zahedan": {
+    "parent": "iran",
+    "label": "Zahedan"
+  },
+  "zambia": {
+    "parent": "africa",
+    "label": "Zambia",
+    "children": [
+      "kitwe",
+      "lusaka"
+    ]
+  },
+  "zamboanga_city": {
+    "parent": "philippines",
+    "label": "Zamboanga City"
+  },
+  "zaozhuang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zaozhuang"
+  },
+  "zapopan": {
+    "parent": "mexico",
+    "label": "Zapopan"
+  },
+  "zaporizhzhia": {
+    "parent": "ukraine",
+    "label": "Zaporizhzhia"
+  },
+  "zaragoza": {
+    "parent": "spain",
+    "label": "Zaragoza"
+  },
+  "zhangjiajie": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhangjiajie"
+  },
+  "zhangjiakou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhangjiakou"
+  },
+  "zhangye": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhangye"
+  },
+  "zhangzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhangzhou"
+  },
+  "zhanjiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhanjiang"
+  },
+  "zhaoqing": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhaoqing"
+  },
+  "zhaotong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhaotong"
+  },
+  "zhengzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhengzhou"
+  },
+  "zhenjiang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhenjiang"
+  },
+  "zhongshan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhongshan"
+  },
+  "zhongwei": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhongwei"
+  },
+  "zhoukou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhoukou"
+  },
+  "zhoushan": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhoushan"
+  },
+  "zhuhai": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhuhai"
+  },
+  "zhumadian": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhumadian"
+  },
+  "zhuzhou": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zhuzhou"
+  },
+  "zibo": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zibo"
+  },
+  "zigong": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zigong"
+  },
+  "zimbabwe": {
+    "parent": "africa",
+    "label": "Zimbabwe",
+    "children": [
+      "bulawayo",
+      "harare"
+    ]
+  },
+  "ziyang": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Ziyang"
+  },
+  "zunyi": {
+    "parent": "people\u0027s_republic_of_china",
+    "label": "Zunyi"
+  }
+}
