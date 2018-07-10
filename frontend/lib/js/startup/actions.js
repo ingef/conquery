@@ -1,17 +1,18 @@
 // @flow
 
-import api                     from '../api';
-import { expandPreviousQuery } from '../standard-query-editor/actions';
+import type { Dispatch }                    from 'redux-thunk';
+
+import api                                  from '../api';
+import { expandPreviousQuery }              from '../standard-query-editor/actions';
+import { loadAllPreviousQueriesInGroups }   from '../previous-queries/list/actions';
+import { loadDatasets, selectDatasetInput } from '../dataset/actions';
+import { defaultError, defaultSuccess }     from '../common/actions';
 
 import {
-  loadAllPreviousQueriesInGroups,
-} from '../previous-queries/list/actions';
-
-import {
-  loadDatasets,
-  selectDatasetInput
-} from '../dataset/actions';
-
+  LOAD_CONFIG_START,
+  LOAD_CONFIG_ERROR,
+  LOAD_CONFIG_SUCCESS
+}                                           from './actionTypes';
 
 export const startupOnDataset = (datasetId) =>
   loadDatasets(datasetId);
@@ -32,4 +33,19 @@ export const startupOnQuery = (datasetId, queryId) => {
         );
     }
   );
+}
+
+export const loadConfigStart = () => ({ type: LOAD_CONFIG_START });
+export const loadConfigError = (err: any) => defaultError(LOAD_CONFIG_ERROR, err);
+export const loadConfigSuccess = (res: any) => defaultSuccess(LOAD_CONFIG_SUCCESS, res);
+
+export const loadConfig = () => {
+  return (dispatch: Dispatch) => {
+    dispatch(loadConfigStart())
+
+    return api.getFrontendConfig().then(
+      r => dispatch(loadConfigSuccess(r)),
+      e => dispatch(loadConfigError(e))
+    )
+  }
 }

@@ -2,13 +2,8 @@ import React           from 'react';
 import PropTypes       from 'prop-types';
 import T               from 'i18n-react';
 import { connect }     from 'react-redux';
-import { loadVersion } from './actions';
 
 class Header extends React.Component {
-  componentDidMount() {
-    this.props.loadVersion();
-  }
-
   render() {
     return (
       <header className="header">
@@ -31,21 +26,14 @@ class Header extends React.Component {
 
 Header.propTypes = {
   version: PropTypes.string,
-  isDevelopment: PropTypes.bool,
-  loadVersion: PropTypes.func
+  isDevelopment: PropTypes.bool
 };
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    version: state.version ? state.version.version : '',
-    isDevelopment: state.version ? state.version.isDevelopment : false,
+    version: state.config ? state.config.version : '',
+    isDevelopment: state.config ? !state.config.production : false,
   }
 };
 
-const mapDispatchToProps = (dispatch) => {
-  return {
-    loadVersion: () => dispatch(loadVersion()),
-  };
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(Header);
+export default connect(mapStateToProps, {})(Header);
