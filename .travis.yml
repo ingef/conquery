@@ -8,14 +8,8 @@ before_script:
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
   
-addons:
-  apt:
-    sources:
-    - heroku
-    packages:
-    - heroku-toolbelt
-
 cache:
   directories:
   - "$HOME/.m2"
