@@ -1,9 +1,6 @@
 // @flow
 
 import type { Dispatch }               from 'redux';
-import {
-  change
-}                                      from 'redux-form';
 
 import api                             from '../api';
 import {
@@ -13,8 +10,6 @@ import {
 import { isEmpty }                     from '../common/helpers';
 import { type TreeNodeIdType }         from '../common/types/backend';
 import { type GenericFileType }        from '../file-upload/types';
-// import { selectReduxFormState }        from '../external-forms/stateSelectors';
-// import { addConceptFromFile }          from '../external-forms/form-concept-group/FormConceptGroup';
 
 import {
   UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
@@ -100,10 +95,15 @@ export const uploadConceptListModalAccept = (
   rootConcepts,
   resolutionResult,
   parameters
-) => ({
+) => {
+  if (parameters.callback)
+    return parameters.callback(resolutionResult, label);
+
+  return {
     type: parameters.actionType || UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
     data: { label, rootConcepts, resolutionResult, parameters }
-  });
+  }
+};
 
 export const acceptAndCloseUploadConceptListModal = (
   label,
@@ -111,20 +111,6 @@ export const acceptAndCloseUploadConceptListModal = (
   resolutionResult,
   parameters
 ) => {
-  // const { form } = parameters;
-  // if (form && form.formType)
-  //   return (dispatch) => {
-  //     dispatch([
-  //       change(
-  //         form.formType,
-  //         form.field,
-  //         addConceptFromFile(resolutionResult, form.value),
-  //         selectReduxFormState
-  //       ),
-  //       uploadConceptListModalClose()
-  //     ])
-  //   };
-
   return (dispatch) => {
     dispatch([
       uploadConceptListModalAccept(label, rootConcepts, resolutionResult, parameters),
