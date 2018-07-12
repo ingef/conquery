@@ -42,6 +42,10 @@ import {
 } from '../form-components';
 
 import {
+  nodeHasActiveFilters
+} from '../model/node';
+
+import {
   DROP_AND_NODE,
   DROP_OR_NODE,
   DELETE_NODE,
