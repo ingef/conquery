@@ -1,4 +1,4 @@
 // @flow
 
 export { default as Startup } from './Startup';
-export { default as config } from './reducer';
+export { default as reducer } from './reducer';

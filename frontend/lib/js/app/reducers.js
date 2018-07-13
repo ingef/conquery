@@ -22,7 +22,7 @@ import {
   type StateType as PanesStateType
 } from '../pane';
 
-import { config }                              from '../startup';
+import { reducer as startup }                  from '../startup';
 import { reducer as query }                    from '../standard-query-editor';
 import { reducer as queryGroupModal }          from '../query-group-modal';
 import { reducer as previousQueries }          from '../previous-queries/list';
@@ -45,7 +45,7 @@ export type StateType = {
 };
 
 const buildAppReducer = (availableForms) => combineReducers({
-  config,
+  startup,
   categoryTrees,
   query,
   uploadConceptListModal,

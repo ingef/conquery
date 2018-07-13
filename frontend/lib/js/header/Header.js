@@ -31,8 +31,8 @@ Header.propTypes = {
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    version: state.config ? state.config.version : '',
-    isDevelopment: state.config ? !state.config.production : false,
+    version: state.startup.config.version || '',
+    isDevelopment: !state.startup.config.production || false,
   }
 };
 

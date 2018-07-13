@@ -12,7 +12,7 @@ export type StateType = {
   config: Object
 };
 
-const config  = (state: StateType = {}, action: Object): StateType => {
+const startup  = (state: StateType = {}, action: Object): StateType => {
   switch (action.type) {
     case LOAD_CONFIG_START:
       return {
@@ -36,4 +36,4 @@ const config  = (state: StateType = {}, action: Object): StateType => {
   }
 }
 
-export default config;
+export default startup;
