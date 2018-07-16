@@ -1,5 +1,7 @@
 // @flow
 
+import config from '../../../app/api/config';
+
 import {
   LOAD_CONFIG_START,
   LOAD_CONFIG_ERROR,
@@ -12,7 +14,13 @@ export type StateType = {
   config: Object
 };
 
-const startup  = (state: StateType = {}, action: Object): StateType => {
+const initialState: StateType = {
+  loading: false,
+  error: null,
+  config: config
+};
+
+const startup  = (state: StateType = initialState, action: Object): StateType => {
   switch (action.type) {
     case LOAD_CONFIG_START:
       return {

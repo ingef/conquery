@@ -100,13 +100,11 @@ export const searchTreesEnd = (query: string, searchResult: SearchResult) =>
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
-export const searchTrees = (datasetId: DatasetIdType, query: string) => {
+export const searchTrees = (datasetId: DatasetIdType, query: string, limit: number) => {
   return (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query))
 
     if (isEmpty(query)) return;
-
-    const limit = parseInt(process.env.SEARCH_RESULT_LIMIT);
 
     return api.searchConcepts(datasetId, query, limit)
       .then(

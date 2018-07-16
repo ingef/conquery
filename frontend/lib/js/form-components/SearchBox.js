@@ -3,11 +3,10 @@ import { Dot }                  from 'react-animated-dots';
 import PropTypes                from 'prop-types';
 import T                        from 'i18n-react';
 import { Creatable as Select }  from 'react-select';
-import { DelayInput }           from 'react-delay-input';
 import { isEmpty, duration }    from '../common/helpers';
 
 const SearchBox = (props) => {
-  const { searchResult } = props;
+  const { searchResult, searchConfig } = props;
 
   return props.isMulti
     ? <div className="search-box">
@@ -33,12 +32,21 @@ const SearchBox = (props) => {
         />
       </div>
     : <div className="search-box input--full-width">
-        <DelayInput
-          delayTimeout={500}
+        <input
           className="search-box__input"
           placeholder={T.translate('search.placeholder')}
-          value={searchResult.query || ""}
-          onChange={e => props.onSearch(props.datasetId, e.target.value)}
+          onChange={(e) => {
+            return isEmpty(e.target.value)
+              ? props.onSearch(props.datasetId, e.target.value, searchConfig.limit)
+              : null
+            }
+          }
+          onKeyPress={(e) => {
+            return e.key === 'Enter'
+              ? props.onSearch(props.datasetId, e.target.value, searchConfig.limit)
+              : null
+            }
+          }
         />
         {
           searchResult.loading
@@ -78,7 +86,8 @@ SearchBox.propTypes = {
   options: PropTypes.arrayOf(PropTypes.string),
   isMulti: PropTypes.object,
   searchResult: PropTypes.object,
-  datasetId: PropTypes.string
+  datasetId: PropTypes.string,
+  searchConfig: PropTypes.object
 };
 
 export default SearchBox;

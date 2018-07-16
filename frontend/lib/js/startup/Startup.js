@@ -55,7 +55,10 @@ const mapStateToProps = (state) => ({});
 
 const mapDispatchToProps = (dispatch) => {
   return {
-    startupOnDataset: (datasetId) => dispatch([loadConfig(), startupOnDataset(datasetId)]),
+    startupOnDataset: (datasetId) => {
+      dispatch(loadConfig());
+      dispatch(startupOnDataset(datasetId));
+    },
     startupOnQuery: (datasetId, queryId) => dispatch(startupOnQuery(datasetId, queryId))
   };
 };
