@@ -35,13 +35,9 @@ const SearchBox = (props) => {
         <input
           className="search-box__input"
           placeholder={T.translate('search.placeholder')}
-          onChange={(e) => {
-            return isEmpty(e.target.value)
-              ? props.onSearch(props.datasetId, e.target.value, searchConfig.limit)
-              : null
-            }
-          }
-          onKeyPress={(e) => {
+          value={searchResult.query}
+          onChange={e => props.onChange(e.target.value)}
+          onKeyPress={e => {
             return e.key === 'Enter'
               ? props.onSearch(props.datasetId, e.target.value, searchConfig.limit)
               : null
@@ -72,7 +68,7 @@ const SearchBox = (props) => {
             className="search-box__clear-zone"
             title={T.translate('common.clearValue')}
             aria-label={T.translate('common.clearValue')}
-            onClick={() => props.onSearch('')}
+            onClick={() => props.onClearQuery()}
           >
             ×
           </span>
@@ -83,6 +79,8 @@ const SearchBox = (props) => {
 SearchBox.propTypes = {
   search: PropTypes.arrayOf(PropTypes.string),
   onSearch: PropTypes.func.isRequired,
+  onChange: PropTypes.func.isRequired,
+  onClearQuery: PropTypes.func.isRequired,
   options: PropTypes.arrayOf(PropTypes.string),
   isMulti: PropTypes.object,
   searchResult: PropTypes.object,

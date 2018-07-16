@@ -13,6 +13,8 @@ import {
   SEARCH_TREES_START,
   SEARCH_TREES_END,
   SEARCH_TREES_ERROR,
+  CLEAR_SEARCH_QUERY,
+  CHANGE_SEARCH_QUERY,
 }                                         from './actionTypes';
 import { setTree }                        from './globalTreeStoreHelper';
 
@@ -55,9 +57,9 @@ const initialState: StateType = {
 const setSearchTreesEnd = (state: StateType, action: Object): StateType => {
   const { query, searchResult } = action.payload;
   const searching = query && query.length > 0;
-  const result = searchResult.result || [];
-  const limit = searchResult.limit;
-  const size = searchResult.size;
+  const result = searchResult ? searchResult.result : [];
+  const limit = searchResult ? searchResult.limit : 50;
+  const size = searchResult ? searchResult.size : 0;
 
   return {
     ...state,
@@ -156,14 +158,27 @@ const categoryTrees = (
       return setTreeSuccess(state, action);
     case LOAD_TREE_ERROR:
       return setTreeError(state, action);
+    case CLEAR_TREES:
+      return initialState;
     case SEARCH_TREES_START:
       return setSearchTreesStart(state, action);
     case SEARCH_TREES_END:
       return setSearchTreesEnd(state, action);
     case SEARCH_TREES_ERROR:
-      return { ...state, search: {loading: false}, error: action.payload.message };
-    case CLEAR_TREES:
-      return initialState;
+      return { ...state,
+        search: { loading: false },
+        error: action.payload.message
+      };
+    case CLEAR_SEARCH_QUERY:
+      return {
+        ...state,
+        search: { searching: false, query: '' }
+      };
+    case CHANGE_SEARCH_QUERY:
+      return {
+        ...state,
+        search: { searching: false, query: action.payload.query }
+      };
     default:
       return state;
   }
