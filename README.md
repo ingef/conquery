@@ -28,7 +28,7 @@ yarn start
 
 ## Acknowledgements
 
-This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com).
+This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com). Special thanks go to [Kai Rollmann](https://kairollmann.de/) for a great job directing frontend and design in the first half year of the project.
 
 [<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=50 align="top">](http://www.ingef.de/)
 &emsp;
