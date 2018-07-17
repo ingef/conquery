@@ -1,15 +1,15 @@
 // @flow
 
-import React                   from 'react';
-import T                       from 'i18n-react';
-import Select                  from 'react-select';
-import classnames              from 'classnames';
-import { type FieldPropsType } from 'redux-form';
+import React                      from 'react';
+import T                          from 'i18n-react';
+import Select                     from 'react-select';
+import classnames                 from 'classnames';
+import { type FieldPropsType }    from 'redux-form';
+import Dropzone                   from 'react-dropzone'
 
 import { type SelectOptionsType } from '../common/types/backend';
 import { isEmpty }                from '../common/helpers';
-
-import InfoTooltip from '../tooltip/InfoTooltip';
+import InfoTooltip                from '../tooltip/InfoTooltip';
 
 type PropsType = FieldPropsType & {
   label: string,
@@ -19,6 +19,8 @@ type PropsType = FieldPropsType & {
   onInputChange?: Function,
   isLoading?: boolean,
   className?: string,
+  onDropFiles?: Function,
+  isOver: boolean
 };
 
 const InputMultiSelect = (props: PropsType) => (
@@ -36,24 +38,32 @@ const InputMultiSelect = (props: PropsType) => (
       { props.label }
       { props.tooltip && <InfoTooltip text={props.tooltip} /> }
     </p>
-    <Select
-      name="form-field"
-      options={props.options}
-      value={props.input.value}
-      onChange={(values) => props.input.onChange(values.map(v => v.value))}
-      disabled={props.disabled}
-      searchable
-      multi
-      placeholder={T.translate('reactSelect.placeholder')}
-      backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
-      clearAllText={T.translate('reactSelect.clearAll')}
-      clearValueText={T.translate('reactSelect.clearValue')}
-      noResultsText={T.translate('reactSelect.noResults')}
-      onInputChange={props.onInputChange || function(value) { return value; }}
-      isLoading={props.isLoading}
-      className={props.className}
-      matchPos="start"
-    />
+    <Dropzone
+      disableClick
+      style={{position: "relative", display: "block", maxWidth: "300px"}}
+      activeClassName={'dropzone--over'}
+      className={'dropzone'}
+      onDrop={props.onDropFiles}
+    >
+      <Select
+        name="form-field"
+        options={props.options}
+        value={props.input.value}
+        onChange={(values) => props.input.onChange(values.map(v => v.value))}
+        disabled={props.disabled}
+        searchable
+        multi
+        placeholder={T.translate('reactSelect.dndPlaceholder')}
+        backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
+        clearAllText={T.translate('reactSelect.clearAll')}
+        clearValueText={T.translate('reactSelect.clearValue')}
+        noResultsText={T.translate('reactSelect.noResults')}
+        onInputChange={props.onInputChange || function(value) { return value; }}
+        isLoading={props.isLoading}
+        className={props.className}
+        matchPos="start"
+      />
+    </Dropzone>
   </label>
 );
 

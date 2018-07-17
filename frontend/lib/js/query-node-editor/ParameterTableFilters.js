@@ -35,6 +35,7 @@ type PropsType = {
   onLoadFilterSuggestions: Function,
   onShowDescription: Function,
   suggestions: ?Object,
+  onDropFiles: Function,
 };
 
 const ParameterTableFilters = (props: PropsType) => (
@@ -70,6 +71,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     label={filter.label}
                     options={filter.options}
                     disabled={props.excludeTable}
+                    onDropFiles={(files) => props.onDropFiles(filterIdx, filter.id, files)}
                   />
                 );
               case BIG_MULTI_SELECT:
@@ -95,6 +97,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     }
                     startLoadingThreshold={filter.threshold || 1}
                     onLoad={(prefix) => props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)}
+                    onDropFiles={(files) => props.onDropFiles(filterIdx, filter.id, files)}
                     disabled={!!props.excludeTable}
                   />
                 );

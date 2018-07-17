@@ -100,6 +100,7 @@
     "gulp-babel": "^7.0.1",
     "html-webpack-plugin": "^2.30.1",
     "husky": "^0.14.3",
+    "ie-version": "^0.1.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.6.2",
     "jsdom-global": "^3.0.2",

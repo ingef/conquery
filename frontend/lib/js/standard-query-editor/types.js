@@ -56,11 +56,6 @@ export type TableWithFilterValueType = {
   filters: ?FilterWithValueType[],
 };
 
-export type DraggedFileType = {
-  files: File[],
-  isPreviousQuery?: void,
-}
-
 export type DraggedQueryType = {
   id: QueryIdType,
   // eslint-disable-next-line no-use-before-define
