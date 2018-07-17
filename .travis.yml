@@ -16,7 +16,7 @@ cache:
   - "$TRAVIS_BUILD_DIR/frontend/node_modules"
 
 script:
-  - mvn test -B -DskipDockerTests=false -P reportCoverage
+  - mvn test -B -DskipDockerTests=true -P reportCoverage
 
 deploy:
   - provider: script
