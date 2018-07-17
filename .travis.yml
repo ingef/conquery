@@ -16,7 +16,7 @@ cache:
   - "$HOME/.m2"
 
 script:
-  - mvn test -B -DskipDockerTests=false -P reportCoverage
+  - mvn test -B -DskipDockerTests=false -P reportCoverage -X
 
 deploy:
   - provider: script
