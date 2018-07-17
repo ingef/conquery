@@ -11,19 +11,10 @@ type PropsType = {
   selectedDatasetId: DatasetIdType
 }
 
-class QueryEditor extends React.Component {
-  props: PropsType;
-
-  render() {
-    return (
-      <div className="query-editor">
-        <Query selectedDatasetId={this.props.selectedDatasetId} />
-        <StandardQueryNodeEditor datasetId={this.props.selectedDatasetId} />
-        <UploadConceptListModal selectedDatasetId={this.props.selectedDatasetId} />
-        <QueryGroupModal />
-      </div>
-    );
-  }
-}
-
-export default QueryEditor;
+export const QueryEditor = (props: PropsType) =>
+  <div className="query-editor">
+    <Query selectedDatasetId={props.selectedDatasetId} />
+    <StandardQueryNodeEditor datasetId={props.selectedDatasetId} />
+    <UploadConceptListModal selectedDatasetId={props.selectedDatasetId} />
+    <QueryGroupModal />
+  </div>;
