@@ -33,7 +33,7 @@
     box-shadow: none
     border-color: $col-gray-medium-light
 
-  .Select--multi
+  .Select--multi 
     .Select-value
       font-size: $font-sm
       background-color: $col-gray-very-light
@@ -51,6 +51,16 @@
 
     .Select-multi-value-wrapper
       display: table-cell
+      height: 95%
+      width: 100%
+      overflow: auto
+      position: absolute
+      padding-right: 30px
+      -ms-overflow-style: none // IE 10+
+      &::-webkit-scrollbar
+        display: none
+    &.has-value > .Select-control
+      min-height: 100px
 
   .Select-option
     &.is-selected

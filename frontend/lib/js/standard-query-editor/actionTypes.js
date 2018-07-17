@@ -1,9 +1,6 @@
 // @flow
 
 export const DROP_AND_NODE = "query-editor/DROP_AND_NODE";
-export const LOAD_FILES_START = "query-editor/LOAD_FILES_START";
-export const LOAD_FILES_SUCCESS = "query-editor/LOAD_FILES_SUCCESS";
-export const LOAD_FILES_ERROR = "query-editor/LOAD_FILES_ERROR";
 export const DROP_OR_NODE = "query-editor/DROP_OR_NODE";
 export const DELETE_NODE = "query-editor/DELETE_NODE";
 export const DELETE_GROUP = "query-editor/DELETE_GROUP";
@@ -26,3 +23,4 @@ export const TOGGLE_TIMESTAMPS =  "query-editor/TOGGLE_TIMESTAMPS";
 export const LOAD_FILTER_SUGGESTIONS_START =  "query-editor/LOAD_FILTER_SUGGESTIONS_START";
 export const LOAD_FILTER_SUGGESTIONS_SUCCESS =  "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS";
 export const LOAD_FILTER_SUGGESTIONS_ERROR =  "query-editor/LOAD_FILTER_SUGGESTIONS_ERROR";
+export const SET_RESOLVED_FILTER_VALUES =  "query-editor/SET_RESOLVED_FILTER_VALUES";

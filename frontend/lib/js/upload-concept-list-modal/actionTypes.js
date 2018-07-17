@@ -11,6 +11,11 @@ export const RESOLVE_CONCEPTS_START   = "upload-concept-list-modal/RESOLVE_CONCE
 export const RESOLVE_CONCEPTS_SUCCESS = "upload-concept-list-modal/RESOLVE_CONCEPTS_SUCCESS";
 export const RESOLVE_CONCEPTS_ERROR   = "upload-concept-list-modal/RESOLVE_CONCEPTS_ERROR";
 
+export const RESOLVE_FILTER_VALUES_SUCCESS =
+  "upload-concept-list-modal/RESOLVE_FILTER_VALUES_SUCCESS";
+export const RESOLVE_FILTER_VALUES_ERROR =
+  "upload-concept-list-modal/RESOLVE_FILTER_VALUES_ERROR";
+
 export const UPLOAD_CONCEPT_LIST_MODAL_OPEN   =
   "upload-concept-list-modal/UPLOAD_CONCEPT_LIST_MODAL_OPEN";
 export const UPLOAD_CONCEPT_LIST_MODAL_CLOSE  =
@@ -33,5 +38,5 @@ export type UploadConceptListModalResultType = {
     },
     selectedRoot: TreeNodeIdType
   },
-  queryContext: any
+  parameters: any
 }

@@ -12,7 +12,16 @@ import ParameterTable       from './ParameterTable';
 // import { createQueryNodeEditorActions } from './actions';
 
 type QueryNodeEditorState = {
-  // In the future: define QueryNodeEditor-internal state here
+  detailsViewActive: boolean,
+  selectedInputTableIdx: number,
+  selectedInput: number,
+  editingLabel: boolean,
+  onSelectDetailsView: Function,
+  onSelectInputTableView: Function,
+  onShowDescription: Function,
+  onToggleEditLabel: Function,
+  onReset: Function,
+  onDropFiles: Function,
 }
 
 export type PropsType = {
@@ -124,15 +133,47 @@ export const createConnectedQueryNodeEditor = (
   mapDispatchToProps: Function,
   mergeProps: Function
 ) => {
-  // In the future: import QueryNodeEditor-internal actions here
-  // const { } = createQueryNodeEditorActions(type);
+  const mapDispatchToPropsInternal = (dispatch: Dispatch, ownProps) => {
+    const externalDispatchProps = mapDispatchToProps ? mapDispatchToProps(dispatch, ownProps) : {};
+
+    const {
+      setDetailsViewActive,
+      toggleEditLabel,
+      setInputTableViewActive,
+      setFocusedInput,
+      reset,
+      onDropFiles
+    } = createQueryNodeEditorActions(ownProps.type);
 
   function mapDispatchToPropsInternal(dispatch: Dispatch, ownProps) {
     return {
-      ...(mapDispatchToProps ? mapDispatchToProps(dispatch, ownProps) : {})
-      // In the future: dispatch QueryNodeEditor-internal actions here
+      ...externalDispatchProps,
+      editorState: {
+        ...(externalDispatchProps.editorState || {}),
+        onSelectDetailsView: () => dispatch(setDetailsViewActive()),
+        onToggleEditLabel: () => dispatch(toggleEditLabel()),
+        onSelectInputTableView: (tableIdx) => dispatch(setInputTableViewActive(tableIdx)),
+        onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
+        onReset: () => dispatch(reset()),
+        onDropFiles: (...params) => dispatch(onDropFiles(...params))
+      }
     };
   }
 
-  return connect(mapStateToProps, mapDispatchToPropsInternal, mergeProps)(QueryNodeEditor);
+  const mergePropsInternal = (stateProps, dispatchProps, ownProps) => {
+    const externalMergedProps = mergeProps
+      ? mergeProps(stateProps, dispatchProps, ownProps)
+      : { ...ownProps, ...stateProps, ...dispatchProps };
+
+    return {
+      ...externalMergedProps,
+      editorState: {
+        ...(stateProps.editorState || {}),
+        ...(dispatchProps.editorState || {}),
+        onDropFiles: (...params) => dispatchProps.editorState.onDropFiles(...params)
+      }
+    };
+  };
+
+  return connect(mapStateToProps, mapDispatchToPropsInternal, mergePropsInternal)(QueryNodeEditor);
 };

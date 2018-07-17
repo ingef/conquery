@@ -221,6 +221,24 @@ export function postConceptsListToResolve(
   });
 };
 
+export function postConceptFilterValuesResolve(
+  datasetId: DatasetIdType,
+  conceptId: string,
+  tableId: string,
+  filterId: string,
+  values: string[],
+) {
+  return fetchJson(
+    apiUrl() +
+    `/datasets/${datasetId}/concepts/${conceptId}` +
+    `/tables/${tableId}/filters/${filterId}/resolve`,
+    {
+    method: 'POST',
+      body: { values },
+    }
+  );
+};
+
 export const searchConcepts = (datasetId: DatasetIdType, query: string, limit?: number) => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/search`, {
     method: 'POST',
