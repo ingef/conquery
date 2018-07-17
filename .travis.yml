@@ -14,7 +14,6 @@ before_install:
 cache:
   directories:
   - "$HOME/.m2"
-  - "$TRAVIS_BUILD_DIR/frontend/node_modules"
 
 script:
   - mvn test -B -DskipDockerTests=false -P reportCoverage
