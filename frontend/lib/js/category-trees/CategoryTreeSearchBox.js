@@ -11,7 +11,7 @@ import {
 const mapStateToProps = (state) => ({
   searchResult: state.categoryTrees.search,
   onSearch: state.onSearch,
-  searchConfig: state.startup.config.search ? state.startup.config.search : null
+  searchConfig: state.startup.config.search ? state.startup.config.search : {}
 });
 
 const mapDispatchToProps = (dispatch) => ({

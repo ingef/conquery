@@ -244,7 +244,7 @@ export const searchConcepts = (datasetId: DatasetIdType, query: string, limit?: 
     method: 'POST',
     body: {
       query: query,
-      limit: limit || 500
+      limit: limit || 50
     }
   });
 }
