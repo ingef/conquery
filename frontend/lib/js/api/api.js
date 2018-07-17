@@ -72,6 +72,10 @@ export function getVersion() {
   return fetchJson(apiUrl() + '/version')
 }
 
+export function getFrontendConfig() {
+  return fetchJson(apiUrl() + '/config/frontend')
+}
+
 export function getDatasets() {
   return fetchJson(apiUrl() + `/datasets`);
 }

@@ -1,22 +1,22 @@
 language: java
 
 env:
-  - DOCKER_COMPOSE_VERSION=1.21.2
+  - DOCKER_COMPOSE_VERSION=1.18.0
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
   - curl -L https://github.com/docker/compose/releases/download/${DOCKER_COMPOSE_VERSION}/docker-compose-`uname -s`-`uname -m` > docker-compose
   - chmod +x docker-compose
   - sudo mv docker-compose /usr/local/bin
+  
   - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
   
 cache:
   directories:
   - "$HOME/.m2"
-  - "$TRAVIS_BUILD_DIR/frontend/node_modules"
 
 script:
-  - mvn test -B -DskipDockerTests=false -P reportCoverage
+  - mvn test -B -DskipDockerTests=true -P reportCoverage
 
 deploy:
   - provider: script
