@@ -8,8 +8,9 @@ import classnames           from 'classnames';
 
 import { Modal }            from '../modal';
 import ParameterTable       from './ParameterTable';
-
-// import { createQueryNodeEditorActions } from './actions';
+import {
+  createQueryNodeEditorActions
+}                           from './actions';
 
 type QueryNodeEditorState = {
   detailsViewActive: boolean,
@@ -129,7 +130,7 @@ const QueryNodeEditor = (props: PropsType) => {
 };
 
 export const createConnectedQueryNodeEditor = (
-  type: string, mapStateToProps: Function,
+  mapStateToProps: Function,
   mapDispatchToProps: Function,
   mergeProps: Function
 ) => {
@@ -145,7 +146,6 @@ export const createConnectedQueryNodeEditor = (
       onDropFiles
     } = createQueryNodeEditorActions(ownProps.type);
 
-  function mapDispatchToPropsInternal(dispatch: Dispatch, ownProps) {
     return {
       ...externalDispatchProps,
       editorState: {
