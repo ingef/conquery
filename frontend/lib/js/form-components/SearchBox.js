@@ -36,7 +36,12 @@ const SearchBox = (props) => {
           className="search-box__input"
           placeholder={T.translate('search.placeholder')}
           value={searchResult.query}
-          onChange={e => props.onChange(e.target.value)}
+          onChange={e => {
+            return isEmpty(e.target.value)
+              ? props.onClearQuery()
+              : props.onChange(e.target.value)
+            }
+          }
           onKeyPress={e => {
             return e.key === 'Enter'
               ? props.onSearch(props.datasetId, e.target.value, searchConfig.limit)

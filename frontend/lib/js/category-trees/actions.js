@@ -119,4 +119,4 @@ export const searchTrees = (datasetId: DatasetIdType, query: string, limit: numb
 export const clearSearchQuery = () =>
   ({ type: CLEAR_SEARCH_QUERY })
 export const changeSearchQuery = (query) =>
-  ({ type: CHANGE_SEARCH_QUERY, payload: {query} })
+  ({ type: CHANGE_SEARCH_QUERY, payload: { query } })

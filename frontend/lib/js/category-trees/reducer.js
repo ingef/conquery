@@ -45,6 +45,7 @@ const initialState: StateType = {
   search: {
     searching: false,
     loading: false,
+    updateComponent: true,
     query: '',
     words: [],
     result: [],
@@ -57,19 +58,21 @@ const initialState: StateType = {
 const setSearchTreesEnd = (state: StateType, action: Object): StateType => {
   const { query, searchResult } = action.payload;
   const searching = query && query.length > 0;
-  const result = searchResult ? searchResult.result : [];
+  const result = searchResult ? searchResult.result || [] : [];
   const limit = searchResult ? searchResult.limit : 50;
   const size = searchResult ? searchResult.size : 0;
+  const matches = searchResult ? searchResult.matches : 0;
 
   return {
     ...state,
     search: {
       searching: searching,
       loading: false,
+      updateComponent: true,
       query: query,
       words: query ? query.split(' ') : [],
       result: result,
-      limit: result.length <= limit ? result.length : limit,
+      limit: matches <= limit ? matches : limit,
       resultCount: searching ? size : 0,
       duration: (Date.now() - state.search.duration)
     }
@@ -84,6 +87,7 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
     search: {
       searching: false,
       loading: query && query.length > 0,
+      updateComponent: true,
       query: query,
       words: query ? query.split(' ') : [],
       result: [],
@@ -172,12 +176,16 @@ const categoryTrees = (
     case CLEAR_SEARCH_QUERY:
       return {
         ...state,
-        search: { searching: false, query: '' }
+        search: { searching: false, query: '', updateComponent: true }
       };
     case CHANGE_SEARCH_QUERY:
       return {
         ...state,
-        search: { searching: false, query: action.payload.query }
+        search: {
+          ...state.search,
+          query: action.payload.query,
+          updateComponent: false
+        }
       };
     default:
       return state;
