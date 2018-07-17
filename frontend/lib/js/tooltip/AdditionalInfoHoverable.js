@@ -20,6 +20,15 @@ export type AdditionalInfoHoverableNodeType = {
   additionalInfos: Array<InfoType>
 }
 
+// Whitelist the data we pass (especially: don't pass all children)
+const additionalInfos = (node: AdditionalInfoHoverableNodeType) => ({
+  label: node.label,
+  description: node.description,
+  matchingEntries: node.matchingEntries,
+  dateRange: node.dateRange,
+  additionalInfos: node.additionalInfos,
+});
+
 // Decorates a component with a hoverable node.
 // On mouse enter, additional infos about the component are saved in the state
 // The Tooltip (and potential other components) might then update their view.
@@ -36,16 +45,17 @@ const AdditionalInfoHoverable = (Component: any) => {
 
       if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
 
-      // Whitelist the data we pass (especially: don't pass all children)
-      const additionalInfos = {
-        label: ownProps.node.label,
-        description: node.description,
-        matchingEntries: node.matchingEntries,
-        dateRange: node.dateRange,
-        additionalInfos: node.additionalInfos,
-      };
+      dispatch(actions.displayAdditionalInfos(additionalInfos(node)))
+    },
+    onToggleAdditionalInfos: () => {
+      const node = ownProps.node;
 
-      dispatch(actions.displayAdditionalInfos(additionalInfos))
+      if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
+
+      dispatch([
+        actions.toggleAdditionalInfos(additionalInfos(node)),
+        actions.displayAdditionalInfos(additionalInfos(node))
+      ])
     },
   });
 
