@@ -32,7 +32,11 @@ const Tooltip = (props: PropsType) => {
   const { additionalInfos, toggleDisplayTooltip } = props;
   const { label, description, infos, matchingEntries, dateRange } = additionalInfos;
   const searchHighlight = (text) =>
-    <Highlighter searchWords={props.search.words} autoEscape={true} textToHighlight={text} />;
+    <Highlighter
+      searchWords={props.search.words || []}
+      autoEscape={true}
+      textToHighlight={text || ''}
+    />;
 
   return (
     <div className="tooltip">

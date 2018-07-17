@@ -92,6 +92,7 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
       words: query ? query.split(' ') : [],
       result: [],
       resultCount: 0,
+      limit: 0,
       duration: Date.now()
     }
   }

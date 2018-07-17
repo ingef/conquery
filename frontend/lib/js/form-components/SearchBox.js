@@ -35,11 +35,11 @@ const SearchBox = (props) => {
         <input
           className="search-box__input"
           placeholder={T.translate('search.placeholder')}
-          value={searchResult.query}
+          value={searchResult.query || ''}
           onChange={e => {
             return isEmpty(e.target.value)
               ? props.onClearQuery()
-              : props.onChange(e.target.value)
+              : props.onChange(e.target.value) || props.onSearch(e.target.value)
             }
           }
           onKeyPress={e => {
@@ -69,14 +69,22 @@ const SearchBox = (props) => {
         }
         {
           !isEmpty(searchResult.query) &&
-          <span
-            className="search-box__clear-zone"
-            title={T.translate('common.clearValue')}
-            aria-label={T.translate('common.clearValue')}
-            onClick={() => props.onClearQuery()}
-          >
-            ×
-          </span>
+          <div>
+            <i
+              className="search-box__search-icon fa fa-search fa-1"
+              aria-hidden="true"
+              onClick={() =>
+                props.onSearch(props.datasetId, searchResult.query, searchConfig.limit)}
+            />
+            <span
+              className="search-box__clear-zone"
+              title={T.translate('common.clearValue')}
+              aria-label={T.translate('common.clearValue')}
+              onClick={() => props.onClearQuery() || props.onSearch('')}
+            >
+              ×
+            </span>
+          </div>
         }
       </div>
 };
@@ -84,10 +92,10 @@ const SearchBox = (props) => {
 SearchBox.propTypes = {
   search: PropTypes.arrayOf(PropTypes.string),
   onSearch: PropTypes.func.isRequired,
-  onChange: PropTypes.func.isRequired,
-  onClearQuery: PropTypes.func.isRequired,
+  onChange: PropTypes.func,
+  onClearQuery: PropTypes.func,
   options: PropTypes.arrayOf(PropTypes.string),
-  isMulti: PropTypes.object,
+  isMulti: PropTypes.bool,
   searchResult: PropTypes.object,
   datasetId: PropTypes.string,
   searchConfig: PropTypes.object
