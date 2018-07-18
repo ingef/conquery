@@ -24,7 +24,7 @@ type NumberFormatValueType = {
 };
 
 const ClearableInput = (props: PropsType) => {
-  const { currency } = props.inputProps;
+  const { currency } = props.inputProps || {};
   return (
     <span className="clearable-input">
       {
