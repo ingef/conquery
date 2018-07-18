@@ -22,7 +22,6 @@ import {
 } from '../pane';
 
 import { reducer as startup }                  from '../startup';
-import { reducer as query }                    from '../standard-query-editor';
 import { buildPanesReducer }                   from '../pane/reducer';
 import { reducer as queryGroupModal }          from '../query-group-modal';
 import { reducer as previousQueries }          from '../previous-queries/list';

@@ -271,6 +271,15 @@ module.exports = function (app, port) {
       res.send({ result: result, limit: 20, size: result.length });
     }, 10);
   });
+
+  app.get('/api/config/frontend', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+
+    const config = require('./config.json');
+    config.version = version;
+
+    res.send(config);
+  });
 };
 
 const findConcepts = (concepts, query) => {

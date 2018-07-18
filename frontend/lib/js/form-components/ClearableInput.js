@@ -24,21 +24,22 @@ type NumberFormatValueType = {
 };
 
 const ClearableInput = (props: PropsType) => {
+  const { currency } = props.inputProps;
   return (
     <span className="clearable-input">
       {
         props.valueType === MONEY_RANGE
         ? <NumberFormat
-            prefix={T.translate('moneyRange.prefix')}
-            thousandSeparator={T.translate('moneyRange.thousandSeparator')}
-            decimalSeparator={T.translate('moneyRange.decimalSeparator')}
-            decimalScale={parseInt(T.translate('moneyRange.decimalScale'))}
+            prefix={currency.prefix || ''}
+            thousandSeparator={currency.thousandSeparator || ''}
+            decimalSeparator={currency.decimalSeparator || ''}
+            decimalScale={currency.decimalScale || ''}
             className="clearable-input__input"
             placeholder={props.placeholder}
             type={props.inputType}
             onValueChange={(values: NumberFormatValueType) => {
               const { formattedValue, floatValue } = values;
-              const parsed = Math.round(floatValue * (T.translate('moneyRange.factor') || 1))
+              const parsed = Math.round(floatValue * (currency.factor || 1))
 
               props.onChange(parsed, formattedValue);
             }}

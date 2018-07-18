@@ -68,10 +68,6 @@ function fetchJson(url: string, request?: RequestType, rawBody?: boolean = false
   return fetchJsonUnauthorized(url, finalRequest, rawBody);
 }
 
-export function getVersion() {
-  return fetchJson(apiUrl() + '/version')
-}
-
 export function getFrontendConfig() {
   return fetchJson(apiUrl() + '/config/frontend')
 }

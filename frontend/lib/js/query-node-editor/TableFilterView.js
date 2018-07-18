@@ -50,6 +50,7 @@ export const TableFilterView = (props: PropsType) => {
               filterId,
               files
             )}
+          currencyConfig={props.currencyConfig}
         />
       </div>
     </div>

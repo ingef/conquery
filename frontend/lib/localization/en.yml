@@ -118,13 +118,6 @@ inputRange:
   minLabel: "Min"
   maxLabel: "Max"
 
-moneyRange:
-  factor: "100"
-  thousandSeparator: "."
-  decimalSeparator: ","
-  decimalScale: "2"
-  prefix: "€"
-
 previousQueries:
   loading: "Loading Queries"
   error: "Could not load Queries"

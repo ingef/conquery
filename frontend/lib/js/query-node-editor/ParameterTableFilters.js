@@ -23,7 +23,8 @@ import {
 } from '../form-components';
 
 import {
-  type FilterType
+  type FilterType,
+  CurrencyType
 } from '../standard-query-editor/types';
 
 type PropsType = {
@@ -36,6 +37,7 @@ type PropsType = {
   onShowDescription: Function,
   suggestions: ?Object,
   onDropFiles: Function,
+  currencyConfig: CurrencyType,
 };
 
 const ParameterTableFilters = (props: PropsType) => (
@@ -155,6 +157,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     disabled={!!props.excludeTable}
                     onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
                     placeholder="-"
+                    currencyConfig={props.currencyConfig}
                   />
                 );
               case STRING:

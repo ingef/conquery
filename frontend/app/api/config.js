@@ -1,8 +1,6 @@
 const version = require('../../package.json').version;
+const config = require('./config.json');
 
-const config = {
-  version: version,
-  limit: 50
-};
+config.version = version;
 
 export default config;
