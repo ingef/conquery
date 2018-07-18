@@ -1,7 +1,5 @@
 // @flow
 
-import config from '../../../app/api/config';
-
 import {
   LOAD_CONFIG_START,
   LOAD_CONFIG_ERROR,
@@ -17,7 +15,7 @@ export type StateType = {
 const initialState: StateType = {
   loading: false,
   error: null,
-  config: config
+  config: {}
 };
 
 const startup  = (state: StateType = initialState, action: Object): StateType => {
