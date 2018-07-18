@@ -117,9 +117,19 @@ export const selectDataset = (
 
       dispatch(loadTrees(datasetId));
       // clearing Redux Form
-      dispatch(reset(state().externalForms.activeForm));
+      dispatch(reset(selectActiveForm(state)));
 
       return dispatch(loadPreviousQueries(datasetId));
     }
   };
 };
+
+const selectActiveForm = (getState) => {
+  const state = getState();
+  return state.panes &&
+    state.panes.right &&
+    state.panes.right.tabs &&
+    state.panes.right.tabs.externalForms &&
+    state.panes.right.tabs.externalForms.externalForms &&
+    state.panes.right.tabs.externalForms.externalForms.activeForm
+}
