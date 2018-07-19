@@ -3,7 +3,7 @@
     <parent>
         <groupId>com.bakdata.conquery</groupId>
         <artifactId>parent</artifactId>
-        <version>1.9.0-rc.3</version>
+        <version>1.9.0-rc.4</version>
     </parent>
     
     <modelVersion>4.0.0</modelVersion>
