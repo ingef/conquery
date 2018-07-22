@@ -97,7 +97,7 @@ export const uploadConceptListModalAccept = (
   parameters
 ) => {
   if (parameters.callback)
-    return parameters.callback(resolutionResult, label);
+    return parameters.callback(label, rootConcepts, resolutionResult);
 
   return {
     type: parameters.actionType || UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
