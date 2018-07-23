@@ -20,7 +20,8 @@ type PropsType = FieldPropsType & {
   isLoading?: boolean,
   className?: string,
   onDropFiles?: Function,
-  isOver: boolean
+  isOver: boolean,
+  allowDropFile?: ?boolean,
 };
 
 const InputMultiSelect = (props: PropsType) => (
@@ -41,9 +42,10 @@ const InputMultiSelect = (props: PropsType) => (
     <Dropzone
       disableClick
       style={{position: "relative", display: "block", maxWidth: "300px"}}
-      activeClassName={'dropzone--over'}
-      className={'dropzone'}
+      activeClassName={props.allowDropFile ? 'dropzone--over' : ''}
+      className={props.allowDropFile ? 'dropzone' : ''}
       onDrop={props.onDropFiles}
+      disabled={!props.allowDropFile}
     >
       <Select
         name="form-field"
@@ -53,7 +55,10 @@ const InputMultiSelect = (props: PropsType) => (
         disabled={props.disabled}
         searchable
         multi
-        placeholder={T.translate('reactSelect.dndPlaceholder')}
+        placeholder={props.allowDropFile
+          ? T.translate('reactSelect.dndPlaceholder')
+          : T.translate('reactSelect.placeholder')
+        }
         backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
         clearAllText={T.translate('reactSelect.clearAll')}
         clearValueText={T.translate('reactSelect.clearValue')}
