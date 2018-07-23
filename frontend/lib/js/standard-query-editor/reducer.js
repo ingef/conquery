@@ -44,10 +44,6 @@ import {
 import type { StateType } from '../query-runner/reducer';
 
 import {
-  nodeHasActiveFilters
-} from '../model/node';
-
-import {
   DROP_AND_NODE,
   DROP_OR_NODE,
   DELETE_NODE,
@@ -691,7 +687,7 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
 
   return setNodeFilterValue(state, {
     payload: {
-      value: resolutionResult.filter.value,
+      value: resolutionResult.filter.value.map(v => v.value),
       tableIdx: parameters.tableIdx,
       filterIdx: parameters.filterIdx,
       options: resolutionResult.filter.value
