@@ -100,6 +100,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     startLoadingThreshold={filter.threshold || 1}
                     onLoad={(prefix) => props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)}
                     onDropFiles={(files) => props.onDropFiles(filterIdx, filter.id, files)}
+                    allowDropFile={!!filter.allowDropFile}
                     disabled={!!props.excludeTable}
                   />
                 );
