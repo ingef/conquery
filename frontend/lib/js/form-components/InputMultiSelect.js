@@ -24,52 +24,55 @@ type PropsType = FieldPropsType & {
   allowDropFile?: ?boolean,
 };
 
-const InputMultiSelect = (props: PropsType) => (
-  <label className={classnames(
-    'input', {
-      'input--value-changed':
-        !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue
-    }
-  )}>
-    <p className={classnames(
-      'input-label', {
-        'input-label--disabled': !!props.disabled
+const InputMultiSelect = (props: PropsType) => {
+  const allowDropFile = props.allowDropFile && !!props.onDropFiles
+  return (
+    <label className={classnames(
+      'input', {
+        'input--value-changed':
+          !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue
       }
     )}>
-      { props.label }
-      { props.tooltip && <InfoTooltip text={props.tooltip} /> }
-    </p>
-    <Dropzone
-      disableClick
-      style={{position: "relative", display: "block", maxWidth: "300px"}}
-      activeClassName={props.allowDropFile ? 'dropzone--over' : ''}
-      className={props.allowDropFile ? 'dropzone' : ''}
-      onDrop={props.onDropFiles}
-      disabled={!props.allowDropFile}
-    >
-      <Select
-        name="form-field"
-        options={props.options}
-        value={props.input.value}
-        onChange={(values) => props.input.onChange(values.map(v => v.value))}
-        disabled={props.disabled}
-        searchable
-        multi
-        placeholder={props.allowDropFile
-          ? T.translate('reactSelect.dndPlaceholder')
-          : T.translate('reactSelect.placeholder')
+      <p className={classnames(
+        'input-label', {
+          'input-label--disabled': !!props.disabled
         }
-        backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
-        clearAllText={T.translate('reactSelect.clearAll')}
-        clearValueText={T.translate('reactSelect.clearValue')}
-        noResultsText={T.translate('reactSelect.noResults')}
-        onInputChange={props.onInputChange || function(value) { return value; }}
-        isLoading={props.isLoading}
-        className={props.className}
-        matchPos="start"
-      />
-    </Dropzone>
-  </label>
-);
+      )}>
+        { props.label }
+        { props.tooltip && <InfoTooltip text={props.tooltip} /> }
+      </p>
+      <Dropzone
+        disableClick
+        style={{position: "relative", display: "block", maxWidth: "300px"}}
+        activeClassName={allowDropFile ? 'dropzone--over' : ''}
+        className={allowDropFile ? 'dropzone' : ''}
+        onDrop={props.onDropFiles}
+        disabled={!allowDropFile}
+      >
+        <Select
+          name="form-field"
+          options={props.options}
+          value={props.input.value}
+          onChange={(values) => props.input.onChange(values.map(v => v.value))}
+          disabled={props.disabled}
+          searchable
+          multi
+          placeholder={allowDropFile
+            ? T.translate('reactSelect.dndPlaceholder')
+            : T.translate('reactSelect.placeholder')
+          }
+          backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
+          clearAllText={T.translate('reactSelect.clearAll')}
+          clearValueText={T.translate('reactSelect.clearValue')}
+          noResultsText={T.translate('reactSelect.noResults')}
+          onInputChange={props.onInputChange || function(value) { return value; }}
+          isLoading={props.isLoading}
+          className={props.className}
+          matchPos="start"
+        />
+      </Dropzone>
+    </label>
+  )
+};
 
 export default InputMultiSelect;
