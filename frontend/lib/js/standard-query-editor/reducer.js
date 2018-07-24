@@ -413,8 +413,8 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
 
   if (!savedTable.filters) return null;
 
-  return savedTable.filters.map(savedTableFilter => {
-    const tableFilter = table.filters.find(f => f.id === savedTableFilter.id) || {};
+  return table.filters.map(filter => {
+    const tableFilter = savedTable.filters.find(f => f.id === filter.id) || {};
     const mode = tableFilter.type === INTEGER_RANGE
       ? tableFilter.value && !isEmpty(tableFilter.value.exact)
         ? { mode: 'exact' }
@@ -422,7 +422,7 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
       : {}
 
     return {
-      ...savedTableFilter,
+      ...filter,
       ...tableFilter, // => this one may contain a "value" property
       ...mode
     };
