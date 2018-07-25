@@ -3,7 +3,8 @@
 import React from 'react';
 
 type PropsType = {
-  onDisplayAdditionalInfos: Function
+  onDisplayAdditionalInfos: Function,
+  onToggleAdditionalInfos: Function
 };
 
 const HoverableBase = (Component: any) => class extends React.Component {
@@ -14,6 +15,7 @@ const HoverableBase = (Component: any) => class extends React.Component {
       <div
         className="additional-info-hoverable"
         onMouseEnter={this.props.onDisplayAdditionalInfos}
+        onClick={this.props.onToggleAdditionalInfos}
       >
         <Component {...this.props} />
       </div>

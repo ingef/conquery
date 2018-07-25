@@ -1,9 +1,9 @@
 // @flow
 
-import { difference } from 'lodash'
+import { difference }           from 'lodash'
 
-import { type TreeNodeIdType }   from '../common/types/backend';
-import { type SearchType }       from './reducer';
+import { type TreeNodeIdType }  from '../common/types/backend';
+import { type SearchType }      from './reducer';
 
 const isSearchResultInChildren = (children?: [], search?: SearchType) => {
     if (!search || !search.result || !children) return false;

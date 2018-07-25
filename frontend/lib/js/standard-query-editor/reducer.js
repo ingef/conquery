@@ -41,6 +41,8 @@ import {
   INTEGER_RANGE
 } from '../form-components';
 
+import type { StateType } from '../query-runner/reducer';
+
 import {
   DROP_AND_NODE,
   DROP_OR_NODE,
@@ -63,6 +65,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
+  SET_RESOLVED_FILTER_VALUES,
 } from './actionTypes';
 
 import type
@@ -345,9 +348,9 @@ const setNodeFilterProperties = (state, action, obj) => {
 };
 
 const setNodeFilterValue = (state, action) => {
-  const { value, formattedValue } = action.payload;
+  const { value, formattedValue, options } = action.payload;
 
-  return setNodeFilterProperties(state, action, { value, formattedValue });
+  return setNodeFilterProperties(state, action, { value, formattedValue, options });
 };
 
 const switchNodeFilterMode = (state, action) => {
@@ -410,8 +413,8 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
 
   if (!savedTable.filters) return null;
 
-  return savedTable.filters.map(savedTableFilter => {
-    const tableFilter = table.filters.find(f => f.id === savedTableFilter.id) || {};
+  return table.filters.map(filter => {
+    const tableFilter = savedTable.filters.find(f => f.id === filter.id) || {};
     const mode = tableFilter.type === INTEGER_RANGE
       ? tableFilter.value && !isEmpty(tableFilter.value.exact)
         ? { mode: 'exact' }
@@ -419,7 +422,7 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
       : {}
 
     return {
-      ...savedTableFilter,
+      ...filter,
       ...tableFilter, // => this one may contain a "value" property
       ...mode
     };
@@ -632,13 +635,13 @@ const createQueryNodeFromConceptListUploadResult = (
 }
 
 const insertUploadedConceptList = (state, action: { data: UploadConceptListModalResultType }) => {
-  const { queryContext } = action.data;
+  const { parameters } = action.data;
   const queryElement = createQueryNodeFromConceptListUploadResult(action.data);
 
-  if (queryContext.andIdx != null)
-    return dropOrNode(state, { payload: { item: queryElement, andIdx: queryContext.andIdx } });
+  if (parameters.andIdx != null)
+    return dropOrNode(state, { payload: { item: queryElement, andIdx: parameters.andIdx } });
 
-  return dropAndNode(state, { payload: { item: queryElement, dateRange: queryContext.dateRange } });
+  return dropAndNode(state, { payload: { item: queryElement, dateRange: parameters.dateRange } });
 };
 
 const selectNodeForEditing = (state, {payload: { andIdx, orIdx }}) => {
@@ -676,6 +679,19 @@ const removeConceptFromNode = (state, action) => {
   const node = state[andIdx].elements[orIdx];
   return setElementProperties(state, andIdx, orIdx, {
     ids: node.ids.filter(id => id !== action.conceptId)
+  });
+}
+
+const setResolvedFilterValues = (state: StateType, action: Object) => {
+  const { resolutionResult, parameters } = action.data;
+
+  return setNodeFilterValue(state, {
+    payload: {
+      value: resolutionResult.filter.value.map(v => v.value),
+      tableIdx: parameters.tableIdx,
+      filterIdx: parameters.filterIdx,
+      options: resolutionResult.filter.value
+    }
   });
 }
 
@@ -775,6 +791,8 @@ const query = (
       return loadFilterSuggestionsError(state, action);
     case UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
+    case SET_RESOLVED_FILTER_VALUES:
+      return setResolvedFilterValues(state, action);
     default:
       return state;
   }

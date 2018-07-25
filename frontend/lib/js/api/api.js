@@ -68,8 +68,8 @@ function fetchJson(url: string, request?: RequestType, rawBody?: boolean = false
   return fetchJsonUnauthorized(url, finalRequest, rawBody);
 }
 
-export function getVersion() {
-  return fetchJson(apiUrl() + '/version')
+export function getFrontendConfig() {
+  return fetchJson(apiUrl() + '/config/frontend')
 }
 
 export function getDatasets() {
@@ -217,12 +217,30 @@ export function postConceptsListToResolve(
   });
 };
 
+export function postConceptFilterValuesResolve(
+  datasetId: DatasetIdType,
+  conceptId: string,
+  tableId: string,
+  filterId: string,
+  values: string[],
+) {
+  return fetchJson(
+    apiUrl() +
+    `/datasets/${datasetId}/concepts/${conceptId}` +
+    `/tables/${tableId}/filters/${filterId}/resolve`,
+    {
+    method: 'POST',
+      body: { values },
+    }
+  );
+};
+
 export const searchConcepts = (datasetId: DatasetIdType, query: string, limit?: number) => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/search`, {
     method: 'POST',
     body: {
       query: query,
-      limit: limit || 500
+      limit: limit || 50
     }
   });
 }

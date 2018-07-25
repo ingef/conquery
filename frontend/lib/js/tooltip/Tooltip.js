@@ -22,6 +22,7 @@ import TooltipEntries           from './TooltipEntries';
 type PropsType = {
   additionalInfos: AdditionalInfosType,
   displayTooltip: boolean,
+  toggleAdditionInfos: boolean,
   toggleDisplayTooltip: Function,
   search: SearchType
 };
@@ -29,13 +30,21 @@ type PropsType = {
 const Tooltip = (props: PropsType) => {
   if (!props.displayTooltip) return <ActivateTooltip />;
 
-  const { additionalInfos, toggleDisplayTooltip } = props;
+  const { additionalInfos, toggleDisplayTooltip, toggleAdditionInfos } = props;
   const { label, description, infos, matchingEntries, dateRange } = additionalInfos;
   const searchHighlight = (text) =>
-    <Highlighter searchWords={props.search.words} autoEscape={true} textToHighlight={text} />;
+    <Highlighter
+      searchWords={props.search.words || []}
+      autoEscape={true}
+      textToHighlight={text || ''}
+    />;
 
   return (
     <div className="tooltip">
+      {
+        toggleAdditionInfos &&
+        <i className="tooltip__tack fa fa-thumb-tack" />
+      }
       <div className="tooltip__left">
         <div>
           {
@@ -92,6 +101,7 @@ const mapStateToProps = (state) => {
   return {
     additionalInfos: state.tooltip.additionalInfos,
     displayTooltip: state.tooltip.displayTooltip,
+    toggleAdditionInfos: state.tooltip.toggleAdditionInfos,
     search: state.categoryTrees.search
   };
 };

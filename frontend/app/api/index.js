@@ -224,6 +224,34 @@ module.exports = function (app, port) {
   });
 
   /*
+    For DND File see ./app/api/dnd
+  */
+  app.post(
+    '/api/datasets/:datasetId/concepts/:conceptId/tables/:tableId/filters/:filterId/resolve',
+    function response (req, res) {
+      setTimeout(() => {
+        res.setHeader('Content-Type', 'application/json');
+
+        if (req.params.filterId !== 'production_country') return null;
+
+        const countries = require('./autocomplete/countries');
+        const unknownCodes = req.body.values.filter(val => !countries.includes(val));
+        const values = req.body.values.filter(val => countries.includes(val));
+
+
+        res.send({
+          unknownCodes: unknownCodes,
+          resolvedFilter: {
+            tableId: req.params.tableId,
+            filterId: req.params.filterId,
+            value: values.map(val => ({label: val, value: val}))
+          }
+        });
+      }, 500);
+    }
+  );
+
+  /*
     SEARCH
   */
   app.post('/api/datasets/:datasetId/concepts/search', (req, res) => {
@@ -242,6 +270,15 @@ module.exports = function (app, port) {
       // see type SearchResult
       res.send({ result: result, limit: 20, size: result.length });
     }, 10);
+  });
+
+  app.get('/api/config/frontend', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+
+    const config = require('./config.json');
+    config.version = version;
+
+    res.send(config);
   });
 };
 

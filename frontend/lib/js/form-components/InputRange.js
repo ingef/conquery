@@ -1,13 +1,15 @@
 // @flow
 
-import React from 'react';
-import T from 'i18n-react';
-import classnames from 'classnames';
-import { type FieldPropsType } from 'redux-form';
+import React                    from 'react';
+import T                        from 'i18n-react';
+import classnames               from 'classnames';
+import { type FieldPropsType }  from 'redux-form';
 
-import InputWithLabel from './InputWithLabel';
-import ToggleButton from './ToggleButton';
-import InputRangeHeader from './InputRangeHeader';
+import { CurrencyType }         from '../standard-query-editor/types';
+
+import InputWithLabel           from './InputWithLabel';
+import ToggleButton             from './ToggleButton';
+import InputRangeHeader         from './InputRangeHeader';
 
 type PropsType = FieldPropsType & {
   inputType: string,
@@ -36,7 +38,8 @@ type PropsType = FieldPropsType & {
       min?: string,
       max?: string
     }
-  }
+  },
+  currencyConfig?: CurrencyType
 };
 
 const InputRange = (props: PropsType) => {
@@ -46,7 +49,7 @@ const InputRange = (props: PropsType) => {
   const maxValue = (value && value.max) || '';
   const exactValue = (value && value.exact) || '';
 
-  const factor = T.translate('moneyRange.factor') || 1;
+  const factor = (props.currencyConfig && props.currencyConfig.factor) || 1;
   const minFormattedValue =
     (formattedValue && formattedValue.min) || (Math.round(minValue) / factor) || null;
   const maxFormattedValue =
@@ -59,6 +62,7 @@ const InputRange = (props: PropsType) => {
     step: props.stepSize || null,
     min: (props.limits && props.limits.min) || null,
     max: (props.limits && props.limits.max) || null,
+    currency: props.currencyConfig,
   };
 
   const onChangeValue = (type, newValue, newFormattedValue) => {

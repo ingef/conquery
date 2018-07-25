@@ -23,6 +23,10 @@ type PropsType = {
 class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
+  shouldComponentUpdate(nextProps, nextState) {
+    return nextProps.search.updateComponent;
+  }
+
   render() {
     const { search } = this.props;
     const searching = search && search.searching

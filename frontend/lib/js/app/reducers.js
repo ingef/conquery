@@ -13,11 +13,6 @@ import {
 } from '../dataset';
 
 import {
-  version,
-  type StateType as VersionStateType
-} from '../header/reducer'
-
-import {
   reducer as tooltip,
   type StateType as TooltipStateType
 } from '../tooltip';
@@ -26,6 +21,7 @@ import {
   type StateType as PanesStateType
 } from '../pane';
 
+import { reducer as startup }                  from '../startup';
 import { buildPanesReducer }                   from '../pane/reducer';
 import { reducer as queryGroupModal }          from '../query-group-modal';
 import { reducer as previousQueries }          from '../previous-queries/list';
@@ -41,11 +37,11 @@ export type StateType = {
   categoryTrees: CategoryTreesStateType,
   datasets: DatasetsStateType,
   tooltip: TooltipStateType,
-  panes: PanesStateType,
-  version: VersionStateType,
+  panes: PanesStateType
 };
 
 const buildAppReducer = (tabs) => combineReducers({
+  startup,
   categoryTrees,
   uploadConceptListModal,
   queryNodeEditor: createQueryNodeEditorReducer('standard'),
@@ -57,8 +53,7 @@ const buildAppReducer = (tabs) => combineReducers({
   previousQueriesSearch,
   previousQueriesFilter,
   uploadQueryResults,
-  deletePreviousQueryModal,
-  version,
+  deletePreviousQueryModal
 });
 
 export default buildAppReducer;

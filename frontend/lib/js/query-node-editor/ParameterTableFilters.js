@@ -23,7 +23,8 @@ import {
 } from '../form-components';
 
 import {
-  type FilterType
+  type FilterType,
+  CurrencyType
 } from '../standard-query-editor/types';
 
 type PropsType = {
@@ -35,6 +36,8 @@ type PropsType = {
   onLoadFilterSuggestions: Function,
   onShowDescription: Function,
   suggestions: ?Object,
+  onDropFiles: Function,
+  currencyConfig: CurrencyType,
 };
 
 const ParameterTableFilters = (props: PropsType) => (
@@ -70,6 +73,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     label={filter.label}
                     options={filter.options}
                     disabled={props.excludeTable}
+                    onDropFiles={(files) => props.onDropFiles(filterIdx, filter.id, files)}
                   />
                 );
               case BIG_MULTI_SELECT:
@@ -95,6 +99,8 @@ const ParameterTableFilters = (props: PropsType) => (
                     }
                     startLoadingThreshold={filter.threshold || 1}
                     onLoad={(prefix) => props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)}
+                    onDropFiles={(files) => props.onDropFiles(filterIdx, filter.id, files)}
+                    allowDropFile={!!filter.allowDropFile}
                     disabled={!!props.excludeTable}
                   />
                 );
@@ -152,6 +158,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     disabled={!!props.excludeTable}
                     onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
                     placeholder="-"
+                    currencyConfig={props.currencyConfig}
                   />
                 );
               case STRING:

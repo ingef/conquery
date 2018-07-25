@@ -35,6 +35,7 @@ const mapStateToProps = (state) => {
     editorState: state.queryNodeEditor,
     showTables,
     isExcludeTimestampsPossible: true,
+    currencyConfig: state.startup.config.currency
   };
 }
 

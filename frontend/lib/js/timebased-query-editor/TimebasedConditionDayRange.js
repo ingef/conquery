@@ -18,28 +18,32 @@ type PropsType = {
 const TimebasedConditionDayRange = (props: PropsType) => (
   <div className="timebased-condition__day-range-container">
     <div className="timebased-condition__day-range">
-      <InputWithLabel
-        inputType="number"
-        input={{
-          value: props.minDays,
-          onChange: (value) => props.onSetTimebasedConditionMinDays(value),
-        }}
-        className="input-range__input-with-label"
-        placeholder={T.translate('common.timeUnitDays')}
-        label={T.translate('timebasedQueryEditor.minDaysLabel')}
-        tinyLabel
-      />
-      <InputWithLabel
-        inputType="number"
-        input={{
-          value: props.maxDays,
-          onChange: (value) => props.onSetTimebasedConditionMaxDays(value),
-        }}
-        className="input-range__input-with-label"
-        placeholder={T.translate('common.timeUnitDays')}
-        label={T.translate('timebasedQueryEditor.maxDaysLabel')}
-        tinyLabel
-      />
+      {
+        props.minDays !== undefined && <InputWithLabel
+          inputType="number"
+          input={{
+            value: props.minDays,
+            onChange: (value) => props.onSetTimebasedConditionMinDays(value),
+          }}
+          className="input-range__input-with-label"
+          placeholder={T.translate('common.timeUnitDays')}
+          label={T.translate('timebasedQueryEditor.minDaysLabel')}
+          tinyLabel
+        />
+      }
+      {
+        props.maxDays !== undefined && <InputWithLabel
+          inputType="number"
+          input={{
+            value: props.maxDays,
+            onChange: (value) => props.onSetTimebasedConditionMaxDays(value),
+          }}
+          className="input-range__input-with-label"
+          placeholder={T.translate('common.timeUnitDays')}
+          label={T.translate('timebasedQueryEditor.maxDaysLabel')}
+          tinyLabel
+        />
+      }
     </div>
   </div>
 );

@@ -14,6 +14,8 @@ type PropsType = FieldPropsType & {
   startLoadingThreshold: number,
   tooltip?: string,
   onLoad: Function,
+  onDropFiles: Function,
+  allowDropFile?: ?boolean,
 };
 
 const AsyncInputMultiSelect = ({
@@ -25,6 +27,8 @@ const AsyncInputMultiSelect = ({
   onLoad,
   isLoading,
   input,
+  onDropFiles,
+  allowDropFile
 }: PropsType) => (
   <InputMultiSelect
     label={label}
@@ -42,6 +46,8 @@ const AsyncInputMultiSelect = ({
         return value
       }
     }
+    onDropFiles={onDropFiles}
+    allowDropFile={allowDropFile}
   />
 );
 
