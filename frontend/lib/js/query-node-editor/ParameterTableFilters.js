@@ -74,6 +74,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     options={filter.options}
                     disabled={props.excludeTable}
                     onDropFiles={(files) => props.onDropFiles(filterIdx, filter.id, files)}
+                    allowDropFile={!!filter.allowDropFile}
                   />
                 );
               case BIG_MULTI_SELECT:
