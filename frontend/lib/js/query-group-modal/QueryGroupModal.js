@@ -1,23 +1,24 @@
 // @flow
 
-import React                from 'react';
-import PropTypes            from 'prop-types';
-import classnames           from 'classnames';
-import T                    from 'i18n-react';
-import { connect }          from 'react-redux';
-import DatePicker           from 'react-datepicker';
-import ie                   from 'ie-version';
-import moment               from 'moment';
+import React                    from 'react';
+import PropTypes                from 'prop-types';
+import classnames               from 'classnames';
+import T                        from 'i18n-react';
+import { connect }              from 'react-redux';
+import DatePicker               from 'react-datepicker';
+import ie                       from 'ie-version';
+import moment                   from 'moment';
 
-import { dateTypes }        from '../common/constants';
-import { Modal }            from '../modal';
+import { dateTypes }            from '../common/constants';
+import { Modal }                from '../modal';
+import { specificDatePattern }  from '../common/helpers/dateHelper';
 
 import {
   queryGroupModalClearNode,
   queryGroupModalSetMinDate,
   queryGroupModalSetMaxDate,
   queryGroupModalResetAllDates,
-}                           from './actions';
+}                               from './actions';
 
 const {
   DATE_FORMAT,
@@ -41,6 +42,19 @@ const QueryGroupModal = (props) => {
   const minDate = getGroupDate(props.group.dateRange, 'min');
   const maxDate = getGroupDate(props.group.dateRange, 'max');
   const hasActiveDate = !!(minDate || maxDate);
+
+  const { onSetMinDate, onSetMaxDate } = props;
+
+  const onChangeRawMin = (e) => {
+    const { minDate, maxDate } = specificDatePattern(e);
+    onSetMinDate(formatDate(minDate));
+    onSetMaxDate(formatDate(maxDate));
+  }
+
+  const onChangeRawMax = (e) => {
+    const { maxDate } = specificDatePattern(e);
+    onSetMaxDate(formatDate(maxDate));
+  }
 
   return (
     <Modal closeModal={props.onCloseModal} doneButton>
@@ -96,11 +110,20 @@ const QueryGroupModal = (props) => {
               locale="de"
               dateFormat={localizedDateFormat()}
               selected={minDate}
+              openToDate={minDate}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
-              onChange={(date) => props.onSetMinDate(formatDate(date))}
+              onChange={(date) => onSetMinDate(formatDate(date))}
+              onChangeRaw={(event) => onChangeRawMin(event)}
+              ref={r => {
+                if (r && minDate && minDate.isValid) {
+                  r.setOpen(false)
+                  r.setSelected(minDate)
+                }
+              }}
               isClearable
               showYearDropdown
               scrollableYearDropdown
+              tabIndex={1}
             />
           </div>
           <div className="query-group-modal__input-group">
@@ -116,10 +139,18 @@ const QueryGroupModal = (props) => {
               dateFormat={localizedDateFormat()}
               selected={maxDate}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
-              onChange={(date) => props.onSetMaxDate(formatDate(date))}
+              onChange={(date) => onSetMaxDate(formatDate(date))}
+              onChangeRaw={(event) => onChangeRawMax(event)}
+              ref={r => {
+                if (r && maxDate && maxDate.isValid) {
+                  r.setOpen(false)
+                  r.setSelected(maxDate)
+                }
+              }}
               isClearable
               showYearDropdown
               scrollableYearDropdown
+              tabIndex={2}
             />
           </div>
         </div>
