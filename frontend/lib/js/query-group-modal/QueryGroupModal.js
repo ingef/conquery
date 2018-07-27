@@ -11,7 +11,10 @@ import moment                   from 'moment';
 
 import { dateTypes }            from '../common/constants';
 import { Modal }                from '../modal';
-import { specificDatePattern }  from '../common/helpers/dateHelper';
+import {
+  specificDatePattern,
+  parseDatePattern
+}                               from '../common/helpers/dateHelper';
 
 import {
   queryGroupModalClearNode,
@@ -52,8 +55,8 @@ const QueryGroupModal = (props) => {
   }
 
   const onChangeRawMax = (e) => {
-    const { maxDate } = specificDatePattern(e);
-    onSetMaxDate(formatDate(maxDate));
+    const { value } = e.target;
+    onSetMaxDate(formatDate(parseDatePattern(value)));
   }
 
   return (
@@ -111,6 +114,7 @@ const QueryGroupModal = (props) => {
               dateFormat={localizedDateFormat()}
               selected={minDate}
               openToDate={minDate}
+              maxDate={moment().add(2, "year")}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
               onChange={(date) => onSetMinDate(formatDate(date))}
               onChangeRaw={(event) => onChangeRawMin(event)}
@@ -138,6 +142,8 @@ const QueryGroupModal = (props) => {
               locale="de"
               dateFormat={localizedDateFormat()}
               selected={maxDate}
+              openToDate={minDate}
+              maxDate={moment().add(2, "year")}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
               onChange={(date) => onSetMaxDate(formatDate(date))}
               onChangeRaw={(event) => onChangeRawMax(event)}

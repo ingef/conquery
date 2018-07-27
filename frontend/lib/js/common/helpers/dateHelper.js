@@ -12,8 +12,8 @@ export const duration = (value, units: string, format: string) => {
 
 const DATE_PATTERN = {
   year: /^\.(\d{4})/, // e.g. .2018 > min: 01.01.2018, max: 31.12.2018
-  quarter_year: /^.[q]([1-4]).(\d{4})/,  // e.g. .q1.2018 > min: 01.01.2018, max: 31.03.2018
-  date: /^\d{8}/
+  quarter_year: /^.[q]([1-4])(\d{4})/,  // e.g. .q12018 > min: 01.01.2018, max: 31.03.2018
+  date: /^\d{8}/ // e.g. 01012018 > 01.01.2018
 }
 
 export const specificDatePattern = (event) => {
@@ -33,9 +33,14 @@ export const specificDatePattern = (event) => {
       max = moment([year, 0, 1]).quarter(quarter + 1).subtract(1, "day");
     break;
     case DATE_PATTERN.date.test(value):
-      min = max = moment(value, "DDMMYYYY");
+      min = moment(value, "DDMMYYYY");
     break;
     }
 
   return { minDate: min, maxDate: max }
+}
+
+export const parseDatePattern = (value, pattern) => {
+  if (value && DATE_PATTERN.date.test(value))
+    return moment(value, "DDMMYYYY")
 }
