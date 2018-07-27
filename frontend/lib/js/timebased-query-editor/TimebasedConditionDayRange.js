@@ -25,6 +25,7 @@ const TimebasedConditionDayRange = (props: PropsType) => (
             value: props.minDays,
             onChange: (value) => props.onSetTimebasedConditionMinDays(value),
           }}
+          inputProps={{min: 1}}
           className="input-range__input-with-label"
           placeholder={T.translate('common.timeUnitDays')}
           label={T.translate('timebasedQueryEditor.minDaysLabel')}
@@ -38,6 +39,7 @@ const TimebasedConditionDayRange = (props: PropsType) => (
             value: props.maxDays,
             onChange: (value) => props.onSetTimebasedConditionMaxDays(value),
           }}
+          inputProps={{min: 1}}
           className="input-range__input-with-label"
           placeholder={T.translate('common.timeUnitDays')}
           label={T.translate('timebasedQueryEditor.maxDaysLabel')}
