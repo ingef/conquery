@@ -14,7 +14,7 @@ import { Modal }                from '../modal';
 import {
   specificDatePattern,
   parseDatePattern
-}                               from '../common/helpers/dateHelper';
+}  from '../common/helpers/dateHelper';
 
 import {
   queryGroupModalClearNode,
@@ -49,18 +49,28 @@ const QueryGroupModal = (props) => {
   const { onSetMinDate, onSetMaxDate } = props;
 
   const onChangeRawMin = (e) => {
-    const { minDate, maxDate } = specificDatePattern(e);
-    onSetMinDate(formatDate(minDate));
-    onSetMaxDate(formatDate(maxDate));
+    var { minDate, maxDate } = specificDatePattern(e);
+
+    minDate = parseDatePattern(e.target.value);
+
+    if (minDate && minDate.isValid)
+      onSetMinDate(formatDate(minDate));
+
+    if (maxDate && maxDate.isValid)
+      onSetMaxDate(formatDate(maxDate));
   }
 
   const onChangeRawMax = (e) => {
-    const { value } = e.target;
-    onSetMaxDate(formatDate(parseDatePattern(value)));
+    var { maxDate } = specificDatePattern(e);
+
+    maxDate = parseDatePattern(e.target.value);
+
+    if (maxDate && maxDate.isValid)
+      onSetMaxDate(formatDate(maxDate));
   }
 
   return (
-    <Modal closeModal={props.onCloseModal} doneButton>
+    <Modal closeModal={props.onCloseModal} doneButton tabIndex={3}>
       <div className="query-group-modal">
         <h3 className="query-group-modal__headline">
           {
@@ -142,7 +152,7 @@ const QueryGroupModal = (props) => {
               locale="de"
               dateFormat={localizedDateFormat()}
               selected={maxDate}
-              openToDate={minDate}
+              openToDate={maxDate}
               maxDate={moment().add(2, "year")}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
               onChange={(date) => onSetMaxDate(formatDate(date))}
