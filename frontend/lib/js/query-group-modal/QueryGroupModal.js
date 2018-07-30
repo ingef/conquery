@@ -21,6 +21,7 @@ import {
   queryGroupModalSetMinDate,
   queryGroupModalSetMaxDate,
   queryGroupModalResetAllDates,
+  queryGroupModalSetTouched,
 }                               from './actions';
 
 const {
@@ -39,34 +40,43 @@ const getGroupDate = (dateRange, minOrMax) =>
     ? moment(dateRange[minOrMax], DATE_FORMAT)
     : null;
 
+const getTouched = (touched, minOrMax) =>
+touched && touched[minOrMax] ? touched[minOrMax] : false
+
 const QueryGroupModal = (props) => {
   if (!props.group) return null;
 
-  const minDate = getGroupDate(props.group.dateRange, 'min');
-  const maxDate = getGroupDate(props.group.dateRange, 'max');
+  const min = 'min';
+  const max = 'max';
+
+  const minDate = getGroupDate(props.group.dateRange, min);
+  const maxDate = getGroupDate(props.group.dateRange, max);
   const hasActiveDate = !!(minDate || maxDate);
 
-  const { onSetMinDate, onSetMaxDate } = props;
+  const minTouched = getTouched(props.group.touched, min);
+  const maxTouched = getTouched(props.group.touched, max);
 
-  const onChangeRawMin = (e) => {
-    var { minDate, maxDate } = specificDatePattern(e);
+  const { onSetMinDate, onSetMaxDate, onSetTouched } = props;
 
-    minDate = parseDatePattern(e.target.value);
+  const onChangeRawMin = (value) => {
+    var { minDate, maxDate } = specificDatePattern(value);
 
-    if (minDate && minDate.isValid)
-      onSetMinDate(formatDate(minDate));
+    if (!minDate)
+      minDate = parseDatePattern(value);
+
+    onSetMinDate(formatDate(minDate));
 
     if (maxDate && maxDate.isValid)
       onSetMaxDate(formatDate(maxDate));
   }
 
-  const onChangeRawMax = (e) => {
-    var { maxDate } = specificDatePattern(e);
+  const onChangeRawMax = (value) => {
+    var { maxDate } = specificDatePattern(value);
 
-    maxDate = parseDatePattern(e.target.value);
+    if (!maxDate)
+      maxDate = parseDatePattern(value);
 
-    if (maxDate && maxDate.isValid)
-      onSetMaxDate(formatDate(maxDate));
+    onSetMaxDate(formatDate(maxDate));
   }
 
   return (
@@ -117,8 +127,9 @@ const QueryGroupModal = (props) => {
             </label>
             <DatePicker
               id="datepicker-min"
-              className={classnames({
-                "query-group-modal__datepicker--has-value": !!minDate
+              className={classnames('query-group-modal__datepicker', {
+                'query-group-modal__datepicker--has-value': !!minDate,
+                'query-group-modal__datepicker--invalid': !minDate && minTouched && hasActiveDate
               })}
               locale="de"
               dateFormat={localizedDateFormat()}
@@ -127,7 +138,8 @@ const QueryGroupModal = (props) => {
               maxDate={moment().add(2, "year")}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
               onChange={(date) => onSetMinDate(formatDate(date))}
-              onChangeRaw={(event) => onChangeRawMin(event)}
+              onChangeRaw={(event) => onChangeRawMin(event.target.value)}
+              onBlur={(event) => onSetTouched(min)}
               ref={r => {
                 if (r && minDate && minDate.isValid) {
                   r.setOpen(false)
@@ -146,8 +158,9 @@ const QueryGroupModal = (props) => {
             </label>
             <DatePicker
               id="datepicker-max"
-              className={classnames({
-                "query-group-modal__datepicker--has-value": !!maxDate
+              className={classnames('query-group-modal__datepicker', {
+                'query-group-modal__datepicker--has-value': !!maxDate,
+                'query-group-modal__datepicker--invalid': !maxDate && maxTouched && hasActiveDate
               })}
               locale="de"
               dateFormat={localizedDateFormat()}
@@ -156,7 +169,8 @@ const QueryGroupModal = (props) => {
               maxDate={moment().add(2, "year")}
               placeholderText={T.translate('queryGroupModal.datePlaceholder')}
               onChange={(date) => onSetMaxDate(formatDate(date))}
-              onChangeRaw={(event) => onChangeRawMax(event)}
+              onChangeRaw={(event) => onChangeRawMax(event.target.value)}
+              onBlur={(event) => onSetTouched(max)}
               ref={r => {
                 if (r && maxDate && maxDate.isValid) {
                   r.setOpen(false)
@@ -182,6 +196,7 @@ QueryGroupModal.propTypes = {
   onSetMinDate: PropTypes.func.isRequired,
   onSetMaxDate: PropTypes.func.isRequired,
   onResetAllDates: PropTypes.func.isRequired,
+  onSetTouched: PropTypes.func,
 };
 
 function findGroup(query, andIdx) {
@@ -203,6 +218,7 @@ const mapDispatchToProps = (dispatch: any) => ({
   onSetMinDate: (andIdx, date) => dispatch(queryGroupModalSetMinDate(andIdx, date)),
   onSetMaxDate: (andIdx, date) => dispatch(queryGroupModalSetMaxDate(andIdx, date)),
   onResetAllDates: (andIdx) => dispatch(queryGroupModalResetAllDates(andIdx)),
+  onSetTouched: (andIdx, field, value?) => dispatch(queryGroupModalSetTouched(andIdx, field)),
 });
 
 // Used to enhance the dispatchProps with the andIdx
@@ -216,6 +232,8 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
     dispatchProps.onSetMaxDate(stateProps.andIdx, date),
   onResetAllDates: () =>
     dispatchProps.onResetAllDates(stateProps.andIdx),
+  onSetTouched: (field) =>
+    dispatchProps.onSetTouched(stateProps.andIdx, field),
 });
 
 export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(QueryGroupModal);

@@ -17,8 +17,7 @@ const DATE_PATTERN = {
   date: /^\d{8}$/
 }
 
-export const specificDatePattern = (e) => {
-  const value = e.target.value;
+export const specificDatePattern = (value) => {
   var minDate, maxDate, year, match;
   switch (true) {
     case DATE_PATTERN.year.test(value):
