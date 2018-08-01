@@ -190,7 +190,10 @@ module.exports = function (app, port) {
         ];
 
         const suggestions = storedValues
-          .map((v, id) => ({ label: v, value: id }))
+          .map((v, id) => ({
+            label: v,
+            value: id,
+            templateValues: { company: 'Columbia Pictures Corporation' } }))
           .filter(v => v.label.toLowerCase().startsWith(req.body.text.toLowerCase()));
 
         res.send(JSON.stringify(suggestions));
