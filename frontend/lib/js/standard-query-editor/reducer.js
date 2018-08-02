@@ -465,7 +465,6 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
             isPreviousQuery: true
           };
         } else {
-          const convertConceptToConceptList = element.type === 'CONCEPT';
           const ids = element.ids || [element.id];
           const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
 
@@ -477,14 +476,8 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
 
           const tables = mergeTablesFromSavedConcept(lookupResult, element);
 
-          const label = convertConceptToConceptList
-            ? lookupResult.concepts[0].label
-            : element.label;
-
           return {
             ...element,
-            label,
-            ids,
             tables,
             tree: lookupResult.root
           };
