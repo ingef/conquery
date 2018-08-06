@@ -171,6 +171,23 @@
           ]
         }
       ]
+    },
+    "place_of_birth": {
+      "label": "Place of birth",
+      "active": true,
+      "children": [
+        "europe",
+        "north_america",
+        "south_america",
+        "africa",
+        "asia",
+        "oceania",
+        "australia"
+      ],
+      "detailsAvailable": true,
+      "tables": [
+        {}
+      ]
     }
   }
 }

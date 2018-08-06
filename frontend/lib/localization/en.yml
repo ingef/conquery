@@ -103,6 +103,7 @@ reactSelect:
   placeholder: "Choose ..."
   tagPlaceholder: "Tag ..."
   searchPlaceholder: "Search ..."
+  dndPlaceholder: "Choose or drop File ..."
   backspaceToRemove: "Press Backspace to remove"
   noResults: "No values found"
   createTag: "Create tag: {label}"
@@ -116,13 +117,6 @@ inputRange:
   exactLabel: "Exact"
   minLabel: "Min"
   maxLabel: "Max"
-
-moneyRange:
-  factor: "100"
-  thousandSeparator: "."
-  decimalSeparator: ","
-  decimalScale: "2"
-  prefix: "€"
 
 previousQueries:
   loading: "Loading Queries"
@@ -204,18 +198,18 @@ uploadQueryResultsModal:
     text: "File should contain one result per row with comma-separated values"
 
 uploadConceptListModal:
-  headline: "Upload Concept List"
-  label: "Name of the Concept List"
+  headline: "Upload List"
+  label: "Name of the Concept"
   selectConceptRootNode: "Choose a Concept Tree root"
-  insertNode: "Insert node"
+  insertNode: "Insert"
   result: "Result"
   resolvedCodes:
-    1: "One concept code could be resolved."
-    _: "{context} concept codes could not be resolved."
+    1: "One value could be resolved."
+    _: "{context} values could be resolved."
   unknownCodes:
-    1: "The following concept code could not be resolved:"
-    _: "The following {context} concept codes could not be resolved:"
-  error: "An error occurred when resolving the concept codes."
+    1: "The following value could not be resolved:"
+    _: "The following {context} values could not be resolved:"
+  error: "An error occurred when resolving the values."
 
 conceptListDetailsModal:
   conceptTreeRoot: "Concept Tree"

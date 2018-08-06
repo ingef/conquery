@@ -27,7 +27,9 @@ import {
   CLEAR_TREES,
   SEARCH_TREES_START,
   SEARCH_TREES_END,
-  SEARCH_TREES_ERROR
+  SEARCH_TREES_ERROR,
+  CHANGE_SEARCH_QUERY,
+  CLEAR_SEARCH_QUERY
 }                             from './actionTypes';
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
@@ -100,13 +102,11 @@ export const searchTreesEnd = (query: string, searchResult: SearchResult) =>
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
-export const searchTrees = (datasetId: DatasetIdType, query: string) => {
+export const searchTrees = (datasetId: DatasetIdType, query: string, limit: number) => {
   return (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query))
 
     if (isEmpty(query)) return;
-
-    const limit = parseInt(process.env.SEARCH_RESULT_LIMIT);
 
     return api.searchConcepts(datasetId, query, limit)
       .then(
@@ -115,3 +115,8 @@ export const searchTrees = (datasetId: DatasetIdType, query: string) => {
       );
   }
 }
+
+export const clearSearchQuery = () =>
+  ({ type: CLEAR_SEARCH_QUERY })
+export const changeSearchQuery = (query) =>
+  ({ type: CHANGE_SEARCH_QUERY, payload: { query } })

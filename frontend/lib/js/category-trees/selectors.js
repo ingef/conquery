@@ -1,17 +1,20 @@
 // @flow
 
-import { type TreeNodeIdType }   from '../common/types/backend';
-import { type SearchType }       from './reducer';
+import { difference }           from 'lodash'
+
+import { type TreeNodeIdType }  from '../common/types/backend';
+import { type SearchType }      from './reducer';
 
 const isSearchResultInChildren = (children?: [], search?: SearchType) => {
     if (!search || !search.result || !children) return false;
     const result = search.result;
 
     for (var i = 0; i < result.length; i++) {
-      const id = result[i];
+      const ids = result[i].split('.');
       for (var j = 0; j < children.length; j++) {
-        const childId = children[j];
-        if (id.indexOf(childId) >= 0)
+        const childIds = children[j].split('.');
+
+        if (difference(childIds, ids).length === 0)
           return true;
       }
     }

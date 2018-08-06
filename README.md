@@ -3,10 +3,10 @@
 
 ![conquery Screenshot](images/screenshot.png)
 
-Branch | Travis CI  | Heroku
------- | ---------- | ------
-master  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=master)](https://travis-ci.org/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery&svg=1)](https://conquery.herokuapp.com/) | 
-develop  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=develop)](https://travis-ci.org/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev&svg=1)](https://conquery-dev.herokuapp.com/) |
+Branch | Travis CI  | Quality | Coverage | Heroku
+------ | ---------- | ------- | -------- | ------
+master  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=master)](https://travis-ci.org/bakdata/conquery) | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ec39f307f9e149b185378061cd9b7a5d?branch=master)](https://www.codacy.com/app/bakdata/conquery) | [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/ec39f307f9e149b185378061cd9b7a5d?branch=master)](https://www.codacy.com/app/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery&svg=1)](https://conquery.herokuapp.com/) | 
+develop  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=develop)](https://travis-ci.org/bakdata/conquery) | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ec39f307f9e149b185378061cd9b7a5d?branch=develop)](https://www.codacy.com/app/bakdata/conquery) | [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/ec39f307f9e149b185378061cd9b7a5d?branch=develop)](https://www.codacy.com/app/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev&svg=1)](https://conquery-dev.herokuapp.com/) |
 
 Conquery provides a powerful web-based platform to compose and execute queries against large event-like data sets.
 
@@ -28,7 +28,7 @@ yarn start
 
 ## Acknowledgements
 
-This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com).
+This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com). Special thanks go to [Kai Rollmann](https://kairollmann.de/) for a great job directing frontend and design in the first half year of the project.
 
 [<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=50 align="top">](http://www.ingef.de/)
 &emsp;

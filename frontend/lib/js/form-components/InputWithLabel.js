@@ -1,12 +1,12 @@
 // @flow
 
-import React                   from 'react';
-import classnames              from 'classnames';
-import { type FieldPropsType } from 'redux-form';
+import React                    from 'react';
+import classnames               from 'classnames';
+import { type FieldPropsType }  from 'redux-form';
 
-import { isEmpty }             from '../common/helpers';
+import { isEmpty }              from '../common/helpers';
 
-import ClearableInput          from './ClearableInput';
+import ClearableInput           from './ClearableInput';
 
 type PropsType = FieldPropsType & {
   label: string,

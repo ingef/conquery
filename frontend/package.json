@@ -1,6 +1,6 @@
 {
   "name": "conquery",
-  "version": "1.8.4",
+  "version": "1.9.0",
   "description": "conquery",
   "main": "dist/js/index.js",
   "private": false,
@@ -20,7 +20,8 @@
     "test": "rimraf coverage && cross-env NODE_ENV=test nyc _mocha test",
     "test-watch": "cross-env NODE_ENV=test mocha test --watch",
     "debug-test": "cross-env NODE_ENV=test node-debug --debug-brk _mocha test",
-    "prepush": "npm run lint"
+    "prepush": "npm run lint",
+    "codacy-coverage": "codacy-coverage < ./coverage/lcov.info"
   },
   "files": [
     "/dist"
@@ -72,6 +73,7 @@
     "babel-register": "^6.26.0",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
+    "codacy-coverage": "^3.0.0",
     "cross-env": "^5.1.3",
     "css-loader": "^0.28.9",
     "dirty-chai": "^2.0.1",
@@ -102,6 +104,7 @@
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.6.2",
     "jsdom-global": "^3.0.2",
+    "lodash": "^4.17.10",
     "mocha": "^5.0.1",
     "mock-local-storage": "^1.0.5",
     "nock": "^9.1.9",

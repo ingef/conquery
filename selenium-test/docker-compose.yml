@@ -11,9 +11,9 @@ services:
         environment:
             - HUB_PORT_4444_TCP_ADDR=selenium-hub
             - HUB_PORT_4444_TCP_PORT=4444
-#            # see https://github.com/SeleniumHQ/docker-selenium/issues/79
-#        volumes:
-#            - /dev/shm:/dev/shm
+        # see https://github.com/SeleniumHQ/docker-selenium/issues/79
+        volumes:
+            - /dev/shm:/dev/shm
         depends_on:
             - frontend
     frontend:

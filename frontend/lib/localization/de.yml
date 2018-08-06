@@ -105,6 +105,7 @@ reactSelect:
   placeholder: "Auswählen ..."
   tagPlaceholder: "Tag ..."
   searchPlaceholder: "Suchen ..."
+  dndPlaceholder: "Auswählen oder Datei hochladen ..."
   backspaceToRemove: "Backspace zum Entfernen drücken"
   noResults: "Keine Werte gefunden"
   createTag: "Tag erstellen: {label}"
@@ -118,13 +119,6 @@ inputRange:
   exactLabel: 'exakt'
   minLabel: 'min'
   maxLabel: 'max'
-
-moneyRange:
-  factor: "100"
-  thousandSeparator: "."
-  decimalSeparator: ","
-  decimalScale: "2"
-  prefix: "€"
 
 previousQueries:
   loading: "Lade Anfragen"
@@ -206,18 +200,18 @@ uploadQueryResultsModal:
     text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
 
 uploadConceptListModal:
-  headline: "Konzeptliste hochladen"
-  label: "Name der Konzeptliste"
+  headline: "Liste hochladen"
+  label: "Name der Liste"
   selectConceptRootNode: "Konzeptbaum-Wurzel auswählen"
-  insertNode: "Knoten einfügen"
+  insertNode: "Einfügen"
   result: "Ergebnis"
   resolvedCodes:
-    1: "Ein Konzeptcode konnte aufgelöst werden."
-    _: "{context} Konzeptcodes konnten aufgelöst werden."
+    1: "Ein Wert konnte aufgelöst werden."
+    _: "{context} Werte konnten aufgelöst werden."
   unknownCodes:
-    1: "Folgender Konzeptcode konnte nicht aufgelöst werden:"
-    _: "Folgende {context} Konzeptcodes konnten nicht aufgelöst werden:"
-  error: "Beim Auflösen der Konzeptcodes ist ein Fehler aufgetreten."
+    1: "Folgender Wert konnte nicht aufgelöst werden:"
+    _: "Folgende {context} Werte konnten nicht aufgelöst werden:"
+  error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
 
 conceptListDetailsModal:
   conceptTreeRoot: "Konzeptbaum"

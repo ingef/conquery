@@ -224,30 +224,90 @@ module.exports = function (app, port) {
   });
 
   /*
-    SEARCH
+    For DND File see ./app/api/dnd
   */
-  app.post('/api/datasets/:datasetId/concepts/search',
+  app.post(
+    '/api/datasets/:datasetId/concepts/:conceptId/tables/:tableId/filters/:filterId/resolve',
     function response (req, res) {
       setTimeout(() => {
         res.setHeader('Content-Type', 'application/json');
 
-        const result = [];
-        const awards = require('./concepts/awards');
-        const movieAppearance = require('./concepts/movie_appearances');
+        if (req.params.filterId !== 'production_country') return null;
 
-        result.push(...findConcepts(awards, req.body.query))
-        result.push(...findConcepts(movieAppearance, req.body.query))
+        const countries = require('./autocomplete/countries');
+        const unknownCodes = req.body.values.filter(val => !countries.includes(val));
+        const values = req.body.values.filter(val => countries.includes(val));
 
-        // see type SearchResult
-        res.send({ result: result, limit: 20, size: result.length });
+
+        res.send({
+          unknownCodes: unknownCodes,
+          resolvedFilter: {
+            tableId: req.params.tableId,
+            filterId: req.params.filterId,
+            value: values.map(val => ({label: val, value: val}))
+          }
+        });
       }, 500);
     }
   );
+
+  /*
+    SEARCH
+  */
+  app.post('/api/datasets/:datasetId/concepts/search', (req, res) => {
+    setTimeout(() => {
+      res.setHeader('Content-Type', 'application/json');
+
+      const result = [];
+      const awards = require('./concepts/awards');
+      const movieAppearance = require('./concepts/movie_appearances');
+      const placeOfBirth = require('./concepts/place_of_birth');
+
+      result.push(...findConcepts(awards, req.body.query));
+      result.push(...findConcepts(movieAppearance, req.body.query));
+      result.push(...findConcepts(placeOfBirth, req.body.query));
+
+      // see type SearchResult
+      res.send({ result: result, limit: 20, size: result.length });
+    }, 10);
+  });
+
+  app.get('/api/config/frontend', (req, res) => {
+    res.setHeader('Content-Type', 'application/json');
+
+    const config = require('./config.json');
+    config.version = version;
+
+    res.send(config);
+  });
 };
 
 const findConcepts = (concepts, query) => {
-  return Object.keys(concepts)
-    .map(key => ({id: key, label: concepts[key].label}))
-    .filter(res => res.label.toLowerCase().includes(query.toLowerCase()))
-    .map(res => res.id);
+  const matches = Object.keys(concepts)
+    .map(key => ({ id: key, label: concepts[key].label}))
+    .filter(res => res.label.toLowerCase().includes(query.toLowerCase()));
+
+    return fetchParents(concepts, matches);
+}
+
+const fetchParents = (concepts, matches) => {
+  for (var ma in matches)
+    visit(matches[ma].id, concepts, matches);
+
+  return matches.map(r => r.id);
+}
+
+const visit = (id, concepts, matches) => {
+  for (var co in concepts) {
+    const children = concepts[co].children
+    const parent = concepts[co].parent;
+    if (children !== undefined) {
+      const idx = children.indexOf(id);
+      if (idx >= 0) {
+        matches.push({ id: parent });
+        children.slice(idx); // remove element for next iterate
+        return visit(parent, concepts, matches);
+      }
+    }
+  }
 }

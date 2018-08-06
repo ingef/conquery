@@ -1,6 +1,7 @@
 // @flow
 
-import type { Dispatch } from 'redux-thunk';
+import type { Dispatch, getState } from 'redux-thunk';
+import { reset }         from 'redux-form';
 import { replace }       from 'react-router-redux';
 
 import { toDataset }     from '../routes';
@@ -32,7 +33,6 @@ import {
 import {
   type StandardQueryType
 } from '../standard-query-editor/types';
-
 
 import {
   LOAD_DATASETS_START,
@@ -100,7 +100,7 @@ export const selectDataset = (
   previouslySelectedDatasetId: DatasetIdType,
   query: StandardQueryType
 ) => {
-  return (dispatch: Dispatch) => {
+  return (dispatch: Dispatch, state: getState) => {
     dispatch(saveQuery(query, previouslySelectedDatasetId));
     dispatch(selectDatasetInput(datasetId));
 
@@ -116,8 +116,20 @@ export const selectDataset = (
         dispatch(loadQuery(nextDataset.query));
 
       dispatch(loadTrees(datasetId));
+      // clearing Redux Form
+      dispatch(reset(selectActiveForm(state)));
 
       return dispatch(loadPreviousQueries(datasetId));
     }
   };
 };
+
+const selectActiveForm = (getState) => {
+  const state = getState();
+  return state.panes &&
+    state.panes.right &&
+    state.panes.right.tabs &&
+    state.panes.right.tabs.externalForms &&
+    state.panes.right.tabs.externalForms.externalForms &&
+    state.panes.right.tabs.externalForms.externalForms.activeForm
+}

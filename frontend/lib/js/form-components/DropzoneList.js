@@ -17,6 +17,7 @@ type PropsType = {
   acceptedDropTypes: string[],
   onDrop: Function,
   onDelete: Function,
+  disallowMultipleColumns?: boolean
 };
 
 const DropzoneList = (props: PropsType) => {
@@ -46,11 +47,15 @@ const DropzoneList = (props: PropsType) => {
           }
         </div>
       }
-      <FreeDropzone
-        className={props.dropzoneClassName}
-        containsItem={false}
-        dropzoneText={props.dropzoneText}
-      />
+      {
+        // allow at least one column
+        ((props.items && props.items.length === 0) || !props.disallowMultipleColumns) &&
+        <FreeDropzone
+          className={props.dropzoneClassName}
+          containsItem={false}
+          dropzoneText={props.dropzoneText}
+        />
+      }
     </div>
   );
 };
