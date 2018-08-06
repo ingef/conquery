@@ -5,12 +5,17 @@ import T              from 'i18n-react';
 import classnames     from 'classnames';
 import DatePicker     from 'react-datepicker';
 import moment         from 'moment';
-
-import 'react-datepicker/dist/react-datepicker.css';
-
-import { type FieldPropsType } from 'redux-form';
+import {
+  type FieldPropsType
+}                     from 'redux-form';
 
 import { dateTypes }  from '../common/constants';
+import {
+  parseDatePattern,
+  specificDatePattern
+}                     from '../common/helpers/dateHelper';
+
+import 'react-datepicker/dist/react-datepicker.css';
 
 const {
   DATE_FORMAT,
@@ -35,23 +40,44 @@ const convertToDate = date =>
     : null;
 
 const DateRangePicker = (props: PropsType) => {
-  const onChangeMinDate = date =>
+  const minDate = convertToDate(props.input.value.minDate);
+  const maxDate = convertToDate(props.input.value.maxDate);
+
+  const onSetDate = value =>
+    props.input.onChange(value);
+
+  const onSetMinDate = date =>
     props.input.onChange({
       ...props.input.value,
-      'minDate': date,
-      'maxDate': props.input.value.maxDate
-        ? props.input.value.maxDate
-        : null
+      'minDate': date
     });
 
-  const onChangeMaxDate = date =>
+  const onSetMaxDate = date =>
     props.input.onChange({
       ...props.input.value,
-      'maxDate': date,
-      'minDate': props.input.value.minDate
-        ? props.input.value.minDate
-        : null
+      'maxDate': date
     });
+
+  const onChangeRawMin = (value) => {
+    var { minDate, maxDate } = specificDatePattern(value);
+
+    if (!minDate)
+      minDate = parseDatePattern(value);
+
+    onSetMinDate(formatDate(minDate));
+
+    if (maxDate && maxDate.isValid)
+      onSetDate({ minDate: formatDate(minDate), maxDate: formatDate(maxDate) });
+  }
+
+  const onChangeRawMax = (value) => {
+    var { maxDate } = specificDatePattern(value);
+
+    if (!maxDate)
+      maxDate = parseDatePattern(value);
+
+    onSetMaxDate(formatDate(maxDate));
+  }
 
   return (
     <div className={props.className}>
@@ -72,16 +98,26 @@ const DateRangePicker = (props: PropsType) => {
           <DatePicker
             id="datepicker-min"
             className={classnames({
-              "query-group-modal__datepicker--has-value": !!props.input.value.minDate
+              "query-group-modal__datepicker--has-value": !!minDate
             })}
             locale="de"
             dateFormat={localizedDateFormat()}
-            selected={convertToDate(props.input.value.minDate)}
+              selected={minDate}
+              openToDate={minDate}
+              maxDate={moment().add(2, "year")}
             placeholderText={T.translate('queryGroupModal.datePlaceholder')}
-            isClearable={true}
-            onChange={date => onChangeMinDate(formatDate(date))}
-            showYearDropdown={true}
-            scrollableYearDropdown={true}
+              onChange={(date) => onSetMinDate(formatDate(date))}
+              onChangeRaw={(event) => onChangeRawMin(event.target.value)}
+              ref={r => {
+                if (r && minDate && minDate.isValid) {
+                  r.setOpen(false)
+                  r.setSelected(minDate)
+                }
+              }}
+              isClearable
+              showYearDropdown
+              scrollableYearDropdown
+              tabIndex={1}
           />
         </div>
         <div className={props.inputGroupElementClassName}>
@@ -94,16 +130,26 @@ const DateRangePicker = (props: PropsType) => {
           <DatePicker
             id="datepicker-max"
             className={classnames({
-              "query-group-modal__datepicker--has-value": !!props.input.value.maxDate
+              "query-group-modal__datepicker--has-value": !!maxDate
             })}
             locale="de"
             dateFormat={localizedDateFormat()}
-            selected={convertToDate(props.input.value.maxDate)}
+              selected={maxDate}
+              openToDate={maxDate}
+              maxDate={moment().add(2, "year")}
             placeholderText={T.translate('queryGroupModal.datePlaceholder')}
-            isClearable={true}
-            onChange={date => onChangeMaxDate(formatDate(date))}
-            showYearDropdown={true}
-            scrollableYearDropdown={true}
+              onChange={(date) => onSetMaxDate(formatDate(date))}
+              onChangeRaw={(event) => onChangeRawMax(event.target.value)}
+              ref={r => {
+                if (r && maxDate && maxDate.isValid) {
+                  r.setOpen(false)
+                  r.setSelected(maxDate)
+                }
+              }}
+              isClearable
+              showYearDropdown
+              scrollableYearDropdown
+              tabIndex={2}
           />
         </div>
       </div>
