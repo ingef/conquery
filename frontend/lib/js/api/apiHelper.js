@@ -76,7 +76,9 @@ const transformStandardQueryToApi = (query, version) =>  {
             : [];
 
           return {
-            ids: element.ids,
+            ids: element.includeSubnodes
+              ? [...element.ids, ...element.includeIds]
+              : element.ids,
             type: 'CONCEPT_LIST',
             label: element.label,
             tables,

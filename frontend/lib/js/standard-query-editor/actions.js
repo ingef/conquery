@@ -31,6 +31,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
+  TOGGLE_INCLUDE_SUBNODES
 }                                      from './actionTypes';
 
 export const dropAndNode = (
@@ -107,6 +108,11 @@ export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
 export const toggleTimestamps = (isExcluded) => ({
   type: TOGGLE_TIMESTAMPS,
   payload: { isExcluded }
+});
+
+export const toggleIncludeSubnodes = (isIncludeSubnodes) => ({
+  type: TOGGLE_INCLUDE_SUBNODES,
+  payload: { isIncludeSubnodes }
 });
 
 export const loadFilterSuggestionsStart = (tableIdx, conceptId, filterIdx, prefix) => ({

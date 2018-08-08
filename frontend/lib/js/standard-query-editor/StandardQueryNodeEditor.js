@@ -3,6 +3,7 @@
 import React                              from 'react';
 
 import { createConnectedQueryNodeEditor } from '../query-node-editor';
+import { getConceptById }                 from '../category-trees/globalTreeStoreHelper';
 
 import {
   deselectNode,
@@ -15,7 +16,16 @@ import {
   resetAllFilters,
   toggleTimestamps,
   loadFilterSuggestions,
-} from './actions';
+  toggleIncludeSubnodes,
+}                                         from './actions';
+
+const canIncludeSubnodes = node => {
+  if (!node) return false;
+
+  const concept = getConceptById(node.ids);
+
+  return (concept && concept.children && concept.children.length > 0);
+}
 
 const findNodeBeingEdited = (query) =>
   query
@@ -35,6 +45,7 @@ const mapStateToProps = (state) => {
     editorState: state.queryNodeEditor,
     showTables,
     isExcludeTimestampsPossible: true,
+    canIncludeSubnodes: canIncludeSubnodes(node),
     currencyConfig: state.startup.config.currency
   };
 }
@@ -77,6 +88,8 @@ const mapDispatchToProps = (dispatch) => ({
         filterId,
         prefix
     )),
+  onToggleIncludeSubnodes: (isIncludeSubNodes) =>
+    dispatch(toggleIncludeSubnodes(isIncludeSubNodes)),
 });
 
 const QueryNodeEditor = createConnectedQueryNodeEditor(mapStateToProps, mapDispatchToProps);

@@ -3,7 +3,7 @@
 import T from 'i18n-react';
 
 import {
-  getConceptsByIdsWithTables
+  getConceptsByIdsWithTables, getConceptById
 } from '../category-trees/globalTreeStoreHelper';
 
 import {
@@ -66,6 +66,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
+  TOGGLE_INCLUDE_SUBNODES,
 } from './actionTypes';
 
 import type
@@ -695,6 +696,24 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
   });
 }
 
+const toggleIncludeSubnodes = (state: StateType, action: Object) => {
+  const { isIncludeSubnodes } = action.payload;
+
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const {andIdx, orIdx} = nodePosition;
+
+  const node = state[andIdx].elements[orIdx];
+
+  const concept = getConceptById(node.ids);
+
+  return setElementProperties(state, andIdx, orIdx, {
+    includeIds: concept.children,
+    includeSubnodes : isIncludeSubnodes
+  });
+}
+
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
 // like `dateRange` or `exclude`.
@@ -793,6 +812,8 @@ const query = (
       return insertUploadedConceptList(state, action);
     case SET_RESOLVED_FILTER_VALUES:
       return setResolvedFilterValues(state, action);
+    case TOGGLE_INCLUDE_SUBNODES:
+      return toggleIncludeSubnodes(state, action);
     default:
       return state;
   }
