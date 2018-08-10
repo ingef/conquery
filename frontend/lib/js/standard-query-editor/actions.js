@@ -110,9 +110,9 @@ export const toggleTimestamps = (isExcluded) => ({
   payload: { isExcluded }
 });
 
-export const toggleIncludeSubnodes = (isIncludeSubnodes) => ({
+export const toggleIncludeSubnodes = (includeSubnodes) => ({
   type: TOGGLE_INCLUDE_SUBNODES,
-  payload: { isIncludeSubnodes }
+  payload: { includeSubnodes }
 });
 
 export const loadFilterSuggestionsStart = (tableIdx, conceptId, filterIdx, prefix) => ({

@@ -1,6 +1,7 @@
 // @flow
 
 import T from 'i18n-react';
+import { difference } from 'lodash'
 
 import {
   getConceptsByIdsWithTables, getConceptById
@@ -697,7 +698,7 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
 }
 
 const toggleIncludeSubnodes = (state: StateType, action: Object) => {
-  const { isIncludeSubnodes } = action.payload;
+  const { includeSubnodes } = action.payload;
 
   const nodePosition = selectEditedNode(state);
   if (!nodePosition) return state;
@@ -708,10 +709,37 @@ const toggleIncludeSubnodes = (state: StateType, action: Object) => {
 
   const concept = getConceptById(node.ids);
 
-  return setElementProperties(state, andIdx, orIdx, {
-    includeIds: concept.children,
-    includeSubnodes : isIncludeSubnodes
-  });
+  const childIds = [];
+  const elements = concept.children.map(childId => {
+      const child = getConceptById(childId);
+      childIds.push(childId)
+      return {
+          ids: [childId],
+          label: child.label,
+          tables: node.tables,
+          tree: node.tree
+        }
+      });
+
+  const groupProps = {
+    elements: [
+      ...state[andIdx].elements.slice(0, orIdx),
+      {
+        ...state[andIdx].elements[orIdx],
+        includeSubnodes : includeSubnodes
+      },
+      ...state[andIdx].elements.slice(orIdx + 1),
+    ]
+  };
+
+  if (includeSubnodes)
+    groupProps.elements.push(...elements);
+  else
+    groupProps.elements = groupProps.elements.filter(element => {
+        return !(difference(element.ids, childIds).length === 0)
+    })
+
+  return setGroupProperties(state, andIdx, groupProps);
 }
 
 // Query is an array of "groups" (a AND b and c)

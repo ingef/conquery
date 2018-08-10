@@ -112,3 +112,11 @@ export const getConceptsByIdsWithTables = (
     tables: parentConceptsWithTables[0].concept.tables
   };
 }
+
+export const hasConceptChildren = node => {
+  if (!node) return false;
+
+  const concept = getConceptById(node.ids);
+
+  return (concept && concept.children && concept.children.length > 0);
+}

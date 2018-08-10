@@ -3,6 +3,7 @@ import classnames           from 'classnames';
 
 import CloseIconButton      from '../button/CloseIconButton';
 import IconButton           from '../button/IconButton';
+import { ExpandButton } from '../button';
 
 type PropsType = {
   className?: string,
@@ -10,6 +11,7 @@ type PropsType = {
   items: Array<Element>,
   onAddClick: Function,
   onRemoveClick: Function,
+  canExpand: boolean,
 };
 
 const DynamicInputGroup = (props: PropsType) => (

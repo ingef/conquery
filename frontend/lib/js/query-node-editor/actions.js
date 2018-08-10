@@ -11,7 +11,8 @@ export const createQueryNodeEditorActions = (type: string): Object => {
     SET_INPUT_TABLE_VIEW_ACTIVE,
     SET_FOCUSED_INPUT,
     TOGGLE_EDIT_LABEL,
-    RESET
+    RESET,
+    TOGGLE_INCLUDE_SUBNODES
   } = createActionTypes(type);
 
   const setDetailsViewActive = () => ({type: SET_DETAILS_VIEW_ACTIVE});
@@ -32,6 +33,7 @@ export const createQueryNodeEditorActions = (type: string): Object => {
       },
       callback: conceptFilterValuesResolve
     });
+  const toggleIncludeSubnodes = () => ({type: TOGGLE_INCLUDE_SUBNODES});
 
   return {
     setDetailsViewActive,
@@ -39,6 +41,7 @@ export const createQueryNodeEditorActions = (type: string): Object => {
     setFocusedInput,
     toggleEditLabel,
     reset,
-    onDropFiles
+    onDropFiles,
+    toggleIncludeSubnodes
   };
 };
