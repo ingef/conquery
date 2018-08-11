@@ -16,7 +16,7 @@ const ExpandButton = (props: PropsType) => {
       className={classnames(props.className, 'btn--icon', 'btn--icon--padded')}
       onClick={props.onClick}
     >
-      <i data-tip data-for="fa-expand" className="fa fa-expand" />
+      <i data-tip data-for="fa-expand" className="fa fa-expand" aria-hidden="true" />
       {
         !!props.tooltip &&
           <ReactTooltip
@@ -25,6 +25,7 @@ const ExpandButton = (props: PropsType) => {
             type="info"
             effect="solid"
             multiline={true}
+            delayShow={1000}
           >
             <span>{props.tooltip}</span>
           </ReactTooltip>
