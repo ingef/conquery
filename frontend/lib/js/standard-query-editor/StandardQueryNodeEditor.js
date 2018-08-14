@@ -15,6 +15,7 @@ import {
   resetAllFilters,
   toggleTimestamps,
   loadFilterSuggestions,
+  onDropFiles,
 } from './actions';
 
 const findNodeBeingEdited = (query) =>
@@ -77,6 +78,7 @@ const mapDispatchToProps = (dispatch) => ({
         filterId,
         prefix
     )),
+  onDropFiles: (...params) => dispatch(onDropFiles(...params))
 });
 
 const QueryNodeEditor = createConnectedQueryNodeEditor(mapStateToProps, mapDispatchToProps);
