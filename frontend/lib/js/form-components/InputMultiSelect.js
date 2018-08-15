@@ -24,20 +24,8 @@ type PropsType = FieldPropsType & {
   allowDropFile?: ?boolean,
 };
 
-const linesToParagraphs = (options) => {
-  if (!options) return;
-  return options
-      .map(o => ({
-          label: o.label.split(/\n/).map((text, i) => <p key={i}>{text}</p>),
-          value: o.value
-        })
-      );
-}
-
 const InputMultiSelect = (props: PropsType) => {
   const allowDropFile = props.allowDropFile && !!props.onDropFiles
-
-  // const options = linesToParagraphs(props.options)
 
   return (
     <label className={classnames(
@@ -81,7 +69,6 @@ const InputMultiSelect = (props: PropsType) => {
           onInputChange={props.onInputChange || function(value) { return value; }}
           isLoading={props.isLoading}
           className={props.className}
-          matchPos="start"
         />
       </Dropzone>
     </label>
