@@ -25,7 +25,7 @@ const DatasetSelector = (props: PropsType) => (
       name="dataset-selector"
       value={props.error
         ? -1
-        : props.selectedDatasetId
+        : { value: props.selectedDatasetId, label: props.selectedDatasetId }
       }
       onChange={(value) =>
         !isEmpty(value)
@@ -33,10 +33,7 @@ const DatasetSelector = (props: PropsType) => (
           : props.selectDataset(null, props.selectedDatasetId)
       }
       placeholder={T.translate('reactSelect.placeholder')}
-      autosize
-      clearable={false}
-      searchable={false}
-      disabled={!!props.error}
+      isDisabled={!!props.error}
       options={props.error
         ? [{
             value: -1,

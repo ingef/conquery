@@ -1,7 +1,6 @@
 // @flow
 
 import T from 'i18n-react';
-import Mustache from 'mustache'
 
 import {
   getConceptsByIdsWithTables
@@ -577,10 +576,10 @@ const loadFilterSuggestionsSuccess = (state, action) =>
   setNodeFilterProperties(state, action, {
     isLoading: false,
     options: action.payload.suggestions.map(option => ({
-      label: option.templateValues
-        ? Mustache.render(option.label, option.templateValues)
-        : option.label,
-      value: option.value
+      label: option.label,
+      value: option.value,
+      template: option.templateValues,
+      optionValue: option.optionValue
     }))
   });
 

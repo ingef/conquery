@@ -36,7 +36,6 @@ const AsyncInputMultiSelect = ({
     disabled={disabled}
     tooltip={tooltip}
     isLoading={isLoading}
-    className="async-input-multi-select"
     input={input}
     onInputChange={
       (value) => {
