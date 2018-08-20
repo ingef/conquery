@@ -5,36 +5,31 @@ import classnames       from 'classnames';
 import clickOutside     from 'react-onclickoutside';
 
 // A multi-select where new items can be created
-import CreatableSelect  from 'react-select/lib/Creatable';
+import { Creatable as Select}  from 'react-select';
 
 class EditableTagsForm extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      value: props.tags || []
+      values: (props.tags && props.tags.map(t => ({ label: t, value: t}))) || []
     };
-  }
-
-  componentDidMount() {
-    this.refs.input.select.focus();
   }
 
   handleClickOutside() {
     this.props.onCancel();
   }
 
-  handleChange = (value: any, actionMeta: any) => {
-    this.setState({ value });
+  handleChange = (values: any, actionMeta: any) => {
+    this.setState({ values });
   };
 
   _onSubmit(e) {
     e.preventDefault();
 
-    this.props.onSubmit(this.state.value);
+    this.props.onSubmit(this.state.values.map(v => v.value));
   }
 
   render() {
-    const { value, inputValue } = this.state;
     return (
       <form
         className={classnames(
@@ -43,13 +38,14 @@ class EditableTagsForm extends React.Component {
         )}
         onSubmit={this._onSubmit.bind(this)}
       >
-        <CreatableSelect
-          ref="input"
+        <Select
           name="input"
+          value={this.state.values}
           options={this.props.availableTags.map(t => ({ label: t, value: t}))}
           onChange={this.handleChange}
           isMulti
           isClearable
+          autoFocus={true}
           placeholder={T.translate('reactSelect.tagPlaceholder')}
           noOptionsMessage={() => T.translate('reactSelect.noResults')}
         />

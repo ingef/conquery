@@ -4,9 +4,9 @@ import React                      from 'react';
 import T                          from 'i18n-react';
 import {
   components,
-  createFilter
+  createFilter,
+  Creatable as Select
 }                                 from 'react-select';
-import CreatableSelect            from 'react-select/lib/Creatable';
 import { type FieldPropsType }    from 'redux-form';
 import Dropzone                   from 'react-dropzone'
 import Markdown                   from 'react-markdown';
@@ -38,16 +38,22 @@ const InputMultiSelect = (props: PropsType) => {
       : defaultValue
   )
 
-  const MultiValueLabel = (params) =>
-      <components.MultiValueLabel {...params}>
-        { markdown(params.data.optionLabel, params.data.template, params.children) }
-      </components.MultiValueLabel>;
+  const MultiValueLabel = (params) => {
+    const valueLabel = params.data.optionLabel
+      ? markdown(params.data.optionLabel, params.data.template, params.children)
+      : params.data.label
+      return (
+    <components.MultiValueLabel {...params}>
+      <span data-tip={valueLabel}>{valueLabel}</span>
+      <InfoTooltip text={valueLabel} symbol={false} place={'top'} />
+    </components.MultiValueLabel>)
+  };
 
   const options = props.options && props.options.map(o => ({
     label: o.optionValue && o.template
       ? Mustache.render(o.optionValue, o.template)
       : o.label,
-    value: o.value,
+    value: '' + o.value, // convert number to string
     template: o.template,
     optionValue: o.optionValue,
     optionLabel: o.label,
@@ -84,7 +90,7 @@ const InputMultiSelect = (props: PropsType) => {
         onDrop={props.onDropFiles}
         disabled={!allowDropFile}
       >
-        <CreatableSelect
+        <Select
           name="form-field"
           options={options}
           components={{ MultiValueLabel }}
@@ -103,11 +109,9 @@ const InputMultiSelect = (props: PropsType) => {
           classNamePrefix={'react-select'}
           closeMenuOnSelect={false}
           formatOptionLabel={({ label, optionValue, template, highlight }) =>
-            <Markdown source={
-              optionValue && template
-              ? Mustache.render(optionValue, template)
-              : label}
-            />
+            optionValue && template
+              ? <Markdown source={Mustache.render(optionValue, template)} />
+              : label
           }
           filterOption={filterOption}
         />

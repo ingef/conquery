@@ -19,11 +19,14 @@ type PropsType = FieldPropsType & {
 };
 
 const InputSelect = (props: PropsType) => {
+  const { input, options } = props;
+  const selected = options && options.filter(v => v.value === input.value);
+  const defaultValue = options && options.filter(v => v.value === input.defaultValue);
   return (
     <label className={classnames(
       'input', {
         'input--value-changed':
-          !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue
+          !isEmpty(input.value) && input.value !== input.defaultValue
       }
     )}>
       <p className={classnames(
@@ -36,21 +39,19 @@ const InputSelect = (props: PropsType) => {
       </p>
       <Select
         name="form-field"
-        value={props.input.value}
-        options={props.options}
-        searchable={false}
+        value={selected}
+        defaultValue={defaultValue}
+        options={options}
+        isSearchable={false}
         onChange={
           field => field
-            ? props.input.onChange(field.value)
-            : props.input.onChange(null)
+            ? input.onChange(field.value)
+            : input.onChange(null)
         }
-        clearable={props.input.clearable}
-        disabled={!!props.disabled}
+        isClearable={input.clearable}
+        isDisabled={!!props.disabled}
         placeholder={T.translate('reactSelect.placeholder')}
-        backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
-        clearAllText={T.translate('reactSelect.clearAll')}
-        clearValueText={T.translate('reactSelect.clearValue')}
-        noResultsText={T.translate('reactSelect.noResults')}
+        noOptionsMessage={() => T.translate('reactSelect.noResults')}
         {...props.selectProps}
       />
     </label>
