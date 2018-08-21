@@ -112,7 +112,8 @@ export default function createQueryRunnerActions(
 
               // Now there should be a new result that can be queried
               dispatch(loadPreviousQueries(datasetId));
-            } else if (r.status === 'CANCELED' || r.status === 'FAILED') {
+            } else if (r.status === 'CANCELED') {
+            } else if (r.status === 'FAILED') {
               dispatch(queryResultError(r));
             } else {
               // Try again after a short time:
