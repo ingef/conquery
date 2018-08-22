@@ -2,16 +2,16 @@
 
 import React                      from 'react';
 import T                          from 'i18n-react';
-import {
+import Select, {
   components,
-  createFilter,
-  Creatable as Select
+  createFilter
 }                                 from 'react-select';
 import { type FieldPropsType }    from 'redux-form';
 import Dropzone                   from 'react-dropzone'
 import Markdown                   from 'react-markdown';
 import Mustache                   from 'mustache'
 import classnames                 from 'classnames';
+import ReactTooltip               from 'react-tooltip';
 
 import { type SelectOptionsType } from '../common/types/backend';
 import { isEmpty }                from '../common/helpers';
@@ -32,32 +32,27 @@ type PropsType = FieldPropsType & {
 
 const InputMultiSelect = (props: PropsType) => {
   const allowDropFile = props.allowDropFile && !!props.onDropFiles
-  const markdown = (label, template, defaultValue) => (
-    typeof label === 'string' && template
-      ? <Markdown source={Mustache.render(label, template)} />
-      : defaultValue
-  )
 
   const MultiValueLabel = (params) => {
-    const valueLabel = params.data.optionLabel
-      ? markdown(params.data.optionLabel, params.data.template, params.children)
-      : params.data.label
-      return (
-    <components.MultiValueLabel {...params}>
-      <span data-tip={valueLabel}>{valueLabel}</span>
-      <InfoTooltip text={valueLabel} symbol={false} place={'top'} />
-    </components.MultiValueLabel>)
+    const label = params.data.optionLabel || params.data.label
+    const valueLabel = params.data.templateValues
+      ? Mustache.render(label, params.data.templateValues)
+      : label
+    return (
+      <components.MultiValueLabel {...params}>
+        <span data-tip={valueLabel}>{valueLabel}</span>
+        <ReactTooltip type="info" place="top" effect="solid" />
+      </components.MultiValueLabel>
+    )
   };
 
-  const options = props.options && props.options.map(o => ({
-    label: o.optionValue && o.template
-      ? Mustache.render(o.optionValue, o.template)
-      : o.label,
-    value: '' + o.value, // convert number to string
-    template: o.template,
-    optionValue: o.optionValue,
-    optionLabel: o.label,
-    highlight: props.input.value
+  const options = props.options && props.options.map(option => ({
+    ...option,
+    label: option.optionValue && option.templateValues
+      ? Mustache.render(option.optionValue, option.templateValues)
+      : option.label,
+    value: '' + option.value, // convert number to string
+    optionLabel: option.label
   }))
 
   const filterOption = createFilter({
@@ -108,9 +103,9 @@ const InputMultiSelect = (props: PropsType) => {
           isLoading={props.isLoading}
           classNamePrefix={'react-select'}
           closeMenuOnSelect={false}
-          formatOptionLabel={({ label, optionValue, template, highlight }) =>
-            optionValue && template
-              ? <Markdown source={Mustache.render(optionValue, template)} />
+          formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
+            optionValue && templateValues
+              ? <Markdown source={Mustache.render(optionValue, templateValues)} />
               : label
           }
           filterOption={filterOption}
