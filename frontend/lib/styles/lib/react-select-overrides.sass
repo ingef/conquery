@@ -9,12 +9,17 @@
         .Select-value
           line-height: 24px
 
-.react-select__value-container.react-select__value-container--is-multi.react-select__value-container--has-value
-  max-height: 130px
-  overflow-y: scroll
-  -ms-overflow-style: none // IE 10+
-  &::-webkit-scrollbar
-    display: none
+.react-select
+    &__value-container
+      &--has-value
+        max-height: 130px
+        overflow-y: scroll
+        -ms-overflow-style: none // IE 10+
+        &::-webkit-scrollbar
+          display: none
+    &__placeholder
+      font-size: 12px
+      padding-left: 5px
 
 
 // Override the defaults, add #root selectors to ensure precedence
