@@ -1,8 +1,5 @@
 // @flow
 
-import { dropFiles }                  from '../file-upload/actions';
-import { conceptFilterValuesResolve } from '../upload-concept-list-modal/actions';
-import { SET_RESOLVED_FILTER_VALUES } from '../standard-query-editor/actionTypes';
 import { createActionTypes }          from './actionTypes';
 
 export const createQueryNodeEditorActions = (type: string): Object => {
