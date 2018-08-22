@@ -11,6 +11,7 @@ import moment                   from 'moment';
 
 import { dateTypes }            from '../common/constants';
 import { Modal }                from '../modal';
+import { InfoTooltip }          from '../tooltip';
 import {
   specificDatePattern,
   parseDatePattern
@@ -108,6 +109,7 @@ const QueryGroupModal = (props) => {
         </h3>
         <p className="query-group-modal__explanation">
           { T.translate('queryGroupModal.explanation') }
+          <InfoTooltip text={T.translate('tooltip.date.possiblePattern')} />
           {
             hasActiveDate &&
             <span

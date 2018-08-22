@@ -2,14 +2,16 @@
 
 import React                from 'react';
 import ReactTooltip         from 'react-tooltip';
+import classnames           from 'classnames'
 
 type PropsType = {
   text: string,
+  className: string
 };
 
 const InfoTooltip = (props: PropsType) => {
   return (
-    <span className="info-tooltip">
+    <span className={classnames("info-tooltip", props.className)}>
       <i
         data-tip={props.text}
         className="fa fa-question-circle-o"

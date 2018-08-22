@@ -1,19 +1,20 @@
 // @flow
 
-import React          from 'react';
-import T              from 'i18n-react';
-import classnames     from 'classnames';
-import DatePicker     from 'react-datepicker';
-import moment         from 'moment';
+import React           from 'react';
+import T               from 'i18n-react';
+import classnames      from 'classnames';
+import DatePicker      from 'react-datepicker';
+import moment          from 'moment';
 import {
   type FieldPropsType
-}                     from 'redux-form';
+}                      from 'redux-form';
 
-import { dateTypes }  from '../common/constants';
+import { dateTypes }   from '../common/constants';
 import {
   parseDatePattern,
   specificDatePattern
-}                     from '../common/helpers/dateHelper';
+}                      from '../common/helpers/dateHelper';
+import { InfoTooltip } from '../tooltip';
 
 import 'react-datepicker/dist/react-datepicker.css';
 
@@ -81,12 +82,15 @@ const DateRangePicker = (props: PropsType) => {
 
   return (
     <div className={props.className}>
-      {
-        props.label &&
-        <span className="input input-label">
-          {props.label}
-        </span>
-      }
+      <div className="">
+        {
+          props.label &&
+          <span className="input input-label__inline">
+            {props.label}
+          </span>
+        }
+        <InfoTooltip className="inline" text={T.translate('tooltip.date.possiblePattern')} />
+      </div>
       <div className={props.inputGroupClassName}>
         <div className={props.inputGroupElementClassName}>
           <label
