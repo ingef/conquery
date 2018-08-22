@@ -575,12 +575,7 @@ const loadFilterSuggestionsStart = (state, action) =>
 const loadFilterSuggestionsSuccess = (state, action) =>
   setNodeFilterProperties(state, action, {
     isLoading: false,
-    options: action.payload.suggestions.map(option => ({
-      label: option.label,
-      value: option.value,
-      template: option.templateValues,
-      optionValue: option.optionValue
-    }))
+    options: action.payload.suggestions
   });
 
 const loadFilterSuggestionsError = (state, action) =>
@@ -689,7 +684,7 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
 
   return setNodeFilterValue(state, {
     payload: {
-      value: resolutionResult.filter.value.map(v => v.value),
+      value: resolutionResult.filter.value,
       tableIdx: parameters.tableIdx,
       filterIdx: parameters.filterIdx,
       options: resolutionResult.filter.value
