@@ -603,7 +603,7 @@ const createQueryNodeFromConceptListUploadResult = (
       id: resolutionResult.filter.tableId,
       filters: [{
           id: resolutionResult.filter.filterId,
-          value: resolutionResult.filter.value.map(filterValue => filterValue.value),
+          value: resolutionResult.filter.value,
           options: resolutionResult.filter.value,
       }]
     };
