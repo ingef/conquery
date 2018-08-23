@@ -27,6 +27,8 @@ const ClearableInput = (props: PropsType) => {
   const { currency, pattern } = props.inputProps || {};
 
   const handleKeyPress = (event) => {
+    if (!pattern) return;
+
     var regex = new RegExp(pattern);
     var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
     if (!regex.test(key)) {
