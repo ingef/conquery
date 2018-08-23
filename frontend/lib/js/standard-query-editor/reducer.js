@@ -45,6 +45,10 @@ import {
 import type { StateType } from '../query-runner/reducer';
 
 import {
+  nodeHasActiveFilters
+} from '../model/node';
+
+import {
   DROP_AND_NODE,
   DROP_OR_NODE,
   DELETE_NODE,
@@ -471,7 +475,6 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
             isPreviousQuery: true
           };
         } else {
-          const convertConceptToConceptList = element.type === 'CONCEPT';
           const ids = element.ids || [element.id];
           const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
 
@@ -483,14 +486,8 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
 
           const tables = mergeTablesFromSavedConcept(lookupResult, element);
 
-          const label = convertConceptToConceptList
-            ? lookupResult.concepts[0].label
-            : element.label;
-
           return {
             ...element,
-            label,
-            ids,
             tables,
             tree: lookupResult.root
           };
@@ -581,10 +578,7 @@ const loadFilterSuggestionsStart = (state, action) =>
 const loadFilterSuggestionsSuccess = (state, action) =>
   setNodeFilterProperties(state, action, {
     isLoading: false,
-    options: action.payload.suggestions.map(option => ({
-      label: option.label,
-      value: option.value
-    }))
+    options: action.payload.suggestions
   });
 
 const loadFilterSuggestionsError = (state, action) =>
@@ -612,7 +606,7 @@ const createQueryNodeFromConceptListUploadResult = (
       id: resolutionResult.filter.tableId,
       filters: [{
           id: resolutionResult.filter.filterId,
-          value: resolutionResult.filter.value.map(filterValue => filterValue.value),
+          value: resolutionResult.filter.value,
           options: resolutionResult.filter.value,
       }]
     };
@@ -693,7 +687,7 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
 
   return setNodeFilterValue(state, {
     payload: {
-      value: resolutionResult.filter.value.map(v => v.value),
+      value: resolutionResult.filter.value,
       tableIdx: parameters.tableIdx,
       filterIdx: parameters.filterIdx,
       options: resolutionResult.filter.value

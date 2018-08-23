@@ -4,6 +4,8 @@ import { type Dispatch }               from 'redux-thunk';
 
 import api                             from '../api';
 import { type DateRangeType }          from '../common/types/backend';
+import { dropFiles }                   from '../file-upload/actions';
+import { conceptFilterValuesResolve }  from '../upload-concept-list-modal/actions';
 
 import type {
   DraggedNodeType,
@@ -31,6 +33,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
+  SET_RESOLVED_FILTER_VALUES,
 }                                      from './actionTypes';
 
 export const dropAndNode = (
@@ -145,3 +148,17 @@ export const loadFilterSuggestions =
         );
     };
   }
+
+export const onDropFiles = (datasetId, treeId, tableIdx, tableId, filterIdx, filterId, files) =>
+  dropFiles(files, {
+    parameters: {
+      actionType: SET_RESOLVED_FILTER_VALUES,
+      datasetId,
+      treeId,
+      tableIdx,
+      tableId,
+      filterIdx,
+      filterId
+    },
+    callback: conceptFilterValuesResolve
+  });

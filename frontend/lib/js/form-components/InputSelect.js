@@ -3,10 +3,9 @@
 import React                      from 'react';
 import T                          from 'i18n-react';
 import Select                     from 'react-select';
+import Dropzone                   from 'react-dropzone'
 import classnames                 from 'classnames';
 import { type FieldPropsType }    from 'redux-form';
-
-import 'react-select/dist/react-select.css';
 
 import { isEmpty }                from '../common/helpers';
 import { type SelectOptionsType } from '../common/types/backend';
@@ -18,14 +17,21 @@ type PropsType = FieldPropsType & {
   disabled?: boolean,
   selectProps?: Object,
   tooltip?: string,
+  onDropFiles?: Function,
+  allowDropFile?: ?boolean,
 };
 
 const InputSelect = (props: PropsType) => {
+  const allowDropFile = props.allowDropFile && !!props.onDropFiles
+  const { input, options } = props;
+  const selected = options && options.filter(v => v.value === input.value);
+  const defaultValue = options && options.filter(v => v.value === input.defaultValue);
+  
   return (
     <label className={classnames(
       'input', {
         'input--value-changed':
-          !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue
+          !isEmpty(input.value) && input.value !== input.defaultValue
       }
     )}>
       <p className={classnames(
@@ -36,25 +42,32 @@ const InputSelect = (props: PropsType) => {
         { props.label }
         { props.tooltip && <InfoTooltip text={props.tooltip} /> }
       </p>
-      <Select
-        name="form-field"
-        value={props.input.value}
-        options={props.options}
-        searchable={false}
-        onChange={
-          field => field
-            ? props.input.onChange(field.value)
-            : props.input.onChange(null)
-        }
-        clearable={props.input.clearable}
-        disabled={!!props.disabled}
-        placeholder={T.translate('reactSelect.placeholder')}
-        backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
-        clearAllText={T.translate('reactSelect.clearAll')}
-        clearValueText={T.translate('reactSelect.clearValue')}
-        noResultsText={T.translate('reactSelect.noResults')}
-        {...props.selectProps}
-      />
+      <Dropzone
+        disableClick
+        style={{position: "relative", display: "block", maxWidth: "300px"}}
+        activeClassName={allowDropFile ? 'dropzone--over' : ''}
+        className={allowDropFile ? 'dropzone' : ''}
+        onDrop={props.onDropFiles}
+        disabled={!allowDropFile}
+      >
+        <Select
+          name="form-field"
+          value={selected}
+          defaultValue={defaultValue}
+          options={options}
+          isSearchable={false}
+          onChange={
+            field => field
+              ? input.onChange(field.value)
+              : input.onChange(null)
+          }
+          isClearable={input.clearable}
+          isDisabled={!!props.disabled}
+          placeholder={T.translate('reactSelect.placeholder')}
+          noOptionsMessage={() => T.translate('reactSelect.noResults')}
+          {...props.selectProps}
+        />
+      </Dropzone>
     </label>
   );
 }
