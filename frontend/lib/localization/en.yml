@@ -99,6 +99,7 @@ tooltip:
     daterange: "Date Range"
     from: "From"
     to: "To"
+    possiblePattern: ".2000 => from: 01/01/2000 to: 01/31/2000 <br/> q2.2000 => from: 04/01/2000 to: 06/30/2000 <br/> m3.2000 => from: 03/01/2000 to: 03/31/2000"
 
 reactSelect:
   placeholder: "Choose ..."

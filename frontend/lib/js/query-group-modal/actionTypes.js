@@ -4,3 +4,4 @@ export const QUERY_GROUP_MODAL_SET_MIN_DATE = "query-group-modal/QUERY_GROUP_MOD
 export const QUERY_GROUP_MODAL_SET_MAX_DATE = "query-group-modal/QUERY_GROUP_MODAL_SET_MAX_DATE";
 export const QUERY_GROUP_MODAL_RESET_ALL_DATES =
   "query-group-modal/QUERY_GROUP_MODAL_RESET_ALL_DATES";
+export const QUERY_GROUP_MODAL_SET_TOUCHED = "query-group-modal/QUERY_GROUP_MODAL_SET_TOUCHED";

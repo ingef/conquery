@@ -24,6 +24,7 @@ import {
   QUERY_GROUP_MODAL_SET_MIN_DATE,
   QUERY_GROUP_MODAL_SET_MAX_DATE,
   QUERY_GROUP_MODAL_RESET_ALL_DATES,
+  QUERY_GROUP_MODAL_SET_TOUCHED,
 } from '../query-group-modal/actionTypes';
 
 import {
@@ -407,6 +408,11 @@ const resetGroupDates = (state, action) => {
   return setGroupProperties(state, andIdx, { dateRange: null });
 };
 
+const setGroupTouched = (state, action) => {
+  const { andIdx, field } = action.payload;
+
+  return setGroupProperties(state, andIdx, { touched:  { [field]: true } });
+};
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
@@ -814,6 +820,8 @@ const query = (
       return setGroupDate(state, action, 'max');
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
       return resetGroupDates(state, action);
+    case QUERY_GROUP_MODAL_SET_TOUCHED:
+      return setGroupTouched(state, action);
     case EXPAND_PREVIOUS_QUERY:
       return expandPreviousQuery(state, action);
     case LOAD_PREVIOUS_QUERY_START:
