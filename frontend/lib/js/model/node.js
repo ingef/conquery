@@ -12,6 +12,7 @@ export const nodeHasActiveFilters = (
   tables: Array<TableType> = node.tables
 ) =>
   node.excludeTimestamps ||
+  node.includeSubnodes ||
     nodeHasActiveTableFilters(node, tables) ||
     nodeHasExludedTable(node, tables);
 

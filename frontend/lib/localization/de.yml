@@ -59,6 +59,7 @@ queryNodeEditor:
   noDescriptionProvided: "Keine Beschreibung verfügbar."
   selectAFilter: "Kein Filter ausgewählt."
   dropConcept: "Füge ein weiteres Konzept hinzu"
+  includeSubnodes: "Untergeordnete Konzepte einbeziehen"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"

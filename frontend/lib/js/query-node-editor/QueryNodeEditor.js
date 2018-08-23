@@ -45,6 +45,7 @@ export type PropsType = {
   onLoadFilterSuggestions: Function,
   datasetId: number,
   suggestions: ?Object,
+  onToggleIncludeSubnodes: Function,
 };
 
 const QueryNodeEditor = (props: PropsType) => {

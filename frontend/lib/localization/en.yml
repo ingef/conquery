@@ -57,6 +57,7 @@ queryNodeEditor:
   noDescriptionProvided: "No description provided."
   selectAFilter: "Select a filter to see its description here."
   dropConcept: "Drop another concept here"
+  includeSubnodes: "Include subordinate concepts"
 
 queryGroupModal:
   explanation: "Set time frame"

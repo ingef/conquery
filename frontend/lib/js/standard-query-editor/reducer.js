@@ -1,9 +1,10 @@
 // @flow
 
 import T from 'i18n-react';
+import { difference } from 'lodash'
 
 import {
-  getConceptsByIdsWithTables
+  getConceptsByIdsWithTables, getConceptById
 } from '../category-trees/globalTreeStoreHelper';
 
 import {
@@ -70,6 +71,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
+  TOGGLE_INCLUDE_SUBNODES,
 } from './actionTypes';
 
 import type
@@ -689,6 +691,51 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
   });
 }
 
+const toggleIncludeSubnodes = (state: StateType, action: Object) => {
+  const { includeSubnodes } = action.payload;
+
+  const nodePosition = selectEditedNode(state);
+  if (!nodePosition) return state;
+
+  const {andIdx, orIdx} = nodePosition;
+
+  const node = state[andIdx].elements[orIdx];
+
+  const concept = getConceptById(node.ids);
+
+  const childIds = [];
+  const elements = concept.children.map(childId => {
+      const child = getConceptById(childId);
+      childIds.push(childId)
+      return {
+          ids: [childId],
+          label: child.label,
+          tables: node.tables,
+          tree: node.tree
+        }
+      });
+
+  const groupProps = {
+    elements: [
+      ...state[andIdx].elements.slice(0, orIdx),
+      {
+        ...state[andIdx].elements[orIdx],
+        includeSubnodes : includeSubnodes
+      },
+      ...state[andIdx].elements.slice(orIdx + 1),
+    ]
+  };
+
+  if (includeSubnodes)
+    groupProps.elements.push(...elements);
+  else
+    groupProps.elements = groupProps.elements.filter(element => {
+        return !(difference(element.ids, childIds).length === 0)
+    })
+
+  return setGroupProperties(state, andIdx, groupProps);
+}
+
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
 // like `dateRange` or `exclude`.
@@ -787,6 +834,8 @@ const query = (
       return insertUploadedConceptList(state, action);
     case SET_RESOLVED_FILTER_VALUES:
       return setResolvedFilterValues(state, action);
+    case TOGGLE_INCLUDE_SUBNODES:
+      return toggleIncludeSubnodes(state, action);
     default:
       return state;
   }
