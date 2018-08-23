@@ -19,37 +19,36 @@ type PropsType = {
   selectDataset: Function,
 };
 
-const DatasetSelector = (props: PropsType) => (
-  <div className="dataset-selector">
-    <Select
-      name="dataset-selector"
-      value={props.error
-        ? -1
-        : props.selectedDatasetId
-      }
-      onChange={(value) =>
-        !isEmpty(value)
-          ? props.selectDataset(value.value, props.selectedDatasetId)
-          : props.selectDataset(null, props.selectedDatasetId)
-      }
-      placeholder={T.translate('reactSelect.placeholder')}
-      autosize
-      clearable={false}
-      searchable={false}
-      disabled={!!props.error}
-      options={props.error
-        ? [{
-            value: -1,
-            label: T.translate('datasetSelector.error')
-          }]
-        : props.datasets.map(db => ({
-            value: db.id,
-            label: db.label
-          }))
-      }
-    />
-  </div>
-);
+const DatasetSelector = (props: PropsType) => {
+  const { selectedDatasetId, datasets, selectDataset, error } = props;
+  const options = datasets && datasets.map(db => ({ value: db.id, label: db.label }));
+  const selected = options.filter(set => selectedDatasetId === set.value);
+  return (
+    <div className="dataset-selector">
+      <Select
+        name="dataset-selector"
+        value={error
+          ? -1
+          : selected
+        }
+        onChange={(value) =>
+          !isEmpty(value)
+            ? selectDataset(value.value, selectedDatasetId)
+            : selectDataset(null, selectedDatasetId)
+        }
+        placeholder={T.translate('reactSelect.placeholder')}
+        isDisabled={!!error}
+        options={error
+          ? [{
+              value: -1,
+              label: T.translate('datasetSelector.error')
+            }]
+          : options
+        }
+      />
+    </div>
+  );
+}
 
 const mapStateToProps = (state) => ({
   datasets: state.datasets.data,

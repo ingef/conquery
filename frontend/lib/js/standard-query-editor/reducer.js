@@ -572,10 +572,7 @@ const loadFilterSuggestionsStart = (state, action) =>
 const loadFilterSuggestionsSuccess = (state, action) =>
   setNodeFilterProperties(state, action, {
     isLoading: false,
-    options: action.payload.suggestions.map(option => ({
-      label: option.label,
-      value: option.value
-    }))
+    options: action.payload.suggestions
   });
 
 const loadFilterSuggestionsError = (state, action) =>
@@ -603,7 +600,7 @@ const createQueryNodeFromConceptListUploadResult = (
       id: resolutionResult.filter.tableId,
       filters: [{
           id: resolutionResult.filter.filterId,
-          value: resolutionResult.filter.value.map(filterValue => filterValue.value),
+          value: resolutionResult.filter.value,
           options: resolutionResult.filter.value,
       }]
     };
@@ -684,7 +681,7 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
 
   return setNodeFilterValue(state, {
     payload: {
-      value: resolutionResult.filter.value.map(v => v.value),
+      value: resolutionResult.filter.value,
       tableIdx: parameters.tableIdx,
       filterIdx: parameters.filterIdx,
       options: resolutionResult.filter.value
