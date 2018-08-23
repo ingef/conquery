@@ -24,7 +24,17 @@ type NumberFormatValueType = {
 };
 
 const ClearableInput = (props: PropsType) => {
-  const { currency } = props.inputProps || {};
+  const { currency, pattern } = props.inputProps || {};
+
+  const handleKeyPress = (event) => {
+    var regex = new RegExp(pattern);
+    var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+    if (!regex.test(key)) {
+       event.preventDefault();
+       return false;
+    }
+  }
+
   return (
     <span className="clearable-input">
       {
@@ -51,6 +61,7 @@ const ClearableInput = (props: PropsType) => {
             placeholder={props.placeholder}
             type={props.inputType}
             onChange={(e) => props.onChange(e.target.value)}
+            onKeyPress={(e) => handleKeyPress(e)}
             value={props.value}
             {...props.inputProps}
           />

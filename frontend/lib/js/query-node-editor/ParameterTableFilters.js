@@ -121,6 +121,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     disabled={!!props.excludeTable}
                     onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
                     placeholder="-"
+                    pattern={filter.pattern}
                   />
                 );
               case REAL_RANGE:
@@ -140,6 +141,7 @@ const ParameterTableFilters = (props: PropsType) => (
                     disabled={!!props.excludeTable}
                     onSwitchMode={(mode) => props.onSwitchFilterMode(filterIdx, mode)}
                     placeholder="-"
+                    pattern={filter.pattern}
                   />
                 );
               case MONEY_RANGE:

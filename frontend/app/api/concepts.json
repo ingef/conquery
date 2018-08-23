@@ -131,10 +131,12 @@
             {
               "id": "series_count",
               "label": "Number of series",
-              "type": "COUNT",
+              "type": "INTEGER_RANGE",
               "distinct": true,
               "unit": "#",
-              "description": "The total number of series"
+              "description": "The total number of series",
+              "pattern": "^(?!-)\\d*$",
+              "min": 1
             }
           ]
         }
