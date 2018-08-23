@@ -31,6 +31,7 @@ export type RangeFilterType = {
   precision?: number,
   min?: number,
   max?: number,
+  pattern?: string,
 }
 
 export type MultiSelectFilterValueType = (string | number)[];
