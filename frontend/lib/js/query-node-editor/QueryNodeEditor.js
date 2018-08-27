@@ -24,6 +24,7 @@ type QueryNodeEditorState = {
   onShowDescription: Function,
   onToggleEditLabel: Function,
   onReset: Function,
+  onDropFiles: Function,
 }
 
 export type PropsType = {
@@ -97,6 +98,7 @@ export const createConnectedQueryNodeEditor = (
       setInputTableViewActive,
       setFocusedInput,
       reset,
+      onDropFiles
     } = createQueryNodeEditorActions(ownProps.type);
 
     return {
@@ -108,6 +110,7 @@ export const createConnectedQueryNodeEditor = (
         onSelectInputTableView: (tableIdx) => dispatch(setInputTableViewActive(tableIdx)),
         onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
         onReset: () => dispatch(reset()),
+        onDropFiles: (...params) => dispatch(onDropFiles(...params))
       }
     };
   }
@@ -122,6 +125,7 @@ export const createConnectedQueryNodeEditor = (
       editorState: {
         ...(stateProps.editorState || {}),
         ...(dispatchProps.editorState || {}),
+        onDropFiles: (...params) => dispatchProps.editorState.onDropFiles(...params)
       }
     };
   };

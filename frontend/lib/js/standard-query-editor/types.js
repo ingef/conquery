@@ -12,6 +12,14 @@ import type {
   SelectFilterValueType
 } from '../common/types/backend';
 
+export type CurrencyType = {
+  factor: number,
+  prefix: string,
+  thousandSeparator: string,
+  decimalSeparator: string,
+  decimalScale: number
+}
+
 // A concept that is part of a query node in the editor
 export type ConceptType =  {
   id: string,
@@ -55,11 +63,6 @@ export type TableWithFilterValueType = {
   exclude?: boolean,
   filters: ?FilterWithValueType[],
 };
-
-export type DraggedFileType = {
-  files: File[],
-  isPreviousQuery?: void,
-}
 
 export type DraggedQueryType = {
   id: QueryIdType,

@@ -42,8 +42,6 @@ const TimebasedCondition = (props: PropsType) => {
   const maxDays = !isEmpty(props.condition.maxDays) ? props.condition.maxDays : '';
   const minDaysOrNoEvent =
     !isEmpty(props.condition.minDaysOrNoEvent) ? props.condition.minDaysOrNoEvent : '';
-  const maxDaysOrNoEvent =
-    !isEmpty(props.condition.maxDaysOrNoEvent) ? props.condition.maxDaysOrNoEvent : '';
 
   const createTimebasedResult = (idx) => {
     return props.condition[`result${idx}`]
@@ -126,9 +124,7 @@ const TimebasedCondition = (props: PropsType) => {
         props.condition.operator === DAYS_OR_NO_EVENT_BEFORE &&
         <TimebasedConditionDayRange
           minDays={minDaysOrNoEvent}
-          maxDays={maxDaysOrNoEvent}
           onSetTimebasedConditionMinDays={props.onSetTimebasedConditionMinDaysOrNoEvent}
-          onSetTimebasedConditionMaxDays={props.onSetTimebasedConditionMaxDaysOrNoEvent}
         />
       }
     </div>

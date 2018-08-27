@@ -96,7 +96,7 @@ export const NodeDetailsView = (props: PropsType) => {
         }
         {
           node.isPreviousQuery &&
-          (node.label || node.id)
+          (node.label || node.id || node.ids)
         }
       </h4>
       <div className="query-node-editor__column_content">

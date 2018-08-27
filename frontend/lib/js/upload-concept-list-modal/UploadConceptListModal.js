@@ -12,7 +12,6 @@ import {
   InputWithLabel
 }                                from '../form-components';
 import { ScrollableList }        from '../scrollable-list';
-
 import type { StateType }        from '../app/reducers';
 import type { DatasetIdType }    from '../dataset/reducer';
 
@@ -28,7 +27,8 @@ type PropsType = {
   onAccept: Function,
   loading: boolean,
   isModalOpen: boolean,
-  queryContext: Object,
+  showDetails?: boolean,
+  parameters: Object,
   label: String,
   availableConceptRootNodes: Array,
   selectedConceptRootNode: Object,
@@ -46,6 +46,7 @@ type PropsType = {
 const UploadConceptListModal = (props: PropsType) => {
   const {
     isModalOpen,
+    showDetails,
     availableConceptRootNodes,
     selectedConceptRootNode,
     loading,
@@ -53,8 +54,12 @@ const UploadConceptListModal = (props: PropsType) => {
     hasResolvedItems,
     hasUnresolvedCodes,
     numberOfResolvedItems,
-    error
+    error,
+    parameters
   } = props;
+
+  if (!isModalOpen && resolved && resolved.resolvedFilter)
+    props.onAccept(props.label, {filter: resolved.resolvedFilter}, parameters);
 
   if (!isModalOpen) return null;
 
@@ -64,34 +69,42 @@ const UploadConceptListModal = (props: PropsType) => {
         <h3>
           { T.translate('uploadConceptListModal.headline') }
         </h3>
-        <InputWithLabel
-          label={T.translate('uploadConceptListModal.label')}
-          fullWidth
-          input={{
-            value: props.label,
-            onChange: (value) => props.updateLabel(value)
-          }}
-        />
-        <div className="upload-concept-list-modal__section">
-          <label className="input">
-            <span className="input-label">
-              { T.translate('uploadConceptListModal.selectConceptRootNode') }
-            </span>
-            <InputSelect
-              input={{
-                value: selectedConceptRootNode,
-                onChange: (value) =>
-                    props.selectConceptRootNode(
-                        props.selectedDatasetId, value, props.conceptCodesFromFile
-                    )
-              }}
-              options={
-                availableConceptRootNodes
-                  .map(x => ({ value: x.key, label: x.value.label }))
-              }
-            />
-          </label>
-        </div>
+        {
+          showDetails &&
+          <InputWithLabel
+            label={T.translate('uploadConceptListModal.label')}
+            fullWidth
+            input={{
+              value: props.label,
+              onChange: (value) => props.updateLabel(value)
+            }}
+          />
+        }
+        { showDetails &&
+          <div className="upload-concept-list-modal__section">
+            <label className="input">
+              <span className="input-label">
+                { T.translate('uploadConceptListModal.selectConceptRootNode') }
+              </span>
+              <InputSelect
+                input={{
+                  value: selectedConceptRootNode,
+                  onChange: (value) =>
+                      props.selectConceptRootNode(
+                          props.selectedDatasetId,
+                          value,
+                          props.conceptCodesFromFile,
+                          parameters
+                      )
+                }}
+                options={
+                  availableConceptRootNodes
+                    .map(x => ({ value: x.key, label: x.value.label }))
+                }
+              />
+            </label>
+          </div>
+        }
         {
           error &&
           <div className="upload-concept-list-modal__status upload-concept-list-modal__section">
@@ -183,7 +196,7 @@ const UploadConceptListModal = (props: PropsType) => {
                 filter: props.resolved.resolvedFilter,
                 selectedRoot: props.selectedConceptRootNode
               },
-              props.queryContext
+              props.parameters
             )}
           >
             { T.translate('uploadConceptListModal.insertNode') }
@@ -240,9 +253,18 @@ const selectAvailableConceptRootNodes = (state) => {
     .sort((a, b) => a.value.label.toLowerCase().localeCompare(b.value.label.toLowerCase()));
 };
 
+const selectShowDetails = (state) => {
+  const { showDetails } = state.uploadConceptListModal;
+
+  if (typeof showDetails === 'undefined') return true;
+
+  return showDetails;
+}
+
 const mapStateToProps = (state: StateType) => ({
   isModalOpen: state.uploadConceptListModal.isModalOpen,
-  queryContext: state.uploadConceptListModal.queryContext,
+  showDetails: selectShowDetails(state),
+  parameters: state.uploadConceptListModal.parameters,
   label: state.uploadConceptListModal.label,
   conceptCodesFromFile: state.uploadConceptListModal.conceptCodesFromFile,
   availableConceptRootNodes: selectAvailableConceptRootNodes(state),
@@ -258,10 +280,12 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onCloseModal: () => dispatch(uploadConceptListModalClose()),
-  onAccept: (label, rootConcepts, concepts, queryContext) =>
-    dispatch(acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts, queryContext)),
-  selectConceptRootNode: (datasetId, conceptId, conceptCodesFromFile) =>
-    dispatch(selectConceptRootNodeAndResolveCodes(datasetId, conceptId, conceptCodesFromFile)),
+  onAccept: (label, rootConcepts, concepts, parameters) =>
+    dispatch(acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts, parameters)),
+  selectConceptRootNode: (datasetId, treeId, conceptCodes, parameters) =>
+    dispatch(selectConceptRootNodeAndResolveCodes(
+      { datasetId, treeId, conceptCodes, ...parameters }
+    )),
   updateLabel: (label) => dispatch(uploadConceptListModalUpdateLabel(label))
 });
 
@@ -269,12 +293,12 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  onAccept: (fileName, concepts, queryContext) =>
+  onAccept: (fileName, concepts, parameters) =>
     dispatchProps.onAccept(
       fileName,
       stateProps.rootConcepts,
       concepts,
-      queryContext
+      parameters
     ),
 });
 

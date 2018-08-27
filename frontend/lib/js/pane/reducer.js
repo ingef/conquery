@@ -6,7 +6,7 @@ import { CLICK_PANE_TAB }   from './actionTypes';
 
 export type TabType = {
   label: string,
-  tab: string
+  key: string
 };
 
 export type StateType = {
@@ -53,8 +53,8 @@ export const buildPanesReducer = (availableTabs) => {
     left: {
       activeTab: 'categoryTrees',
       tabs: [
-        'categoryTrees': { label: 'leftPane.categoryTrees', key: 'categoryTrees', order: 0 },
-        'previousQueries': { label: 'leftPane.previousQueries', key: 'previousQueries', order: 1 },
+        { label: 'leftPane.categoryTrees', key: 'categoryTrees', order: 0 },
+        { label: 'leftPane.previousQueries', key: 'previousQueries', order: 1 },
       ]
     },
     right: {
