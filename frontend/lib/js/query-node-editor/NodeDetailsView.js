@@ -118,23 +118,6 @@ export const NodeDetailsView = (props: PropsType) => {
           </div>
         }
         {
-          props.canIncludeSubnodes &&
-          <div className="query-node-editor__row">
-            <button
-              type="button"
-              className="btn btn--header-transparent"
-              onClick={() => props.onToggleIncludeSubnodes(!node.includeSubnodes)}
-            >
-              <i className={classnames('fa',
-                {
-                  'fa-square-o': !node.includeSubnodes,
-                  'fa-check-square-o': node.includeSubnodes
-                }
-              )} /> {T.translate('queryNodeEditor.includeSubnodes')}
-            </button>
-          </div>
-        }
-        {
           !node.isPreviousQuery &&
           <div className="query-node-editor__row">
             <h5>{[getConceptById(node.tree).label]}</h5>
