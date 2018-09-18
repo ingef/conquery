@@ -9,7 +9,7 @@ import Select, {
 import { type FieldPropsType }    from 'redux-form';
 import Dropzone                   from 'react-dropzone'
 import Markdown                   from 'react-markdown';
-import Mustache                   from 'mustache'
+import Mustache                   from 'mustache';
 import classnames                 from 'classnames';
 import ReactTooltip               from 'react-tooltip';
 
@@ -89,8 +89,8 @@ const InputMultiSelect = (props: PropsType) => {
           name="form-field"
           options={options}
           components={{ MultiValueLabel }}
-          value={props.input.value}
-          onChange={(value) => props.input.onChange(value)}
+          value={(props.input.value || []).map(id => options.find(option => option.value === id))}
+          onChange={(value) => props.input.onChange((value || []).map(v => v.value))}
           isDisabled={props.disabled}
           isSearchable
           isMulti
