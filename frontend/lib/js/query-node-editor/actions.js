@@ -17,19 +17,6 @@ export const createQueryNodeEditorActions = (type: string): Object => {
   const setFocusedInput = (filterIdx) => ({type: SET_FOCUSED_INPUT, filterIdx});
   const toggleEditLabel = () => ({type: TOGGLE_EDIT_LABEL});
   const reset = () => ({type: RESET});
-  const onDropFiles = (datasetId, treeId, tableIdx, tableId, filterIdx, filterId, files) =>
-    dropFiles(files, {
-      parameters: {
-        actionType: SET_RESOLVED_FILTER_VALUES,
-        datasetId,
-        treeId,
-        tableIdx,
-        tableId,
-        filterIdx,
-        filterId
-      },
-      callback: conceptFilterValuesResolve
-    });
   const toggleIncludeSubnodes = () => ({type: TOGGLE_INCLUDE_SUBNODES});
 
   return {
@@ -38,7 +25,6 @@ export const createQueryNodeEditorActions = (type: string): Object => {
     setFocusedInput,
     toggleEditLabel,
     reset,
-    onDropFiles,
     toggleIncludeSubnodes
   };
 };

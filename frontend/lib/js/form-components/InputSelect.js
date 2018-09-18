@@ -26,7 +26,7 @@ const InputSelect = (props: PropsType) => {
   const { input, options } = props;
   const selected = options && options.filter(v => v.value === input.value);
   const defaultValue = options && options.filter(v => v.value === input.defaultValue);
-  
+
   return (
     <label className={classnames(
       'input', {
