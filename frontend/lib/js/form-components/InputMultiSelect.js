@@ -89,8 +89,8 @@ const InputMultiSelect = (props: PropsType) => {
           name="form-field"
           options={options}
           components={{ MultiValueLabel }}
-          value={(props.input.value || []).map(id => options.find(option => option.value === id))}
-          onChange={(value) => props.input.onChange((value || []).map(v => v.value))}
+          value={props.input.value}
+          onChange={(value) => props.input.onChange(value)}
           isDisabled={props.disabled}
           isSearchable
           isMulti
