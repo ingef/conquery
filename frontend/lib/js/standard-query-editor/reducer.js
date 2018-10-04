@@ -314,15 +314,10 @@ const setNodeFilterProperties = (state, action, obj) => {
   const properties = stripObject(obj);
 
   if ('options' in properties) {
-    // Options are only updated in the context of autocompletion.
-    // In this case we don't want to replace the existing options but update
-    // them with the new list, removing duplicates
-    const previousOptions = filter.options || [];
     // The properties object contains an 'options' key, but its value might
     // be undefined (because of stripObject above)
-    const newOptions = (properties.options || []);
+    const newOptions = (properties.options || filter.options);
     properties.options = newOptions
-      .concat(previousOptions)
       .reduce(
         (options, currentOption) =>
           options.find(x => x.value === currentOption.value)
