@@ -2,10 +2,7 @@
 
 import React                      from 'react';
 import T                          from 'i18n-react';
-import Select, {
-  components,
-  createFilter
-}                                 from 'react-select';
+import Select, { components }     from 'react-select';
 import { type FieldPropsType }    from 'redux-form';
 import Dropzone                   from 'react-dropzone'
 import Markdown                   from 'react-markdown';
@@ -55,13 +52,6 @@ const InputMultiSelect = (props: PropsType) => {
     optionLabel: option.label
   }))
 
-  const filterOption = createFilter({
-    ignoreCase: true,
-    ignoreAccents: true,
-    trim: true,
-    matchFrom: 'any',
-  });
-
   return (
     <label className={classnames(
       'input', {
@@ -92,7 +82,6 @@ const InputMultiSelect = (props: PropsType) => {
           value={props.input.value}
           onChange={(value) => props.input.onChange(value)}
           isDisabled={props.disabled}
-          isSearchable
           isMulti
           placeholder={allowDropFile
             ? T.translate('reactSelect.dndPlaceholder')
@@ -100,7 +89,7 @@ const InputMultiSelect = (props: PropsType) => {
           }
           noOptionsMessage={() => T.translate('reactSelect.noResults')}
           onInputChange={props.onInputChange || function(value) { return value; }}
-          isLoading={props.isLoading}
+          isLoading={!!props.isLoading}
           classNamePrefix={'react-select'}
           closeMenuOnSelect={false}
           formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
@@ -108,7 +97,7 @@ const InputMultiSelect = (props: PropsType) => {
               ? <Markdown source={Mustache.render(optionValue, templateValues)} />
               : label
           }
-          filterOption={filterOption}
+          filterOption={false}
         />
       </Dropzone>
     </label>
