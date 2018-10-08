@@ -316,7 +316,7 @@ const setNodeFilterProperties = (state, action, obj) => {
   if ('options' in properties) {
     // The properties object contains an 'options' key, but its value might
     // be undefined (because of stripObject above)
-    const newOptions = (properties.options || filter.options);
+    const newOptions = (properties.options || filter.options || []);
     properties.options = newOptions
       .reduce(
         (options, currentOption) =>
@@ -416,8 +416,8 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
 
   if (!savedTable.filters) return null;
 
-  return table.filters.map(filter => {
-    const tableFilter = savedTable.filters.find(f => f.id === filter.id) || {};
+  return savedTable.filters.map(filter => {
+    const tableFilter = table.filters.find(f => f.id === filter.id) || {};
     const mode = tableFilter.type === INTEGER_RANGE
       ? tableFilter.value && !isEmpty(tableFilter.value.exact)
         ? { mode: 'exact' }
