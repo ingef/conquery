@@ -43,7 +43,7 @@ const InputMultiSelect = (props: PropsType) => {
     )
   };
 
-  const options = props.options && props.options.map(option => ({
+  const options = props.options && props.options.slice(0, 50).map(option => ({
     ...option,
     label: option.optionValue && option.templateValues
       ? Mustache.render(option.optionValue, option.templateValues)
