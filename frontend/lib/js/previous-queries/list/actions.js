@@ -21,9 +21,9 @@ import {
   RETAG_PREVIOUS_QUERY_START,
   RETAG_PREVIOUS_QUERY_SUCCESS,
   RETAG_PREVIOUS_QUERY_ERROR,
-  SHARE_PREVIOUS_QUERY_START,
-  SHARE_PREVIOUS_QUERY_SUCCESS,
-  SHARE_PREVIOUS_QUERY_ERROR,
+  TOGGLE_SHARE_PREVIOUS_QUERY_START,
+  TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
+  TOGGLE_SHARE_PREVIOUS_QUERY_ERROR,
   DELETE_PREVIOUS_QUERY_START,
   DELETE_PREVIOUS_QUERY_SUCCESS,
   DELETE_PREVIOUS_QUERY_ERROR,
@@ -137,21 +137,21 @@ export const retagPreviousQuery = (datasetId, queryId, tags) => {
   };
 };
 
-export const sharePreviousQueryStart = (queryId) =>
-  ({ type: SHARE_PREVIOUS_QUERY_START, payload: { queryId } });
-export const sharePreviousQuerySuccess = (queryId, res) =>
-  defaultSuccess(SHARE_PREVIOUS_QUERY_SUCCESS, res, { queryId, shared: true });
-export const sharePreviousQueryError = (queryId, err) =>
-  defaultError(SHARE_PREVIOUS_QUERY_ERROR, err, { queryId });
+export const toggleSharePreviousQueryStart = (queryId) =>
+  ({ type: TOGGLE_SHARE_PREVIOUS_QUERY_START, payload: { queryId } });
+export const toggleSharePreviousQuerySuccess = (queryId, shared, res) =>
+  defaultSuccess(TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS, res, { queryId, shared });
+export const toggleSharePreviousQueryError = (queryId, err) =>
+  defaultError(TOGGLE_SHARE_PREVIOUS_QUERY_ERROR, err, { queryId });
 
-export const sharePreviousQuery = (datasetId, queryId) => {
+export const toggleSharePreviousQuery = (datasetId, queryId, shared) => {
   return (dispatch) => {
-    dispatch(sharePreviousQueryStart(queryId));
+    dispatch(toggleSharePreviousQueryStart(queryId));
 
-    return api.patchStoredQuery(datasetId, queryId, { shared: true })
+    return api.patchStoredQuery(datasetId, queryId, { shared: shared })
       .then(
-        r => dispatch(sharePreviousQuerySuccess(queryId, r)),
-        e => dispatch(sharePreviousQueryError(queryId, {
+        r => dispatch(toggleSharePreviousQuerySuccess(queryId, shared, r)),
+        e => dispatch(toggleSharePreviousQueryError(queryId, {
           message: T.translate('previousQuery.shareError')
         }))
       );
