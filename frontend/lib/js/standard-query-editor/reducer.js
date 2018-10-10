@@ -478,9 +478,11 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
             };
 
           const tables = mergeTablesFromSavedConcept(lookupResult, element);
+          const label = element.label || lookupResult.concepts[0].label;
 
           return {
             ...element,
+            label,
             tables,
             tree: lookupResult.root
           };
