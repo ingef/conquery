@@ -108,7 +108,7 @@ const PreviousQuery = (props) => {
           )
           }
           {
-            mayEditQuery && !query.editingTags && (!query.tags || query.tags.length === 0) &&
+            mayEditQuery && !query.editingTags &&
             <span
               onClick={onToggleEditPreviousQueryTags}
               className="previous-query__btn previous-query__hover-btn btn--icon"
