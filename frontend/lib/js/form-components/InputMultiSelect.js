@@ -31,7 +31,7 @@ const InputMultiSelect = (props: PropsType) => {
   const allowDropFile = props.allowDropFile && !!props.onDropFiles
 
   const MultiValueLabel = (params) => {
-    const label = params.data.optionLabel || params.data.label
+    const label = params.data.optionLabel || params.data.label || params.data
     const valueLabel = params.data.templateValues
       ? Mustache.render(label, params.data.templateValues)
       : label
