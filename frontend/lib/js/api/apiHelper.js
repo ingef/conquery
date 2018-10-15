@@ -19,6 +19,8 @@ import {
 import { type TableType } from '../standard-query-editor/types';
 
 export const transformTablesToApi = (tables: TableType[]) => {
+  if (!tables) return [];
+
   return tables
     .filter(table => !table.exclude)
     .map(table => {
@@ -58,35 +60,52 @@ export const transformElementsToApi = (conceptGroup) => conceptGroup.map(concept
 
 const transformStandardQueryToApi = (query, version) =>  {
   return {
-    version,
+    label: "Standard Query",
     type: 'CONCEPT_QUERY',
-    groups: query.map(group => ({
-      exclude: group.exclude,
-      dateRange: group.dateRange ? group.dateRange : undefined,
-      elements: group.elements.map(element => {
-        if (element.isPreviousQuery) {
-          return {
-            id: element.id,
-            type: 'QUERY',
-            excludeTimestamps: element.excludeTimestamps,
-          };
-        } else {
-          const tables = element.tables
-            ? transformTablesToApi(element.tables)
-            : [];
-
-          return {
-            ids: element.ids,
-            type: 'CONCEPT_LIST',
-            label: element.label,
-            tables,
-            excludeTimestamps: element.excludeTimestamps
-          }
-        }
-      })
-    }))
+    root: {
+      type: "AND",
+      children: createQueryConcepts(query)
+    }
   };
 };
+
+const createQueryDateRestriction = (dateRange, concept) => {
+  return {
+    type: "DATE_RESTRICTION",
+    dateRange: dateRange,
+    child: concept
+  }
+}
+
+const createSavedQuery = (concept) => ({
+  type: 'SAVED_QUERY',
+  query: concept.id,
+})
+
+const createQueryConcept = (concept) =>
+  concept.isPreviousQuery
+    ? createSavedQuery(concept)
+    : createConcept(concept)
+
+const createConcept = (concept) => ({
+  type: 'CONCEPT',
+  ids: concept.ids,
+  label: concept.label,
+  tables: transformTablesToApi(concept.tables)
+})
+
+const createQueryConcepts = (query) => {
+  return query.map(group => {
+    const concepts = group.dateRange
+      ? group.elements.map(concept =>
+            createQueryDateRestriction(group.dateRange, createQueryConcept(concept)))
+      : group.elements.map(concept => createQueryConcept(concept))
+
+    return group.elements.length > 1
+        ? { type: "OR", children: [...concepts]}
+        : concepts.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+  })
+}
 
 const transformResultToApi = (result) => {
   return {
