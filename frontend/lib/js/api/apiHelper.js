@@ -60,7 +60,6 @@ export const transformElementsToApi = (conceptGroup) => conceptGroup.map(concept
 
 const transformStandardQueryToApi = (query, version) =>  {
   return {
-    label: "Standard Query",
     type: 'CONCEPT_QUERY',
     root: {
       type: "AND",
