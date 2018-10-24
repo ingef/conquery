@@ -51,7 +51,8 @@ const ClearableInput = (props: PropsType) => {
             type={props.inputType}
             onValueChange={(values: NumberFormatValueType) => {
               const { formattedValue, floatValue } = values;
-              const parsed = Math.round(floatValue * (currency.factor || 1))
+              const parsed = parseFloat(floatValue * (currency.factor || 1)).toFixed()
+
 
               props.onChange(parsed, formattedValue);
             }}
