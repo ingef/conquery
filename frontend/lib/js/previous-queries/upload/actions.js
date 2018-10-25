@@ -1,5 +1,6 @@
 // @flow
 
+import Papa                   from 'papaparse'
 import T                      from 'i18n-react';
 import { type Dispatch }      from 'redux-thunk';
 
@@ -41,18 +42,26 @@ export const uploadFileError = (error: any, payload: Object) =>
     unsuccessful: payload.unsuccessful,
   });
 
-export const uploadFile = (datasetId: DatasetIdType, file: any) => (dispatch: Dispatch) => {
-  dispatch(uploadFileStart());
+export const uploadFile = (
+  datasetId: DatasetIdType,
+  file: any,
+  version: any
+  ) => (dispatch: Dispatch) => {
+    dispatch(uploadFileStart());
 
-  return api.postResults(datasetId, file).then(
-    r => {
-      dispatch(uploadFileSuccess(r));
+    Papa.parse(file, {
+      complete: function(results) {
+        return api.postQueries(datasetId, results, "external", version).then(
+          r => {
+            dispatch(uploadFileSuccess(r));
 
-      return dispatch(loadPreviousQueries(datasetId));
-    },
-    e => dispatch(uploadFileError(
-      { message: T.translate('uploadQueryResultsModal.uploadFailed') },
-      e
-    ))
-  );
+            return dispatch(loadPreviousQueries(datasetId));
+          },
+          e => dispatch(uploadFileError(
+            { message: T.translate('uploadQueryResultsModal.uploadFailed') },
+            e
+          ))
+        );
+      }
+    });
 }

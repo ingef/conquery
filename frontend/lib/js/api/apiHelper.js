@@ -58,23 +58,22 @@ export const transformElementsToApi = (conceptGroup) => conceptGroup.map(concept
   };
 });
 
-const transformStandardQueryToApi = (query, version) =>  {
-  return {
-    type: 'CONCEPT_QUERY',
-    root: {
-      type: "AND",
-      children: createQueryConcepts(query)
-    }
-  };
-};
+const transformStandardQueryToApi = (query, version) =>
+  createConceptQuery(createQueryConcepts(query))
 
-const createQueryDateRestriction = (dateRange, concept) => {
-  return {
+const createConceptQuery = (children) => ({
+  type: 'CONCEPT_QUERY',
+  root: {
+    type: "AND",
+    children: children
+  }
+})
+
+const createDateRestriction = (dateRange, concept) => ({
     type: "DATE_RESTRICTION",
     dateRange: dateRange,
     child: concept
-  }
-}
+})
 
 const createSavedQuery = (concept) => ({
   type: 'SAVED_QUERY',
@@ -97,7 +96,7 @@ const createQueryConcepts = (query) => {
   return query.map(group => {
     const concepts = group.dateRange
       ? group.elements.map(concept =>
-            createQueryDateRestriction(group.dateRange, createQueryConcept(concept)))
+          createDateRestriction(group.dateRange, createQueryConcept(concept)))
       : group.elements.map(concept => createQueryConcept(concept))
 
     return group.elements.length > 1
@@ -148,12 +147,25 @@ const transformTimebasedQueryToApi = (query, version) => {
   };
 };
 
+const transformExternalQueryToApi = (query) => createConceptQuery(createExternal(query))
+
+const createExternal = (query: any) => ({
+  type: "EXTERNAL",
+  format: query.data[0],
+  values: [query.data.slice(1)],
+})
+
 
 // The query state already contains the query.
 // But small additions are made (properties whitelisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformQueryToApi = (query: Object, queryType: string, version: any) => {
-  return queryType === 'timebased'
-    ? transformTimebasedQueryToApi(query, version)
-    : transformStandardQueryToApi(query, version);
+  switch (queryType) {
+    case 'timebased':
+        return transformTimebasedQueryToApi(query, version)
+      case 'standard':
+        return transformStandardQueryToApi(query, version);
+      case 'external':
+        return transformExternalQueryToApi(query);
+    }
 };
