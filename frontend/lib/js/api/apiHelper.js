@@ -31,7 +31,7 @@ export const transformTablesToApi = (tables: TableType[]) => {
           ? table.filters
             .filter(filter => !isEmpty(filter.value)) // Only send filters with a value
             .map(filter => ({
-              id: filter.id,
+              filter: filter.id,
               type: filter.type,
               value: filter.value
             }))
