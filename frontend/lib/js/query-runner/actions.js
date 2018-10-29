@@ -64,9 +64,9 @@ export default function createQueryRunnerActions(
 
             const queryId = r.id;
 
-            // dispatch(replace(toQuery(datasetId, queryId)));
+            dispatch(replace(toQuery(datasetId, queryId)));
 
-            // return dispatch(queryResult(datasetId, queryId));
+            return dispatch(queryResult(datasetId, queryId));
           },
           e => dispatch(startQueryError(e))
         );
