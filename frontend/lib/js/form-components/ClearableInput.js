@@ -3,6 +3,7 @@
 import React                from 'react';
 import T                    from 'i18n-react';
 import NumberFormat         from 'react-number-format';
+import { Decimal }          from 'decimal.js';
 
 import { isEmpty }          from '../common/helpers';
 import { MONEY_RANGE }      from './filterTypes';
@@ -51,8 +52,7 @@ const ClearableInput = (props: PropsType) => {
             type={props.inputType}
             onValueChange={(values: NumberFormatValueType) => {
               const { formattedValue, floatValue } = values;
-              const parsed = parseFloat(floatValue * (currency.factor || 1)).toFixed()
-
+              const parsed = new Decimal(floatValue).mul(currency.factor || 0);
 
               props.onChange(parsed, formattedValue);
             }}
@@ -75,7 +75,7 @@ const ClearableInput = (props: PropsType) => {
           className="clearable-input__clear-zone"
           title={T.translate('common.clearValue')}
           aria-label={T.translate('common.clearValue')}
-          onClick={() => props.onChange('')}
+          onClick={() => props.onChange(null)}
         >
           ×
         </span>
