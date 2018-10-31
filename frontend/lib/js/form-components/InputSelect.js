@@ -66,6 +66,21 @@ const InputSelect = (props: PropsType) => {
           placeholder={T.translate('reactSelect.placeholder')}
           noOptionsMessage={() => T.translate('reactSelect.noResults')}
           {...props.selectProps}
+          ref={r => {
+            const select = r.select
+            // https://github.com/JedWatson/react-select/issues/2816#issuecomment-425280935
+            if (!select.onInputBlurPatched) {
+              const originalOnInputBlur = select.onInputBlur;
+              select.onInputBlur = e => {
+                  if (select.menuListRef && select.menuListRef.contains(document.activeElement)) {
+                      select.inputRef.focus();
+                      return;
+                  }
+                  originalOnInputBlur(e);
+              }
+              select.onInputBlurPatched = true;
+          }
+          }}
         />
       </Dropzone>
     </label>
