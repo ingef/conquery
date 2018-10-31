@@ -101,6 +101,9 @@ const UploadConceptListModal = (props: PropsType) => {
                   availableConceptRootNodes
                     .map(x => ({ value: x.key, label: x.value.label }))
                 }
+                selectProps={{
+                  isSearchable: true
+                }}
               />
             </label>
           </div>
