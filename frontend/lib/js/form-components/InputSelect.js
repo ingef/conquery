@@ -67,6 +67,8 @@ const InputSelect = (props: PropsType) => {
           noOptionsMessage={() => T.translate('reactSelect.noResults')}
           {...props.selectProps}
           ref={r => {
+            if (!r) return;
+
             const select = r.select
             // https://github.com/JedWatson/react-select/issues/2816#issuecomment-425280935
             if (!select.onInputBlurPatched) {
