@@ -7,8 +7,6 @@ import Dropzone                   from 'react-dropzone'
 import classnames                 from 'classnames';
 import { type FieldPropsType }    from 'redux-form';
 
-import 'react-select/dist/react-select.css';
-
 import { isEmpty }                from '../common/helpers';
 import { type SelectOptionsType } from '../common/types/backend';
 import InfoTooltip                from '../tooltip/InfoTooltip';
@@ -25,11 +23,15 @@ type PropsType = FieldPropsType & {
 
 const InputSelect = (props: PropsType) => {
   const allowDropFile = props.allowDropFile && !!props.onDropFiles
+  const { input, options } = props;
+  const selected = options && options.filter(v => v.value === input.value);
+  const defaultValue = options && options.filter(v => v.value === input.defaultValue);
+
   return (
     <label className={classnames(
       'input', {
         'input--value-changed':
-          !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue
+          !isEmpty(input.value) && input.value !== input.defaultValue
       }
     )}>
       <p className={classnames(
@@ -50,25 +52,37 @@ const InputSelect = (props: PropsType) => {
       >
         <Select
           name="form-field"
-          value={props.input.value}
-          options={props.options}
-          searchable={false}
+          value={selected}
+          defaultValue={defaultValue}
+          options={options}
+          isSearchable={false}
           onChange={
             field => field
-              ? props.input.onChange(field.value)
-              : props.input.onChange(null)
+              ? input.onChange(field.value)
+              : input.onChange(null)
           }
-          clearable={props.input.clearable}
-          disabled={!!props.disabled}
-          placeholder={allowDropFile
-            ? T.translate('reactSelect.dndPlaceholder')
-            : T.translate('reactSelect.placeholder')
-          }
-          backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
-          clearAllText={T.translate('reactSelect.clearAll')}
-          clearValueText={T.translate('reactSelect.clearValue')}
-          noResultsText={T.translate('reactSelect.noResults')}
+          isClearable={input.clearable}
+          isDisabled={!!props.disabled}
+          placeholder={T.translate('reactSelect.placeholder')}
+          noOptionsMessage={() => T.translate('reactSelect.noResults')}
           {...props.selectProps}
+          ref={r => {
+            if (!r) return;
+
+            const select = r.select
+            // https://github.com/JedWatson/react-select/issues/2816#issuecomment-425280935
+            if (!select.onInputBlurPatched) {
+              const originalOnInputBlur = select.onInputBlur;
+              select.onInputBlur = e => {
+                  if (select.menuListRef && select.menuListRef.contains(document.activeElement)) {
+                      select.inputRef.focus();
+                      return;
+                  }
+                  originalOnInputBlur(e);
+              }
+              select.onInputBlurPatched = true;
+          }
+          }}
         />
       </Dropzone>
     </label>

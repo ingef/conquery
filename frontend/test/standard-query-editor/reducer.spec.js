@@ -55,27 +55,6 @@ describe('standard query editor', () => {
       expect(updatedState[0].elements[0].tables[0].filters[0].options).to.deep.equal(options);
     });
 
-    it('enhances the filter\'s options list with additional suggestions', () => {
-      const options = [
-        { value: "0", label: "0" },
-        { value: "1", label: "1" },
-        { value: "2", label: "2" },
-      ];
-      const state = createQueryStateWithOneBigMultiSelect();
-      state[0].elements[0].tables[0].filters[0].options = options;
-
-      const newOptions = [
-        { value: "3", label: "3" },
-        { value: "4", label: "4" },
-        { value: "5", label: "5" },
-      ];
-      const action = loadFilterSuggestionsSuccess(newOptions, 0, 0);
-      const updatedState = reducer(state, action);
-
-      expect(updatedState[0].elements[0].tables[0].filters[0].options)
-        .to.deep.equal([...newOptions, ...options]);
-    });
-
     it('leaves filter\'s options list unmodified when receiving empty suggestions list', () => {
       const options = [
         { value: "0", label: "0" },

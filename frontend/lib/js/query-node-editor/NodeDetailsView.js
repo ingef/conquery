@@ -105,12 +105,10 @@ export const NodeDetailsView = (props: PropsType) => {
           <div className="query-node-editor__row">
             <button
               type="button"
-              className="query-node-editor__toggle-timestamps btn btn--header-transparent"
+              className="btn btn--header-transparent"
               onClick={() => props.onToggleTimestamps(!node.excludeTimestamps)}
             >
-              <i className={classnames(
-                'parameter-table__exclude-icon',
-                'fa',
+              <i className={classnames('fa',
                 {
                   'fa-square-o': !node.excludeTimestamps,
                   'fa-check-square-o': node.excludeTimestamps

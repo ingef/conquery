@@ -10,6 +10,7 @@ type PropsType = {
   children?: Element[],
   closeModal: Function,
   doneButton: boolean,
+  tabIndex: number
 };
 
 class Modal extends React.Component {
@@ -50,6 +51,7 @@ class Modal extends React.Component {
           type="button"
           className="modal__close-button btn btn--transparent btn--small"
           onClick={this.props.closeModal}
+          tabIndex={this.props.tabIndex || 0}
         >
           { T.translate('common.done') }
         </button>

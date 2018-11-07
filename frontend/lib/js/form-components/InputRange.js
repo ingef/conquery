@@ -37,7 +37,8 @@ type PropsType = FieldPropsType & {
       exact?: string,
       min?: string,
       max?: string
-    }
+    },
+    pattern?: string
   },
   currencyConfig?: CurrencyType
 };
@@ -63,6 +64,7 @@ const InputRange = (props: PropsType) => {
     min: (props.limits && props.limits.min) || null,
     max: (props.limits && props.limits.max) || null,
     currency: props.currencyConfig,
+    pattern: props.pattern
   };
 
   const onChangeValue = (type, newValue, newFormattedValue) => {

@@ -10,6 +10,7 @@ type PropsType = {
   items: Array<Element>,
   onAddClick: Function,
   onRemoveClick: Function,
+  canExpand: boolean,
 };
 
 const DynamicInputGroup = (props: PropsType) => (

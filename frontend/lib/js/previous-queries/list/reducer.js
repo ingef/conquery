@@ -13,9 +13,9 @@ import {
   RETAG_PREVIOUS_QUERY_START,
   RETAG_PREVIOUS_QUERY_SUCCESS,
   RETAG_PREVIOUS_QUERY_ERROR,
-  SHARE_PREVIOUS_QUERY_START,
-  SHARE_PREVIOUS_QUERY_SUCCESS,
-  SHARE_PREVIOUS_QUERY_ERROR,
+  TOGGLE_SHARE_PREVIOUS_QUERY_START,
+  TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS,
+  TOGGLE_SHARE_PREVIOUS_QUERY_ERROR,
   DELETE_PREVIOUS_QUERY_START,
   DELETE_PREVIOUS_QUERY_SUCCESS,
   DELETE_PREVIOUS_QUERY_ERROR,
@@ -135,7 +135,7 @@ const previousQueriesReducer = (state = initialState, action) => {
     case LOAD_PREVIOUS_QUERY_START:
     case RENAME_PREVIOUS_QUERY_START:
     case RETAG_PREVIOUS_QUERY_START:
-    case SHARE_PREVIOUS_QUERY_START:
+    case TOGGLE_SHARE_PREVIOUS_QUERY_START:
     case DELETE_PREVIOUS_QUERY_START:
       return updatePreviousQuery(
         state,
@@ -166,7 +166,7 @@ const previousQueriesReducer = (state = initialState, action) => {
         ),
         tags: findNewTags([...state.tags, ...action.payload.tags]),
       }
-    case SHARE_PREVIOUS_QUERY_SUCCESS:
+    case TOGGLE_SHARE_PREVIOUS_QUERY_SUCCESS:
       return updatePreviousQuery(
         state,
         action,
@@ -177,7 +177,7 @@ const previousQueriesReducer = (state = initialState, action) => {
     case LOAD_PREVIOUS_QUERY_ERROR:
     case RENAME_PREVIOUS_QUERY_ERROR:
     case RETAG_PREVIOUS_QUERY_ERROR:
-    case SHARE_PREVIOUS_QUERY_ERROR:
+    case TOGGLE_SHARE_PREVIOUS_QUERY_ERROR:
     case DELETE_PREVIOUS_QUERY_ERROR:
       return updatePreviousQuery(
         state,

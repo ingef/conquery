@@ -33,7 +33,9 @@ export const transformTablesToApi = (tables: TableType[]) => {
             .map(filter => ({
               filter: filter.id,
               type: filter.type,
-              value: filter.value
+              value: filter.value instanceof Array
+                ? filter.value.map(v => v.value ? v.value : v)
+                : filter.value
             }))
           : []
         };
