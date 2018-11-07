@@ -30,7 +30,7 @@ import {
 }                           from '../../standard-query-editor/types';
 
 import {
-  sharePreviousQuery,
+  toggleSharePreviousQuery,
   renamePreviousQuery,
   retagPreviousQuery,
   toggleEditPreviousQueryLabel,
@@ -65,7 +65,7 @@ const PreviousQuery = (props) => {
     onToggleEditPreviousQueryTags,
     onToggleEditPreviousQueryLabel,
     onRetagPreviousQuery,
-    onSharePreviousQuery,
+    onToggleSharePreviousQuery,
   } = props;
 
   const peopleFound = `${query.numberOfResults} ${T.translate('previousQueries.results')}`;
@@ -94,11 +94,13 @@ const PreviousQuery = (props) => {
           {
             query.own && (
             query.shared
-            ? <span className="previous-query__shared-indicator">
+            ? <span
+                onClick={() => onToggleSharePreviousQuery(!query.shared)}
+                className="previous-query__shared-indicator">
                 { T.translate('previousQuery.shared') }
               </span>
             : <span
-                onClick={onSharePreviousQuery}
+                onClick={() => onToggleSharePreviousQuery(!query.shared)}
                 className="previous-query__btn btn--icon"
               >
                 <i className="fa fa-upload" /> { T.translate('previousQuery.share') }
@@ -106,7 +108,7 @@ const PreviousQuery = (props) => {
           )
           }
           {
-            mayEditQuery && !query.editingTags && (!query.tags || query.tags.length === 0) &&
+            mayEditQuery && !query.editingTags &&
             <span
               onClick={onToggleEditPreviousQueryTags}
               className="previous-query__btn previous-query__hover-btn btn--icon"
@@ -190,7 +192,7 @@ PreviousQuery.propTypes = {
   onRenamePreviousQuery: PropTypes.func.isRequired,
   onToggleEditPreviousQueryLabel: PropTypes.func.isRequired,
   onToggleEditPreviousQueryTags: PropTypes.func.isRequired,
-  onSharePreviousQuery: PropTypes.func.isRequired,
+  onToggleSharePreviousQuery: PropTypes.func.isRequired,
   onRetagPreviousQuery: PropTypes.func.isRequired,
   onDeletePreviousQuery: PropTypes.func.isRequired,
   connectDragSource: PropTypes.func.isRequired,
@@ -202,8 +204,8 @@ const mapStateToProps = (state) => ({
 });
 
 const mapDispatchToProps = (dispatch) => ({
-  onSharePreviousQuery: (datasetId, queryId) =>
-    dispatch(sharePreviousQuery(datasetId, queryId)),
+  onToggleSharePreviousQuery: (datasetId, queryId, shared) =>
+    dispatch(toggleSharePreviousQuery(datasetId, queryId, shared)),
 
   onRenamePreviousQuery: (datasetId, queryId, label) =>
     dispatch(renamePreviousQuery(datasetId, queryId, label)),
@@ -225,8 +227,8 @@ const mapProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  onSharePreviousQuery: () =>
-    dispatchProps.onSharePreviousQuery(ownProps.datasetId, ownProps.query.id),
+  onToggleSharePreviousQuery: (shared) =>
+    dispatchProps.onToggleSharePreviousQuery(ownProps.datasetId, ownProps.query.id, shared),
   onRenamePreviousQuery: (label) =>
     dispatchProps.onRenamePreviousQuery(ownProps.datasetId, ownProps.query.id, label),
   onRetagPreviousQuery: (tags) =>

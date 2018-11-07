@@ -3,6 +3,7 @@
 import React                from 'react';
 import T                    from 'i18n-react';
 import NumberFormat         from 'react-number-format';
+import { Decimal }          from 'decimal.js';
 
 import { isEmpty }          from '../common/helpers';
 import { MONEY_RANGE }      from './filterTypes';
@@ -24,7 +25,19 @@ type NumberFormatValueType = {
 };
 
 const ClearableInput = (props: PropsType) => {
-  const { currency } = props.inputProps || {};
+  const { currency, pattern } = props.inputProps || {};
+
+  const handleKeyPress = (event) => {
+    if (!pattern) return;
+
+    var regex = new RegExp(pattern);
+    var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+    if (!regex.test(key)) {
+       event.preventDefault();
+       return false;
+    }
+  }
+
   return (
     <span className="clearable-input">
       {
@@ -39,7 +52,7 @@ const ClearableInput = (props: PropsType) => {
             type={props.inputType}
             onValueChange={(values: NumberFormatValueType) => {
               const { formattedValue, floatValue } = values;
-              const parsed = Math.round(floatValue * (currency.factor || 1))
+              const parsed = new Decimal(floatValue).mul(currency.factor || 0);
 
               props.onChange(parsed, formattedValue);
             }}
@@ -51,6 +64,7 @@ const ClearableInput = (props: PropsType) => {
             placeholder={props.placeholder}
             type={props.inputType}
             onChange={(e) => props.onChange(e.target.value)}
+            onKeyPress={(e) => handleKeyPress(e)}
             value={props.value}
             {...props.inputProps}
           />
@@ -61,7 +75,7 @@ const ClearableInput = (props: PropsType) => {
           className="clearable-input__clear-zone"
           title={T.translate('common.clearValue')}
           aria-label={T.translate('common.clearValue')}
-          onClick={() => props.onChange('')}
+          onClick={() => props.onChange(null)}
         >
           ×
         </span>

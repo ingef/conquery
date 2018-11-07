@@ -1,39 +1,32 @@
-import React                   from 'react';
-import PropTypes               from 'prop-types';
-import T                       from 'i18n-react';
-import classnames              from 'classnames';
-import clickOutside            from 'react-onclickoutside';
+import React            from 'react';
+import PropTypes        from 'prop-types';
+import T                from 'i18n-react';
+import classnames       from 'classnames';
+import clickOutside     from 'react-onclickoutside';
 
 // A multi-select where new items can be created
-import { Creatable as Select } from 'react-select';
+import { Creatable as Select}  from 'react-select';
 
 class EditableTagsForm extends React.Component {
   constructor(props) {
     super(props);
-
     this.state = {
-      values: props.tags || []
+      values: (props.tags && props.tags.map(t => ({ label: t, value: t}))) || []
     };
-  }
-
-  componentDidMount() {
-    this.refs.input.select.focus();
   }
 
   handleClickOutside() {
     this.props.onCancel();
   }
 
-  _onSelect(inputValues) {
-    const values = inputValues.map(v => v.value);
-
-    this.setState({ values })
-  }
+  handleChange = (values: any, actionMeta: any) => {
+    this.setState({ values });
+  };
 
   _onSubmit(e) {
     e.preventDefault();
 
-    this.props.onSubmit(this.state.values);
+    this.props.onSubmit(this.state.values.map(v => v.value));
   }
 
   render() {
@@ -46,18 +39,15 @@ class EditableTagsForm extends React.Component {
         onSubmit={this._onSubmit.bind(this)}
       >
         <Select
-          ref="input"
           name="input"
-          value={this.state.values.map(t => ({ label: t, value: t}))}
+          value={this.state.values}
           options={this.props.availableTags.map(t => ({ label: t, value: t}))}
-          onChange={this._onSelect.bind(this)}
-          multi
-          promptTextCreator={(label) => T.translate('reactSelect.createTag', {label})}
+          onChange={this.handleChange}
+          isMulti
+          isClearable
+          autoFocus={true}
           placeholder={T.translate('reactSelect.tagPlaceholder')}
-          backspaceToRemoveMessage={T.translate('reactSelect.backspaceToRemove')}
-          clearAllText={T.translate('reactSelect.clearAll')}
-          clearValueText={T.translate('reactSelect.clearValue')}
-          noResultsText={T.translate('reactSelect.noResults')}
+          noOptionsMessage={() => T.translate('reactSelect.noResults')}
         />
         <button
           type="submit"

@@ -4,6 +4,8 @@ import { type Dispatch }               from 'redux-thunk';
 
 import api                             from '../api';
 import { type DateRangeType }          from '../common/types/backend';
+import { dropFiles }                   from '../file-upload/actions';
+import { conceptFilterValuesResolve }  from '../upload-concept-list-modal/actions';
 
 import type {
   DraggedNodeType,
@@ -31,6 +33,8 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
+  SET_RESOLVED_FILTER_VALUES,
+  TOGGLE_INCLUDE_SUBNODES
 }                                      from './actionTypes';
 
 export const dropAndNode = (
@@ -109,6 +113,11 @@ export const toggleTimestamps = (isExcluded) => ({
   payload: { isExcluded }
 });
 
+export const toggleIncludeSubnodes = (includeSubnodes) => ({
+  type: TOGGLE_INCLUDE_SUBNODES,
+  payload: { includeSubnodes }
+});
+
 export const loadFilterSuggestionsStart = (tableIdx, conceptId, filterIdx, prefix) => ({
   type: LOAD_FILTER_SUGGESTIONS_START,
   payload: { tableIdx, conceptId, filterIdx, prefix }
@@ -145,3 +154,17 @@ export const loadFilterSuggestions =
         );
     };
   }
+
+export const onDropFiles = (datasetId, treeId, tableIdx, tableId, filterIdx, filterId, files) =>
+  dropFiles(files, {
+    parameters: {
+      actionType: SET_RESOLVED_FILTER_VALUES,
+      datasetId,
+      treeId,
+      tableIdx,
+      tableId,
+      filterIdx,
+      filterId
+    },
+    callback: conceptFilterValuesResolve
+  });
