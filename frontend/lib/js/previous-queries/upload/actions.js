@@ -1,18 +1,18 @@
 // @flow
 
-import T                      from 'i18n-react';
-import { type Dispatch }      from 'redux-thunk';
+import T                        from 'i18n-react';
+import { type Dispatch }        from 'redux-thunk';
 
-import { type DatasetIdType } from '../../dataset/reducer';
-
+import { type DatasetIdType }   from '../../dataset/reducer';
 import {
   defaultSuccess,
   defaultError
-}                             from '../../common/actions';
+}                               from '../../common/actions';
+import api                      from '../../api';
+import { QUERY_AGAIN_TIMEOUT }  from '../../query-runner/constants';
+import { getStoredQuery } from '../../api/api';
 
-import api                    from '../../api';
-
-import { loadPreviousQueries } from '../list/actions';
+import { loadPreviousQueries }  from '../list/actions';
 
 import {
   OPEN_UPLOAD_MODAL,
@@ -21,7 +21,6 @@ import {
   UPLOAD_FILE_SUCCESS,
   UPLOAD_FILE_ERROR,
 }                             from './actionTypes';
-
 
 export const openUploadModal = () => ({
   type: OPEN_UPLOAD_MODAL
@@ -37,6 +36,7 @@ export const uploadFileSuccess = (success: any) =>
   defaultSuccess(UPLOAD_FILE_SUCCESS, success);
 export const uploadFileError = (error: any, payload: Object) =>
   defaultError(UPLOAD_FILE_ERROR, error, {
+    details: payload,
     successful: payload.successful,
     unsuccessful: payload.unsuccessful,
   });
@@ -46,13 +46,34 @@ export const uploadFile = (datasetId: DatasetIdType, file: any) => (dispatch: Di
 
   return api.postResults(datasetId, file).then(
     r => {
-      dispatch(uploadFileSuccess(r));
+      if (r.status === 'DONE')
+        dispatch([uploadFileSuccess(r), loadPreviousQueries(datasetId)]);
 
-      return dispatch(loadPreviousQueries(datasetId));
+      if (r.status === 'FAILED')
+        dispatch(uploadFailed(r));
+
+      if (r.status === 'RUNNING' && r.message === 'Unspecified')
+        dispatch(waitForQueryDone(datasetId, r.id));
     },
-    e => dispatch(uploadFileError(
-      { message: T.translate('uploadQueryResultsModal.uploadFailed') },
-      e
-    ))
+    e => dispatch(uploadFailed(e))
   );
 }
+
+const uploadFailed = (result: any) => uploadFileError({
+    message: T.translate('uploadQueryResultsModal.uploadFailed')
+  }, result);
+
+const waitForQueryDone = (datasetId, queryId) => (dispatch: Dispatch) =>
+  getStoredQuery(datasetId, queryId).then(
+    r => {
+      if (r.status === 'DONE' && r.message)
+        return dispatch(uploadFailed(r));
+      else if (r.status === 'DONE')
+        return dispatch([uploadFileSuccess(r), loadPreviousQueries(datasetId)]);
+      else
+        setTimeout(
+          () => waitForQueryDone(datasetId, queryId),
+          QUERY_AGAIN_TIMEOUT
+        );
+    }
+  )
