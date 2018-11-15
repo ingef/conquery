@@ -42,7 +42,7 @@ class UploadQueryResultsModal extends React.Component {
   }
 
   _onReset() {
-    this.setState({ file: null });
+    this.setState({ file: null, error: null });
   }
 
   render() {
@@ -87,12 +87,12 @@ class UploadQueryResultsModal extends React.Component {
               }
               {
                 this.props.error &&
-                <div className="upload-query-results-modal__error">
-                  <ErrorMessage
-                    message={this.props.error.message}
-                  />
-                  <UploadReport report={this.props.error} />
-                </div>
+                  <div className="upload-query-results-modal__error">
+                    <ErrorMessage
+                      message={this.props.error.message}
+                    />
+                    <UploadReport report={this.props.error} />
+                  </div>
               }
               <button
                 type="button"
