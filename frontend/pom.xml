@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.bakdata.conquery</groupId>
         <artifactId>parent</artifactId>
-        <version>1.10-rc.14</version>
+        <version>1.10-rc.15</version>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
