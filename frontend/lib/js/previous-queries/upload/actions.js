@@ -36,7 +36,6 @@ export const uploadFileSuccess = (success: any) =>
   defaultSuccess(UPLOAD_FILE_SUCCESS, success);
 export const uploadFileError = (error: any, payload: Object) =>
   defaultError(UPLOAD_FILE_ERROR, error, {
-    details: payload,
     successful: payload.successful,
     unsuccessful: payload.unsuccessful,
   });
@@ -46,14 +45,14 @@ export const uploadFile = (datasetId: DatasetIdType, file: any) => (dispatch: Di
 
   return api.postResults(datasetId, file).then(
     r => {
-      if (r.status === 'DONE')
-        dispatch([uploadFileSuccess(r), loadPreviousQueries(datasetId)]);
+      if (r.status === 'RUNNING' || r.status === 'NEW')
+        dispatch(waitForQueryDone(datasetId, r.id));
 
-      if (r.status === 'FAILED')
+      if (r.status === 'FAILED' || r.status === 'CANCELED')
         dispatch(uploadFailed(r));
 
-      if (r.status === 'RUNNING' && r.message === 'Unspecified')
-        dispatch(waitForQueryDone(datasetId, r.id));
+      if (r.status === 'DONE')
+        dispatch([uploadFileSuccess(r), loadPreviousQueries(datasetId)]);
     },
     e => dispatch(uploadFailed(e))
   );

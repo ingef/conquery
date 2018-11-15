@@ -22,8 +22,7 @@ type PropsType = {
 };
 
 type StateType = {
-  file: any,
-  error: any
+  file: any
 };
 
 class UploadQueryResultsModal extends React.Component {
@@ -34,13 +33,8 @@ class UploadQueryResultsModal extends React.Component {
     super(props);
 
     (this:any).state = {
-      file: null,
-      error: props.error
+      file: null
     };
-  }
-
-  componentWillReceiveProps(nextProps) {
-    this.setState({error: nextProps.error})
   }
 
   _onDrop(acceptedFiles: any) {
@@ -92,23 +86,12 @@ class UploadQueryResultsModal extends React.Component {
                     </ReactDropzone>
               }
               {
-                this.props.error && this.state.error &&
+                this.props.error &&
                   <div className="upload-query-results-modal__error">
                     <ErrorMessage
                       message={this.props.error.message}
                     />
                     <UploadReport report={this.props.error} />
-                    {
-                      this.props.error.details &&
-                        <div className="upload-query-results-modal__details">
-                          <textarea
-                            rows={4}
-                            cols={30}
-                            value={this.props.error.details.message}
-                            disabled={true}
-                          />
-                        </div>
-                    }
                   </div>
               }
               <button
