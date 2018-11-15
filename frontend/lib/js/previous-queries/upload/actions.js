@@ -10,7 +10,7 @@ import {
 }                               from '../../common/actions';
 import api                      from '../../api';
 import { QUERY_AGAIN_TIMEOUT }  from '../../query-runner/constants';
-import { getStoredQuery } from '../../api/api';
+import { getStoredQuery }       from '../../api/api';
 
 import { loadPreviousQueries }  from '../list/actions';
 
