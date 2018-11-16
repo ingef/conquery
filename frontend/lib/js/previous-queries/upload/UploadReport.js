@@ -12,12 +12,15 @@ type PropsType = {
 
 const UploadReport = (props: PropsType) => (
   <div className="upload-report">
-    <p className="upload-report__successful-count">
-      {T.translate(
-        'uploadReport.successful',
-        { count: props.report.successful}
-      )}
-    </p>
+    {
+      props.report.successful > 0 &&
+        <p className="upload-report__successful-count">
+          {T.translate(
+            'uploadReport.successful',
+            { count: props.report.successful}
+          )}
+        </p>
+    }
     {
       props.report.unsuccessful > 0 &&
       <p className="upload-report__unsuccessful-count">
