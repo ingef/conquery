@@ -146,9 +146,9 @@ previousQueriesFilter:
 
 timebasedQueryEditor:
   headline: "Anfragen in Relation"
-  opBefore: "VOR"
-  opBeforeOrSame: "VOR ODER GLEICH"
-  opDays: "TAGE VOR"
+  opBefore: "DAVOR"
+  opBeforeOrSame: "DAVOR ODER GLEICH"
+  opDays: "TAGE DAVOR"
   opSame: "GLEICH"
   opDaysOrNoEventBefore: "TAGE ODER KEIN EREIGNIS DAVOR"
   timestampFirst: "ERSTER"
