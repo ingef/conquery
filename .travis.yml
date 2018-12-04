@@ -1,7 +1,13 @@
 language: java
+os:
+  - linux
+#  - osx
+#  - windows
 
 env:
   - DOCKER_COMPOSE_VERSION=1.21.2
+jdk:
+  - openjdk10
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
@@ -13,10 +19,13 @@ before_install:
   
 cache:
   directories:
-  - "$HOME/.m2"
+    - "$HOME/.cache"
+    - "$HOME/.m2"
 
 script:
-  - mvn test -B -DskipDockerTests=true -P reportCoverage
+  >
+    mvn install test verify checkstyle:checkstyle -B -DskipDockerTests=true -P test-coverage,reportCoverage &&
+    mvn -pl coverage-reporter exec:java@report -P test-coverage
 
 deploy:
   - provider: script
