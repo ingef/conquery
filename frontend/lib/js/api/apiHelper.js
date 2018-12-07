@@ -26,7 +26,7 @@ export const transformTablesToApi = (tables: TableType[]) => {
     .map(table => {
       // Explicitly whitelist the tables that we allow to send to the API
       return {
-        id: table.id,
+        id: table.connectorId,
         filters: table.filters
           ? table.filters
             .filter(filter => !isEmpty(filter.value)) // Only send filters with a value
