@@ -71,6 +71,11 @@ const createConceptQuery = (children) => ({
   }
 })
 
+const createNegation = (group) => ({
+    type: "NEGATION",
+    child: group
+})
+
 const createDateRestriction = (dateRange, concept) => ({
     type: "DATE_RESTRICTION",
     dateRange: dateRange,
@@ -101,9 +106,11 @@ const createQueryConcepts = (query) => {
           createDateRestriction(group.dateRange, createQueryConcept(concept)))
       : group.elements.map(concept => createQueryConcept(concept))
 
-    return group.elements.length > 1
-        ? { type: "OR", children: [...concepts]}
-        : concepts.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+      var result = group.elements.length > 1
+      ? { type: "OR", children: [...concepts]}
+      : concepts.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
+    return group.exclude ? createNegation(result) : result;
   })
 }
 
