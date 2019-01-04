@@ -15,8 +15,8 @@ import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
@@ -49,11 +49,11 @@ public class CQConcept implements CQElement {
 	private List<Select> select = Collections.emptyList();
 
 	@Override
-	public QPNode createQueryPlan(CentralRegistry registry, QueryPlan plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		ConceptElement[] concepts = ids
 			.stream()
 			.map(id ->
-				registry.resolve(id.findConcept()).getElementById(id)
+				context.getCentralRegistry().resolve(id.findConcept()).getElementById(id)
 			)
 			.toArray(ConceptElement[]::new);
 		
@@ -80,7 +80,7 @@ public class CQConcept implements CQElement {
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, t.getSelect()));
 			aggregators.add(new SpecialDateUnionAggregatorNode(
-					t.getResolvedConnector().getTable(),
+					t.getResolvedConnector().getTable().getId(),
 					(SpecialDateUnion) plan.getAggregators().get(0)
 			));
 			

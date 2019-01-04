@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.BlockDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.IdReference;
 import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -54,6 +55,7 @@ public abstract class Block extends IdentifiableImpl<BlockId> implements JsonSer
 	public abstract Object getAsObject(int event, Column column);
 
 	public abstract boolean eventIsContainedIn(int event, Column column, CDateRange dateRange);
+	public abstract boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges);
 	public abstract CDateRange getAsDateRange(int event, Column currentColumn);
 
 	@Override

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -41,10 +42,21 @@ public class QueryManager {
 			}
 		}
 	}
+
 	public ManagedQuery createQuery(IQuery query) throws JSONException {
+		return createQuery(query, UUID.randomUUID());
+	}
+	
+	public ManagedQuery createQuery(IQuery query, UUID queryId) throws JSONException {
+		query = query.resolve(new QueryResolveContext(
+			namespace.getStorage().getMetaStorage(),
+			namespace
+		));
 		ManagedQuery managed = new ManagedQuery(query, namespace);
+		managed.setQueryId(queryId);
 		namespace.getStorage().getMetaStorage().addQuery(managed);
 		queries.add(managed);
+		
 		for(WorkerInformation worker : namespace.getWorkers()) {
 			worker.send(new ExecuteQuery(managed));
 		}

@@ -5,6 +5,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -23,7 +24,7 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	}
 
 	@Override
-	public void collectRequiredTables(Set<Table> out) {
+	public void collectRequiredTables(Set<TableId> out) {
 		aggregator.collectRequiredTables(out);
 	}
 

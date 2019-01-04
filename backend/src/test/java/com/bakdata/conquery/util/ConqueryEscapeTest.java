@@ -17,7 +17,10 @@ public class ConqueryEscapeTest {
 		"$,$24",
 		"$24,$2424",
 		"PO!\"$%&/()=ß,PO$21$22$24$25$26$2f$28$29$3d$c3$9f",
-		"\uD83D\uDE08,$f0$9f$98$88"
+		"\uD83D\uDE08,$f0$9f$98$88",
+		"aa.aa,aa$2eaa",
+		"a_a,a_a",
+		"a-a,a$2da"
 	})
 	public void testEscaping(String in, String expectedEscaped) {
 		String escaped1 = ConqueryEscape.escape(in);

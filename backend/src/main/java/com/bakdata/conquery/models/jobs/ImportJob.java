@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.jobs;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
@@ -16,6 +17,8 @@ import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
+import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -35,6 +38,7 @@ import com.bakdata.conquery.util.io.MultiByteBuffer;
 import com.bakdata.conquery.util.progress.reporter.ProgressReporter;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
 
@@ -54,6 +58,7 @@ public class ImportJob extends Job {
 	
 	@Override
 	public void execute() throws JSONException {
+		this.progressReporter.setMax(16);
 		try (HCFile file = new HCFile(importFile, false)) {
 			
 			if(log.isInfoEnabled()) {
@@ -98,7 +103,6 @@ public class ImportJob extends Job {
 			log.debug("\tupdating primary dictionary");
 			//see #168  this leads to a crash if the primary values are not full strings
 			Dictionary entities = ((StringType)header.getPrimaryColumn().getType()).getDictionary();
-			this.progressReporter.setMax(10);
 			this.progressReporter.report(1);
 			log.debug("\tcompute dictionary");
 			Dictionary primaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
@@ -137,6 +141,20 @@ public class ImportJob extends Job {
 			namespace.updateWorkerMap();
 			//namespace.getStorage().updateupdateMeta(namespace);
 			
+			//update the allIdsTable
+			log.info("\tupdating id information");
+			Import allIdsImp = new Import();
+			allIdsImp.setName(header.getName());
+			allIdsImp.setTable(new TableId(namespace.getStorage().getDataset().getId(), ConqueryConstants.ALL_IDS_TABLE));
+			allIdsImp.setNumberOfBlocks(header.getGroups());
+			allIdsImp.setNumberOfEntries(header.getGroups());
+			allIdsImp.setColumns(new ImportColumn[0]);
+			namespace.getStorage().updateImport(allIdsImp);
+			namespace.sendToAll(new AddImport(allIdsImp));
+			this.progressReporter.report(1);
+
+			
+			//create data import and store/send it
 			log.info("\tupdating import information");
 			Import imp = new Import();
 			imp.setName(header.getName());
@@ -155,17 +173,18 @@ public class ImportJob extends Job {
 			}
 			namespace.getStorage().updateImport(imp);
 			namespace.sendToAll(new AddImport(imp));
-			
 			this.progressReporter.report(1);
 			
-			log.info("\timporting");
-			final Map<WorkerInformation, ImportBits> bits = new ConcurrentHashMap<>();
-			for(WorkerInformation wi:namespace.getWorkers()) {
-				bits.put(wi, new ImportBits(imp.getName(), imp.getId(), table));
-			}
-			try(Input in = new Input(file.readContent());
-					MultiByteBuffer<WorkerInformation> buffer = new MultiByteBuffer<>(bits.keySet(), (worker,bytes) -> {
-						ImportBits ib = bits.put(worker, new ImportBits(imp.getName(), imp.getId(), table));
+			
+			//import the new ids into the all ids table
+			if(primaryMapping.getNewIds() != null) {
+				BlockFactory factory = allIdsImp.getBlockFactory();
+				final Map<WorkerInformation, ImportBits> allIdsBits = new ConcurrentHashMap<>();
+				for(WorkerInformation wi:namespace.getWorkers()) {
+					allIdsBits.put(wi, new ImportBits(allIdsImp.getName(), allIdsImp.getId(), allIdsImp.getTable()));
+				}
+				try(MultiByteBuffer<WorkerInformation> allIdsBuffer = new MultiByteBuffer<>(namespace.getWorkers(), (worker,bytes) -> {
+						ImportBits ib = allIdsBits.put(worker, new ImportBits(allIdsImp.getName(), allIdsImp.getId(), allIdsImp.getTable()));
 						ib.setBytes(bytes);
 						try {
 							worker.getConnectedSlave().waitForFreeJobqueue();
@@ -173,11 +192,59 @@ public class ImportJob extends Job {
 							log.error("Interrupted while waiting for worker "+worker+" to have free space in queue", e);
 						}
 						worker.send(ib);
-					})) {
+					});
+					Output buffer = new Output(2048);
+				) {
+					ProgressReporter child = this.progressReporter.subJob(5);
+					child.setMax(primaryMapping.getNewIds().getMax() - primaryMapping.getNewIds().getMin() + 1);
+					
+					for(int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
+						buffer.clear();
+						Block block = factory.createBlock(entityId, allIdsImp, Collections.singletonList(new Object[0]));
+						block.writeContent(buffer);
+						
+						
+						//copy content into ImportBits
+						int size = buffer.position();
+						WorkerInformation responsibleWorker = namespace.getResponsibleWorker(entityId);
+						if(responsibleWorker == null) {
+							throw new IllegalStateException("No responsible worker for "+entityId);
+						}
+							
+						GroupingByteBuffer responsibleAllIdsBuffer = allIdsBuffer.get(responsibleWorker);
+						responsibleAllIdsBuffer.ensureCapacity(size);
+						allIdsBits.get(responsibleWorker).getBits().add(new ImportBits.Bit(entityId, size));
+						System.arraycopy(buffer.getBuffer(), 0, responsibleAllIdsBuffer.internalArray(), responsibleAllIdsBuffer.offset(), size);
+						responsibleAllIdsBuffer.advance(size);
+						
+						child.report(1);
+					}
+				}
+			}
+			
+			//import the actual data
+			log.info("\timporting");
+			final Map<WorkerInformation, ImportBits> bits = new ConcurrentHashMap<>();
+			for(WorkerInformation wi:namespace.getWorkers()) {
+				bits.put(wi, new ImportBits(imp.getName(), imp.getId(), table));
+			}
+			try(Input in = new Input(file.readContent());
+				MultiByteBuffer<WorkerInformation> buffer = new MultiByteBuffer<>(bits.keySet(), (worker,bytes) -> {
+					ImportBits ib = bits.put(worker, new ImportBits(imp.getName(), imp.getId(), table));
+					ib.setBytes(bytes);
+					try {
+						worker.getConnectedSlave().waitForFreeJobqueue();
+					} catch (InterruptedException e) {
+						log.error("Interrupted while waiting for worker "+worker+" to have free space in queue", e);
+					}
+					worker.send(ib);
+				});
+			) {
 				
 				ProgressReporter child = this.progressReporter.subJob(5);
-				child.setMax(header.getGroups());
+				child.setMax(header.getGroups()+1);
 				for(long group = 0;group<header.getGroups();group++) {
+					//copy content into ImportBits
 					int entityId = primaryMapping.source2Target(in.readInt(true));
 					int size = in.readInt(true);
 					WorkerInformation responsibleWorker = namespace.getResponsibleWorker(entityId);
@@ -189,6 +256,7 @@ public class ImportJob extends Job {
 					bits.get(responsibleWorker).getBits().add(new ImportBits.Bit(entityId, size));
 					in.readBytes(responsibleBuffer.internalArray(), responsibleBuffer.offset(), size);
 					responsibleBuffer.advance(size);
+					
 					child.report(1);
 				}
 			}
