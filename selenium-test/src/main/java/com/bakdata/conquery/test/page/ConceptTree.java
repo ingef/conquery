@@ -47,7 +47,7 @@ public class ConceptTree {
 	
 	public WebElement getTreeNode(String name) {
 		return getTreeNode(name, false);
-   }
+	}
 	
 	public WebElement getTreeNode(String name, boolean open) {
 		String xpathNode = open 
