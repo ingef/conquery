@@ -1,0 +1,69 @@
+{
+  "type": "QUERY_TEST",
+  "label": "SIMPLE_VIRTUAL_CONCEPT_QUERY Test",
+  "expectedCsv": "tests/aggregator/SUM_DIFF_AGGREGATOR/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "${dataset}.geschlecht_select"
+      ],
+      "type": "CONCEPT",
+      "label": "Geschlecht SELECT",
+      "tables": [
+        {
+          "id": "${dataset}.geschlecht_select.geschlecht_connector"
+        }
+      ],
+      "select": [
+        {
+          "type": "SUM",
+          "column": "vers_stamm.sum",
+          "subtractColumn": "vers_stamm.sub"
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "Geschlecht SELECT",
+      "type": "VIRTUAL",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "vers_stamm",
+          "validityDates": {
+            "label": "datum",
+            "column": "vers_stamm.datum"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/SUM_DIFF_AGGREGATOR/content.csv",
+        "name": "vers_stamm",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "sum",
+            "type": "INTEGER"
+          },
+          {
+            "name": "sub",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  }
+}

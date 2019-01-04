@@ -12,18 +12,18 @@ import org.openqa.selenium.support.PageFactory;
  */
 public class PreviousQueries {
 
-    private final WebDriver driver;
+	private final WebDriver driver;
 
-    public PreviousQueries(WebDriver driver) {
-        this.driver = driver;
-        PageFactory.initElements(driver, this);
-    }
+	public PreviousQueries(WebDriver driver) {
+		this.driver = driver;
+		PageFactory.initElements(driver, this);
+	}
 
-    public WebElement getPreviousQuery(int idx) {
-        return getPreviousQueries().get(idx);
-    }
+	public WebElement getPreviousQuery(int idx) {
+		return getPreviousQueries().get(idx);
+	}
 
-    public List<WebElement> getPreviousQueries() {
-        return driver.findElements(By.xpath("//div[@class='previous-queries']//div[@class='previous-query-container']"));
-    }
+	public List<WebElement> getPreviousQueries() {
+		return driver.findElements(By.xpath("//div[@class='previous-queries']//div[@class='previous-query-container']"));
+	}
 }

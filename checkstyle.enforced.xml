@@ -1,0 +1,82 @@
+<?xml version="1.0"?>
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+
+<module name = "Checker">
+    <property name="charset" value="UTF-8"/>
+
+    <property name="severity" value="error"/>
+	
+    <module name="TreeWalker">
+    	<property name="tabWidth" value="4"/>
+    
+    	<!-- custom rules -->
+
+    	<module name="RegexpSinglelineJava">
+		    <property name="format" value='^[\t]* '/>
+		    <property name="message" value="Indent must use tab characters"/>
+		    <property name="ignoreComments" value="true"/>
+		</module>
+		<module name="RegexpSinglelineJava">
+		    <property name="format" value='^[\t]*  +\*'/>
+		    <property name="message" value="Comment indent must use tab characters"/>
+		</module>
+		<module name="RegexpSinglelineJava">
+		    <property name="format" value='//\s*(todo|fixme|bug)'/>
+		    <property name="ignoreCase" value="true"/>
+		    <property name="message" value="no TODOs should be commited, use issues instead"/>
+		</module>
+		<module name="RegexpSinglelineJava">
+		 	<property name="format" value="System\.out\."/>
+		 	<property name="message" value="no direct output"/>
+		</module>
+		
+		
+		
+        <module name="PackageName">
+            <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
+            <message key="name.invalidPattern"
+             value="Package name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="TypeName">
+            <message key="name.invalidPattern"
+             value="Type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="MemberName">
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+            <message key="name.invalidPattern"
+             value="Member name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="ParameterName">
+            <property name="format" value="^[a-z]([a-zA-Z0-9]*)?$"/>
+            <message key="name.invalidPattern"
+             value="Parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="CatchParameterName">
+            <property name="format" value="^[a-z]([a-zA-Z0-9]*)?$"/>
+            <message key="name.invalidPattern"
+             value="Catch parameter name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="LocalVariableName">
+            <property name="tokens" value="VARIABLE_DEF"/>
+            <property name="format" value="^[a-z]([a-zA-Z0-9]*)?$"/>
+            <message key="name.invalidPattern"
+             value="Local variable name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="ClassTypeParameterName">
+            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][_A-Z0-9]*$)"/>
+            <message key="name.invalidPattern"
+             value="Class type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="MethodTypeParameterName">
+            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][_A-Z0-9]*$)"/>
+            <message key="name.invalidPattern"
+             value="Method type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="InterfaceTypeParameterName">
+            <property name="format" value="(^[A-Z][0-9]?)$|([A-Z][a-zA-Z0-9]*$)"/>
+            <message key="name.invalidPattern"
+             value="Interface type name ''{0}'' must match pattern ''{1}''."/>
+        </module>
+        <module name="NoFinalizer"/>
+    </module>
+</module>

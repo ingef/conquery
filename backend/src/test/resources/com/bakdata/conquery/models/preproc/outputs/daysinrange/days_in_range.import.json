@@ -1,0 +1,28 @@
+{
+	"inputs": {
+		"sourceFile": "days_in_range.csv",
+		"autoOutput" : {
+			"type" : "DAYS_IN_RANGE",
+			"identifiers" : {
+				"operation": "COPY",
+                "inputType" : "STRING",
+				"inputColumn": 0,
+				"name": "uid"
+			},
+			"yearColumn" : 1,
+			"dayType" : {
+				"type" : "f",
+				"column" : 3
+			},
+			"quarterColumn" : 2
+		},
+		"primary": {
+			"operation": "COPY",
+            "inputType" : "STRING",
+			"inputColumn": 0,
+			"name": "uid"
+		}
+	},
+	"name": "default",
+	"table": "table"
+}

@@ -15,48 +15,48 @@ import org.openqa.selenium.support.ui.WebDriverWait;
  */
 public class ConceptTree {
 
-    public static final String XPATH_TREE = "//div[@class='category-tree-list']";
+	public static final String XPATH_TREE = "//div[@class='category-tree-list']";
 
-    @FindBy(xpath = "//input[@type='hidden'][@name='dataset-selector']")
-    private WebElement datasetSelect;
+	@FindBy(xpath = "//input[@type='hidden'][@name='dataset-selector']")
+	private WebElement datasetSelect;
 
-    @FindBy(xpath = XPATH_TREE)
-    private WebElement treeRoot;
-    
-    private final WebDriver driver;
+	@FindBy(xpath = XPATH_TREE)
+	private WebElement treeRoot;
+	
+	private final WebDriver driver;
 
-    public ConceptTree(WebDriver driver) {
-        this.driver = driver;
-        
-        PageFactory.initElements(driver, this);
-    }
+	public ConceptTree(WebDriver driver) {
+		this.driver = driver;
+		
+		PageFactory.initElements(driver, this);
+	}
 
-    public ConceptTree datasetSelectByValue(String value) {
-        new Select(datasetSelect).selectByValue(value);
+	public ConceptTree datasetSelectByValue(String value) {
+		new Select(datasetSelect).selectByValue(value);
 
-        return this;
-    }
+		return this;
+	}
 
-    public WebElement getDatasetSelect() {
-        return datasetSelect;
-    }
+	public WebElement getDatasetSelect() {
+		return datasetSelect;
+	}
 
-    public WebElement getTreeRoot() {
-        return treeRoot;
-    }
-    
-    public WebElement getTreeNode(String name) {
-        return getTreeNode(name, false);
-   }
-    
-    public WebElement getTreeNode(String name, boolean open) {
-        String xpathNode = open 
-                ? XPATH_TREE + "//p[contains(.,'%s')]/i" 
-                : XPATH_TREE + "//p[contains(.,'%s')]";
-        By xpath = By.xpath(String.format(xpathNode, name));
-        new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(xpath));
-        
-        return driver.findElement(xpath);
-    }
-    
+	public WebElement getTreeRoot() {
+		return treeRoot;
+	}
+	
+	public WebElement getTreeNode(String name) {
+		return getTreeNode(name, false);
+	}
+	
+	public WebElement getTreeNode(String name, boolean open) {
+		String xpathNode = open 
+				? XPATH_TREE + "//p[contains(.,'%s')]/i" 
+				: XPATH_TREE + "//p[contains(.,'%s')]";
+		By xpath = By.xpath(String.format(xpathNode, name));
+		new WebDriverWait(driver, 10).until(ExpectedConditions.elementToBeClickable(xpath));
+		
+		return driver.findElement(xpath);
+	}
+	
 }

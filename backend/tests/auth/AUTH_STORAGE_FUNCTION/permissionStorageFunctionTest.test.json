@@ -1,0 +1,43 @@
+{
+    "type": "PERMISSION_STORAGE_FUNCTION_TEST",
+    "roles":[
+        {
+            "label" : "unused",
+            "name" : "unused",
+            "principals": "mandator.testCompany"
+        }
+    ],
+    "users": [
+        {
+            "user" : {
+                "label" : "unused",
+                "name" : "unused",
+                "principals": "user.user1"
+            },
+            "rolesInjected": [
+                "mandator.testCompany"
+            ]
+        },
+        {
+            "user" : {
+                "label" : "unused",
+                "name" : "unused",
+                "principals": "user.user2"
+            }
+        }
+    ],
+    "permissions": [
+        {
+            "type": "DATASET_PERMISSION",
+            "ownerId": "user.user1",
+            "abilities": ["DELETE"],
+            "instanceId": "testDataset"
+        },
+        {
+            "type": "DATASET_PERMISSION",
+            "ownerId": "mandator.testCompany",
+            "abilities": ["READ"],
+            "instanceId": "testDataset"
+        }
+    ]
+}
