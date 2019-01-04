@@ -10,21 +10,21 @@ import org.openqa.selenium.support.PageFactory;
  * @author Marcus Baitz
  */
 public class Navigation {
-    
-    public enum Pane {
-        LEFT,RIGHT;
-    }
-    
-    
-    private final WebDriver driver;
+	
+	public enum Pane {
+		LEFT,RIGHT;
+	}
+	
+	
+	private final WebDriver driver;
 
-    public Navigation(WebDriver driver) {
-        this.driver = driver;
-        PageFactory.initElements(driver, this);
-    }
-    
-    public WebElement getNavigateTo(String name) {
-        return driver.findElement(By.xpath(String.format("//div[@class='pane-tab-navigation']//h2[text()='%s']", name)));
-    }
-    
+	public Navigation(WebDriver driver) {
+		this.driver = driver;
+		PageFactory.initElements(driver, this);
+	}
+	
+	public WebElement getNavigateTo(String name) {
+		return driver.findElement(By.xpath(String.format("//div[@class='pane-tab-navigation']//h2[text()='%s']", name)));
+	}
+	
 }
