@@ -62,6 +62,7 @@
 		<exclude name="CloneMethodMustImplementCloneable"/>
 		<exclude name="DoNotCallSystemExit"/>
 		<exclude name="ProperCloneImplementation"/>
+		<exclude name="AvoidFieldNameMatchingMethodName"/>
 	</rule>
 	<rule ref="category/java/design.xml">
 		<exclude name="LawOfDemeter"/>
