@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.query.queryplan.OpenResult;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QPParentNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -15,10 +16,10 @@ public class OrNode extends QPParentNode {
 	}
 	
 	@Override
-	public boolean nextEvent(Block block, int event) {
-		boolean currently = false;
+	protected OpenResult nextEvent(Block block, int event) {
+		OpenResult currently = OpenResult.NOT_INCLUDED;
 		for(QPNode agg:currentTableChildren) {
-			currently |= agg.aggregate(block, event);
+			currently = currently.or(agg.aggregate(block, event));
 		}
 		return currently;
 	}

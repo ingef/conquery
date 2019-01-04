@@ -52,20 +52,20 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public BigStore(Validator validator, Environment env, StoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
 		metaStore = new MPStore<>(
-				validator,
+				validator, 
 				env,
 				new SimpleStoreInfo(
-					storeInfo.getXodusName()+"_META",
-					storeInfo.getKeyType(),
+					storeInfo.getXodusName()+"_META", 
+					storeInfo.getKeyType(), 
 					BigStoreMeta.class
 				)
 			);
 		dataStore = new MPStore<>(
-				validator,
+				validator, 
 				env,
 				new SimpleStoreInfo(
-					storeInfo.getXodusName()+"_DATA",
-					UUID.class,
+					storeInfo.getXodusName()+"_DATA", 
+					UUID.class, 
 					byte[].class
 				)
 			);

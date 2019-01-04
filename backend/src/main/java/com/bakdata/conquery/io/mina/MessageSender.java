@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 

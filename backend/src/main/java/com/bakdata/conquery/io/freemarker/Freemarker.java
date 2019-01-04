@@ -1,10 +1,10 @@
 package com.bakdata.conquery.io.freemarker;
 
-import java.nio.charset.StandardCharsets;
-
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
 
 import freemarker.template.Configuration;
+
+import java.nio.charset.StandardCharsets;
 
 public class Freemarker {
 

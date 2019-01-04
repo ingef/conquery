@@ -4,8 +4,8 @@ import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
-import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 
@@ -14,20 +14,14 @@ import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class QuarterUtils {
 
-	private static final TemporalAdjuster FIRST_MONTH_IN_QUARTER_ADJUSTER = new TemporalAdjuster() {
-		@Override
-		public Temporal adjustInto(Temporal temporal) {
+	private static final TemporalAdjuster FIRST_MONTH_IN_QUARTER_ADJUSTER =
+			temporal -> temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR)).getValue());
 
-			int quarter = temporal.get(IsoFields.QUARTER_OF_YEAR);
-
-			return YearMonth.from(temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(quarter).getValue()));
-		}
-	};
 	private static final TemporalAdjuster FIRST_DAY_OF_QUARTER_ADJUSTER =
 			temporal -> TemporalAdjusters.firstDayOfMonth().adjustInto(firstMonthInQuarterAdjuster().adjustInto(temporal));
 
 	private static final TemporalAdjuster LAST_DAY_OF_QUARTER_ADJUSTER =
-			temporal -> ((LocalDate) TemporalAdjusters.firstDayOfMonth().adjustInto(nextQuarterAdjuster().adjustInto(temporal))).minusDays(1);
+			temporal -> (TemporalAdjusters.firstDayOfMonth().adjustInto(nextQuarterAdjuster().adjustInto(temporal))).minus(1, ChronoUnit.DAYS);
 
 
 	public static boolean isFirstMonthOfQuarter(LocalDate date) {
@@ -63,12 +57,26 @@ public final class QuarterUtils {
 	}
 
 	public static LocalDate getFirstDayOfQuarter(int year, int quarter) {
-		Month month = getFirstMonthOfQuarter(quarter);
-		return LocalDate.of(year, month, 1);
+		return LocalDate.of(year, getFirstMonthOfQuarter(quarter), 1);
 	}
 
 	public static LocalDate getLastDayOfQuarter(int year, int quarter) {
-		return (LocalDate) lastDayOfQuarterAdjuster().adjustInto(getFirstDayOfQuarter(year, quarter));
+		return YearMonth.of(year, getLastMonthOfQuarter(quarter)).atEndOfMonth();
+	}
+
+	public static Month getLastMonthOfQuarter(int quarter) {
+		switch (quarter) {
+			case 1:
+				return Month.MARCH;
+			case 2:
+				return Month.JUNE;
+			case 3:
+				return Month.SEPTEMBER;
+			case 4:
+				return Month.DECEMBER;
+			default:
+				throw new IllegalStateException(String.format("Quarter %d exceeds 1-4", quarter));
+		}
 	}
 
 	public static CDateRange fromQuarter(int year, int quarter) {
@@ -81,7 +89,7 @@ public final class QuarterUtils {
 		return temporal -> {
 			if (temporal.get(IsoFields.QUARTER_OF_YEAR) == 4) {
 				return temporal.with(ChronoField.MONTH_OF_YEAR, 1)
-					.with(ChronoField.YEAR, (temporal).get(ChronoField.YEAR) + 1);
+							   .with(ChronoField.YEAR, temporal.get(ChronoField.YEAR) + 1);
 			}
 			else {
 				return temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR) + 1).getValue());

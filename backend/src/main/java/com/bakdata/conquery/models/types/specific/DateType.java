@@ -15,7 +15,7 @@ public class DateType extends CType<Integer, DateType> {
 	
 	@Override
 	protected Integer parseValue(String value) throws ParsingException {
-		//see #148  Delegate to DateUtils instead
+		//TODO Delegate to DateUtils instead
 		return CDate.ofLocalDate(DateFormats.instance().parseToLocalDate(value));
 	}
 

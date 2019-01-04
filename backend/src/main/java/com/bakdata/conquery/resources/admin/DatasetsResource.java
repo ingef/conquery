@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -71,11 +70,11 @@ public class DatasetsResource {
 	private final DatasetsProcessor processor;
 	private final Namespaces namespaces;
 	
-	public DatasetsResource(ConqueryConfig config, MasterMetaStorage storage, Namespaces namespaces, JobManager jobManager, ScheduledExecutorService maintenanceService) {
+	public DatasetsResource(ConqueryConfig config, MasterMetaStorage storage, Namespaces namespaces, JobManager jobManager) {
 		this.ctx = new UIContext(namespaces);
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
 		this.namespaces = namespaces;
-		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager, maintenanceService);
+		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager);
 	}
 
 	@GET
@@ -86,8 +85,8 @@ public class DatasetsResource {
 	@GET @Path("/{"+DATASET_NAME+"}")
 	public View getDataset(@PathParam(DATASET_NAME)DatasetId dataset) {
 		return new FileView<>(
-				"dataset.html.ftl",
-				ctx,
+				"dataset.html.ftl", 
+				ctx, 
 				namespaces.get(dataset).getStorage().getDataset(),
 				FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
 	}
@@ -109,7 +108,7 @@ public class DatasetsResource {
 		
 		return new UIView<>(
 			"table.html.ftl",
-			ctx,
+			ctx, 
 			new TableStatistics(
 				table,
 				imports.stream().mapToLong(Import::getNumberOfBlocks).sum(),
@@ -126,15 +125,15 @@ public class DatasetsResource {
 			.getConcept(conceptParam);
 		
 		return new UIView<>(
-			"concept.html.ftl",
-			ctx,
+			"concept.html.ftl", 
+			ctx, 
 			concept
 		);
 	}
 	
 	@POST @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDataset(@NotEmpty@FormDataParam("dataset_name")String name) throws JSONException {
-		processor.addDataset(name, processor.getMaintenanceService());
+		processor.addDataset(name, null);
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
 			.build();

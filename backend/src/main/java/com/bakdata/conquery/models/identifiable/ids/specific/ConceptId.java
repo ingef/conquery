@@ -14,12 +14,12 @@ import lombok.Getter;
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
 public class ConceptId extends ConceptElementId<Concept<?>> implements NamespacedId {
 
-	private final DatasetId dataset;
+	private final ConceptsId concepts;
 	private final String concept;
 
 	@Override
 	public DatasetId getDataset() {
-		return dataset;
+		return concepts.getDataset();
 	}
 	
 	@Override
@@ -29,7 +29,7 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 	
 	@Override
 	public void collectComponents(List<Object> components) {
-		dataset.collectComponents(components);
+		concepts.collectComponents(components);
 		components.add(concept);
 	}
 	
@@ -38,7 +38,7 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 		
 		@Override
 		public ConceptId parse(Iterator<String> parts) {
-			DatasetId parent = DatasetId.Parser.INSTANCE.parse(parts);
+			ConceptsId parent = ConceptsId.Parser.INSTANCE.parse(parts);
 			return new ConceptId(parent, parts.next());
 		}
 	}

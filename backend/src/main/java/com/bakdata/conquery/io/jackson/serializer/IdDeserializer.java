@@ -23,7 +23,6 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor @NoArgsConstructor
 public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> implements ContextualDeserializer {
 
-	private Class<ID> idClass;
 	private Parser<ID> idParser;
 	
 	@SuppressWarnings("unchecked")
@@ -34,14 +33,14 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 			try {
 				//check if there was a dataset injected and if it is already a prefix
 				Dataset dataset = (Dataset) ctxt.findInjectableValue(Dataset.class.getName(), null, null);
-				if(dataset != null) {
-					return idParser.parsePrefixed(dataset.getName(), text);
+				if(dataset != null && !text.startsWith(dataset.getName()+IId.JOIN_CHAR)) {
+					return idParser.parse(dataset.getName(),text);
 				}
 				else {
 					return idParser.parse(text);
 				}
 			} catch(Exception e) {
-				throw new IllegalArgumentException("Could not parse an "+idClass.getSimpleName()+" from "+text, e);
+				throw new IllegalArgumentException("Could not parse an id from "+text, e);
 			}
 		}
 		else {
@@ -54,7 +53,6 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 		return this.deserialize(p, ctxt);
 	}
 
-	@SuppressWarnings({ "rawtypes", "unchecked" })
 	@Override
 	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
 		JavaType type = Optional
@@ -67,6 +65,6 @@ public class IdDeserializer<ID extends IId<?>> extends JsonDeserializer<ID> impl
 		Class<IId<?>> idClass = (Class<IId<?>>) type.getRawClass();
 		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class)idClass);
 		
-		return new IdDeserializer(idClass, parser);
+		return new IdDeserializer<>(parser);
 	}
 }

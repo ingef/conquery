@@ -23,8 +23,8 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 	public WriteFuture send(final NetworkMessage<?> message) {
 		try {
 			while(!queuedMessages.offer(message, 2, TimeUnit.MINUTES)) {
-				log.debug("Waiting for full writing queue for {}\n\tcurrently filled by: {}",
-						message,
+				log.debug("Waiting for full writing queue for {}\n\tcurrently filled by: {}", 
+						message, 
 						new ArrayList<>(queuedMessages)
 							.stream()
 							.map(Objects::toString)

@@ -20,8 +20,8 @@ public class JobExecutor extends Thread {
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final AtomicBoolean busy = new AtomicBoolean(false);
 	
-	public JobExecutor(String name) {
-		super("JobManager Worker "+name);
+	public JobExecutor(ThreadGroup threadGroup, String name) {
+		super(threadGroup, "JobManager Worker "+name);
 	}
 
 	public void add(Job job) {
@@ -55,15 +55,14 @@ public class JobExecutor extends Thread {
 		while(!closed.get()) {
 			Job job;
 			try {
-				while((job =jobs.poll(100, TimeUnit.MILLISECONDS))!=null) {
+				while((job =jobs.poll(5, TimeUnit.SECONDS))!=null) {
 					busy.set(true);
 					currentJob.set(job);
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
 					try {
-						log.trace("{} started job {}", this.getName(), job);
 						job.execute();
-						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+						log.trace("Finished fast job {} within {}", job, timer.stop());
 						currentJob.set(null);
 					} catch (Throwable e) {
 						log.error("Fast Job "+job+" failed", e);

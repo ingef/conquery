@@ -7,14 +7,14 @@
         "root": {
             "type": "CONCEPT",
             "ids": [
-                "${dataset}.test_tree.test_child1"
+                "${dataset}.concepts.test_tree.test_child1"
             ],
             "tables": [
                 {
-                    "id": "${dataset}.test_tree.test_column",
+                    "id": "${dataset}.concepts.test_tree.test_column",
                     "filters": [
                         {
-                            "filter": "${dataset}.test_tree.test_column.conquery_validity_date_selection",
+                            "filter": "${dataset}.concepts.test_tree.test_column.conquery_validity_date_selection",
                             "type": "SELECT",
                             "value": "other_date"
                         }

@@ -6,14 +6,8 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Iterator;
-import java.util.Spliterator;
-import java.util.Spliterators;
-import java.util.stream.Stream;
-import java.util.stream.StreamSupport;
-import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.input.CountingInputStream;
 import org.slf4j.Logger;
@@ -36,7 +30,7 @@ public class CSV implements Closeable {
 	private final long totalSizeToRead;
 	private long read = 0;
 	
-	public CSV(CSVConfig config, File file) throws IOException {
+	public CSV(CSVConfig config, File file) throws FileNotFoundException {
 		this.config = config;
 		CsvFormat format = new CsvFormat();
 		{
@@ -54,22 +48,10 @@ public class CSV implements Closeable {
 		
 		totalSizeToRead = file.length();
 		counter = new CountingInputStream(new FileInputStream(file));
-		
-		InputStream in = file.getName().endsWith(".gz")?new GZIPInputStream(counter):counter;
-			
-		reader = new BufferedReader(new InputStreamReader(in, config.getEncoding()));
-	}
-	
-	public static Stream<String[]> streamContent(CSVConfig config, File file, Logger log) throws IOException {
-		CSV csv = new CSV(config, file);
-		return StreamSupport.stream(
-			Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED),
-			false
-		)
-		.onClose(csv::closeUnchecked);
+		reader = new BufferedReader(new InputStreamReader(counter, config.getEncoding()));
 	}
 
-	public Iterator<String[]> iterateContent(Logger log) {
+	public Iterator<String[]> iterateContent(String name, Logger log) throws IOException {
 		Iterator<String[]> it = new CsvParser(settings)
 				.iterate(reader)
 				.iterator();
@@ -105,14 +87,5 @@ public class CSV implements Closeable {
 	@Override
 	public void close() throws IOException {
 		reader.close();
-	}
-	
-	private void closeUnchecked() {
-		try {
-			reader.close();
-		}
-		catch(Exception e) {
-			throw new RuntimeException(e);
-		}
 	}
 }

@@ -4,12 +4,14 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.identifiable.ids.IId;
 
-import lombok.NoArgsConstructor;
-
-@SuppressWarnings({"rawtypes", "unchecked"}) @NoArgsConstructor
+@SuppressWarnings({"rawtypes", "unchecked"})
 public class CentralRegistry {
 	
 	private final IdMap map = new IdMap<>();
+	
+	public CentralRegistry() {
+		map.initMap();
+	}
 	
 	public void register(Identifiable<?> ident) {
 		map.add(ident);

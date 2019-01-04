@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 @CPSType(base=CType.class, id="DECIMAL")
 public class DecimalType extends CType<BigDecimal, DecimalType> {
 
-	private int maxScale = -1;
+	private int maxScale = -1; 
 	private BigInteger maxUnscaled;
 	private BigInteger minUnscaled;
 	
@@ -41,8 +41,8 @@ public class DecimalType extends CType<BigDecimal, DecimalType> {
 			sub.registerValue(minUnscaled.longValueExact());
 			return new DecimalTypeScaled(getLines(), getNullLines(), maxScale, sub);
 		}
-		else
-			return this;
+        else
+            return this;
 	}
 	
 	@Override

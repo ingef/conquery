@@ -6,7 +6,9 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.io.FileUtils;
@@ -43,6 +45,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.google.common.util.concurrent.Uninterruptibles;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
 
@@ -64,14 +67,9 @@ public class FilterTest extends AbstractQueryEngineTest {
 	@JsonProperty("filterValue")
 	private ObjectNode rawFilterValue;
 
+	@Valid
 	@NotNull
-	@JsonProperty("content")
-	private ObjectNode rawContent;
-
-	@JsonIgnore
 	private RequiredData content;
-
-
 	@NotNull
 	@JsonProperty("connector")
 	private ObjectNode rawConnector;
@@ -87,17 +85,10 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
-
-		((ObjectNode) rawContent.get("tables")).put("name", "table");
-
-		content = parseSubTree(support, rawContent, RequiredData.class);
-
 		importTables(support);
 		support.waitUntilWorkDone();
 
 		importConcepts(support);
-		support.waitUntilWorkDone();
-		
 		query = parseQuery(support);
 
 		importTableContents(support);
@@ -118,23 +109,22 @@ public class FilterTest extends AbstractQueryEngineTest {
 			FileUtils.copyFileToDirectory(rTable.getCsv(), support.getTmpDir());
 
 			//create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getCfg().getPreprocessor().getDirectories()[0], name);
 			ImportDescriptor desc = new ImportDescriptor();
-			desc.setInputFile(inputFile);
+			desc.setInputFile(InputFile.fromName(support.getCfg().getPreprocessor().getDirectories()[0], name));
 			desc.setName(rTable.getName() + "_import");
 			desc.setTable(rTable.getName());
 			Input input = new Input();
 			{
 				input.setPrimary(copyOutput(0, rTable.getPrimaryColumn()));
-				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
+				input.setSourceFile(new File(support.getTmpDir(), rTable.getCsv().getName()));
 				input.setOutput(new Output[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
 					input.getOutput()[i] = copyOutput(i + 1, rTable.getColumns()[i]);
 				}
 			}
 			desc.setInputs(new Input[]{input});
-			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
-			preprocessedFiles.add(inputFile.getPreprocessedFile());
+			Jackson.MAPPER.writeValue(desc.getInputFile().getDescriptionFile(), desc);
+			preprocessedFiles.add(desc.getInputFile().getPreprocessedFile());
 		}
 		//preprocess
 		support.preprocessTmp();
@@ -157,15 +147,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 		Dataset dataset = support.getDataset();
 
 		concept = new VirtualConcept();
-		concept.setLabel("concept");
+		concept.setName("the_concept");
+		concept.setLabel("the_concept");
 		support.getDatasetsProcessor().addConcept(dataset, concept);
 
-		concept.setDataset(support.getDataset().getId());
-
-		rawConnector.put("name", "connector");
-		rawConnector.put("table", "table");
-
-		((ObjectNode) rawConnector.get("filter")).put("name", "filter");
+		concept.setConcepts(support.getDataset().getConcepts());
 
 		connector = parseSubTree(
 				support,
@@ -179,9 +165,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 	private IQuery parseQuery(StandaloneSupport support) throws JSONException, IOException {
-		rawFilterValue.put("filter", support.getDataset().getName() + ".concept.connector.filter");
-
-
 		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class));
 
 		CQTable cqTable = new CQTable();

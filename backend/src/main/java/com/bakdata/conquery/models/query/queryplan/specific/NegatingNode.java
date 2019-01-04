@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.query.queryplan.OpenResult;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -14,9 +15,17 @@ public class NegatingNode extends QPChainNode {
 	}
 	
 	@Override
-	public boolean nextEvent(Block block, int event) {
-		getChild().aggregate(block, event);
-		return true;
+	protected OpenResult nextEvent(Block block, int event) {
+		switch (getChild().aggregate(block, event)) {
+			case NOT_INCLUDED:
+				return OpenResult.INCLUDED;
+			case INCLUDED:
+				return OpenResult.NOT_INCLUDED;
+			case MAYBE:
+				return OpenResult.MAYBE;
+			default:
+				throw new IllegalStateException("unknown state for NegatingAggregator "+this.toString());
+		}
 	}
 	
 	@Override

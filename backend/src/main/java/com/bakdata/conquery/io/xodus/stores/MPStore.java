@@ -66,7 +66,7 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer) {
-		final StoreEntry<KEY, VALUE> entry = new StoreEntry<>();
+		final StoreEntry<KEY, VALUE> entry = new StoreEntry<>(); 
 		store.forEach((k,v) -> {
 			entry.setKey(readKey(k));
 			entry.setByteSize(v.getLength());

@@ -140,10 +140,8 @@ public class TypeIdDaysInRangeMerger {
 			}
 
 			DaysInRange days =
-					new DaysInRange(
-						CDateRange.of(this.getDaysInRange().fromEnd(), entry.getDaysInRange().fromStart()),
-						this.daysInRange.getDays() + entry.daysInRange.getDays()
-					);
+					new DaysInRange(CDateRange.of(this.getDaysInRange().fromEnd(), entry.getDaysInRange().fromStart()), this.daysInRange.getDays()
+																														 + entry.daysInRange.getDays());
 			return new DaysInRangeEntry(this.primaryId, this.columns, days, this.identifier, this.type);
 		}
 	}

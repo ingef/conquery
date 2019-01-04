@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.annotation.JsonCreator;

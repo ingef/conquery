@@ -1,13 +1,17 @@
 package com.bakdata.conquery.models.worker;
 
+import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nonnull;
 
+import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryManager;
@@ -28,12 +32,8 @@ public class Namespace {
 	private List<WorkerInformation> workers = new ArrayList<>();
 	@JsonIgnore
 	private transient List<WorkerInformation> bucket2WorkerMap = new ArrayList<>();
-	@JsonIgnore
-	private transient Namespaces namespaces;
-	private int entityBucketSize;
 	
-	public Namespace(int entityBucketSize, NamespaceStorage storage) {
-		this.entityBucketSize = entityBucketSize;
+	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;
 		this.queryManager = new QueryManager(this);
 	}
@@ -55,7 +55,7 @@ public class Namespace {
 		if(workers.isEmpty()) {
 			throw new IllegalStateException("There are no workers yet");
 		}
-		//see #162  use broadcast and use the coder here only once so that we do not serialize twice
+		//TODO use broadcast and use the coder here only once so that we do not serialize twice
 		for(WorkerInformation w:workers) {
 			w.send(msg);
 		}
@@ -89,7 +89,7 @@ public class Namespace {
 	
 	@Nonnull
 	public WorkerInformation getResponsibleWorker(int entityId) {
-		int bucket = Entity.getBucket(entityId, entityBucketSize);
+		int bucket = Entity.getBucket(entityId);
 		if(bucket < bucket2WorkerMap.size()) {
 			return bucket2WorkerMap.get(bucket);
 		}

@@ -54,12 +54,10 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Environment environment;
 
 	public void run(ConqueryConfig config, Environment environment) throws IOException, JSONException {
-		this.jobManager = new JobManager("master");
+		this.jobManager = new JobManager();
 		this.environment = environment;
-		
-		RESTServer.configure(config, environment.jersey().getResourceConfig());
-		
 		environment.lifecycle().manage(jobManager);
+		initStorage(environment.getValidator(), config);
 		
 		validator = environment.getValidator();
 		this.config = config;
@@ -73,20 +71,15 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		
 		environment.lifecycle().manage(this);
 		
-		for(File directory : config.getStorage().getDirectory().listFiles()) {
-			if(directory.getName().startsWith("dataset_")) {
-				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
+		for(File directory : storage.getDirectory().getParentFile().listFiles()) {
+			if(!directory.equals(storage.getDirectory()) && directory.getName().startsWith("dataset_")) {
+				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(storage, config.getStorage(), directory);
 				if(datasetStorage != null) {
-					Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
+					Namespace ns = new Namespace(datasetStorage);
 					ns.initMaintenance(maintenanceService);
 					namespaces.add(ns);
 				}
 			}
-		}
-		
-		storage = new MasterMetaStorageImpl(environment.getValidator(), config.getStorage());
-		for(Namespace sn : namespaces.getNamespaces()) {
-			sn.getStorage().setMetaStorage(storage);
 		}
 		
 		admin = new AdminUIServlet();
@@ -95,6 +88,16 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
+	}
+
+	public void initStorage(Validator validator, ConqueryConfig config) throws JSONException {
+		if(storage == null) {
+			storage = new MasterMetaStorageImpl(validator, config.getStorage());
+			/*if(storage.getMeta()==null) {
+				storage.updateMeta(new Namespaces());
+			}
+			storage.getMeta().updateWorkerMap();*/
+		}
 	}
 
 	@Override
@@ -160,7 +163,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		} catch(Exception e) {
 			log.error(acceptor+" could not be closed", e);
 		}
-		for(Namespace namespace : namespaces.getNamespaces()) {
+		for(Namespace namespace : namespaces.getDatasets().values()) {
 			try {
 				namespace.getStorage().close();
 			} catch(Exception e) {

@@ -17,36 +17,25 @@ public class ConqueryEscape {
 		
 		byte[] bytes = word.getBytes(StandardCharsets.UTF_8);
 		
-		//if the first does not match we escape everything
-		if(!matchesFirst(bytes[0])) {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream(bytes.length + 5);
-			encode(bytes[0], baos);
-			return escapeRequired(bytes, 1, baos);
+		ByteArrayOutputStream out = new ByteArrayOutputStream(bytes.length + 5);
+		
+		if(matchesFirst(bytes[0])) {
+			out.write(bytes[0]);
+		}
+		else {
+			encode(bytes[0], out);
 		}
 		
-		//if the first matched we walk through the rest and check if any don't match the allowed characters
 		for(int i=1;i<bytes.length;i++) {
-			if(!matchesOther(bytes[i])) {
-				ByteArrayOutputStream baos = new ByteArrayOutputStream(bytes.length + 5);
-				baos.write(bytes, 0, i);
-				return escapeRequired(bytes, i, baos);
-			}
-		}
-		
-		return word;
-	}
-	
-			
-	private static String escapeRequired(byte[] bytes, int index, ByteArrayOutputStream baos) {
-		for(int i=index;i<bytes.length;i++) {
 			if(matchesOther(bytes[i])) {
-				baos.write(bytes[i]);
+				out.write(bytes[i]);
 			}
 			else {
-				encode(bytes[i], baos);
+				encode(bytes[i], out);
 			}
 		}
-		return new String(baos.toByteArray(), StandardCharsets.UTF_8);
+		
+		return new String(out.toByteArray(), StandardCharsets.UTF_8).intern();
 	}
 	
 	public static String unescape(@NonNull String word) {
@@ -82,7 +71,7 @@ public class ConqueryEscape {
 	}
 
 	private static boolean matchesOther(byte v) {
-		return matchesFirst(v) || (v>=(byte)'0' && v<=(byte)'9') || v == '_';
+		return matchesFirst(v) || (v>=(byte)'0' && v<=(byte)'9');
 	}
 
 	private static boolean matchesFirst(byte v) {

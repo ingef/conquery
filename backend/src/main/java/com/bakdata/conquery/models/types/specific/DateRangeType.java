@@ -18,10 +18,6 @@ public class DateRangeType extends CType<CDateRange, DateRangeType> {
 	
 	@Override
 	protected CDateRange parseValue(String value) throws ParsingException {
-		return parseISORange(value);
-	}
-	
-	public static CDateRange parseISORange(String value) throws ParsingException {
 		if(value==null) {
 			return null;
 		}

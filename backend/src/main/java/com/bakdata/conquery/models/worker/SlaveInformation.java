@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
-
+ 
 public class SlaveInformation extends MessageSender.Simple<SlaveMessage> {
 	@JsonIgnore @Getter
 	private transient List<JobStatus> jobManagerStatus = Collections.emptyList();

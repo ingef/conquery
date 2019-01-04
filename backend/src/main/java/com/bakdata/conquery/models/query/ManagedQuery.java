@@ -11,10 +11,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -35,7 +37,8 @@ import lombok.extern.slf4j.Slf4j;
 @Getter @Setter @ToString @Slf4j
 public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 
-	private DatasetId dataset;
+	@IdReference
+	private Dataset dataset;
 	private UUID queryId = UUID.randomUUID();
 	private IQuery query;
 	private LocalDateTime creationTime = LocalDateTime.now();
@@ -61,12 +64,12 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		this.namespace = namespace;
 		executingThreads = namespace.getWorkers().size();
 		execution = new CountDownLatch(1);
-		dataset = namespace.getStorage().getDataset().getId();
+		dataset = namespace.getStorage().getDataset();
 	}
 	
 	@Override
 	public ManagedQueryId createId() {
-		return new ManagedQueryId(dataset, queryId);
+		return new ManagedQueryId(dataset.getId(), queryId);
 	}
 
 	public void addResult(ShardResult result) {
@@ -102,7 +105,7 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	}
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {
-		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset));
+		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset.getId()));
 		return Stream.concat(
 			Stream.of("result,dates"),
 			results

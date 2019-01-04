@@ -3,9 +3,10 @@
   "label": "SELECT Test",
   "expectedCsv": "tests/filter/SELECT/expected_SELECT_Filter.csv",
   "content": {
-    "tables":
+    "tables": [
       {
         "csv": "tests/filter/SELECT/content_SELECT_Filter.csv",
+        "name": "select_filter",
         "primaryColumn": {
           "name": "pid",
           "type": "STRING"
@@ -21,21 +22,25 @@
           }
         ]
       }
-
+    ]
   },
   "connector": {
+    "name": "filter_connector",
+    "table": "select_filter",
     "validityDates": {
       "label": "Datum",
-      "column": "table.datum"
+      "column": "select_filter.datum"
     },
     "filter": {
+      "name": "filter",
       "description": "Test SELECT_Filter",
-      "column": "table.value",
-      "type": "SINGLE_SELECT"
+      "column": "select_filter.value",
+      "type": "SELECT"
     }
   },
   "filterValue": {
-    "type": "SELECT",
+    "type": "MULTI_SELECT",
+    "filter": "${dataset}.concepts.the_concept.filter_connector.filter",
     "value": "1"
   }
 }

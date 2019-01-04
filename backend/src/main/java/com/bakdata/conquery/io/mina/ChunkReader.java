@@ -72,18 +72,16 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 				throw new IllegalStateException("Received message of length 0");
 			}
 			
-			try {
+			try  {
 				out.write(coder.decode(chunkedMessage));
 			} catch (Exception e) {
 				log.error("Failed while deserializing the message "
-						+ chunkedMessage
-						+ ":'"
-						+ JacksonUtil.toJsonDebug(chunkedMessage)
-						+ "'.\n\tI tried to create a dump as "
-						+ id
-						+ ".json"
-					, e
-				);
+						  + chunkedMessage
+						  + ":'"
+						  + JacksonUtil.toJsonDebug(chunkedMessage)
+						  + "'.\n\tI tried to create a dump as "
+						  + id
+						  + ".json", e);
 				
 				try (InputStream is = chunkedMessage.createInputStream()) {
 					JsonNode tree = Jackson.BINARY_MAPPER.readTree(is);

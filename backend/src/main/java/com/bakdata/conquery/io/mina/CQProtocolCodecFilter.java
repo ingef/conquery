@@ -29,7 +29,7 @@ import org.apache.mina.filter.codec.RecoverableProtocolDecoderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//see #167  this class is a copy of the one in the mina project
+//FIXME this class is a copy of the one in the mina project
 //it is used because mina on default dumps even very large hex values
 public class CQProtocolCodecFilter extends IoFilterAdapter {
 	/** A logger for this class */
@@ -68,7 +68,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	 * Creates a new instance of ProtocolCodecFilter, without any factory.
 	 * The encoder/decoder factory will be created as an inner class, using
 	 * the two parameters (encoder and decoder).
-	 *
+	 * 
 	 * @param encoder The class responsible for encoding the message
 	 * @param decoder The class responsible for decoding the message
 	 */
@@ -105,7 +105,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	 * The encoder/decoder factory will be created as an inner class, using
 	 * the two parameters (encoder and decoder), which are class names. Instances
 	 * for those classes will be created in this constructor.
-	 *
+	 * 
 	 * @param encoderClass The class responsible for encoding the message
 	 * @param decoderClass The class responsible for decoding the message
 	 */
@@ -204,13 +204,13 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	 * Process the incoming message, calling the session decoder. As the incoming
 	 * buffer might contains more than one messages, we have to loop until the decoder
 	 * throws an exception.
-	 *
+	 * 
 	 *  while ( buffer not empty )
 	 *	try
 	 *	  decode ( buffer )
 	 *	catch
 	 *	  break;
-	 *
+	 * 
 	 */
 	@Override
 	public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {

@@ -52,9 +52,8 @@ public class ImportBits extends WorkerMessage.Slow {
 		
 		BlockFactory factory = imp.getBlockFactory();
 		
+		int count = 0;
 		List<Block> newBlocks = new ArrayList<>();
-		
-		getProgressReporter().setMax(bits.size());
 		for(Bit bit:bits) {
 			try(ByteArrayInputStream input = new ByteArrayInputStream(bytes, bytePos, bit.getSize())) {
 				

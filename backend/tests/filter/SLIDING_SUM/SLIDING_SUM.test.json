@@ -1,0 +1,63 @@
+{
+  "type": "FILTER_TEST",
+  "label": "SLIDING_SUM Test",
+  "expectedCsv": "tests/filter/SLIDING_SUM/expected_SLIDING_SUM_Filter.csv",
+  "dateRange": {
+    "min": "2015-03-03",
+    "max": "2015-05-20"
+  },
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/filter/SLIDING_SUM/content_SLIDING_SUM_Filter.csv",
+        "name": "sliding_sum_filter",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "date_range",
+            "type": "DATE_RANGE"
+          },
+          {
+            "name": "value",
+            "type": "REAL"
+          },
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "maximum_days",
+            "type": "INTEGER"
+          }
+        ]
+      }
+    ]
+  },
+  "connector": {
+    "name": "filter_connector",
+    "table": "sliding_sum_filter",
+    "validityDates": {
+      "label": "Datum",
+      "column": "sliding_sum_filter.datum"
+    },
+    "filter": {
+      "name": "filter",
+      "description": "Test SLIDING_SUM_Filter",
+      "dateRangeColumn": "sliding_sum_filter.date_range",
+      "valueColumn": "sliding_sum_filter.value",
+      "maximumDaysColumn": "sliding_sum_filter.maximum_days",
+      "type": "SLIDING_SUM"
+    }
+  },
+  "filterValue": {
+    "type": "REAL_RANGE",
+    "filter": "${dataset}.concepts.the_concept.filter_connector.filter",
+    "value": {
+      "min": 5,
+      "max": 10
+    }
+  }
+}

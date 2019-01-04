@@ -11,7 +11,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * This condition requires each value to start with one of the given values.
+ * This condition requires each value to start with one of the given values. 
  */
 @CPSType(id="PREFIX_LIST", base=CTCondition.class)
 public class PrefixCondition implements CTCondition {

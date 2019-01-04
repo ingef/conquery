@@ -9,19 +9,18 @@ import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
+import com.bakdata.conquery.models.concepts.filters.GroupFilter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.query.aggregators.filter.diffsum.DecimalDiffSumFilterNode;
+import com.bakdata.conquery.models.query.aggregators.filter.diffsum.IntegerDiffSumFilterNode;
+import com.bakdata.conquery.models.query.aggregators.filter.diffsum.MoneyDiffSumFilterNode;
+import com.bakdata.conquery.models.query.aggregators.filter.diffsum.RealDiffSumFilterNode;
+import com.bakdata.conquery.models.query.aggregators.filter.sum.DecimalSumFilterNode;
+import com.bakdata.conquery.models.query.aggregators.filter.sum.IntegerSumFilterNode;
+import com.bakdata.conquery.models.query.aggregators.filter.sum.MoneySumFilterNode;
+import com.bakdata.conquery.models.query.aggregators.filter.sum.RealSumFilterNode;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.filter.RangeFilterNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.DecimalDiffSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.IntegerDiffSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.MoneyDiffSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.RealDiffSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.DecimalSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.Getter;
@@ -35,9 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "SUM", base = Filter.class)
-public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
+public class SumFilter extends GroupFilter<FilterValue<? extends IRange<?, ?>>> {
 
-	
+	private static final long serialVersionUID = 1L;
 
 	@Valid
 	@NotNull
@@ -55,7 +54,7 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		Column column = getColumn();
 		switch (column.getType()) {
-			case MONEY: //see #171  introduce money filter into frontend
+			case MONEY: //TODO introduce money filter into frontend
 			case INTEGER: {
 				f.setType(FEFilterType.INTEGER_RANGE);
 				return;
@@ -70,6 +69,7 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 		}
 	}
 
+	@Override
 	public Column[] getRequiredColumns() {
 		if (getSubtractColumn() == null) {
 			return new Column[]{getColumn()};
@@ -81,20 +81,16 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 
 	@Override
 	public FilterNode createAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
-		return new RangeFilterNode(this, filterValue, getAggregator(filterValue));
-	}
-
-	private Aggregator<?> getAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
 		if (getSubtractColumn() == null) {
 			switch (getColumn().getType()) {
 				case MONEY:
-					return new MoneySumAggregator(getColumn());
+					return new MoneySumFilterNode(this, filterValue);
 				case INTEGER:
-					return new IntegerSumAggregator(getColumn());
+					return new IntegerSumFilterNode(this, filterValue);
 				case DECIMAL:
-					return new DecimalSumAggregator(getColumn());
+					return new DecimalSumFilterNode(this, filterValue);
 				case REAL:
-					return new RealSumAggregator(getColumn());
+					return new RealSumFilterNode(this, filterValue);
 				default:
 					throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
 			}
@@ -102,13 +98,13 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 		else {
 			switch (getColumn().getType()) {
 				case MONEY:
-					return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
+					return new MoneyDiffSumFilterNode(this, filterValue);
 				case INTEGER:
-					return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
+					return new IntegerDiffSumFilterNode(this, filterValue);
 				case DECIMAL:
-					return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
+					return new DecimalDiffSumFilterNode(this, filterValue);
 				case REAL:
-					return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
+					return new RealDiffSumFilterNode(this, filterValue);
 				default:
 					throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
 			}

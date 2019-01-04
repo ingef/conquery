@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.concepts.filters;
 
+import java.io.Serializable;
+
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -25,8 +27,10 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public abstract class Filter<FE_TYPE extends FilterValue<?>> extends Labeled<FilterId> {
+public abstract class Filter<FE_TYPE extends FilterValue<?>> extends Labeled<FilterId> implements Serializable {
 
+	private static final long serialVersionUID = 1L;
+	
 	private String unit;
 	private String description;
 	@JsonBackReference

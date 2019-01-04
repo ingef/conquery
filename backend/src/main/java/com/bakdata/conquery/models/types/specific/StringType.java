@@ -14,6 +14,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -45,7 +46,7 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	}
 	
 	@Override
-	protected Integer parseValue(String value) {
+	protected Integer parseValue(String value) throws ParsingException {
 		return dictionary.add(value);
 	}
 
@@ -53,11 +54,6 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	@Override
 	public String createScriptValue(Integer value) {
 		return dictionary.getElement(value);
-	}
-
-	@Override
-	public int getStringId(String string) {
-		return dictionary.getId(string);
 	}
 
 	@Override

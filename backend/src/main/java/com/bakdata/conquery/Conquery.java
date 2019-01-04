@@ -10,7 +10,6 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.preproc.DateFormats;
 
-import ch.qos.logback.classic.Level;
 import io.dropwizard.Application;
 import io.dropwizard.Bundle;
 import io.dropwizard.ConfiguredBundle;
@@ -52,7 +51,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				//see #142  configuration.initializeDatePatterns();
+				//TODO configuration.initializeDatePatterns();
 			}
 			
 			@Override
@@ -71,11 +70,6 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void initialize(Bootstrap<?> bootstrap) {}
 		});
-	}
-	
-	@Override
-	protected Level bootstrapLogLevel() {
-		return Level.INFO;
 	}
 
 	@Override

@@ -7,11 +7,11 @@
         "root": {
             "type": "CONCEPT",
             "ids": [
-              "${dataset}.test_tree.test_child1"
+              "${dataset}.concepts.test_tree.test_child1"
             ],
             "tables": [
                 {
-                  "id": "${dataset}.test_tree.test_column",
+                  "id": "${dataset}.concepts.test_tree.test_column",
                     "filters": []
                 }
             ]

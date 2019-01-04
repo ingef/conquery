@@ -69,9 +69,9 @@ public class FileTreeReduction {
 
 	private static FileTreeReduction build(Path root, File file, int depth) {
 		FileTreeReduction ftr = new FileTreeReduction(
-			file.getName(),
-			file,
-			depth,
+			file.getName(), 
+			file, 
+			depth, 
 			file.isFile(),
 			Joiner.on('/').join(root.relativize(file.toPath()).iterator())
 		);

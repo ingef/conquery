@@ -1,18 +1,17 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Set;
-
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.entity.EntityRow;
+import com.bakdata.conquery.models.query.queryplan.OpenResult;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.google.common.collect.Multiset;
 
 public class ConceptNode extends QPChainNode {
 
@@ -36,7 +35,7 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public boolean nextEvent(Block block, int event) {
+	protected OpenResult nextEvent(Block block, int event) {
 		if (active) {
 
 			int[] mostSpecificChildren;
@@ -44,21 +43,21 @@ public class ConceptNode extends QPChainNode {
 			if (currentRow.getCBlock().getMostSpecificChildren() != null
 				&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
 
-				for (ConceptElement ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
+				for (ConceptElement ce : concepts) { //TODO we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.matchesPrefix(mostSpecificChildren)) {
 						return getChild().aggregate(block, event);
 					}
 				}
 			}
 			else {
-				for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
+				for (ConceptElement ce : concepts) { //TODO we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.getConcept() == ce) {
 						return getChild().aggregate(block, event);
 					}
 				}
 			}
 		}
-		return true;
+		return OpenResult.MAYBE;
 	}
 	
 	@Override
@@ -72,11 +71,12 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		super.collectRequiredTables(requiredTables);
-		requiredTables.add(table.getResolvedConnector().getTable().getId());
+	public Multiset<Table> collectRequiredTables() {
+		Multiset<Table> result = getChild().collectRequiredTables();
+		result.add(table.getResolvedConnector().getTable());
+		return result;
 	}
-	
+
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		active = table.getResolvedConnector().getTable().equals(currentTable);

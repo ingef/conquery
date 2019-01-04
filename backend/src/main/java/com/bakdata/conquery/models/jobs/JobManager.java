@@ -8,14 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class JobManager implements Managed {
-	private final JobExecutor slowExecutor;
-	private final JobExecutor fastExecutor;
-	
-	
-	public JobManager(String labelSuffix) {
-		slowExecutor = new JobExecutor("slow "+labelSuffix);
-		fastExecutor = new JobExecutor("fast "+labelSuffix);
-	}
+	private final ThreadGroup threadGroup = new ThreadGroup("Job Manager");
+	private final JobExecutor slowExecutor = new JobExecutor(threadGroup, "slow");
+	private final JobExecutor fastExecutor = new JobExecutor(threadGroup, "fast");
 
 	public void addSlowJob(Job job) {
 		log.info("Added job {}", job.getLabel());

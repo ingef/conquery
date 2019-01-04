@@ -15,8 +15,8 @@ import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
-import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
 import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -49,11 +48,11 @@ public class CQConcept implements CQElement {
 	private List<Select> select = Collections.emptyList();
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	public QPNode createQueryPlan(CentralRegistry registry, QueryPlan plan) {
 		ConceptElement[] concepts = ids
 			.stream()
 			.map(id ->
-				context.getCentralRegistry().resolve(id.findConcept()).getElementById(id)
+				registry.resolve(id.findConcept()).getElementById(id)
 			)
 			.toArray(ConceptElement[]::new);
 		
@@ -66,21 +65,18 @@ public class CQConcept implements CQElement {
 		for(CQTable t : tables) {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
 			
-			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
+			List<QPNode> children = new ArrayList<>();
 			//add filter to children
 			for(FilterValue<?> f : t.getFilters()) {
 				FilterNode<?,?> agg = ((Filter)f.getFilter()).createAggregator(f);
-				if(agg != null) {
-					filters.add(agg);
-				}
+				if(agg != null)
+					children.add(agg);
 			}
-			
-			List<QPNode> aggregators = new ArrayList<>();
 			//add aggregators
-			aggregators.addAll(conceptAggregators);
-			aggregators.addAll(createConceptAggregators(plan, t.getSelect()));
-			aggregators.add(new SpecialDateUnionAggregatorNode(
-					t.getResolvedConnector().getTable().getId(),
+			children.addAll(conceptAggregators);
+			children.addAll(createConceptAggregators(plan, t.getSelect()));
+			children.add(new SpecialDateUnionAggregatorNode(
+					t.getResolvedConnector().getTable(),
 					(SpecialDateUnion) plan.getAggregators().get(0)
 			));
 			
@@ -89,20 +85,12 @@ public class CQConcept implements CQElement {
 					concepts,
 					t,
 					selectValidityDateColumn(t),
-					conceptChild(filters, aggregators)
+					AndNode.of(children)
 				)
 			);
 		}
 		
 		return AndNode.of(tableNodes);
-	}
-
-	private QPNode conceptChild(List<FilterNode<?, ?>> filters, List<QPNode> aggregators) {
-		QPNode result = AndNode.of(aggregators);
-		if(!filters.isEmpty()) {
-			result = new FiltersNode(filters, result);
-		}
-		return result;
 	}
 
 	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {

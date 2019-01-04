@@ -41,14 +41,14 @@ public class StringEncodingTest {
 		StringTypeEncoded.Encoding encoding = StringTypeEncoded.Encoding.Base64;
 
 		return Stream.generate(() -> randomUUID(random).toString().replace("-", ""))
-				.map(uuid -> DynamicTest.dynamicTest(uuid, () -> {
-					byte[] decoded = encoding.decode(uuid);
-					String encoded = encoding.encode(decoded);
+					 .map(uuid -> DynamicTest.dynamicTest(uuid, () -> {
+						 byte[] decoded = encoding.decode(uuid);
+						 String encoded = encoding.encode(decoded);
 
-					assertThat(encoded).isEqualTo(uuid);
-					assertThat(decoded.length).isLessThan(uuid.length());
-				}))
-				.limit(100);
+						 assertThat(encoded).isEqualTo(uuid);
+						 assertThat(decoded.length).isLessThan(uuid.length());
+					 }))
+					 .limit(100);
 	}
 
 	@TestFactory
@@ -74,18 +74,18 @@ public class StringEncodingTest {
 		stringType.getDictionary().tryCompress();
 
 		return parsed.keySet().stream()
-			.map(parsedId -> DynamicTest.dynamicTest(parsed.get(parsedId), () -> {
+					 .map(parsedId -> DynamicTest.dynamicTest(parsed.get(parsedId), () -> {
 
-			String unparsed = stringType.createScriptValue(
-				type.transformFromMajorType(stringType, parsedId)
-			);
+						 String unparsed = stringType.createScriptValue(
+								 type.transformFromMajorType(stringType, parsedId)
+						 );
 
-			assertThat(unparsed)
-				.isNotNull()
-				.isNotEmpty()
-				.isEqualTo(parsed.get(parsedId));
-			}))
-			.limit(100);
+						 assertThat(unparsed)
+								 .isNotNull()
+								 .isNotEmpty()
+								 .isEqualTo(parsed.get(parsedId));
+					 }))
+					 .limit(100);
 	}
 
 	@Test

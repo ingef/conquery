@@ -17,6 +17,7 @@ import org.junit.jupiter.api.Tag;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Concepts;
 import com.bakdata.conquery.models.concepts.tree.GroovyIndexedTest;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
@@ -37,13 +38,15 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Tag("slow")
-@Disabled //see #179  Find fix for surefire plugin not understanding tags
+@Disabled //TODO Find fix for surefire plugin not understanding tags
 public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 
 	protected TreeConcept referenceConcept;
 
 	protected TreeConcept newConcept;
 	protected CentralRegistry registry;
+
+	protected Concepts concepts;
 
 	private Dataset dataset;
 
@@ -76,13 +79,13 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 
 		// load old tree concept before altering it to force loading of indexed concept.
 		referenceConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class)))
-								.readValue(node);
+								   .readValue(node);
 
-		referenceConcept.setDataset(dataset.getId());
+		referenceConcept.setConcepts(concepts);
 		referenceConcept.initElements(Validators.newValidator());
 
 		newConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
-		newConcept.setDataset(dataset.getId());
+		newConcept.setConcepts(concepts);
 		newConcept.initElements(Validators.newValidator());
 
 		postprocessConcepts();
@@ -92,12 +95,16 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 	public void initializeDataset() {
 		registry = new CentralRegistry();
 
+		concepts = new Concepts();
+
 		Table table = new Table();
 
 		table.setName("the_table");
 		dataset = new Dataset();
 
 		dataset.setName("the_dataset");
+
+		concepts.setDataset(dataset);
 
 		registry.register(dataset);
 
@@ -115,16 +122,15 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 	}
 
 	//@TestFactory
-	// //see #180  Re-enable these tests properly
+	// TODO Re-enable these tests properly
 	public Stream<DynamicTest> createTests(){
 		return Arrays
-			.stream(getIterations())
-			.mapToObj(iter ->
-				dynamicTest(
-					String.format("%s, %d iterations", getName(), iter),
-					() -> compareExecutionSpeed(iter)
-				)
-		);
+				   .stream(getIterations())
+				   .mapToObj(iter ->
+									 dynamicTest(
+											 String.format("%s, %d iterations", getName(), iter),
+											 () -> compareExecutionSpeed(iter)
+									 ));
 	}
 
 	public void compareExecutionSpeed(int iterations) throws JSONException {

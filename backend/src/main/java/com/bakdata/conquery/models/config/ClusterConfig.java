@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.config;
 import java.net.InetAddress;
 
 import javax.validation.Valid;
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import io.dropwizard.Configuration;
@@ -19,7 +18,5 @@ public class ClusterConfig extends Configuration {
 	private InetAddress masterURL = InetAddress.getLoopbackAddress();
 	@Valid @NotNull
 	private MinaConfig mina = new MinaConfig();
-	@Min(1)
-	private int entityBucketSize = 100;
 	
 }

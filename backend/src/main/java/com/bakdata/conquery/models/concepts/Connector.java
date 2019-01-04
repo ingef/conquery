@@ -78,11 +78,11 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@JsonIgnore
 	public Column getSelectableDate(String name) {
 		return validityDates
-						.stream()
-						.filter(vd -> vd.getName().equals(name))
-						.map(ValidityDate::getColumn)
-						.findAny()
-						.orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
+					   .stream()
+					   .filter(vd -> vd.getName().equals(name))
+					   .map(ValidityDate::getColumn)
+					   .findAny()
+					   .orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
 	}
 
 	public CDateRange extractValidityDates(Block block, int event) {
@@ -95,7 +95,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 				.reduce(Range::span)
 				.orElse(null);
 				*/
-		//see #157
+		//TODO
 	}
 
 	@ValidationMethod2

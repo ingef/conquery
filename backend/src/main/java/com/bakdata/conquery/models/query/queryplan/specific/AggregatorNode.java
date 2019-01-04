@@ -1,20 +1,18 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Set;
-
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.queryplan.OpenResult;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.google.common.collect.Multiset;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.ToString;
 
-@RequiredArgsConstructor @Getter @ToString(of = "aggregator")
+@RequiredArgsConstructor @Getter
 public class AggregatorNode<T> extends QPNode  {
 
 	private final int position;
@@ -22,10 +20,10 @@ public class AggregatorNode<T> extends QPNode  {
 	private boolean triggered = false;
 	
 	@Override
-	public boolean nextEvent(Block block, int event) {
+	protected OpenResult nextEvent(Block block, int event) {
 		triggered = true;
-		aggregator.aggregateEvent(block, event);
-		return true;
+		aggregator.aggregateNextEvent(block, event);
+		return OpenResult.MAYBE;
 	}
 
 	@Override
@@ -40,8 +38,8 @@ public class AggregatorNode<T> extends QPNode  {
 	}
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		aggregator.collectRequiredTables(requiredTables);
+	public Multiset<Table> collectRequiredTables() {
+		return aggregator.collectRequiredTables();
 	}
 	
 	@Override

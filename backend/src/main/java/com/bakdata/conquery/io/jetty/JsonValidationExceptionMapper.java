@@ -20,9 +20,9 @@ public class JsonValidationExceptionMapper implements ExceptionMapper<Constraint
 	public Response toResponse(ConstraintViolationException exception) {
 
 		return Response.status(422)
-						.type(MediaType.APPLICATION_JSON_TYPE)
-						.entity(new ErrorMessage(422, Joiner.on(" AND ").join(Iterables.transform(exception.getConstraintViolations(), this::constraintMessageBuilder))))
-						.build();
+					   .type(MediaType.APPLICATION_JSON_TYPE)
+					   .entity(new ErrorMessage(422, Joiner.on(" AND ").join(Iterables.transform(exception.getConstraintViolations(), this::constraintMessageBuilder))))
+					   .build();
 	}
 	
 	private <T> String constraintMessageBuilder(ConstraintViolation<T> violation) {

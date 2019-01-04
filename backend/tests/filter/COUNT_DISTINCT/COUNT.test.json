@@ -3,37 +3,45 @@
   "label": "COUNT distinct Test",
   "expectedCsv": "tests/filter/COUNT_DISTINCT/expected_COUNT_Filter.csv",
   "content": {
-    "tables": {
-      "csv": "tests/filter/COUNT/content_COUNT_Filter.csv",
-      "primaryColumn": {
-        "name": "pid",
-        "type": "STRING"
-      },
-      "columns": [
-        {
-          "name": "nr",
-          "type": "INTEGER"
+    "tables": [
+      {
+        "csv": "tests/filter/COUNT/content_COUNT_Filter.csv",
+        "name": "count_filter",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
         },
-        {
-          "name": "datum",
-          "type": "DATE_RANGE"
-        }
-      ]
-    }
+        "columns": [
+          {
+            "name": "nr",
+            "type": "INTEGER"
+          },
+          {
+            "name": "datum",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
   },
   "connector": {
+    "name": "filter_connector",
+    "table": "count_filter",
     "validityDates": {
       "label": "Datum",
-      "column": "table.datum"
+      "column": "count_filter.datum"
     },
     "filter": {
-      "column": "table.nr",
+      "name": "filter",
+      "description": "Test count_filter",
+      "column": "count_filter.nr",
       "distinct": "true",
       "type": "COUNT"
     }
   },
   "filterValue": {
     "type": "INTEGER_RANGE",
+    "filter": "${dataset}.concepts.the_concept.filter_connector.filter",
     "value": {
       "min": 5,
       "max": 6

@@ -5,18 +5,16 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
@@ -30,41 +28,23 @@ public class QueryExecutor implements Closeable {
 	private final ListeningExecutorService pool;
 	
 	public QueryExecutor(ConqueryConfig config) {
-		this.pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
+		pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
 	}
 
-	public ShardResult execute(QueryPlanContext context, ManagedQuery query) {
-		QueryPlan plan = query.getQuery().createQueryPlan(context);
-		return execute(
-			context.getBlockManager(),
-			new QueryContext(context.getWorker().getStorage()),
-			query.getId(),
-			plan,
-			pool
-		);
+	public ShardResult execute(Worker context, ManagedQuery query) {
+		QueryPlan plan = query.getQuery().createQueryPlan(context.getStorage().getCentralRegistry());
+		return execute(context.getStorage().getBlockManager(), query.getId(), plan, pool);
 	}
 	
-	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedQueryId queryId, QueryPlan plan, ListeningExecutorService executor) {
+	public static ShardResult execute(BlockManager blockManager, ManagedQueryId queryId, QueryPlan plan, ListeningExecutorService executor) {
 		Collection<Entity> entries = blockManager.getEntities().values();
-		if(entries.isEmpty()) {
-			log.warn("entries for query {} are empty", queryId);
-		}
 		ShardResult result = new ShardResult();
 		result.setQueryId(queryId);
 		
-		
+		QueryContext ctx = new QueryContext();
 		List<ListenableFuture<EntityResult>> futures = new ArrayList<>(entries.size());
-		
-		//collect required tables
-		Set<Table> requiredTables = plan
-			.getRoot()
-			.collectRequiredTables()
-			.stream()
-			.map(context.getStorage().getDataset().getTables()::getOrFail)
-			.collect(Collectors.toSet());
-		
 		for(Entity entity:entries) {
-			futures.add(executor.submit(new QueryPart(context, plan, requiredTables, entity)));
+			futures.add(executor.submit(new QueryPart(ctx, plan, entity)));
 		}
 		result.setFuture(Futures.allAsList(futures));
 		
@@ -78,8 +58,8 @@ public class QueryExecutor implements Closeable {
 		try {
 			boolean success = pool.awaitTermination(1, TimeUnit.DAYS);
 			if (!success && log.isDebugEnabled()) {
-				log.error("Timeout has elapsed before termination completed for executor {}", pool);
-			}
+	            log.error("Timeout has elapsed before termination completed for executor {}", pool);
+	        }
 		} catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}

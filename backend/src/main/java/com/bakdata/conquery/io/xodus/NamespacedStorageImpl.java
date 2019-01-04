@@ -8,7 +8,6 @@ import java.util.Optional;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -28,6 +27,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.google.common.base.Stopwatch;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -77,10 +77,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		this.concepts =	new IdentifiableStore<Concept<?>>(centralRegistry, StoreInfo.CONCEPTS.cached(this)) {
 			@Override
 			protected void addToRegistry(CentralRegistry centralRegistry, Concept<?> concept) throws ConfigurationException, JSONException {
-				if (concept.getDataset() == null) {
-					Dataset ds = centralRegistry.resolve(concept.getId().getDataset());
-					concept.setDataset(ds.getId());
-					ds.addConcept(concept);
+				if (concept.getConcepts() == null) {
+					Dataset ds = centralRegistry.resolve(concept.getId().getConcepts().getDataset());
+					concept.setConcepts(ds.getConcepts());
+					ds.getConcepts().addConcept(concept);
 				}
 				concept.initElements(validator);
 				for (Connector c : concept.getConnectors()) {
@@ -91,7 +91,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 			@Override
 			protected void removeFromRegistry(CentralRegistry centralRegistry, Concept<?> concept) {
-				//see #146  remove from Dataset.concepts
+				//TODO remove from Dataset.concepts
 				for(Connector c:concept.getConnectors()) {
 					c.getAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
 					centralRegistry.remove(c.getId());
@@ -130,11 +130,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	public Dictionary getDictionary(DictionaryId id) {
 		return dictionaries.get(id);
-	}
-	
-	@Override
-	public Dictionary getPrimaryDictionary() {
-		return dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()));
 	}
 
 	@Override
@@ -184,9 +179,14 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
+	public void addConcept(Concept<?> concept) throws JSONException {
+		concepts.add(concept);
+	}
+
+	@Override
 	public Concept<?> getConcept(ConceptId id) {
 		return Optional.ofNullable(concepts.get(id))
-			.orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
+					   .orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
 	}
 
 	@Override
@@ -203,6 +203,4 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Collection<Concept<?>> getAllConcepts() {
 		return concepts.getAll();
 	}
-	
-	
 }

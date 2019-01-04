@@ -17,29 +17,29 @@ import lombok.Data;
 @CPSType(id = "QUARTER_TO_FIRST_DAY", base = Output.class)
 public class QuarterToFirstDayOutput extends Output {
 
-	private static final long serialVersionUID = 1L;
+    private static final long serialVersionUID = 1L;
 
-	@Min(0)
-	private int yearColumn;
-	@Min(0)
-	private int quarterColumn;
+    @Min(0)
+    private int yearColumn;
+    @Min(0)
+    private int quarterColumn;
 
-	@Override
-	public List<Object> createOutput(CType<?, ?> type, String[] row, int source, long sourceLine) {
-		if (row[yearColumn] == null || row[quarterColumn] == null) {
-			return NULL;
-		} else {
-			return Collections.singletonList(
-				CDate.ofLocalDate(QuarterUtils.getFirstDayOfQuarter(
-						Integer.parseInt(row[yearColumn]),
-						Integer.parseInt(row[quarterColumn]))
-				)
-			);
-		}
-	}
+    @Override
+    public List<Object> createOutput(CType<?, ?> type, String[] row, int source, long sourceLine) {
+        if (row[yearColumn] == null || row[quarterColumn] == null) {
+            return NULL;
+        } else {
+            return Collections.singletonList(
+            	CDate.ofLocalDate(QuarterUtils.getFirstDayOfQuarter(
+            			Integer.parseInt(row[yearColumn]), 
+            			Integer.parseInt(row[quarterColumn]))
+            	)
+            );
+        }
+    }
 
-	@Override
-	public MajorTypeId getResultType() {
-		return MajorTypeId.DATE;
-	}
+    @Override
+    public MajorTypeId getResultType() {
+        return MajorTypeId.DATE;
+    }
 }

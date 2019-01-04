@@ -9,6 +9,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -21,7 +22,7 @@ public class UpdateConcept extends WorkerMessage.Slow {
 	@Override
 	public void react(Worker context) throws Exception {
 		synchronized (context.getStorage()) {
-			concept.setDataset(context.getStorage().getDataset().getId());
+			concept.setConcepts(context.getStorage().getDataset().getConcepts());
 			context.getStorage().updateConcept(concept);
 		}
 	}

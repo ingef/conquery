@@ -159,6 +159,31 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
 		return allChildren.getOrFail(conceptTreeChildId);
 	}
+	
+	public ConceptTreeChild getElementByName(ConceptTreeChildId conceptName, int namePos) {
+		//TODO
+		throw new UnsupportedOperationException();
+		/*
+		int pos = namePos;
+		List<ConceptTreeChild> nodes = getChildren();
+		ConceptTreeChild lastNode = null;
+		while(pos<conceptName.getParts().size()) {
+			final int id = pos;
+			Optional<ConceptTreeChild> res = nodes
+					.stream()
+					.filter(n->n.getName().equals(conceptName.getParts().get(id)))
+					.findAny();
+			if(res.isPresent()) {
+				pos++;
+				lastNode = res.get();
+				nodes = lastNode.getChildren();
+			}
+			else {
+				throw new NoSuchElementException("Could not resolve the concept "+conceptName);
+			}
+		}
+		return lastNode;*/
+	}
 
 	/*
 	public Stream<ConceptTreeChild> streamTreeChildren() {
