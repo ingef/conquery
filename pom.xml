@@ -29,18 +29,6 @@
 		<module>model-translator</module>
     </modules>
     
-    <distributionManagement>
-        <snapshotRepository>
-            <id>bakdata-snapshot</id>
-            <name>bakdata AWS S3 Snapshot Repository</name>
-            <url>s3://bakdata-maven/snapshot</url>
-        </snapshotRepository>
-        <repository>
-            <id>bakdata-release</id>
-            <name>bakdata AWS S3 Release Repository</name>
-            <url>s3://bakdata-maven/release</url>
-        </repository>
-    </distributionManagement>
     <dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -75,13 +63,6 @@
 	</dependencies>
     
     <build>
-        <extensions>
-            <extension>
-                <groupId>org.springframework.build</groupId>
-                <artifactId>aws-maven</artifactId>
-                <version>5.0.0.RELEASE</version>
-            </extension>
-        </extensions>
         <plugins>
             <plugin>
                 <groupId>external.atlassian.jgitflow</groupId>
