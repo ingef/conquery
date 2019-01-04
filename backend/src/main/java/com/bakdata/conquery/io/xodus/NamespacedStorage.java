@@ -18,7 +18,6 @@ public interface NamespacedStorage extends ConqueryStorage {
 	void updateDictionary(Dictionary dict) throws JSONException;
 	void removeDictionary(DictionaryId id);
 	Dictionary computeDictionary(DictionaryId id) throws JSONException;
-	Dictionary getPrimaryDictionary();
 	
 	void addImport(Import imp) throws JSONException;
 	Import getImport(ImportId id);

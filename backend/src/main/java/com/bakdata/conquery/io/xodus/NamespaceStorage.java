@@ -5,6 +5,8 @@ import java.io.File;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -26,4 +28,7 @@ public interface NamespaceStorage extends NamespacedStorage {
 	
 	MasterMetaStorage getMetaStorage();
 	void setMetaStorage(@NonNull MasterMetaStorage storage);
+	
+	IdMapping getIdMapping();
+	void updateIdMapping(IdMapping idMapping) throws JSONException;
 }

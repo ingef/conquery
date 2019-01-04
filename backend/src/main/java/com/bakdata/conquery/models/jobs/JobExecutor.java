@@ -61,9 +61,8 @@ public class JobExecutor extends Thread {
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
 					try {
-						log.trace("{} started job {}", this.getName(), job);
 						job.execute();
-						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+						log.trace("Finished fast job {} within {}", job, timer.stop());
 						currentJob.set(null);
 					} catch (Throwable e) {
 						log.error("Fast Job "+job+" failed", e);

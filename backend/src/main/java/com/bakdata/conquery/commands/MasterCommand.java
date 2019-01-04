@@ -1,5 +1,8 @@
 package com.bakdata.conquery.commands;
 
+import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
+
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -21,6 +24,8 @@ import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.auth.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -29,18 +34,23 @@ import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.MasterMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.NamespaceCollection;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminUIServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import io.dropwizard.auth.AuthDynamicFeature;
+import io.dropwizard.auth.AuthValueFactoryProvider;
 
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @Getter
+@Slf4j
+@Getter
 public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	private IoAcceptor acceptor;
@@ -52,31 +62,35 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private ScheduledExecutorService maintenanceService;
 	private Namespaces namespaces = new Namespaces();
 	private Environment environment;
+	private AuthDynamicFeature authDynamicFeature;
 
 	public void run(ConqueryConfig config, Environment environment) throws IOException, JSONException {
+		//inject namespaces into the objectmapper
+		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
+			.add(NamespaceCollection.class, namespaces);
+			
 		this.jobManager = new JobManager("master");
 		this.environment = environment;
-		
+
 		RESTServer.configure(config, environment.jersey().getResourceConfig());
-		
+
 		environment.lifecycle().manage(jobManager);
-		
-		validator = environment.getValidator();
+
+		this.validator = environment.getValidator();
 		this.config = config;
-		
-		maintenanceService = environment
+
+		this.maintenanceService = environment
 			.lifecycle()
 			.scheduledExecutorService("Maintenance Service")
 			.build();
 		
-		log.info("Started meta storage");
-		
 		environment.lifecycle().manage(this);
-		
-		for(File directory : config.getStorage().getDirectory().listFiles()) {
-			if(directory.getName().startsWith("dataset_")) {
+
+		log.info("Started meta storage");
+		for (File directory : config.getStorage().getDirectory().listFiles()) {
+			if (directory.getName().startsWith("dataset_")) {
 				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
-				if(datasetStorage != null) {
+				if (datasetStorage != null) {
 					Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
 					ns.initMaintenance(maintenanceService);
 					namespaces.add(ns);
@@ -84,14 +98,27 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			}
 		}
 		
-		storage = new MasterMetaStorageImpl(environment.getValidator(), config.getStorage());
-		for(Namespace sn : namespaces.getNamespaces()) {
+		
+		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
+		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
-		
+
+		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(storage, config.getAuthentication());
+		environment.jersey().register(new AuthValueFactoryProvider.Binder(User.class));
+
+		log.info("Registering ResourcesProvider");
+		for (Class<?> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
+			try {
+				((ResourcesProvider) resourceProvider.getConstructor().newInstance()).registerResources(this);
+			} catch (Exception e) {
+				log.error("Failed to register Resource {}", e);
+			}
+		}
+
 		admin = new AdminUIServlet();
 		admin.register(this);
-		
+
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
@@ -99,44 +126,42 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
+		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 		namespaces.getSlaves().put(session.getRemoteAddress(), new SlaveInformation(new NetworkSession(session)));
 	}
 
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
+		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
 	}
 
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
-		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
+		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
 		log.error("cought exception", cause);
 	}
-	
+
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
-		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
-		if(message instanceof MasterMessage) {
+		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
+		if (message instanceof MasterMessage) {
 			MasterMessage mrm = (MasterMessage) message;
 			log.trace("Master recieved {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(mrm, new NetworkMessageContext.Master (
+			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(mrm, new NetworkMessageContext.Master(
 				jobManager,
 				new NetworkSession(session),
 				namespaces
 			));
-			
-			if(mrm.isSlowMessage()) {
+
+			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
-			}
-			else {
+			} else {
 				jobManager.addFastJob(job);
 			}
-		}
-		else {
+		} else {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
 		}
@@ -157,21 +182,21 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	public void stop() throws Exception {
 		try {
 			acceptor.dispose();
-		} catch(Exception e) {
-			log.error(acceptor+" could not be closed", e);
+		} catch (Exception e) {
+			log.error(acceptor + " could not be closed", e);
 		}
-		for(Namespace namespace : namespaces.getNamespaces()) {
+		for (Namespace namespace : namespaces.getNamespaces()) {
 			try {
 				namespace.getStorage().close();
-			} catch(Exception e) {
-				log.error(namespace+" could not be closed", e);
+			} catch (Exception e) {
+				log.error(namespace + " could not be closed", e);
 			}
-			
+
 		}
 		try {
 			storage.close();
-		} catch(Exception e) {
-			log.error(storage+" could not be closed", e);
+		} catch (Exception e) {
+			log.error(storage + " could not be closed", e);
 		}
 	}
 }

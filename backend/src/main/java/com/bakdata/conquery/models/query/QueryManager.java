@@ -2,9 +2,11 @@ package com.bakdata.conquery.models.query;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.UUID;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -25,6 +27,10 @@ public class QueryManager {
 	private final IdMap<ManagedQueryId, ManagedQuery> queries = new IdMap<>();
 
 	public void initMaintenance(ScheduledExecutorService service) {
+		if (service == null) {
+			return;
+		}
+
 		service.scheduleAtFixedRate(
 			this::maintain,
 			0,
@@ -32,33 +38,33 @@ public class QueryManager {
 			TimeUnit.MINUTES
 		);
 	}
-	
+
 	public void maintain() {
 		LocalDateTime threshhold = LocalDateTime.now().minus(10L, ChronoUnit.MINUTES);
-		
-		for(ManagedQuery mq : queries.values()) {
-			if(mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshhold)) {
+
+		for (ManagedQuery mq : queries.values()) {
+			if (mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshhold)) {
 				queries.remove(mq.getId());
 			}
 		}
 	}
 
 	public ManagedQuery createQuery(IQuery query) throws JSONException {
-		return createQuery(query, UUID.randomUUID());
-	}
-	
-	public ManagedQuery createQuery(IQuery query, UUID queryId) throws JSONException {
-		query = query.resolve(new QueryResolveContext(
-			namespace.getStorage().getMetaStorage(),
-			namespace
-		));
 		ManagedQuery managed = new ManagedQuery(query, namespace);
-		managed.setQueryId(queryId);
 		namespace.getStorage().getMetaStorage().addQuery(managed);
 		queries.add(managed);
 		
+		Map<ManagedQueryId, IQuery> requirements = managed
+			.getQuery()
+			.collectRequiredQueries()
+			.stream()
+			.collect(Collectors.toUnmodifiableMap(
+				Function.identity(),
+				id->namespace.getStorage().getMetaStorage().getQuery(id).getQuery()
+			));
+		
 		for(WorkerInformation worker : namespace.getWorkers()) {
-			worker.send(new ExecuteQuery(managed));
+			worker.send(new ExecuteQuery(managed, requirements));
 		}
 		return managed;
 	}
@@ -66,6 +72,10 @@ public class QueryManager {
 	public void addQueryResult(ShardResult result) {
 		ManagedQuery managedQuery = queries.getOrFail(result.getQueryId());
 		managedQuery.addResult(result);
+	}
+
+	public ManagedQuery getQuery(ManagedQueryId id) {
+		return queries.getOrFail(id);
 	}
 
 }

@@ -61,7 +61,7 @@ public class Namespaces implements NamespaceCollection {
 	}
 
 	public List<Dataset> getAllDatasets() {
-		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
+                return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
 	}
 	
 	public Collection<Namespace> getNamespaces() {

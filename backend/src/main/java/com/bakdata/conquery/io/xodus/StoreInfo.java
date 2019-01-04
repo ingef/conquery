@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.xodus;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.BigStore;
 import com.bakdata.conquery.io.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
@@ -36,6 +38,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor @Getter
 public enum StoreInfo implements IStoreInfo {
 	DATASET			("DATASET", 		Dataset.class,				Boolean.class),
+	ID_MAPPING		("ID_MAPPING", 		IdMapping.class,		Boolean.class),
 	NAMESPACES		("NAMESPACES", 		Namespaces.class,			Boolean.class),
 	SLAVE			("NETWORK_SLAVE", 	SlaveInformation.class,		Boolean.class),
 	DICTIONARIES	("DICTIONARIES", 	Dictionary.class,			DictionaryId.class),
@@ -53,6 +56,14 @@ public enum StoreInfo implements IStoreInfo {
 	private final String xodusName;
 	private final Class<?> valueType;
 	private final Class<?> keyType;
+	
+	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(ConqueryStorage storage, Injectable... injectables) {
+		return new IdentifiableStore<>(
+			storage.getCentralRegistry(),
+			cached(storage),
+			injectables
+		);
+	}
 	
 	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(ConqueryStorage storage) {
 		return new IdentifiableStore<>(
