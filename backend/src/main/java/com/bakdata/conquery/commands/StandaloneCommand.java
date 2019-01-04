@@ -1,10 +1,12 @@
 package com.bakdata.conquery.commands;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.Conquery;
@@ -12,6 +14,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.ConfigCloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
@@ -63,7 +66,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 				.setNameFormat("Slave Storage Loader %d")
 				.setUncaughtExceptionHandler((t, e) -> {
 					ConqueryMDC.setLocation(t.getName());
-					log.error(t.getName()+" failed to init storage of slave", e);
+                                        log.error(t.getName() + " failed to init storage of slave", e);
 					System.exit(-1);
 				})
 				.build());

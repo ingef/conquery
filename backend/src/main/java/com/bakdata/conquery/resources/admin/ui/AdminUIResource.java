@@ -44,19 +44,17 @@ public class AdminUIResource {
 		this.context = new UIContext(namespaces);
 	}
 
-	
-	
 	@GET
 	public View getIndex() {
 		return new UIView<>("index.html.ftl", context);
 	}
 	
-	@GET @Path("/query")
+	@GET @Path("query")
 	public View getQuery() {
 		return new UIView<>("query.html.ftl", context);
 	}
 	
-	@GET @Path("/jobs/")
+	@GET @Path("jobs")
 	public View getJobs() {
 		Map<String, List<JobStatus>> status = ImmutableMap
 				.<String, List<JobStatus>>builder()

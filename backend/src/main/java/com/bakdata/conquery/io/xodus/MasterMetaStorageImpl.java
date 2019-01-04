@@ -34,14 +34,14 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private final IdentifiableStore<ConqueryPermission> authPermissions;
 	private final IdentifiableStore<Mandator> authMandator;
 
-	public MasterMetaStorageImpl(Validator validator, StorageConfig config) {
+	public MasterMetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {
 		super(
 			validator,
 			config,
 			new File(config.getDirectory(), "meta")
 		);
 		this.meta = StoreInfo.NAMESPACES.singleton(this);
-		this.queries = StoreInfo.QUERIES.identifiable(this);
+		this.queries = StoreInfo.QUERIES.identifiable(this, namespaces);
 		
 		MasterMetaStorage storage = this;
 		this.authMandator = new IdentifiableStore<>(

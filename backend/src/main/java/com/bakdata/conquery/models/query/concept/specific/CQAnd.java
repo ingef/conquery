@@ -11,7 +11,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
-import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -39,11 +38,5 @@ public class CQAnd implements CQElement {
 		for(CQElement c:children) {
 			c.collectRequiredQueries(requiredQueries);
 		}
-	}
-	
-	@Override
-	public CQElement resolve(QueryResolveContext context) {
-		children.replaceAll(c->c.resolve(context));
-		return this;
 	}
 }

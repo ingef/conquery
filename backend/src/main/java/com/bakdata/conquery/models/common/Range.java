@@ -27,6 +27,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 	}
 
+
 	@Override
 	public String toString() {
 		if (isExactly()) {

@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -57,25 +56,30 @@ import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.views.View;
+import java.util.concurrent.ScheduledExecutorService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@PermitAll @Slf4j @Getter
+@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@PermitAll
+@Slf4j
+@Getter
 @Path("/datasets")
 public class DatasetsResource {
-	
+
 	private final ObjectMapper mapper;
 	private final UIContext ctx;
 	private final DatasetsProcessor processor;
 	private final Namespaces namespaces;
+	private final ScheduledExecutorService maintenanceService;
 	
 	public DatasetsResource(ConqueryConfig config, MasterMetaStorage storage, Namespaces namespaces, JobManager jobManager, ScheduledExecutorService maintenanceService) {
 		this.ctx = new UIContext(namespaces);
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
 		this.namespaces = namespaces;
-		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager, maintenanceService);
+		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager);
+		this.maintenanceService = maintenanceService;
 	}
 
 	@GET
@@ -134,7 +138,7 @@ public class DatasetsResource {
 	
 	@POST @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDataset(@NotEmpty@FormDataParam("dataset_name")String name) throws JSONException {
-		processor.addDataset(name, processor.getMaintenanceService());
+		processor.addDataset(name, maintenanceService);
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
 			.build();
@@ -145,7 +149,7 @@ public class DatasetsResource {
 		Dataset dataset =  namespaces.get(datasetId).getStorage().getDataset();
 		for(BodyPart part : schemas.getParent().getBodyParts()){
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
-				//ContentDisposition meta = part.getContentDisposition();
+				// ContentDisposition meta = part.getContentDisposition();
 				Table t = mapper.readValue(is, Table.class);
 				processor.addTable(dataset, t);
 			}
@@ -161,10 +165,10 @@ public class DatasetsResource {
 		if(ns == null) {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}
-		
+
 		File selectedFile = new File(processor.getConfig().getStorage().getPreprocessedRoot(), file.toString());
-		if(!selectedFile.exists()) {
-			throw new WebApplicationException("Could not find file "+selectedFile, Status.NOT_FOUND);
+		if (!selectedFile.exists()) {
+			throw new WebApplicationException("Could not find file " + selectedFile, Status.NOT_FOUND);
 		}
 		
 		processor.addImport(ns.getStorage().getDataset(), selectedFile);

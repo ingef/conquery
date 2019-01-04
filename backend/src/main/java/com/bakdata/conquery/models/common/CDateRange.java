@@ -25,10 +25,6 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		this(orig.getMin(), orig.getMax());
 	}
 
-	public CDateRange(LocalDate min, LocalDate max) {
-		this(CDate.ofLocalDate(min), CDate.ofLocalDate(max));
-	}
-	
 	public CDateRange(int min, int max) {
 		this.min = min;
 		this.max = max;
@@ -38,16 +34,12 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		}
 	}
 
-	public static CDateRange exactly(int value) {
-		return new CDateRange(value, value);
+	public static CDateRange of(Range<LocalDate> orig) {
+		return of(orig.getMin(), orig.getMax());
 	}
 
 	public static CDateRange exactly(LocalDate value) {
 		return new CDateRange(CDate.ofLocalDate(value), CDate.ofLocalDate(value));
-	}
-	
-	public static CDateRange of(Range<LocalDate> value) {
-		return new CDateRange(CDate.ofLocalDate(value.getMin()), CDate.ofLocalDate(value.getMax()));
 	}
 
 	public static CDateRange atLeast(LocalDate value) {
@@ -184,26 +176,6 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 			|| this.contains(other.getMinValue())
 			|| this.contains(other.getMaxValue());
 	}
-	
-	public boolean isConnected(CDateRange other) {
-		if (other == null) {
-			return false;
-		}
-		
-		//either they intersect or they are right next to each other
-		return this.intersects(other)
-			|| this.getMinValue()-1 == other.getMaxValue()
-			|| this.getMaxValue() == other.getMinValue()-1;
-	}
-	
-	public boolean encloses(CDateRange other) {
-		if (other == null) {
-			return false;
-		}
-		
-		return getMaxValue() >= other.getMaxValue()
-			&& getMinValue() <= other.getMinValue();
-	}
 
 	public Stream<LocalDate> stream(TemporalUnit unit) {
 		return Stream.iterate(getMin(), value -> value.plus(1, unit)).limit(1 + unit.between(getMin(), getMax()));
@@ -211,19 +183,18 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	@Override
 	public String toString() {
+		if (isExactly()) {
+			return String.format("[%s]", getMin());
+		}
 
 		if (isAtLeast()) {
-			return String.format("%s/+\u221E", getMin());
+			return String.format("[%s, +\u221E)", getMin());
 		}
 
 		if (isAtMost()) {
-			return String.format("-\u221E/%s", getMax());
+			return String.format("(-\u221E, %s]", getMax());
 		}
 
-		return String.format("%s/%s", getMin(), getMax());
-	}
-
-	public boolean hasUpperBound() {
-		return max != Integer.MAX_VALUE;
+		return String.format("[%s, %s]", getMin(), getMax());
 	}
 }

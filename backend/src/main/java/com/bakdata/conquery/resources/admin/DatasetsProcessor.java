@@ -30,32 +30,37 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.preproc.PPHeader;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Slf4j @RequiredArgsConstructor
+@Getter
+@Slf4j
+@RequiredArgsConstructor
 public class DatasetsProcessor {
+
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;
 	private final Namespaces namespaces;
 	private final JobManager jobManager;
-	private final ScheduledExecutorService maintenanceService;
 
 	public void addTable(Dataset dataset, Table table) throws JSONException {
 		Objects.requireNonNull(dataset);
 		Objects.requireNonNull(table);
-		if(table.getDataset() == null)
+		if (table.getDataset() == null) {
 			table.setDataset(dataset);
-		else if(!table.getDataset().equals(dataset))
+		} else if (!table.getDataset().equals(dataset)) {
 			throw new IllegalArgumentException();
-		
-		for(int p=0;p<table.getColumns().length;p++) {
+		}
+
+		for (int p = 0; p < table.getColumns().length; p++) {
 			table.getColumns()[p].setPosition(p);
 		}
 		table.getPrimaryColumn().setPosition(Column.PRIMARY_POSITION);
@@ -65,12 +70,11 @@ public class DatasetsProcessor {
 		//see #143  check duplicate names
 	}
 
-
 	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
-		
+
 		//if there are multiple selectable dates we need to add the select date filter
-		for(Connector con:c.getConnectors()) {
-			if(con.getValidityDates().size()>1) {
+		for (Connector con : c.getConnectors()) {
+			if (con.getValidityDates().size() > 1) {
 				ValidityDateSelectionFilter f = new ValidityDateSelectionFilter();
 				f.setConnector(con);
 				f.setName(ConqueryConstants.VALIDITY_DATE_SELECTION_FILTER_NAME);
@@ -80,7 +84,7 @@ public class DatasetsProcessor {
 				con.setAllFilters(null);
 			}
 		}
-		
+
 		dataset.addConcept(c);
 		c.setDataset(dataset.getId());
 		jobManager.addSlowJob(new SimpleJob("Adding concept "+c.getId(), ()->namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
@@ -90,47 +94,32 @@ public class DatasetsProcessor {
 	}
 
 	public void addDataset(String name, ScheduledExecutorService maintenanceService) throws JSONException {
-		//create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
-		
-		//add allIds table
-		Table allIdsTable = new Table();
-		{
-			allIdsTable.setName(ConqueryConstants.ALL_IDS_TABLE);
-			allIdsTable.setDataset(dataset);
-			Column primaryColumn = new Column();
-			{
-				primaryColumn.setName(ConqueryConstants.ALL_IDS_TABLE___ID);
-				primaryColumn.setPosition(0);
-				primaryColumn.setTable(allIdsTable);
-				primaryColumn.setType(MajorTypeId.STRING);
-			}
-			allIdsTable.setPrimaryColumn(primaryColumn);
-		}
-		dataset.getTables().add(allIdsTable);
-		
-		//store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_"+name));
+		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 		datasetStorage.setMetaStorage(storage);
 		Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
 		ns.initMaintenance(maintenanceService);
 		ns.getStorage().updateDataset(dataset);
 		namespaces.add(ns);
+
+		List<SlaveInformation> slaves = new ArrayList<>(namespaces.getSlaves().values());
+		for (SlaveInformation s : slaves) {
+			addWorker(s, dataset);
+		}
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
-		try(HCFile hcFile = new HCFile(selectedFile, false);
-				InputStream in = hcFile.readHeader()) {
+		try (HCFile hcFile = new HCFile(selectedFile, false);
+			InputStream in = hcFile.readHeader()) {
 			PPHeader header = Jackson.BINARY_MAPPER.readValue(in, PPHeader.class);
-			
+
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);
-			
-			
+
 			table.getTags().add(header.getName());
 			namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
-			
+
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 			jobManager.addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
 		}

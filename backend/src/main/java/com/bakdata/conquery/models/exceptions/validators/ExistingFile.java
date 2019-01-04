@@ -4,7 +4,6 @@ import static java.lang.annotation.ElementType.ANNOTATION_TYPE;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.PARAMETER;
-import static java.lang.annotation.ElementType.TYPE_USE;
 
 import java.io.File;
 import java.lang.annotation.Documented;
@@ -24,7 +23,7 @@ import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFi
 
 import lombok.extern.slf4j.Slf4j;
 
-@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE, TYPE_USE})
+@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = {ExistingFileValidator.class, ExistingFilesValidator.class})
 @Documented
