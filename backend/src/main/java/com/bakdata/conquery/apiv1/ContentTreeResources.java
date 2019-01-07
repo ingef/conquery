@@ -68,6 +68,7 @@ public class ContentTreeResources {
 	@GET
 	@Path("{" + DATASET + "}/concepts")
 	public FERoot getRoot(@Auth User user, @PathParam(DATASET) DatasetId datasetId) {
+		// TODO AUTH ?
 		return processor.getRoot(dsUtil.getDataset(datasetId));
 	}
 
@@ -77,7 +78,7 @@ public class ContentTreeResources {
 //                if (useCaching && req.getHeader(HttpHeaders.IF_NONE_MATCH) != null && currentTag.equals(EntityTag.valueOf(req.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
 //                        return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 //                }
-
+		// TODO AUTH authorizeDataset(user, dataset); ?? Already done in processor::getNode
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		Map<ConceptElementId<?>, FENode> result = processor.getNode(user, dataset, id);
 
@@ -128,6 +129,7 @@ public class ContentTreeResources {
 	@POST
 	@Path("{" + DATASET + "}/concepts/search")
 	public SearchResult search(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull ConceptSearchParam conceptSearchParam, @Context HttpServletRequest req) {
+		// TODO AUTH authorizeDataset(user, dataset);
 		String query = conceptSearchParam.getQuery();
 
 		if (StringUtils.isBlank(query)) {

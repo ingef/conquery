@@ -52,6 +52,7 @@ public class FormResource {
 	@POST
 	@Path("")
 	public SQStatus post(@Auth User user, @PathParam(DATASET) DatasetId datasetId, ObjectNode jsonForm, @Context HttpServletRequest req) throws JsonProcessingException, IOException, IllegalArgumentException, UriBuilderException, InterruptedException {//@Valid com.bakdata.conquery.feforms.psm.FeForm form) {
+		//TODO AUTH authorizeDataset(user, dataset);
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
 //                dsUtil.getStorage(datasetId).get
@@ -61,7 +62,6 @@ public class FormResource {
 	@GET
 	@Path("{" + QUERY + "}")
 	public SQStatus get(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws IllegalArgumentException, UriBuilderException, IOException, InterruptedException {
-
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
 
@@ -90,6 +90,9 @@ public class FormResource {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
 
+		//TODO AUTH authorizeDataset(user, dataset);
+		//TODO AUTH authorizeQuery(user, id.get(), QueryPermission::canRead);
+		
 		log.info("Querying results for {}", queryId);
 		/*
 		//IFormQuery fqi = processor.getQuery(user, query);

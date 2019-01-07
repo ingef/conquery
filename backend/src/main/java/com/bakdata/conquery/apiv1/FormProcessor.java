@@ -7,11 +7,11 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 public class FormProcessor {
 
 	public SQStatus get(User user, Dataset dataset, ManagedQuery query, URLBuilder fromRequest) {
-		// TODO Auto-generated method stub
+		// TODO AUTH authorizeDataset(user, dataset);
 		return null;
 	}
 
 	public void cancel(User user, Dataset dataset, ManagedQuery query) {
-		// TODO Auto-generated method stub
+		// TODO AUTH authorizeDataset(user, dataset);
 	}
 }

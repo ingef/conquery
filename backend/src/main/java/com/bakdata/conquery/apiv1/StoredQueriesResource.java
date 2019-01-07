@@ -48,7 +48,7 @@ public class StoredQueriesResource {
 	public List<SQStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-		return processor.getAllQueries(dataset, URLBuilder.fromRequest(req));
+		return processor.getAllQueries(user, dataset, URLBuilder.fromRequest(req));
 	}
 
 	@GET

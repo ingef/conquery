@@ -47,6 +47,9 @@ public class ResultCSVResource {
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId id) {
+		// TODO AUTH authorizeDataset(user, dataset);
+		// TODO AUTH authorizeQuery(user, queryId, QueryPermission::canRead);
+
 		ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, id);
 		String csv = query.toCSV(config).collect(Collectors.joining("\n"));
 

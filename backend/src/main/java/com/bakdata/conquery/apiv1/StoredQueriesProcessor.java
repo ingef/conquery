@@ -17,23 +17,32 @@ public class StoredQueriesProcessor {
                 this.namespaces = namespaces;
         }
         
-	public List<SQStatus> getAllQueries(Dataset dataset, URLBuilder fromRequest) {
-                // TODO Auto-generated method stub
+	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder fromRequest) {
+		// TODO AUTH authorizeDataset(user, dataset);
+		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedQuery query) {
+		// TODO AUTH authorizeDataset(user, dataset);
+		// TODO AUTH authorizeQuery(user, queryId, QueryPermission::canRead);
 		// TODO Auto-generated method stub
 		
 	}
 
 	public SQStatus patchQuery(Dataset dataset, UUID uuid, JsonNode patch) {
+
+		// TODO AUTH authorizeDataset(user, dataset);
+		// TODO AUTH authorizeQuery(user, queryId, QueryPermission::canTag);
+		// TODO AUTH authorizeQuery(user, queryId, QueryPermission::canLabel);
+		// TODO AUTH authorizeQuery(user, queryId, QueryPermission::canShare);
 		// TODO Auto-generated method stub
 		return null;
 	}
 
 	public SQStatus getQueryWithSource(Dataset dataset, UUID uuid) {
-		// TODO Auto-generated method stub
+		// TODO AUTH authorizeDataset(user, dataset);
+		// TODO AUTH authorizeQuery(user, queryId, QueryPermission::canRead);
 		return null;
 	}
 

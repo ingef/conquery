@@ -60,6 +60,7 @@ public class ContentTreeProcessor {
 	}
 
 	public List<FEValue> autocompleteTextFilter(@Auth User user, Dataset dataset, Table table, Filter filter, String text) {
+		// TODO AUTH
 		List<FEValue> result = new LinkedList<>();
 
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
@@ -77,6 +78,7 @@ public class ContentTreeProcessor {
 	}
 
 	public Map<ConceptElementId<?>, FENode> getNode(@Auth User user, Dataset dataset, IId id) {
+		// TODO AUTH authorizeDataset(user, dataset);
 		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder
 			.createTreeMap(dataset.getConcepts());
 		return ctRoots.get(id);
@@ -91,7 +93,7 @@ public class ContentTreeProcessor {
 
 	public ResolvedConceptsResult resolve(User user, Dataset dataset, ConceptElement conceptElement,
 		List<String> conceptCodes) {
-
+		// TODO AUTH
 		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
 
 		if (conceptElement.getConcept() instanceof TreeConcept) {
@@ -176,6 +178,7 @@ public class ContentTreeProcessor {
 	}
 
 	public ResolvedConceptsResult resolveFilterValues(@Auth User user, Dataset dataset, Table table, Filter filter, List<String> values) {
+		// TODO AUTH
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
 
 		List<FEValue> filterValues = new LinkedList<>();

@@ -57,7 +57,7 @@ public class QueryResource {
 		Dataset dataset = resourceUtil.getDataset(datasetId);
 		ManagedQuery query = resourceUtil.getManagedQuery(datasetId, queryId);
 
-		return processor.cancel(dataset, query, URLBuilder.fromRequest(req));
+		return processor.cancel(user, dataset, query, URLBuilder.fromRequest(req));
 	}
 
 	@GET

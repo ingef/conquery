@@ -1,5 +1,8 @@
 package com.bakdata.conquery.apiv1;
 
+import java.util.EnumSet;
+import java.util.concurrent.TimeUnit;
+
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
@@ -14,9 +17,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 
-import java.util.EnumSet;
-import java.util.concurrent.TimeUnit;
-
 public class QueryProcessor {
 
 	private final Namespaces namespaces;
@@ -28,6 +28,7 @@ public class QueryProcessor {
 	}
 
 	public SQStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
+		// TODO AUTH authorizeDataset(user, primaryDataset);
 		Namespace namespace = namespaces.get(dataset.getId());
 		
 		// Check dataset
@@ -47,11 +48,15 @@ public class QueryProcessor {
 	}
 
 	public SQStatus getStatus(Dataset dataset, ManagedQuery query, URLBuilder urlb) {
+		// TODO AUTH authorizeDataset(user, dataset);
+		// TODO AUTH authorizeQuery(user, queryId, QueryPermission::canRead);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return SQStatus.buildFromQuery(query, urlb, config);
 	}
 
-	public SQStatus cancel(Dataset dataset, ManagedQuery query, URLBuilder urlb) {
+	public SQStatus cancel(User user, Dataset dataset, ManagedQuery query, URLBuilder urlb) {
+		// TODO AUTH authorizeDataset(user, dataset);
+		// TODO AUTH authorizeQuery(user, queryId, QueryPermission::canRead);
 		return null;
 	}
 
