@@ -14,8 +14,8 @@ import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.filters.Filter;
+import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.filters.specific.BigMultiSelectFilter;
 import com.bakdata.conquery.models.concepts.filters.specific.MultiSelectFilter;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
@@ -55,12 +55,13 @@ public class ContentTreeProcessor {
 		FilterSearch.init(namespaces.getAllDatasets());
 	}
 
-	public FERoot getRoot(Dataset dataset) {
+	public FERoot getRoot(User user, Dataset dataset) {
+		// TODO AUTH authorizeDataset(user, dataset);
 		return FrontEndConceptBuilder.createRoot(dataset);
 	}
 
 	public List<FEValue> autocompleteTextFilter(@Auth User user, Dataset dataset, Table table, Filter filter, String text) {
-		// TODO AUTH
+		// TODO AUTH authorizeDataset(user, dataset);
 		List<FEValue> result = new LinkedList<>();
 
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
@@ -93,7 +94,7 @@ public class ContentTreeProcessor {
 
 	public ResolvedConceptsResult resolve(User user, Dataset dataset, ConceptElement conceptElement,
 		List<String> conceptCodes) {
-		// TODO AUTH
+		// TODO AUTH authorizeDataset(user, dataset);
 		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
 
 		if (conceptElement.getConcept() instanceof TreeConcept) {
@@ -178,7 +179,7 @@ public class ContentTreeProcessor {
 	}
 
 	public ResolvedConceptsResult resolveFilterValues(@Auth User user, Dataset dataset, Table table, Filter filter, List<String> values) {
-		// TODO AUTH
+		// TODO AUTH authorizeDataset(user, dataset);
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
 
 		List<FEValue> filterValues = new LinkedList<>();
