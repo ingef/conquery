@@ -34,7 +34,7 @@
 			<dependency>
 				<groupId>io.dropwizard</groupId>
 				<artifactId>dropwizard-bom</artifactId>
-				<version>1.3.7</version>
+				<version>1.3.8</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
@@ -115,16 +115,6 @@
 						<!-- //TODO test this as some point <configurationParameters> junit.jupiter.execution.parallel.enabled 
 							= true </configurationParameters> -->
 					</properties>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>3.0.0</version>
-				<configuration>
-					<configLocation>checkstyle.enforced.xml</configLocation>
-					<consoleOutput>true</consoleOutput>
-					<failsOnError>true</failsOnError>
 				</configuration>
 			</plugin>
         </plugins>
