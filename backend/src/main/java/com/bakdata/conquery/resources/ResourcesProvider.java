@@ -6,5 +6,5 @@ import com.bakdata.conquery.io.cps.CPSBase;
 @CPSBase
 public interface ResourcesProvider {
 
-        void registerResources(MasterCommand master);
+	void registerResources(MasterCommand master);
 }

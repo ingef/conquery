@@ -9,30 +9,31 @@ import lombok.Data;
  *
  * @author Marcus Baitz
  */
-@Data @AllArgsConstructor
+@Data
+@AllArgsConstructor
 public class FilterTemplate implements Serializable {
-    
-    private static final long serialVersionUID = 1L;
-    
-    /**
-     * Path to CSV File
-     */
-    private String filePath;
-    /**
-     * Columns to search see @FilterSearch
-     */
-    private List<String> columns;
-    /**
-     * Value to Filter
-     */
-    private String columnValue;
-    /**
-     * Selected value
-     */
-    private String value;
-    /**
-     * Option value
-     */
-    private String optionValue;
-    
+
+	private static final long serialVersionUID = 1L;
+
+	/**
+	 * Path to CSV File
+	 */
+	private String filePath;
+	/**
+	 * Columns to search see @FilterSearch
+	 */
+	private List<String> columns;
+	/**
+	 * Value to Filter
+	 */
+	private String columnValue;
+	/**
+	 * Selected value
+	 */
+	private String value;
+	/**
+	 * Option value
+	 */
+	private String optionValue;
+
 }

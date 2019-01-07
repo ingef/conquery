@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
-
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
@@ -19,35 +18,39 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter @Slf4j @RequiredArgsConstructor
-public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
+@Getter
+@Setter
+@Slf4j
+@RequiredArgsConstructor
+public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> extends SingleColumnFilter<FE_TYPE>
+		implements ISelectFilter {
 
-        protected Map<String, String> labels = Collections.emptyMap();
-        protected boolean matchLabels = false;
-        protected boolean allowDropFile = false;
-        @JsonIgnore
-        protected Map<String, String> realLabels;
-        @JsonIgnore
-        protected Map<String, String> labelsToRealLabels;
-        @JsonIgnore
-        protected transient QuickSearch sourceSearch;
+	protected Map<String, String> labels = Collections.emptyMap();
+	protected boolean matchLabels = false;
+	protected boolean allowDropFile = false;
+	@JsonIgnore
+	protected Map<String, String> realLabels;
+	@JsonIgnore
+	protected Map<String, String> labelsToRealLabels;
+	@JsonIgnore
+	protected transient QuickSearch sourceSearch;
 
-        @JsonIgnore
-        private final int maximumSize;
-        @JsonIgnore
-        private final FEFilterType filterType;
+	@JsonIgnore
+	private final int maximumSize;
+	@JsonIgnore
+	private final FEFilterType filterType;
 
 	private Dictionary dictionary;
-	
+
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
 	}
 
-        @Override
-        public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
-                f.setType(filterType);
-                
+	@Override
+	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+		f.setType(filterType);
+
 //                Column c = getColumn();
 //                if (!c.getType().equals(MajorTypeId.STRING)) {
 //                        throw new ConceptConfigurationException(getConnector(), filterType + " filter is incompatible with columns of type " + c.getType());
@@ -85,15 +88,15 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 //                if (maximumSize > 0) {
 //                        f.setOptions(FEValue.fromLabels(realLabels));
 //                }
-        }
+	}
 
-        public String resolveValueToRealValue(String value) {
-                if (realLabels.containsKey(value)) {
-                        return value;
-                }
-                if (labelsToRealLabels.containsKey(value)) {
-                        return labelsToRealLabels.get(value);
-                }
-                return null;
-        }
+	public String resolveValueToRealValue(String value) {
+		if (realLabels.containsKey(value)) {
+			return value;
+		}
+		if (labelsToRealLabels.containsKey(value)) {
+			return labelsToRealLabels.get(value);
+		}
+		return null;
+	}
 }

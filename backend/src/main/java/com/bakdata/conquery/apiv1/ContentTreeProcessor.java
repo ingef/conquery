@@ -59,11 +59,12 @@ public class ContentTreeProcessor {
 
 	public FERoot getRoot(User user, Dataset dataset) {
 		authorize(user, dataset.getId(), Ability.READ);
-		
+
 		return FrontEndConceptBuilder.createRoot(dataset);
 	}
 
-	public List<FEValue> autocompleteTextFilter(@Auth User user, Dataset dataset, Table table, Filter filter, String text) {
+	public List<FEValue> autocompleteTextFilter(@Auth User user, Dataset dataset, Table table, Filter filter,
+			String text) {
 		authorize(user, dataset.getId(), Ability.READ);
 		List<FEValue> result = new LinkedList<>();
 
@@ -74,8 +75,8 @@ public class ContentTreeProcessor {
 			result = createSourceSearchResult(search, text);
 		}
 
-		// TODO 
-//		List<String> res = meta.getAutoCompleteSuggestions(dataset, tf.getColumn(), text); 
+		// TODO
+//		List<String> res = meta.getAutoCompleteSuggestions(dataset, tf.getColumn(), text);
 //              if(res != null) result.addAll(res.stream().map(v->new FEValue(tf.getRealLabels().get(v), v)).collect(Collectors.toList()));
 //                dataset.get
 		return result;
@@ -84,19 +85,19 @@ public class ContentTreeProcessor {
 	public Map<ConceptElementId<?>, FENode> getNode(@Auth User user, Dataset dataset, IId id) {
 		authorize(user, dataset.getId(), Ability.READ);
 		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder
-			.createTreeMap(dataset.getConcepts());
+				.createTreeMap(dataset.getConcepts());
 		return ctRoots.get(id);
 	}
 
 	public List<IdLabel> getDatasets(User user) {
 		return namespaces.getAllDatasets().stream()
-			//                        .filter(d -> user.isPermitted(new IdentifiableInstancePermission(user.getId(), AccessType.READ, d.getId())))
-			.map(d -> new IdLabel(d.getLabel(), d.getId().toString()))
-			.collect(Collectors.toList());
+				// .filter(d -> user.isPermitted(new
+				// IdentifiableInstancePermission(user.getId(), AccessType.READ, d.getId())))
+				.map(d -> new IdLabel(d.getLabel(), d.getId().toString())).collect(Collectors.toList());
 	}
 
 	public ResolvedConceptsResult resolve(User user, Dataset dataset, ConceptElement conceptElement,
-		List<String> conceptCodes) {
+			List<String> conceptCodes) {
 		authorize(user, dataset.getId(), Ability.READ);
 		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
 
@@ -138,16 +139,17 @@ public class ContentTreeProcessor {
 					List<FEValue> filterValues = new LinkedList<>();
 					QuickSearch<FilterSearchItem> search = selectFilter.getSourceSearch();
 					if (search != null) {
-						filterValues.addAll(createSourceSearchResult(search, conceptCodes.toArray(new String[conceptCodes.size()])));
+						filterValues.addAll(createSourceSearchResult(search,
+								conceptCodes.toArray(new String[conceptCodes.size()])));
 					}
 
 					List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
 					filterValues.addAll(resolvedCodes.stream().filter(v -> !toRemove.contains(v))
-						.map(v -> new FEValue(selectFilter.getRealLabels().get(v), v))
-						.collect(Collectors.toList()));
+							.map(v -> new FEValue(selectFilter.getRealLabels().get(v), v))
+							.collect(Collectors.toList()));
 
 					return new ResolvedConceptsResult(null, new ResolvedFilterResult(connector.getId().toString(),
-						selectFilter.getId().toString(), filterValues), unknownCodes);
+							selectFilter.getId().toString(), filterValues), unknownCodes);
 				}
 			}
 		}
@@ -161,8 +163,8 @@ public class ContentTreeProcessor {
 		}
 
 		return result.stream().map(
-			item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-			.collect(Collectors.toList());
+				item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+				.collect(Collectors.toList());
 	}
 
 	private ResolvedFilter createResolvedFilter(Filter<?> filter) {
@@ -181,7 +183,8 @@ public class ContentTreeProcessor {
 		return result;
 	}
 
-	public ResolvedConceptsResult resolveFilterValues(@Auth User user, Dataset dataset, Table table, Filter filter, List<String> values) {
+	public ResolvedConceptsResult resolveFilterValues(@Auth User user, Dataset dataset, Table table, Filter filter,
+			List<String> values) {
 		authorize(user, dataset.getId(), Ability.READ);
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
 
@@ -208,7 +211,8 @@ public class ContentTreeProcessor {
 //			.collect(Collectors.toList()));
 //                values.removeAll(filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList()));
 //	    }
-		return new ResolvedConceptsResult(null, new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues), values);
+		return new ResolvedConceptsResult(null,
+				new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues), values);
 	}
 
 	public SearchResult search(@Auth User user, Dataset dataset, String query, int limit) {

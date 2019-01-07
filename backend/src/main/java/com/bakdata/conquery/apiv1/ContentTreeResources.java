@@ -75,7 +75,8 @@ public class ContentTreeResources {
 
 	@GET
 	@Path("{" + DATASET + "}/concepts/{" + CONCEPT + "}")
-	public Response getNode(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(CONCEPT) ConceptId id, @Context HttpServletRequest req) {
+	public Response getNode(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(CONCEPT) ConceptId id,
+			@Context HttpServletRequest req) {
 //                if (useCaching && req.getHeader(HttpHeaders.IF_NONE_MATCH) != null && currentTag.equals(EntityTag.valueOf(req.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
 //                        return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 //                }
@@ -83,54 +84,62 @@ public class ContentTreeResources {
 		Map<ConceptElementId<?>, FENode> result = processor.getNode(user, dataset, id);
 
 		if (result == null) {
-			throw new WebApplicationException("There is not concept with the id " + id + " in the dataset " + dataset, Status.NOT_FOUND);
+			throw new WebApplicationException("There is not concept with the id " + id + " in the dataset " + dataset,
+					Status.NOT_FOUND);
 		} else {
-			return Response
-				.ok(result)
-				//                                .tag(currentTag)
-				.build();
+			return Response.ok(result)
+					// .tag(currentTag)
+					.build();
 		}
 	}
 
 	@POST
 	@Path("{" + DATASET + "}/concepts/{" + CONCEPT + "}/tables/{" + TABLE + "}/filters/{" + FILTER + "}/autocomplete")
-	public List<FEValue> autocompleteTextFilter(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(CONCEPT) ConceptElementId conceptElementId, @PathParam(TABLE) TableId tableId, @PathParam(FILTER) FilterId filterId, @NotNull StringContainer text, @Context HttpServletRequest req) {
+	public List<FEValue> autocompleteTextFilter(@Auth User user, @PathParam(DATASET) DatasetId datasetId,
+			@PathParam(CONCEPT) ConceptElementId conceptElementId, @PathParam(TABLE) TableId tableId,
+			@PathParam(FILTER) FilterId filterId, @NotNull StringContainer text, @Context HttpServletRequest req) {
 		if (text.getText().length() < 1) {
 			throw new WebApplicationException("Too short text. Requires at least 1 characters.", Status.BAD_REQUEST);
 		}
 
-		Connector connector = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept()).getConnectorByName(filterId.getConnector().getConnector());
+		Connector connector = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept())
+				.getConnectorByName(filterId.getConnector().getConnector());
 
-		return processor.autocompleteTextFilter(user, dsUtil.getDataset(datasetId), connector.getTable(), connector.getFilter(filterId), text.getText());
+		return processor.autocompleteTextFilter(user, dsUtil.getDataset(datasetId), connector.getTable(),
+				connector.getFilter(filterId), text.getText());
 	}
 
 	@POST
 	@Path("{" + DATASET + "}/concepts/{" + CONCEPT + "}/resolve")
-	public ResolvedConceptsResult resolve(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(CONCEPT) ConceptElementId conceptElementId, @NotNull ConceptCodeList conceptCodes, @Context HttpServletRequest req) {
-		ConceptElement<?> conceptElement = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept()).getElementById(conceptElementId);
+	public ResolvedConceptsResult resolve(@Auth User user, @PathParam(DATASET) DatasetId datasetId,
+			@PathParam(CONCEPT) ConceptElementId conceptElementId, @NotNull ConceptCodeList conceptCodes,
+			@Context HttpServletRequest req) {
+		ConceptElement<?> conceptElement = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept())
+				.getElementById(conceptElementId);
 
-		List<String> codes = conceptCodes
-			.getConcepts()
-			.stream()
-			.map(String::trim)
-			.collect(Collectors.toList());
+		List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());
 
 		return processor.resolve(user, dsUtil.getDataset(datasetId), conceptElement, codes);
 	}
 
 	@POST
 	@Path("{" + DATASET + "}/concepts/{" + CONCEPT + "}/tables/{" + TABLE + "}/filters/{" + FILTER + "}/resolve")
-	public ResolvedConceptsResult resolveFilterValues(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(CONCEPT) ConceptElementId conceptElementId, @PathParam(TABLE) TableId tableId, @PathParam(FILTER) FilterId filterId, FilterValues filterValues, @Context HttpServletRequest req) {
-		Connector connector = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept()).getConnectorByName(filterId.getConnector().getConnector());
+	public ResolvedConceptsResult resolveFilterValues(@Auth User user, @PathParam(DATASET) DatasetId datasetId,
+			@PathParam(CONCEPT) ConceptElementId conceptElementId, @PathParam(TABLE) TableId tableId,
+			@PathParam(FILTER) FilterId filterId, FilterValues filterValues, @Context HttpServletRequest req) {
+		Connector connector = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept())
+				.getConnectorByName(filterId.getConnector().getConnector());
 
-		return processor.resolveFilterValues(user, dsUtil.getDataset(datasetId), connector.getTable(), connector.getFilter(filterId), filterValues.getValues());
+		return processor.resolveFilterValues(user, dsUtil.getDataset(datasetId), connector.getTable(),
+				connector.getFilter(filterId), filterValues.getValues());
 	}
 
 	@POST
 	@Path("{" + DATASET + "}/concepts/search")
-	public SearchResult search(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull ConceptSearchParam conceptSearchParam, @Context HttpServletRequest req) {
+	public SearchResult search(@Auth User user, @PathParam(DATASET) DatasetId datasetId,
+			@NotNull ConceptSearchParam conceptSearchParam, @Context HttpServletRequest req) {
 		authorize(user, datasetId, Ability.READ);
-		
+
 		String query = conceptSearchParam.getQuery();
 
 		if (StringUtils.isBlank(query)) {
