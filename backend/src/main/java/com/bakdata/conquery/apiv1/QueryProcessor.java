@@ -41,7 +41,7 @@ public class QueryProcessor {
 		ManagedQuery mq = namespace.getQueryManager().createQuery(query);
 		
 		// Set abilities for submitted query
-		user.addPermission(new QueryPermission(null, AbilitySets.CREATOR.getSet(), mq.getId()));
+		user.addPermission(new QueryPermission(null, AbilitySets.QUERY_CREATOR.getSet(), mq.getId()));
 		mq.awaitDone(1, TimeUnit.HOURS);
 		
 		return SQStatus.buildFromQuery(mq, urlb, config);
