@@ -10,11 +10,15 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
+import lombok.Getter;
+import lombok.Setter;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id="NEGATION", base=CQElement.class)
+@Setter
+@Getter
 public class CQNegation implements CQElement {
 
 	@Valid @NotNull @Getter @Setter

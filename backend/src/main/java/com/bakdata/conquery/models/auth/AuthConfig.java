@@ -10,4 +10,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @CPSBase
 public abstract class AuthConfig {
 	public abstract AuthorizingRealm getRealm(MasterMetaStorage storage);
+	public abstract UnknownUserHandler getUnknownUserHandler(MasterMetaStorage storage);
+	public abstract void initializeAuthConstellation(MasterMetaStorage storage);
+	public abstract TokenExtractor getTokenExtractor();
 }

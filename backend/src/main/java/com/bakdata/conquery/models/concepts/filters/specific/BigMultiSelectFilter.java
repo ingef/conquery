@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQMultiSelectFilter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.zigurs.karlis.utils.search.QuickSearch;
 
 import lombok.Getter;
 import lombok.Setter;

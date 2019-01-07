@@ -63,7 +63,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 				.setNameFormat("Slave Storage Loader %d")
 				.setUncaughtExceptionHandler((t, e) -> {
 					ConqueryMDC.setLocation(t.getName());
-					log.error(t.getName()+" failed to init storage of slave", e);
+                                        log.error(t.getName() + " failed to init storage of slave", e);
 					System.exit(-1);
 				})
 				.build());

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.api.description;
 
+import com.bakdata.conquery.apiv1.FilterTemplate;
 import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -20,4 +21,7 @@ public class FEFilter {
 	private List<FEValue> options;
 	private Integer min;
 	private Integer max;
+        private FilterTemplate template;
+        private String pattern;
+        private Boolean allowDropFile;
 }
