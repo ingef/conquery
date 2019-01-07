@@ -235,9 +235,19 @@
 		    <version>1.1.1</version>
 		</dependency>
         <dependency>
+            <groupId>com.zigurs.karlis.utils.search</groupId>
+            <artifactId>QuickSearch</artifactId>
+            <version>1.8</version>
+        </dependency>
+        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
             <version>3.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>org.tuckey</groupId>
+            <artifactId>urlrewritefilter</artifactId>
+            <version>4.0.4</version>
         </dependency>
     </dependencies>
 </project>
