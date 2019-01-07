@@ -21,7 +21,7 @@ public class UpdateConcept extends WorkerMessage.Slow {
 	@Override
 	public void react(Worker context) throws Exception {
 		synchronized (context.getStorage()) {
-			concept.setDataset(context.getStorage().getDataset().getId());
+			concept.setDataset(context.getStorage().getDataset());
 			context.getStorage().updateConcept(concept);
 		}
 	}

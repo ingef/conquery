@@ -78,11 +78,11 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 		referenceConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class)))
 								.readValue(node);
 
-		referenceConcept.setDataset(dataset.getId());
+		referenceConcept.setDataset(dataset);
 		referenceConcept.initElements(Validators.newValidator());
 
 		newConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
-		newConcept.setDataset(dataset.getId());
+		newConcept.setDataset(dataset);
 		newConcept.initElements(Validators.newValidator());
 
 		postprocessConcepts();

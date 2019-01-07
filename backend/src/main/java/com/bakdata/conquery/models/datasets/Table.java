@@ -6,6 +6,8 @@ import java.util.Set;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPHeader;
@@ -23,7 +25,7 @@ public class Table extends Labeled<TableId> {
 	private Dataset dataset;
 	@NotNull @Valid @JsonManagedReference
 	private Column primaryColumn;
-	@NotNull @Valid @JsonManagedReference
+	@NotEmpty @Valid @JsonManagedReference
 	private Column[] columns = new Column[0];
 	private Set<String> tags = new HashSet<>();
 	

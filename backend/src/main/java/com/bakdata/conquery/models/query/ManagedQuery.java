@@ -1,15 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -24,12 +14,21 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 @NoArgsConstructor
 @Getter @Setter @ToString @Slf4j
@@ -98,7 +97,7 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		finishTime = LocalDateTime.now();
 		status = QueryStatus.DONE;
 		execution.countDown();
-		log.info("Finished query {} within {}", Duration.between(startTime, finishTime));
+		log.info("Finished query {} within {}", queryId, Duration.between(startTime, finishTime));
 	}
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {

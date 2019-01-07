@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
 public class RealSumAggregator extends SingleColumnAggregator<Double> {

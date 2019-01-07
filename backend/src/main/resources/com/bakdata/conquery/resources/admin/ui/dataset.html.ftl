@@ -39,7 +39,7 @@
 		<div class="col">Concepts</div>
 		<div class="col">
 			<ul>
-			<#list c.concepts as concept>
+			<#list c.concepts.concepts as concept>
 				<li>
 					<a href="/admin/datasets/${c.id}/concepts/${concept.id}">${concept.label}</a>
 					<a href="" onclick="event.preventDefault(); fetch('/admin/datasets/${c.id}/concepts/${concept.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>

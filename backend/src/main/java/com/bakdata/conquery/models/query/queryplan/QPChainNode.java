@@ -6,7 +6,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.specific.Leaf;
@@ -57,7 +56,7 @@ public abstract class QPChainNode extends QPNode {
 	
 	
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
+	public void collectRequiredTables(Set<Table> requiredTables) {
 		child.collectRequiredTables(requiredTables);
 	}
 	

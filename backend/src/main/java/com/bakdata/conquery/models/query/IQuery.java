@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @CPSBase
 public interface IQuery {
 
-	IQuery resolve(QueryResolveContext context);
 	QueryPlan createQueryPlan(QueryPlanContext context);
 	
 	void collectRequiredQueries(Set<ManagedQueryId> requiredQueries);

@@ -6,20 +6,16 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.esotericsoftware.kryo.io.Output;
 import com.bakdata.conquery.io.kryo.KryoHelper;
 
-
 import java.time.LocalDate;
 import java.io.IOException;
 
 import java.lang.Integer;
-import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.Range;
 
 import com.google.common.collect.ImmutableMap;
 import java.math.BigDecimal;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
@@ -165,23 +161,6 @@ public class Block_${suffix} extends Block {
 			<#elseif col.type.typeId == "DATE_RANGE">
 			case ${col.position}:
 				return dateRange.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			</#if>
-		</#list>
-			default:
-				throw new IllegalArgumentException("Column "+column+" is not a date type");
-		}
-	}
-	
-	@Override
-	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
-		switch(column.getPosition()) {
-		<#list imp.columns as col>
-			<#if col.type.typeId == "DATE">
-			case ${col.position}:
-				return dateRanges.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			<#elseif col.type.typeId == "DATE_RANGE">
-			case ${col.position}:
-				return dateRanges.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
 			</#if>
 		</#list>
 			default:
