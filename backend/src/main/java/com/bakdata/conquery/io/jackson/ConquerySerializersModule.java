@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.jackson;
 
+import java.util.List;
+
 import javax.money.CurrencyUnit;
 
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitDeserializer;
@@ -10,7 +12,8 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.PackageVersion;
 
 import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 public class ConquerySerializersModule extends SimpleModule {
 
@@ -20,11 +23,11 @@ public class ConquerySerializersModule extends SimpleModule {
 		super("Conquery Module", PackageVersion.VERSION);
 		addDeserializer(CurrencyUnit.class, new CurrencyUnitDeserializer());
 		addSerializer(CurrencyUnit.class, new CurrencyUnitSerializer());
+		addAbstractTypeMapping(Int2ObjectMap.class, Int2ObjectOpenHashMap.class);
 		
 		//register IdKeySerializer for all id types
-		ScanResult scanRes = new ClassGraph()
+		List<Class<?>> idTypes = new ClassGraph()
 			.enableClassInfo()
-			//blacklist some packages that contain large libraries
 			.blacklistPackages(
 				"groovy",
 				"org.codehaus.groovy",
@@ -32,9 +35,11 @@ public class ConquerySerializersModule extends SimpleModule {
 				"org.eclipse",
 				"com.google"
 			)
-			.scan();
-		
-		for(Class<?> type : scanRes.getClassesImplementing(IId.class.getName()).loadClasses()) {
+			.scan()
+			.getClassesImplementing(IId.class.getName())
+			.loadClasses();
+
+		for(Class<?> type : idTypes) {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());
 		}
 	}

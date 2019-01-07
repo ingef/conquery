@@ -2,13 +2,10 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContextImpl;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -27,12 +24,11 @@ import lombok.ToString;
 public class ExecuteQuery extends WorkerMessage.Slow {
 
 	private ManagedQuery query;
-	private Map<ManagedQueryId, IQuery> dependencies;
 
 	@Override
 	public void react(Worker context) throws Exception {
 		try {
-			ShardResult result = context.getQueryExecutor().execute(new QueryPlanContextImpl(context, dependencies), query);
+			ShardResult result = context.getQueryExecutor().execute(new QueryPlanContextImpl(context), query);
 			result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
 		} catch(Exception e) {
 			ShardResult result = new ShardResult();

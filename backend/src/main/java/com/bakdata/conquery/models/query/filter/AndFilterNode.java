@@ -8,6 +8,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -30,7 +31,7 @@ public class AndFilterNode<FILTER extends Filter<FilterValue<?>>> extends Filter
 	}
 
 	@Override
-	public void collectRequiredTables(Set<Table> requiredTables) {
+	public void collectRequiredTables(Set<TableId> requiredTables) {
 		for (FilterNode<?, ?> filterNode : filterNodes) {
 			filterNode.collectRequiredTables(requiredTables);
 		}

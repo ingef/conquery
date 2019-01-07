@@ -5,9 +5,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -27,26 +30,41 @@ public class QueryExecutor implements Closeable {
 	private final ListeningExecutorService pool;
 	
 	public QueryExecutor(ConqueryConfig config) {
-		pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
+		this.pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
 	}
 
 	public ShardResult execute(QueryPlanContext context, ManagedQuery query) {
 		QueryPlan plan = query.getQuery().createQueryPlan(context);
-		return execute(context.getBlockManager(), query.getId(), plan, pool);
+		return execute(
+			context.getBlockManager(),
+			new QueryContext(context.getWorker().getStorage()),
+			query.getId(),
+			plan,
+			pool
+		);
 	}
 	
-	public static ShardResult execute(BlockManager blockManager, ManagedQueryId queryId, QueryPlan plan, ListeningExecutorService executor) {
+	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedQueryId queryId, QueryPlan plan, ListeningExecutorService executor) {
 		Collection<Entity> entries = blockManager.getEntities().values();
 		if(entries.isEmpty()) {
-			log.error("WTF? (On a more polite not, entries are empty)");
+			log.warn("entries for query {} are empty", queryId);
 		}
 		ShardResult result = new ShardResult();
 		result.setQueryId(queryId);
 		
-		QueryContext ctx = new QueryContext();
+		
 		List<ListenableFuture<EntityResult>> futures = new ArrayList<>(entries.size());
+		
+		//collect required tables
+		Set<Table> requiredTables = plan
+			.getRoot()
+			.collectRequiredTables()
+			.stream()
+			.map(context.getStorage().getDataset().getTables()::getOrFail)
+			.collect(Collectors.toSet());
+		
 		for(Entity entity:entries) {
-			futures.add(executor.submit(new QueryPart(ctx, plan, entity)));
+			futures.add(executor.submit(new QueryPart(context, plan, requiredTables, entity)));
 		}
 		result.setFuture(Futures.allAsList(futures));
 		

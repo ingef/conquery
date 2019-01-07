@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -56,7 +57,6 @@ import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.views.View;
-import java.util.concurrent.ScheduledExecutorService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -72,14 +72,12 @@ public class DatasetsResource {
 	private final UIContext ctx;
 	private final DatasetsProcessor processor;
 	private final Namespaces namespaces;
-	private final ScheduledExecutorService maintenanceService;
 	
 	public DatasetsResource(ConqueryConfig config, MasterMetaStorage storage, Namespaces namespaces, JobManager jobManager, ScheduledExecutorService maintenanceService) {
 		this.ctx = new UIContext(namespaces);
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
 		this.namespaces = namespaces;
-		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager);
-		this.maintenanceService = maintenanceService;
+		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager, maintenanceService);
 	}
 
 	@GET
@@ -138,7 +136,7 @@ public class DatasetsResource {
 	
 	@POST @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDataset(@NotEmpty@FormDataParam("dataset_name")String name) throws JSONException {
-		processor.addDataset(name, maintenanceService);
+		processor.addDataset(name, processor.getMaintenanceService());
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
 			.build();
