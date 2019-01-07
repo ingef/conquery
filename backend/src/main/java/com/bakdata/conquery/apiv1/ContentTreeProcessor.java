@@ -75,9 +75,7 @@ public class ContentTreeProcessor {
 			result = createSourceSearchResult(search, text);
 		}
 
-//		List<String> res = meta.getAutoCompleteSuggestions(dataset, tf.getColumn(), text);
-//              if(res != null) result.addAll(res.stream().map(v->new FEValue(tf.getRealLabels().get(v), v)).collect(Collectors.toList()));
-//                dataset.get
+		// complete body
 		return result;
 	}
 
@@ -195,21 +193,8 @@ public class ContentTreeProcessor {
 
 		ResolvedFilter rf = createResolvedFilter(filter);
 
-		/*
-		 * FIXME not yet supported
-		 */
-//		              @SqlQuery("SELECT value FROM <dataset.schema>.<column.dictName> WHERE value IN (SELECT * FROM UNNEST(:values));"
-//                )
-//            List<String> resolveFilterValues = meta.resolveFilterValues(dataset, rf.getColumn(), values.toArray(new String[values.size()]));
-//           
-//            if (resolveFilterValues != null) {
-//		List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
-//		filterValues.addAll(resolveFilterValues.stream()
-//			.filter(v -> !toRemove.contains(v))
-//			.map(v -> new FEValue(rf.getRealLabels().get(v), v))
-//			.collect(Collectors.toList()));
-//                values.removeAll(filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList()));
-//	    }
+
+		// complete body
 		return new ResolvedConceptsResult(null,
 				new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues), values);
 	}

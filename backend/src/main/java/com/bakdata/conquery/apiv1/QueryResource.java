@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.*;
+import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
+import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 
 import java.sql.SQLException;
 

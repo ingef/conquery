@@ -77,9 +77,10 @@ public class ContentTreeResources {
 	@Path("{" + DATASET + "}/concepts/{" + CONCEPT + "}")
 	public Response getNode(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(CONCEPT) ConceptId id,
 			@Context HttpServletRequest req) {
-//                if (useCaching && req.getHeader(HttpHeaders.IF_NONE_MATCH) != null && currentTag.equals(EntityTag.valueOf(req.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
-//                        return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
-//                }
+		//if (useCaching && req.getHeader(HttpHeaders.IF_NONE_MATCH) != null
+		//		&& currentTag.equals(EntityTag.valueOf(req.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
+		//	return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
+		//}
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		Map<ConceptElementId<?>, FENode> result = processor.getNode(user, dataset, id);
 

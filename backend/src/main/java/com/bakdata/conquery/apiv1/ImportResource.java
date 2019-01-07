@@ -1,6 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.*;
+import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 
 import java.io.IOException;
 
@@ -43,7 +43,6 @@ public class ImportResource {
 		 * ConstantQuery.of(queryProcessor.getConfig().getResultIdMapper(), input,
 		 * version); return queryProcessor.postQuery(user, dataset.get(datasets), cq,
 		 * URLBuilder.fromRequest(req));
-		 * 
 		 */
 		return null;
 	}
