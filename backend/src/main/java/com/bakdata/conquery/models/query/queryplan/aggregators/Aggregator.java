@@ -1,21 +1,13 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.QueryContext;
-import com.google.common.collect.Multiset;
+import com.bakdata.conquery.models.query.queryplan.EventIterating;
 
-public interface Aggregator<T> extends Cloneable {
+public interface Aggregator<T> extends Cloneable, EventIterating {
 
-	public default void nextTable(QueryContext ctx, Table table) {}
-	
-	public default void nextBlock(Block block) {}
-	
-	void aggregateNextEvent(Block block, int event);
-	
 	T getAggregationResult();
+
+	public void aggregateEvent(Block block, int event);
 	
 	public Aggregator<T> clone();
-	
-	Multiset<Table> collectRequiredTables();
 }

@@ -27,7 +27,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	@Getter
 	private final WorkerInformation info;
 	@Setter
-	private NetworkSession session; 
+	private NetworkSession session;
 	
 	public Worker(WorkerInformation info, JobManager jobManager, WorkerStorage storage, QueryExecutor queryExecutor) {
 		this.info = info;

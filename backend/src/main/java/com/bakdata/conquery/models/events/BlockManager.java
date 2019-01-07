@@ -50,7 +50,7 @@ public class BlockManager {
 		jobManager.addSlowJob(new SimpleJob("Update Block Manager", this::fullUpdate));
 	}
 	
-	public void fullUpdate() {
+	private void fullUpdate() {
 		for(Concept<?> c:concepts) {
 			for(Connector con:c.getConnectors()) {
 				try(Locked lock = cBlockLocks.acquire(con.getId())) {
@@ -99,7 +99,7 @@ public class BlockManager {
 		}
 	}
 	
-	public void addCalculatedCBlock(CBlock cBlock) {
+	public synchronized void addCalculatedCBlock(CBlock cBlock) {
 		cBlocks.add(cBlock);
 		entities
 			.computeIfAbsent(cBlock.getBlock().getEntity(), Entity::new)

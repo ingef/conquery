@@ -14,5 +14,5 @@ public interface ConqueryStorage extends Closeable {
 	File getDirectory();
 	Validator getValidator();
 	Environment getEnvironment();
-	CentralRegistry getCentralRegistry();	
+	CentralRegistry getCentralRegistry();
 }

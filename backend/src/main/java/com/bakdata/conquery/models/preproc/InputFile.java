@@ -51,7 +51,7 @@ public class InputFile implements Serializable {
 				descriptionFile.getName().substring(0,descriptionFile.getName().length()-EXTENSION_DESCRIPTION.length()));
 	}
 	
-	public static InputFile fromName(PreprocessingDirectories dirs,  String extensionlessName) {
+	public static InputFile fromName(PreprocessingDirectories dirs, String extensionlessName) {
 		InputFile f=new InputFile();
 		f.descriptionFile = 	new File(dirs.getDescriptions(), extensionlessName+EXTENSION_DESCRIPTION);
 		f.preprocessedFile = 	new File(dirs.getPreprocessedOutput(), extensionlessName+EXTENSION_PREPROCESSED);

@@ -94,7 +94,7 @@ public class Preprocessor {
 					ConqueryMDC.setLocation(name);
 
 					try(CSV csv = new CSV(config.getCsv(), input.getSourceFile())) {
-						Iterator<String[]> it = csv.iterateContent(name, log);
+						Iterator<String[]> it = csv.iterateContent(log);
 
 						while(it.hasNext()) {
 							String[] row = it.next();
@@ -116,7 +116,7 @@ public class Preprocessor {
 				//find the optimal subtypes
 				log.info("finding optimal column types");
 				CType<?,?> type = result.getPrimaryColumn().getType();
-				//TODO compress this here with new Trie PR
+				//see #151  compress this here with new Trie PR
 				//((StringType)result.getPrimaryColumn()).getDictionary();
 				log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), type, result.getPrimaryColumn().getType());
 

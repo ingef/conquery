@@ -1,30 +1,37 @@
 package com.bakdata.conquery.models.query.queryplan.filter;
 
-import java.util.Arrays;
+import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableMultiset;
-import com.google.common.collect.Multiset;
+import com.bakdata.conquery.models.query.queryplan.EventIterating;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class FilterNode<FILTER_VALUE extends FilterValue<?>, FILTER extends Filter<FILTER_VALUE>> extends QPNode {
+public abstract class FilterNode<FILTER_VALUE extends FilterValue<?>, FILTER extends Filter<FILTER_VALUE>> implements EventIterating {
 
 	protected final FILTER filter;
 	protected final FILTER_VALUE filterValue;
 
 	@Override
-	public Multiset<Table> collectRequiredTables() {
-		return HashMultiset.create(Arrays
-										   .stream(filter.getRequiredColumns())
-										   .map(Column::getTable)
-										   .collect(ImmutableMultiset.toImmutableMultiset())
-		);
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		for(Column c:filter.getRequiredColumns()) {
+			requiredTables.add(c.getTable().getId());
+		}
 	}
+
+	public abstract FilterNode<?,?> clone(QueryPlan plan, QueryPlan clone);
+
+	public boolean checkEvent(Block block, int event) {
+		return true;
+	}
+
+	public abstract void acceptEvent(Block block, int event);
+
+	public abstract boolean isContained();
 }

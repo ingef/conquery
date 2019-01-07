@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.concepts;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import javax.validation.Valid;
 import javax.validation.Validator;
@@ -11,6 +12,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -33,23 +35,8 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	private List<CONNECTOR> connectors=Collections.emptyList();
 	@JsonIgnore @Setter @Getter
 	private StructureNode structureParent;
-	@JsonIgnore @NotNull @Getter
-	private Concepts concepts;
-	@Setter @Getter @NotNull
-	private ConceptId storedId;
-	
-	@Override
-	public final ConceptId getId() {
-		if(storedId == null) {
-			storedId = createId();
-		}
-		return storedId;
-	}
-	
-	public void setConcepts(Concepts concepts) {
-		this.concepts = concepts;
-		storedId = createId();
-	}
+	@NotNull @Getter @Setter
+	private DatasetId dataset;
 	
 	public CONNECTOR getConnectorByName(String connector) {
 		return connectors
@@ -68,6 +55,6 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	
 	@Override
 	public ConceptId createId() {
-		return new ConceptId(concepts.getId(), getName());
+		return new ConceptId(Objects.requireNonNull(dataset), getName());
 	}
 }

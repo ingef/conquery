@@ -94,10 +94,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			}
 		});
 		log.info(
-				"\tloaded store {}\n\tentries: {}\n\tsize: {}\n\tloading time: {}", 
-				this, 
-				cache.values().size(), 
-				FileUtils.byteCountToDisplaySize(totalSize.get()), 
+				"\tloaded store {}\n\tentries: {}\n\tsize: {}\n\tloading time: {}",
+				this,
+				cache.values().size(),
+				FileUtils.byteCountToDisplaySize(totalSize.get()),
 				timer.stop()
 		);
 	}
@@ -109,7 +109,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void inject(Injectable injectable) {
-		store.inject(injectable);		
+		store.inject(injectable);
 	}
 	
 	@Override

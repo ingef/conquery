@@ -50,7 +50,7 @@ public abstract class IdentifiableImpl<ID extends IId<? extends IdentifiableImpl
 		if (getClass() != obj.getClass()) {
 			return false;
 		}
-		IdentifiableImpl other = (IdentifiableImpl) obj;
+		IdentifiableImpl<?> other = (IdentifiableImpl<?>) obj;
 		if (getId() == null) {
 			if (other.getId() != null) {
 				return false;

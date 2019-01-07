@@ -15,7 +15,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Concepts;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -67,13 +66,11 @@ public class PrefixIndexedTest {
 		// load concept tree from json
 		CentralRegistry registry = new CentralRegistry();
 
-		Concepts concepts = new Concepts();
 
 		Table table = new Table();
 
 		table.setName("the_table");
 		Dataset dataset = new Dataset();
-		concepts.setDataset(dataset);
 
 		dataset.setName("the_dataset");
 
@@ -95,7 +92,7 @@ public class PrefixIndexedTest {
 
 		indexedConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
 
-		indexedConcept.setConcepts(concepts);
+		indexedConcept.setDataset(dataset.getId());
 		indexedConcept.initElements(Validators.newValidator());
 
 		TreeChildPrefixIndex.putIndexInto(indexedConcept);
@@ -105,7 +102,7 @@ public class PrefixIndexedTest {
 
 		oldConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
 
-		oldConcept.setConcepts(concepts);
+		oldConcept.setDataset(dataset.getId());
 		oldConcept.initElements(Validators.newValidator());
 
 		assertThat(indexedConcept.getChildIndex()).isNotNull();

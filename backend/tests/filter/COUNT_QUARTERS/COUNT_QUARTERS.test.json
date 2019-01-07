@@ -3,44 +3,36 @@
   "label": "COUNT_QUARTERS Test",
   "expectedCsv": "tests/filter/COUNT_QUARTERS/expected_COUNT_QUARTERS_Filter.csv",
   "content": {
-    "tables": [
-      {
-        "csv": "tests/filter/COUNT_QUARTERS/content_COUNT_QUARTERS_Filter.csv",
-        "name": "count_quarters_filter",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
+    "tables": {
+      "csv": "tests/filter/COUNT_QUARTERS/content_COUNT_QUARTERS_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "behandlungsdatum",
+          "type": "DATE"
         },
-        "columns": [
-          {
-            "name": "behandlungsdatum",
-            "type": "DATE"
-          },
-          {
-            "name": "datum",
-            "type": "DATE_RANGE"
-          }
-        ]
-      }
-    ]
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        }
+      ]
+    }
   },
   "connector": {
-    "name": "filter_connector",
-    "table": "count_quarters_filter",
     "validityDates": {
       "label": "Datum",
-      "column": "count_quarters_filter.datum"
+      "column": "table.datum"
     },
     "filter": {
-      "name": "filter",
-      "description": "Test COUNT_QUARTERS_Filter",
-      "column": "count_quarters_filter.behandlungsdatum",
+      "column": "table.behandlungsdatum",
       "type": "COUNT_QUARTERS"
     }
   },
   "filterValue": {
     "type": "INTEGER_RANGE",
-    "filter": "${dataset}.concepts.the_concept.filter_connector.filter",
     "value": {
       "min": 2,
       "max": 3

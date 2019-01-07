@@ -22,7 +22,7 @@ public class XodusConfig {
 	@MaxSize(value=1,unit=SizeUnit.GIGABYTES)
 	private Size	logFileSize;
 	private String	logLockId;
-	private Long	logLockTimeout;
+	private Duration logLockTimeout = Duration.seconds(1);
 	private Size	logCachePageSize;
 	private Integer	logCacheOpenFilesCount;
 	private Boolean	logCacheUseNio;
@@ -72,7 +72,7 @@ public class XodusConfig {
 		if(logDurableWrite != null) {config.setLogDurableWrite(logDurableWrite);}
 		if(logFileSize != null) {config.setLogFileSize(logFileSize.toKilobytes());}
 		if(logLockId != null) {config.setLogLockId(logLockId);}
-		if(logLockTimeout != null) {config.setLogLockTimeout(logLockTimeout);}
+		if(logLockTimeout != null) {config.setLogLockTimeout(logLockTimeout.toMilliseconds());}
 		if(logCachePageSize != null) {config.setLogCachePageSize(Ints.checkedCast(logCachePageSize.toBytes()));}
 		if(logCacheOpenFilesCount != null) {config.setLogCacheOpenFilesCount(logCacheOpenFilesCount);}
 		if(logCacheUseNio != null) {config.setLogCacheUseNio(logCacheUseNio);}

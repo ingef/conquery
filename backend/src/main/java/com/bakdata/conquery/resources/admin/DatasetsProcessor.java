@@ -22,14 +22,15 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.i18n.I18n;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.preproc.PPHeader;
+import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
@@ -44,6 +45,7 @@ public class DatasetsProcessor {
 	private final MasterMetaStorage storage;
 	private final Namespaces namespaces;
 	private final JobManager jobManager;
+	private final ScheduledExecutorService maintenanceService;
 
 	public void addTable(Dataset dataset, Table table) throws JSONException {
 		Objects.requireNonNull(dataset);
@@ -60,7 +62,7 @@ public class DatasetsProcessor {
 		dataset.getTables().add(table);
 		namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
 		namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
-		//TODO check duplicate names
+		//see #143  check duplicate names
 	}
 
 
@@ -79,18 +81,39 @@ public class DatasetsProcessor {
 			}
 		}
 		
-		dataset.getConcepts().addConcept(c);
-		c.setConcepts(dataset.getConcepts());
-		namespaces.get(dataset.getId()).getStorage().updateConcept(c);
+		dataset.addConcept(c);
+		c.setDataset(dataset.getId());
+		jobManager.addSlowJob(new SimpleJob("Adding concept "+c.getId(), ()->namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
+
 		namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c));
-		//TODO check duplicate names
+		//see #144  check duplicate names
 	}
 
 	public void addDataset(String name, ScheduledExecutorService maintenanceService) throws JSONException {
+		//create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage, config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_"+name));
-		Namespace ns = new Namespace(datasetStorage);
+		
+		//add allIds table
+		Table allIdsTable = new Table();
+		{
+			allIdsTable.setName(ConqueryConstants.ALL_IDS_TABLE);
+			allIdsTable.setDataset(dataset);
+			Column primaryColumn = new Column();
+			{
+				primaryColumn.setName(ConqueryConstants.ALL_IDS_TABLE___ID);
+				primaryColumn.setPosition(0);
+				primaryColumn.setTable(allIdsTable);
+				primaryColumn.setType(MajorTypeId.STRING);
+			}
+			allIdsTable.setPrimaryColumn(primaryColumn);
+		}
+		dataset.getTables().add(allIdsTable);
+		
+		//store dataset in own storage
+		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_"+name));
+		datasetStorage.setMetaStorage(storage);
+		Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
 		ns.initMaintenance(maintenanceService);
 		ns.getStorage().updateDataset(dataset);
 		namespaces.add(ns);

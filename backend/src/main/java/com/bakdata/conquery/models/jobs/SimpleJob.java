@@ -7,10 +7,14 @@ import lombok.RequiredArgsConstructor;
 public class SimpleJob extends Job {
 	@Getter
 	private final String label;
-	private final Runnable runner;
+	private final Executable runner;
 
 	@Override
 	public void execute() throws Exception {
-		runner.run();
+		runner.execute();
+	}
+	
+	public interface Executable {
+		void execute() throws Exception;
 	}
 }

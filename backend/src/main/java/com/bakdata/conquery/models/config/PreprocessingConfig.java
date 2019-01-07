@@ -14,5 +14,5 @@ public class PreprocessingConfig {
 	@NotEmpty @Valid
 	private PreprocessingDirectories[] directories;
 	@Min(1)
-	private int threads = Runtime.getRuntime().availableProcessors(); 
+	private int threads = Runtime.getRuntime().availableProcessors();
 }

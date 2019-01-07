@@ -99,20 +99,19 @@ public class CalculateCBlocksJob extends Job {
 					if (child != null) {
 						cBlock.getMostSpecificChildren().add(child.getPrefix());
 					}
-					else {//TODO improve handling by copying the relevant things from the old project
+					else {//see #174  improve handling by copying the relevant things from the old project
 						cBlock.getMostSpecificChildren().add(null);
 					}
 				}
 				else {
 					cBlock.getMostSpecificChildren().add(null);
 				}
-
 			} catch (ConceptConfigurationException ex) {
 				log.error("Failed to resolve event "+block+"-"+event+" against concept "+connector, ex);
 			}
 		}
 
-		//TODO metrics candidate
+		//see #175  metrics candidate
 		log.trace(
 				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
 				treeConcept.getCache().getHits(),

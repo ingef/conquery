@@ -50,7 +50,7 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	}
 	
 
-	//TODO
+	//see #155
 		/*updateConceptDateRange(newConceptDateRange);
 	}
 

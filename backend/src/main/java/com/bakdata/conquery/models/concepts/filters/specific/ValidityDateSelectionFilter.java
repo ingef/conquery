@@ -20,7 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id="VALIDITY_DATE_SELECTION", base=Filter.class)
 public class ValidityDateSelectionFilter extends Filter<CQSelectFilter> implements ISelectFilter {
 
-	private static final long serialVersionUID = 1L;
+	
 	
 	@Override
 	public void configureFrontend(FEFilter f) {

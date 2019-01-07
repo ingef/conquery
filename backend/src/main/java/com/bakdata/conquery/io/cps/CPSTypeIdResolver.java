@@ -1,6 +1,5 @@
 package com.bakdata.conquery.io.cps;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -17,8 +16,8 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
-import io.github.lukehutch.fastclasspathscanner.scanner.ScanResult;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -33,7 +32,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	public void init(JavaType baseType) {
 		this.baseType = baseType;
 		this.cpsMap = null;
-		//TODO ideally this would create an aggregate map of all the children and not just super classes
+		//see #145  ideally this would create an aggregate map of all the children and not just super classes
 		Class<?> cl = baseType.getRawClass();
 		while(cpsMap == null && cl != null) {
 			cpsMap = globalMap.get(cl);
@@ -48,15 +47,23 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	static {
 		log.info("Scanning Classpath");
 		//scan classpaths for annotated child classes
-		List<Class<?>> bases = new ArrayList<>();
-		Set<Class<?>> types =  new HashSet<>();
-		ScanResult scanRes = new FastClasspathScanner()
-				.matchClassesWithAnnotation(CPSTypes.class, types::add)
-				.matchClassesWithAnnotation(CPSType.class, types::add)
-				.matchClassesWithAnnotation(CPSBase.class, bases::add)
-				.scan();
 		
-		log.info("Scanned: {} classes in classpath",scanRes.getNamesOfAllClasses().size());
+		ScanResult scanRes = new ClassGraph()
+			.enableAnnotationInfo()
+			//blacklist some packages that contain large libraries
+			.blacklistPackages(
+				"groovy",
+				"org.codehaus.groovy",
+				"org.apache",
+				"org.eclipse",
+				"com.google"
+			)
+			.scan();
+		
+		log.info("Scanned: {} classes in classpath", scanRes.getAllClasses().size());
+		Set<Class<?>> types = new HashSet<>();
+		types.addAll(scanRes.getClassesWithAnnotation(CPSTypes.class.getName()).loadClasses());
+		types.addAll(scanRes.getClassesWithAnnotation(CPSType.class.getName()).loadClasses());
 		
 		globalMap = new HashMap<>();
 		for(Class<?> type:types) {
@@ -77,13 +84,14 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			}
 		}
 		
+		List<Class<?>> bases = scanRes.getClassesWithAnnotation(CPSBase.class.getName()).loadClasses();
 		for(Class<?> b:bases) {
-			log.info("\tBase Class {}", b);
 			CPSMap map = globalMap.get(b);
 			if(map==null) {
-				log.warn("\t\tNo registered types");
+				log.warn("\tBase Class {}:\tNo registered types", b);
 			}
 			else {
+				log.info("\tBase Class {}", b);
 				map.calculateInverse();
 				for(Entry<Class<?>, String> e:map) {
 					log.info("\t\t{}\t->\t{}", e.getValue(), e.getKey());

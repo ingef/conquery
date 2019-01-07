@@ -45,7 +45,7 @@ public enum ESType {
 	private final static char DEZIMAL_SEPARATOR = DecimalFormatSymbols.getInstance().getDecimalSeparator();
 	
 	public String print(Object o) {
-		//TODO printing logic for output to statistic form
+		//see #153  printing logic for output to statistic form
 		throw new NotImplementedException("");
 	}
 }

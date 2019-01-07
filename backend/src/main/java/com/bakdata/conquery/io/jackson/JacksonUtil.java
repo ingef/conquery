@@ -47,8 +47,8 @@ public class JacksonUtil {
 	
 	private static InputStream stream(IoBuffer buffer) {
 		return new ByteArrayInputStream(
-			buffer.array(), 
-			buffer.position()+buffer.arrayOffset(), 
+			buffer.array(),
+			buffer.position()+buffer.arrayOffset(),
 			buffer.remaining()
 		);
 	}

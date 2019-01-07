@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -19,6 +18,7 @@ public interface NamespacedStorage extends ConqueryStorage {
 	void updateDictionary(Dictionary dict) throws JSONException;
 	void removeDictionary(DictionaryId id);
 	Dictionary computeDictionary(DictionaryId id) throws JSONException;
+	Dictionary getPrimaryDictionary();
 	
 	void addImport(Import imp) throws JSONException;
 	Import getImport(ImportId id);
@@ -29,7 +29,6 @@ public interface NamespacedStorage extends ConqueryStorage {
 	Dataset getDataset();
 	void updateDataset(Dataset dataset) throws JSONException;
 	
-	void addConcept(Concept<?> concept) throws JSONException;
 	Concept<?> getConcept(ConceptId id);
 	void updateConcept(Concept<?> concept) throws JSONException;
 	void removeConcept(ConceptId id);

@@ -101,7 +101,7 @@ public class TreeChildPrefixIndex {
 
 			log.trace("Index below {} contains {} nodes", root.getId(), index.treeChildren.length);
 
-			//TODO consider adding a higher threshold to avoid costly context switches for just a few elements?
+			//see #158  consider adding a higher threshold to avoid costly context switches for just a few elements?
 			if(index.treeChildren.length == 0) {
 				return;
 			}

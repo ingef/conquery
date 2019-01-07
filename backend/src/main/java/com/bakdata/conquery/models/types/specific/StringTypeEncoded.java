@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.google.common.io.BaseEncoding;
 
@@ -37,12 +36,17 @@ public class StringTypeEncoded extends StringType implements IStringType {
 	}
 
 	@Override
+	public int getStringId(String string) {
+		return super.getStringId(new String(encoding.decode(string)));
+	}
+
+	@Override
 	public CType<?, StringType> bestSubType() {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public Integer parse(String v) throws ParsingException {
+	public Integer parse(String v) {
 		throw new UnsupportedOperationException();
 	}
 

@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 
 public class NumberParsing {
 	
-	//TODO parse with ConqueryConfig.getInstance().getLocale()
+	//see #150  parse with ConqueryConfig.getInstance().getLocale()
 	
 	public static long parseLong(String value) throws ParsingException {
 		try {

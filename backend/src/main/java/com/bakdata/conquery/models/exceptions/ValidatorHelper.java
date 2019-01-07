@@ -22,7 +22,7 @@ public interface ValidatorHelper {
 	public static void failOnError(Logger log, Set<? extends ConstraintViolation<?>> violations, String context) throws JSONException {
 		List<String> violationMessages = violations
 				.stream()
-				.map( v-> 
+				.map( v->
 					ConstraintMessage.getMessage(v,Invocable.create((Inflector<Request, Void>) data -> null)))
 				.collect(Collectors.toList());
 		

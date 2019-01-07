@@ -42,8 +42,8 @@ public class Entity {
 		throw new UnsupportedOperationException();
 	}
 
-	public static int getBucket(int entityId) {
-		return entityId / 100;
+	public static int getBucket(int entityId, int entityBucketSize) {
+		return entityId / entityBucketSize;
 	}
 
 	public static Iterable<Integer> iterateBucket(int bucket) {

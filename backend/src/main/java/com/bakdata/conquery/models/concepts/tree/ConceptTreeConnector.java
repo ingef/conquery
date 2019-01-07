@@ -46,7 +46,7 @@ public class ConceptTreeConnector extends Connector {
 	/*
 	@Override
 	public EventProcessingResult processEvent(Event r) throws ConceptConfigurationException {
-		ConceptTreeChild concept = getConcept().findMostSpecificConcept(column, r.<Integer>get(column), null);//TODO new CalculatedValue<>(r::createRowMap));
+		ConceptTreeChild concept = getConcept().findMostSpecificConcept(column, r.<Integer>get(column), null);//see #172  new CalculatedValue<>(r::createRowMap));
 		if(concept!=null) {
 			CDateRange dateRange = extractValidityDates(r);
 			concept.incMatchingEntries(dateRange);

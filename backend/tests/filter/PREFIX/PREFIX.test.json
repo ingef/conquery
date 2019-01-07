@@ -3,44 +3,36 @@
   "label": "Prefix Test",
   "expectedCsv": "tests/filter/PREFIX/expected_SELECT_Filter.csv",
   "content": {
-    "tables": [
-      {
-        "csv": "tests/filter/PREFIX/content_SELECT_Filter.csv",
-        "name": "select_filter",
-        "primaryColumn": {
-          "name": "pid",
+    "tables": {
+      "csv": "tests/filter/PREFIX/content_SELECT_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "value",
           "type": "STRING"
         },
-        "columns": [
-          {
-            "name": "value",
-            "type": "STRING"
-          },
-          {
-            "name": "datum",
-            "type": "DATE"
-          }
-        ]
-      }
-    ]
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
   },
   "connector": {
-    "name": "filter_connector",
-    "table": "select_filter",
     "validityDates": {
       "label": "Datum",
-      "column": "select_filter.datum"
+      "column": "table.datum"
     },
     "filter": {
-      "name": "filter",
-      "description": "Test SELECT_Filter",
-      "column": "select_filter.value",
+      "column": "table.value",
       "type": "PREFIX_TEXT"
     }
   },
   "filterValue": {
     "type": "STRING",
-    "filter": "${dataset}.concepts.the_concept.filter_connector.filter",
     "value": "A"
   }
 }

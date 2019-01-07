@@ -85,11 +85,13 @@ public class DaysInRangeOutputTest {
 		ArrayList<PatientEvent> output = new ArrayList<>();
 
 		TypeIdDaysInRangeMerger merger = TypeIdDaysInRangeMerger.builder()
-																.consumer(output::add)
-																.mergeCondition(daysInRange -> QuarterUtils.isBeginOfQuarter(daysInRange.getStart())
-																							   || QuarterUtils.isEndOfQuarter(daysInRange.getEnd()))
-																.rangeFunction(DaysInRange::rangeFromStart)
-																.build();
+			.consumer(output::add)
+			.mergeCondition(daysInRange ->
+				QuarterUtils.isBeginOfQuarter(daysInRange.getStart())
+				|| QuarterUtils.isEndOfQuarter(daysInRange.getEnd())
+			)
+			.rangeFunction(DaysInRange::rangeFromStart)
+			.build();
 
 		for (Record record : csvParser.iterateRecords(csvFile.toFile())) {
 			// unique,year,quarter,days

@@ -6,10 +6,10 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.concepts.filters.SimpleSingleColumnFilter;
+import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.query.aggregators.filter.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQIntegerRangeFilter;
+import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
@@ -22,9 +22,9 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Getter @Setter @Slf4j
 @CPSType(id="DATE_DISTANCE", base=Filter.class)
-public class DateDistanceFilter extends SimpleSingleColumnFilter<CQIntegerRangeFilter> {
+public class DateDistanceFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
 
-	private static final long serialVersionUID = 1L;
+	
 	
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {

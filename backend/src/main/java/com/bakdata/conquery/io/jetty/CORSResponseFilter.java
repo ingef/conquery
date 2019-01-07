@@ -10,7 +10,7 @@ public class CORSResponseFilter implements ContainerResponseFilter {
 	public void filter(ContainerRequestContext requestContext, ContainerResponseContext rCtx) {
 		rCtx.getHeaders().add("Access-Control-Allow-Origin", "*");
 		rCtx.getHeaders().add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept, Authorization");
-		rCtx.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PATCH,DELETE, PUT");			
+		rCtx.getHeaders().add("Access-Control-Allow-Methods", "GET, POST, PATCH,DELETE, PUT");
 	}
 
 }

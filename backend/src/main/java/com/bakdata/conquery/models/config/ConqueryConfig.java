@@ -3,6 +3,9 @@ package com.bakdata.conquery.models.config;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.auth.AuthConfig;
+import com.bakdata.conquery.models.auth.DevAuthConfig;
+
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
@@ -17,7 +20,7 @@ public class ConqueryConfig extends Configuration {
 	
 	@Valid @NotNull
 	private ClusterConfig cluster = new ClusterConfig();
-	@Valid @NotNull //TODO remove
+	@Valid @NotNull //see #173  remove
 	private ShardConfig shardConfig = new ShardConfig();
 	@Valid @NotNull
 	private PreprocessingConfig preprocessor = new PreprocessingConfig();
@@ -31,6 +34,10 @@ public class ConqueryConfig extends Configuration {
 	private StorageConfig storage = new StorageConfig();
 	@Valid @NotNull
 	private QueryConfig queries = new QueryConfig();
+	@Valid @NotNull
+	private APIConfig api = new APIConfig();
+	
+	private AuthConfig authentication = new DevAuthConfig();
 	/**
 	 * null means here that we try to deduce from an attached agent
 	 */

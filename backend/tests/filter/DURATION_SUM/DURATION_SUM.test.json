@@ -3,42 +3,34 @@
   "label": "DURATION_SUM Test",
   "expectedCsv": "tests/filter/DURATION_SUM/expected_DURATION_SUM_Filter.csv",
   "content": {
-    "tables": [
-      {
-        "csv": "tests/filter/DURATION_SUM/content_DURATION_SUM_Filter.csv",
-        "name": "duration_sum",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
-        },
-        "columns": [
-          {
-            "name": "datum",
-            "type": "DATE_RANGE"
-          }
-        ]
-      }
-    ]
+    "tables": {
+      "csv": "tests/filter/DURATION_SUM/content_DURATION_SUM_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        }
+      ]
+    }
   },
   "connector": {
-    "name": "filter_connector",
-    "table": "duration_sum",
     "validityDates": [
       {
         "label": "Dauer",
-        "column": "duration_sum.datum"
+        "column": "table.datum"
       }
     ],
     "filter": {
-      "name": "filter",
-      "description": "Test DURATION_SUM_Filter",
-      "column": "duration_sum.datum",
+      "column": "table.datum",
       "type": "DURATION_SUM"
     }
   },
   "filterValue": {
     "type": "INTEGER_RANGE",
-    "filter": "${dataset}.concepts.the_concept.filter_connector.filter",
     "value": {
       "min": 5
     }

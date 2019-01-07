@@ -8,8 +8,6 @@ import java.util.Arrays;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.joor.Reflect;
-
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
@@ -43,8 +41,8 @@ public class Import extends NamedImpl<ImportId> {
 
 	@Valid @NotNull
 	private TableId table;
-	@JsonManagedReference
-	private ImportColumn[] columns;
+	@JsonManagedReference @NotNull
+	private ImportColumn[] columns = new ImportColumn[0];
 	private long numberOfBlocks;
 	private long numberOfEntries;
 	@JsonIgnore
@@ -65,7 +63,7 @@ public class Import extends NamedImpl<ImportId> {
 	}
 
 	public void loadExternalInfos(NamespacedStorage storage) {
-		//TODO primary column?
+		//see #149  primary column?
 		for(ImportColumn col:columns) {
 			col.getType().loadExternalInfos(storage);
 		}
@@ -102,10 +100,11 @@ public class Import extends NamedImpl<ImportId> {
 				);
 				
 				gen.compile();
-				blockFactory = Reflect.on(
-						gen.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix)
-				).create().get();
 				
+				blockFactory = (BlockFactory) gen
+					.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix)
+					.getConstructor()
+					.newInstance();
 			} catch (Exception e) {
 				log.error("Failed to generate classes for {}:\n{}\n{}\n{}", this, eventSource, blockSource, factorySource);
 				throw new IllegalStateException("Failed to generate Block/Event classes", e);

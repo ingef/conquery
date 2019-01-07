@@ -42,8 +42,8 @@ public class IdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends I
 				
 				//check if there was a dataset injected and if it is already a prefix
 				Dataset dataset = (Dataset) ctxt.findInjectableValue(Dataset.class.getName(), null, null);
-				if(dataset != null && !text.startsWith(dataset.getName()+IId.JOIN_CHAR)) {
-					id = idParser.parse(dataset.getName(),text);
+				if(dataset != null) {
+					id = idParser.parsePrefixed(dataset.getName(), text);
 				}
 				else {
 					id = idParser.parse(text);

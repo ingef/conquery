@@ -8,7 +8,7 @@ import io.dropwizard.testing.POJOConfigurationFactory;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
-//FIXME this is a workaround for https://github.com/dropwizard/dropwizard/issues/2496
+//see #169  this is a workaround for https://github.com/dropwizard/dropwizard/issues/2496
 public class TestCommandWrapper extends Command {
 
 	private Command parent;
@@ -28,8 +28,10 @@ public class TestCommandWrapper extends Command {
 	@SuppressWarnings({"rawtypes", "unchecked"})
 	@Override
 	public void run(Bootstrap bootstrap, Namespace namespace) throws Exception {
-		bootstrap.setConfigurationFactoryFactory((klass, validator, objectMapper, propertyPrefix) ->
-														 new POJOConfigurationFactory<ConqueryConfig>(config));
+		bootstrap.setConfigurationFactoryFactory(
+			(klass, validator, objectMapper, propertyPrefix) ->
+				new POJOConfigurationFactory<ConqueryConfig>(config)
+		);
 		parent.run(bootstrap, namespace);
 	}
 }

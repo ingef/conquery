@@ -12,7 +12,6 @@ import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.DatasetsProcessor;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -26,6 +25,7 @@ import lombok.extern.slf4j.Slf4j;
 public class StandaloneSupport implements Closeable {
 
 	private final TestConquery testConquery;
+	@Getter
 	private final StandaloneCommand standaloneCommand;
 	@Getter
 	private final Namespace namespace;
@@ -41,24 +41,25 @@ public class StandaloneSupport implements Closeable {
 
 	public void waitUntilWorkDone() {
 		log.info("Waiting for jobs to finish");
-		waitUntilWorkDone(standaloneCommand.getMaster().getJobManager());
-		for (SlaveCommand slave : standaloneCommand.getSlaves())
-			waitUntilWorkDone(slave.getJobManager());
-		waitUntilWorkDone(standaloneCommand.getMaster().getJobManager());
+		boolean busy;
+		//sample 10 times from the job queues to make sure we are done with everything
+		for(int i=0;i<10;i++) {
+			do {
+				busy = false;
+				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
+				for (SlaveCommand slave : standaloneCommand.getSlaves())
+					busy |= slave.getJobManager().isSlowWorkerBusy();
+				Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
+			} while(busy);
+		}
 		log.info("all jobs finished");
 	}
 
-	private void waitUntilWorkDone(JobManager jobManager) {
-		while (jobManager.isSlowWorkerBusy()) {
-			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-		}
-	}
-	
 	public void preprocessTmp() {
 		DropwizardTestSupport<ConqueryConfig> prepro = new DropwizardTestSupport<>(
-				Conquery.class,
-				cfg,
-				app -> new TestCommandWrapper(cfg, new PreprocessorCommand())
+			Conquery.class,
+			cfg,
+			app -> new TestCommandWrapper(cfg, new PreprocessorCommand())
 		);
 		prepro.before();
 		prepro.after();

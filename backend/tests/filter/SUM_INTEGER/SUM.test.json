@@ -3,44 +3,36 @@
   "label": "SUM_INTEGER Test",
   "expectedCsv": "tests/filter/SUM_INTEGER/expected_SUM_Filter.csv",
   "content": {
-    "tables": [
-      {
-        "csv": "tests/filter/SUM_INTEGER/content_SUM_Filter.csv",
-        "name": "sum_filter",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
+    "tables": {
+      "csv": "tests/filter/SUM_INTEGER/content_SUM_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "plus",
+          "type": "INTEGER"
         },
-        "columns": [
-          {
-            "name": "plus",
-            "type": "INTEGER"
-          },
-          {
-            "name": "datum",
-            "type": "DATE"
-          }
-        ]
-      }
-    ]
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
   },
   "connector": {
-    "name": "connector",
-    "table": "sum_filter",
     "validityDates": {
       "label": "Datum",
-      "column": "sum_filter.datum"
+      "column": "table.datum"
     },
     "filter": {
-      "name": "filter",
-      "description": "Test sum_filter",
-      "column": "sum_filter.plus",
+      "column": "table.plus",
       "type": "SUM"
     }
   },
   "filterValue": {
     "type": "INTEGER_RANGE",
-    "filter": "${dataset}.concepts.the_concept.connector.filter",
     "value": {
       "min": 100,
       "max": 200

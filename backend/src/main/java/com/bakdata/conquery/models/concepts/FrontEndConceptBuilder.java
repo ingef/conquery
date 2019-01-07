@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.concepts;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -17,6 +18,7 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -29,20 +31,20 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
  */
 public class FrontEndConceptBuilder {
 
-	public static FERoot createRoot(long version, Concepts concepts) {
+	public static FERoot createRoot(long version, Dataset dataset) {
 		
 		FERoot root = new FERoot();
 		root.setVersion(version);
 		
 		Map<IId<?>,FENode> roots = new LinkedHashMap<>();
 		//add all real roots
-		for(Concept<?> c:concepts.getConcepts()) {
+		for(Concept<?> c:dataset.getConcepts()) {
 			roots.put(c.getId(),createCTRoot(c));
 		}
 		//add the structure tree
-		for(StructureNode sn:concepts.getAllStructureNodes()) {
-			roots.put(sn.getId(),createStructureNode(sn));
-		}
+		dataset
+			.streamAllStructureNodes()
+			.forEach(sn->roots.put(sn.getId(),createStructureNode(sn)));
 		root.setConcepts(roots);
 		return root;
 	}
@@ -58,7 +60,7 @@ public class FrontEndConceptBuilder {
 				.detailsAvailable(Boolean.TRUE)
 				.codeListResolvable(
 					c instanceof TreeConcept
-					|| ( 
+					|| (
 							c instanceof VirtualConcept
 							&& ((VirtualConcept)c).getConnectors()
 								.stream()
@@ -104,7 +106,7 @@ public class FrontEndConceptBuilder {
 					cn.getChildren().stream()
 						.map(IdentifiableImpl::getId)
 						.toArray(ConceptTreeChildId[]::new),
-					cn.getResolvedContained().stream()
+					cn.getContainedRoots().stream()
 					.map(Concept::getId)
 						.toArray(ConceptTreeChildId[]::new)
 				)
@@ -161,10 +163,10 @@ public class FrontEndConceptBuilder {
 		return f;
 	}
 
-	public static Map<ConceptId, Map<ConceptElementId<?>, FENode>> createTreeMap(Concepts concepts) {
+	public static Map<ConceptId, Map<ConceptElementId<?>, FENode>> createTreeMap(List<Concept<?>> concepts) {
 		Map<ConceptId, Map<ConceptElementId<?>, FENode>> rootedMap = new LinkedHashMap<>();
 
-		for(Concept<?> c : concepts.getConcepts()) {
+		for(Concept<?> c : concepts) {
 			Map<ConceptElementId<?>, FENode> map = new LinkedHashMap<>();
 			rootedMap.put(c.getId(), map);
 			fillTreeMap(c,map);

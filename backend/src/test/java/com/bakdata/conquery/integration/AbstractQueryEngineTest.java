@@ -29,8 +29,6 @@ public abstract class AbstractQueryEngineTest implements ConqueryTestSpec {
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
 
-		standaloneSupport.waitUntilWorkDone();
-
 		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query);
 
 		managed.awaitDone(1, TimeUnit.DAYS);

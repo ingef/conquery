@@ -1,5 +1,9 @@
 package com.bakdata.conquery.util.progress.reporter;
 
+import java.math.RoundingMode;
+
+import com.google.common.math.DoubleMath;
+
 public class NullProgressReporter implements ProgressReporter{
 
 	@Override
@@ -14,7 +18,7 @@ public class NullProgressReporter implements ProgressReporter{
 
 	@Override
 	public String getEstimate() {
-		return ProgressReporterImpl.ZERO_PROGRESS;
+		return ProgressReporterUtil.ZERO_PROGRESS;
 	}
 
 	@Override
@@ -36,11 +40,20 @@ public class NullProgressReporter implements ProgressReporter{
 
 	@Override
 	public void start() {
-		
 	}
-	
+
 	@Override
-	public String toString() {
-		return getEstimate();
+	public long getWaitedSeconds() {
+		return 0;
+	}
+
+	@Override
+	public long getStartTime() {
+		return DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN);
+	}
+
+	@Override
+	public boolean isStarted() {
+		return false;
 	}
 }

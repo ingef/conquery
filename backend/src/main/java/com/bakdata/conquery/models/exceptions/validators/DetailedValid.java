@@ -46,7 +46,7 @@ public @interface DetailedValid {
 			Class<?> cl = obj.getClass();
 			if(!methods.containsKey(cl)) {
 				for(Method m:obj.getClass().getMethods()) {
-					if(m.isAnnotationPresent(ValidationMethod2.class) 
+					if(m.isAnnotationPresent(ValidationMethod2.class)
 							&& boolean.class.equals(m.getReturnType())
 							&& Arrays.equals(new Class<?>[]{ConstraintValidatorContext.class}, m.getParameterTypes())) {
 						m.setAccessible(true);

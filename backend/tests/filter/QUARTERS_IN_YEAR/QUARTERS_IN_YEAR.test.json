@@ -3,44 +3,36 @@
   "label": "QUARTERS_IN_YEAR Test",
   "expectedCsv": "tests/filter/QUARTERS_IN_YEAR/expected_QUARTERS_IN_YEAR_Filter.csv",
   "content": {
-    "tables": [
-      {
-        "csv": "tests/filter/QUARTERS_IN_YEAR/content_QUARTERS_IN_YEAR_Filter.csv",
-        "name": "quarters_in_year_filter",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
+    "tables": {
+      "csv": "tests/filter/QUARTERS_IN_YEAR/content_QUARTERS_IN_YEAR_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "behandlungsdatum",
+          "type": "DATE"
         },
-        "columns": [
-          {
-            "name": "behandlungsdatum",
-            "type": "DATE"
-          },
-          {
-            "name": "datum",
-            "type": "DATE_RANGE"
-          }
-        ]
-      }
-    ]
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        }
+      ]
+    }
   },
   "connector": {
-    "name": "filter_connector",
-    "table": "quarters_in_year_filter",
     "validityDates": {
       "label": "Datum",
-      "column": "quarters_in_year_filter.datum"
+      "column": "table.datum"
     },
     "filter": {
-      "name": "filter",
-      "description": "Test QUARTERS_IN_YEAR_Filter",
-      "column": "quarters_in_year_filter.behandlungsdatum",
+      "column": "table.behandlungsdatum",
       "type": "QUARTERS_IN_YEAR"
     }
   },
   "filterValue": {
     "type": "INTEGER_RANGE",
-    "filter": "${dataset}.concepts.the_concept.filter_connector.filter",
     "value": {
       "min": 2,
       "max": 3

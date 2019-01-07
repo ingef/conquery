@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -10,26 +11,34 @@ import org.apache.commons.lang3.reflect.MethodUtils;
 
 import com.bakdata.conquery.io.jackson.serializer.IdDeserializer;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
 
 import jersey.repackaged.com.google.common.collect.Lists;
 
 @JsonDeserialize(using=IdDeserializer.class)
 public interface IId<TYPE> {
 
-	public static final char JOIN_CHAR = '.';
+	char JOIN_CHAR = '.';
 	public static final Joiner JOINER = Joiner.on(JOIN_CHAR);
 	public static final Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
 	static final Map<List<String>, IId<?>> INTERNED_IDS = new ConcurrentHashMap<>();
 	
 	public static interface Parser<ID extends IId<?>> {
+		
+		static String[] split(String id) {
+			String[] parts = StringUtils.split(id, IId.JOIN_CHAR);
+			for(int i = 0; i < parts.length; ++i){
+				parts[i] = ConqueryEscape.unescape(parts[i]);
+				
+			}
+			return parts;
+		}
 
 		default ID parse(String id) {
-			List<String> parts = ImmutableList.copyOf(StringUtils.split(id, IId.JOIN_CHAR));
-			return parse(parts);
+			return parse(Arrays.asList(split(id)));
 		}
 		
 		@SuppressWarnings("unchecked")
@@ -43,13 +52,18 @@ public interface IId<TYPE> {
 			return checkNoRemaining(parse(it), it);
 		}
 		
-		@SuppressWarnings("unchecked")
-		default ID parse(String dataset, String id) {
-			List<String> parts = new ImmutableList.Builder<String>()
+		default ID parsePrefixed(String dataset, String id) {
+			String[] split = split(id);
+			//if already prefixed
+			if(split.length > 0 && split[0].equals(dataset)) {
+				return parse(ImmutableList.copyOf(split));
+			}
+
+			List<String> parts = ImmutableList.<String>builderWithExpectedSize(split.length+1)
 				.add(dataset)
-				.addAll(Iterators.forArray(StringUtils.split(id, IId.JOIN_CHAR)))
+				.add(split)
 				.build();
-			return (ID)INTERNED_IDS.computeIfAbsent(parts, this::createId);
+			return parse(parts);
 		}
 		
 		ID parse(Iterator<String> parts);
@@ -98,7 +112,6 @@ public interface IId<TYPE> {
 		return (Class<T>)result;
 	}
 	
-	//TODO these methods should be cached and more performant
 	public static <T extends IId<?>> Parser<T> createParser(Class<T> idClass) {
 		return (Parser<T>)idClass.getDeclaredClasses()[0].getEnumConstants()[0];
 	}

@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
+import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 

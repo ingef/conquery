@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.Workers;
 
-import io.dropwizard.setup.Environment;
 import lombok.Getter;
 
 public abstract class NetworkMessageContext<MESSAGE extends NetworkMessage<?>> extends MessageSender.Simple<MESSAGE> {

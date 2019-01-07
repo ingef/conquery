@@ -28,9 +28,9 @@ public class MinaConfig implements IoSessionConfig {
 	/** The delay before we notify a session that it has been idle on write. Default to infinite */
 	private int writerIdleTime;
 
-	/** 
-	 * The delay before we notify a session that it has been idle on read and write. 
-	 * Default to infinite 
+	/**
+	 * The delay before we notify a session that it has been idle on read and write.
+	 * Default to infinite
 	 **/
 	private int bothIdleTime;
 

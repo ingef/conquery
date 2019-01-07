@@ -20,26 +20,27 @@ public class RangeSerializerTest {
 
 	public static Stream<Range<Integer>> data() {
 		Random random = new Random(SEED);
-		return  Stream.generate(() -> {
-			int first = random.nextInt();
-			int second = random.nextInt();
-
-			if (first < second) {
-				return Range.of(first, second);
-			}
-			else {
-				return Range.of(second, first);
-			}
-		})
-					 .filter(Range::isOrdered)
-					 .flatMap(range -> Stream.of(
-					 		range,
-							Range.exactly(range.getMin()),
-							Range.atMost(range.getMin()),
-							Range.atLeast(range.getMin())
-					 ))
-					 .filter(Range::isOrdered)
-					 .limit(100);
+		return  Stream
+			.generate(() -> {
+				int first = random.nextInt();
+				int second = random.nextInt();
+	
+				if (first < second) {
+					return Range.of(first, second);
+				}
+				else {
+					return Range.of(second, first);
+				}
+			})
+			.filter(Range::isOrdered)
+			.flatMap(range -> Stream.of(
+					range,
+					Range.exactly(range.getMin()),
+					Range.atMost(range.getMin()),
+					Range.atLeast(range.getMin())
+			))
+			.filter(Range::isOrdered)
+			.limit(100);
 	}
 
 	@ParameterizedTest @MethodSource("data")

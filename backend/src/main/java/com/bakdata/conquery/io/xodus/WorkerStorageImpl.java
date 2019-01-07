@@ -81,14 +81,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 	
 	@Override
-	public void addConcept(Concept<?> concept) throws JSONException {
-		concepts.add(concept);
-		if(blockManager!=null) {
-			blockManager.addConcept(concept);
-		}
-	}
-	
-	@Override
 	public void addCBlock(CBlock cBlock) throws JSONException {
 		cBlocks.add(cBlock);
 	}

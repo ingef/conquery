@@ -7,55 +7,40 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Multiset;
 
-import lombok.Getter;
-
-public abstract class QPNode {
-	
-	@JsonIgnore @Getter
-	private transient OpenResult lastResult = OpenResult.MAYBE;
+public abstract class QPNode implements EventIterating {
+	private transient boolean lastResult = true;
 	protected QueryContext context;
 	protected Entity entity;
-	
+
 	public void init(Entity entity) {
 		this.entity = entity;
 		init();
 	}
-	
-	protected void init() {}
+
+	protected void init() {
+	}
 
 	public abstract QPNode clone(QueryPlan plan, QueryPlan clone);
-	
-	public abstract Multiset<Table> collectRequiredTables();
 
+	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		this.context = ctx;
 	}
-	
-	public void nextBlock(Block block) {}
 
-	/**
-	 * If Node has not yet signaled termination, continue aggregating over events.
-	 *
-	 * @param block
-	 * @param event
-	 * @return
-	 */
-	public final OpenResult aggregate(Block block, int event) {
-		if(lastResult == OpenResult.MAYBE) {
+	public final boolean aggregate(Block block, int event) {
+		if (lastResult) {
 			lastResult = nextEvent(block, event);
 		}
 		return lastResult;
 	}
 
-	protected abstract OpenResult nextEvent(Block block, int event);
+	public abstract boolean nextEvent(Block block, int event);
 
 	public boolean isContained() {
-		return getLastResult().asDefiniteResult();
+		return lastResult;
 	}
-	
+
 	public List<QPNode> getChildren() {
 		return Collections.emptyList();
 	}

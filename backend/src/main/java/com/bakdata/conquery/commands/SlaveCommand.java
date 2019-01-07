@@ -24,10 +24,8 @@ import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
-import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Slave;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Slave;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.RegisterWorker;
 import com.bakdata.conquery.models.messages.network.specific.UpdateJobManagerStatus;
@@ -49,12 +47,12 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	private NioSocketConnector connector;
 	private JobManager jobManager;
-	@Setter
-	private String storageSuffix = "";
 	private Validator validator;
 	private ConqueryConfig config;
 	private Slave context;
 	private Workers workers = new Workers();
+	@Setter
+	private String label = "slave";
 
 	public SlaveCommand() {
 		super("slave", "Connects this instance as a slave to a running master.");
@@ -64,7 +62,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		connector = new NioSocketConnector();
-		jobManager = new JobManager();
+		jobManager = new JobManager(label);
 		environment.lifecycle().manage(jobManager);
 		environment.lifecycle().manage(this);
 		
@@ -173,7 +171,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
 		
 		InetSocketAddress address = new InetSocketAddress(
-				config.getCluster().getMasterURL().getHostAddress(), 
+				config.getCluster().getMasterURL().getHostAddress(),
 				config.getCluster().getPort()
 		);
 

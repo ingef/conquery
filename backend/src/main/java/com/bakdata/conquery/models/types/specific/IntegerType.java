@@ -49,4 +49,4 @@ public class IntegerType extends CType<Long, IntegerType> {
 			return this;
 		}
 	}
-}	
+}

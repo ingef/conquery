@@ -5,8 +5,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.IOException;
 import java.lang.reflect.Modifier;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.Test;
@@ -19,14 +17,13 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptsId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.github.lukehutch.fastclasspathscanner.FastClasspathScanner;
+import io.github.classgraph.ClassGraph;
 
 public class IdTests {
 
@@ -35,9 +32,7 @@ public class IdTests {
 		ConceptTreeChildId idA = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new ConceptsId(
-						new DatasetId("1")
-					),
+					new DatasetId("1"),
 					"2"
 				),
 				"3"
@@ -48,9 +43,7 @@ public class IdTests {
 		ConceptTreeChildId idB = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new ConceptsId(
-						new DatasetId("1")
-					),
+					new DatasetId("1"),
 					"2"
 				),
 				"3"
@@ -68,9 +61,7 @@ public class IdTests {
 		ConceptTreeChildId id = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new ConceptsId(
-						new DatasetId("1")
-					),
+					new DatasetId("1"),
 					"2"
 				),
 				"3"
@@ -90,9 +81,7 @@ public class IdTests {
 		ConceptTreeChildId id = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new ConceptsId(
-						new DatasetId("1")
-					),
+					new DatasetId("1"),
 					"2"
 				),
 				"3"
@@ -118,7 +107,7 @@ public class IdTests {
 		assertThat(id1).isSameAs(id2);
 		assertThat(id1.getParent()).isSameAs(id2.getParent());
 		assertThat(id1.findConcept()).isSameAs(id2.findConcept());
-		assertThat(id1.findConcept().getConcepts().getDataset()).isSameAs(id2.findConcept().getConcepts().getDataset());
+		assertThat(id1.findConcept().getDataset()).isSameAs(id2.findConcept().getDataset());
 	}
 	
 	@Test
@@ -126,9 +115,7 @@ public class IdTests {
 		ConceptTreeChildId id = new ConceptTreeChildId(
 			new ConceptTreeChildId(
 				new ConceptId(
-					new ConceptsId(
-						new DatasetId("1")
-					),
+					new DatasetId("1"),
 					"2"
 				),
 				"3"
@@ -145,12 +132,10 @@ public class IdTests {
 	}
 	
 	public static Stream<Arguments> reflectionTest() {
-		Set<Class<?>> types =  new HashSet<>();
-		new FastClasspathScanner()
-				.matchClassesImplementing(Identifiable.class, types::add)
-				.scan();
-		
-		return types
+		return new ClassGraph()
+			.enableClassInfo()
+			.scan()
+			.getClassesImplementing(Identifiable.class.getName()).loadClasses()
 			.stream()
 			.filter(cl -> !cl.isInterface())
 			.filter(cl -> !Modifier.isAbstract(cl.getModifiers()))
@@ -164,9 +149,12 @@ public class IdTests {
 					
 					
 					//special exceptions for this test
-					if(name.endsWith("Information"))
+					if(name.endsWith("Information")) {
 						name = name.substring(0, name.length()-11);
-					
+					}
+					if(name.endsWith("Permission")) {
+						name = "Permission";
+					}
 					
 					try {
 						return Arguments.of(

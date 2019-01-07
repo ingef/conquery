@@ -1,17 +1,13 @@
 package com.bakdata.conquery.io.jackson;
 
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import org.junit.jupiter.api.Test;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import lombok.Data;
 
 public class SerializationBlockTest {
 	@Test
 	public void testUnmarkedClass() {
-		//TODO //FIXME
+		//see #141
 		/*assertThatThrownBy(() -> {
 			Jackson.MAPPER.writeValueAsString(new Unmarked());
 		})

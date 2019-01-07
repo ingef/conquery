@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;

@@ -9,8 +9,6 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
-import io.dropwizard.lifecycle.ExecutorServiceManager;
-import io.dropwizard.lifecycle.setup.LifecycleEnvironment;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;

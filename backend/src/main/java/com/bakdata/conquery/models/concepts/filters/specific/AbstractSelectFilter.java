@@ -11,7 +11,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.api.description.FEValue;
-import com.bakdata.conquery.models.concepts.filters.SimpleSingleColumnFilter;
+import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -23,9 +23,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter @Setter @Slf4j @RequiredArgsConstructor
-public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> extends SimpleSingleColumnFilter<FE_TYPE> implements ISelectFilter {
+public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
 
-	private static final long serialVersionUID = 1L;
+	
 
 	protected Map<String, String> labels = Collections.emptyMap();
 	protected boolean matchLabels = false;
@@ -50,7 +50,7 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 	@Override
 	public void configureFrontend(FEFilter f) {
 		f.setType(filterType);
-		//TODO
+		//see #160
 		/*
 		Column c = getColumn();
 		if(!c.getType().equals(ColumnType.STRING))

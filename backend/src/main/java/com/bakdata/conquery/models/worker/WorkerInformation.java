@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
-import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.ForwardToWorker;
@@ -20,7 +19,7 @@ import lombok.Setter;
 public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSender.Transforming<WorkerMessage, SlaveMessage> {
 	@NotNull
 	private DatasetId dataset;
-	@NotNull 
+	@NotNull
 	private IntArrayList includedBuckets = new IntArrayList();
 	@JsonIgnore
 	private transient SlaveInformation connectedSlave;

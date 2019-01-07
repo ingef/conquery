@@ -1,50 +1,47 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.time.LocalDate;
-
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.google.common.collect.Multiset;
-import com.google.common.collect.Range;
-import com.google.common.collect.RangeSet;
-import com.google.common.collect.TreeRangeSet;
 
-public class SpecialDateUnion implements Aggregator<RangeSet<LocalDate>> {
-	
-	private RangeSet<LocalDate> set = TreeRangeSet.create();
+public class SpecialDateUnion implements Aggregator<CDateSet> {
+
+	private CDateSet set = CDateSet.create();
 	private Column currentColumn;
-	
+	private CDateSet dateRestriction;
 
 	@Override
 	public void nextTable(QueryContext ctx, Table table) {
 		currentColumn = ctx.getValidityDateColumn();
+		dateRestriction = ctx.getDateRestriction();
 	}
-	
+
 	@Override
-	public void aggregateNextEvent(Block block, int event) {
-		if(currentColumn != null) {
+	public void aggregateEvent(Block block, int event) {
+		if (currentColumn != null) {
 			CDateRange range = block.getAsDateRange(event, currentColumn);
-			set.add(Range.closedOpen(range.getMin(), CDate.toLocalDate(range.getMaxValue()+1)));
+			if(range != null) {
+				CDateSet add = CDateSet.create(dateRestriction);
+				add.retainAll(CDateSet.create(range));
+				set.addAll(add);
+				return;
+			}
 		}
+		
+		set.addAll(dateRestriction);
 	}
 
 	@Override
 	public SpecialDateUnion clone() {
 		return new SpecialDateUnion();
 	}
-	
-	@Override
-	public RangeSet<LocalDate> getAggregationResult() {
-		return set;
-	}
 
 	@Override
-	public Multiset<Table> collectRequiredTables() {
-		throw new UnsupportedOperationException();
+	public CDateSet getAggregationResult() {
+		return set;
 	}
 }
