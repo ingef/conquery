@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.IdReference;
 import com.bakdata.conquery.models.api.description.FEFilter;
@@ -23,10 +20,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 /**
  * This filter represents a filter on the sum of one integer column.

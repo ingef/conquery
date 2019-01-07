@@ -1,38 +1,34 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateRange;
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.google.common.collect.Range;
+import com.google.common.collect.RangeSet;
+import com.google.common.collect.TreeRangeSet;
 
-public class SpecialDateUnion implements Aggregator<CDateSet> {
+import java.time.LocalDate;
 
-	private CDateSet set = CDateSet.create();
+public class SpecialDateUnion implements Aggregator<RangeSet<LocalDate>> {
+
+	private RangeSet<LocalDate> set = TreeRangeSet.create();
 	private Column currentColumn;
-	private CDateSet dateRestriction;
 
 	@Override
 	public void nextTable(QueryContext ctx, Table table) {
 		currentColumn = ctx.getValidityDateColumn();
-		dateRestriction = ctx.getDateRestriction();
 	}
 
 	@Override
 	public void aggregateEvent(Block block, int event) {
 		if (currentColumn != null) {
 			CDateRange range = block.getAsDateRange(event, currentColumn);
-			if(range != null) {
-				CDateSet add = CDateSet.create(dateRestriction);
-				add.retainAll(CDateSet.create(range));
-				set.addAll(add);
-				return;
-			}
+			set.add(Range.closedOpen(range.getMin(), CDate.toLocalDate(range.getMaxValue() + 1)));
 		}
-		
-		set.addAll(dateRestriction);
 	}
 
 	@Override
@@ -40,8 +36,12 @@ public class SpecialDateUnion implements Aggregator<CDateSet> {
 		return new SpecialDateUnion();
 	}
 
+	public void merge(RangeSet<LocalDate> dates) {
+		set.addAll(dates);
+	}
+
 	@Override
-	public CDateSet getAggregationResult() {
+	public RangeSet<LocalDate> getAggregationResult() {
 		return set;
 	}
 }

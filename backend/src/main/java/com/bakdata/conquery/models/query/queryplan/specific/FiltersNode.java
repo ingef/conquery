@@ -6,7 +6,6 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
@@ -71,7 +70,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	}
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
+	public void collectRequiredTables(Set<Table> requiredTables) {
 		super.collectRequiredTables(requiredTables);
 		for(FilterNode<?,?> f:filters) {
 			f.collectRequiredTables(requiredTables);

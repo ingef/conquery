@@ -30,7 +30,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.preproc.PPHeader;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
@@ -45,7 +44,6 @@ public class DatasetsProcessor {
 	private final MasterMetaStorage storage;
 	private final Namespaces namespaces;
 	private final JobManager jobManager;
-	private final ScheduledExecutorService maintenanceService;
 
 	public void addTable(Dataset dataset, Table table) throws JSONException {
 		Objects.requireNonNull(dataset);
@@ -82,7 +80,7 @@ public class DatasetsProcessor {
 		}
 		
 		dataset.addConcept(c);
-		c.setDataset(dataset.getId());
+		c.setDataset(dataset);
 		jobManager.addSlowJob(new SimpleJob("Adding concept "+c.getId(), ()->namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
 
 		namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c));
@@ -90,27 +88,8 @@ public class DatasetsProcessor {
 	}
 
 	public void addDataset(String name, ScheduledExecutorService maintenanceService) throws JSONException {
-		//create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
-		
-		//add allIds table
-		Table allIdsTable = new Table();
-		{
-			allIdsTable.setName(ConqueryConstants.ALL_IDS_TABLE);
-			allIdsTable.setDataset(dataset);
-			Column primaryColumn = new Column();
-			{
-				primaryColumn.setName(ConqueryConstants.ALL_IDS_TABLE___ID);
-				primaryColumn.setPosition(0);
-				primaryColumn.setTable(allIdsTable);
-				primaryColumn.setType(MajorTypeId.STRING);
-			}
-			allIdsTable.setPrimaryColumn(primaryColumn);
-		}
-		dataset.getTables().add(allIdsTable);
-		
-		//store dataset in own storage
 		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_"+name));
 		datasetStorage.setMetaStorage(storage);
 		Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);

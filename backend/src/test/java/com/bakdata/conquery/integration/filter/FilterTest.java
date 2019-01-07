@@ -160,7 +160,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		concept.setLabel("concept");
 		support.getDatasetsProcessor().addConcept(dataset, concept);
 
-		concept.setDataset(support.getDataset().getId());
+		concept.setDataset(support.getDataset());
 
 		rawConnector.put("name", "connector");
 		rawConnector.put("table", "table");

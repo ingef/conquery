@@ -41,7 +41,7 @@ public class AdminUIServlet {
 		
 		//jerseyConfig.getSingletons().add(new UnitOfWorkResourceMethodDispatchAdapter(hibernateBundle.getSessionFactory()));
 		jerseyConfig.register(new AdminUIResource(masterCommand.getConfig(), masterCommand.getNamespaces(), masterCommand.getJobManager()));
-		DatasetsResource datasets = new DatasetsResource(masterCommand.getConfig(), masterCommand.getStorage(), masterCommand.getNamespaces(), masterCommand.getJobManager(), masterCommand.getMaintenanceService());
+		DatasetsResource datasets = new DatasetsResource(masterCommand.getConfig(), masterCommand.getStorage(), masterCommand.getNamespaces(), masterCommand.getJobManager());
 		datasetsProcessor = datasets.getProcessor();
 		jerseyConfig.register(datasets);
 		jerseyConfig.register(new JobsResource(masterCommand.getJobManager()));

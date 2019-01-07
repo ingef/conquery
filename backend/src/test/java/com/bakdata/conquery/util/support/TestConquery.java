@@ -179,7 +179,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		
 		//make buckets very small
 		cfg.getCluster().setEntityBucketSize(1);
-		
+
 		//define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(
 				Conquery.class,

@@ -80,7 +80,7 @@ public class CQConcept implements CQElement {
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, t.getSelect()));
 			aggregators.add(new SpecialDateUnionAggregatorNode(
-					t.getResolvedConnector().getTable().getId(),
+					t.getResolvedConnector().getTable(),
 					(SpecialDateUnion) plan.getAggregators().get(0)
 			));
 			

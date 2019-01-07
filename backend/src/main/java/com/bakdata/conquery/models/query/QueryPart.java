@@ -18,7 +18,6 @@ public class QueryPart implements Callable<EntityResult> {
 
 	private final QueryContext ctx;
 	private final QueryPlan plan;
-	private final Set<Table> requiredTables;
 	private final Entity entity;
 	
 	@Override
@@ -27,7 +26,8 @@ public class QueryPart implements Callable<EntityResult> {
 			QueryPlan queryPlan = this.plan.clone();
 			QPNode root = queryPlan.getRoot();
 			root.init(entity);
-			
+			Set<Table> requiredTables = root.collectRequiredTables();
+
 			if (requiredTables.isEmpty()) {
 				return EntityResult.notContained();
 			}
