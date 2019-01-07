@@ -24,14 +24,14 @@ public class StoredQueriesProcessor {
 
 	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder fromRequest) {
 		authorize(user, dataset.getId(), Ability.READ);
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 		return null;
 	}
 
 	public void deleteQuery(User user, Dataset dataset, ManagedQuery query) {
 		authorize(user, dataset.getId(), Ability.READ);
 		authorize(user, query.getId(), Ability.DELETE);
-		// TODO Auto-generated method stub
+		// Auto-generated method stub
 
 	}
 

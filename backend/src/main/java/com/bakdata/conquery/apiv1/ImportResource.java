@@ -36,8 +36,8 @@ public class ImportResource {
 	public SQStatus postConstantQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull String input,
 			@Context HttpServletRequest req) throws QueryExecutionException, IOException {
 		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();
-		// TODO Wait for new CSV Handler
-		// TODO What is the new Version of a ConstantQuery
+		// Wait for new CSV Handler
+		// What is the new Version of a ConstantQuery
 		/*
 		 * ConstantQuery cq =
 		 * ConstantQuery.of(queryProcessor.getConfig().getResultIdMapper(), input,
