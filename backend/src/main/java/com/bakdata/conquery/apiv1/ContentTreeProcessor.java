@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -11,6 +12,7 @@ import com.bakdata.conquery.apiv1.ContentTreeResources.SearchResult;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
@@ -56,12 +58,13 @@ public class ContentTreeProcessor {
 	}
 
 	public FERoot getRoot(User user, Dataset dataset) {
-		// TODO AUTH authorizeDataset(user, dataset);
+		authorize(user, dataset.getId(), Ability.READ);
+		
 		return FrontEndConceptBuilder.createRoot(dataset);
 	}
 
 	public List<FEValue> autocompleteTextFilter(@Auth User user, Dataset dataset, Table table, Filter filter, String text) {
-		// TODO AUTH authorizeDataset(user, dataset);
+		authorize(user, dataset.getId(), Ability.READ);
 		List<FEValue> result = new LinkedList<>();
 
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
@@ -79,7 +82,7 @@ public class ContentTreeProcessor {
 	}
 
 	public Map<ConceptElementId<?>, FENode> getNode(@Auth User user, Dataset dataset, IId id) {
-		// TODO AUTH authorizeDataset(user, dataset);
+		authorize(user, dataset.getId(), Ability.READ);
 		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder
 			.createTreeMap(dataset.getConcepts());
 		return ctRoots.get(id);
@@ -94,7 +97,7 @@ public class ContentTreeProcessor {
 
 	public ResolvedConceptsResult resolve(User user, Dataset dataset, ConceptElement conceptElement,
 		List<String> conceptCodes) {
-		// TODO AUTH authorizeDataset(user, dataset);
+		authorize(user, dataset.getId(), Ability.READ);
 		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
 
 		if (conceptElement.getConcept() instanceof TreeConcept) {
@@ -179,7 +182,7 @@ public class ContentTreeProcessor {
 	}
 
 	public ResolvedConceptsResult resolveFilterValues(@Auth User user, Dataset dataset, Table table, Filter filter, List<String> values) {
-		// TODO AUTH authorizeDataset(user, dataset);
+		authorize(user, dataset.getId(), Ability.READ);
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
 
 		List<FEValue> filterValues = new LinkedList<>();
@@ -209,6 +212,7 @@ public class ContentTreeProcessor {
 	}
 
 	public SearchResult search(@Auth User user, Dataset dataset, String query, int limit) {
+		authorize(user, dataset.getId(), Ability.READ);
 		List<String> items = conceptSearch.findItems(dataset.getId(), query);
 		List<String> result = items.stream().limit(limit).collect(Collectors.toList());
 

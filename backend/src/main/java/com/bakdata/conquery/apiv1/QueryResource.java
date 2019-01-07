@@ -67,6 +67,6 @@ public class QueryResource {
 		Dataset dataset = resourceUtil.getDataset(datasetId);
 		ManagedQuery query = resourceUtil.getManagedQuery(datasetId, queryId);
 
-		return processor.getStatus(dataset, query, URLBuilder.fromRequest(req));
+		return processor.getStatus(user, dataset, query, URLBuilder.fromRequest(req));
 	}
 }

@@ -4,6 +4,7 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.CONCEPT;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.FILTER;
 import static com.bakdata.conquery.apiv1.ResourceConstants.TABLE;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.util.List;
 import java.util.Map;
@@ -28,6 +29,7 @@ import com.bakdata.conquery.apiv1.ContentTreeProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -77,7 +79,6 @@ public class ContentTreeResources {
 //                if (useCaching && req.getHeader(HttpHeaders.IF_NONE_MATCH) != null && currentTag.equals(EntityTag.valueOf(req.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
 //                        return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 //                }
-		// TODO AUTH authorizeDataset(user, dataset); ?? Already done in processor::getNode
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		Map<ConceptElementId<?>, FENode> result = processor.getNode(user, dataset, id);
 
@@ -128,7 +129,8 @@ public class ContentTreeResources {
 	@POST
 	@Path("{" + DATASET + "}/concepts/search")
 	public SearchResult search(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull ConceptSearchParam conceptSearchParam, @Context HttpServletRequest req) {
-		// TODO AUTH authorizeDataset(user, dataset);
+		authorize(user, datasetId, Ability.READ);
+		
 		String query = conceptSearchParam.getQuery();
 
 		if (StringUtils.isBlank(query)) {

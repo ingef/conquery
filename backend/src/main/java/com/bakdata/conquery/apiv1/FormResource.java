@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.FILENAME;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.io.IOException;
 
@@ -21,6 +22,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilderException;
 
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -52,7 +54,7 @@ public class FormResource {
 	@POST
 	@Path("")
 	public SQStatus post(@Auth User user, @PathParam(DATASET) DatasetId datasetId, ObjectNode jsonForm, @Context HttpServletRequest req) throws JsonProcessingException, IOException, IllegalArgumentException, UriBuilderException, InterruptedException {//@Valid com.bakdata.conquery.feforms.psm.FeForm form) {
-		//TODO AUTH authorizeDataset(user, dataset);
+		authorize(user, datasetId, Ability.READ);
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
 //                dsUtil.getStorage(datasetId).get
@@ -90,8 +92,8 @@ public class FormResource {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
 
-		//TODO AUTH authorizeDataset(user, dataset);
-		//TODO AUTH authorizeQuery(user, id.get(), QueryPermission::canRead);
+		authorize(user, dataset.getId(), Ability.READ);
+		authorize(user, queryId, Ability.READ);
 		
 		log.info("Querying results for {}", queryId);
 		/*
