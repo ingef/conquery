@@ -75,7 +75,6 @@ public class ContentTreeProcessor {
 			result = createSourceSearchResult(search, text);
 		}
 
-		// TODO
 //		List<String> res = meta.getAutoCompleteSuggestions(dataset, tf.getColumn(), text);
 //              if(res != null) result.addAll(res.stream().map(v->new FEValue(tf.getRealLabels().get(v), v)).collect(Collectors.toList()));
 //                dataset.get
