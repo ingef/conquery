@@ -82,7 +82,7 @@ public class ConqueryEscape {
 	}
 
 	private static boolean matchesOther(byte v) {
-		return matchesFirst(v) || (v>=(byte)'0' && v<=(byte)'9');
+		return matchesFirst(v) || (v>=(byte)'0' && v<=(byte)'9') || v == '_';
 	}
 
 	private static boolean matchesFirst(byte v) {

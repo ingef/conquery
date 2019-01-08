@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.entity.EntityRow;
@@ -71,9 +72,9 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public void collectRequiredTables(Set<Table> requiredTables) {
+	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		requiredTables.add(table.getResolvedConnector().getTable());
+		requiredTables.add(table.getResolvedConnector().getTable().getId());
 	}
 	
 	@Override

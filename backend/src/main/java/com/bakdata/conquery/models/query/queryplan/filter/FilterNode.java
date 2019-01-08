@@ -4,8 +4,8 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -19,9 +19,9 @@ public abstract class FilterNode<FILTER_VALUE extends FilterValue<?>, FILTER ext
 	protected final FILTER_VALUE filterValue;
 
 	@Override
-	public void collectRequiredTables(Set<Table> requiredTables) {
+	public void collectRequiredTables(Set<TableId> requiredTables) {
 		for(Column c:filter.getRequiredColumns()) {
-			requiredTables.add(c.getTable());
+			requiredTables.add(c.getTable().getId());
 		}
 	}
 

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -9,8 +10,10 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -45,7 +48,10 @@ public class CQDateRestriction implements CQElement {
 			QPNode current = openList.get(i);
 			if (current instanceof ConceptNode) {
 				ConceptNode ca = (ConceptNode) current;
-				ca.setChild(new DateRestrictingNode(CDateRange.of(dateRange), ca.getChild()));
+				ca.setChild(new DateRestrictingNode(
+					CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
+					ca.getChild()
+				));
 			}
 			else {
 				openList.addAll(current.getChildren());
@@ -54,5 +60,11 @@ public class CQDateRestriction implements CQElement {
 		}
 
 		return childAgg;
+	}
+	
+	@Override
+	public CQElement resolve(QueryResolveContext context) {
+		child = child.resolve(context);
+		return this;
 	}
 }

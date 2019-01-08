@@ -15,7 +15,7 @@ public enum SafeJavaString implements TemplateMethodModelEx {
 	@Override
 	public Object exec(List arguments) throws TemplateModelException {
 		if(arguments.size() != 1 || !(arguments.get(0) instanceof SimpleScalar)) {
-			throw new TemplateModelException("safeName requires exaclty one strng argument");
+			throw new TemplateModelException("safeName requires exaclty one string argument");
 		}
 		String name = ((SimpleScalar) arguments.get(0)).getAsString();
 		return new SimpleScalar(makeSafe(name));

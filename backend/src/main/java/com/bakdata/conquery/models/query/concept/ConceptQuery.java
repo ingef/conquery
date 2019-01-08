@@ -6,10 +6,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
 import lombok.Getter;
@@ -32,5 +32,11 @@ public class ConceptQuery implements IQuery {
 	@Override
 	public void collectRequiredQueries(Set<ManagedQueryId> requiredQueries) {
 		root.collectRequiredQueries(requiredQueries);
+	}
+
+	@Override
+	public IQuery resolve(QueryResolveContext context) {
+		this.root = root.resolve(context);
+		return this;
 	}
 }
