@@ -94,7 +94,7 @@ public class Preprocessor {
 					ConqueryMDC.setLocation(name);
 
 					try(CSV csv = new CSV(config.getCsv(), input.getSourceFile())) {
-						Iterator<String[]> it = csv.iterateContent(name, log);
+						Iterator<String[]> it = csv.iterateContent(log);
 
 						while(it.hasNext()) {
 							String[] row = it.next();

@@ -12,7 +12,7 @@ import lombok.extern.slf4j.Slf4j;
  * Includes entities when the specified column is one of many values.
  */
 @Slf4j
-public class RangeFilterNode<TYPE> extends AggregationResultFilterNode<Aggregator<TYPE>, FilterValue<IRange<TYPE, ?>>, Filter<FilterValue<IRange<TYPE, ?>>>> {
+public class RangeFilterNode<TYPE extends Comparable> extends AggregationResultFilterNode<Aggregator<TYPE>, FilterValue<IRange<TYPE, ?>>, Filter<FilterValue<IRange<TYPE, ?>>>> {
 
 	public RangeFilterNode(Filter filter, FilterValue<IRange<TYPE, ?>> filterValue, Aggregator<TYPE> aggregator) {
 		super(aggregator, filter, filterValue);

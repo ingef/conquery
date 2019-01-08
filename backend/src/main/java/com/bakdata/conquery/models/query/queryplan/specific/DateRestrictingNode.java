@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.Objects;
 
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
@@ -13,21 +13,23 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
 public class DateRestrictingNode extends QPChainNode {
 
-	private final CDateRange dateRange;
+	private final CDateSet dateRange;
 	private Column validityDateColumn;
 
-	public DateRestrictingNode(CDateRange dateRange, QPNode child) {
+	public DateRestrictingNode(CDateSet dateRange, QPNode child) {
 		super(child);
 		this.dateRange = dateRange;
 	}
 
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
+		CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+		dateRestriction.retainAll(dateRange);
+		
 		super.nextTable(
-				ctx.getDateRestriction() != null
-						? ctx.withDateRestriction(ctx.getDateRestriction().intersection(dateRange))
-						: ctx.withDateRestriction(dateRange)
-				, currentTable);
+			ctx.withDateRestriction(dateRestriction),
+			currentTable
+		);
 
 
 		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());

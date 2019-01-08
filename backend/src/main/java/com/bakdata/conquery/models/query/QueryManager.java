@@ -2,11 +2,9 @@ package com.bakdata.conquery.models.query;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
-import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -46,21 +44,21 @@ public class QueryManager {
 	}
 
 	public ManagedQuery createQuery(IQuery query) throws JSONException {
+		return createQuery(query, UUID.randomUUID());
+	}
+	
+	public ManagedQuery createQuery(IQuery query, UUID queryId) throws JSONException {
+		query = query.resolve(new QueryResolveContext(
+			namespace.getStorage().getMetaStorage(),
+			namespace
+		));
 		ManagedQuery managed = new ManagedQuery(query, namespace);
+		managed.setQueryId(queryId);
 		namespace.getStorage().getMetaStorage().addQuery(managed);
 		queries.add(managed);
 		
-		Map<ManagedQueryId, IQuery> requirements = managed
-			.getQuery()
-			.collectRequiredQueries()
-			.stream()
-			.collect(Collectors.toUnmodifiableMap(
-				Function.identity(),
-				id->namespace.getStorage().getMetaStorage().getQuery(id).getQuery()
-			));
-		
 		for(WorkerInformation worker : namespace.getWorkers()) {
-			worker.send(new ExecuteQuery(managed, requirements));
+			worker.send(new ExecuteQuery(managed));
 		}
 		return managed;
 	}

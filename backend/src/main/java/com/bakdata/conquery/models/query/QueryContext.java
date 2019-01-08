@@ -1,17 +1,21 @@
 package com.bakdata.conquery.models.query;
 
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.Wither;
 
-@Getter @AllArgsConstructor @NoArgsConstructor
+@Getter @AllArgsConstructor @RequiredArgsConstructor
 @Wither
 public class QueryContext {
 
 	private Column validityDateColumn;
-	private CDateRange dateRestriction;
+	@NonNull
+	private CDateSet dateRestriction = CDateSet.createFull();
+	private final WorkerStorage storage;
 }

@@ -43,8 +43,6 @@ public class RestartTest {
 				
 				test.importRequiredData(conquery);
 		
-				conquery.waitUntilWorkDone();
-		
 				test.executeTest(conquery);
 			}
 			
@@ -55,8 +53,6 @@ public class RestartTest {
 			
 			try(StandaloneSupport conquery = testConquery.openDataset(dataset)) {
 				test.executeTest(conquery);
-				
-				
 			}
 		}
 		finally {
