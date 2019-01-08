@@ -12,6 +12,7 @@ import org.apache.commons.io.FileUtils;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
@@ -161,6 +162,7 @@ public class ImportJob extends Job {
 			imp.setTable(table);
 			imp.setNumberOfBlocks(header.getGroups());
 			imp.setNumberOfEntries(header.getRows());
+			imp.setEventRange(header.getEventRange());
 			imp.setColumns(new ImportColumn[header.getColumns().length]);
 			for(int i=0;i<header.getColumns().length;i++) {
 				PPColumn src = header.getColumns()[i];

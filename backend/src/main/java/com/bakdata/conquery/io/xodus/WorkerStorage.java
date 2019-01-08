@@ -8,7 +8,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.events.BlockManager;
+import com.bakdata.conquery.models.events.SlaveBlockManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 
-public interface WorkerStorage extends NamespacedStorage {
+public interface WorkerStorage extends NamespacedStorage<SlaveBlockManager> {
 	
 	WorkerInformation getWorker();
 	void setWorker(WorkerInformation worker) throws JSONException;
@@ -34,9 +34,6 @@ public interface WorkerStorage extends NamespacedStorage {
 	void updateCBlock(CBlock cBlock) throws JSONException;
 	void removeCBlock(CBlockId id);
 	Collection<CBlock> getAllCBlocks();
-	
-	void setBlockManager(BlockManager blockManager);
-	BlockManager getBlockManager();
 	
 	public static WorkerStorage tryLoad(Validator validator, StorageConfig config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());

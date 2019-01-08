@@ -48,8 +48,8 @@ public class AdminUIServlet {
 		jerseyConfig.register(new MultiPartFeature());
 		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)));
 
-		jerseyConfig.register(DefaultAuthFilter.asDropwizardFeature(masterCommand.getStorage(), masterCommand.getConfig().getAuthentication()));
-		jerseyConfig.register(new AuthValueFactoryProvider.Binder<>(User.class));
+		//jerseyConfig.register(DefaultAuthFilter.asDropwizardFeature(masterCommand.getStorage(), masterCommand.getConfig().getAuthentication()));
+		//jerseyConfig.register(new AuthValueFactoryProvider.Binder<>(User.class));
 		
 		jerseyConfig.register(IdParamConverter.Provider.INSTANCE);
 	}

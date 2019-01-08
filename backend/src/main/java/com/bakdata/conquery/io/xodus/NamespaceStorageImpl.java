@@ -6,6 +6,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.events.MasterBlockManager;
 
 import lombok.Getter;
 import lombok.NonNull;
@@ -13,7 +14,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
+public class NamespaceStorageImpl extends NamespacedStorageImpl<MasterBlockManager> implements NamespaceStorage {
 	
 	@Getter @Setter @NonNull
 	private MasterMetaStorage metaStorage;

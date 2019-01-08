@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.cps;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
@@ -113,7 +114,13 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	}
 	
 	public static Set<Class<?>> listImplementations(Class<?> base) {
-		return globalMap.get(base).getClasses();
+		CPSMap map = globalMap.get(base);
+		if(map == null) {
+			throw new NoSuchElementException("there are no implementations for "+base);
+		}
+		else {
+			return map.getClasses();
+		}
 	}
 	
 	public static Set<Pair<Class<?>, Class<?>>> listImplementations() {

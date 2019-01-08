@@ -9,6 +9,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.events.MasterBlockManager;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryManager;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -22,19 +23,23 @@ import lombok.Setter;
 public class Namespace {
 
 	@JsonIgnore
-	private NamespaceStorage storage;
+	private transient NamespaceStorage storage;
 	@JsonIgnore
-	private QueryManager queryManager;
+	private transient QueryManager queryManager;
 	private List<WorkerInformation> workers = new ArrayList<>();
 	@JsonIgnore
 	private transient List<WorkerInformation> bucket2WorkerMap = new ArrayList<>();
 	@JsonIgnore
 	private transient Namespaces namespaces;
 	private int entityBucketSize;
+	@JsonIgnore
+	private transient MasterBlockManager blockManager;
 	
 	public Namespace(int entityBucketSize, NamespaceStorage storage) {
 		this.entityBucketSize = entityBucketSize;
 		this.storage = storage;
+		this.blockManager = new MasterBlockManager(storage);
+		this.storage.setBlockManager(blockManager);
 		this.queryManager = new QueryManager(this);
 	}
 	

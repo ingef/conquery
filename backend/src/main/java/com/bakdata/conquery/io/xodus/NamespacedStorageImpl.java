@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -28,15 +29,18 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.google.common.base.Stopwatch;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
+public abstract class NamespacedStorageImpl<BLOCK_MANAGER extends BlockManager> extends ConqueryStorageImpl implements NamespacedStorage<BLOCK_MANAGER> {
 
 	protected final SingletonStore<Dataset> dataset;
 	protected final IdentifiableStore<Dictionary> dictionaries;
 	protected IdentifiableStore<Import> imports;
 	protected final IdentifiableStore<Concept<?>> concepts;
+	@Getter
+	private BLOCK_MANAGER blockManager;
 
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
@@ -103,6 +107,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 		log.info("Loaded complete storage within {}", all.stop());
 	}
+	
+	@Override
+	public void setBlockManager(BLOCK_MANAGER blockManager) {
+		this.blockManager = blockManager;
+		blockManager.init();
+	}
 
 	@Override
 	public void stopStores() throws IOException {
@@ -161,6 +171,9 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	public void addImport(Import imp) throws JSONException {
 		imports.add(imp);
+		if(blockManager != null) {
+			blockManager.addImport(imp);
+		}
 	}
 
 	@Override
@@ -176,11 +189,18 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	public void updateImport(Import imp) throws JSONException {
 		imports.update(imp);
+		if(blockManager != null) {
+			blockManager.removeImport(imp.getId());
+			blockManager.addImport(imp);
+		}
 	}
 
 	@Override
 	public void removeImport(ImportId id) {
-		imports.get(id);
+		imports.remove(id);
+		if(blockManager != null) {
+			blockManager.removeImport(id);
+		}
 	}
 
 	@Override
@@ -192,11 +212,18 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	public void updateConcept(Concept<?> concept) throws JSONException {
 		concepts.update(concept);
+		if(blockManager!=null) {
+			blockManager.removeConcept(concept.getId());
+			blockManager.addConcept(concept);
+		}
 	}
 
 	@Override
 	public void removeConcept(ConceptId id) {
 		concepts.remove(id);
+		if(blockManager!=null) {
+			blockManager.removeConcept(id);
+		}
 	}
 
 	@Override

@@ -6,12 +6,13 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 
-public interface NamespacedStorage extends ConqueryStorage {
+public interface NamespacedStorage<BLOCK_MANAGER extends BlockManager> extends ConqueryStorage {
 	
 	void addDictionary(Dictionary dict) throws JSONException;
 	Dictionary getDictionary(DictionaryId id);
@@ -33,4 +34,7 @@ public interface NamespacedStorage extends ConqueryStorage {
 	void updateConcept(Concept<?> concept) throws JSONException;
 	void removeConcept(ConceptId id);
 	Collection<? extends Concept<?>> getAllConcepts();
+	
+	void setBlockManager(BLOCK_MANAGER blockManager);
+	BLOCK_MANAGER getBlockManager();
 }
