@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.query.temporal;
 
+import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.temporal.TemporalSampler;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -38,7 +41,7 @@ public abstract class AbstractTemporalQueryNode extends QPNode {
 	public abstract QPNode clone(QueryPlan plan, QueryPlan clone);
 
 	@Override
-	public void collectRequiredTables(Set<Table> out) {
+	public void collectRequiredTables(Set<TableId> out) {
 		index.getRoot().collectRequiredTables(out);
 		preceding.getRoot().collectRequiredTables(out);
 	}
@@ -77,14 +80,14 @@ public abstract class AbstractTemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		RangeSet<LocalDate> indexDurations = getIndex().getIncluded().getAggregationResult();
+		CDateSet indexDurations = getIndex().getIncluded().getAggregationResult();
 		// Create copy as we are mutating the set
-		RangeSet<LocalDate> precedingDurations = TreeRangeSet.create(getPreceding().getIncluded().getAggregationResult());
+		CDateSet precedingDurations = getPreceding().getIncluded().getAggregationResult();
 
 		LocalDate sampledIndex = getSampler().sample(indexDurations);
 
 		// Only consider samples that are before index's sample event
-		precedingDurations.remove(Range.atLeast(sampledIndex));
+		precedingDurations.remove(CDateRange.atLeast(sampledIndex));
 
 		if (!precedingDurations.isEmpty() && isContained(sampledIndex, sampler.sample(precedingDurations))) {
 			dateUnion.merge(precedingDurations);

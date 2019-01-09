@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.concepts.temporal;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 
@@ -11,7 +13,7 @@ public enum TemporalSampler {
 	//TODO empty sets
 	EARLIEST {
 		@Override
-		public LocalDate sample(RangeSet<LocalDate> data) {
+		public LocalDate sample(CDateSet data) {
 			if (data.isEmpty()) {
 				return null;
 			}
@@ -20,12 +22,12 @@ public enum TemporalSampler {
 				return null;
 			}
 
-			return data.span().lowerEndpoint();
+			return data.span().getMin();
 		}
 	},
 	LATEST {
 		@Override
-		public LocalDate sample(RangeSet<LocalDate> data) {
+		public LocalDate sample(CDateSet data) {
 			if (data.isEmpty()) {
 				return null;
 			}
@@ -34,7 +36,7 @@ public enum TemporalSampler {
 				return null;
 			}
 
-			return data.span().upperEndpoint();
+			return data.span().getMax();
 		}
 	},
 	RANDOM {
@@ -42,31 +44,31 @@ public enum TemporalSampler {
 		Random random = new Random();
 
 		@Override
-		public LocalDate sample(RangeSet<LocalDate> data) {
+		public LocalDate sample(CDateSet data) {
 			if (data.isEmpty()) {
 				return null;
 			}
 
 
-			Range<LocalDate> span = data.span();
+			CDateRange span = data.span();
 
 			int lower;
 
 			if (span.hasLowerBound()) {
-				lower = CDate.ofLocalDate(span.lowerEndpoint());
+				lower = span.getMinValue();
 			}
 			else {
-				lower = CDate.ofLocalDate(LocalDate.ofEpochDay(0));
+				lower = 0;
 			}
 
 
 			int upper;
 
 			if (span.hasUpperBound()) {
-				upper = CDate.ofLocalDate(span.upperEndpoint());
+				upper = span.getMaxValue();
 			}
 			else {
-				upper = CDate.ofLocalDate(LocalDate.ofEpochDay(Long.MAX_VALUE)); //TODO wat do?
+				upper = Integer.MAX_VALUE; //TODO wat do?
 			}
 
 
@@ -78,13 +80,13 @@ public enum TemporalSampler {
 
 			do {
 				sample = lower + random.nextInt(upper - lower);
-			} while (!data.contains(CDate.toLocalDate(sample)));
+			} while (!data.contains(sample));
 
 
 			return CDate.toLocalDate(sample);
 		}
 	};
 
-	public abstract LocalDate sample(RangeSet<LocalDate> data);
+	public abstract LocalDate sample(CDateSet data);
 
 }

@@ -226,4 +226,8 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	public boolean hasUpperBound() {
 		return max != Integer.MAX_VALUE;
 	}
+
+	public boolean hasLowerBound() {
+		return min != Integer.MIN_VALUE;
+	}
 }
