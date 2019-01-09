@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.concepts.tree;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.MatchingStats;
@@ -25,4 +27,17 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	public void setChildIndex(TreeChildPrefixIndex childIndex);
 	
 	public MatchingStats getMatchingStats();
+	
+	public default ConceptTreeNode<?> getElementByLocalId(int[] ids) {
+		return getElementByLocalId(ids, 0);
+	}
+	
+	public default ConceptTreeNode<?> getElementByLocalId(int[] ids, int index) {
+		if(index == ids.length ) {
+			return this;
+		}
+		else {
+			return getChildren().get(ids[index]).getElementByLocalId(ids, index+1);
+		}
+	}
 }

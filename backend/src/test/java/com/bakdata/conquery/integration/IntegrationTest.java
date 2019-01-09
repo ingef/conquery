@@ -2,9 +2,12 @@ package com.bakdata.conquery.integration;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+
+import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -83,6 +86,11 @@ public class IntegrationTest {
 	
 			test.importRequiredData(conquery);
 
+			//ensure the metadata is collected
+			for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+				slave.getJobManager().addSlowJob(new UpdateMatchingStats(slave.getWorkers()));
+			}
+			
 			conquery.waitUntilWorkDone();
 	
 			test.executeTest(conquery);

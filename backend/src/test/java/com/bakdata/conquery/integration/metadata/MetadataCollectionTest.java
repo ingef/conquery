@@ -10,6 +10,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
+import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.models.common.CDateRange;
@@ -18,6 +19,7 @@ import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -46,8 +48,13 @@ public class MetadataCollectionTest {
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 			
 			test.importRequiredData(conquery);
-	
-			test.executeTest(conquery);
+			
+			//ensure the metadata is collected
+			for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+				slave.getJobManager().addSlowJob(new UpdateMatchingStats(slave.getWorkers()));
+			}
+			
+			conquery.waitUntilWorkDone();
 			
 			TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 			

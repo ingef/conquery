@@ -162,7 +162,6 @@ public class ImportJob extends Job {
 			imp.setTable(table);
 			imp.setNumberOfBlocks(header.getGroups());
 			imp.setNumberOfEntries(header.getRows());
-			imp.setEventRange(header.getEventRange());
 			imp.setColumns(new ImportColumn[header.getColumns().length]);
 			for(int i=0;i<header.getColumns().length;i++) {
 				PPColumn src = header.getColumns()[i];

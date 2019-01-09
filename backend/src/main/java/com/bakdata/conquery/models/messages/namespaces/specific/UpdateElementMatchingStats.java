@@ -14,10 +14,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 import lombok.ToString;
 
 @CPSType(id="UPDATE_METADATA", base=NamespacedMessage.class)
-@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @ToString(callSuper=true)
+@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
 public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
 	
 	private final WorkerId source;
@@ -27,7 +28,7 @@ public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
 	@Override
 	public void react(Namespace context) throws Exception {
 		Concept<?> c = context.getStorage().getConcept(target.findConcept());
-		//if a child node propagate the update to all parents;
+		//if a child node
 		if(target instanceof ConceptTreeChildId) {
 			ConceptTreeNode<?> child = c.getChildById((ConceptTreeChildId) target);
 			child.getMatchingStats().updateEntry(source, value);

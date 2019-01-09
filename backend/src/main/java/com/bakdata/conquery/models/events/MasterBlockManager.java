@@ -13,7 +13,7 @@ public class MasterBlockManager implements BlockManager {
 
 	private final NamespaceStorage storage;
 	
-	@Override
+	/*@Override
 	public void addImport(Import imp) {
 		for(Concept<?> c: storage.getAllConcepts()) {
 			for(Connector con : c.getConnectors()) {
@@ -44,6 +44,6 @@ public class MasterBlockManager implements BlockManager {
 				}
 			}
 		}
-	}
+	}*/
 	
 }

@@ -1,10 +1,12 @@
 package com.bakdata.conquery.models.concepts.tree;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.validation.ConstraintViolation;
@@ -12,6 +14,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -172,5 +175,4 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			this.cache = new ConceptTreeCache(this, type);
 		}
 	}
-
 }
