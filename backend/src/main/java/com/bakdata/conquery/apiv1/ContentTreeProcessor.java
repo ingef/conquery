@@ -132,7 +132,7 @@ public class ContentTreeProcessor {
 					QuickSearch<FilterSearchItem> search = selectFilter.getSourceSearch();
 					if (search != null) {
 						filterValues.addAll(createSourceSearchResult(search,
-								conceptCodes.toArray(new String[conceptCodes.size()])));
+								conceptCodes.toArray(new String[0])));
 					}
 
 					List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
