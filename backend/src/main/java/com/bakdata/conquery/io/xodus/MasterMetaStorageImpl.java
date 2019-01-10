@@ -16,11 +16,7 @@ import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.ids.specific.*;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 

@@ -12,11 +12,7 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Master;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 import lombok.extern.slf4j.Slf4j;
 
 @CPSType(id="UPDATE_JOB_MANAGER_STATUS", base=NetworkMessage.class)

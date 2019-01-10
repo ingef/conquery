@@ -1,5 +1,26 @@
 package com.bakdata.conquery.resources.admin;
 
+import static com.bakdata.conquery.resources.ResourceConstants.*;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
+import javax.annotation.security.PermitAll;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+
+import org.glassfish.jersey.media.multipart.BodyPart;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -25,28 +46,10 @@ import com.bakdata.conquery.resources.admin.ui.UIContext;
 import com.bakdata.conquery.resources.admin.ui.UIView;
 import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.glassfish.jersey.media.multipart.BodyPart;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.hibernate.validator.constraints.NotEmpty;
-
-import javax.annotation.security.PermitAll;
-import javax.ws.rs.*;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-
-import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})

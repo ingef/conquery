@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Map;
+
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
@@ -9,9 +13,6 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.zigurs.karlis.utils.search.QuickSearch;
-import java.util.Collections;
-import java.util.EnumSet;
-import java.util.Map;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

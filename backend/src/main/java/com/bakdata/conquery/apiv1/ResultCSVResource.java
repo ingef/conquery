@@ -4,17 +4,19 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
+import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.StandardCharsets;
+import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+
+import org.eclipse.jetty.io.EofException;
 
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -27,13 +29,8 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 
 import io.dropwizard.auth.Auth;
-import java.io.BufferedWriter;
-import java.io.OutputStreamWriter;
-import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.eclipse.jetty.io.EofException;
 
 @AllArgsConstructor
 @Path("datasets/{" + DATASET + "}/result/")

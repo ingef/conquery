@@ -12,11 +12,7 @@ import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
-import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
-import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
-import com.bakdata.conquery.models.query.filter.event.number.NumberFilterNode;
-import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
+import com.bakdata.conquery.models.query.filter.event.number.*;
 
 import lombok.Getter;
 import lombok.Setter;

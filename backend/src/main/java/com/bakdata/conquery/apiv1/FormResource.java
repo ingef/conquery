@@ -1,22 +1,13 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
-import static com.bakdata.conquery.apiv1.ResourceConstants.FILENAME;
-import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
+import static com.bakdata.conquery.apiv1.ResourceConstants.*;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.io.IOException;
 
 import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.*;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;

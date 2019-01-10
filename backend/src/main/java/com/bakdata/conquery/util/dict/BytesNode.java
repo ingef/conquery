@@ -1,8 +1,6 @@
 package com.bakdata.conquery.util.dict;
 
-import static com.bakdata.conquery.util.dict.TTDirection.LEFT;
-import static com.bakdata.conquery.util.dict.TTDirection.MIDDLE;
-import static com.bakdata.conquery.util.dict.TTDirection.RIGHT;
+import static com.bakdata.conquery.util.dict.TTDirection.*;
 
 import java.util.Arrays;
 

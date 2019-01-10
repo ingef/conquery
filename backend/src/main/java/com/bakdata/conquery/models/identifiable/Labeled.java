@@ -4,12 +4,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.identifiable.ids.IId;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 
 @Getter @Setter @NoArgsConstructor @EqualsAndHashCode(callSuper=true) @AllArgsConstructor

@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.api.description;
 
-import com.bakdata.conquery.apiv1.FilterTemplate;
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 
 import lombok.Builder;

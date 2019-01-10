@@ -1,12 +1,7 @@
 package com.bakdata.conquery.util.dict;
 
-
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
+import java.util.*;
 
 import org.apache.mina.core.buffer.IoBuffer;
 

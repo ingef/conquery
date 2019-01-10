@@ -1,15 +1,17 @@
 package com.bakdata.conquery.io.jackson;
 
+import java.util.List;
+
+import javax.money.CurrencyUnit;
+
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitSerializer;
 import com.bakdata.conquery.io.jackson.serializer.IdKeyDeserializer;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.PackageVersion;
-import io.github.classgraph.ClassGraph;
 
-import javax.money.CurrencyUnit;
-import java.util.List;
+import io.github.classgraph.ClassGraph;
 
 public class ConquerySerializersModule extends SimpleModule {
 
