@@ -9,24 +9,24 @@
     <name>Conquery Parent</name>
         
     <properties>
-    	<lombok.version>1.18.4</lombok.version>
+        <lombok.version>1.18.4</lombok.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>10</maven.compiler.source>
         <maven.compiler.target>10</maven.compiler.target>
         <version.jgitflow>1.0-m5.1</version.jgitflow>
         <junit.minor>3.2</junit.minor>
-		<junit.version>5.${junit.minor}</junit.version>
-		<junit.platform.version>1.${junit.minor}</junit.platform.version>
-		<jaxb.version>2.2.11</jaxb.version>
+        <junit.version>5.${junit.minor}</junit.version>
+        <junit.platform.version>1.${junit.minor}</junit.platform.version>
+        <jaxb.version>2.2.11</jaxb.version>
     </properties>
     
     <modules>
         <module>frontend</module>
-        <module>selenium-test</module>
         <module>backend</module>
-		<module>executable</module>
-		<module>coverage-reporter</module>
-		<module>model-translator</module>
+        <module>selenium-test</module>
+        <module>executable</module>
+        <module>coverage-reporter</module>
+        <module>model-translator</module>
     </modules>
     
     <dependencyManagement>
@@ -41,26 +41,26 @@
 		</dependencies>
 	</dependencyManagement>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-launcher</artifactId>
-			<version>${junit.platform.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.platform</groupId>
+            <artifactId>junit-platform-launcher</artifactId>
+            <version>${junit.platform.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
     
     <build>
         <plugins>
@@ -121,36 +121,36 @@
     </build>
 
     <profiles>
-		<profile>
-			<id>test-coverage</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.1</version>
-						<executions>
-							<execution>
-								<id>default-prepare-agent</id>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>default-report</id>
-								<goals>
-									<goal>report</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<excludes>
-								<exclude>**/*MethodAccess*</exclude>
-							</excludes>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+        <profile>
+            <id>test-coverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.1</version>
+                        <executions>
+                            <execution>
+                                <id>default-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*MethodAccess*</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
