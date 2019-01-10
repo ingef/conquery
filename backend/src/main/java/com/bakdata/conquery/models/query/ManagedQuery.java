@@ -108,13 +108,20 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	public Stream<String> toCSV(ConqueryConfig cfg) {
 		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset));
 		return Stream.concat(
-			Stream.of("result,dates"),
-			results
-				.stream()
-				.filter(ContainedEntityResult.class::isInstance)
-				.map(ContainedEntityResult.class::cast)
-				.map(cer -> dict.getElement(cer.getEntityId()) + "," + Joiner.on(',').join(cer.getValues()))
-				.map(Objects::toString)
+				Stream.of(Joiner.on(',').join(mapping.getPrintIdFields())+",dates"),
+				results
+						.stream()
+						.filter(ContainedEntityResult.class::isInstance)
+						.map(ContainedEntityResult.class::cast)
+						.filter(cer -> mapping.forCsv(dict.getElement(cer.getEntityId())) != null)
+						.map(cer -> Joiner.on(',').join(mapping.forCsv(dict.getElement(cer.getEntityId()))) + "," + Joiner.on(',').join(cer.getValues()))
+						.map(Objects::toString)
+						.onClose(() -> {
+							if (unmapableTuples > 0) {
+								log.warn(unmapableTuples + " Tuples could not be mapped");
+								// TODO give some (10?) examples
+							}
+						})
 		);
 	}
 
