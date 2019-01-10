@@ -2,47 +2,57 @@
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
- 
-    <parent>
-        <groupId>com.bakdata.conquery</groupId>
-        <artifactId>parent</artifactId>
-        <version>2.0.0</version>
-    </parent>
-    <artifactId>backend</artifactId>
-	
-    <properties>
-        <shiro.version>1.3.2</shiro.version>
-    </properties>
- 
-    <build>
-        <resources>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>true</filtering>
-                <includes>
-                    <include>banner.txt</include>
-                    <include>git.properties</include>
-                </includes>
-            </resource>
-            <resource>
-                <directory>src/main/resources</directory>
-                <filtering>false</filtering>
-                <excludes>
-                    <exclude>banner.txt</exclude>
-                    <exclude>git.properties</exclude>
-                    <exclude>**/.gitignore</exclude>
-                </excludes>
-            </resource>
-        </resources>
-        <!-- <plugins> <plugin> <groupId>pl.project13.maven</groupId> <artifactId>git-commit-id-plugin</artifactId> 
-        <version>2.2.3</version> <executions> <execution> <id>get-the-git-infos</id> 
-        <goals> <goal>revision</goal> </goals> <phase>generate-resources</phase> 
-        </execution> <execution> <id>validate-the-git-infos</id> <goals> <goal>validateRevision</goal> 
-        </goals> </execution> </executions> <configuration> <dotGitDirectory>${project.basedir}/.git</dotGitDirectory> 
-        <injectAllReactorProjects>true</injectAllReactorProjects> <dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat> 
-        <gitDescribe> <skip>false</skip> <always>false</always> </gitDescribe> </configuration> 
-        </plugin> </plugins> -->
-    </build>
+   
+	<parent>
+		<groupId>com.bakdata.conquery</groupId>
+		<artifactId>parent</artifactId>
+		<version>2.0.0</version>
+	</parent>
+	<artifactId>backend</artifactId>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>true</filtering>
+				<includes>
+					<include>banner.txt</include>
+					<include>git.properties</include>
+				</includes>
+			</resource>
+			<resource>
+				<directory>src/main/resources</directory>
+				<filtering>false</filtering>
+				<excludes>
+					<exclude>banner.txt</exclude>
+					<exclude>git.properties</exclude>
+					<exclude>**/.gitignore</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<!-- <plugins> <plugin> <groupId>pl.project13.maven</groupId> <artifactId>git-commit-id-plugin</artifactId> 
+			<version>2.2.3</version> <executions> <execution> <id>get-the-git-infos</id> 
+			<goals> <goal>revision</goal> </goals> <phase>generate-resources</phase> 
+			</execution> <execution> <id>validate-the-git-infos</id> <goals> <goal>validateRevision</goal> 
+			</goals> </execution> </executions> <configuration> <dotGitDirectory>${project.basedir}/.git</dotGitDirectory> 
+			<injectAllReactorProjects>true</injectAllReactorProjects> <dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat> 
+			<gitDescribe> <skip>false</skip> <always>false</always> </gitDescribe> </configuration> 
+			</plugin> </plugins> -->
+        <plugins>
+            <plugin>
+	          <groupId>org.apache.maven.plugins</groupId>
+	          <artifactId>maven-jar-plugin</artifactId>
+	          <version>2.2</version>
+	          <executions>
+	            <execution>
+	              <goals>
+	                <goal>test-jar</goal>
+	              </goals>
+	            </execution>
+	          </executions>
+	        </plugin>
+        </plugins>
+	</build>
  
     <dependencies>
         <dependency>
@@ -225,14 +235,14 @@
             <version>1.1.1</version>
         </dependency>
         <dependency>
-            <groupId>com.zigurs.karlis.utils.search</groupId>
-            <artifactId>QuickSearch</artifactId>
-            <version>1.8</version>
-        </dependency>
-        <dependency>
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-math3</artifactId>
             <version>3.6.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.zigurs.karlis.utils.search</groupId>
+            <artifactId>QuickSearch</artifactId>
+            <version>1.8</version>
         </dependency>
         <dependency>
             <groupId>org.tuckey</groupId>

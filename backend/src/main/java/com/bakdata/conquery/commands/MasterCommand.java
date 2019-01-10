@@ -103,6 +103,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
+		
+		config.getAuthentication().initializeAuthConstellation(storage);
 
 		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(storage, config.getAuthentication());
 		environment.jersey().register(new AuthValueFactoryProvider.Binder(User.class));
