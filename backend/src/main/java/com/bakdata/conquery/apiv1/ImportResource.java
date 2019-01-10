@@ -40,8 +40,8 @@ public class ImportResource {
 		authorize(user, datasetId, Ability.READ);
 		
 		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();
-		// Wait for new CSV Handler
-		// What is the new Version of a ConstantQuery
+		// Wait for new CSV Handler see https://github.com/bakdata/conquery/issues/243
+		// What is the new Version of a ConstantQuery see https://github.com/bakdata/conquery/issues/242
 		/*
 		 * ConstantQuery cq =
 		 * ConstantQuery.of(queryProcessor.getConfig().getResultIdMapper(), input,

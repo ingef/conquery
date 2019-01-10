@@ -73,7 +73,7 @@ public class ContentTreeProcessor {
 			result = createSourceSearchResult(search, text);
 		}
 
-		// complete body
+		// see https://github.com/bakdata/conquery/issues/235
 		return result;
 	}
 
@@ -188,7 +188,7 @@ public class ContentTreeProcessor {
 		ResolvedFilter rf = createResolvedFilter(filter);
 
 
-		// complete body
+		// see https://github.com/bakdata/conquery/issues/251
 		return new ResolvedConceptsResult(null,
 				new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues), values);
 	}
