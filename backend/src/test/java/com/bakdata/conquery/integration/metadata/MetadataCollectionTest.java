@@ -67,6 +67,10 @@ public class MetadataCollectionTest {
 			//check the date ranges
 			assertThat(concept.getMatchingStats().spanEvents())
 				.isEqualTo(CDateRange.of(LocalDate.parse("2010-07-15"), LocalDate.parse("2013-11-10")));
+			assertThat(concept.getChildren().get(0).getMatchingStats().spanEvents())
+				.isEqualTo(CDateRange.of(LocalDate.parse("2012-01-01"), LocalDate.parse("2013-11-10")));
+			assertThat(concept.getChildren().get(1).getMatchingStats().spanEvents())
+				.isEqualTo(CDateRange.of(LocalDate.parse("2010-07-15"), LocalDate.parse("2012-11-11")));
 		}
 	}
 }
