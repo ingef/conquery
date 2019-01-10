@@ -1,7 +1,11 @@
 package com.bakdata.conquery.models.events.generation;
 
-import javax.tools.*;
+import javax.tools.FileObject;
+import javax.tools.ForwardingJavaFileManager;
+import javax.tools.JavaCompiler;
+import javax.tools.JavaFileObject;
 import javax.tools.JavaFileObject.Kind;
+import javax.tools.StandardJavaFileManager;
 
 public class MemJavaFileManager extends ForwardingJavaFileManager<StandardJavaFileManager> {
 	private final MemClassLoader classLoader;

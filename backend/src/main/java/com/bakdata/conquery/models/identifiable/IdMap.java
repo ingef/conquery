@@ -1,6 +1,12 @@
 package com.bakdata.conquery.models.identifiable;
 
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.identifiable.ids.IId;
