@@ -57,31 +57,11 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		}
 		return true;
 	}
-
-	@Override
-	public void checkPermission(Permission permission) throws AuthorizationException {
-		SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
-	}
-
-	@Override
-	public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
-		SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
-	}
-
+	
 	@Override
 	public UserId createId() {
 		return (UserId) getPrincipals().getPrimaryPrincipal();
 	}
-	
-	public void addRole(Mandator mandator) {
-		roles.add(mandator);
-	}
-	
-	public void addRoles(List<Mandator> mandators) {
-		roles.addAll(mandators);
-	}
-	
-	
 	
 	public void removeRole(Mandator mandator) {
 		roles.remove(mandator);

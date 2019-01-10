@@ -47,7 +47,7 @@ public class QueryResource {
 
 	@POST
 	public SQStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws QueryExecutionException, JSONException {
-		return processor.postQuery(resourceUtil.getDataset(datasetId), query, URLBuilder.fromRequest(req));
+		return processor.postQuery(resourceUtil.getDataset(datasetId), query, URLBuilder.fromRequest(req), user);
 	}
 
 	@DELETE
