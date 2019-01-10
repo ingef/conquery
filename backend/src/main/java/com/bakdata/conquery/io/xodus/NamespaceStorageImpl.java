@@ -4,9 +4,11 @@ import java.io.File;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
 
@@ -34,5 +36,10 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	@Override
 	public void updateIdMapping(IdMapping idMapping) throws JSONException {
 		this.idMapping.update(idMapping);
+	}
+
+	@Override
+	public Dictionary getPrimaryDictionary() {
+		return dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()));
 	}
 }
