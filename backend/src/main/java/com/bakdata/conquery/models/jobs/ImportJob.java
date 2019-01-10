@@ -59,8 +59,9 @@ public class ImportJob extends Job {
 
 	@Override
 	public void execute() throws JSONException {
+		this.progressReporter.setMax(16);
 		try (HCFile file = new HCFile(importFile, false)) {
-			this.progressReporter.setMax(16);
+
 			if (log.isInfoEnabled()) {
 				log.info(
 						"Reading HCFile {}:\n\theader size: {}\n\tcontent size: {}",

@@ -83,8 +83,8 @@ public class CSV implements Closeable {
 	public static Stream<String[]> streamContent(CSVConfig config, File file, Logger log) throws IOException {
 		CSV csv = new CSV(config, file);
 		return StreamSupport.stream(
-				Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED),
-				false
+			Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED),
+			false
 		)
 		.onClose(csv::closeUnchecked);
 	}
