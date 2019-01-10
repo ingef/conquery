@@ -43,15 +43,15 @@ public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>
 	public Optional<User> authenticate(ConqueryToken token) throws AuthenticationException {
 		
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
-		Optional<User> user = storage.getUser((UserId)info.getPrincipals().getPrimaryPrincipal());
-		if(!user.isPresent()) {
+		User user = storage.getUser((UserId)info.getPrincipals().getPrimaryPrincipal());
+		if(user == null) {
 			user = uuHandler.handle(info);
-			if(!user.isPresent()) {
+			if(user == null) {
 				throw new org.apache.shiro.authc.AuthenticationException("User not found");
 			}
 		}
-		ConqueryMDC.setLocation(user.get().getId().toString());
-		return user;
+		ConqueryMDC.setLocation(user.getId().toString());
+		return Optional.ofNullable(user);
 	}
 
 }

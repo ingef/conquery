@@ -76,13 +76,7 @@ public class PermissionStorageFunctionTest implements ConqueryTestSpec {
 		for(ConqueryPermission permission: permissions) {
 			permission.getId();
 			PermissionOwnerId<?> ownerId = permission.getOwnerId();
-			PermissionOwner<?> owner =null;
-			if(ownerId instanceof UserId) {
-				owner = storage.getUser((UserId) ownerId).get();
-			} else if(ownerId instanceof MandatorId) {
-				owner = storage.getMandator((MandatorId) ownerId).get();
-			}
-			
+			PermissionOwner<?> owner = ownerId.getOwner(storage);
 			owner.addPermission(permission);
 		}
 	}
@@ -93,11 +87,11 @@ public class PermissionStorageFunctionTest implements ConqueryTestSpec {
 	
 	public void updateUsers() throws JSONException {
 		for(RequiredUser rUser: rUsers) {
-			User user = storage.getUser(rUser.getUser().getId()).get();
+			User user = storage.getUser(rUser.getUser().getId());
 			MandatorId [] rolesInjected = rUser.getRolesInjected();
 			
 			for(MandatorId mandatorId : rolesInjected) {
-				user.addMandatorLocal(storage.getMandator(mandatorId).get());
+				user.addMandatorLocal(storage.getMandator(mandatorId));
 			}
 			storage.updateUser(user);
 		}
@@ -141,7 +135,7 @@ public class PermissionStorageFunctionTest implements ConqueryTestSpec {
 				.map(rUser ->{
 					User user = (User)rUser.getUser();
 					Arrays.asList(rUser.getRolesInjected()).forEach(id -> {
-						user.addMandatorLocal(storage.getMandator(id).get());
+						user.addMandatorLocal(storage.getMandator(id));
 					});
 					return user;
 				}).map(User.class::cast).collect(Collectors.toList());

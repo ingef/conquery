@@ -42,6 +42,6 @@ public class MandatorId extends PermissionOwnerId<Mandator> {
 
 	@Override
 	public PermissionOwner<?> getOwner(MasterMetaStorage storage) {
-		return storage.getMandator(this).get();
+		return storage.getMandator(this);
 	}
 }
