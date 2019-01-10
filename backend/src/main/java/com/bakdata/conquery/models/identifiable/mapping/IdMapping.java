@@ -19,7 +19,7 @@ public abstract class IdMapping {
 
 	public IdMapping(CSV csvData) throws IOException {
 		List<Pair<String, List<String>>> data = new ArrayList<>();
-		Iterator<String[]> csvIterator = csvData.iterateContent(null, null);
+		Iterator<String[]> csvIterator = csvData.iterateContent(null);
 		// we skip the first row because it contains the headers
 		csvIterator.next();
 		// first column is the external key, the rest is part of the print key

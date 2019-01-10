@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRangeFilter, DateDistanceFilter> {
 
 	private boolean hit;
-	private CDateRange dateRestriction;
+	private CDateSet dateRestriction;
 
 	public DateDistanceFilterNode(DateDistanceFilter dateDistanceFilter, FilterValue.CQIntegerRangeFilter filterValue) {
 		super(dateDistanceFilter, filterValue);
@@ -28,16 +28,12 @@ public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRang
 	}
 
 	@Override
-	public FilterNode clone(QueryPlan plan, QueryPlan clone) {
+	public DateDistanceFilterNode clone(QueryPlan plan, QueryPlan clone) {
 		return new DateDistanceFilterNode(filter, filterValue);
 	}
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
-		if (dateRestriction == null) {
-			return true;
-		}
-
 		if (!block.has(event, filter.getColumn())) {
 			return false;
 		}

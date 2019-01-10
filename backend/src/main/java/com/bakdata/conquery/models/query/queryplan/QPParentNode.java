@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.List;
 import java.util.Set;
 
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.models.datasets.Table;
@@ -19,7 +20,7 @@ import lombok.Setter;
 public abstract class QPParentNode extends QPNode {
 
 	private final List<QPNode> children;
-	private final ListMultimap<Table, QPNode> childMap;
+	private final ListMultimap<TableId, QPNode> childMap;
 	
 	protected List<QPNode> currentTableChildren;
 	
@@ -50,7 +51,7 @@ public abstract class QPParentNode extends QPNode {
 	}
 	
 	@Override
-	public void collectRequiredTables(Set<Table> requiredTables) {
+	public void collectRequiredTables(Set<TableId> requiredTables) {
 		for(QPNode c:children) {
 			c.collectRequiredTables(requiredTables);
 		}
@@ -59,7 +60,7 @@ public abstract class QPParentNode extends QPNode {
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
-		currentTableChildren = childMap.get(currentTable);
+		currentTableChildren = childMap.get(currentTable.getId());
 		for(QPNode agg:currentTableChildren) {
 			agg.nextTable(ctx, currentTable);
 		}

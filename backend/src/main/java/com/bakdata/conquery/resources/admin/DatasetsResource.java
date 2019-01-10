@@ -1,43 +1,5 @@
 package com.bakdata.conquery.resources.admin;
 
-import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import javax.annotation.security.PermitAll;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriBuilder;
-
-import com.bakdata.conquery.io.csv.CSV;
-import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
-import com.bakdata.conquery.models.identifiable.mapping.SimpleIdMapping;
-import org.apache.commons.io.IOUtils;
-import org.glassfish.jersey.media.multipart.BodyPart;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -51,6 +13,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -62,16 +25,31 @@ import com.bakdata.conquery.resources.admin.ui.UIContext;
 import com.bakdata.conquery.resources.admin.ui.UIView;
 import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import io.dropwizard.views.View;
-
-import java.util.concurrent.ScheduledExecutorService;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.glassfish.jersey.media.multipart.BodyPart;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.annotation.security.PermitAll;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
 @Slf4j
 @Getter
@@ -88,8 +66,8 @@ public class DatasetsResource {
 		this.ctx = new UIContext(namespaces);
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
 		this.namespaces = namespaces;
-		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager);
 		this.maintenanceService = maintenanceService;
+		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager, maintenanceService);
 	}
 
 	@GET
@@ -101,10 +79,10 @@ public class DatasetsResource {
 	@Path("/{" + DATASET_NAME + "}")
 	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
 		return new FileView<>(
-				"dataset.html.ftl",
-				ctx,
-				namespaces.get(dataset).getStorage().getDataset(),
-				FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
+			"dataset.html.ftl",
+			ctx,
+			namespaces.get(dataset).getStorage().getDataset(),
+			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
 	}
 
 	@GET
@@ -113,15 +91,15 @@ public class DatasetsResource {
 		IdMapping mapping = namespaces.get(datasetId).getStorage().getIdMapping();
 		if (mapping != null) {
 			return new UIView<>(
-					"idmapping.html.ftl",
-					ctx,
-					mapping
+				"idmapping.html.ftl",
+				ctx,
+				mapping
 			);
 		} else {
 			return new UIView<>(
-					"add_idmapping.html.ftl",
-					ctx,
-					datasetId
+				"add_idmapping.html.ftl",
+				ctx,
+				datasetId
 			);
 		}
 	}

@@ -1,22 +1,12 @@
 package com.bakdata.conquery.integration.query;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.io.FileUtils;
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.integration.AbstractQueryEngineTest;
 import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -30,6 +20,11 @@ import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryStatus;
+import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -37,10 +32,23 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.fail;
 
 @Slf4j
 @Getter
@@ -76,18 +84,34 @@ public class QueryTest extends AbstractQueryEngineTest {
 		query = parseQuery(support);
 
 		importTableContents(support);
+		support.waitUntilWorkDone();
+		importPreviousQueries(support);
+	}
 
+	private void importPreviousQueries(StandaloneSupport support) throws JSONException, IOException {
 		// Load previous query results if available
-		/*
-		File queryResults = content.getPreviousQueryResults();
-		if(queryResults != null) {
-			if(queryResults.exists()) {
-				con.createStatement().executeUpdate(
-						"COPY "+this.getSchema()+".query_results FROM '" + queryResults.getAbsolutePath()+ "' DELIMITER ',' CSV HEADER");
-			} else {
-				throw new IOException("The File "+ queryResults.getAbsolutePath() + " does not exsist.");
+		int id = 1;
+		for (File queryResults : content.getPreviousQueryResults()) {
+			UUID queryId = new UUID(0L, id++);
+
+			String[][] data = CSV.streamContent(support.getCfg().getCsv(), queryResults, log)
+					.toArray(String[][]::new);
+
+			ConceptQuery q = new ConceptQuery();
+			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
+
+			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId);
+			managed.awaitDone(1, TimeUnit.DAYS);
+
+			if (managed.getStatus() == QueryStatus.FAILED) {
+				fail("Query failed");
 			}
-		}*/
+		}
+
+		//wait only if we actually did anything
+		if (!content.getPreviousQueryResults().isEmpty()) {
+			support.waitUntilWorkDone();
+		}
 	}
 
 	private void importTableContents(StandaloneSupport support) throws IOException, JSONException {
