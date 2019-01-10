@@ -62,8 +62,7 @@ public class ContentTreeProcessor {
 		return FrontEndConceptBuilder.createRoot(dataset);
 	}
 
-	public List<FEValue> autocompleteTextFilter(Dataset dataset, Table table, Filter filter,
-			String text) {
+	public List<FEValue> autocompleteTextFilter(Dataset dataset, Table table, Filter filter, String text) {
 		List<FEValue> result = new LinkedList<>();
 
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
@@ -78,19 +77,20 @@ public class ContentTreeProcessor {
 	}
 
 	public Map<ConceptElementId<?>, FENode> getNode(Dataset dataset, IId id) {
-		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder
-				.createTreeMap(dataset.getConcepts());
+		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder.createTreeMap(dataset.getConcepts());
 		return ctRoots.get(id);
 	}
 
 	public List<IdLabel> getDatasets(User user) {
-		return namespaces.getAllDatasets().stream()
-				.filter(d -> user.isPermitted(new DatasetPermission(user.getId(), EnumSet.of(Ability.READ), d.getId())))
-				.map(d -> new IdLabel(d.getLabel(), d.getId().toString())).collect(Collectors.toList());
+		return namespaces
+			.getAllDatasets()
+			.stream()
+			.filter(d -> user.isPermitted(new DatasetPermission(user.getId(), EnumSet.of(Ability.READ), d.getId())))
+			.map(d -> new IdLabel(d.getLabel(), d.getId().toString()))
+			.collect(Collectors.toList());
 	}
 
-	public ResolvedConceptsResult resolve(Dataset dataset, ConceptElement conceptElement,
-			List<String> conceptCodes) {
+	public ResolvedConceptsResult resolve(Dataset dataset, ConceptElement conceptElement, List<String> conceptCodes) {
 		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
 
 		if (conceptElement.getConcept() instanceof TreeConcept) {
@@ -102,10 +102,12 @@ public class ContentTreeProcessor {
 					child = tree.findMostSpecificChild(conceptCode, new CalculatedValue<>(() -> new HashMap<>()));
 					if (child != null) {
 						resolvedCodes.add(child.getId().toString());
-					} else {
+					}
+					else {
 						unknownCodes.add(conceptCode);
 					}
-				} catch (ConceptConfigurationException e) {
+				}
+				catch (ConceptConfigurationException e) {
 					log.error("", e);
 				}
 			}
@@ -123,7 +125,8 @@ public class ContentTreeProcessor {
 						String resolved = selectFilter.resolveValueToRealValue(conceptCode);
 						if (resolved != null) {
 							resolvedCodes.add(resolved);
-						} else {
+						}
+						else {
 							unknownCodes.add(conceptCode);
 						}
 					}
@@ -131,17 +134,22 @@ public class ContentTreeProcessor {
 					List<FEValue> filterValues = new LinkedList<>();
 					QuickSearch<FilterSearchItem> search = selectFilter.getSourceSearch();
 					if (search != null) {
-						filterValues.addAll(createSourceSearchResult(search,
-								conceptCodes.toArray(new String[0])));
+						filterValues.addAll(createSourceSearchResult(search, conceptCodes.toArray(new String[0])));
 					}
 
 					List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
-					filterValues.addAll(resolvedCodes.stream().filter(v -> !toRemove.contains(v))
-							.map(v -> new FEValue(selectFilter.getRealLabels().get(v), v))
-							.collect(Collectors.toList()));
+					filterValues
+						.addAll(
+							resolvedCodes
+								.stream()
+								.filter(v -> !toRemove.contains(v))
+								.map(v -> new FEValue(selectFilter.getRealLabels().get(v), v))
+								.collect(Collectors.toList()));
 
-					return new ResolvedConceptsResult(null, new ResolvedFilterResult(connector.getId().toString(),
-							selectFilter.getId().toString(), filterValues), unknownCodes);
+					return new ResolvedConceptsResult(
+						null,
+						new ResolvedFilterResult(connector.getId().toString(), selectFilter.getId().toString(), filterValues),
+						unknownCodes);
 				}
 			}
 		}
@@ -154,9 +162,10 @@ public class ContentTreeProcessor {
 			result.addAll(search.findItems(value, 10));
 		}
 
-		return result.stream().map(
-				item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-				.collect(Collectors.toList());
+		return result
+			.stream()
+			.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+			.collect(Collectors.toList());
 	}
 
 	private ResolvedFilter createResolvedFilter(Filter<?> filter) {
@@ -166,7 +175,8 @@ public class ContentTreeProcessor {
 			BigMultiSelectFilter bmsf = (BigMultiSelectFilter) filter;
 			result.setColumn(bmsf.getColumn());
 			result.setRealLabels(bmsf.getRealLabels());
-		} else {
+		}
+		else {
 			MultiSelectFilter msf = (MultiSelectFilter) filter;
 			result.setColumn(msf.getColumn());
 			result.setRealLabels(msf.getRealLabels());
@@ -175,8 +185,7 @@ public class ContentTreeProcessor {
 		return result;
 	}
 
-	public ResolvedConceptsResult resolveFilterValues(Dataset dataset, Table table, Filter filter,
-			List<String> values) {
+	public ResolvedConceptsResult resolveFilterValues(Dataset dataset, Table table, Filter filter, List<String> values) {
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
 
 		List<FEValue> filterValues = new LinkedList<>();
@@ -187,13 +196,14 @@ public class ContentTreeProcessor {
 
 		ResolvedFilter rf = createResolvedFilter(filter);
 
-
 		// see https://github.com/bakdata/conquery/issues/251
-		return new ResolvedConceptsResult(null,
-				new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues), values);
+		return new ResolvedConceptsResult(
+			null,
+			new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues),
+			values);
 	}
 
-	public SearchResult search( Dataset dataset, String query, int limit) {
+	public SearchResult search(Dataset dataset, String query, int limit) {
 		List<String> items = conceptSearch.findItems(dataset.getId(), query);
 		List<String> result = items.stream().limit(limit).collect(Collectors.toList());
 

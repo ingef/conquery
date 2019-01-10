@@ -19,13 +19,11 @@ public class UrlRewriteBundle implements ConfiguredBundle<ConqueryConfig> {
 
 	public static final String DEFAULT_CONF_PATH = "urlrewrite.xml";
 
-	public UrlRewriteBundle() {
-	}
+	public UrlRewriteBundle() {}
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		FilterRegistration.Dynamic registration = environment.servlets().addFilter("UrlRewriteFilter",
-				new UrlRewriteFilter());
+		FilterRegistration.Dynamic registration = environment.servlets().addFilter("UrlRewriteFilter", new UrlRewriteFilter());
 		registration.addMappingForUrlPatterns(null, true, "/*");
 		registration.setInitParameter("confPath", DEFAULT_CONF_PATH);
 	}

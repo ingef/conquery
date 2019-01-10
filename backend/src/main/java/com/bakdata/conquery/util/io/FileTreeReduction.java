@@ -38,7 +38,8 @@ public class FileTreeReduction {
 			FileTreeReduction ftr = it.next();
 			if (reduce(ftr, extension, l)) {
 				it.remove();
-			} else {
+			}
+			else {
 				l.add(ftr);
 			}
 		}
@@ -50,14 +51,16 @@ public class FileTreeReduction {
 	private static boolean reduce(FileTreeReduction ftr, String extension, List<FileTreeReduction> l) {
 		if (ftr.children.isEmpty()) {
 			return !ftr.name.endsWith(extension);
-		} else {
+		}
+		else {
 			boolean remove = true;
 			Iterator<FileTreeReduction> it = ftr.children.iterator();
 			while (it.hasNext()) {
 				FileTreeReduction c = it.next();
 				if (reduce(c, extension, l)) {
 					it.remove();
-				} else {
+				}
+				else {
 					remove = false;
 					l.add(c);
 				}
@@ -67,8 +70,12 @@ public class FileTreeReduction {
 	}
 
 	private static FileTreeReduction build(Path root, File file, int depth) {
-		FileTreeReduction ftr = new FileTreeReduction(file.getName(), file, depth, file.isFile(),
-				Joiner.on('/').join(root.relativize(file.toPath()).iterator()));
+		FileTreeReduction ftr = new FileTreeReduction(
+			file.getName(),
+			file,
+			depth,
+			file.isFile(),
+			Joiner.on('/').join(root.relativize(file.toPath()).iterator()));
 		if (file.isDirectory()) {
 			for (File f : file.listFiles()) {
 				ftr.getChildren().add(build(root, f, depth + 1));

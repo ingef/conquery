@@ -14,6 +14,7 @@ import lombok.Data;
 @Data
 @Builder
 public class FEFilter {
+
 	private FilterId id;
 	private String label;
 	private FEFilterType type;

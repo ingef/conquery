@@ -35,13 +35,13 @@ public class ImportResource {
 
 	@Consumes(AdditionalMediaTypes.CSV)
 	@POST
-	public SQStatus postConstantQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull String input,
-			@Context HttpServletRequest req) throws QueryExecutionException, IOException {
+	public SQStatus postConstantQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull String input, @Context HttpServletRequest req) throws QueryExecutionException, IOException {
 		authorize(user, datasetId, Ability.READ);
-		
+
 		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();
 		// Wait for new CSV Handler see https://github.com/bakdata/conquery/issues/243
-		// What is the new Version of a ConstantQuery see https://github.com/bakdata/conquery/issues/242
+		// What is the new Version of a ConstantQuery see
+		// https://github.com/bakdata/conquery/issues/242
 		/*
 		 * ConstantQuery cq =
 		 * ConstantQuery.of(queryProcessor.getConfig().getResultIdMapper(), input,
