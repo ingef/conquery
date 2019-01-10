@@ -72,10 +72,10 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	}
 
 	@Override
-	public void storeExternalInfos(NamespacedStorage storage, Consumer<WorkerMessage> messageConsumer) {
+	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {
 		dictionary.setName(dictionaryId.getDictionary());
 		dictionary.setDataset(dictionaryId.getDataset());
-		messageConsumer.accept(new UpdateDictionary(dictionary));
+		dictionaryConsumer.accept(dictionary);
 	}
 
 	@Override

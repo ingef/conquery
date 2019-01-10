@@ -13,6 +13,7 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
@@ -57,6 +58,7 @@ public class ImportJob extends Job {
 	private final TableId table;
 	private final File importFile;
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void execute() throws JSONException {
 		this.progressReporter.setMax(16);
@@ -119,7 +121,16 @@ public class ImportJob extends Job {
 			this.progressReporter.report(1);
 			log.debug("\tsending secondary dictionaries");
 			for(PPColumn col:header.getColumns()) {
-				col.getType().storeExternalInfos(namespace.getStorage(), (Consumer<WorkerMessage>)(namespace::sendToAll));
+				col.getType().storeExternalInfos(namespace.getStorage(),
+					(Consumer<Dictionary>)(dict -> {
+						try {
+							namespace.getStorage().addDictionary(dict);
+							namespace.sendToAll(new UpdateDictionary(dict));
+						} catch(Exception e) {
+							throw new RuntimeException("Failed to store dictionary "+dict, e);
+						}
+					})
+				);
 			}
 			this.progressReporter.report(1);
 			

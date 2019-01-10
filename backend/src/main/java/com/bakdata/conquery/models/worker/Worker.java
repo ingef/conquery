@@ -6,7 +6,7 @@ import java.io.IOException;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.events.SlaveBlockManager;
+import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.network.MasterMessage;
@@ -33,7 +33,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.info = info;
 		this.jobManager = jobManager;
 		this.storage = storage;
-		SlaveBlockManager blockManager = new SlaveBlockManager(jobManager, storage, this);
+		BlockManager blockManager = new BlockManager(jobManager, storage, this);
 		storage.setBlockManager(blockManager);
 		this.queryExecutor = queryExecutor;
 	}

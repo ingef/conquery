@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 
-public interface NamespacedStorage<BLOCK_MANAGER extends BlockManager> extends ConqueryStorage {
+public interface NamespacedStorage extends ConqueryStorage {
 	
 	void addDictionary(Dictionary dict) throws JSONException;
 	Dictionary getDictionary(DictionaryId id);
@@ -34,7 +34,4 @@ public interface NamespacedStorage<BLOCK_MANAGER extends BlockManager> extends C
 	void updateConcept(Concept<?> concept) throws JSONException;
 	void removeConcept(ConceptId id);
 	Collection<? extends Concept<?>> getAllConcepts();
-	
-	void setBlockManager(BLOCK_MANAGER blockManager);
-	BLOCK_MANAGER getBlockManager();
 }

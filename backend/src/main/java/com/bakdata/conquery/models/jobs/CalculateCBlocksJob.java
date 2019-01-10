@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.events.SlaveBlockManager;
+import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
@@ -31,7 +31,7 @@ public class CalculateCBlocksJob extends Job {
 
 	private final List<CalculationInformation> infos = new ArrayList<>();
 	private final WorkerStorage storage;
-	private final SlaveBlockManager blockManager;
+	private final BlockManager blockManager;
 	private final Connector connector;
 	private final Table table;
 

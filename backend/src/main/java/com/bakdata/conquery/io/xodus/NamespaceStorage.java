@@ -5,13 +5,12 @@ import java.io.File;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.events.MasterBlockManager;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
 
-public interface NamespaceStorage extends NamespacedStorage<MasterBlockManager> {
+public interface NamespaceStorage extends NamespacedStorage {
 	
 	public static NamespaceStorage tryLoad(Validator validator, StorageConfig config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());

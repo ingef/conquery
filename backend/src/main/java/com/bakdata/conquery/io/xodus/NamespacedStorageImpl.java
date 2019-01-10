@@ -33,15 +33,12 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public abstract class NamespacedStorageImpl<BLOCK_MANAGER extends BlockManager> extends ConqueryStorageImpl implements NamespacedStorage<BLOCK_MANAGER> {
+public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
 
 	protected final SingletonStore<Dataset> dataset;
 	protected final IdentifiableStore<Dictionary> dictionaries;
-	protected IdentifiableStore<Import> imports;
+	protected final IdentifiableStore<Import> imports;
 	protected final IdentifiableStore<Concept<?>> concepts;
-	@Getter
-	private BLOCK_MANAGER blockManager;
-
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(
@@ -104,16 +101,17 @@ public abstract class NamespacedStorageImpl<BLOCK_MANAGER extends BlockManager> 
 
 
 		};
+		
+		this.imports = new IdentifiableStore<Import>(centralRegistry, StoreInfo.IMPORTS.cached(this)) {
+			@Override
+			protected void addToRegistry(CentralRegistry centralRegistry, Import imp) throws ConfigurationException, JSONException {
+				imp.loadExternalInfos(NamespacedStorageImpl.this);
+			}
+		};
 
 		log.info("Loaded complete storage within {}", all.stop());
 	}
 	
-	@Override
-	public void setBlockManager(BLOCK_MANAGER blockManager) {
-		this.blockManager = blockManager;
-		blockManager.init();
-	}
-
 	@Override
 	public void stopStores() throws IOException {
 		dataset.close();
@@ -171,9 +169,6 @@ public abstract class NamespacedStorageImpl<BLOCK_MANAGER extends BlockManager> 
 	@Override
 	public void addImport(Import imp) throws JSONException {
 		imports.add(imp);
-		if(blockManager != null) {
-			blockManager.addImport(imp);
-		}
 	}
 
 	@Override
@@ -189,18 +184,11 @@ public abstract class NamespacedStorageImpl<BLOCK_MANAGER extends BlockManager> 
 	@Override
 	public void updateImport(Import imp) throws JSONException {
 		imports.update(imp);
-		if(blockManager != null) {
-			blockManager.removeImport(imp.getId());
-			blockManager.addImport(imp);
-		}
 	}
 
 	@Override
 	public void removeImport(ImportId id) {
 		imports.remove(id);
-		if(blockManager != null) {
-			blockManager.removeImport(id);
-		}
 	}
 
 	@Override
@@ -212,18 +200,11 @@ public abstract class NamespacedStorageImpl<BLOCK_MANAGER extends BlockManager> 
 	@Override
 	public void updateConcept(Concept<?> concept) throws JSONException {
 		concepts.update(concept);
-		if(blockManager!=null) {
-			blockManager.removeConcept(concept.getId());
-			blockManager.addConcept(concept);
-		}
 	}
 
 	@Override
 	public void removeConcept(ConceptId id) {
 		concepts.remove(id);
-		if(blockManager!=null) {
-			blockManager.removeConcept(id);
-		}
 	}
 
 	@Override
