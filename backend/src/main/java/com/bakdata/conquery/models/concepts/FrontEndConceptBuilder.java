@@ -28,8 +28,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 
 import lombok.AllArgsConstructor;
 
-import lombok.AllArgsConstructor;
-
 /**
  * This class constructs the concept tree as it is presented to the front end.
  */
