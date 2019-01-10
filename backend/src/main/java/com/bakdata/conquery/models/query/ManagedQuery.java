@@ -108,8 +108,6 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {
 		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset));
-		IdMapping mapping = namespace.getStorage().getIdMapping();
-		int unmapableTuples = 0;
 		return Stream.concat(
 				Stream.of(Joiner.on(',').join(mapping.getPrintIdFields())+",dates"),
 				results

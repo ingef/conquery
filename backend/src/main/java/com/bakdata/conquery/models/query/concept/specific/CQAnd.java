@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.validation.Valid;
 
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -38,5 +39,11 @@ public class CQAnd implements CQElement {
 		for(CQElement c:children) {
 			c.collectRequiredQueries(requiredQueries);
 		}
+	}
+
+	@Override
+	public CQElement resolve(QueryResolveContext context) {
+		children.replaceAll(c->c.resolve(context));
+		return this;
 	}
 }

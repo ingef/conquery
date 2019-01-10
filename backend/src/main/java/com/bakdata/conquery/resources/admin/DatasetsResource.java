@@ -59,6 +59,25 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.glassfish.jersey.media.multipart.BodyPart;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.annotation.security.PermitAll;
+import javax.ws.rs.*;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriBuilder;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
@@ -93,9 +112,39 @@ public class DatasetsResource {
 				namespaces.get(dataset).getStorage().getDataset(),
 				FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
 	}
-	
-	@GET @Path("/{"+DATASET_NAME+"}/tables/{"+TABLE_NAME+"}")
-	public View getTable(@PathParam(DATASET_NAME)DatasetId datasetId, @PathParam(TABLE_NAME)TableId tableParam) {
+
+	@GET
+	@Path("/{" + DATASET_NAME + "}/mapping")
+	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
+		IdMapping mapping = namespaces.get(datasetId).getStorage().getIdMapping();
+		if (mapping != null) {
+			return new UIView<>(
+				"idmapping.html.ftl",
+				ctx,
+				mapping
+			);
+		} else {
+			return new UIView<>(
+				"add_idmapping.html.ftl",
+				ctx,
+				datasetId
+			);
+		}
+	}
+
+	@POST
+	@Consumes(MediaType.WILDCARD)
+	@Path("/{" + DATASET_NAME + "}/mapping")
+	public Response addIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("data_csv") InputStream data) throws IOException, JSONException {
+		processor.addIdMaping(data, namespaces.get(datasetId));
+		return Response
+				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
+				.build();
+	}
+
+	@GET
+	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+	public View getTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) {
 		Namespace ns = namespaces.get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
 		Table table = dataset

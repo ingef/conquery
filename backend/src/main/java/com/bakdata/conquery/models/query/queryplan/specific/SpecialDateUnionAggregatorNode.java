@@ -1,25 +1,24 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.time.LocalDate;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import com.google.common.collect.RangeSet;
 
-public class SpecialDateUnionAggregatorNode extends AggregatorNode<RangeSet<LocalDate>> {
+public class SpecialDateUnionAggregatorNode extends AggregatorNode<CDateSet> {
 
-	private Table requiredTable;
+	private TableId requiredTable;
 	
-	public SpecialDateUnionAggregatorNode(Table requiredTable, SpecialDateUnion aggregator) {
+	public SpecialDateUnionAggregatorNode(TableId requiredTable, SpecialDateUnion aggregator) {
 		super(0, aggregator);
 		this.requiredTable = requiredTable;
 	}
 
 	@Override
-	public void collectRequiredTables(Set<Table> requiredTables) {
+	public void collectRequiredTables(Set<TableId> requiredTables) {
 		requiredTables.add(requiredTable);
 	}
 	

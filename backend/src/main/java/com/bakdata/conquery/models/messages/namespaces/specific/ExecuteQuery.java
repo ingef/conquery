@@ -27,12 +27,11 @@ import lombok.ToString;
 public class ExecuteQuery extends WorkerMessage.Slow {
 
 	private ManagedQuery query;
-	private Map<ManagedQueryId, IQuery> dependencies;
 
 	@Override
 	public void react(Worker context) throws Exception {
 		try {
-			ShardResult result = context.getQueryExecutor().execute(new QueryPlanContextImpl(context, dependencies), query);
+			ShardResult result = context.getQueryExecutor().execute(new QueryPlanContextImpl(context), query);
 			result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
 		} catch(Exception e) {
 			ShardResult result = new ShardResult();
