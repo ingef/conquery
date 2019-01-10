@@ -1,12 +1,14 @@
 package com.bakdata.conquery.util;
 
+import javax.servlet.FilterRegistration;
+
+import org.tuckey.web.filters.urlrewrite.UrlRewriteFilter;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
+
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import org.tuckey.web.filters.urlrewrite.UrlRewriteFilter;
-
-import javax.servlet.FilterRegistration;
 
 /**
  * The URL rewriting (in a Dropwizard application) to allow for use of React

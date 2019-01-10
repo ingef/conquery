@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
