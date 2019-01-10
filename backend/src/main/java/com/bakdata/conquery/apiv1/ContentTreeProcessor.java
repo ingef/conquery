@@ -85,7 +85,7 @@ public class ContentTreeProcessor {
 		return namespaces
 			.getAllDatasets()
 			.stream()
-			.filter(d -> user.isPermitted(new DatasetPermission(user.getId(), EnumSet.of(Ability.READ), d.getId())))
+			.filter(d -> user.isPermitted(new DatasetPermission(user.getId(), Ability.READ.AS_SET, d.getId())))
 			.map(d -> new IdLabel(d.getLabel(), d.getId().toString()))
 			.collect(Collectors.toList());
 	}

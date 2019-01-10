@@ -33,9 +33,9 @@ public class SubjectTest implements ConqueryTestSpec {
 		mandator1.setLabel("company");
 		storage.addMandator(mandator1);
 		
-		DatasetPermission datasetPermission1 = new DatasetPermission(mandator1.getId(), EnumSet.of(Ability.READ), dataset1.getId());
+		DatasetPermission datasetPermission1 = new DatasetPermission(mandator1.getId(), Ability.READ.AS_SET, dataset1.getId());
 		assertThat(mandator1.addPermission(datasetPermission1).getId()).isEqualTo(datasetPermission1.getId());
-		DatasetPermission datasetPermission2 = new DatasetPermission(mandator1.getId(), EnumSet.of(Ability.DELETE), dataset1.getId());
+		DatasetPermission datasetPermission2 = new DatasetPermission(mandator1.getId(), Ability.DELETE.AS_SET, dataset1.getId());
 		assertThat(mandator1.addPermission(datasetPermission2).getId()).isNotEqualTo(datasetPermission2.getId());
 		
 		// setup user
