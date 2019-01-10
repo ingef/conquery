@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.xodus;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.BigStore;
 import com.bakdata.conquery.io.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
@@ -53,6 +54,14 @@ public enum StoreInfo implements IStoreInfo {
 	private final String xodusName;
 	private final Class<?> valueType;
 	private final Class<?> keyType;
+	
+	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(ConqueryStorage storage, Injectable... injectables) {
+		return new IdentifiableStore<>(
+			storage.getCentralRegistry(),
+			cached(storage),
+			injectables
+		);
+	}
 	
 	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(ConqueryStorage storage) {
 		return new IdentifiableStore<>(

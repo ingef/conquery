@@ -3,6 +3,7 @@ package com.bakdata.conquery.io.xodus;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Validator;
@@ -34,14 +35,14 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private final IdentifiableStore<ConqueryPermission> authPermissions;
 	private final IdentifiableStore<Mandator> authMandator;
 
-	public MasterMetaStorageImpl(Validator validator, StorageConfig config) {
+	public MasterMetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {
 		super(
 			validator,
 			config,
 			new File(config.getDirectory(), "meta")
 		);
 		this.meta = StoreInfo.NAMESPACES.singleton(this);
-		this.queries = StoreInfo.QUERIES.identifiable(this);
+		this.queries = StoreInfo.QUERIES.identifiable(this, namespaces);
 		
 		MasterMetaStorage storage = this;
 		this.authMandator = new IdentifiableStore<>(
@@ -152,8 +153,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		authUser.add(user);
 	}
 	
-	public User getUser(UserId userId) {
-		return authUser.get(userId);
+	public Optional<User> getUser(UserId userId) {
+		return Optional.ofNullable(authUser.get(userId));
 	}
 	
 	public Collection<User> getAllUsers(){
@@ -174,8 +175,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		authMandator.add(mandator);
 	}
 	
-	public Mandator getMandator(MandatorId mandatorId) {
-		return authMandator.get(mandatorId);
+	public Optional<Mandator> getMandator(MandatorId mandatorId) {
+		return Optional.ofNullable(authMandator.get(mandatorId));
 	}
 	
 	@Override
@@ -206,5 +207,10 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Override
 	public Set<ConqueryPermission> getPermissions(PermissionOwnerId<?> ownerId) {
 		return ownerId.getOwner(this).getPermissions();
+	}
+
+	@Override
+	public void updateMandator(Mandator mandator) throws JSONException {
+		authMandator.update(mandator);
 	}
 }
