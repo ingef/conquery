@@ -111,20 +111,13 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		IdMapping mapping = namespace.getStorage().getIdMapping();
 		int unmapableTuples = 0;
 		return Stream.concat(
-				Stream.of(Joiner.on(',').join(mapping.getPrintIdFields())+",dates"),
-				results
-						.stream()
-						.filter(ContainedEntityResult.class::isInstance)
-						.map(ContainedEntityResult.class::cast)
-						.filter(cer -> mapping.forCsv(dict.getElement(cer.getEntityId())) != null)
-						.map(cer -> Joiner.on(',').join(mapping.forCsv(dict.getElement(cer.getEntityId()))) + "," + Joiner.on(',').join(cer.getValues()))
-						.map(Objects::toString)
-						.onClose(() -> {
-							if (unmapableTuples > 0) {
-								log.warn(unmapableTuples + " Tuples could not be mapped");
-								// TODO give some (10?) examples
-							}
-						})
+			Stream.of("result,dates"),
+			results
+				.stream()
+				.filter(ContainedEntityResult.class::isInstance)
+				.map(ContainedEntityResult.class::cast)
+				.map(cer -> dict.getElement(cer.getEntityId()) + "," + Joiner.on(',').join(cer.getValues()))
+				.map(Objects::toString)
 		);
 	}
 

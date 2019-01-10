@@ -48,7 +48,7 @@ public class StoredQueriesResource {
 	public List<SQStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-		return processor.getAllQueries(dataset, URLBuilder.fromRequest(req));
+		return processor.getAllQueries(user, dataset, URLBuilder.fromRequest(req));
 	}
 
 	@GET
@@ -56,7 +56,7 @@ public class StoredQueriesResource {
 	public SQStatus getQueryWithSource(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId) throws QueryTranslationException {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-		return processor.getQueryWithSource(dataset, queryId.getQuery());
+		return processor.getQueryWithSource(user, dataset, queryId);
 	}
 
 	@PATCH
@@ -64,7 +64,7 @@ public class StoredQueriesResource {
 	public SQStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, JsonNode patch) {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-		SQStatus status = processor.patchQuery(dataset, queryId.getQuery(), patch);
+		SQStatus status = processor.patchQuery(user, dataset, queryId, patch);
 		if (status != null) {
 			return status;
 		}
@@ -77,7 +77,7 @@ public class StoredQueriesResource {
 	public void deleteQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId) {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getManagedQuery(datasetId, queryId);
-		processor.deleteQuery(dataset, query);
+		processor.deleteQuery(user, dataset, query);
 	}
 
 }

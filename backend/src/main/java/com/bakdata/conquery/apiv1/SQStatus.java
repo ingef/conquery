@@ -83,7 +83,7 @@ public class SQStatus {
 			.to(ResultCSVResource.GET_CSV_PATH).get();
 		
 		return builder()
-			.id(query.createId())
+			.id(query.getId())
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
 			.query(query)
 			.requiredTime((query.getStartTime() != null && query.getFinishTime() != null)

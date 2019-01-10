@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.util.Collection;
+import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -30,13 +31,14 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	Set<ConqueryPermission> getPermissions(PermissionOwnerId<?> owner);
 	
 	void addUser(User user) throws JSONException;
-	User getUser(UserId user);
+	Optional<User> getUser(UserId user);
 	Collection<User> getAllUsers();
 	void updateUser(User user) throws JSONException;
 	void removeUser(UserId userId);
 	
 	void addMandator(Mandator mandator) throws JSONException;
-	Mandator getMandator(MandatorId mandatorId);
+	Optional<Mandator> getMandator(MandatorId mandatorId);
 	Collection<Mandator> getAllMandators();
 	void removeMandator(MandatorId mandatorId);
+	void updateMandator(Mandator mandator) throws JSONException;
 }

@@ -32,7 +32,7 @@ import lombok.Setter;
 
 //see #152  Move to EVA
 @NoArgsConstructor
-@Setter
+@Setter @Getter
 @CPSType(id="DAYS_IN_RANGE", base=AutoOutput.class)
 public class DaysInRangeOutput implements AutoOutput {
 
@@ -77,7 +77,7 @@ public class DaysInRangeOutput implements AutoOutput {
 		return result;
 	}
 
-	@Override
+	@Override @JsonIgnore
 	public int getWidth() {
 		return CONSTANT_COLUMN_OFFSET + identifiers.size();
 	}

@@ -33,7 +33,7 @@ public class IntegrationUtils {
 			MandatorId [] rolesInjected = rUser.getRolesInjected();
 			
 			for(MandatorId mandatorId : rolesInjected) {
-				user.addRole(storage.getMandator(mandatorId));
+				user.addMandatorLocal(storage.getMandator(mandatorId).get());
 			}
 			storage.addUser(user);
 		}
@@ -42,9 +42,9 @@ public class IntegrationUtils {
 			PermissionOwnerId<?> ownerId = permission.getOwnerId();
 			PermissionOwner<?> owner =null;
 			if(ownerId instanceof UserId) {
-				owner = storage.getUser((UserId) ownerId);
+				owner = storage.getUser((UserId) ownerId).get();
 			} else if(ownerId instanceof MandatorId) {
-				owner = storage.getMandator((MandatorId) ownerId);
+				owner = storage.getMandator((MandatorId) ownerId).get();
 			}
 			
 			owner.addPermission(permission);
