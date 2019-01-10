@@ -43,7 +43,7 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User>{
 				throw new NotAuthorizedException("Failed to authenticate request");
 			}
 		} catch(AuthenticationException e) {
-			log.warn("Shiro failed to authenticate the request. See the following trace:\n{}", e);
+			log.warn("Shiro failed to authenticate the request. See the following trace:", e);
 			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.", e);
 		}
 	}
