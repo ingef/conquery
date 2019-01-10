@@ -134,9 +134,9 @@ public class PermissionStorageFunctionTest implements ConqueryTestSpec {
 				.stream()
 				.map(rUser ->{
 					User user = (User)rUser.getUser();
-					Arrays.asList(rUser.getRolesInjected()).forEach(id -> {
+					for(MandatorId id : rUser.getRolesInjected()){
 						user.addMandatorLocal(storage.getMandator(id));
-					});
+					}
 					return user;
 				}).map(User.class::cast).collect(Collectors.toList());
 		
