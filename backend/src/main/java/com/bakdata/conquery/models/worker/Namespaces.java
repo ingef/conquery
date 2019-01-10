@@ -1,7 +1,11 @@
 package com.bakdata.conquery.models.worker;
 
 import java.net.SocketAddress;
-import java.util.*;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;

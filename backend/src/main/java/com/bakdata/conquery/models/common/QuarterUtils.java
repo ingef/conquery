@@ -3,7 +3,11 @@ package com.bakdata.conquery.models.common;
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
-import java.time.temporal.*;
+import java.time.temporal.ChronoField;
+import java.time.temporal.IsoFields;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalAdjuster;
+import java.time.temporal.TemporalAdjusters;
 
 import lombok.experimental.UtilityClass;
 

@@ -1,6 +1,12 @@
 package com.bakdata.conquery.models.auth.util;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 
 import org.apache.shiro.subject.PrincipalCollection;
 

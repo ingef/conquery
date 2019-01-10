@@ -8,14 +8,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
 import com.bakdata.conquery.models.identifiable.mapping.IdMapping.IdMappingAccessor;
-
-import org.apache.commons.lang3.tuple.Pair;
 
 
 public class IdMappingStoreTest {

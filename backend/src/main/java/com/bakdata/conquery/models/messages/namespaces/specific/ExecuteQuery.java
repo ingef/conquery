@@ -13,7 +13,11 @@ import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.util.concurrent.MoreExecutors;
 
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @CPSType(id="EXECUTE_QUERY", base=NamespacedMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)

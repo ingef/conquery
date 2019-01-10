@@ -1,6 +1,15 @@
 package com.bakdata.conquery.io;
 
-import java.io.*;
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.RandomAccessFile;
 
 import org.apache.commons.compress.utils.IOUtils;
 import org.apache.commons.io.input.BoundedInputStream;

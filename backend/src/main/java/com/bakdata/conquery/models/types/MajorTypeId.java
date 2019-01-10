@@ -2,7 +2,14 @@ package com.bakdata.conquery.models.types;
 
 import java.util.function.Supplier;
 
-import com.bakdata.conquery.models.types.specific.*;
+import com.bakdata.conquery.models.types.specific.BooleanType;
+import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.types.specific.DateType;
+import com.bakdata.conquery.models.types.specific.DecimalType;
+import com.bakdata.conquery.models.types.specific.IntegerType;
+import com.bakdata.conquery.models.types.specific.MoneyType;
+import com.bakdata.conquery.models.types.specific.RealType;
+import com.bakdata.conquery.models.types.specific.StringType;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
