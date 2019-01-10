@@ -44,9 +44,9 @@ public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>
 		
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
 		Optional<User> user = storage.getUser((UserId)info.getPrincipals().getPrimaryPrincipal());
-		if(user.isEmpty()) {
+		if(!user.isPresent()) {
 			user = uuHandler.handle(info);
-			if(user.isEmpty()) {
+			if(!user.isPresent()) {
 				throw new org.apache.shiro.authc.AuthenticationException("User not found");
 			}
 		}
