@@ -1,7 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
@@ -36,7 +37,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.zigurs.karlis.utils.search.QuickSearch;
 
-import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -57,15 +57,13 @@ public class ContentTreeProcessor {
 		FilterSearch.init(namespaces.getAllDatasets());
 	}
 
-	public FERoot getRoot(User user, Dataset dataset) {
-		authorize(user, dataset.getId(), Ability.READ);
+	public FERoot getRoot(Dataset dataset) {
 
 		return FrontEndConceptBuilder.createRoot(dataset);
 	}
 
-	public List<FEValue> autocompleteTextFilter(@Auth User user, Dataset dataset, Table table, Filter filter,
+	public List<FEValue> autocompleteTextFilter(Dataset dataset, Table table, Filter filter,
 			String text) {
-		authorize(user, dataset.getId(), Ability.READ);
 		List<FEValue> result = new LinkedList<>();
 
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
@@ -79,8 +77,7 @@ public class ContentTreeProcessor {
 		return result;
 	}
 
-	public Map<ConceptElementId<?>, FENode> getNode(@Auth User user, Dataset dataset, IId id) {
-		authorize(user, dataset.getId(), Ability.READ);
+	public Map<ConceptElementId<?>, FENode> getNode(Dataset dataset, IId id) {
 		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder
 				.createTreeMap(dataset.getConcepts());
 		return ctRoots.get(id);
@@ -88,14 +85,12 @@ public class ContentTreeProcessor {
 
 	public List<IdLabel> getDatasets(User user) {
 		return namespaces.getAllDatasets().stream()
-				// .filter(d -> user.isPermitted(new
-				// IdentifiableInstancePermission(user.getId(), AccessType.READ, d.getId())))
+				.filter(d -> user.isPermitted(new DatasetPermission(user.getId(), EnumSet.of(Ability.READ), d.getId())))
 				.map(d -> new IdLabel(d.getLabel(), d.getId().toString())).collect(Collectors.toList());
 	}
 
-	public ResolvedConceptsResult resolve(User user, Dataset dataset, ConceptElement conceptElement,
+	public ResolvedConceptsResult resolve(Dataset dataset, ConceptElement conceptElement,
 			List<String> conceptCodes) {
-		authorize(user, dataset.getId(), Ability.READ);
 		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
 
 		if (conceptElement.getConcept() instanceof TreeConcept) {
@@ -180,9 +175,8 @@ public class ContentTreeProcessor {
 		return result;
 	}
 
-	public ResolvedConceptsResult resolveFilterValues(@Auth User user, Dataset dataset, Table table, Filter filter,
+	public ResolvedConceptsResult resolveFilterValues(Dataset dataset, Table table, Filter filter,
 			List<String> values) {
-		authorize(user, dataset.getId(), Ability.READ);
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
 
 		List<FEValue> filterValues = new LinkedList<>();
@@ -199,8 +193,7 @@ public class ContentTreeProcessor {
 				new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues), values);
 	}
 
-	public SearchResult search(@Auth User user, Dataset dataset, String query, int limit) {
-		authorize(user, dataset.getId(), Ability.READ);
+	public SearchResult search( Dataset dataset, String query, int limit) {
 		List<String> items = conceptSearch.findItems(dataset.getId(), query);
 		List<String> result = items.stream().limit(limit).collect(Collectors.toList());
 

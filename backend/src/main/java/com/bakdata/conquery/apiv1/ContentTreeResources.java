@@ -70,19 +70,21 @@ public class ContentTreeResources {
 	@GET
 	@Path("{" + DATASET + "}/concepts")
 	public FERoot getRoot(@Auth User user, @PathParam(DATASET) DatasetId datasetId) {
-		return processor.getRoot(user, dsUtil.getDataset(datasetId));
+		authorize(user, datasetId, Ability.READ);
+		return processor.getRoot(dsUtil.getDataset(datasetId));
 	}
 
 	@GET
 	@Path("{" + DATASET + "}/concepts/{" + CONCEPT + "}")
 	public Response getNode(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(CONCEPT) ConceptId id,
 			@Context HttpServletRequest req) {
+		authorize(user, datasetId, Ability.READ);
 		//if (useCaching && req.getHeader(HttpHeaders.IF_NONE_MATCH) != null
 		//		&& currentTag.equals(EntityTag.valueOf(req.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
 		//	return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 		//}
 		Dataset dataset = dsUtil.getDataset(datasetId);
-		Map<ConceptElementId<?>, FENode> result = processor.getNode(user, dataset, id);
+		Map<ConceptElementId<?>, FENode> result = processor.getNode(dataset, id);
 
 		if (result == null) {
 			throw new WebApplicationException("There is not concept with the id " + id + " in the dataset " + dataset,
@@ -99,6 +101,9 @@ public class ContentTreeResources {
 	public List<FEValue> autocompleteTextFilter(@Auth User user, @PathParam(DATASET) DatasetId datasetId,
 			@PathParam(CONCEPT) ConceptElementId conceptElementId, @PathParam(TABLE) TableId tableId,
 			@PathParam(FILTER) FilterId filterId, @NotNull StringContainer text, @Context HttpServletRequest req) {
+		
+		authorize(user, datasetId, Ability.READ);
+		
 		if (text.getText().length() < 1) {
 			throw new WebApplicationException("Too short text. Requires at least 1 characters.", Status.BAD_REQUEST);
 		}
@@ -106,7 +111,7 @@ public class ContentTreeResources {
 		Connector connector = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept())
 				.getConnectorByName(filterId.getConnector().getConnector());
 
-		return processor.autocompleteTextFilter(user, dsUtil.getDataset(datasetId), connector.getTable(),
+		return processor.autocompleteTextFilter(dsUtil.getDataset(datasetId), connector.getTable(),
 				connector.getFilter(filterId), text.getText());
 	}
 
@@ -115,12 +120,13 @@ public class ContentTreeResources {
 	public ResolvedConceptsResult resolve(@Auth User user, @PathParam(DATASET) DatasetId datasetId,
 			@PathParam(CONCEPT) ConceptElementId conceptElementId, @NotNull ConceptCodeList conceptCodes,
 			@Context HttpServletRequest req) {
+		authorize(user, datasetId, Ability.READ);
 		ConceptElement<?> conceptElement = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept())
 				.getElementById(conceptElementId);
 
 		List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());
 
-		return processor.resolve(user, dsUtil.getDataset(datasetId), conceptElement, codes);
+		return processor.resolve(dsUtil.getDataset(datasetId), conceptElement, codes);
 	}
 
 	@POST
@@ -128,10 +134,12 @@ public class ContentTreeResources {
 	public ResolvedConceptsResult resolveFilterValues(@Auth User user, @PathParam(DATASET) DatasetId datasetId,
 			@PathParam(CONCEPT) ConceptElementId conceptElementId, @PathParam(TABLE) TableId tableId,
 			@PathParam(FILTER) FilterId filterId, FilterValues filterValues, @Context HttpServletRequest req) {
+		authorize(user, datasetId, Ability.READ);
+		
 		Connector connector = dsUtil.getStorage(datasetId).getConcept(conceptElementId.findConcept())
 				.getConnectorByName(filterId.getConnector().getConnector());
 
-		return processor.resolveFilterValues(user, dsUtil.getDataset(datasetId), connector.getTable(),
+		return processor.resolveFilterValues(dsUtil.getDataset(datasetId), connector.getTable(),
 				connector.getFilter(filterId), filterValues.getValues());
 	}
 
@@ -148,7 +156,7 @@ public class ContentTreeResources {
 		}
 
 		int limit = conceptSearchParam.getLimit();
-		return processor.search(user, dsUtil.getDataset(datasetId), query, limit);
+		return processor.search(dsUtil.getDataset(datasetId), query, limit);
 	}
 
 	@Getter

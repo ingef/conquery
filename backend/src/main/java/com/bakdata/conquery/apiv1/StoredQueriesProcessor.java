@@ -23,21 +23,17 @@ public class StoredQueriesProcessor {
 	}
 
 	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder fromRequest) {
-		authorize(user, dataset.getId(), Ability.READ);
 		// Auto-generated method stub
 		return null;
 	}
 
-	public void deleteQuery(User user, Dataset dataset, ManagedQuery query) {
-		authorize(user, dataset.getId(), Ability.READ);
-		authorize(user, query.getId(), Ability.DELETE);
+	public void deleteQuery(Dataset dataset, ManagedQuery query) {
 		// Auto-generated method stub
 
 	}
 
 	public SQStatus patchQuery(User user, Dataset dataset, ManagedQueryId queryId, JsonNode patch) {
 
-		authorize(user, dataset.getId(), Ability.READ);
 
 		if (patch.has("tags")) {
 			authorize(user, queryId, Ability.TAG);
@@ -59,9 +55,7 @@ public class StoredQueriesProcessor {
 		return null;
 	}
 
-	public SQStatus getQueryWithSource(User user, Dataset dataset, ManagedQueryId queryId) {
-		authorize(user, dataset.getId(), Ability.READ);
-		authorize(user, queryId, Ability.READ);
+	public SQStatus getQueryWithSource(Dataset dataset, ManagedQueryId queryId) {
 		// fill body
 		return null;
 	}

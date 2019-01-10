@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.io.IOException;
 
@@ -14,6 +15,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.QueryExecutionException;
@@ -35,6 +37,8 @@ public class ImportResource {
 	@POST
 	public SQStatus postConstantQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull String input,
 			@Context HttpServletRequest req) throws QueryExecutionException, IOException {
+		authorize(user, datasetId, Ability.READ);
+		
 		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();
 		// Wait for new CSV Handler
 		// What is the new Version of a ConstantQuery
