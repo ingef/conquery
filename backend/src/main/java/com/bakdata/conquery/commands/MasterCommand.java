@@ -1,8 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.jackson.MutableInjectableValues;
-
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -15,6 +12,8 @@ import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
+import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -41,9 +40,9 @@ import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminUIServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthValueFactoryProvider;
-
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -103,6 +102,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
+		
+		config.getAuthentication().initializeAuthConstellation(storage);
 
 		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(storage, config.getAuthentication());
 		environment.jersey().register(new AuthValueFactoryProvider.Binder(User.class));

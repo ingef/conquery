@@ -21,6 +21,17 @@
     </properties>
 
     <build>
+        <resources>
+            <resource>
+                <directory>app/dist/</directory>
+                <includes>
+                    <include>**/*</include>
+                </includes>
+                <excludes>
+                    <exclude>**/stats.json</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

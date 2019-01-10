@@ -5,12 +5,10 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -28,11 +26,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilder;
 
-import com.bakdata.conquery.io.csv.CSV;
-import com.bakdata.conquery.models.config.CSVConfig;
-import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
-import com.bakdata.conquery.models.identifiable.mapping.SimpleIdMapping;
-import org.apache.commons.io.IOUtils;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
@@ -64,14 +57,11 @@ import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.views.View;
-
-import java.util.concurrent.ScheduledExecutorService;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
+@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
 @PermitAll
 @Slf4j
 @Getter
@@ -82,118 +72,80 @@ public class DatasetsResource {
 	private final UIContext ctx;
 	private final DatasetsProcessor processor;
 	private final Namespaces namespaces;
-	private final ScheduledExecutorService maintenanceService;
-
+	
 	public DatasetsResource(ConqueryConfig config, MasterMetaStorage storage, Namespaces namespaces, JobManager jobManager, ScheduledExecutorService maintenanceService) {
 		this.ctx = new UIContext(namespaces);
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
 		this.namespaces = namespaces;
-		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager);
-		this.maintenanceService = maintenanceService;
+		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager, maintenanceService);
 	}
 
 	@GET
 	public View getDatasets() {
 		return new UIView<>("datasets.html.ftl", ctx, namespaces.getAllDatasets());
 	}
-
-	@GET
-	@Path("/{" + DATASET_NAME + "}")
-	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
+	
+	@GET @Path("/{"+DATASET_NAME+"}")
+	public View getDataset(@PathParam(DATASET_NAME)DatasetId dataset) {
 		return new FileView<>(
 				"dataset.html.ftl",
 				ctx,
 				namespaces.get(dataset).getStorage().getDataset(),
 				FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
 	}
-
-	@GET
-	@Path("/{" + DATASET_NAME + "}/mapping")
-	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
-		IdMapping mapping = namespaces.get(datasetId).getStorage().getIdMapping();
-		if (mapping != null) {
-			return new UIView<>(
-					"idmapping.html.ftl",
-					ctx,
-					mapping
-			);
-		} else {
-			return new UIView<>(
-					"add_idmapping.html.ftl",
-					ctx,
-					datasetId
-			);
-		}
-	}
-
-	@POST
-	@Consumes(MediaType.WILDCARD)
-	@Path("/{" + DATASET_NAME + "}/mapping")
-	public Response addIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("data_csv") InputStream data) throws IOException, JSONException {
-		processor.addIdMaping(data, namespaces.get(datasetId));
-		return Response
-				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
-				.build();
-	}
-
-	@GET
-	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
-	public View getTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) {
+	
+	@GET @Path("/{"+DATASET_NAME+"}/tables/{"+TABLE_NAME+"}")
+	public View getTable(@PathParam(DATASET_NAME)DatasetId datasetId, @PathParam(TABLE_NAME)TableId tableParam) {
 		Namespace ns = namespaces.get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
 		Table table = dataset
 				.getTables()
 				.getOrFail(tableParam);
-
+		
 		List<Import> imports = ns
 				.getStorage()
 				.getAllImports()
 				.stream()
-				.filter(imp -> imp.getTable().equals(table.getId()))
+				.filter(imp->imp.getTable().equals(table.getId()))
 				.collect(Collectors.toList());
-
+		
 		return new UIView<>(
-				"table.html.ftl",
-				ctx,
-				new TableStatistics(
-						table,
-						imports.stream().mapToLong(Import::getNumberOfBlocks).sum(),
-						imports.stream().mapToLong(Import::getNumberOfEntries).sum()
-				)
+			"table.html.ftl",
+			ctx,
+			new TableStatistics(
+				table,
+				imports.stream().mapToLong(Import::getNumberOfBlocks).sum(),
+				imports.stream().mapToLong(Import::getNumberOfEntries).sum()
+			)
 		);
 	}
-
-	@GET
-	@Path("/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
-	public View getConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(CONCEPT_NAME) ConceptId conceptParam) {
+	
+	@GET @Path("/{"+DATASET_NAME+"}/concepts/{"+CONCEPT_NAME+"}")
+	public View getConcept(@PathParam(DATASET_NAME)DatasetId datasetId, @PathParam(CONCEPT_NAME)ConceptId conceptParam) {
 		Namespace ns = namespaces.get(datasetId);
 		Concept<?> concept = ns
-				.getStorage()
-				.getConcept(conceptParam);
-
+			.getStorage()
+			.getConcept(conceptParam);
+		
 		return new UIView<>(
-				"concept.html.ftl",
-				ctx,
-				concept
+			"concept.html.ftl",
+			ctx,
+			concept
 		);
 	}
-
-
-	@POST
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
-		processor.addDataset(name, maintenanceService);
+	
+	@POST @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response addDataset(@NotEmpty@FormDataParam("dataset_name")String name) throws JSONException {
+		processor.addDataset(name, processor.getMaintenanceService());
 		return Response
-				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
-				.build();
+			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
+			.build();
 	}
-
-	@POST
-	@Path("/{" + DATASET_NAME + "}/tables")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addTable(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
-		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();
-		for (BodyPart part : schemas.getParent().getBodyParts()) {
+	
+	@POST @Path("/{"+DATASET_NAME+"}/tables") @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response addTable(@PathParam(DATASET_NAME)DatasetId datasetId, @FormDataParam("table_schema")FormDataBodyPart schemas) throws IOException, JSONException {
+		Dataset dataset =  namespaces.get(datasetId).getStorage().getDataset();
+		for(BodyPart part : schemas.getParent().getBodyParts()){
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
 				// ContentDisposition meta = part.getContentDisposition();
 				Table t = mapper.readValue(is, Table.class);
@@ -201,55 +153,51 @@ public class DatasetsResource {
 			}
 		}
 		return Response
-				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
-				.build();
+			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
+			.build();
 	}
-
-	@POST
-	@Path("/{" + DATASET_NAME + "}/imports")
-	public Response addImport(@PathParam(DATASET_NAME) DatasetId datasetId, @QueryParam("file") File file) throws IOException, JSONException {
+	
+	@POST @Path("/{"+DATASET_NAME+"}/imports")
+	public Response addImport(@PathParam(DATASET_NAME)DatasetId datasetId, @QueryParam("file")File file) throws IOException, JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
-		if (ns == null) {
-			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
+		if(ns == null) {
+			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}
 
 		File selectedFile = new File(processor.getConfig().getStorage().getPreprocessedRoot(), file.toString());
 		if (!selectedFile.exists()) {
 			throw new WebApplicationException("Could not find file " + selectedFile, Status.NOT_FOUND);
 		}
-
+		
 		processor.addImport(ns.getStorage().getDataset(), selectedFile);
 		return Response.ok().build();
 	}
-
-	@DELETE
-	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
-	public Response removeTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) throws IOException, JSONException {
+	
+	@DELETE @Path("/{"+DATASET_NAME+"}/tables/{"+TABLE_NAME+"}")
+	public Response removeTable(@PathParam(DATASET_NAME)DatasetId datasetId, @PathParam(TABLE_NAME)TableId tableParam) throws IOException, JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
 		dataset.getTables().remove(tableParam);
 		ns.getStorage().updateDataset(dataset);
-		for (WorkerInformation w : ns.getWorkers()) {
+		for(WorkerInformation w : ns.getWorkers()) {
 			w.send(new UpdateDataset(dataset));
 		}
 		return Response.ok().build();
 	}
-
-	@POST
-	@Path("/{" + DATASET_NAME + "}/concepts")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("concept_schema") InputStream schema) throws IOException, JSONException, ConfigurationException {
+	
+	@POST @Path("/{"+DATASET_NAME+"}/concepts") @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response addConcept(@PathParam(DATASET_NAME)DatasetId datasetId, @FormDataParam("concept_schema")InputStream schema) throws IOException, JSONException, ConfigurationException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
-		try (schema) {
+		try(schema) {
 			Concept<?> c = dataset
 					.injectInto(mapper.readerFor(Concept.class))
 					.readValue(schema);
 			processor.addConcept(dataset, c);
 			return Response
-					.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
-					.build();
+				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
+				.build();
 		}
-
+		
 	}
 }

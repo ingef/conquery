@@ -1,6 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.*;
+import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 
 import java.io.IOException;
 
@@ -23,26 +23,27 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
 
-@Path("datasets/{"+DATASET+"}/import")
+@Path("datasets/{" + DATASET + "}/import")
 @Produces(AdditionalMediaTypes.JSON)
-@PermitAll @AllArgsConstructor
+@PermitAll
+@AllArgsConstructor
 public class ImportResource {
-        
-        private final Namespaces namespaces;
-        
-        
-	
+
+	private final Namespaces namespaces;
+
 	@Consumes(AdditionalMediaTypes.CSV)
 	@POST
-	public SQStatus postConstantQuery(@Auth User user, @PathParam(DATASET)DatasetId datasetId, @NotNull String input, @Context HttpServletRequest req) throws QueryExecutionException, IOException {
+	public SQStatus postConstantQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull String input,
+			@Context HttpServletRequest req) throws QueryExecutionException, IOException {
 		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();
-		//TODO Wait for new CSV Handler
-		//TODO What is the new Version of a ConstantQuery
+		// Wait for new CSV Handler
+		// What is the new Version of a ConstantQuery
 		/*
-		ConstantQuery cq = ConstantQuery.of(queryProcessor.getConfig().getResultIdMapper(), input, version);
-		return queryProcessor.postQuery(user, dataset.get(datasets), cq, URLBuilder.fromRequest(req));
-		
-		*/
+		 * ConstantQuery cq =
+		 * ConstantQuery.of(queryProcessor.getConfig().getResultIdMapper(), input,
+		 * version); return queryProcessor.postQuery(user, dataset.get(datasets), cq,
+		 * URLBuilder.fromRequest(req));
+		 */
 		return null;
 	}
 }

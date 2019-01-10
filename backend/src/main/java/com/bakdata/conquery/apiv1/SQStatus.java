@@ -1,13 +1,14 @@
 package com.bakdata.conquery.apiv1;
 
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
-import java.time.ZonedDateTime;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -83,7 +84,7 @@ public class SQStatus {
 			.to(ResultCSVResource.GET_CSV_PATH).get();
 		
 		return builder()
-			.id(query.createId())
+			.id(query.getId())
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
 			.query(query)
 			.requiredTime((query.getStartTime() != null && query.getFinishTime() != null)

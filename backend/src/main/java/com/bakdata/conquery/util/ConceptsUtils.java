@@ -1,10 +1,11 @@
 package com.bakdata.conquery.util;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import java.util.List;
 
 /**
  *

@@ -83,10 +83,10 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 				}
 				FailedEntityResult failed = er.asFailed();
 				log.error(
-						"Failed query {} at least for the entity {} with:\n{}",
-						queryId,
-						failed.getEntityId(),
-						failed.getExceptionStackTrace()
+					"Failed query {} at least for the entity {} with:\n{}",
+					queryId,
+					failed.getEntityId(),
+					failed.getExceptionStackTrace()
 				);
 			}
 		}
