@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.FILENAME;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.io.IOException;
 
@@ -21,6 +22,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilderException;
 
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -52,16 +54,16 @@ public class FormResource {
 	@POST
 	@Path("")
 	public SQStatus post(@Auth User user, @PathParam(DATASET) DatasetId datasetId, ObjectNode jsonForm, @Context HttpServletRequest req) throws JsonProcessingException, IOException, IllegalArgumentException, UriBuilderException, InterruptedException {//@Valid com.bakdata.conquery.feforms.psm.FeForm form) {
+		authorize(user, datasetId, Ability.READ);
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-//                dsUtil.getStorage(datasetId).get
+		//dsUtil.getStorage(datasetId).get
 		return null;
 	}
 
 	@GET
 	@Path("{" + QUERY + "}")
 	public SQStatus get(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws IllegalArgumentException, UriBuilderException, IOException, InterruptedException {
-
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
 
@@ -90,6 +92,9 @@ public class FormResource {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
 
+		authorize(user, dataset.getId(), Ability.READ);
+		authorize(user, queryId, Ability.READ);
+		
 		log.info("Querying results for {}", queryId);
 		/*
 		//IFormQuery fqi = processor.getQuery(user, query);

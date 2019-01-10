@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.*;
+import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
+import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 
 import java.sql.SQLException;
 
@@ -57,7 +58,7 @@ public class QueryResource {
 		Dataset dataset = resourceUtil.getDataset(datasetId);
 		ManagedQuery query = resourceUtil.getManagedQuery(datasetId, queryId);
 
-		return processor.cancel(dataset, query, URLBuilder.fromRequest(req));
+		return processor.cancel(user, dataset, query, URLBuilder.fromRequest(req));
 	}
 
 	@GET
@@ -67,6 +68,6 @@ public class QueryResource {
 		Dataset dataset = resourceUtil.getDataset(datasetId);
 		ManagedQuery query = resourceUtil.getManagedQuery(datasetId, queryId);
 
-		return processor.getStatus(dataset, query, URLBuilder.fromRequest(req));
+		return processor.getStatus(user, dataset, query, URLBuilder.fromRequest(req));
 	}
 }
