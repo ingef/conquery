@@ -16,7 +16,7 @@ public class AdminUIProcessor {
 	
 	public void createMandator(String name, String idString) throws JSONException {
 
-		log.debug("New mandator:\tName: {}\tId: {} ", name, idString);
+		log.info("New mandator:\tName: {}\tId: {} ", name, idString);
 		MandatorId mandatorId = new MandatorId(idString);
 		Mandator mandator = new Mandator(new SinglePrincipalCollection(mandatorId));
 		mandator.setLabel(name);
