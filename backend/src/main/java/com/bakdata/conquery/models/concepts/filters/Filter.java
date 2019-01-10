@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters;
 
-import com.bakdata.conquery.apiv1.FilterTemplate;
-import java.io.Serializable;
-
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;

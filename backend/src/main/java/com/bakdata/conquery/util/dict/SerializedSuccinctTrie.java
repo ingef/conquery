@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 @Data @AllArgsConstructor(onConstructor_ = @JsonCreator )
 public class SerializedSuccinctTrie {

@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
+import java.util.Set;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-
-import java.util.Set;
 
 public abstract class ColumnAggregator<T> implements Aggregator<T> {
 

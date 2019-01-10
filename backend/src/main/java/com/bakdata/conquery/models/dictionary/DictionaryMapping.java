@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.dictionary;
 
-
 import com.bakdata.conquery.models.common.Range;
 
 import lombok.AccessLevel;

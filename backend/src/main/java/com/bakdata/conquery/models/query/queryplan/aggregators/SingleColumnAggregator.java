@@ -7,8 +7,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.IdReference;
 import com.bakdata.conquery.models.datasets.Column;
-
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;

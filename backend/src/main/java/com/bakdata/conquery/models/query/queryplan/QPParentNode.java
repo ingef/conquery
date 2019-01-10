@@ -3,11 +3,11 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.List;
 import java.util.Set;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.google.common.collect.ImmutableListMultimap;

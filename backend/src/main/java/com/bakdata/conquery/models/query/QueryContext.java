@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;

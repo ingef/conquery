@@ -5,8 +5,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bakdata.conquery.io.csv.CSV;
 import org.apache.commons.lang3.tuple.Pair;
+
+import com.bakdata.conquery.io.csv.CSV;
 
 public class SimpleIdMapping extends IdMapping{
 

@@ -1,18 +1,20 @@
 package com.bakdata.conquery.models.exceptions.validators;
 
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFileList;
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFileValidator;
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFilesValidator;
-import lombok.extern.slf4j.Slf4j;
+import static java.lang.annotation.ElementType.*;
+
+import java.io.File;
+import java.lang.annotation.*;
 
 import javax.validation.Constraint;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.Payload;
-import java.io.File;
-import java.lang.annotation.*;
 
-import static java.lang.annotation.ElementType.*;
+import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFileList;
+import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFileValidator;
+import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFilesValidator;
+
+import lombok.extern.slf4j.Slf4j;
 
 @Target({FIELD, METHOD, PARAMETER, ANNOTATION_TYPE, TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)

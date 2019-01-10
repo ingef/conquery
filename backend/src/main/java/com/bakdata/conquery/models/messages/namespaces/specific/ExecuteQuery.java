@@ -2,13 +2,10 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
-import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContextImpl;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -16,11 +13,7 @@ import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.util.concurrent.MoreExecutors;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import lombok.*;
 
 @CPSType(id="EXECUTE_QUERY", base=NamespacedMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)

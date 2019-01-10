@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.preproc.outputs.daysinrange;
 
-
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.preproc.PPColumn;
 

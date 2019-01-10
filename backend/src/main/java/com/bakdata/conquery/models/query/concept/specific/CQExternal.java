@@ -1,20 +1,16 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.time.LocalDate;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
+import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -113,7 +109,7 @@ public class CQExternal implements CQElement {
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		int idIndex = format.indexOf(FormatColumn.ID);
-		Dictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
+		IdMapping primary = context.getNamespace().getStorage().getPrimaryDictionary();
 		Optional<DateFormat> dateFormat = format.stream().map(FormatColumn::getDateFormat).filter(Objects::nonNull).collect(MoreCollectors.toOptional());
 		int[] dateIndices = format.stream().filter(fc -> fc.getDateFormat() != null).mapToInt(format::indexOf).toArray();
 		

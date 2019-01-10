@@ -3,12 +3,7 @@ package com.bakdata.conquery.io.jackson.serializer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
-import com.bakdata.conquery.util.dict.ABytesNode;
-import com.bakdata.conquery.util.dict.BytesNode;
-import com.bakdata.conquery.util.dict.BytesPatriciaNode;
-import com.bakdata.conquery.util.dict.BytesPatriciaValueNode;
-import com.bakdata.conquery.util.dict.BytesTTMap;
-import com.bakdata.conquery.util.dict.BytesValueNode;
+import com.bakdata.conquery.util.dict.*;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.databind.DeserializationContext;
