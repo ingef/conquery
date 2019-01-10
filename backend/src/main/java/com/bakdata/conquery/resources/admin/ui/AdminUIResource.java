@@ -45,15 +45,15 @@ public class AdminUIResource {
 	private final JobManager jobManager;
 	private final ObjectMapper mapper;
 	private final UIContext context;
-	private final MasterMetaStorage storage;
+	private final AdminUIProcessor processor;
 	
-	public AdminUIResource(ConqueryConfig config, Namespaces namespaces, JobManager jobManager, MasterMetaStorage storage) {
+	public AdminUIResource(ConqueryConfig config, Namespaces namespaces, JobManager jobManager, AdminUIProcessor processor) {
 		this.config = config;
 		this.namespaces = namespaces;
 		this.jobManager = jobManager;
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
 		this.context = new UIContext(namespaces);
-		this.storage = storage;
+		this.processor = processor;
 	}
 
 	@GET
@@ -75,13 +75,7 @@ public class AdminUIResource {
 	public Response postMandator(
 			@NotEmpty@FormDataParam("mandantor_name")String name,
 			@NotEmpty@FormDataParam("mandantor_id")String idString) throws JSONException {
-		log.debug("New mandator:\tName: {}\tId: {} ", name, idString);
-		MandatorId mandatorId = new MandatorId(idString);
-		Mandator mandator = new Mandator(new SinglePrincipalCollection(mandatorId));
-		mandator.setLabel(name);
-		mandator.setName(name);
-		mandator.setStorage(storage);
-		storage.addMandator(mandator);
+		processor.createMandator(name, idString);
 		return Response.ok().build();
 	}
 	
