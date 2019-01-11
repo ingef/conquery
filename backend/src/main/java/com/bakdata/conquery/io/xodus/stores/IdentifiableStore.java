@@ -1,14 +1,20 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
+import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+@Accessors(fluent=true) @Setter
 public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<IId<VALUE>, VALUE> {
 
 	private final CentralRegistry centralRegistry;
+	private ThrowingConsumer<VALUE> onAdd;
+	private ThrowingConsumer<VALUE> onRemove;
 	
 	public IdentifiableStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
 		super(store);
@@ -23,50 +29,30 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 	}
 	
 	@Override
-	public void add(VALUE value) throws JSONException {
-		super.add(value);
+	protected void removed(VALUE value) {
 		try {
-			centralRegistry.register(value);
-			addToRegistry(centralRegistry, value);
+			if(value != null) {
+				if(value != null && onRemove != null) {
+					onRemove.accept(value);
+				}
+				centralRegistry.remove(value);
+			}
 		} catch(Exception e) {
-			throw new RuntimeException("Failed to add "+value+" to the registry", e);
-		}
-	}
-	
-	@Override
-	public void update(VALUE value) throws JSONException {
-		super.update(value);
-		centralRegistry.remove(value.getId());
-		synchronized (centralRegistry) {
-			removeFromRegistry(centralRegistry, value);
-			try {
-				centralRegistry.register(value);
-				addToRegistry(centralRegistry, value);
-			} catch(Exception e) {
-				throw new RuntimeException("Failed to add "+value+" to the registry", e);
-			}
-		}
-	}
-	
-	@Override
-	public void remove(IId<VALUE> key) {
-		super.remove(key);
-		centralRegistry.remove(key);
-	}
-	
-	@Override
-	public void fillCache() {
-		super.fillCache();
-		for(VALUE value:getAll()) {
-			try {
-				centralRegistry.register(value);
-				addToRegistry(centralRegistry, value);
-			} catch(Exception e) {
-				throw new RuntimeException("Failed to add "+value+" to the registry", e);
-			}
+			throw new RuntimeException("Failed to remove "+value, e);
 		}
 	}
 
-	protected void addToRegistry(CentralRegistry centralRegistry, VALUE value) throws Exception {}
-	protected void removeFromRegistry(CentralRegistry centralRegistry, VALUE value) {}
+	@Override
+	protected void added(VALUE value) {
+		try {
+			if(value != null) {
+				centralRegistry.register(value);
+				if(onAdd != null) {
+					onAdd.accept(value);
+				}
+			}
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to add "+value, e);
+		}
+	}
 }

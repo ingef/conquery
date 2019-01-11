@@ -50,9 +50,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		log.info("Loading storage from {}", directory);
 		Stopwatch all = Stopwatch.createStarted();
 
-		this.dataset =	new SingletonStore<>(StoreInfo.DATASET.cached(this)) {
-			@Override
-			protected void onValueAdded(Dataset ds) {
+		this.dataset = StoreInfo.DATASET.<Dataset>singleton(this)
+			.onAdd(ds -> {
 				centralRegistry.register(ds);
 				for(Table t:ds.getTables().values()) {
 					centralRegistry.register(t);
@@ -60,10 +59,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 						centralRegistry.register(c);
 					}
 				}
-			}
-
-			@Override
-			protected void onValueRemoved(Dataset ds) {
+			})
+			.onRemove(ds -> {
 				for(Table t:ds.getTables().values()) {
 					for (Column c : t.getColumns()) {
 						centralRegistry.remove(c);
@@ -71,13 +68,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					centralRegistry.remove(t);
 				}
 				centralRegistry.remove(ds);
-			}
-		};
+			});
 		this.dictionaries =	StoreInfo.DICTIONARIES.big(this);
 		
-		this.concepts =	new IdentifiableStore<Concept<?>>(centralRegistry, StoreInfo.CONCEPTS.cached(this)) {
-			@Override
-			protected void addToRegistry(CentralRegistry centralRegistry, Concept<?> concept) throws ConfigurationException, JSONException {
+		this.concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(this)
+			.onAdd(concept -> {
 				if (concept.getDataset() == null) {
 					Dataset ds = centralRegistry.resolve(concept.getId().getDataset());
 					concept.setDataset(ds.getId());
@@ -88,26 +83,16 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					centralRegistry.register(c);
 					c.getAllFilters().forEach(centralRegistry::register);
 				}
-			}
-
-			@Override
-			protected void removeFromRegistry(CentralRegistry centralRegistry, Concept<?> concept) {
+			})
+			.onRemove(concept -> {
 				//see #146  remove from Dataset.concepts
 				for(Connector c:concept.getConnectors()) {
 					c.getAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
 					centralRegistry.remove(c.getId());
 				}
-			}
-
-
-		};
-		
-		this.imports = new IdentifiableStore<Import>(centralRegistry, StoreInfo.IMPORTS.cached(this)) {
-			@Override
-			protected void addToRegistry(CentralRegistry centralRegistry, Import imp) throws ConfigurationException, JSONException {
-				imp.loadExternalInfos(NamespacedStorageImpl.this);
-			}
-		};
+			});
+		this.imports = StoreInfo.IMPORTS.<Import>identifiable(this)
+			.onAdd(imp->imp.loadExternalInfos(this));
 
 		log.info("Loaded complete storage within {}", all.stop());
 	}
