@@ -13,7 +13,6 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	
 	public SingletonStore(Store<Boolean, VALUE> store) {
 		super(store);
-		fillCache();
 	}
 
 	@Override

@@ -28,6 +28,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	
 	public void add(VALUE value) throws JSONException {
 		store.add(extractKey(value), value);
+		added(value);
 	}
 	
 	public VALUE get(KEY key) {
@@ -53,7 +54,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 			removed(old);
 	}
 	
-	public void fillCache() {
+	public void loadData() {
 		store.fillCache();
 		for(VALUE value : getAll()) {
 			added(value);

@@ -1,28 +1,25 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
+import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.events.BlockManager;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
+import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.util.functions.Collector;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -30,17 +27,14 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
 
-	private final SingletonStore<WorkerInformation> worker;
-	private final IdentifiableStore<Block> blocks;
-	private final IdentifiableStore<CBlock> cBlocks;
+	private SingletonStore<WorkerInformation> worker;
+	private IdentifiableStore<Block> blocks;
+	private IdentifiableStore<CBlock> cBlocks;
 	@Getter
 	private BlockManager blockManager;
 	
 	public WorkerStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
-		this.worker = StoreInfo.WORKER.singleton(this);
-		this.blocks = StoreInfo.BLOCKS.identifiable(this);
-		this.cBlocks = StoreInfo.C_BLOCKS.identifiable(this);
 	}
 	
 	@Override
@@ -48,12 +42,18 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		this.blockManager = blockManager;
 		blockManager.init();
 	}
-
+	
 	@Override
-	public void stopStores() throws IOException {
-		blocks.close();
-		cBlocks.close();
-		log.info("Stopped slave storage");
+	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
+		super.createStores(collector);
+		this.worker = StoreInfo.WORKER.singleton(this);
+		this.blocks = StoreInfo.BLOCKS.identifiable(this);
+		this.cBlocks = StoreInfo.C_BLOCKS.identifiable(this);
+		
+		collector
+			.collect(worker)
+			.collect(blocks)
+			.collect(cBlocks);
 	}
 	
 	@Override

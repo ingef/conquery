@@ -20,7 +20,6 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 		super(store);
 		store.inject(new SingletonNamespaceCollection(centralRegistry));
 		this.centralRegistry = centralRegistry;
-		fillCache();
 	}
 
 	@Override

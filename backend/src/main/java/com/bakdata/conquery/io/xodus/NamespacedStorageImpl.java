@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.NoSuchElementException;
 import java.util.Optional;
@@ -10,6 +9,7 @@ import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
+import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -20,25 +20,21 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.BlockManager;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.google.common.base.Stopwatch;
+import com.bakdata.conquery.util.functions.Collector;
 
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
 
-	protected final SingletonStore<Dataset> dataset;
-	protected final IdentifiableStore<Dictionary> dictionaries;
-	protected final IdentifiableStore<Import> imports;
-	protected final IdentifiableStore<Concept<?>> concepts;
+	protected SingletonStore<Dataset> dataset;
+	protected IdentifiableStore<Dictionary> dictionaries;
+	protected IdentifiableStore<Import> imports;
+	protected IdentifiableStore<Concept<?>> concepts;
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(
@@ -46,10 +42,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			config,
 			directory
 		);
-		
-		log.info("Loading storage from {}", directory);
-		Stopwatch all = Stopwatch.createStarted();
-
+	}
+	
+	@Override
+	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		this.dataset = StoreInfo.DATASET.<Dataset>singleton(this)
 			.onAdd(ds -> {
 				centralRegistry.register(ds);
@@ -83,6 +79,14 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 					centralRegistry.register(c);
 					c.getAllFilters().forEach(centralRegistry::register);
 				}
+				//add imports of table
+				for(Import imp: getAllImports()) {
+					for(Connector con : concept.getConnectors()) {
+						if(con.getTable().getId().equals(imp.getTable())) {
+							con.addImport(imp);
+						}
+					}
+				}
 			})
 			.onRemove(concept -> {
 				//see #146  remove from Dataset.concepts
@@ -92,17 +96,22 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				}
 			});
 		this.imports = StoreInfo.IMPORTS.<Import>identifiable(this)
-			.onAdd(imp->imp.loadExternalInfos(this));
-
-		log.info("Loaded complete storage within {}", all.stop());
-	}
-	
-	@Override
-	public void stopStores() throws IOException {
-		dataset.close();
-		dictionaries.close();
-		imports.close();
-		concepts.close();
+			.onAdd(imp-> {
+				imp.loadExternalInfos(this);
+				for(Concept<?> c: getAllConcepts()) {
+					for(Connector con : c.getConnectors()) {
+						if(con.getTable().getId().equals(imp.getTable())) {
+							con.addImport(imp);
+						}
+					}
+				}
+			});
+		
+		collector
+			.collect(dataset)
+			.collect(dictionaries)
+			.collect(concepts)
+			.collect(imports);
 	}
 
 	@Override
