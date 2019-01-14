@@ -10,7 +10,6 @@
 		<property name="tabWidth" value="4"/>
 	
 		<!-- custom rules -->
-
 		<module name="RegexpSinglelineJava">
 			<property name="format" value='^[\t]* '/>
 			<property name="message" value="Indent must use tab characters"/>
