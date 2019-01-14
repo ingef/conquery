@@ -43,11 +43,6 @@
     	<module name="CommentsIndentation"/>
     	<module name="AvoidStarImport"/>
     	<module name="Indentation"/>
-        <!-- <module name="CustomImportOrder">
-            <property name="sortImportsInGroupAlphabetically" value="true"/>
-            <property name="separateLineBetweenGroups" value="true"/>
-            <property name="customImportOrderRules" value="STATIC###STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE"/>
-        </module> -->
         <module name="PackageName">
             <property name="format" value="^[a-z]+(\.[a-z][a-z0-9]*)*$"/>
             <message key="name.invalidPattern"
@@ -94,5 +89,39 @@
              value="Interface type name ''{0}'' must match pattern ''{1}''."/>
         </module>
         <module name="NoFinalizer"/>
+        
+        <!-- more code formatting rules -->
+        <module name="AnnotationLocation">
+			<property name="allowSamelineMultipleAnnotations" value="false"/>
+			<property name="allowSamelineSingleParameterlessAnnotation" value="false"/>
+			<property name="allowSamelineParameterizedAnnotation" value="false"/>
+		</module>
+		<module name="AnnotationUseStyle"/>
+		<module name="MissingDeprecated"/>
+		<module name="MissingOverride"/>
+		<module name="PackageAnnotation"/>
+		<module name="EmptyBlock"/>
+		<module name="EmptyCatchBlock"/>
+		<module name="LeftCurly"/>
+		<module name="RightCurly">
+			<property name="option" value="alone_or_singleline"/>
+		</module>
+		<module name="MutableException"/>
+		<module name="ThrowsCount"/>
+		<module name="MissingSwitchDefault"/>
+		<module name="NoFinalizer"/>
+		<module name="RedundantImport"/>
+		<module name="UnusedImports"/>
+		<module name="ArrayTypeStyle"/>
+		<module name="AvoidEscapedUnicodeCharacters">
+			<property name="allowEscapesForControlCharacters" value="true"/>
+		</module>
+		<module name="TrailingComment"/>
+		<module name="UncommentedMain">
+			<property name="excludedClasses" value="^com\.bakdata\.conquery\.Conquery$"/>
+		</module>
+		<module name="UpperEll"/>
+		<module name="ModifierOrder"/>
+		<module name="RedundantModifier"/>
     </module>
 </module>
