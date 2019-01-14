@@ -12,3 +12,4 @@ plugins:
     channel: "eslint-5"
     config:
       config: frontend/.eslintrc.json
+      
