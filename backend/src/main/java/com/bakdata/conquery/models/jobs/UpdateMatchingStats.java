@@ -33,38 +33,42 @@ public class UpdateMatchingStats extends Job {
 
 	@Override
 	public void execute() throws Exception {
+		if(workers.getWorkers().isEmpty())
+			return;
 		progressReporter.setMax(workers.getWorkers().values().size());
 		
 		for(Worker w:new ArrayList<>(workers.getWorkers().values())) {
 			ProgressReporter sub = progressReporter.subJob(1);
-			sub.setMax(w.getStorage().getAllCBlocks().size());
-			
-			Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>();
-			
-			for(CBlock cBlock : new ArrayList<>(w.getStorage().getAllCBlocks())) {
-				Concept<?> concept = w.getStorage().getConcept(cBlock.getConnector().getConcept());
-				Block block = w.getStorage().getBlock(cBlock.getBlock());
-				Table table = w.getStorage().getDataset().getTables().get(block.getId().getImp().getTable());
+			if(!w.getStorage().getAllCBlocks().isEmpty()) {
+				sub.setMax(w.getStorage().getAllCBlocks().size());
 				
-				for(int event=0;event<block.size();event++) {
-					if(concept instanceof TreeConcept) {
-						ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(cBlock.getMostSpecificChildren().get(event));
-						
-						while(e != null) {
+				Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>();
+				
+				for(CBlock cBlock : new ArrayList<>(w.getStorage().getAllCBlocks())) {
+					Concept<?> concept = w.getStorage().getConcept(cBlock.getConnector().getConcept());
+					Block block = w.getStorage().getBlock(cBlock.getBlock());
+					Table table = w.getStorage().getDataset().getTables().get(block.getId().getImp().getTable());
+					
+					for(int event=0;event<block.size();event++) {
+						if(concept instanceof TreeConcept) {
+							ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(cBlock.getMostSpecificChildren().get(event));
+							
+							while(e != null) {
+								messages
+									.computeIfAbsent(e.getId(), (x)->new MatchingStats.Entry())
+									.addEvent(table, block, cBlock, event);
+								e = e.getParent();
+							}
+						}
+						else {
 							messages
-								.computeIfAbsent(e.getId(), (x)->new MatchingStats.Entry())
+								.computeIfAbsent(concept.getId(), (x)->new MatchingStats.Entry())
 								.addEvent(table, block, cBlock, event);
-							e = e.getParent();
 						}
 					}
-					else {
-						messages
-							.computeIfAbsent(concept.getId(), (x)->new MatchingStats.Entry())
-							.addEvent(table, block, cBlock, event);
-					}
+					
+					sub.report(1);
 				}
-				
-				sub.report(1);
 			}
 			sub.done();
 			

@@ -75,15 +75,17 @@ public class Preprocessed {
 		//update stats
 		rows++;
 		for(int i=0;i<columns.length;i++) {
-			switch(columns[i].getType().getTypeId()) {
-				case DATE:
-					extendEventRange(CDateRange.exactly((Integer)outRow[i]));
-					break;
-				case DATE_RANGE:
-					extendEventRange((CDateRange)outRow[i]);
-					break;
-				default:
-					break;
+			if(outRow[i] != null) {
+				switch(columns[i].getType().getTypeId()) {
+					case DATE:
+						extendEventRange(CDateRange.exactly((Integer)outRow[i]));
+						break;
+					case DATE_RANGE:
+						extendEventRange((CDateRange)outRow[i]);
+						break;
+					default:
+						break;
+				}
 			}
 		}
 		
