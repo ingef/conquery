@@ -26,7 +26,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
 
 public class CSV implements Closeable {
 	
-	private final static ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
+	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
 	
 	private final CsvParserSettings settings;
 	private final CSVConfig config;
