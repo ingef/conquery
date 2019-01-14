@@ -9,6 +9,7 @@
 	<module name="TreeWalker">
 		<property name="tabWidth" value="4"/>
 	
+	
 		<!-- custom rules -->
 		<module name="RegexpSinglelineJava">
 			<property name="format" value='^[\t]* '/>
