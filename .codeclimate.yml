@@ -1,0 +1,14 @@
+plugins:
+  checkstyle:
+    enabled: true
+    config:
+      file: checkstyle.xml
+  pmd:
+    enabled: true
+    config:
+      file: ruleset.xml
+  eslint:
+    enabled: true
+    channel: "eslint-5"
+    config:
+      config: frontend/.eslintrc.json
