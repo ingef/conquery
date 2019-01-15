@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.Closeable;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -27,7 +26,7 @@ import com.univocity.parsers.csv.CsvParserSettings;
 
 public class CSV implements Closeable {
 	
-	private final static ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
+	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
 	
 	private final CsvParserSettings settings;
 	private final CSVConfig config;

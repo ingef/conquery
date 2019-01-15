@@ -212,12 +212,16 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	@Override
 	public String toString() {
 
+		if (isAll()) {
+			return "-∞/+∞";
+		}
+		
 		if (isAtLeast()) {
-			return String.format("%s/+\u221E", getMin());
+			return String.format("%s/+∞", getMin());
 		}
 
 		if (isAtMost()) {
-			return String.format("-\u221E/%s", getMax());
+			return String.format("-∞/%s", getMax());
 		}
 
 		return String.format("%s/%s", getMin(), getMax());
