@@ -1,13 +1,14 @@
 package com.bakdata.conquery.models.concepts.temporal;
 
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
 
+import java.time.LocalDate;
 import java.util.OptionalInt;
 import java.util.Random;
 
 public enum TemporalSampler {
-	//TODO empty sets
 	EARLIEST {
 		@Override
 		public OptionalInt sample(CDateSet data) {
@@ -37,7 +38,6 @@ public enum TemporalSampler {
 		}
 	},
 	RANDOM {
-		//TODO How to initialize this with known seed?
 		Random random = new Random();
 
 		@Override
@@ -54,7 +54,7 @@ public enum TemporalSampler {
 				lower = span.getMinValue();
 			}
 			else {
-				lower = 0;
+				lower = CDate.ofLocalDate(LocalDate.MIN);
 			}
 
 
@@ -64,7 +64,7 @@ public enum TemporalSampler {
 				upper = span.getMaxValue();
 			}
 			else {
-				upper = Integer.MAX_VALUE; //TODO wat do?
+				upper = CDate.ofLocalDate(LocalDate.MAX);
 			}
 
 

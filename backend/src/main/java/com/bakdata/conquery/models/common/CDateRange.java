@@ -185,11 +185,12 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 			return false;
 		}
 
-		return other.contains(this.getMinValue())
-			   || other.contains(this.getMaxValue())
+		return
+				other.contains(this.getMinValue())
+				|| other.contains(this.getMaxValue())
 
-			   || this.contains(other.getMinValue())
-			   || this.contains(other.getMaxValue());
+				|| this.contains(other.getMinValue())
+				|| this.contains(other.getMaxValue());
 	}
 
 	public boolean isConnected(CDateRange other) {
@@ -198,9 +199,10 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		}
 
 		//either they intersect or they are right next to each other
-		return this.intersects(other)
-			   || this.getMinValue() - 1 == other.getMaxValue()
-			   || this.getMaxValue() == other.getMinValue() - 1;
+		return
+				this.intersects(other)
+				|| this.getMinValue() - 1 == other.getMaxValue()
+				|| this.getMaxValue() == other.getMinValue() - 1;
 	}
 
 	public boolean encloses(CDateRange other) {
