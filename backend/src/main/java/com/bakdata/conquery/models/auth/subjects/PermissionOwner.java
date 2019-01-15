@@ -13,6 +13,7 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.authz.Permission;
 import org.apache.shiro.session.Session;
 import org.apache.shiro.subject.ExecutionException;
 import org.apache.shiro.subject.PrincipalCollection;
@@ -72,6 +73,29 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@Override
 	public void checkPermissions(String... permissions) throws AuthorizationException {
 		throw new UnsupportedOperationException();
+	}
+	
+
+	@Override
+	public void checkPermission(Permission permission) throws AuthorizationException {
+		if(!(permission instanceof ConqueryPermission)) {
+			throw new IllegalStateException("Supplied permission "+permission+" is not of Type " + ConqueryPermission.class.getName());
+		}
+		ConqueryPermission owned = ((ConqueryPermission)permission).withOwner(this.getId());
+		SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), owned);
+	}
+
+	@Override
+	public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
+		permissions.forEach(permission ->
+		{
+			if(!(permission instanceof ConqueryPermission)) {
+				throw new IllegalStateException("Supplied permission "+permission+" is not of Type " + ConqueryPermission.class.getName());
+			}
+			ConqueryPermission owned = ((ConqueryPermission)permission).withOwner(this.getId());
+			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
+		}
+		);
 	}
 
 	@Override
@@ -226,7 +250,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 				return reducedPermission.get(0);
 			}
 		}
-		// first permission with the provided Target
 		storage.addPermission(ownedPermission);
 		return ownedPermission;
 	}
@@ -239,11 +262,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		storage.removePermission(permission.getId());
 	}
 	
-	private Optional<ConqueryPermission> ofTarget(Object obj) {
-		if(!(obj instanceof ConqueryPermission)) {
-			return Optional.empty();
-		}
-		ConqueryPermission other = (ConqueryPermission) obj;
+	private Optional<ConqueryPermission> ofTarget(ConqueryPermission other) {
 		Iterator<ConqueryPermission> it = permissions.iterator();
 		while(it.hasNext()) {
 			ConqueryPermission perm = it.next();

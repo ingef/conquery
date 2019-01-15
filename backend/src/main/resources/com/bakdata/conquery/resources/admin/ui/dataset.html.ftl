@@ -18,7 +18,7 @@
 		<div class="col">Tables</div>
 		<div class="col">
 			<ul>
-				<#list c.tables as table>
+				<#list c.tables as id, table>
 					<li>
 						<a href="/admin/datasets/${c.id}/tables/${table.id}">${table.label}</a> 
 						<a href="" onclick="event.preventDefault(); fetch('/admin/datasets/${c.id}/tables/${table.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
@@ -30,7 +30,7 @@
 			<form action="/admin/datasets/${c.id}/tables" method="post" enctype="multipart/form-data">
 				<div class="form-group">
 					<label for="table_schema">Add Table</label>
-					<input class="form-control-file" type="file" name="table_schema" title="Schema of the table" accept=".table.json" multiple required>
+					<input class="form-control-file" type="file" name="table_schema" title="Schema of the table" accept="*.table.json" multiple required>
 				</div>
 				<input class="btn btn-primary" type="submit"/>
 			</form>
@@ -51,7 +51,7 @@
 			<form action="/admin/datasets/${c.id}/concepts" method="post" enctype="multipart/form-data">
 				<div class="form-group">
 				<label for="concept_schema">Add Concept</label>
-				<input type="file" name="concept_schema" title="Schema of the Concept" accept=".concept.json" required>
+				<input type="file" name="concept_schema" title="Schema of the Concept" accept="*.concept.json" required>
 				</div>
 				<input class="btn btn-primary" type="submit"/>
 			</form>

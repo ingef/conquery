@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.concepts.filters;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -22,8 +23,10 @@ import lombok.Setter;
 /**
  * This class is the abstract superclass for all filters.
  */
-@Getter @Setter @NoArgsConstructor
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@Getter
+@Setter
+@NoArgsConstructor
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public abstract class Filter<FE_TYPE extends FilterValue<?>> extends Labeled<FilterId> {
 
@@ -31,18 +34,21 @@ public abstract class Filter<FE_TYPE extends FilterValue<?>> extends Labeled<Fil
 	private String description;
 	@JsonBackReference
 	private Connector connector;
-	
+	private FilterTemplate template;
+	private String pattern;
+	private Boolean allowDropFile;
+
 	public abstract void configureFrontend(FEFilter f) throws ConceptConfigurationException;
 
 	@JsonIgnore
 	public abstract Column[] getRequiredColumns();
 
 	public final boolean requiresColumn(Column c) {
-		return ArrayUtils.contains(getRequiredColumns(),c);
+		return ArrayUtils.contains(getRequiredColumns(), c);
 	}
-	
+
 	public abstract FilterNode createAggregator(FE_TYPE filterValue);
-	
+
 	@Override
 	public FilterId createId() {
 		return new FilterId(connector.getId(), getName());

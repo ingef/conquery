@@ -14,51 +14,50 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor(access=AccessLevel.PRIVATE)
-@Getter @ToString
+@RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@Getter
+@ToString
 public class FileTreeReduction {
+
 	private final String name;
 	private final File f;
 	private final int depth;
 	private final boolean file;
 	private final String relativePath;
 	private final List<FileTreeReduction> children = new ArrayList<>();
-	
+
 	public static List<FileTreeReduction> reduceByExtension(File root, String extension) {
 		List<FileTreeReduction> children = new ArrayList<>();
-		for(File file : root.listFiles()) {
+		for (File file : root.listFiles()) {
 			children.add(build(root.toPath(), file, 0));
 		}
-		
+
 		List<FileTreeReduction> l = new ArrayList<>();
 		Iterator<FileTreeReduction> it = children.iterator();
-		while(it.hasNext()) {
+		while (it.hasNext()) {
 			FileTreeReduction ftr = it.next();
-			if(reduce(ftr, extension, l)) {
+			if (reduce(ftr, extension, l)) {
 				it.remove();
-			}
-			else {
+			} else {
 				l.add(ftr);
 			}
 		}
 		Collections.reverse(l);
-		
+
 		return l;
 	}
 
 	private static boolean reduce(FileTreeReduction ftr, String extension, List<FileTreeReduction> l) {
-		if(ftr.children.isEmpty()) {
+		if (ftr.children.isEmpty()) {
 			return !ftr.name.endsWith(extension);
-		}
-		else {
+		} else {
 			boolean remove = true;
 			Iterator<FileTreeReduction> it = ftr.children.iterator();
-			while(it.hasNext()) {
+			while (it.hasNext()) {
 				FileTreeReduction c = it.next();
-				if(reduce(c, extension, l)) {
+				if (reduce(c, extension, l)) {
 					it.remove();
-				}
-				else {
+				} else {
 					remove = false;
 					l.add(c);
 				}
@@ -68,16 +67,11 @@ public class FileTreeReduction {
 	}
 
 	private static FileTreeReduction build(Path root, File file, int depth) {
-		FileTreeReduction ftr = new FileTreeReduction(
-			file.getName(),
-			file,
-			depth,
-			file.isFile(),
-			Joiner.on('/').join(root.relativize(file.toPath()).iterator())
-		);
-		if(file.isDirectory()) {
-			for(File f:file.listFiles()) {
-				ftr.getChildren().add(build(root, f, depth+1));
+		FileTreeReduction ftr = new FileTreeReduction(file.getName(), file, depth, file.isFile(),
+				Joiner.on('/').join(root.relativize(file.toPath()).iterator()));
+		if (file.isDirectory()) {
+			for (File f : file.listFiles()) {
+				ftr.getChildren().add(build(root, f, depth + 1));
 			}
 		}
 		return ftr;

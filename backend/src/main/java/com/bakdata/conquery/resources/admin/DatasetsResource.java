@@ -61,11 +61,13 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@PermitAll @Slf4j @Getter
+@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@PermitAll
+@Slf4j
+@Getter
 @Path("/datasets")
 public class DatasetsResource {
-	
+
 	private final ObjectMapper mapper;
 	private final UIContext ctx;
 	private final DatasetsProcessor processor;
@@ -145,7 +147,7 @@ public class DatasetsResource {
 		Dataset dataset =  namespaces.get(datasetId).getStorage().getDataset();
 		for(BodyPart part : schemas.getParent().getBodyParts()){
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
-				//ContentDisposition meta = part.getContentDisposition();
+				// ContentDisposition meta = part.getContentDisposition();
 				Table t = mapper.readValue(is, Table.class);
 				processor.addTable(dataset, t);
 			}
@@ -161,10 +163,10 @@ public class DatasetsResource {
 		if(ns == null) {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}
-		
+
 		File selectedFile = new File(processor.getConfig().getStorage().getPreprocessedRoot(), file.toString());
-		if(!selectedFile.exists()) {
-			throw new WebApplicationException("Could not find file "+selectedFile, Status.NOT_FOUND);
+		if (!selectedFile.exists()) {
+			throw new WebApplicationException("Could not find file " + selectedFile, Status.NOT_FOUND);
 		}
 		
 		processor.addImport(ns.getStorage().getDataset(), selectedFile);

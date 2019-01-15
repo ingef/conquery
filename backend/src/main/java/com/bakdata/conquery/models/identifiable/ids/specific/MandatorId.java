@@ -19,9 +19,9 @@ public class MandatorId extends PermissionOwnerId<Mandator> {
 	@Getter
 	private final String mandator;
 	
-	public MandatorId(String company) {
+	public MandatorId(String mandator) {
 		super();
-		this.mandator = company;
+		this.mandator = mandator;
 	}
 
 	public void collectComponents(List<Object> components) {
@@ -42,6 +42,6 @@ public class MandatorId extends PermissionOwnerId<Mandator> {
 
 	@Override
 	public PermissionOwner<?> getOwner(MasterMetaStorage storage) {
-		return storage.getMandator(this);
+		return storage.getMandator(this).get();
 	}
 }
