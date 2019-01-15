@@ -28,7 +28,7 @@ public class RestartTest {
 			testConquery.beforeAll(null);
 			
 			//read test sepcification
-			String testJson = In.file("tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+			String testJson = In.file("tests/query/VALIDITY_DATE_QUERY/VALIDITY_DATE_QUERY_Query.test.json").withUTF8().readAll();
 	
 			Validator validator = Validators.newValidator();
 			DatasetId dataset;

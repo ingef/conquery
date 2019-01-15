@@ -49,7 +49,7 @@ public interface IId<TYPE> {
 		default ID createId(List<String> parts) {
 			parts = ImmutableList.copyOf(Lists.transform(parts,String::intern));
 			Iterator<String> it = parts.iterator();
-			return checkNoRemaining(parse(it), it);
+			return checkNoRemaining(parse(it), it, parts);
 		}
 		
 		default ID parsePrefixed(String dataset, String id) {
@@ -68,14 +68,15 @@ public interface IId<TYPE> {
 		
 		ID parse(Iterator<String> parts);
 		
-		default ID checkNoRemaining(ID id, Iterator<String> parts) {
-			if(parts.hasNext()) {
+		default ID checkNoRemaining(ID id, Iterator<String> remaining, List<String> allParts) {
+			if(remaining.hasNext()) {
 				throw new IllegalStateException(
 					String.format(
-						"Remaining parts '%s' after parsing '%s' as '%s'",
-						IId.JOINER.join(parts),
+						"After parsing '%s' as id '%s' of type %s there are parts remaining: '%s'",
+						IId.JOINER.join(allParts),
 						id,
-						id.getClass().getSimpleName()
+						id.getClass().getSimpleName(),
+						IId.JOINER.join(remaining)
 					)
 				);
 			}

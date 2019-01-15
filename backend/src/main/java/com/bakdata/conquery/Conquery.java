@@ -23,7 +23,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @RequiredArgsConstructor @Getter
+@Slf4j
+@RequiredArgsConstructor
+@Getter
 public class Conquery extends Application<ConqueryConfig> {
 
 	private final String name;
@@ -32,15 +34,15 @@ public class Conquery extends Application<ConqueryConfig> {
 	public Conquery() {
 		this("Conquery");
 	}
-	
+
 	@Override
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
 		Jackson.configure(bootstrap.getObjectMapper());
 		//check for java compiler, needed for the class generation
-		if(ToolProvider.getSystemJavaCompiler() == null) {
+		if (ToolProvider.getSystemJavaCompiler() == null) {
 			throw new IllegalStateException("Conquery requires to be run on either a JDK or a ServerJRE");
 		}
-		
+
 		//main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
 
@@ -54,12 +56,14 @@ public class Conquery extends Application<ConqueryConfig> {
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 				//see #142  configuration.initializeDatePatterns();
 			}
-			
+
 			@Override
-			public void initialize(Bootstrap<?> bootstrap) {}
+			public void initialize(Bootstrap<?> bootstrap) {
+			}
 		});
 		//register frontend
-		bootstrap.addBundle(new AssetsBundle("/frontend/", "/", "index.html", "frontend"));
+		bootstrap.addBundle(new AssetsBundle("/frontend/app", "/", "index.de.html"));
+
 		//freemarker support
 		bootstrap.addBundle(new ViewBundle<>());
 		bootstrap.addBundle(new Bundle() {
@@ -67,12 +71,13 @@ public class Conquery extends Application<ConqueryConfig> {
 			public void run(Environment environment) {
 				DateFormats.initialize(new String[0]);
 			}
-			
+
 			@Override
-			public void initialize(Bootstrap<?> bootstrap) {}
+			public void initialize(Bootstrap<?> bootstrap) {
+			}
 		});
 	}
-	
+
 	@Override
 	protected Level bootstrapLogLevel() {
 		return Level.INFO;
@@ -83,7 +88,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		master = new MasterCommand();
 		master.run(configuration, environment);
 	}
-	
+
 	public static void main(String... args) throws Exception {
 		new Conquery().run(args);
 	}

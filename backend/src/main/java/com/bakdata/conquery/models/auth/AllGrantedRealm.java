@@ -14,16 +14,11 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AllGrantedRealm extends AuthorizingRealm {
-	private static final String PRINCIPAL = "SUPERUSER@ALLGRANTEDREALM.DE";
 	private static final String WARNING = "\n" +
 			"           §§\n" +
 			"          §  §\n" +
@@ -38,22 +33,10 @@ public class AllGrantedRealm extends AuthorizingRealm {
 			" §                    §\n" +
 			" §§§§§§§§§§§§§§§§§§§§§§";
 	
-	private static final UserId ID= new UserId(PRINCIPAL);
-	private static final String LABEL = "SUPERUSER";
-	
 	public AllGrantedRealm(MasterMetaStorage storage) {
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(ConqueryToken.class);
 		this.setCredentialsMatcher(new AllGrantedCredentialsMatcher());
-		User user = new User(new SinglePrincipalCollection(ID));
-		user.setStorage(storage);
-		user.setName(LABEL);
-		user.setLabel(LABEL);
-		try {
-			storage.updateUser(user);
-		} catch (JSONException e) {
-			throw new IllegalStateException(e);
-		}
 	}
 
 	@Override
@@ -67,7 +50,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-		return new SingleAuthenticationInfo(ID,token.getCredentials());
+		return new SingleAuthenticationInfo(DevAuthConfig.ID,token.getCredentials());
 	}
 	
 	private static class AllGrantedPermission implements Permission {

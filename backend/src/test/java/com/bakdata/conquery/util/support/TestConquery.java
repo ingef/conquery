@@ -145,28 +145,22 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		openSupports.remove(support);
 	}
 	
-	@Override
-	public void beforeAll(ExtensionContext context) throws Exception {
-		//create tmp dir if it was not already created
-		if(tmpDir == null) {
-			tmpDir = Files.createTempDir();
-		}
-		log.info("Working in temporary directory {}", tmpDir);
-		cfg = new ConqueryConfig();
+	protected ConqueryConfig getConfig() throws Exception {
+		ConqueryConfig config = new ConqueryConfig();
 
-		cfg.getPreprocessor().setDirectories(
+		config.getPreprocessor().setDirectories(
 				new PreprocessingDirectories[]{
 					new PreprocessingDirectories(tmpDir, tmpDir, tmpDir)
 				}
 		);
-		cfg.getStorage().setDirectory(tmpDir);
-		cfg.getStorage().setPreprocessedRoot(tmpDir);
-		cfg.getStandalone().setNumberOfSlaves(2);
+		config.getStorage().setDirectory(tmpDir);
+		config.getStorage().setPreprocessedRoot(tmpDir);
+		config.getStandalone().setNumberOfSlaves(2);
 		
 		//set random open ports
 		for(ConnectorFactory con : CollectionUtils.union(
-				((DefaultServerFactory)cfg.getServerFactory()).getAdminConnectors(),
-				((DefaultServerFactory)cfg.getServerFactory()).getApplicationConnectors()
+				((DefaultServerFactory)config.getServerFactory()).getAdminConnectors(),
+				((DefaultServerFactory)config.getServerFactory()).getApplicationConnectors()
 			)
 		) {
 			try(ServerSocket s = new ServerSocket(0)) {
@@ -174,12 +168,24 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			}
 		}
 		try(ServerSocket s = new ServerSocket(0)) {
-			cfg.getCluster().setPort(s.getLocalPort());
+			config.getCluster().setPort(s.getLocalPort());
 		}
 		
 		//make buckets very small
-		cfg.getCluster().setEntityBucketSize(1);
+		config.getCluster().setEntityBucketSize(1);
+		return config;
+	}
+	
+	@Override
+	public void beforeAll(ExtensionContext context) throws Exception {
+		//create tmp dir if it was not already created
+		if(tmpDir == null) {
+			tmpDir = Files.createTempDir();
+		}
+		log.info("Working in temporary directory {}", tmpDir);
 		
+		cfg = getConfig();
+
 		//define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(
 				Conquery.class,

@@ -18,7 +18,7 @@ public class RESTServer {
 
 	public static void configure(ConqueryConfig config, ResourceConfig jersey) {
 		//change exception mapper behavior because of JERSEY-2437
-		((DefaultServerFactory)config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
+		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
 		// Register custom mapper
 		jersey.register(new JsonValidationExceptionMapper());
 		// default Dropwizard's exception mappers
@@ -26,8 +26,7 @@ public class RESTServer {
 		jersey.register(new JsonProcessingExceptionMapper(true));
 		jersey.register(new EarlyEofExceptionMapper());
 		//allow cross origin
-		if(config.getApi().isAllowCORSRequests())
-			jersey.register(CORSResponseFilter.class);
+		jersey.register(CORSResponseFilter.class);
 		//disable all browser caching if not expressly wanted
 		jersey.register(CachingFilter.class);
 	}

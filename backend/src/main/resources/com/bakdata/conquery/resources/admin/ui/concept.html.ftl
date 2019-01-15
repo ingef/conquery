@@ -13,9 +13,6 @@
 		<div class="col">Structure Parent</div>
 		<div class="col-7">${c.structureParent!}</div>
 	<div class="w-100"></div>
-		<div class="col">Elements</div>
-		<div class="col-7">${c.listElements()?size}</div>
-	<div class="w-100"></div>
 		<div class="col">Connectors</div>
 		<div class="col-7">
 			<#list c.connectors as connector>
@@ -34,7 +31,7 @@
 				<div class="w-100"></div>
 					<div class="col">Filters</div>
 					<div class="col-7">
-						<#list connector.allFilters as filter>
+						<#list connector.allFilters as id, filter>
 							<div class="row">
 								<div class="col">Name</div>
 								<div class="col-7">${filter.id}</div>
