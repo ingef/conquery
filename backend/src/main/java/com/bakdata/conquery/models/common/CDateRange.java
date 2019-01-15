@@ -42,7 +42,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	public static CDateRange exactly(LocalDate value) {
-		return new CDateRange(CDate.ofLocalDate(value), CDate.ofLocalDate(value));
+		return exactly(CDate.ofLocalDate(value));
 	}
 
 	public static CDateRange of(Range<LocalDate> value) {
@@ -50,11 +50,19 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	public static CDateRange atLeast(LocalDate value) {
-		return new CDateRange(CDate.ofLocalDate(value), Integer.MAX_VALUE);
+		return atLeast(CDate.ofLocalDate(value));
+	}
+
+	public static CDateRange atLeast(int value) {
+		return new CDateRange(value, Integer.MAX_VALUE);
+	}
+
+	public static CDateRange atMost(int value) {
+		return new CDateRange(Integer.MIN_VALUE, value);
 	}
 
 	public static CDateRange atMost(LocalDate value) {
-		return new CDateRange(Integer.MIN_VALUE, CDate.ofLocalDate(value));
+		return atMost(CDate.ofLocalDate(value));
 	}
 
 	@JsonCreator
@@ -179,6 +187,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 		return other.contains(this.getMinValue())
 			   || other.contains(this.getMaxValue())
+
 			   || this.contains(other.getMinValue())
 			   || this.contains(other.getMaxValue());
 	}
@@ -210,16 +219,12 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	@Override
 	public String toString() {
 
-		if (isAll()) {
-			return "-∞/+∞";
-		}
-
 		if (isAtLeast()) {
-			return String.format("%s/+∞", getMin());
+			return String.format("%s/+\u221E", getMin());
 		}
 
 		if (isAtMost()) {
-			return String.format("-∞/%s", getMax());
+			return String.format("-\u221E/%s", getMax());
 		}
 
 		return String.format("%s/%s", getMin(), getMax());
@@ -227,5 +232,9 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	public boolean hasUpperBound() {
 		return max != Integer.MAX_VALUE;
+	}
+
+	public boolean hasLowerBound() {
+		return min != Integer.MIN_VALUE;
 	}
 }
