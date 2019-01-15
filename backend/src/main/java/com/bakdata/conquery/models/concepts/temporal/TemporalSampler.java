@@ -1,54 +1,50 @@
 package com.bakdata.conquery.models.concepts.temporal;
 
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.google.common.collect.Range;
-import com.google.common.collect.RangeSet;
 
-import java.time.LocalDate;
+import java.util.OptionalInt;
 import java.util.Random;
 
 public enum TemporalSampler {
 	//TODO empty sets
 	EARLIEST {
 		@Override
-		public LocalDate sample(CDateSet data) {
+		public OptionalInt sample(CDateSet data) {
 			if (data.isEmpty()) {
-				return null;
+				return OptionalInt.empty();
 			}
 
 			if (!data.span().hasLowerBound()) {
-				return null;
+				return OptionalInt.empty();
 			}
 
-			return data.span().getMin();
+			return OptionalInt.of(data.span().getMinValue());
 		}
 	},
 	LATEST {
 		@Override
-		public LocalDate sample(CDateSet data) {
+		public OptionalInt sample(CDateSet data) {
 			if (data.isEmpty()) {
-				return null;
+				return OptionalInt.empty();
 			}
 
 			if (!data.span().hasUpperBound()) {
-				return null;
+				return OptionalInt.empty();
 			}
 
-			return data.span().getMax();
+			return OptionalInt.of(data.span().getMaxValue());
 		}
 	},
 	RANDOM {
-		//TODO How to initalize this with known seed?
+		//TODO How to initialize this with known seed?
 		Random random = new Random();
 
 		@Override
-		public LocalDate sample(CDateSet data) {
+		public OptionalInt sample(CDateSet data) {
 			if (data.isEmpty()) {
-				return null;
+				return OptionalInt.empty();
 			}
-
 
 			CDateRange span = data.span();
 
@@ -73,20 +69,21 @@ public enum TemporalSampler {
 
 
 			if (upper == lower) {
-				return CDate.toLocalDate(upper);
+				return OptionalInt.of(upper);
 			}
 
 			int sample;
 
+			// Sample values as long as they are not inside the data.
 			do {
 				sample = lower + random.nextInt(upper - lower);
 			} while (!data.contains(sample));
 
 
-			return CDate.toLocalDate(sample);
+			return OptionalInt.of(sample);
 		}
 	};
 
-	public abstract LocalDate sample(CDateSet data);
+	public abstract OptionalInt sample(CDateSet data);
 
 }

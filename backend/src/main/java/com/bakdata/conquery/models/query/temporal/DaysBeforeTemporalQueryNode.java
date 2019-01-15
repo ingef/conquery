@@ -1,13 +1,12 @@
 package com.bakdata.conquery.models.query.temporal;
 
-import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 
-import java.time.LocalDate;
+import java.util.OptionalInt;
 
 public class DaysBeforeTemporalQueryNode extends AbstractTemporalQueryNode {
 
@@ -24,11 +23,11 @@ public class DaysBeforeTemporalQueryNode extends AbstractTemporalQueryNode {
 	}
 
 	@Override
-	public boolean isContained(LocalDate index, LocalDate preceding) {
-		if (preceding == null) {
+	public boolean isContained(OptionalInt index, OptionalInt preceding) {
+		if (!preceding.isPresent() || !index.isPresent()) {
 			return false;
 		}
 
-		return days.contains(CDate.ofLocalDate(index) - CDate.ofLocalDate(preceding));
+		return days.contains(index.getAsInt() - preceding.getAsInt());
 	}
 }

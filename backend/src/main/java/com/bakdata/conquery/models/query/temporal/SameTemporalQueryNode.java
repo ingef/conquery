@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 
-import java.time.LocalDate;
+import java.util.OptionalInt;
 
 public class SameTemporalQueryNode extends AbstractTemporalQueryNode {
 
@@ -21,17 +21,17 @@ public class SameTemporalQueryNode extends AbstractTemporalQueryNode {
 	}
 
 	@Override
-	public void removePreceding(CDateSet preceding, LocalDate sample) {
+	public void removePreceding(CDateSet preceding, int sample) {
 		// Only consider samples that are before index's sample event
-		preceding.remove(CDateRange.atLeast(sample.plusDays(1)));
+		preceding.remove(CDateRange.atLeast(sample + 1));
 	}
 
 	@Override
-	public boolean isContained(LocalDate index, LocalDate preceding) {
-		if (preceding == null) {
+	public boolean isContained(OptionalInt index, OptionalInt preceding) {
+		if (!preceding.isPresent() || !index.isPresent()) {
 			return false;
 		}
 
-		return index.compareTo(preceding) == 0;
+		return (index.getAsInt() == preceding.getAsInt());
 	}
 }

@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import lombok.Getter;
 
-import java.time.LocalDate;
+import java.util.OptionalInt;
 import java.util.Set;
 
 @Getter
@@ -71,7 +71,7 @@ public abstract class AbstractTemporalQueryNode extends QPNode {
 		return true;
 	}
 
-	public void removePreceding(CDateSet preceding, LocalDate sample) {
+	public void removePreceding(CDateSet preceding, int sample) {
 		// Only consider samples that are before index's sample event
 		preceding.remove(CDateRange.atLeast(sample));
 	}
@@ -87,11 +87,16 @@ public abstract class AbstractTemporalQueryNode extends QPNode {
 		CDateSet precedingDurations = CDateSet.create(getPreceding().getIncluded().getAggregationResult());
 
 
-		LocalDate sampledIndex = getSampler().sample(indexDurations);
+		OptionalInt sampledIndex = getSampler().sample(indexDurations);
 
-		removePreceding(precedingDurations, sampledIndex);
+		if (!sampledIndex.isPresent())
+			return false;
 
-		if (!precedingDurations.isEmpty() && isContained(sampledIndex, sampler.sample(precedingDurations))) {
+		removePreceding(precedingDurations, sampledIndex.orElse(-1));
+
+		OptionalInt sampledPreceding = sampler.sample(precedingDurations);
+
+		if (!precedingDurations.isEmpty() && isContained(sampledIndex, sampledPreceding)) {
 			dateUnion.merge(precedingDurations);
 			return true;
 		}
@@ -99,6 +104,6 @@ public abstract class AbstractTemporalQueryNode extends QPNode {
 		return false;
 	}
 
-	protected abstract boolean isContained(LocalDate index, LocalDate preceding);
+	protected abstract boolean isContained(OptionalInt index, OptionalInt preceding);
 
 }

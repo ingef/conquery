@@ -1,17 +1,16 @@
 package com.bakdata.conquery.models.common;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonValue;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
+import lombok.experimental.Wither;
+
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.stream.Stream;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonValue;
-
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.experimental.Wither;
 
 @NoArgsConstructor
 @Wither
@@ -28,7 +27,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	public CDateRange(LocalDate min, LocalDate max) {
 		this(CDate.ofLocalDate(min), CDate.ofLocalDate(max));
 	}
-	
+
 	public CDateRange(int min, int max) {
 		this.min = min;
 		this.max = max;
@@ -43,19 +42,27 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	public static CDateRange exactly(LocalDate value) {
-		return new CDateRange(CDate.ofLocalDate(value), CDate.ofLocalDate(value));
+		return exactly(CDate.ofLocalDate(value));
 	}
-	
+
 	public static CDateRange of(Range<LocalDate> value) {
 		return new CDateRange(CDate.ofLocalDate(value.getMin()), CDate.ofLocalDate(value.getMax()));
 	}
 
 	public static CDateRange atLeast(LocalDate value) {
-		return new CDateRange(CDate.ofLocalDate(value), Integer.MAX_VALUE);
+		return atLeast(CDate.ofLocalDate(value));
+	}
+
+	public static CDateRange atLeast(int value) {
+		return new CDateRange(value, Integer.MAX_VALUE);
+	}
+
+	public static CDateRange atMost(int value) {
+		return new CDateRange(Integer.MIN_VALUE, value);
 	}
 
 	public static CDateRange atMost(LocalDate value) {
-		return new CDateRange(Integer.MIN_VALUE, CDate.ofLocalDate(value));
+		return atMost(CDate.ofLocalDate(value));
 	}
 
 	@JsonCreator
@@ -179,30 +186,30 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		}
 
 		return other.contains(this.getMinValue())
-			|| other.contains(this.getMaxValue())
-			
-			|| this.contains(other.getMinValue())
-			|| this.contains(other.getMaxValue());
+			   || other.contains(this.getMaxValue())
+
+			   || this.contains(other.getMinValue())
+			   || this.contains(other.getMaxValue());
 	}
-	
+
 	public boolean isConnected(CDateRange other) {
 		if (other == null) {
 			return false;
 		}
-		
+
 		//either they intersect or they are right next to each other
 		return this.intersects(other)
-			|| this.getMinValue()-1 == other.getMaxValue()
-			|| this.getMaxValue() == other.getMinValue()-1;
+			   || this.getMinValue() - 1 == other.getMaxValue()
+			   || this.getMaxValue() == other.getMinValue() - 1;
 	}
-	
+
 	public boolean encloses(CDateRange other) {
 		if (other == null) {
 			return false;
 		}
-		
+
 		return getMaxValue() >= other.getMaxValue()
-			&& getMinValue() <= other.getMinValue();
+			   && getMinValue() <= other.getMinValue();
 	}
 
 	public Stream<LocalDate> stream(TemporalUnit unit) {
