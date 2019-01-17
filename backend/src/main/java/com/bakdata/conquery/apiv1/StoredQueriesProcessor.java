@@ -23,22 +23,18 @@ public class StoredQueriesProcessor {
 	}
 
 	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder fromRequest) {
-		authorize(user, dataset.getId(), Ability.READ);
-		// Auto-generated method stub
+		// see https://github.com/bakdata/conquery/issues/238
 		return null;
 	}
 
-	public void deleteQuery(User user, Dataset dataset, ManagedQuery query) {
-		authorize(user, dataset.getId(), Ability.READ);
-		authorize(user, query.getId(), Ability.DELETE);
-		// Auto-generated method stub
+	public void deleteQuery(Dataset dataset, ManagedQuery query) {
+		// see https://github.com/bakdata/conquery/issues/239
 
 	}
 
 	public SQStatus patchQuery(User user, Dataset dataset, ManagedQueryId queryId, JsonNode patch) {
 
-		authorize(user, dataset.getId(), Ability.READ);
-
+		// see https://github.com/bakdata/conquery/issues/253
 		if (patch.has("tags")) {
 			authorize(user, queryId, Ability.TAG);
 			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)),
@@ -59,10 +55,8 @@ public class StoredQueriesProcessor {
 		return null;
 	}
 
-	public SQStatus getQueryWithSource(User user, Dataset dataset, ManagedQueryId queryId) {
-		authorize(user, dataset.getId(), Ability.READ);
-		authorize(user, queryId, Ability.READ);
-		// fill body
+	public SQStatus getQueryWithSource(Dataset dataset, ManagedQueryId queryId) {
+		// see https://github.com/bakdata/conquery/issues/252
 		return null;
 	}
 

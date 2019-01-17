@@ -79,7 +79,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@Override
 	public void checkPermission(Permission permission) throws AuthorizationException {
 		if(!(permission instanceof ConqueryPermission)) {
-			throw new IllegalStateException("Supplied permission "+permission+" is not of Type " + ConqueryPermission.class.getName());
+			throw new AuthorizationException("Supplied permission "+permission+" is not of Type " + ConqueryPermission.class.getName());
 		}
 		ConqueryPermission owned = ((ConqueryPermission)permission).withOwner(this.getId());
 		SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), owned);
@@ -87,15 +87,14 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 	@Override
 	public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
-		permissions.forEach(permission ->
+		for(Permission permission : permissions)
 		{
 			if(!(permission instanceof ConqueryPermission)) {
-				throw new IllegalStateException("Supplied permission "+permission+" is not of Type " + ConqueryPermission.class.getName());
+				throw new AuthorizationException("Supplied permission "+permission+" is not of Type " + ConqueryPermission.class.getName());
 			}
 			ConqueryPermission owned = ((ConqueryPermission)permission).withOwner(this.getId());
-			SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
+			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), owned);
 		}
-		);
 	}
 
 	@Override
@@ -288,7 +287,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * Inherit permission from roles are not checked.
 	 */
 	public boolean isPermittedSelfOnly(ConqueryPermission permission) {
-		return  SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
+		return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
 	}
 
 }

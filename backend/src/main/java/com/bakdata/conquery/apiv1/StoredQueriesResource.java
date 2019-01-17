@@ -2,6 +2,7 @@ package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.util.List;
 
@@ -17,6 +18,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.QueryTranslationException;
@@ -46,6 +48,8 @@ public class StoredQueriesResource {
 
 	@GET
 	public List<SQStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
+		authorize(user, datasetId, Ability.READ);
+		
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
 		return processor.getAllQueries(user, dataset, URLBuilder.fromRequest(req));
@@ -55,13 +59,17 @@ public class StoredQueriesResource {
 	@Path("{" + QUERY + "}")
 	public SQStatus getQueryWithSource(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId) throws QueryTranslationException {
 		Dataset dataset = dsUtil.getDataset(datasetId);
+		authorize(user, datasetId, Ability.READ);
+		authorize(user, queryId, Ability.READ);
 
-		return processor.getQueryWithSource(user, dataset, queryId);
+		return processor.getQueryWithSource(dataset, queryId);
 	}
 
 	@PATCH
 	@Path("{" + QUERY + "}")
 	public SQStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, JsonNode patch) {
+		authorize(user, datasetId, Ability.READ);
+		
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
 		SQStatus status = processor.patchQuery(user, dataset, queryId, patch);
@@ -75,9 +83,13 @@ public class StoredQueriesResource {
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public void deleteQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId) {
+
+		authorize(user, datasetId, Ability.READ);
+		authorize(user, queryId, Ability.DELETE);
+		
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getManagedQuery(datasetId, queryId);
-		processor.deleteQuery(user, dataset, query);
+		processor.deleteQuery(dataset, query);
 	}
 
 }

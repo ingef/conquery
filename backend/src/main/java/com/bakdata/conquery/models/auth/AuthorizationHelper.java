@@ -13,19 +13,19 @@ public class AuthorizationHelper {
 	
 	// Dataset Instances
 	public static void authorize(User user, DatasetId dataset, Ability ability) {
-		authorize(null, dataset, EnumSet.of(ability));
+		authorize(user, dataset, EnumSet.of(ability));
 	}
 	
 	public static void authorize(User user, DatasetId dataset, EnumSet<Ability> abilities) {
-		user.checkPermission(new DatasetPermission(null, abilities, dataset));
+		user.checkPermission(new DatasetPermission(user.getId(), abilities, dataset));
 	}
 	
 	// Query Instances
 	public static void authorize(User user, ManagedQueryId query, Ability ability) {
-		authorize(null, query, EnumSet.of(ability));
+		authorize(user, query, EnumSet.of(ability));
 	}
 	
 	public static void authorize(User user, ManagedQueryId query, EnumSet<Ability> abilities) {
-		user.checkPermission(new QueryPermission(null, abilities, query));
+		user.checkPermission(new QueryPermission(user.getId(), abilities, query));
 	}
 }

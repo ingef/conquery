@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -11,12 +11,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 @CPSType(id="QUERY_PERMISSION", base=ConqueryPermission.class)
 public class QueryPermission extends IdentifiableInstancePermission<ManagedQueryId>{
 
-	public QueryPermission(PermissionOwnerId<?> ownerId, EnumSet<Ability> abilities, ManagedQueryId instanceId) {
+	public QueryPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, ManagedQueryId instanceId) {
 		super(ownerId, abilities, instanceId);
 	}
 	
 	@JsonCreator
-	public QueryPermission(PermissionOwnerId<?> ownerId, EnumSet<Ability> abilities, ManagedQueryId instanceId,  UUID jsonId) {
+	public QueryPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, ManagedQueryId instanceId,  UUID jsonId) {
 		super(ownerId, abilities, instanceId, jsonId);
 	}
 

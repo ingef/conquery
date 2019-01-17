@@ -3,7 +3,6 @@ package com.bakdata.conquery.io.xodus;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.validation.Validator;
@@ -12,6 +11,7 @@ import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -153,8 +153,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		authUser.add(user);
 	}
 	
-	public Optional<User> getUser(UserId userId) {
-		return Optional.ofNullable(authUser.get(userId));
+	public User getUser(UserId userId) {
+		return authUser.get(userId);
 	}
 	
 	public Collection<User> getAllUsers(){
@@ -175,8 +175,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		authMandator.add(mandator);
 	}
 	
-	public Optional<Mandator> getMandator(MandatorId mandatorId) {
-		return Optional.ofNullable(authMandator.get(mandatorId));
+	public Mandator getMandator(MandatorId mandatorId) {
+		return authMandator.get(mandatorId);
 	}
 	
 	@Override
