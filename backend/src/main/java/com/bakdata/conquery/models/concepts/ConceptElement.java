@@ -49,22 +49,6 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 		return getLabel();
 	}
 	
-
-	//see #155
-		/*updateConceptDateRange(newConceptDateRange);
-	}
-
-	// Initializes conceptDateRange or sets it to the combined range from old and new range
-	private void updateConceptDateRange(Range<LocalDate> newConceptDateRange) {
-		if (newConceptDateRange != null) {
-			if(this.conceptDateRange == null) {
-				this.conceptDateRange = newConceptDateRange;
-			} else {
-				this.conceptDateRange = this.conceptDateRange.span(newConceptDateRange);
-			}
-		}
-	}*/
-	
 	@JsonIgnore
 	public abstract Concept<?> getConcept();
 
