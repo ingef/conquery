@@ -19,6 +19,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class AllGrantedRealm extends AuthorizingRealm {
+	/**
+	 * The warning that is displayed, when the realm is instantiated.
+	 */
 	private static final String WARNING = "\n" +
 			"           §§\n" +
 			"          §  §\n" +
@@ -33,7 +36,10 @@ public class AllGrantedRealm extends AuthorizingRealm {
 			" §                    §\n" +
 			" §§§§§§§§§§§§§§§§§§§§§§";
 	
-	public AllGrantedRealm(MasterMetaStorage storage) {
+	/**
+	 * This realm authenticates and authorizes all requests given to it positive.
+	 */
+	public AllGrantedRealm() {
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(ConqueryToken.class);
 		this.setCredentialsMatcher(new AllGrantedCredentialsMatcher());
@@ -53,6 +59,9 @@ public class AllGrantedRealm extends AuthorizingRealm {
 		return new SingleAuthenticationInfo(DevAuthConfig.ID,token.getCredentials());
 	}
 	
+	/**
+	 * Inner class that represents a permission, that is always valid.
+	 */
 	private static class AllGrantedPermission implements Permission {
 		@Override
 		public boolean implies(Permission permission) {
@@ -60,6 +69,9 @@ public class AllGrantedRealm extends AuthorizingRealm {
 		}
 	}
 	
+	/**
+	 * Inner class that matches any credentials.
+	 */
 	private static class AllGrantedCredentialsMatcher implements CredentialsMatcher{
 
 		@Override

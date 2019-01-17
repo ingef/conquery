@@ -15,16 +15,33 @@ import lombok.Getter;
 @CPSType(base=AuthConfig.class, id="DEVELOPMENT")
 public class DevAuthConfig extends AuthConfig {
 
+	/**
+	 * The email of the superuser that is known to the system and returned by the {@code AllGrantedRealm} upon authentication.
+	 */
 	private static final String PRINCIPAL = "SUPERUSER@ALLGRANTEDREALM.DE";
+	
+	/**
+	 * The corresponding user id of the superuser that is known to the system and returned by the {@code AllGrantedRealm} upon authentication.
+	 */
 	protected static final UserId ID= new UserId(PRINCIPAL);
+	
+	/**
+	 * The label of the superuser that is used in the frontend.
+	 */
 	private static final String LABEL = "SUPERUSER";
+	
+	/**
+	 * Handler for valid credentials that do not match any user.
+	 */
 	private static final UnknownUserHandler U_U_HANDLER = new DefaultUnknownUserHandler();
-	@Getter @JsonIgnore
+	
+	@Getter
+	@JsonIgnore
 	private final TokenExtractor tokenExtractor= new DefaultTokenExtractor();
 	
 	@Override
 	public AuthorizingRealm getRealm(MasterMetaStorage storage) {
-		return new AllGrantedRealm(storage);
+		return new AllGrantedRealm();
 	}
 	@Override
 	public UnknownUserHandler getUnknownUserHandler(MasterMetaStorage storage) {

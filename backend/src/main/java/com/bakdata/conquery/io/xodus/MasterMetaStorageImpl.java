@@ -205,11 +205,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public Set<ConqueryPermission> getPermissions(PermissionOwnerId<?> ownerId) {
-		return ownerId.getOwner(this).getPermissions();
-	}
-
-	@Override
 	public void updateMandator(Mandator mandator) throws JSONException {
 		authMandator.update(mandator);
 	}
