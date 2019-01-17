@@ -4,12 +4,24 @@
 		<h3>Permissions</h3>
 		<div class="col">
 			<ul>
-			<#list c.permissions as permission>
-				<li>
-					<div>${permission.label}</div> 
-					<!--<a href="" onclick="event.preventDefault(); fetch('./user/${user.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>-->
-				</li>
-			</#list>
+			<table class="table table-striped">
+				<thead>
+					<tr>
+					<th scope="col">Type</th>
+					<th scope="col">Target</th>
+					<th scope="col">Abilities</th>
+					</tr>
+				</thead>
+				<tbody>
+					<#list c.permissions as permission>
+						<tr>
+							<td>${permission.getClass().getSimpleName()}</td>
+							<td>${permission.getTarget().toString()}</td>
+							<td><#list permission.getAbilities() as ability>${ability} </#list></td>
+						</tr>
+					</#list>
+				</tbody>
+			</table>
 			</ul>
 		</div>
 	</div>

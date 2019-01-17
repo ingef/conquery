@@ -10,8 +10,13 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
+import org.glassfish.jersey.client.ClientConfig;
+import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -30,6 +35,7 @@ import com.bakdata.conquery.util.io.ConfigCloner;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
 
+import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
 import io.dropwizard.server.DefaultServerFactory;
@@ -46,6 +52,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	private File tmpDir;
 	private ConqueryConfig cfg;
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
+	@Getter
+	private Client client;
 	
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
 		try {
@@ -195,13 +203,20 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 					return new TestCommandWrapper(cfg, standaloneCommand);
 				}
 		);
-		
+
 		//start server
 		dropwizard.before();
+		
+		// create HTTP client for api tests
+		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
+			.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
+			.withProperty(ClientProperties.READ_TIMEOUT, 10000)
+			.build("test client");
 	}
 
 	@Override
 	public void afterAll(ExtensionContext context) throws Exception {
+		client.close();
 		dropwizard.after();
 		FileUtils.deleteQuietly(tmpDir);
 	}

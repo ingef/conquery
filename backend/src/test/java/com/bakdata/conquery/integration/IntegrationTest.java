@@ -2,6 +2,8 @@ package com.bakdata.conquery.integration;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+
+import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -21,12 +23,15 @@ import org.slf4j.LoggerFactory;
 import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -78,7 +83,7 @@ public class IntegrationTest {
 		}
 	}
 
-	@ParameterizedTest(name = "{index}: {0}")
+	//@ParameterizedTest(name = "{index}: {0}")
 	@MethodSource("data")
 	public void test(String name, String testSpec) throws Exception {
 		try(StandaloneSupport conquery = CONQUERY.getSupport()) {
@@ -104,5 +109,24 @@ public class IntegrationTest {
 			dataset.toString()
 		);
 		return TEST_SPEC_READER.readValue(testSpec);
+	}
+	
+	
+	public static Stream<Arguments> testClasses() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
+		List<IConqueryTest> tests = new ArrayList<>();
+		for(Class<?> testClass : CPSTypeIdResolver.listImplementations(IConqueryTest.class)) {
+			tests.add((IConqueryTest) testClass.getConstructor().newInstance());
+		}
+		return tests.stream().map(test -> Arguments.of(test));
+	}
+	
+	@ParameterizedTest(name = "{index}: {0}")
+	@MethodSource("testClasses")
+	public void test(IConqueryTest conqueryTest) throws Exception {
+		try(StandaloneSupport conquery = CONQUERY.getSupport()) {
+			conqueryTest.init(CONQUERY);
+			conqueryTest.execute();
+			conqueryTest.finish();
+		}
 	}
 }
