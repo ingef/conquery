@@ -18,8 +18,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Provides the methods of QuickSearch
- *
- * @author Marcus Baitz
  */
 @Slf4j
 public class ConceptSearch {

@@ -5,10 +5,6 @@ import java.util.List;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
-/**
- *
- * @author Marcus Baitz
- */
 @Data
 @AllArgsConstructor
 public class FilterTemplate implements Serializable {

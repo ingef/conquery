@@ -16,10 +16,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
-/**
- *
- * @author Marcus Baitz
- */
 @Slf4j
 public class FilterSearch {
 
