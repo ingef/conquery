@@ -82,8 +82,7 @@ public class AdminUIResource {
 	
 	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
 	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
-		FEMandatorContent content = new FEMandatorContent(processor.getUsers(mandatorId), processor.getPermissions(mandatorId));
-		return new UIView<>("mandator.html.ftl", context, content);
+		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
 	}
 	
 	@GET @Path("jobs")

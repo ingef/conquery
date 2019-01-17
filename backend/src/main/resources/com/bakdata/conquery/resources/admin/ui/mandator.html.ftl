@@ -1,28 +1,14 @@
 <#import "templates/template.html.ftl" as layout>
+<#import "templates/permissionTable.html.ftl" as permissionTable>
 <@layout.layout>
 	<div class="row">
-		<h3>Permissions</h3>
 		<div class="col">
-			<ul>
-			<table class="table table-striped">
-				<thead>
-					<tr>
-					<th scope="col">Type</th>
-					<th scope="col">Target</th>
-					<th scope="col">Abilities</th>
-					</tr>
-				</thead>
-				<tbody>
-					<#list c.permissions as permission>
-						<tr>
-							<td>${permission.getClass().getSimpleName()}</td>
-							<td>${permission.getTarget().toString()}</td>
-							<td><#list permission.getAbilities() as ability>${ability} </#list></td>
-						</tr>
-					</#list>
-				</tbody>
-			</table>
-			</ul>
+		<h3>Dataset Permissions</h3>
+		<@permissionTable.permissionTable permissions=c.datasetPermissions />
+		<h3>Query Permissions</h3>
+		<@permissionTable.permissionTable permissions=c.queryPermissions />
+		<h3>Other Permissions</h3>
+		<@permissionTable.permissionTable permissions=c.otherPermissions />
 		</div>
 	</div>
 	<div class="row">
