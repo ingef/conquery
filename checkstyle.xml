@@ -125,7 +125,8 @@
 		<module name="AtclauseOrder"/>
 		<module name="JavadocMethod">
 			<property name="allowUndeclaredRTE" value="true"/>
-			<property name="allowedAnnotations" value="Getter,Setter,Slf4j,Builder,UtilityClass"/>
+			<property name="allowedAnnotations" value="Override"/>
+			<property name="validateThrows" value="true"/>
 		</module>
 		<module name="JavadocStyle"/>
 		<module name="JavadocTagContinuationIndentation"/>
