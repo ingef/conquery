@@ -3,7 +3,6 @@ package com.bakdata.conquery.integration.query;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;

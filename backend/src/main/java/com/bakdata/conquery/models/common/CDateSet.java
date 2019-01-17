@@ -303,7 +303,15 @@ public class CDateSet {
 		}
 	}
 
+	/**
+	 * Counts the number of days represented by this CDateSet.
+	 * @return the number of days or null if there are infinite days in the set
+	 */
 	public Long countDays() {
+		//if we have no entries we return zero days
+		if(rangesByLowerBound.firstEntry() == null) {
+			return 0L;
+		}
 		if(rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry().getValue().isOpen()) {
 			return null;
 		}

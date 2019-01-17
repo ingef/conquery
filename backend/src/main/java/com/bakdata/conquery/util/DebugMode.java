@@ -14,7 +14,8 @@ public class DebugMode {
 	static {
 		try {
 			active = ManagementFactory.getRuntimeMXBean().getInputArguments().toString().contains("-agentlib:jdwp");
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			log.info("getting debug Mode failed, it was set to false by default", e);
 			active = false;
 		}

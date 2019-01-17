@@ -50,45 +50,19 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setType(filterType);
 
-		// Column c = getColumn();
-		// if (!c.getType().equals(MajorTypeId.STRING)) {
-		// throw new ConceptConfigurationException(getConnector(),
-		// filterType + " filter is incompatible with columns of type " + c.getType());
-		// }
-		//
-		// if (maximumSize != -1 && dictionary.size() > maximumSize) {
-		// throw new ConceptConfigurationException(getConnector(), "Too many possible
-		// values (" + dictionary.size()
-		// + " of " + maximumSize + ") in filter " + this.getId() + ".");
-		// }
-		//
-		// realLabels =
-		// dictionary.values().stream().collect(Collectors.toMap(Function.identity(), e
-		// -> {
-		// String r = labels.get(e);
-		// if (r == null) {
-		// if (!labels.isEmpty()) {
-		// log.warn("The value '{}' could not be mapped with the given labels of {}.{}",
-		// e,
-		// this.getConnector().getLabel(), this.getLabel());
-		// }
-		// return e;
-		// } else {
-		// return r;
-		// }
-		// }));
-		//
-		// if (matchLabels) {
-		// // Build the inverse of realLabels to speed up value resolution later
-		// labelsToRealLabels = realLabels.entrySet().stream()
-		// .collect(Collectors.toMap(Entry::getValue, Entry::getKey));
-		// } else {
-		// labelsToRealLabels = new HashMap<>();
-		// }
-		//
-		// if (maximumSize > 0) {
-		// f.setOptions(FEValue.fromLabels(realLabels));
-		// }
+		if (matchLabels) {
+			// Build the inverse of realLabels to speed up value resolution later
+			labelsToRealLabels = realLabels.entrySet()
+				.stream()
+				.collect(Collectors.toMap(Entry::getValue, Entry::getKey));
+		}
+		else {
+			labelsToRealLabels = new HashMap<>();
+		}
+
+		if(maximumSize>0) {
+			f.setOptions(FEValue.fromLabels(realLabels));
+		}
 	}
 
 	public String resolveValueToRealValue(String value) {
