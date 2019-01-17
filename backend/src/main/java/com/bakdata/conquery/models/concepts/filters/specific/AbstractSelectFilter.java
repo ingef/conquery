@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.Map;
+
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.api.description.FEValue;

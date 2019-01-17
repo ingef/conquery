@@ -71,7 +71,7 @@ public class ContentTreeResources {
 	@Path("{" + DATASET + "}/concepts")
 	public FERoot getRoot(@Auth User user, @PathParam(DATASET) DatasetId datasetId) {
 		authorize(user, datasetId, Ability.READ);
-		return processor.getRoot(dsUtil.getDataset(datasetId));
+		return processor.getRoot(dsUtil.getStorage(datasetId));
 	}
 
 	@GET

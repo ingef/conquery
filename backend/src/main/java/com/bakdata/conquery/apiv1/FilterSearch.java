@@ -1,20 +1,22 @@
 package com.bakdata.conquery.apiv1;
 
+import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTION;
+import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.util.ConceptsUtils;
 import com.zigurs.karlis.utils.search.QuickSearch;
-import java.io.File;
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import lombok.extern.slf4j.Slf4j;
 
-import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
-import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTION;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class FilterSearch {

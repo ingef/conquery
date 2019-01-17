@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.api.description;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import java.util.List;
 
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 
 import lombok.Builder;
 import lombok.Data;

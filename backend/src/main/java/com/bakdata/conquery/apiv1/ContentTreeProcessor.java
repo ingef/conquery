@@ -1,5 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.HashMap;
@@ -9,6 +11,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.ContentTreeResources.SearchResult;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
@@ -57,9 +60,9 @@ public class ContentTreeProcessor {
 		FilterSearch.init(namespaces.getAllDatasets());
 	}
 
-	public FERoot getRoot(Dataset dataset) {
+	public FERoot getRoot(NamespaceStorage storage) {
 
-		return FrontEndConceptBuilder.createRoot(dataset);
+		return FrontEndConceptBuilder.createRoot(storage);
 	}
 
 	public List<FEValue> autocompleteTextFilter(Dataset dataset, Table table, Filter filter, String text) {
