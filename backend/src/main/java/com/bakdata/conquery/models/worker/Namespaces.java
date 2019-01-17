@@ -22,10 +22,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class Namespaces implements NamespaceCollection {
+
 	private Map<DatasetId, Namespace> datasets = new HashMap<>();
-	@NotNull @Getter @Setter
+	@NotNull
+	@Getter
+	@Setter
 	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>();
-	@Getter @JsonIgnore
+	@Getter
+	@JsonIgnore
 	private transient Map<SocketAddress, SlaveInformation> slaves = new HashMap<>();
 
 	public void add(Namespace ns) {
@@ -36,7 +40,7 @@ public class Namespaces implements NamespaceCollection {
 	public Namespace get(DatasetId dataset) {
 		return datasets.get(dataset);
 	}
-	
+
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		return datasets.get(dataset).getStorage().getCentralRegistry();
@@ -44,7 +48,7 @@ public class Namespaces implements NamespaceCollection {
 
 	public synchronized void register(SlaveInformation slave, WorkerInformation info) {
 		WorkerInformation old = workers.getOptional(info.getId()).orElse(null);
-		if(old != null) {
+		if (old != null) {
 			old.setIncludedBuckets(info.getIncludedBuckets());
 			old.setConnectedSlave(slave);
 		}
@@ -52,18 +56,19 @@ public class Namespaces implements NamespaceCollection {
 			info.setConnectedSlave(slave);
 			workers.add(info);
 		}
-		
+
 		Namespace ns = datasets.get(info.getDataset());
-		if(ns == null) {
-			throw new NoSuchElementException("Trying to register a worker for unknown dataset '"+info.getDataset()+"'. I only know "+datasets.keySet());
+		if (ns == null) {
+			throw new NoSuchElementException(
+				"Trying to register a worker for unknown dataset '" + info.getDataset() + "'. I only know " + datasets.keySet());
 		}
 		ns.addWorker(info);
 	}
 
 	public List<Dataset> getAllDatasets() {
-                return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
+		return datasets.values().stream().map(Namespace::getStorage).map(NamespaceStorage::getDataset).collect(Collectors.toList());
 	}
-	
+
 	public Collection<Namespace> getNamespaces() {
 		return datasets.values();
 	}
