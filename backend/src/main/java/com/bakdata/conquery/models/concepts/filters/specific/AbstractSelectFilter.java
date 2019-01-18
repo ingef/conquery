@@ -83,7 +83,8 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 			labelsToRealLabels = realLabels.entrySet()
 				.stream()
 				.collect(Collectors.toMap(Entry::getValue, Entry::getKey));
-		} else {
+		}
+		else {
 			labelsToRealLabels = new HashMap<>();
 		}
 

@@ -19,7 +19,7 @@ import com.google.common.collect.Multimap;
 
 @Target({ ElementType.TYPE, ElementType.ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = { DetailedValidValidator.class })
+@Constraint(validatedBy = DetailedValidValidator.class)
 public @interface DetailedValid {
 
 	String message() default "";
@@ -33,7 +33,7 @@ public @interface DetailedValid {
 	@interface ValidationMethod2 {}
 	
 	
-	public static class DetailedValidValidator implements ConstraintValidator<DetailedValid, Object> {
+	class DetailedValidValidator implements ConstraintValidator<DetailedValid, Object> {
 		
 		private final Multimap<Class<?>, Method> methods = HashMultimap.create();
 		
