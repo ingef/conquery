@@ -1,4 +1,4 @@
-package com.bakdata.conquery.util.progress.reporter;
+package com.bakdata.conquery.util.progressreporter;
 
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;

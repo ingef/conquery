@@ -1,7 +1,7 @@
-package com.bakdata.conquery.util.progress.reporter;
+package com.bakdata.conquery.util.progressreporter;
 
-import static com.bakdata.conquery.util.progress.reporter.ProgressReporterUtil.MAX_PROGRESS;
-import static com.bakdata.conquery.util.progress.reporter.ProgressReporterUtil.ZERO_PROGRESS;
+import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.MAX_PROGRESS;
+import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.ZERO_PROGRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -11,6 +11,9 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.util.progressreporter.ImmutableProgressReporter;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
+import com.bakdata.conquery.util.progressreporter.ProgressReporterImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
