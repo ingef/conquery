@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
@@ -26,6 +27,7 @@ public class Preprocessed {
 	private final PPColumn[] columns;
 	private final ImportDescriptor descriptor;
 	private long rows = 0;
+	private CDateRange eventRange;
 	private long writtenGroups = 0;
 	private Output blockOut;
 	private List<List<Object[]>> entries = new ArrayList<>();
@@ -67,7 +69,32 @@ public class Preprocessed {
 		for(int i=0;i<columns.length;i++) {
 			columns[i].getType().addLine(outRow[i]);
 		}
+		//update stats
 		rows++;
+		for(int i=0;i<columns.length;i++) {
+			if(outRow[i] != null) {
+				switch(columns[i].getType().getTypeId()) {
+					case DATE:
+						extendEventRange(CDateRange.exactly((Integer)outRow[i]));
+						break;
+					case DATE_RANGE:
+						extendEventRange((CDateRange)outRow[i]);
+						break;
+					default:
+						break;
+				}
+			}
+		}
+		
+	}
+
+	private void extendEventRange(CDateRange range) {
+		if(eventRange == null) {
+			eventRange = range;
+		}
+		else if(range != null) {
+			eventRange = eventRange.span(range);
+		}
 	}
 
 	private void writeRowToFile(Import imp, int entityId, List<Object[]> events) throws IOException {
@@ -113,6 +140,7 @@ public class Preprocessed {
 				.name(descriptor.getName())
 				.table(descriptor.getTable())
 				.rows(rows)
+				.eventRange(eventRange)
 				.primaryColumn(primaryColumn)
 				.columns(columns)
 				.groups(writtenGroups)

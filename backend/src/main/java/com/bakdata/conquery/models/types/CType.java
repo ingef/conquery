@@ -8,9 +8,9 @@ import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
@@ -76,7 +76,7 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?,?>> implements
 
 	public void writeHeader(OutputStream out) throws IOException {}
 	public void readHeader(JsonParser input) throws IOException {}
-	public void storeExternalInfos(NamespacedStorage storage, Consumer<WorkerMessage> messageConsumer) {}
+	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {}
 	public void loadExternalInfos(NamespacedStorage storage) {}
 
 	@Override
