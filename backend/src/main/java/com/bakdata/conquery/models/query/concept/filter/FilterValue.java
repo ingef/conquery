@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.query.concept.filter;
 
+import java.math.BigDecimal;
+
+import javax.annotation.Nonnull;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.IdReference;
@@ -8,15 +14,11 @@ import com.bakdata.conquery.models.common.Range.DoubleRange;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import javax.annotation.Nonnull;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.math.BigDecimal;
 
 @Getter
 @Setter

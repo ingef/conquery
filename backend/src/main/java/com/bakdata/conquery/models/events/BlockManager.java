@@ -15,32 +15,29 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.models.worker.Worker;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 public class BlockManager {
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
 	private final WorkerStorage storage;
+	private final Worker worker;
 	private final IdMap<ConceptId, Concept<?>> concepts = new IdMap<>();
 	private final IdMap<BlockId, Block> blocks = new IdMap<>();
 	private final IdMap<CBlockId, CBlock> cBlocks = new IdMap<>();
 	@Getter
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
-	private WorkerInformation worker;
 
-	public BlockManager(JobManager jobManager, WorkerStorage storage, WorkerInformation worker) {
+	public BlockManager(JobManager jobManager, WorkerStorage storage, Worker worker) {
 		this.jobManager = jobManager;
 		this.storage = storage;
 		this.worker = worker;
@@ -59,7 +56,7 @@ public class BlockManager {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 					ConnectorId conName = con.getId();
 					for(Import imp:t.findImports(storage)) {
-						for(int bucket : worker.getIncludedBuckets()) {
+						for(int bucket : worker.getInfo().getIncludedBuckets()) {
 							for(int entity : Entity.iterateBucket(bucket)) {
 								BlockId blockId = new BlockId(imp.getId(), entity);
 								Optional<Block> block = blocks.getOptional(blockId);
@@ -153,7 +150,7 @@ public class BlockManager {
 				Table t = con.getTable();
 				CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 				for(Import imp : t.findImports(storage)) {
-					for(int bucket : worker.getIncludedBuckets()) {
+					for(int bucket : worker.getInfo().getIncludedBuckets()) {
 						for(int entity : Entity.iterateBucket(bucket)) {
 							BlockId blockId = new BlockId(imp.getId(), entity);
 							Optional<Block> block = blocks.getOptional(blockId);
@@ -174,31 +171,31 @@ public class BlockManager {
 	}
 
 	public void removeBlock(BlockId blockId) {
-			Block block = blocks.remove(blockId);
-			if(block!=null) {
-				entities
-					.computeIfAbsent(block.getEntity(), Entity::new)
-					.removeBlock(blockId);
-				for(Concept<?> c:concepts) {
-					ConceptId conceptName = c.getId();
-					for(Connector con:c.getConnectors()) {
-						try(Locked lock = cBlockLocks.acquire(con.getId())) {
-							if(con.getTable().getId().equals(block.getImp().getTable())) {
-								CBlockId cBlockId = new CBlockId(
-									blockId,
-									con.getId()
-								);
-								if(cBlocks.remove(cBlockId) != null) {
-									storage.removeCBlock(cBlockId);
-									entities
-										.computeIfAbsent(block.getEntity(), Entity::new)
-										.removeCBlock(cBlockId);
-								}
+		Block block = blocks.remove(blockId);
+		if(block!=null) {
+			entities
+				.computeIfAbsent(block.getEntity(), Entity::new)
+				.removeBlock(blockId);
+			for(Concept<?> c:concepts) {
+				ConceptId conceptName = c.getId();
+				for(Connector con:c.getConnectors()) {
+					try(Locked lock = cBlockLocks.acquire(con.getId())) {
+						if(con.getTable().getId().equals(block.getImp().getTable())) {
+							CBlockId cBlockId = new CBlockId(
+								blockId,
+								con.getId()
+							);
+							if(cBlocks.remove(cBlockId) != null) {
+								storage.removeCBlock(cBlockId);
+								entities
+									.computeIfAbsent(block.getEntity(), Entity::new)
+									.removeCBlock(cBlockId);
 							}
 						}
 					}
 				}
 			}
+		}
 	}
 
 	public void removeConcept(ConceptId conceptId) {
@@ -208,7 +205,7 @@ public class BlockManager {
 				try(Locked lock = cBlockLocks.acquire(con.getId())) {
 					Table t = con.getTable();
 					for(Import imp : t.findImports(storage)) {
-						for(int bucket : worker.getIncludedBuckets()) {
+						for(int bucket : worker.getInfo().getIncludedBuckets()) {
 							for(int entity : Entity.iterateBucket(bucket)) {
 								BlockId blockId = new BlockId(imp.getId(), entity);
 								Optional<Block> block = blocks.getOptional(blockId);

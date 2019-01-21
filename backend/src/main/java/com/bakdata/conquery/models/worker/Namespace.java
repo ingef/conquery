@@ -22,9 +22,9 @@ import lombok.Setter;
 public class Namespace {
 
 	@JsonIgnore
-	private NamespaceStorage storage;
+	private transient NamespaceStorage storage;
 	@JsonIgnore
-	private QueryManager queryManager;
+	private transient QueryManager queryManager;
 	private List<WorkerInformation> workers = new ArrayList<>();
 	@JsonIgnore
 	private transient List<WorkerInformation> bucket2WorkerMap = new ArrayList<>();

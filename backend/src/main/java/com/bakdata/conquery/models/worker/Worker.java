@@ -33,7 +33,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.info = info;
 		this.jobManager = jobManager;
 		this.storage = storage;
-		BlockManager blockManager = new BlockManager(jobManager, storage, info);
+		BlockManager blockManager = new BlockManager(jobManager, storage, this);
 		storage.setBlockManager(blockManager);
 		this.queryExecutor = queryExecutor;
 	}
