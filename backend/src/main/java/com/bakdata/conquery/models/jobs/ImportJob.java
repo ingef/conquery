@@ -222,7 +222,7 @@ public class ImportJob extends Job {
 							
 						GroupingByteBuffer responsibleAllIdsBuffer = allIdsBuffer.get(responsibleWorker);
 						responsibleAllIdsBuffer.ensureCapacity(size);
-						allIdsBits.get(responsibleWorker).getBits().add(new ImportBits.Bit(entityId, size));
+						allIdsBits.get(responsibleWorker).addBits(new ImportBits.Bit(entityId, size));
 						System.arraycopy(buffer.getBuffer(), 0, responsibleAllIdsBuffer.internalArray(), responsibleAllIdsBuffer.offset(), size);
 						responsibleAllIdsBuffer.advance(size);
 						
@@ -262,7 +262,7 @@ public class ImportJob extends Job {
 					}
 					GroupingByteBuffer responsibleBuffer = buffer.get(responsibleWorker);
 					responsibleBuffer.ensureCapacity(size);
-					bits.get(responsibleWorker).getBits().add(new ImportBits.Bit(entityId, size));
+					bits.get(responsibleWorker).addBits(new ImportBits.Bit(entityId, size));
 					in.readBytes(responsibleBuffer.internalArray(), responsibleBuffer.offset(), size);
 					responsibleBuffer.advance(size);
 					

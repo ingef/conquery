@@ -172,4 +172,9 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			this.cache = new ConceptTreeCache(this, type);
 		}
 	}
+
+	@Override
+	public int countElements() {
+		return 1 + allChildren.size();
+	}
 }

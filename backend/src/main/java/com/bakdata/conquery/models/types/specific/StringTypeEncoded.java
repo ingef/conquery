@@ -37,7 +37,7 @@ public class StringTypeEncoded extends StringType implements IStringType {
 
 	@Override
 	public int getStringId(String string) {
-		return super.getStringId(new String(encoding.decode(string)));
+		return super.getDictionary().getId(encoding.decode(string));
 	}
 
 	@Override

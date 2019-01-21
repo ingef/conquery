@@ -9,6 +9,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import lombok.NonNull;
+
 public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Named<ID> {
 
 	@JsonManagedReference
@@ -26,11 +28,11 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	
 	public MatchingStats getMatchingStats();
 	
-	public default ConceptTreeNode<?> getElementByLocalId(int[] ids) {
+	public default ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids) {
 		return getElementByLocalId(ids, 0);
 	}
 	
-	public default ConceptTreeNode<?> getElementByLocalId(int[] ids, int index) {
+	public default ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids, int index) {
 		if(index == ids.length ) {
 			return this;
 		}

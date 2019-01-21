@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.ListIterator;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.CDateRange;
@@ -99,6 +98,9 @@ public class Preprocessed {
 
 	private void writeRowToFile(Import imp, int entityId, List<Object[]> events) throws IOException {
 		//transform values to their current subType
+		//we can't map the primary column since we do a lot of work which would destroy any compression anyway
+		//entityId = (Integer)primaryColumn.getType().transformFromMajorType(primaryColumn.getOriginalType(), Integer.valueOf(entityId));
+
 		for(ImportColumn ic : imp.getColumns()) {
 			for(Object[] event : events) {
 				if(event[ic.getPosition()] != null) {
@@ -108,7 +110,6 @@ public class Preprocessed {
 		}
 		
 		Block block = imp.getBlockFactory().createBlock(entityId, imp, events);
-		
 		
 		blockOut.writeInt(entityId, true);
 		block.writeContent(buffer);
@@ -122,11 +123,8 @@ public class Preprocessed {
 	public void writeToFile() throws IOException {
 		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 		
-		ListIterator<List<Object[]>> it = entries.listIterator(entries.size());
-		while(it.hasPrevious()) {
-			int entityId = it.previousIndex();
-			List<Object[]> events = it.previous();
-			it.remove();
+		for(int entityId = 0; entityId < entries.size(); entityId++) {
+			List<Object[]> events = entries.get(entityId);
 			if(!events.isEmpty()) {
 				writeRowToFile(imp, entityId, events);
 			}

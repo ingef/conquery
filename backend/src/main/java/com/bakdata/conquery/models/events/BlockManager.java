@@ -15,8 +15,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -26,9 +24,7 @@ import com.bakdata.conquery.models.worker.Worker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
 public class BlockManager {
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
@@ -41,7 +37,10 @@ public class BlockManager {
 	@Getter
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
 
-	public void init() {
+	public BlockManager(JobManager jobManager, WorkerStorage storage, Worker worker) {
+		this.jobManager = jobManager;
+		this.storage = storage;
+		this.worker = worker;
 		this.concepts.addAll(storage.getAllConcepts());
 		this.blocks.addAll(storage.getAllBlocks());
 		this.cBlocks.addAll(storage.getAllCBlocks());
@@ -54,11 +53,9 @@ public class BlockManager {
 			for(Connector con:c.getConnectors()) {
 				try(Locked lock = cBlockLocks.acquire(con.getId())) {
 					Table t = con.getTable();
-					TableId tableId = t.getId();
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 					ConnectorId conName = con.getId();
-					for(String tag:t.getTags()) {
-						Import imp = storage.getImport(new ImportId(tableId, tag));
+					for(Import imp:t.findImports(storage)) {
 						for(int bucket : worker.getInfo().getIncludedBuckets()) {
 							for(int entity : Entity.iterateBucket(bucket)) {
 								BlockId blockId = new BlockId(imp.getId(), entity);
@@ -151,11 +148,8 @@ public class BlockManager {
 		for(Connector con:c.getConnectors()) {
 			try(Locked lock = cBlockLocks.acquire(con.getId())) {
 				Table t = con.getTable();
-				TableId tableName = t.getId();
-				
 				CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
-				for(String tag:t.getTags()) {
-					Import imp = storage.getImport(new ImportId(tableName, tag));
+				for(Import imp : t.findImports(storage)) {
 					for(int bucket : worker.getInfo().getIncludedBuckets()) {
 						for(int entity : Entity.iterateBucket(bucket)) {
 							BlockId blockId = new BlockId(imp.getId(), entity);
@@ -210,11 +204,10 @@ public class BlockManager {
 			for(Connector con:c.getConnectors()) {
 				try(Locked lock = cBlockLocks.acquire(con.getId())) {
 					Table t = con.getTable();
-					TableId tableName = t.getId();
-					for(String tag:t.getTags()) {
+					for(Import imp : t.findImports(storage)) {
 						for(int bucket : worker.getInfo().getIncludedBuckets()) {
 							for(int entity : Entity.iterateBucket(bucket)) {
-								BlockId blockId = new BlockId(new ImportId(tableName, tag), entity);
+								BlockId blockId = new BlockId(imp.getId(), entity);
 								Optional<Block> block = blocks.getOptional(blockId);
 								if(block.isPresent()) {
 									CBlockId cBlockId = new CBlockId(blockId, con.getId());
