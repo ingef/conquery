@@ -27,7 +27,7 @@ import com.bakdata.conquery.util.support.TestConquery;
  *
  */
 @CPSType(base = IConqueryTest.class, id = "HTTP_MANDATOR")
-public class MandatorUITest implements IConqueryTest {
+public class MandatorUITest implements IConqueryTest<TestConquery> {
 
 	private TestConquery conquery;
 
