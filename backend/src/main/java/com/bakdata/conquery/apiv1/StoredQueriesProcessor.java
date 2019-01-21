@@ -25,7 +25,6 @@ public class StoredQueriesProcessor {
 	}
 
 	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder urlb) {
-		// see https://github.com/bakdata/conquery/issues/238
 		Collection<ManagedQuery> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllQueries();
 		
 		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(mq, urlb)).collect(Collectors.toList());
