@@ -2,7 +2,8 @@
 
 import React                      from 'react';
 import T                          from 'i18n-react';
-import Select, { components }     from 'react-select';
+import { components }             from 'react-select';
+import Select                     from 'react-select/lib/Creatable';
 import { type FieldPropsType }    from 'redux-form';
 import Dropzone                   from 'react-dropzone'
 import Markdown                   from 'react-markdown';

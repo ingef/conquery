@@ -19,17 +19,19 @@ import {
 import { type TableType } from '../standard-query-editor/types';
 
 export const transformTablesToApi = (tables: TableType[]) => {
+  if (!tables) return [];
+
   return tables
     .filter(table => !table.exclude)
     .map(table => {
       // Explicitly whitelist the tables that we allow to send to the API
       return {
-        id: table.id,
+        id: table.connectorId,
         filters: table.filters
           ? table.filters
             .filter(filter => !isEmpty(filter.value)) // Only send filters with a value
             .map(filter => ({
-              id: filter.id,
+              filter: filter.id,
               type: filter.type,
               value: filter.value instanceof Array
                 ? filter.value.map(v => v.value ? v.value : v)
@@ -58,37 +60,59 @@ export const transformElementsToApi = (conceptGroup) => conceptGroup.map(concept
   };
 });
 
-const transformStandardQueryToApi = (query, version) =>  {
-  return {
-    version,
-    type: 'CONCEPT_QUERY',
-    groups: query.map(group => ({
-      exclude: group.exclude,
-      dateRange: group.dateRange ? group.dateRange : undefined,
-      elements: group.elements.map(element => {
-        if (element.isPreviousQuery) {
-          return {
-            id: element.id,
-            type: 'QUERY',
-            excludeTimestamps: element.excludeTimestamps,
-          };
-        } else {
-          const tables = element.tables
-            ? transformTablesToApi(element.tables)
-            : [];
+const transformStandardQueryToApi = (query, version) =>
+  createConceptQuery(createQueryConcepts(query))
 
-          return {
-            ids: element.ids,
-            type: 'CONCEPT_LIST',
-            label: element.label,
-            tables,
-            excludeTimestamps: element.excludeTimestamps
-          }
-        }
-      })
-    }))
-  };
-};
+const createConceptQuery = (children) => ({
+  type: 'CONCEPT_QUERY',
+  root: {
+    type: "AND",
+    children: children
+  }
+})
+
+const createNegation = (group) => ({
+    type: "NEGATION",
+    child: group
+})
+
+const createDateRestriction = (dateRange, concept) => ({
+    type: "DATE_RESTRICTION",
+    dateRange: dateRange,
+    child: concept
+})
+
+const createSavedQuery = (concept) => ({
+  type: 'SAVED_QUERY',
+  query: concept.id,
+})
+
+const createQueryConcept = (concept) =>
+  concept.isPreviousQuery
+    ? createSavedQuery(concept)
+    : createConcept(concept)
+
+const createConcept = (concept) => ({
+  type: 'CONCEPT',
+  ids: concept.ids,
+  label: concept.label,
+  tables: transformTablesToApi(concept.tables)
+})
+
+const createQueryConcepts = (query) => {
+  return query.map(group => {
+    const concepts = group.dateRange
+      ? group.elements.map(concept =>
+          createDateRestriction(group.dateRange, createQueryConcept(concept)))
+      : group.elements.map(concept => createQueryConcept(concept))
+
+      var result = group.elements.length > 1
+      ? { type: "OR", children: [...concepts]}
+      : concepts.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+
+    return group.exclude ? createNegation(result) : result;
+  })
+}
 
 const transformResultToApi = (result) => {
   return {
@@ -132,12 +156,25 @@ const transformTimebasedQueryToApi = (query, version) => {
   };
 };
 
+const transformExternalQueryToApi = (query) => createConceptQuery(createExternal(query))
+
+const createExternal = (query: any) => ({
+  type: "EXTERNAL",
+  format: query.data[0],
+  values: [query.data.slice(1)],
+})
+
 
 // The query state already contains the query.
 // But small additions are made (properties whitelisted), empty things filtered out
 // to make it compatible with the backend API
 export const transformQueryToApi = (query: Object, queryType: string, version: any) => {
-  return queryType === 'timebased'
-    ? transformTimebasedQueryToApi(query, version)
-    : transformStandardQueryToApi(query, version);
+  switch (queryType) {
+    case 'timebased':
+        return transformTimebasedQueryToApi(query, version)
+      case 'standard':
+        return transformStandardQueryToApi(query, version);
+      case 'external':
+        return transformExternalQueryToApi(query);
+    }
 };

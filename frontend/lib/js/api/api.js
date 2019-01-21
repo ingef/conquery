@@ -76,30 +76,6 @@ export function getDatasets() {
   return fetchJson(apiUrl() + `/datasets`);
 }
 
-export function postResults(datasetId: DatasetIdType, file: any) {
-  return new Promise(resolve => {
-    const reader = new FileReader();
-
-    reader.onload = (evt) => {
-      const fileContent = evt.target.result;
-
-      resolve(fileContent);
-    };
-
-    reader.readAsText(file);
-  }).then((results) => {
-    const rawBody = true;
-
-    return fetchJson(apiUrl() + `/datasets/${datasetId}/import`, {
-      method: "POST",
-      body: results,
-      headers: {
-        "Content-Type": "text/csv"
-      }
-    }, rawBody);
-  });
-};
-
 export const getConcepts = (datasetId: DatasetIdType) : Promise<RootType> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts`);
 }
@@ -127,7 +103,7 @@ export function postQueries(
   return fetchJson(apiUrl() + `/datasets/${datasetId}/queries`, {
     method: "POST",
     body,
-  });
+  }, queryType === 'external');
 }
 
 export function deleteQuery(datasetId: DatasetIdType, queryId: number) {

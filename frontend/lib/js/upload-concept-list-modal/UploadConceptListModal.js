@@ -250,6 +250,8 @@ const selectNumberOfResolvedItems = (state) => {
 const selectAvailableConceptRootNodes = (state) => {
   const { trees } = state.categoryTrees;
 
+  if (!trees) return null;
+
   return Object.entries(trees)
     .map(([key, value]) => ({ key, value }))
     .filter(({ key, value }) => value.codeListResolvable)
