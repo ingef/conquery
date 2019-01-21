@@ -60,7 +60,7 @@ export const transformElementsToApi = (conceptGroup) => conceptGroup.map(concept
   };
 });
 
-const transformStandardQueryToApi = (query, version) =>
+const transformStandardQueryToApi = (query) =>
   createConceptQuery(createQueryConcepts(query))
 
 const createConceptQuery = (children) => ({
@@ -137,9 +137,8 @@ const getDayRange = (condition) => {
   return [{}, {}];
 };
 
-const transformTimebasedQueryToApi = (query, version) => {
+const transformTimebasedQueryToApi = (query) => {
   return {
-    version,
     type: 'TIME_QUERY',
     indexResult: query.indexResult,
     conditions: query.conditions.map(condition => {
@@ -168,12 +167,12 @@ const createExternal = (query: any) => ({
 // The query state already contains the query.
 // But small additions are made (properties whitelisted), empty things filtered out
 // to make it compatible with the backend API
-export const transformQueryToApi = (query: Object, queryType: string, version: any) => {
+export const transformQueryToApi = (query: Object, queryType: string) => {
   switch (queryType) {
     case 'timebased':
-        return transformTimebasedQueryToApi(query, version)
+        return transformTimebasedQueryToApi(query)
       case 'standard':
-        return transformStandardQueryToApi(query, version);
+        return transformStandardQueryToApi(query);
       case 'external':
         return transformExternalQueryToApi(query);
     }

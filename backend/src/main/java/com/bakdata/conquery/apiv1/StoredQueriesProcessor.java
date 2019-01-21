@@ -11,6 +11,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import jersey.repackaged.com.google.common.collect.Iterators;
 
@@ -22,9 +24,11 @@ public class StoredQueriesProcessor {
 		this.namespaces = namespaces;
 	}
 
-	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder fromRequest) {
+	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder urlb) {
 		// see https://github.com/bakdata/conquery/issues/238
-		return null;
+		Collection<ManagedQuery> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllQueries();
+		
+		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(mq, urlb)).collect(Collectors.toList());
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedQuery query) {

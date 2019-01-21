@@ -5,7 +5,6 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.sql.SQLException;
-import java.util.EnumSet;
 
 import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
@@ -21,9 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.QueryExecutionException;
@@ -45,8 +42,8 @@ public class QueryResource {
 	private QueryProcessor processor;
 	private ResourceUtil resourceUtil;
 
-	public QueryResource(Namespaces namespaces, ConqueryConfig config) {
-		this.processor = new QueryProcessor(namespaces, config);
+	public QueryResource(Namespaces namespaces) {
+		this.processor = new QueryProcessor(namespaces);
 		this.resourceUtil = new ResourceUtil(namespaces);
 	}
 

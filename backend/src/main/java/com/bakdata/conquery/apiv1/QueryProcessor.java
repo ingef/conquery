@@ -5,7 +5,6 @@ import java.util.concurrent.TimeUnit;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.IQuery;
@@ -16,11 +15,9 @@ import com.bakdata.conquery.models.worker.Namespaces;
 public class QueryProcessor {
 
 	private final Namespaces namespaces;
-	private final ConqueryConfig config;
 
-	public QueryProcessor(Namespaces namespaces, ConqueryConfig config) {
+	public QueryProcessor(Namespaces namespaces) {
 		this.namespaces = namespaces;
-		this.config = config;
 	}
 
 	public SQStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
@@ -32,13 +29,13 @@ public class QueryProcessor {
 		user.addPermission(new QueryPermission(null, AbilitySets.QUERY_CREATOR, mq.getId()));
 		mq.awaitDone(1, TimeUnit.HOURS);
 		
-		return SQStatus.buildFromQuery(mq, urlb, config);
+		return SQStatus.buildFromQuery(mq, urlb);
 	}
 
 	public SQStatus getStatus(Dataset dataset, ManagedQuery query, URLBuilder urlb) {
-		
 		query.awaitDone(10, TimeUnit.SECONDS);
-		return SQStatus.buildFromQuery(query, urlb, config);
+		
+		return SQStatus.buildFromQuery(query, urlb);
 	}
 
 	public SQStatus cancel(Dataset dataset, ManagedQuery query, URLBuilder urlb) {

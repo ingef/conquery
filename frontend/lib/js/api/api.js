@@ -98,7 +98,7 @@ export function postQueries(
   version: any
 ) {
   // Transform into backend-compatible format
-  const body = transformQueryToApi(query, queryType, version);
+  const body = transformQueryToApi(query, queryType);
 
   return fetchJson(apiUrl() + `/datasets/${datasetId}/queries`, {
     method: "POST",
