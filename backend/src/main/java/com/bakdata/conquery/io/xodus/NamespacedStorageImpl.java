@@ -77,11 +77,13 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		this.concepts =	new IdentifiableStore<Concept<?>>(centralRegistry, StoreInfo.CONCEPTS.cached(this)) {
 			@Override
 			protected void addToRegistry(CentralRegistry centralRegistry, Concept<?> concept) throws ConfigurationException, JSONException {
-				Dataset ds = concept.getDataset() == null
-						? ds = centralRegistry.resolve(concept.getId().getDataset())
-						: centralRegistry.resolve(concept.getDataset());
-				ds.addConcept(concept);
+				Dataset ds = centralRegistry.resolve(
+					concept.getDataset() == null
+						? concept.getId().getDataset()
+						: concept.getDataset()
+				);
 				concept.setDataset(ds.getId());
+				ds.addConcept(concept);
 				concept.initElements(validator);
 				
 				for (Connector c : concept.getConnectors()) {
