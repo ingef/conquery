@@ -18,7 +18,7 @@
 		<div class="col">Tables</div>
 		<div class="col">
 			<ul>
-				<#list c.tables as table>
+				<#list c.tables?values as table>
 					<li>
 						<a href="/admin/datasets/${c.id}/tables/${table.id}">${table.label}</a> 
 						<a href="" onclick="event.preventDefault(); fetch('/admin/datasets/${c.id}/tables/${table.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
