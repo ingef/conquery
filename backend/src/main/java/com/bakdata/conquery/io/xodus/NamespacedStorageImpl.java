@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.google.common.base.Stopwatch;
@@ -77,12 +78,13 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		this.concepts =	new IdentifiableStore<Concept<?>>(centralRegistry, StoreInfo.CONCEPTS.cached(this)) {
 			@Override
 			protected void addToRegistry(CentralRegistry centralRegistry, Concept<?> concept) throws ConfigurationException, JSONException {
-				if (concept.getDataset() == null) {
-					Dataset ds = centralRegistry.resolve(concept.getId().getDataset());
-					concept.setDataset(ds.getId());
-					ds.addConcept(concept);
-				}
+				Dataset ds = concept.getDataset() == null
+						? ds = centralRegistry.resolve(concept.getId().getDataset())
+						: centralRegistry.resolve(concept.getDataset());
+				ds.addConcept(concept);
+				concept.setDataset(ds.getId());
 				concept.initElements(validator);
+				
 				for (Connector c : concept.getConnectors()) {
 					centralRegistry.register(c);
 					c.getAllFilters().forEach(centralRegistry::register);
