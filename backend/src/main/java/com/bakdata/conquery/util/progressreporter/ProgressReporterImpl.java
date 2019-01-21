@@ -1,4 +1,4 @@
-package com.bakdata.conquery.util.progress.reporter;
+package com.bakdata.conquery.util.progressreporter;
 
 import java.math.RoundingMode;
 import java.time.Duration;

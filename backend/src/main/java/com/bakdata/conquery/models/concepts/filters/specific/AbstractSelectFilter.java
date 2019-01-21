@@ -58,16 +58,6 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setType(filterType);
 
-		if (matchLabels) {
-			// Build the inverse of realLabels to speed up value resolution later
-			labelsToRealLabels = realLabels.entrySet()
-				.stream()
-				.collect(Collectors.toMap(Entry::getValue, Entry::getKey));
-		}
-		else {
-			labelsToRealLabels = new HashMap<>();
-		}
-
 		if(maximumSize>0) {
 			f.setOptions(FEValue.fromLabels(realLabels));
 		}

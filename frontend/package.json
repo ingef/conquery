@@ -112,6 +112,7 @@
     "nock": "^9.1.9",
     "node-sass": "^4.7.2",
     "nyc": "^11.4.1",
+    "papaparse": "^4.6.1",
     "postcss-loader": "^2.1.0",
     "progress-bar-webpack-plugin": "^1.11.0",
     "raw-loader": "^0.5.1",
