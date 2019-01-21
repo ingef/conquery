@@ -7,10 +7,6 @@ import java.util.function.Consumer;
 
 import com.bakdata.conquery.models.exceptions.JSONException;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-
 public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 
 	private final Store<KEY, VALUE> store;

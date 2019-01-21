@@ -1,10 +1,8 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.Set;
-import java.util.function.Consumer;
 
 import javax.validation.Validator;
 

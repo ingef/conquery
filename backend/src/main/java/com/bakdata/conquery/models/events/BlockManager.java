@@ -20,10 +20,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;

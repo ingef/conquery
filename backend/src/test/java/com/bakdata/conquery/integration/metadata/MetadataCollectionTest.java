@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
-import javax.validation.Validator;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
@@ -14,10 +12,8 @@ import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.models.common.CDateRange;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import com.bakdata.conquery.util.support.StandaloneSupport;

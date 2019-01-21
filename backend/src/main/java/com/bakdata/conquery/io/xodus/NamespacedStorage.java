@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;

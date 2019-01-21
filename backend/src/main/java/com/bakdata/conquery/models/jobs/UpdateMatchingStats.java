@@ -6,21 +6,17 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.MatchingStats;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.Workers;
-import com.bakdata.conquery.util.progress.reporter.ProgressReporter;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;

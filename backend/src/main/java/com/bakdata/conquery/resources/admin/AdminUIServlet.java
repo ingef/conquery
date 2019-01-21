@@ -9,11 +9,8 @@ import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.commands.RESTServer;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
-import com.bakdata.conquery.models.auth.DefaultAuthFilter;
-import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 
-import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;

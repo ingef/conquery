@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.concepts.tree;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.NoSuchElementException;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.MatchingStats;

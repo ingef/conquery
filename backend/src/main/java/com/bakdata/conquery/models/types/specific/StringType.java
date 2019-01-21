@@ -16,8 +16,6 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;

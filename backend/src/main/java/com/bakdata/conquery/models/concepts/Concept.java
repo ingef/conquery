@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import javax.validation.Valid;
