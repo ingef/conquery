@@ -26,7 +26,6 @@
         <module>backend</module>
 		<module>executable</module>
 		<module>coverage-reporter</module>
-		<module>model-translator</module>
     </modules>
     
     <dependencyManagement>

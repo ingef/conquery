@@ -69,12 +69,16 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		
 		this.concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(this)
 			.onAdd(concept -> {
-				if (concept.getDataset() == null) {
-					Dataset ds = centralRegistry.resolve(concept.getId().getDataset());
-					concept.setDataset(ds.getId());
-					ds.addConcept(concept);
-				}
+				Dataset ds = centralRegistry.resolve(
+					concept.getDataset() == null
+						? concept.getId().getDataset()
+						: concept.getDataset()
+				);
+				concept.setDataset(ds.getId());
+				ds.addConcept(concept);
+
 				concept.initElements(validator);
+				
 				for (Connector c : concept.getConnectors()) {
 					centralRegistry.register(c);
 					c.getAllFilters().forEach(centralRegistry::register);

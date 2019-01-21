@@ -55,7 +55,6 @@ public class Namespace {
 		if(workers.isEmpty()) {
 			throw new IllegalStateException("There are no workers yet");
 		}
-		//see #162  use broadcast and use the coder here only once so that we do not serialize twice
 		for(WorkerInformation w:workers) {
 			w.send(msg);
 		}

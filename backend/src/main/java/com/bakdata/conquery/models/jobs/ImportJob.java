@@ -37,7 +37,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
 import com.bakdata.conquery.util.io.GroupingByteBuffer;
 import com.bakdata.conquery.util.io.MultiByteBuffer;
-import com.bakdata.conquery.util.progress.reporter.ProgressReporter;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.esotericsoftware.kryo.KryoException;
 import com.esotericsoftware.kryo.io.Input;
 import com.esotericsoftware.kryo.io.Output;

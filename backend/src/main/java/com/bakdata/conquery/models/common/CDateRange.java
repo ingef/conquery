@@ -224,6 +224,10 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	@Override
 	public String toString() {
 
+		if (isAll()) {
+			return "-∞/+∞";
+		}
+		
 		if (isAtLeast()) {
 			return String.format("%s/+∞", getMin());
 		}
