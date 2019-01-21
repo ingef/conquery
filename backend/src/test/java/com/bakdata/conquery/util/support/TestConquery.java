@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.util.io.ConfigCloner;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.dictionary;
 
 
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 import com.bakdata.conquery.models.common.Range;

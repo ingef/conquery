@@ -34,7 +34,6 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
