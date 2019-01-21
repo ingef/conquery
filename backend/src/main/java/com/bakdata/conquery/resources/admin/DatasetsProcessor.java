@@ -86,11 +86,10 @@ public class DatasetsProcessor {
 			}
 		}
 
-		dataset.addConcept(c);
 		c.setDataset(dataset.getId());
-		jobManager.addSlowJob(new SimpleJob("Adding concept "+c.getId(), ()->namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
-
-		namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c));
+		jobManager.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
+		jobManager.addSlowJob(new SimpleJob("sendToAll " + c.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
+		
 		//see #144  check duplicate names
 	}
 
@@ -98,7 +97,7 @@ public class DatasetsProcessor {
 		//create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
-		
+
 		//add allIds table
 		Table allIdsTable = new Table();
 		{
@@ -114,9 +113,9 @@ public class DatasetsProcessor {
 			allIdsTable.setPrimaryColumn(primaryColumn);
 		}
 		dataset.getTables().add(allIdsTable);
-		
+
 		//store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_"+name));
+		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 		datasetStorage.setMetaStorage(storage);
 		Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
 		ns.initMaintenance(maintenanceService);
