@@ -102,9 +102,6 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			Dataset dataset = ns.getStorage().getDataset();
 			
 			assertThat(namespaces.getSlaves()).hasSize(2);
-			for(SlaveInformation slave : namespaces.getSlaves().values()) {
-				standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addWorker(slave, dataset);
-			}
 			
 			//make tmp subdir and change cfg accordingly
 			File localTmpDir = new File(tmpDir, "tmp_"+name);

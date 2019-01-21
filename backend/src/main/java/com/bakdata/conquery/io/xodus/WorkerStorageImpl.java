@@ -58,9 +58,6 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void setBlockManager(BlockManager blockManager) {
 		this.blockManager = blockManager;
-		if(this.getWorker()!=null) {
-			blockManager.init(this.getWorker());
-		}
 	}
 	
 	@Override

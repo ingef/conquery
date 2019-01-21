@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.models.worker.WorkerInformation;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -81,7 +82,6 @@ public class DatasetsProcessor {
 			}
 		}
 		
-		dataset.addConcept(c);
 		c.setDataset(dataset.getId());
 		jobManager.addSlowJob(new SimpleJob("Adding concept "+c.getId(), ()->namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
 
@@ -117,6 +117,11 @@ public class DatasetsProcessor {
 		ns.initMaintenance(maintenanceService);
 		ns.getStorage().updateDataset(dataset);
 		namespaces.add(ns);
+		
+		//for now we just add one worker to every slave
+		for(SlaveInformation slave : namespaces.getSlaves().values()) {
+			this.addWorker(slave, dataset);
+		}
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
