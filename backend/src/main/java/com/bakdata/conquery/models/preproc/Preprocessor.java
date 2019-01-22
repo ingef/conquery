@@ -115,16 +115,11 @@ public class Preprocessor {
 				}
 				//find the optimal subtypes
 				log.info("finding optimal column types");
-				CType<?,?> type = result.getPrimaryColumn().getType();
-				//see #151  compress this here with new Trie PR
-				//((StringType)result.getPrimaryColumn()).getDictionary();
-				log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), type, result.getPrimaryColumn().getType());
-
-				result.getPrimaryColumn().findBestType();
+				log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getOriginalType(), result.getPrimaryColumn().getType());
+				
 				for(PPColumn c:result.getColumns()) {
-					type = c.getType();
 					c.findBestType();
-					log.info("{}.{}: {} -> {}", result.getName(), c.getName(), type, c.getType());
+					log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getOriginalType(), c.getType());
 				}
 
 				result.writeToFile();

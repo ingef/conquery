@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.messages;
 
-import com.bakdata.conquery.util.progress.reporter.ProgressReporter;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface SlowMessage extends Message {
