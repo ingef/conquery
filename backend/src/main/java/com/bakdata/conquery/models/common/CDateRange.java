@@ -210,8 +210,9 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 			return false;
 		}
 
-		return getMaxValue() >= other.getMaxValue()
-			   && getMinValue() <= other.getMinValue();
+		return
+				getMaxValue() >= other.getMaxValue()
+				&& getMinValue() <= other.getMinValue();
 	}
 
 	public Stream<LocalDate> stream(TemporalUnit unit) {

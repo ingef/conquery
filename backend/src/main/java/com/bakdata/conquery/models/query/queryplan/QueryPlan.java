@@ -18,7 +18,6 @@ public class QueryPlan implements Cloneable {
 	public static QueryPlan create() {
 		QueryPlan plan = new QueryPlan();
 
-		//TODO move to constructor?
 		plan.aggregators.add(new SpecialDateUnion());
 
 		return plan;
