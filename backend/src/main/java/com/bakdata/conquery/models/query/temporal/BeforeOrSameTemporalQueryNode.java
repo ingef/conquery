@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.temporal;
 
+import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.concepts.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -16,6 +18,12 @@ public class BeforeOrSameTemporalQueryNode extends AbstractTemporalQueryNode {
 	@Override
 	public QPNode clone(QueryPlan plan, QueryPlan clone) {
 		return new BeforeOrSameTemporalQueryNode(getIndex().clone(), getPreceding().clone(), getSampler(), clone.getIncluded());
+	}
+
+	@Override
+	public void removePreceding(CDateSet preceding, int sample) {
+		// Only consider samples that are before index's sample event
+		preceding.remove(CDateRange.atLeast(sample + 1));
 	}
 
 	@Override
