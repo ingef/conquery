@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.dictionary;
 
 
+import java.util.Arrays;
+
 import com.bakdata.conquery.models.common.Range;
 
 import lombok.AccessLevel;
@@ -23,6 +25,9 @@ public class DictionaryMapping {
 		DictionaryMapping mapping = new DictionaryMapping(from, to);
 
 		mapping.mapValues();
+		if(Arrays.stream(mapping.source2TargetMap).distinct().count() < mapping.source2TargetMap.length) {
+			throw new IllegalStateException("Multiple source ids map to the same target");
+		}
 
 		return mapping;
 	}
@@ -31,7 +36,7 @@ public class DictionaryMapping {
 		source2TargetMap = new int[sourceDictionary.size()];
 
 		for (int id = 0; id < sourceDictionary.size(); id++) {
-			String value = sourceDictionary.getElement(id);
+			byte[] value = sourceDictionary.getElementBytes(id);
 			int targetId = targetDictionary.getId(value);
 			//if id was unknown until now
 			if (targetId == -1L) {

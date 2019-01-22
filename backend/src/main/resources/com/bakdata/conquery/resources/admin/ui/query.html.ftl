@@ -10,10 +10,10 @@
 	"type": "CONCEPT_QUERY",
 	"root": {
 		"type": "CONCEPT",
-		"ids": "fdb.icd.a00-b99",
+		"ids": "demo.icd.a00-b99",
 		"tables": [
 			{
-				"id": "fdb.icd.arzt_diagnose_icd_code"
+				"id": "demo.icd.kh_diagnose_icd_code"
 			}
 		]
 	}

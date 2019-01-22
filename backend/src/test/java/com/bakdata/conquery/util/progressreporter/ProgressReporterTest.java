@@ -1,7 +1,7 @@
-package com.bakdata.conquery.util.progress.reporter;
+package com.bakdata.conquery.util.progressreporter;
 
-import static com.bakdata.conquery.util.progress.reporter.ProgressReporterUtil.MAX_PROGRESS;
-import static com.bakdata.conquery.util.progress.reporter.ProgressReporterUtil.ZERO_PROGRESS;
+import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.MAX_PROGRESS;
+import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.ZERO_PROGRESS;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
