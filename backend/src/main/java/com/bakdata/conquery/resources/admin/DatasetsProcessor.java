@@ -36,6 +36,8 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.google.common.util.concurrent.Uninterruptibles;
+import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -89,8 +91,9 @@ public class DatasetsProcessor {
 		c.setDataset(dataset.getId());
 		jobManager.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
 		jobManager.addSlowJob(new SimpleJob("sendToAll " + c.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
-		
 		//see #144  check duplicate names
+		
+		Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 	}
 
 	public void addDataset(String name, ScheduledExecutorService maintenanceService) throws JSONException {
