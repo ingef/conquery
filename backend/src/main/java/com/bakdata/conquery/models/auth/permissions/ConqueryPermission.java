@@ -6,6 +6,7 @@ import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -66,7 +67,7 @@ public abstract class ConqueryPermission extends IdentifiableImpl<PermissionId> 
 		return combined;
 	}
 	
-	public ConqueryPermission(PermissionOwnerId<?> ownerId, EnumSet<Ability> accesses) {
+	public ConqueryPermission(PermissionOwnerId<?> ownerId, Set<Ability> accesses) {
 		if(ownerId == null) {
 			this.ownerId = new NullSubjectId();
 		} else {
@@ -78,7 +79,7 @@ public abstract class ConqueryPermission extends IdentifiableImpl<PermissionId> 
 	/*
 	 * Used for deserialization from storage
 	 */
-	public ConqueryPermission(PermissionOwnerId<?> ownerId, EnumSet<Ability> accesses, UUID jsonId) {
+	public ConqueryPermission(PermissionOwnerId<?> ownerId, Set<Ability> accesses, UUID jsonId) {
 		this(ownerId, accesses);
 		if(jsonId != null) {
 			this.jsonId = jsonId;

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.concepts;
 
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,7 +19,6 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -34,19 +34,19 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class FrontEndConceptBuilder {
 
-	public static FERoot createRoot(Dataset dataset) {
+	public static FERoot createRoot(NamespaceStorage storage) {
 
 		FERoot root = new FERoot();
 
 		Map<IId<?>, FENode> roots = new LinkedHashMap<>();
 		//add all real roots
-		for (Concept<?> c : dataset.getConcepts()) {
+		for (Concept<?> c : storage.getAllConcepts()) {
 			roots.put(c.getId(), createCTRoot(c));
 		}
 		//add the structure tree
-		dataset
-			.streamAllStructureNodes()
-			.forEach(sn -> roots.put(sn.getId(), createStructureNode(sn)));
+//		dataset
+//			.streamAllStructureNodes()
+//			.forEach(sn -> roots.put(sn.getId(), createStructureNode(sn)));
 		root.setConcepts(roots);
 		return root;
 	}

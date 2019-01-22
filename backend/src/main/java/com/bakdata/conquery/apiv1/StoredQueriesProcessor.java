@@ -11,6 +11,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
+import java.util.Collection;
+import java.util.stream.Collectors;
 
 import jersey.repackaged.com.google.common.collect.Iterators;
 
@@ -22,23 +24,20 @@ public class StoredQueriesProcessor {
 		this.namespaces = namespaces;
 	}
 
-	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder fromRequest) {
-		authorize(user, dataset.getId(), Ability.READ);
-		// Auto-generated method stub
-		return null;
+	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder urlb) {
+		Collection<ManagedQuery> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllQueries();
+		
+		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(mq, urlb)).collect(Collectors.toList());
 	}
 
-	public void deleteQuery(User user, Dataset dataset, ManagedQuery query) {
-		authorize(user, dataset.getId(), Ability.READ);
-		authorize(user, query.getId(), Ability.DELETE);
-		// Auto-generated method stub
+	public void deleteQuery(Dataset dataset, ManagedQuery query) {
+		// see https://github.com/bakdata/conquery/issues/239
 
 	}
 
 	public SQStatus patchQuery(User user, Dataset dataset, ManagedQueryId queryId, JsonNode patch) {
 
-		authorize(user, dataset.getId(), Ability.READ);
-
+		// see https://github.com/bakdata/conquery/issues/253
 		if (patch.has("tags")) {
 			authorize(user, queryId, Ability.TAG);
 			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)),
@@ -59,10 +58,8 @@ public class StoredQueriesProcessor {
 		return null;
 	}
 
-	public SQStatus getQueryWithSource(User user, Dataset dataset, ManagedQueryId queryId) {
-		authorize(user, dataset.getId(), Ability.READ);
-		authorize(user, queryId, Ability.READ);
-		// fill body
+	public SQStatus getQueryWithSource(Dataset dataset, ManagedQueryId queryId) {
+		// see https://github.com/bakdata/conquery/issues/252
 		return null;
 	}
 

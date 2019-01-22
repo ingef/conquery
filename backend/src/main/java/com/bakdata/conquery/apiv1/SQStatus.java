@@ -4,7 +4,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
@@ -76,8 +75,8 @@ public class SQStatus {
 		this.requiredTime = requiredTime;
 		this.resultUrl = resultUrl;
 	}
-
-	public static SQStatus buildFromQuery(ManagedQuery query, URLBuilder urlb, ConqueryConfig config) {
+	
+	public static SQStatus buildFromQuery(ManagedQuery query, URLBuilder urlb) {
 		String resultUrl = urlb
 			.set(ResourceConstants.DATASET, query.getDataset().getName())
 			.set(ResourceConstants.QUERY, query.getId().toString())
@@ -91,8 +90,9 @@ public class SQStatus {
 				? ChronoUnit.MILLIS.between(query.getStartTime(), query.getFinishTime())
 				: null)
 			.status(query.getStatus())
+			.numberOfResults(Long.valueOf(query.fetchContainedEntityResult().count()))
 			.resultUrl(resultUrl)
-			.numberOfResults(query.toCSV(config).count() - 1) // -1 remove header
 			.build();
 	}
+	
 }

@@ -17,7 +17,6 @@ module.exports = ['en', 'de'].map(lang => ({
   output: {
     path: path.join(__dirname, '/dist/'),
     filename: `[name]-[hash].${lang}.min.js`,
-    publicPath: '/'
   },
   plugins: [
     ...commonConfig[lang].plugins,

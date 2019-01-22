@@ -30,12 +30,31 @@ import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.LoggerFactory;
+
+import javax.validation.Validator;
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.nio.file.Paths;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
 @Slf4j
 public class IntegrationTest {
 
 	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER
 																.readerFor(ConqueryTestSpec.class);
+	private static final Path TEST_ROOT = Paths.get("tests/");
+	
 	@RegisterExtension
 	public static final TestConquery CONQUERY = new TestConquery();
 	private static final PathMatcher TEST_SPEC_MATCHER = FileSystems.getDefault()
@@ -43,14 +62,14 @@ public class IntegrationTest {
 
 	public static Stream<Arguments> data() throws IOException {
 		reduceLogging();
-		Path path = Paths.get("tests/");
-		if (path.toFile().isDirectory()) {
-			return Files.walk(path)
+		if (TEST_ROOT.toFile().isDirectory()) {
+			return Files.walk(TEST_ROOT)
 						.filter(IntegrationTest::isTestSpecFile)
+						.sorted()
 						.flatMap(IntegrationTest::read);
 		}
 		else {
-			log.warn("Could not find test directory {}", path.toAbsolutePath());
+			log.warn("Could not find test directory {}", TEST_ROOT.toAbsolutePath());
 			return Stream.empty();
 		}
 	}
@@ -68,8 +87,12 @@ public class IntegrationTest {
 		File file = path.toFile();
 		try {
 			String content = In.file(file).withUTF8().readAll();
-			return Stream.of(Arguments.of(path.getParent().getFileName().toString(), content));
-		} catch (IOException e) {
+			return Stream.of(Arguments.of(
+				TEST_ROOT.relativize(path.getParent()).toString(),
+				content
+			));
+		}
+		catch (IOException e) {
 			throw new RuntimeException("Unable to read testSpec " + path, e);
 		}
 	}

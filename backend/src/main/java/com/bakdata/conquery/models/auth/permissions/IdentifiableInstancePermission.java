@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 
 import org.apache.shiro.authz.Permission;
@@ -19,13 +19,13 @@ import lombok.ToString;
 public abstract class IdentifiableInstancePermission<ID extends AId<?>> extends ConqueryPermission {
 	protected final ID instanceId;
 	
-	public IdentifiableInstancePermission(PermissionOwnerId<?> ownerId, EnumSet<Ability> abilities,  ID instanceId) {
+	public IdentifiableInstancePermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities,  ID instanceId) {
 		super(ownerId, abilities);
 		this.instanceId = instanceId;
 	}
 	
 	@JsonCreator
-	public IdentifiableInstancePermission(PermissionOwnerId<?> ownerId, EnumSet<Ability> abilities,  ID instanceId, UUID jsonId) {
+	public IdentifiableInstancePermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities,  ID instanceId, UUID jsonId) {
 		super(ownerId, abilities, jsonId);
 		this.instanceId = instanceId;
 	}
@@ -42,7 +42,7 @@ public abstract class IdentifiableInstancePermission<ID extends AId<?>> extends 
 			return false;
 		}
 		
-		IdentifiableInstancePermission ip = (IdentifiableInstancePermission) permission;
+		IdentifiableInstancePermission<?> ip = (IdentifiableInstancePermission<?>) permission;
 		
 		// Check instance
 		return this.getInstanceId().equals(ip.getInstanceId());

@@ -1,5 +1,5 @@
 package com.bakdata.conquery.resources.admin.ui;
-
+import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -9,6 +9,7 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
@@ -45,15 +46,15 @@ public class AdminUIResource {
 	private final JobManager jobManager;
 	private final ObjectMapper mapper;
 	private final UIContext context;
-	private final MasterMetaStorage storage;
+	private final AdminUIProcessor processor;
 	
-	public AdminUIResource(ConqueryConfig config, Namespaces namespaces, JobManager jobManager, MasterMetaStorage storage) {
+	public AdminUIResource(ConqueryConfig config, Namespaces namespaces, JobManager jobManager, AdminUIProcessor processor) {
 		this.config = config;
 		this.namespaces = namespaces;
 		this.jobManager = jobManager;
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
 		this.context = new UIContext(namespaces);
-		this.storage = storage;
+		this.processor = processor;
 	}
 
 	@GET
@@ -66,23 +67,22 @@ public class AdminUIResource {
 		return new UIView<>("query.html.ftl", context);
 	}
 
-	@GET @Path("/mandator")
-	public View getMandator() {
-		return new UIView<>("mandator.html.ftl", context);
+	@GET @Path("/mandators")
+	public View getMandators() {
+		return new UIView<>("mandators.html.ftl", context, processor.getAllMandators());
 	}
 	
-	@POST @Path("/mandator")  @Consumes(MediaType.MULTIPART_FORM_DATA)
+	@POST @Path("/mandators")  @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postMandator(
 			@NotEmpty@FormDataParam("mandantor_name")String name,
 			@NotEmpty@FormDataParam("mandantor_id")String idString) throws JSONException {
-		log.debug("New mandator:\tName: {}\tId: {} ", name, idString);
-		MandatorId mandatorId = new MandatorId(idString);
-		Mandator mandator = new Mandator(new SinglePrincipalCollection(mandatorId));
-		mandator.setLabel(name);
-		mandator.setName(name);
-		mandator.setStorage(storage);
-		storage.addMandator(mandator);
+		processor.createMandator(name, idString);
 		return Response.ok().build();
+	}
+	
+	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
+	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
+		return new UIView<>("mandator.html.ftl", context, processor.getUsers(mandatorId));
 	}
 	
 	@GET @Path("jobs")

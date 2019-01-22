@@ -5,6 +5,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
+import com.bakdata.conquery.models.auth.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
@@ -20,6 +21,7 @@ public class RESTServer {
 		//change exception mapper behavior because of JERSEY-2437
 		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
 		// Register custom mapper
+		jersey.register(new AuthorizationExceptionMapper());
 		jersey.register(new JsonValidationExceptionMapper());
 		// default Dropwizard's exception mappers
 		jersey.register(new LoggingExceptionMapper<Throwable>() {});

@@ -2,7 +2,7 @@
 
 import React                      from 'react';
 import T                          from 'i18n-react';
-import Select                     from 'react-select';
+import Select                     from 'react-select/lib/Creatable';
 import Dropzone                   from 'react-dropzone'
 import classnames                 from 'classnames';
 import { type FieldPropsType }    from 'redux-form';
@@ -55,12 +55,12 @@ const InputSelect = (props: PropsType) => {
           value={selected}
           defaultValue={defaultValue}
           options={options}
-          isSearchable={false}
           onChange={
             field => field
-              ? input.onChange(field.value)
-              : input.onChange(null)
+            ? input.onChange(field.value)
+            : input.onChange(null)
           }
+          isSearchable={false}
           isClearable={input.clearable}
           isDisabled={!!props.disabled}
           placeholder={T.translate('reactSelect.placeholder')}

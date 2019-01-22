@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,10 +11,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.ContentTreeResources.SearchResult;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
@@ -37,7 +40,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.zigurs.karlis.utils.search.QuickSearch;
 
-import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -58,15 +60,12 @@ public class ContentTreeProcessor {
 		FilterSearch.init(namespaces.getAllDatasets());
 	}
 
-	public FERoot getRoot(User user, Dataset dataset) {
-		authorize(user, dataset.getId(), Ability.READ);
+	public FERoot getRoot(NamespaceStorage storage) {
 
-		return FrontEndConceptBuilder.createRoot(dataset);
+		return FrontEndConceptBuilder.createRoot(storage);
 	}
 
-	public List<FEValue> autocompleteTextFilter(@Auth User user, Dataset dataset, Table table, Filter filter,
-			String text) {
-		authorize(user, dataset.getId(), Ability.READ);
+	public List<FEValue> autocompleteTextFilter(Dataset dataset, Table table, Filter filter, String text) {
 		List<FEValue> result = new LinkedList<>();
 
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
@@ -76,27 +75,25 @@ public class ContentTreeProcessor {
 			result = createSourceSearchResult(search, text);
 		}
 
-		// complete body
+		// see https://github.com/bakdata/conquery/issues/235
 		return result;
 	}
 
-	public Map<ConceptElementId<?>, FENode> getNode(@Auth User user, Dataset dataset, IId id) {
-		authorize(user, dataset.getId(), Ability.READ);
-		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder
-				.createTreeMap(dataset.getConcepts());
+	public Map<ConceptElementId<?>, FENode> getNode(Dataset dataset, IId id) {
+		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder.createTreeMap(dataset.getConcepts());
 		return ctRoots.get(id);
 	}
 
 	public List<IdLabel> getDatasets(User user) {
-		return namespaces.getAllDatasets().stream()
-				// .filter(d -> user.isPermitted(new
-				// IdentifiableInstancePermission(user.getId(), AccessType.READ, d.getId())))
-				.map(d -> new IdLabel(d.getLabel(), d.getId().toString())).collect(Collectors.toList());
+		return namespaces
+			.getAllDatasets()
+			.stream()
+			.filter(d -> user.isPermitted(new DatasetPermission(user.getId(), Ability.READ.AS_SET, d.getId())))
+			.map(d -> new IdLabel(d.getLabel(), d.getId().toString()))
+			.collect(Collectors.toList());
 	}
 
-	public ResolvedConceptsResult resolve(User user, Dataset dataset, ConceptElement conceptElement,
-			List<String> conceptCodes) {
-		authorize(user, dataset.getId(), Ability.READ);
+	public ResolvedConceptsResult resolve(Dataset dataset, ConceptElement conceptElement, List<String> conceptCodes) {
 		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
 
 		if (conceptElement.getConcept() instanceof TreeConcept) {
@@ -108,10 +105,12 @@ public class ContentTreeProcessor {
 					child = tree.findMostSpecificChild(conceptCode, new CalculatedValue<>(() -> new HashMap<>()));
 					if (child != null) {
 						resolvedCodes.add(child.getId().toString());
-					} else {
+					}
+					else {
 						unknownCodes.add(conceptCode);
 					}
-				} catch (ConceptConfigurationException e) {
+				}
+				catch (ConceptConfigurationException e) {
 					log.error("", e);
 				}
 			}
@@ -129,7 +128,8 @@ public class ContentTreeProcessor {
 						String resolved = selectFilter.resolveValueToRealValue(conceptCode);
 						if (resolved != null) {
 							resolvedCodes.add(resolved);
-						} else {
+						}
+						else {
 							unknownCodes.add(conceptCode);
 						}
 					}
@@ -137,17 +137,22 @@ public class ContentTreeProcessor {
 					List<FEValue> filterValues = new LinkedList<>();
 					QuickSearch<FilterSearchItem> search = selectFilter.getSourceSearch();
 					if (search != null) {
-						filterValues.addAll(createSourceSearchResult(search,
-								conceptCodes.toArray(new String[conceptCodes.size()])));
+						filterValues.addAll(createSourceSearchResult(search, conceptCodes.toArray(new String[0])));
 					}
 
 					List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
-					filterValues.addAll(resolvedCodes.stream().filter(v -> !toRemove.contains(v))
-							.map(v -> new FEValue(selectFilter.getRealLabels().get(v), v))
-							.collect(Collectors.toList()));
+					filterValues
+						.addAll(
+							resolvedCodes
+								.stream()
+								.filter(v -> !toRemove.contains(v))
+								.map(v -> new FEValue(selectFilter.getRealLabels().get(v), v))
+								.collect(Collectors.toList()));
 
-					return new ResolvedConceptsResult(null, new ResolvedFilterResult(connector.getId().toString(),
-							selectFilter.getId().toString(), filterValues), unknownCodes);
+					return new ResolvedConceptsResult(
+						null,
+						new ResolvedFilterResult(connector.getId().toString(), selectFilter.getId().toString(), filterValues),
+						unknownCodes);
 				}
 			}
 		}
@@ -160,9 +165,10 @@ public class ContentTreeProcessor {
 			result.addAll(search.findItems(value, 10));
 		}
 
-		return result.stream().map(
-				item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-				.collect(Collectors.toList());
+		return result
+			.stream()
+			.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+			.collect(Collectors.toList());
 	}
 
 	private ResolvedFilter createResolvedFilter(Filter<?> filter) {
@@ -172,7 +178,8 @@ public class ContentTreeProcessor {
 			BigMultiSelectFilter bmsf = (BigMultiSelectFilter) filter;
 			result.setColumn(bmsf.getColumn());
 			result.setRealLabels(bmsf.getRealLabels());
-		} else {
+		}
+		else {
 			MultiSelectFilter msf = (MultiSelectFilter) filter;
 			result.setColumn(msf.getColumn());
 			result.setRealLabels(msf.getRealLabels());
@@ -181,9 +188,7 @@ public class ContentTreeProcessor {
 		return result;
 	}
 
-	public ResolvedConceptsResult resolveFilterValues(@Auth User user, Dataset dataset, Table table, Filter filter,
-			List<String> values) {
-		authorize(user, dataset.getId(), Ability.READ);
+	public ResolvedConceptsResult resolveFilterValues(Dataset dataset, Table table, Filter filter, List<String> values) {
 		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
 
 		List<FEValue> filterValues = new LinkedList<>();
@@ -194,14 +199,14 @@ public class ContentTreeProcessor {
 
 		ResolvedFilter rf = createResolvedFilter(filter);
 
-
-		// complete body
-		return new ResolvedConceptsResult(null,
-				new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues), values);
+		// see https://github.com/bakdata/conquery/issues/251
+		return new ResolvedConceptsResult(
+			null,
+			new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues),
+			values);
 	}
 
-	public SearchResult search(@Auth User user, Dataset dataset, String query, int limit) {
-		authorize(user, dataset.getId(), Ability.READ);
+	public SearchResult search(Dataset dataset, String query, int limit) {
 		List<String> items = conceptSearch.findItems(dataset.getId(), query);
 		List<String> result = items.stream().limit(limit).collect(Collectors.toList());
 

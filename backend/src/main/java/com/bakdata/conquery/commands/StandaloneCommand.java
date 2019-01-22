@@ -34,11 +34,14 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 
 	// this must be overridden so that
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration)
-			throws Exception {
-		final Environment environment = new Environment(bootstrap.getApplication().getName(),
-				bootstrap.getObjectMapper(), bootstrap.getValidatorFactory().getValidator(),
-				bootstrap.getMetricRegistry(), bootstrap.getClassLoader(), bootstrap.getHealthCheckRegistry());
+	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+		final Environment environment = new Environment(
+			bootstrap.getApplication().getName(),
+			bootstrap.getObjectMapper(),
+			bootstrap.getValidatorFactory().getValidator(),
+			bootstrap.getMetricRegistry(),
+			bootstrap.getClassLoader(),
+			bootstrap.getHealthCheckRegistry());
 		configuration.getMetricsFactory().configure(environment.lifecycle(), bootstrap.getMetricRegistry());
 		configuration.getServerFactory().configure(environment);
 
@@ -46,8 +49,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		startStandalone(environment, namespace, configuration);
 	}
 
-	protected void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config)
-			throws Exception {
+	protected void startStandalone(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		// start master
 		ConqueryMDC.setLocation("Master");
 		log.debug("Starting Master");
@@ -57,12 +59,12 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		conquery.run(masterConfig, environment);
 
 		// create thread pool to start multiple slaves at the same time
-		ExecutorService starterPool = Executors.newCachedThreadPool(new ThreadFactoryBuilder()
-				.setNameFormat("Slave Storage Loader %d").setUncaughtExceptionHandler((t, e) -> {
-					ConqueryMDC.setLocation(t.getName());
-					log.error(t.getName() + " failed to init storage of slave", e);
-					System.exit(-1);
-				}).build());
+		ExecutorService starterPool = Executors
+			.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("Slave Storage Loader %d").setUncaughtExceptionHandler((t, e) -> {
+				ConqueryMDC.setLocation(t.getName());
+				log.error(t.getName() + " failed to init storage of slave", e);
+				System.exit(-1);
+			}).build());
 
 		for (int i = 0; i < config.getStandalone().getNumberOfSlaves(); i++) {
 			final int id = i;

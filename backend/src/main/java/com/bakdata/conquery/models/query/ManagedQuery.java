@@ -108,13 +108,17 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset));
 		return Stream.concat(
 			Stream.of("result,dates"),
-			results
-				.stream()
-				.filter(ContainedEntityResult.class::isInstance)
-				.map(ContainedEntityResult.class::cast)
+			fetchContainedEntityResult()
 				.map(cer -> dict.getElement(cer.getEntityId()) + "," + Joiner.on(',').join(cer.getValues()))
 				.map(Objects::toString)
 		);
+	}
+	
+	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
+		return results
+				.stream()
+				.filter(ContainedEntityResult.class::isInstance)
+				.map(ContainedEntityResult.class::cast);
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {

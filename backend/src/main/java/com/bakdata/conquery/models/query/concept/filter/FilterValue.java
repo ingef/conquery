@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept.filter;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.DoubleRange;
 import com.bakdata.conquery.models.common.Range.LongRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
@@ -16,6 +17,11 @@ import lombok.ToString;
 import javax.annotation.Nonnull;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import javax.annotation.Nonnull;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.math.BigDecimal;
 
 @Getter
 @Setter
@@ -73,6 +79,14 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = "REAL_RANGE", base = FilterValue.class)
 	public static class CQRealRangeFilter extends FilterValue<DoubleRange> {
 		public CQRealRangeFilter(@IdReference Filter<?> filter, DoubleRange value) {
+			super(filter, value);
+		}
+	}
+
+	@NoArgsConstructor
+	@CPSType(id = "DECIMAL_RANGE", base = FilterValue.class)
+	public static class CQDecimalRangeFilter extends FilterValue<Range<BigDecimal>> {
+		public CQDecimalRangeFilter(@IdReference Filter<?> filter, Range<BigDecimal> value) {
 			super(filter, value);
 		}
 	}

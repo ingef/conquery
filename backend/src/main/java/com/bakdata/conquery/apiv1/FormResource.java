@@ -64,10 +64,13 @@ public class FormResource {
 	@GET
 	@Path("{" + QUERY + "}")
 	public SQStatus get(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws IllegalArgumentException, UriBuilderException, IOException, InterruptedException {
+		authorize(user, datasetId, Ability.READ);
+		authorize(user, queryId, Ability.READ);
+		
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
 
-		SQStatus status = processor.get(user, dataset, query, URLBuilder.fromRequest(req));
+		SQStatus status = processor.get(dataset, query, URLBuilder.fromRequest(req));
 
 		if (status != null) {
 			return status;
@@ -79,9 +82,12 @@ public class FormResource {
 	@DELETE
 	@Path("{" + QUERY + "}")
 	public SQStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws IllegalArgumentException, UriBuilderException, IOException, InterruptedException {
+		authorize(user, datasetId, Ability.READ);
+		authorize(user, queryId, Ability.READ);
+		
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
-		processor.cancel(user, dataset, query);
+		processor.cancel(dataset, query);
 		return get(user, datasetId, queryId, req);
 	}
 
@@ -89,11 +95,12 @@ public class FormResource {
 	@Path("download/{" + QUERY + "}/{" + FILENAME + "}")
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response download(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId) throws JsonProcessingException, IOException {//@Valid com.bakdata.conquery.feforms.psm.FeForm form) {
+		authorize(user, datasetId, Ability.READ);
+		authorize(user, queryId, Ability.READ);
+		
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
 
-		authorize(user, dataset.getId(), Ability.READ);
-		authorize(user, queryId, Ability.READ);
 		
 		log.info("Querying results for {}", queryId);
 		/*
