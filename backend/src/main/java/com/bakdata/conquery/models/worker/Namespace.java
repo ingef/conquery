@@ -22,9 +22,9 @@ import lombok.Setter;
 public class Namespace {
 
 	@JsonIgnore
-	private NamespaceStorage storage;
+	private transient NamespaceStorage storage;
 	@JsonIgnore
-	private QueryManager queryManager;
+	private transient QueryManager queryManager;
 	private List<WorkerInformation> workers = new ArrayList<>();
 	@JsonIgnore
 	private transient List<WorkerInformation> bucket2WorkerMap = new ArrayList<>();
@@ -55,7 +55,6 @@ public class Namespace {
 		if(workers.isEmpty()) {
 			throw new IllegalStateException("There are no workers yet");
 		}
-		//see #162  use broadcast and use the coder here only once so that we do not serialize twice
 		for(WorkerInformation w:workers) {
 			w.send(msg);
 		}
