@@ -1,21 +1,21 @@
-package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
+package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entity is included when the number of values for a specified column are
  * within a given range.
  */
-public class DistinctValuesAggregator extends SingleColumnAggregator<List<Object>> {
+public class ValuesAggregator extends SingleColumnAggregator<Set<Object>> {
 
-	private final List<Object> entries = new ArrayList<>();
+	private final Set<Object> entries = new HashSet<>();
 
-	public DistinctValuesAggregator(Column column) {
+	public ValuesAggregator(Column column) {
 		super(column);
 	}
 
@@ -27,12 +27,12 @@ public class DistinctValuesAggregator extends SingleColumnAggregator<List<Object
 	}
 
 	@Override
-	public List<Object> getAggregationResult() {
+	public Set<Object> getAggregationResult() {
 		return entries;
 	}
 
 	@Override
-	public DistinctValuesAggregator clone() {
-		return new DistinctValuesAggregator(getColumn());
+	public ValuesAggregator clone() {
+		return new ValuesAggregator(getColumn());
 	}
 }
