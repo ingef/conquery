@@ -1,10 +1,12 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.concepts.filters.Filter;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import lombok.Getter;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -12,24 +14,28 @@ import java.util.Set;
 /**
  * Event is included only, when the value has not been seen before.
  */
-public class DistinctValuesFilterNode<VALUE extends FilterValue<?>, FILTER extends SingleColumnFilter<VALUE>> extends FilterNode<VALUE, FILTER> {
+public class DistinctValuesFilterNode<VALUE extends FilterValue<?>, FILTER extends Filter<VALUE>> extends FilterNode<VALUE, FILTER> {
 
 	private boolean hit = false;
 
 	private Set<Object> observed = new HashSet<>();
 
-	public DistinctValuesFilterNode(FILTER filter, VALUE filterValue) {
-		super(filter, filterValue);
+	@Getter
+	private final Column column;
+
+	public DistinctValuesFilterNode(FILTER filter, Column column) {
+		super(filter, null);
+		this.column = column;
 	}
 
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, filter.getColumn())) {
+		if (!block.has(event, getColumn())) {
 			return false;
 		}
 
-		if (observed.add(block.getAsObject(event, filter.getColumn()))) {
+		if (observed.add(block.getAsObject(event, getColumn()))) {
 			hit = true;
 			return true;
 		}
@@ -39,7 +45,7 @@ public class DistinctValuesFilterNode<VALUE extends FilterValue<?>, FILTER exten
 
 	@Override
 	public FilterNode<?, ?> clone(QueryPlan plan, QueryPlan clone) {
-		return new DistinctValuesFilterNode<>(filter, filterValue);
+		return new DistinctValuesFilterNode<>(filter, getColumn());
 	}
 
 	@Override

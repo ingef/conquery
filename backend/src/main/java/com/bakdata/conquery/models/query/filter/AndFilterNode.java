@@ -1,10 +1,5 @@
 package com.bakdata.conquery.models.query.filter;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
@@ -13,6 +8,11 @@ import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 public class AndFilterNode<FILTER extends Filter<FilterValue<?>>> extends FilterNode<FilterValue<?>, FILTER> {
@@ -58,13 +58,14 @@ public class AndFilterNode<FILTER extends Filter<FilterValue<?>>> extends Filter
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
+
+		boolean check = true;
+
 		for (FilterNode<?, ?> filterNode : filterNodes) {
-			if (!filterNode.checkEvent(block, event)) {
-				return false;
-			}
+			check &= filterNode.checkEvent(block, event);
 		}
 
-		return true;
+		return check;
 	}
 
 	@Override

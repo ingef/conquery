@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 public class FirstValueAggregator extends SingleColumnAggregator<Object> {
 
 	private Object value;
-	private int date;
+	private int date = Integer.MAX_VALUE;
 
 	private Column validityDateColumn;
 
