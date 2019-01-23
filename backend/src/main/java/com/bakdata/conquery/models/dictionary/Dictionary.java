@@ -66,6 +66,10 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	public synchronized int getId(String element) {
 		return trie.get(element.getBytes(StandardCharsets.UTF_8));
 	}
+	
+	public synchronized int getId(byte[] element) {
+		return trie.get(element);
+	}
 
 	public synchronized String getElement(int id) {
 		IoBuffer buffer = IoBuffer.allocate(512);

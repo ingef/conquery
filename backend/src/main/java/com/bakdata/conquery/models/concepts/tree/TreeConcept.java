@@ -173,4 +173,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		}
 	}
 
+	@Override
+	public int countElements() {
+		return 1 + allChildren.size();
+	}
 }

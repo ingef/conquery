@@ -1,24 +1,5 @@
 package com.bakdata.conquery.integration;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.bakdata.conquery.util.support.TestConquery;
-import com.fasterxml.jackson.databind.ObjectReader;
-import com.github.powerlibraries.io.In;
-import io.dropwizard.jersey.validation.Validators;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.StringUtils;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-import org.slf4j.LoggerFactory;
-
-import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.FileSystems;
@@ -28,11 +9,37 @@ import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
+import javax.validation.Validator;
+
+import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+import org.slf4j.LoggerFactory;
+
+import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
+import com.bakdata.conquery.util.support.StandaloneSupport;
+import com.bakdata.conquery.util.support.TestConquery;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.github.powerlibraries.io.In;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
+import io.dropwizard.jersey.validation.Validators;
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public class IntegrationTest {
 
 	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER
 																.readerFor(ConqueryTestSpec.class);
+	private static final Path TEST_ROOT = Paths.get("tests/");
+	
 	@RegisterExtension
 	public static final TestConquery CONQUERY = new TestConquery();
 	private static final PathMatcher TEST_SPEC_MATCHER = FileSystems.getDefault()
@@ -40,14 +47,14 @@ public class IntegrationTest {
 
 	public static Stream<Arguments> data() throws IOException {
 		reduceLogging();
-		Path path = Paths.get("tests/");
-		if (path.toFile().isDirectory()) {
-			return Files.walk(path)
+		if (TEST_ROOT.toFile().isDirectory()) {
+			return Files.walk(TEST_ROOT)
 						.filter(IntegrationTest::isTestSpecFile)
+						.sorted()
 						.flatMap(IntegrationTest::read);
 		}
 		else {
-			log.warn("Could not find test directory {}", path.toAbsolutePath());
+			log.warn("Could not find test directory {}", TEST_ROOT.toAbsolutePath());
 			return Stream.empty();
 		}
 	}
@@ -65,8 +72,12 @@ public class IntegrationTest {
 		File file = path.toFile();
 		try {
 			String content = In.file(file).withUTF8().readAll();
-			return Stream.of(Arguments.of(path.getParent().getFileName().toString(), content));
-		} catch (IOException e) {
+			return Stream.of(Arguments.of(
+				TEST_ROOT.relativize(path.getParent()).toString(),
+				content
+			));
+		}
+		catch (IOException e) {
 			throw new RuntimeException("Unable to read testSpec " + path, e);
 		}
 	}
@@ -83,6 +94,11 @@ public class IntegrationTest {
 	
 			test.importRequiredData(conquery);
 
+			//ensure the metadata is collected
+			for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+				slave.getJobManager().addSlowJob(new UpdateMatchingStats(slave.getWorkers()));
+			}
+			
 			conquery.waitUntilWorkDone();
 	
 			test.executeTest(conquery);
