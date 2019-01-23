@@ -1,11 +1,10 @@
 package com.bakdata.conquery.models.concepts.select.specific;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.DecimalDiffSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.IntegerDiffSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.MoneyDiffSumAggregator;
@@ -15,11 +14,15 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.select.Select;
-
 import lombok.Getter;
+
+import javax.validation.constraints.NotNull;
 
 @CPSType(id = "SUM", base = Select.class)
 public class SumSelect extends Select {
+
+	private boolean distinct = false;
+
 	@Getter
 	@NsIdRef
 	@NotNull
@@ -31,6 +34,13 @@ public class SumSelect extends Select {
 
 	@Override
 	protected Aggregator<?> createAggregator() {
+		if (distinct)
+			return new DistinctValuesWrapperAggregatorNode<>(getAggregator(), getColumn());
+		else
+			return getAggregator();
+	}
+
+	private Aggregator<?> getAggregator() {
 		if (subtractColumn == null) {
 			switch (getColumn().getType()) {
 				case INTEGER:

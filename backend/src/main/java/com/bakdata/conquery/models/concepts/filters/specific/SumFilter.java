@@ -9,10 +9,9 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.filter.AndFilterNode;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
-import com.bakdata.conquery.models.query.filter.event.DistinctValuesFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.DecimalDiffSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.IntegerDiffSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.MoneyDiffSumAggregator;
@@ -28,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
-import java.util.Arrays;
 
 /**
  * This filter represents a filter on the sum of one integer column.
@@ -39,7 +37,6 @@ import java.util.Arrays;
 @CPSType(id = "SUM", base = Filter.class)
 public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 
-	
 
 	@Valid
 	@NotNull
@@ -88,7 +85,7 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 		Aggregator<?> aggregator = getAggregator(filterValue);
 
 		if (distinct)
-			return new AndFilterNode(this, Arrays.asList(new DistinctValuesFilterNode(this, getColumn()), new RangeFilterNode(this, filterValue, aggregator)));
+			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
 
 		return new RangeFilterNode(this, filterValue, aggregator);
 	}
