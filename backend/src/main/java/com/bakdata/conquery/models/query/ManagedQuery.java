@@ -40,6 +40,11 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private UUID queryId = UUID.randomUUID();
 	private IQuery query;
 	private LocalDateTime creationTime = LocalDateTime.now();
+	/**
+	 * The number of contained entities the last time this query was executed.
+	 * @param lastResultCount the new count for JACKSON
+	 * @returns the number of contained entities
+	 */
 	private long lastResultCount;
 	
 	//we don't want to store or send query results or other result metadata
