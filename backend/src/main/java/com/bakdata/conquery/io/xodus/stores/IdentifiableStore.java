@@ -20,6 +20,7 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 		for(Injectable injectable : injectables) {
 			store.inject(injectable);
 		}
+		store.inject(centralRegistry);
 		this.centralRegistry = centralRegistry;
 		fillCache();
 	}

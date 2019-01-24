@@ -5,6 +5,7 @@ import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
@@ -26,7 +27,7 @@ import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
 @AllArgsConstructor @NoArgsConstructor
-public class IdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
+public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
 
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;
@@ -49,7 +50,7 @@ public class IdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends I
 					id = idParser.parse(text);
 				}
 				
-				Optional<T> result = NamespaceCollection.get(ctxt).getOptional(id);
+				Optional<T> result = CentralRegistry.get(ctxt).getOptional(id);
 				
 				if(result.isPresent()) {
 					return result.get();
@@ -84,9 +85,14 @@ public class IdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends I
 		}
 		Class<?> cl = type.getRawClass();
 		Class<IId<?>> idClass = IId.findIdClass(cl);
+		
+		if(NamespacedId.class.isAssignableFrom(idClass)) {
+			throw new IllegalStateException("@MetaIdRef should only be used for non NamespacedId fields");
+		}
+		
 		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class)idClass);
 		
-		return new IdReferenceDeserializer(
+		return new MetaIdReferenceDeserializer(
 				cl,
 				ctxt.getFactory().createBeanDeserializer(ctxt, type, descr),
 				parser

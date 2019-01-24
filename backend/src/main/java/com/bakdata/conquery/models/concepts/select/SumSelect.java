@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.concepts.select;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.DecimalDiffSumAggregator;
@@ -21,12 +21,12 @@ import lombok.Getter;
 @CPSType(id = "SUM", base = Select.class)
 public class SumSelect extends Select {
 	@Getter
-	@IdReference
+	@NsIdRef
 	@NotNull
 	private Column column;
 
 	@Getter
-	@IdReference
+	@NsIdRef
 	private Column subtractColumn;
 
 	@Override
