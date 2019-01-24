@@ -41,6 +41,10 @@ import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Represents the test instance of Conquery.
+ *
+ */
 @Slf4j
 public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallback {
 

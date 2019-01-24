@@ -13,8 +13,13 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
+import com.bakdata.conquery.models.auth.util.SingleAuthenticationInfo;
+
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This realm authenticates and authorizes all requests given to it positive.
+ */
 @Slf4j
 public class AllGrantedRealm extends AuthorizingRealm {
 	/**
@@ -35,7 +40,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 			" §§§§§§§§§§§§§§§§§§§§§§";
 	
 	/**
-	 * This realm authenticates and authorizes all requests given to it positive.
+	 * Standard constructor.
 	 */
 	public AllGrantedRealm() {
 		log.warn(WARNING);

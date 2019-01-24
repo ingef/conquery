@@ -9,6 +9,11 @@ import org.apache.shiro.authz.AuthorizationException;
 import io.dropwizard.jersey.errors.ErrorMessage;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * This mapper intercepts all {@link AuthorizationException}s that occur during a request.
+ * It then logs the specific cause and returns a {@link Response.Status.UNAUTHORIZED} to the client.
+ *
+ */
 @Slf4j
 public class AuthorizationExceptionMapper implements ExceptionMapper<AuthorizationException> {
 
