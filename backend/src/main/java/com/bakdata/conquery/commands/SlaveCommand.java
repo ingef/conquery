@@ -83,7 +83,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			30, 5, TimeUnit.SECONDS
 		);
 		
-		scheduler.scheduleAtFixedRate(() -> jobManager.addSlowJob(new UpdateMatchingStats(workers)), 30, 30, TimeUnit.SECONDS);
+		scheduler.scheduleAtFixedRate(() -> jobManager.addSlowJob(new UpdateMatchingStats(workers)), 30, 300, TimeUnit.SECONDS);
 
 		this.config = config;
 		validator = environment.getValidator();
