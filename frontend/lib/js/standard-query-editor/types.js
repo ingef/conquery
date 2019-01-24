@@ -3,7 +3,6 @@
 import type {
   TreeNodeIdType,
   QueryIdType,
-  DateRangeType,
   RangeFilterType,
   RangeFilterValueType,
   MultiSelectFilterType,
