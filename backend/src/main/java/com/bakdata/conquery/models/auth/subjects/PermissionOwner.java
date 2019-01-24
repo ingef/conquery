@@ -261,9 +261,12 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	
 	/**
 	 * Removes a permission from the storage and from the locally stored permissions by calling
-	 * indirectly {@link #removePermissionLocal(ConqueryPermission)}.
+	 * {@link #removePermissionLocal(ConqueryPermission)}.
+	 * @param storage The storage in which the permission persists.
+	 * @param permission The permission to be deleted.
 	 */
 	public void removePermission(MasterMetaStorage storage, ConqueryPermission permission) {
+		removePermissionLocal(permission);
 		storage.removePermission(permission.getId());
 	}
 	

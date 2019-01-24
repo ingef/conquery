@@ -49,8 +49,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage);
 		this.authUser = StoreInfo.AUTH_USER.<User>identifiable(storage);
 		this.authPermissions = StoreInfo.AUTH_PERMISSIONS.<ConqueryPermission>identifiable(storage)
-			.onAdd(value->		value.getOwnerId().getOwner(storage).addPermissionLocal(value))
-			.onRemove(value->	value.getOwnerId().getOwner(storage).removePermissionLocal(value));
+			.onAdd(value->		value.getOwnerId().getOwner(storage).addPermissionLocal(value));
 		
 		collector
 			.collect(meta)
@@ -114,12 +113,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		authPermissions.remove(permissionId);
 	}
 	
-	public void removePermissionAll() {
-		for(ConqueryPermission p :authPermissions.getAll()) {
-			authPermissions.remove(p.getId());
-		}
-	}
-	
 	public void addUser(User user) throws JSONException {
 		authUser.add(user);
 	}
@@ -134,12 +127,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	
 	public void removeUser(UserId userId) {
 		authUser.remove(userId);
-	}
-	
-	public void removeUserAll() {
-		for(User u :authUser.getAll()) {
-			authUser.remove(u.getId());
-		}
 	}
 
 	public void addMandator(Mandator mandator) throws JSONException {
@@ -157,12 +144,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	
 	public void removeMandator(MandatorId mandatorId)  {
 		authMandator.remove(mandatorId);
-	}
-	
-	public void removeMandatorAll() {
-		for(Mandator m :authMandator.getAll()) {
-			authMandator.remove(m.getId());
-		}
 	}
 
 	@Override
