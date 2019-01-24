@@ -17,7 +17,7 @@ import com.zigurs.karlis.utils.search.QuickSearch;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Provides the methods of QuickSearch
+ * Provides the methods of QuickSearch.
  */
 @Slf4j
 public class ConceptSearch {
