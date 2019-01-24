@@ -61,7 +61,8 @@ public abstract class ConqueryPermission extends IdentifiableImpl<PermissionId> 
 			}
 			permission = permission.withOwner(permission.getOwnerId());
 			permission.getAbilities().addAll(accesses);
-			permission.getId(); // force ID creation
+			// force ID creation
+			permission.getId();
 			combined.add(permission);
 		});
 		return combined;
@@ -90,7 +91,8 @@ public abstract class ConqueryPermission extends IdentifiableImpl<PermissionId> 
 	public boolean implies(Permission permission) {
 		// Check permission category
 		if(!(permission instanceof ConqueryPermission)) {
-			return false; // Fast return on false
+			// Fast return on false
+			return false;
 		}
 		
 		ConqueryPermission cp = (ConqueryPermission) permission;
