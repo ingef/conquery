@@ -26,10 +26,10 @@ import lombok.extern.slf4j.Slf4j;
 public class RestartTest {
 
 	public static final String LABEL = "TEST_LABEL";
-	public final static MandatorId MANDATOR_ID = new MandatorId("999999998");
-	public static Mandator mandator = new Mandator(MANDATOR_ID, LABEL);
-	public final static UserId USER_ID = new UserId("superUser");
-	public static User user = new User(USER_ID, LABEL);
+	public static Mandator mandator = new Mandator("999999998", LABEL);
+	public final static MandatorId MANDATOR_ID = mandator.getId();
+	public static User user = new User("superUser", LABEL);
+	public final static UserId USER_ID = user.getId();
 	
 	@Test
 	public void testRestartingDatabase() throws Exception {

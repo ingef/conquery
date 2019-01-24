@@ -30,7 +30,7 @@ public class SerializationTests {
 	
 	@Test
 	public void mandator() throws IOException, JSONException{
-		Mandator mandator = new Mandator(new MandatorId("company"), "company");
+		Mandator mandator = new Mandator("company", "company");
 		
 		SerializationTestUtil.testSerialization(mandator, Mandator.class);
 		
@@ -38,7 +38,7 @@ public class SerializationTests {
 	
 	@Test
 	public void user() throws IOException, JSONException{
-		User user = new User(new UserId("user"), "user");
+		User user = new User("user", "user");
 		
 		SerializationTestUtil.testSerialization(user, User.class);
 		

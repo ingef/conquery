@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.shiro.authz.Permission;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -16,19 +18,26 @@ import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 public class User extends PermissionOwner<UserId> implements Principal{
 	@Getter @Setter
 	private Set<Mandator> roles = new HashSet<>();
+	@Getter @Setter @NonNull @NotNull
+	private String email;
+	@Getter @Setter @NonNull @NotNull
+	private String label;
 
-	@JsonCreator
-	public User(UserId id, String name) {
-		super(id, name);
+	public User(String email, String label) {
+		this.email = email;
+		this.label = label;
 	}
-
+	
 	@Override
 	public boolean isPermitted(Permission permission) {
 		if(isPermittedSelfOnly((ConqueryPermission)permission)) {
@@ -59,7 +68,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	
 	@Override
 	public UserId createId() {
-		return (UserId) getPrincipals().getPrimaryPrincipal();
+		return new UserId(email);
 	}
 	
 	public void removeRole(Mandator mandator) {
@@ -91,5 +100,11 @@ public class User extends PermissionOwner<UserId> implements Principal{
 
 	public void addMandatorLocal(Mandator mandator) {
 		roles.add(mandator);
+	}
+
+	@Override
+	@JsonIgnore
+	public String getName() {
+		return email;
 	}
 }

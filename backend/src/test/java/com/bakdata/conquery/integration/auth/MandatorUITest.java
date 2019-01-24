@@ -31,10 +31,10 @@ public class MandatorUITest implements IConqueryTest {
 	private TestConquery conquery;
 
 	private MasterMetaStorage storage;
-	private MandatorId mandatorId = new MandatorId("testMandatorId");
-	private Mandator mandator = new Mandator(mandatorId, "testMandatorName");
-	private UserId userId = new UserId("testUserId");
-	private User user = new User(userId, "testUserName");
+	private Mandator mandator = new Mandator("testMandatorName", "testMandatorLabel");
+	private MandatorId mandatorId = mandator.getId();
+	private User user = new User("testUser@test.de", "testUserName");
+	private UserId userId = user.getId();
 	private ConqueryPermission permission = new DatasetPermission(null, Ability.READ.AS_SET, new DatasetId("testDatasetId"));
 
 	@Override

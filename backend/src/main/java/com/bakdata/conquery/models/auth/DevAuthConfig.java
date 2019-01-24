@@ -20,27 +20,26 @@ import lombok.Getter;
 public class DevAuthConfig extends AuthConfig {
 
 	/**
-	 * The email of the superuser that is known to the system and returned by the
-	 * {@code AllGrantedRealm} upon authentication.
-	 */
-	private static final String PRINCIPAL = "SUPERUSER@ALLGRANTEDREALM.DE";
-
-	/**
-	 * The corresponding user id of the superuser that is known to the system and
-	 * returned by the {@code AllGrantedRealm} upon authentication.
-	 */
-	protected static final UserId ID = new UserId(PRINCIPAL);
-
-	/**
 	 * The label of the superuser that is used in the frontend.
 	 */
 	private static final String LABEL = "SUPERUSER";
+	
+	/**
+	 * The email of the superuser that is used in the frontend.
+	 */
+	private static final String EMAIL = "SUPERUSER@SUPERUSER";
+
+	/**
+	 * The superuser.
+	 */
+	public static final User USER = new User(EMAIL, LABEL);
 
 	/**
 	 * Handler for valid credentials that do not match any user.
 	 */
 	private static final UnknownUserHandler U_U_HANDLER = new DefaultUnknownUserHandler();
 
+	
 	@Getter
 	@JsonIgnore
 	private final TokenExtractor tokenExtractor = new DefaultTokenExtractor();
@@ -57,9 +56,8 @@ public class DevAuthConfig extends AuthConfig {
 
 	@Override
 	public void initializeAuthConstellation(MasterMetaStorage storage) {
-		User user = new User(ID, LABEL);
 		try {
-			storage.updateUser(user);
+			storage.updateUser(USER);
 		}
 		catch (JSONException e) {
 			throw new IllegalStateException(e);

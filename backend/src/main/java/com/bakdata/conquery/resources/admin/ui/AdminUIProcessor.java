@@ -29,8 +29,7 @@ public class AdminUIProcessor {
 	public void createMandator(String name, String idString) throws JSONException {
 
 		log.info("New mandator:\tName: {}\tId: {} ", name, idString);
-		MandatorId mandatorId = new MandatorId(idString);
-		Mandator mandator = new Mandator(mandatorId, name);
+		Mandator mandator = new Mandator(idString, name);
 		storage.addMandator(mandator);
 	}
 

@@ -59,7 +59,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-		return new SingleAuthenticationInfo(DevAuthConfig.ID,token.getCredentials());
+		return new SingleAuthenticationInfo(DevAuthConfig.USER.getId(),token.getCredentials());
 	}
 	
 	/**

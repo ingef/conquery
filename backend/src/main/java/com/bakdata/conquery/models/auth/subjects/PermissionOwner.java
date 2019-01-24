@@ -23,8 +23,11 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
@@ -37,22 +40,20 @@ import lombok.extern.slf4j.Slf4j;
  * @param <T> The id type by which an instance is identified
  */
 @Slf4j
-@JsonIgnoreProperties({"session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered"})
-public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends Labeled<T> implements  Subject {
-	@Getter
-	private final SinglePrincipalCollection principals;
+@JsonIgnoreProperties({"session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals"})
+public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements  Subject {
 	
 	@Getter
 	private transient final Set<ConqueryPermission> permissions = new HashSet<>();
 
-	public PermissionOwner(T id, String name) {
-		this.principals = new SinglePrincipalCollection(id);
-		this.setName(name);
+	@Override
+	public Object getPrincipal() {
+		return getId();
 	}
 	
 	@Override
-	public Object getPrincipal() {
-		return principals.getPrimaryPrincipal();
+	public PrincipalCollection getPrincipals() {
+		return new SinglePrincipalCollection(getId());
 	}
 	
 	@Override

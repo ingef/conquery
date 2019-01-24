@@ -26,7 +26,7 @@ public class SubjectTest implements ConqueryTestSpec {
 		dataset1.setLabel("dataset1");
 		
 		// setup mandator
-		Mandator mandator1 = new Mandator(new MandatorId("company"), "company");
+		Mandator mandator1 = new Mandator("company", "company");
 		storage.addMandator(mandator1);
 		
 		DatasetPermission datasetPermission1 = new DatasetPermission(mandator1.getId(), Ability.READ.AS_SET, dataset1.getId());
@@ -35,7 +35,7 @@ public class SubjectTest implements ConqueryTestSpec {
 		assertThat(mandator1.addPermission(storage, datasetPermission2).getId()).isNotEqualTo(datasetPermission2.getId());
 		
 		// setup user
-		User user1  = new User(new UserId("user"), "user");
+		User user1  = new User("user", "user");
 		storage.addUser(user1);
 		
 		user1.addMandator(storage, mandator1);
