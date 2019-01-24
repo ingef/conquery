@@ -52,7 +52,7 @@ public class StoredQueriesResource {
 		
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-		return processor.getAllQueries(user, dataset, URLBuilder.fromRequest(req));
+		return processor.getAllQueries(dataset, req);
 	}
 
 	@GET

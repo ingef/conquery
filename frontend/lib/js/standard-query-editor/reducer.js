@@ -459,7 +459,7 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
   const { rootConcepts, groups } = action.payload;
 
   return groups.map((group) => {
-    return {
+          return {
       ...group,
       elements: group.elements.map((element) => {
         if (element.type === 'QUERY') {
@@ -486,8 +486,8 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
             tables,
             tree: lookupResult.root
           };
-        }
-      })
+      }
+    })
     }
   });
 };

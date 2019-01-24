@@ -44,8 +44,6 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 	@JsonIgnore
 	private final FEFilterType filterType;
 
-	private Dictionary dictionary;
-
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
@@ -68,5 +66,13 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 			return labelsToRealLabels.get(value);
 		}
 		return null;
+	}
+	
+	@Override
+	public void addImport(Import imp) {
+		IStringType type = (IStringType)getColumn().getTypeFor(imp);
+		for(String value : type) {
+			//TODO do whatever
+		}
 	}
 }

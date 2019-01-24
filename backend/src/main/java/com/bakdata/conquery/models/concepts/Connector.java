@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid;
@@ -173,6 +174,12 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 				return vDate.getColumn();
 		}
 		throw new NoSuchElementException("There is no validityDate called '"+name+"' in "+this);
+	}
+
+	public synchronized void addImport(Import imp) {
+		for(Filter<?> f : getAllFilters().values()) {
+			f.addImport(imp);
+		}
 	}
 
 	//public abstract EventProcessingResult processEvent(Event r) throws ConceptConfigurationException;

@@ -76,12 +76,11 @@ public class SQStatus {
 		this.resultUrl = resultUrl;
 	}
 	
+	public static SQStatus buildFromQuery(ManagedQuery query) {
+		return buildFromQuery(query, null);
+	}
+	
 	public static SQStatus buildFromQuery(ManagedQuery query, URLBuilder urlb) {
-		String resultUrl = urlb
-			.set(ResourceConstants.DATASET, query.getDataset().getName())
-			.set(ResourceConstants.QUERY, query.getId().toString())
-			.to(ResultCSVResource.GET_CSV_PATH).get();
-		
 		return builder()
 			.id(query.getId())
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
@@ -91,7 +90,14 @@ public class SQStatus {
 				: null)
 			.status(query.getStatus())
 			.numberOfResults(Long.valueOf(query.fetchContainedEntityResult().count()))
-			.resultUrl(resultUrl)
+			.resultUrl(
+				urlb != null
+				? urlb
+					.set(ResourceConstants.DATASET, query.getDataset().getName())
+					.set(ResourceConstants.QUERY, query.getId().toString())
+					.to(ResultCSVResource.GET_CSV_PATH).get()
+				: null
+			)
 			.build();
 	}
 	

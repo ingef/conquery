@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
-import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.io.cps.CPSType;
