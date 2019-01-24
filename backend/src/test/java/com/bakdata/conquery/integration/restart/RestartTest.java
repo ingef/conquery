@@ -25,11 +25,11 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RestartTest {
 
-	public final static MandatorId MANDATOR_ID = new MandatorId("999999998");
-	public static Mandator mandator = new Mandator(MANDATOR_ID);
-	public final static UserId USER_ID = new UserId("superUser");
-	public static User user = new User(USER_ID);
 	public static final String LABEL = "TEST_LABEL";
+	public final static MandatorId MANDATOR_ID = new MandatorId("999999998");
+	public static Mandator mandator = new Mandator(MANDATOR_ID, LABEL);
+	public final static UserId USER_ID = new UserId("superUser");
+	public static User user = new User(USER_ID, LABEL);
 	
 	@Test
 	public void testRestartingDatabase() throws Exception {
@@ -61,13 +61,9 @@ public class RestartTest {
 				
 				// Auth storage testing
 				MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
-				mandator.setLabel(LABEL);
-				mandator.setName(LABEL);
 				storage.addMandator(mandator);
 				
 				user.addMandatorLocal(mandator);
-				user.setLabel(LABEL);
-				user.setName(LABEL);
 				storage.addUser(user);
 			}
 			

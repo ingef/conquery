@@ -30,9 +30,7 @@ public class AdminUIProcessor {
 
 		log.info("New mandator:\tName: {}\tId: {} ", name, idString);
 		MandatorId mandatorId = new MandatorId(idString);
-		Mandator mandator = new Mandator(new SinglePrincipalCollection(mandatorId));
-		mandator.setLabel(name);
-		mandator.setName(name);
+		Mandator mandator = new Mandator(mandatorId, name);
 		storage.addMandator(mandator);
 	}
 

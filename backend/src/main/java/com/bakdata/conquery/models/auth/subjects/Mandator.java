@@ -14,16 +14,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class Mandator extends PermissionOwner<MandatorId> {
-	
 
-	public Mandator(MandatorId id) {
-		super(new SinglePrincipalCollection(id));
+	@JsonCreator
+	public Mandator(MandatorId id, String name) {
+		super(id, name);
 	}
 	
-	@JsonCreator
-	public Mandator(SinglePrincipalCollection principals) {
-		super(principals);
-	}
 
 	@Override
 	public MandatorId createId() {

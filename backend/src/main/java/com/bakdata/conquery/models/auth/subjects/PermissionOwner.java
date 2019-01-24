@@ -29,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -38,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
  * @param <T> The id type by which an instance is identified
  */
 @Slf4j
-@RequiredArgsConstructor
 @JsonIgnoreProperties({"session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered"})
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends Labeled<T> implements  Subject {
 	@Getter
@@ -47,6 +45,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	@Getter
 	private transient final Set<ConqueryPermission> permissions = new HashSet<>();
 
+	public PermissionOwner(T id, String name) {
+		this.principals = new SinglePrincipalCollection(id);
+		this.setName(name);
+	}
+	
 	@Override
 	public Object getPrincipal() {
 		return principals.getPrimaryPrincipal();
@@ -273,15 +276,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		}
 		return Optional.empty();
 		
-	}
-	
-	@Override
-	public String getLabel() {
-		String ret = super.getLabel();
-		if(ret == null) {
-			ret = getId().toString();
-		}
-		return ret;
 	}
 	
 	/**

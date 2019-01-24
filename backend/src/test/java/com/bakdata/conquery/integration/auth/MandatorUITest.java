@@ -13,7 +13,6 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
@@ -33,9 +32,9 @@ public class MandatorUITest implements IConqueryTest {
 
 	private MasterMetaStorage storage;
 	private MandatorId mandatorId = new MandatorId("testMandatorId");
-	private Mandator mandator = new Mandator(new SinglePrincipalCollection(mandatorId));
+	private Mandator mandator = new Mandator(mandatorId, "testMandatorName");
 	private UserId userId = new UserId("testUserId");
-	private User user = new User(new SinglePrincipalCollection(userId));
+	private User user = new User(userId, "testUserName");
 	private ConqueryPermission permission = new DatasetPermission(null, Ability.READ.AS_SET, new DatasetId("testDatasetId"));
 
 	@Override
@@ -43,13 +42,6 @@ public class MandatorUITest implements IConqueryTest {
 		this.conquery = conquery;
 
 		storage = conquery.getSupport().getStandaloneCommand().getMaster().getStorage();
-
-		mandator.setName("testMandatorName");
-		mandator.setLabel("testMandatorLabel");
-
-		user.setName("testUserName");
-		user.setLabel("testUserLabel");
-
 		try {
 			storage.addMandator(mandator);
 			storage.addUser(user);

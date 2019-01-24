@@ -15,11 +15,7 @@ public class NullSubject extends PermissionOwner<NullSubjectId> {
 	public final static NullSubject INSTANCE = new NullSubject();
 	
 	private NullSubject() {
-		super(new SinglePrincipalCollection(new UserId("")));
-	}
-	
-	public NullSubject(SinglePrincipalCollection principals) {
-		super(principals);
+		super(new NullSubjectId(), "");
 	}
 
 	@Override
