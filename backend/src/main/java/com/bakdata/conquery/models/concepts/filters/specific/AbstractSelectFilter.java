@@ -12,9 +12,11 @@ import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.specific.IStringType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
@@ -40,8 +42,6 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 	@JsonIgnore
 	private final FEFilterType filterType;
 
-	private Dictionary dictionary;
-	
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
@@ -101,5 +101,13 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 			return labelsToRealLabels.get(value);
 		}
 		return null;
+	}
+	
+	@Override
+	public void addImport(Import imp) {
+		IStringType type = (IStringType)getColumn().getTypeFor(imp);
+		for(String value : type) {
+			//TODO do whatever
+		}
 	}
 }
