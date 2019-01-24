@@ -15,6 +15,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 public class Mandator extends PermissionOwner<MandatorId> {
 	
+
+	public Mandator(MandatorId id) {
+		super(new SinglePrincipalCollection(id));
+	}
+	
 	@JsonCreator
 	public Mandator(SinglePrincipalCollection principals) {
 		super(principals);
