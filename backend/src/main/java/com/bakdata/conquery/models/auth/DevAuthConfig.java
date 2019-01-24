@@ -58,7 +58,6 @@ public class DevAuthConfig extends AuthConfig {
 	@Override
 	public void initializeAuthConstellation(MasterMetaStorage storage) {
 		User user = new User(new SinglePrincipalCollection(ID));
-		user.setStorage(storage);
 		user.setName(LABEL);
 		user.setLabel(LABEL);
 		try {

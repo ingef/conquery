@@ -46,8 +46,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	
 	@Getter
 	private transient final Set<ConqueryPermission> permissions = new HashSet<>();
-	@Getter @Setter
-	private transient MasterMetaStorage storage;
 
 	@Override
 	public Object getPrincipal() {
@@ -229,7 +227,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return Returns the added Permission (Id might changed when the owner changed or
 	 * permissions are aggregated
 	 */
-	public ConqueryPermission addPermission(ConqueryPermission permission) throws JSONException{
+	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException{
 		ConqueryPermission ownedPermission = permission;
 		if(!permission.getOwnerId().equals(this.getId())) {
 			ownedPermission = permission.withOwner(this.getId());
@@ -261,7 +259,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * Removes a permission from the storage and from the locally stored permissions by calling
 	 * indirectly {@link #removePermissionLocal(ConqueryPermission)}.
 	 */
-	public void removePermission(ConqueryPermission permission) {
+	public void removePermission(MasterMetaStorage storage, ConqueryPermission permission) {
 		storage.removePermission(permission.getId());
 	}
 	

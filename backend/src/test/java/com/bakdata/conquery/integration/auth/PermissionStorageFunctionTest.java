@@ -76,7 +76,7 @@ public class PermissionStorageFunctionTest implements ConqueryTestSpec {
 			permission.getId();
 			PermissionOwnerId<?> ownerId = permission.getOwnerId();
 			PermissionOwner<?> owner = ownerId.getOwner(storage);
-			owner.addPermission(permission);
+			owner.addPermission(storage, permission);
 		}
 	}
 	

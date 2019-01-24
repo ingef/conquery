@@ -9,6 +9,7 @@ import java.util.Set;
 import org.apache.shiro.authz.Permission;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
@@ -79,17 +80,17 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		return false;
 	}
 
-	public void addMandator(Mandator mandator) throws JSONException {
+	public void addMandator(MasterMetaStorage storage, Mandator mandator) throws JSONException {
 		if(!roles.contains(mandator)) {
 			addMandatorLocal(mandator);
-			this.getStorage().updateUser(this);
+			storage.updateUser(this);
 		}
 	}
 	
-	public void removeMandatorLocal(Mandator mandator) throws JSONException {
+	public void removeMandatorLocal(MasterMetaStorage storage, Mandator mandator) throws JSONException {
 		if(roles.contains(mandator)) {
 			roles.remove(mandator);
-			this.getStorage().updateUser(this);
+			storage.updateUser(this);
 		}
 	}
 

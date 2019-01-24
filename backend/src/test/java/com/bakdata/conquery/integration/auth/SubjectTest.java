@@ -32,17 +32,17 @@ public class SubjectTest implements ConqueryTestSpec {
 		storage.addMandator(mandator1);
 		
 		DatasetPermission datasetPermission1 = new DatasetPermission(mandator1.getId(), Ability.READ.AS_SET, dataset1.getId());
-		assertThat(mandator1.addPermission(datasetPermission1).getId()).isEqualTo(datasetPermission1.getId());
+		assertThat(mandator1.addPermission(storage, datasetPermission1).getId()).isEqualTo(datasetPermission1.getId());
 		DatasetPermission datasetPermission2 = new DatasetPermission(mandator1.getId(), Ability.DELETE.AS_SET, dataset1.getId());
-		assertThat(mandator1.addPermission(datasetPermission2).getId()).isNotEqualTo(datasetPermission2.getId());
+		assertThat(mandator1.addPermission(storage, datasetPermission2).getId()).isNotEqualTo(datasetPermission2.getId());
 		
 		// setup user
 		User user1  = new User(new SinglePrincipalCollection(new UserId("user")));
 		user1.setLabel("user");
 		storage.addUser(user1);
 		
-		user1.addMandator(mandator1);
-		user1.addMandator(mandator1);
+		user1.addMandator(storage, mandator1);
+		user1.addMandator(storage, mandator1);
 		assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1);
 	}
 

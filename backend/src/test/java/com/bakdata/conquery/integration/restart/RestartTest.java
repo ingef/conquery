@@ -1,6 +1,7 @@
 package com.bakdata.conquery.integration.restart;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import javax.validation.Validator;
 
 import org.junit.jupiter.api.Test;
@@ -10,7 +11,6 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
@@ -61,13 +61,11 @@ public class RestartTest {
 				
 				// Auth storage testing
 				MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
-				mandator.setStorage(storage);
 				mandator.setLabel(LABEL);
 				mandator.setName(LABEL);
 				storage.addMandator(mandator);
 				
 				user.addMandatorLocal(mandator);
-				user.setStorage(storage);
 				user.setLabel(LABEL);
 				user.setName(LABEL);
 				storage.addUser(user);

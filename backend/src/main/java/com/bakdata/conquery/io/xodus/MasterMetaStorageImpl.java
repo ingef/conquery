@@ -45,21 +45,11 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		this.authMandator = new IdentifiableStore<>(
 					storage.getCentralRegistry(),
 					StoreInfo.AUTH_MANDATOR.cached(storage)
-				){
-			@Override
-			protected void addToRegistry(CentralRegistry centralRegistry, Mandator value) throws Exception {
-				value.setStorage(storage);
-			}
-		};
+				);
 		this.authUser = new IdentifiableStore<>(
 				storage.getCentralRegistry(),
 				StoreInfo.AUTH_USER.cached(storage)
-			){
-			@Override
-			protected void addToRegistry(CentralRegistry centralRegistry, User value) throws Exception {
-				value.setStorage(storage);
-			}
-		};
+			);
 		this.authPermissions = new IdentifiableStore<>(
 				storage.getCentralRegistry(),
 				StoreInfo.AUTH_PERMISSIONS.cached(storage)

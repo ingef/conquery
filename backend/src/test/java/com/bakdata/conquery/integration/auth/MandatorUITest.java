@@ -55,8 +55,8 @@ public class MandatorUITest implements IConqueryTest {
 			storage.addUser(user);
 			// override permission object, because it might have changed by the subject
 			// owning the permission
-			permission = mandator.addPermission(permission);
-			user.addMandator(mandator);
+			permission = mandator.addPermission(storage, permission);
+			user.addMandator(storage, mandator);
 		}
 		catch (JSONException e) {
 			fail("Failed when adding to storage.",e);

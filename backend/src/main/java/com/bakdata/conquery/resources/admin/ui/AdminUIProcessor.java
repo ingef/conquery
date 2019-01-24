@@ -33,7 +33,6 @@ public class AdminUIProcessor {
 		Mandator mandator = new Mandator(new SinglePrincipalCollection(mandatorId));
 		mandator.setLabel(name);
 		mandator.setName(name);
-		mandator.setStorage(storage);
 		storage.addMandator(mandator);
 	}
 
