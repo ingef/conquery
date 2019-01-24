@@ -32,11 +32,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The base class of security subjects in this project. Used to represent persons and groups with permissions.
+ *
+ * @param <T> The id type by which an instance is identified
+ */
 @Slf4j
 @RequiredArgsConstructor
 @JsonIgnoreProperties({"session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered"})
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends Labeled<T> implements  Subject {
-	
 	@Getter
 	private final SinglePrincipalCollection principals;
 	
