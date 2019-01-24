@@ -2,6 +2,7 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
@@ -22,6 +23,7 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
+import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
@@ -53,6 +55,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	private Workers workers = new Workers();
 	@Setter
 	private String label = "slave";
+	private ScheduledExecutorService scheduler;
 
 	public SlaveCommand() {
 		super("slave", "Connects this instance as a slave to a running master.");
@@ -66,18 +69,22 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		environment.lifecycle().manage(jobManager);
 		environment.lifecycle().manage(this);
 		
-		environment
-				.lifecycle()
-				.scheduledExecutorService("Query Management Maintenance")
-				.build()
-				.scheduleAtFixedRate(
-					() -> {
-						if(context.isConnected()) {
-							context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
-						}
-					},
-					30, 5, TimeUnit.SECONDS
-				);
+		scheduler = environment
+			.lifecycle()
+			.scheduledExecutorService("Scheduled Messages")
+			.build();
+		
+		scheduler.scheduleAtFixedRate(
+			() -> {
+				if(context.isConnected()) {
+					context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
+				}
+			},
+			30, 5, TimeUnit.SECONDS
+		);
+		
+		scheduler.scheduleAtFixedRate(() -> jobManager.addSlowJob(new UpdateMatchingStats(workers)), 30, 30, TimeUnit.SECONDS);
+
 		this.config = config;
 		validator = environment.getValidator();
 		

@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.auth;
 
+import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -61,6 +63,24 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 		@Override
 		protected DefaultAuthFilter newInstance() {
 			return new DefaultAuthFilter(tokenExtractor);
+			
+//			TokenExtractor tokenParser = null;
+//			try {
+//				for(Class<?> parser : CPSTypeIdResolver.listImplementations(TokenExtractor.class)) {
+//					try {
+//						tokenParser = (TokenExtractor) parser.getConstructor().newInstance();
+//					} catch (Exception e) {
+//						log.error("Could not create an instance of {}", parser, e);
+//					}
+//				}
+//			} catch(NoSuchElementException e) {
+//				throw new RuntimeException("No TokenParser found or none of the provided ones could be instanciated.", e);
+//			}
+//			
+//			if(tokenParser == null) {
+//				throw new RuntimeException("No TokenParser found or none of the provided ones could be instanciated.");
+//			}
+//			return new DefaultAuthFilter(tokenParser);
 		}
 	}
 

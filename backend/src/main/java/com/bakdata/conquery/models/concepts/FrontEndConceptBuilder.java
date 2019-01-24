@@ -52,34 +52,37 @@ public class FrontEndConceptBuilder {
 	}
 
 	private static FENode createCTRoot(Concept<?> c) {
+		MatchingStats matchingStats = c.getMatchingStats();
 		FENode n = FENode.builder()
-			.active(c instanceof VirtualConcept)
-			.description(c.getDescription())
-			.label(c.getLabel())
-			.additionalInfos(c.getAdditionalInfos())
-			//.matchingEntries(c.getMatchingEntries())
-			.dateRange(c.getConceptDateRange())
-			.detailsAvailable(Boolean.TRUE)
-			.codeListResolvable(
-				c instanceof TreeConcept
-				|| (c instanceof VirtualConcept
-				&& ((VirtualConcept) c).getConnectors()
-					.stream()
-					.map(VirtualConceptConnector::getFilter)
-					.anyMatch(AbstractSelectFilter.class::isInstance))
-			)
-			.parent(c.getStructureParent() == null ? null : c.getStructureParent().getId())
-			.tables(c
-				.getConnectors()
-				.stream()
-				.map(FrontEndConceptBuilder::createTable)
-				.collect(Collectors.toList())
-			)
-			.build();
-
-		if (c instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>) c;
-			if (tree.getChildren() != null) {
+				.active(c instanceof VirtualConcept)
+				.description(c.getDescription())
+				.label(c.getLabel())
+				.additionalInfos(c.getAdditionalInfos())
+				.matchingEntries(matchingStats.countEvents())
+				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+				.detailsAvailable(Boolean.TRUE)
+				.codeListResolvable(
+					c instanceof TreeConcept
+					|| (
+							c instanceof VirtualConcept
+							&& ((VirtualConcept)c).getConnectors()
+								.stream()
+								.map(VirtualConceptConnector::getFilter)
+								.anyMatch(AbstractSelectFilter.class::isInstance)
+					)
+				)
+				.parent(c.getStructureParent()==null?null:c.getStructureParent().getId())
+				.tables(c
+						.getConnectors()
+						.stream()
+						.map(FrontEndConceptBuilder::createTable)
+						.collect(Collectors.toList())
+				)
+				.build();
+		
+		if(c instanceof ConceptTreeNode) {
+			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)c;
+			if(tree.getChildren()!=null) {
 				n.setChildren(
 					tree
 						.getChildren()
@@ -115,18 +118,19 @@ public class FrontEndConceptBuilder {
 	}
 
 	private static FENode createCTNode(ConceptElement ce) {
+		MatchingStats matchingStats = ce.getMatchingStats();
 		FENode n = FENode.builder()
-			.active(/*(ce.getMatchingEntries()==0)?false:*/null)
-			.description(ce.getDescription())
-			.label(ce.getLabel())
-			.additionalInfos(ce.getAdditionalInfos())
-			//.matchingEntries(ce.getMatchingEntries())
-			.dateRange(ce.getConceptDateRange())
-			.build();
-
-		if (ce instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>) ce;
-			if (tree.getChildren() != null) {
+				.active(null)
+				.description(ce.getDescription())
+				.label(ce.getLabel())
+				.additionalInfos(ce.getAdditionalInfos())
+				.matchingEntries(matchingStats.countEvents())
+				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+				.build();
+		
+		if(ce instanceof ConceptTreeNode) {
+			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)ce;
+			if(tree.getChildren()!=null) {
 				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
 			}
 			if (tree.getParent() != null) {
