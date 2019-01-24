@@ -47,6 +47,8 @@ public abstract class AbstractQueryEngineTest implements ConqueryTestSpec {
 		assertThat(actual)
 				.as("Results for %s are not as expected.", this)
 				.containsExactlyInAnyOrderElementsOf(expected);
+		//check that getLastResultCount returns the correct size
+		assertThat(managed.getLastResultCount()).isEqualTo(expected.size()-1);
 
 		log.info(
 				"INTEGRATION TEST SUCCESSFUL {} {} on {} rows",
