@@ -9,7 +9,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.commons.collections4.CollectionUtils;
 
-import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
@@ -25,7 +25,7 @@ public class ConceptTreeConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
 	
-	@NotNull @IdReference
+	@NotNull @NsIdRef
 	private Column column;
 	@Valid @JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();

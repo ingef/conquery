@@ -8,7 +8,8 @@ import java.util.Set;
 
 import org.apache.shiro.authz.Permission;
 
-import com.bakdata.conquery.io.jackson.serializer.IdReferenceCollection;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -20,7 +21,6 @@ import lombok.Setter;
 
 public class User extends PermissionOwner<UserId> implements Principal{
 	@Getter @Setter
-	@IdReferenceCollection
 	private Set<Mandator> roles = new HashSet<>();
 
 
