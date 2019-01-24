@@ -1,7 +1,7 @@
 package com.bakdata.conquery.integration.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.assertj.core.api.Assertions.fail;
 
 import javax.ws.rs.core.Response;
 
@@ -59,8 +59,7 @@ public class MandatorUITest implements IConqueryTest<TestConquery> {
 			user.addMandator(mandator);
 		}
 		catch (JSONException e) {
-			e.printStackTrace();
-			fail();
+			fail("Failed when adding to storage.",e);
 		}
 	}
 

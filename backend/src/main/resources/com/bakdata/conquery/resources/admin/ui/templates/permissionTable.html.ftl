@@ -10,7 +10,7 @@
         <tbody>
             <#list permissions as permission>
                 <tr>
-                    <td>${permission.getClass().getSimpleName()}</td>
+                    <td>${permission.class.getSimpleName()}</td>
                     <td>${permission.getTarget().toString()}</td>
                     <td><#list permission.getAbilities() as ability>${ability} </#list></td>
                 </tr>

@@ -23,6 +23,11 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	@IdReferenceCollection
 	private Set<Mandator> roles = new HashSet<>();
 
+
+	public User(UserId id) {
+		super(new SinglePrincipalCollection(id));
+	}
+	
 	@JsonCreator
 	public User(SinglePrincipalCollection principals) {
 		super(principals);

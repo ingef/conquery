@@ -17,8 +17,7 @@
 			<ul>
 			<#list c.users as user>
 				<li>
-					<a href="/admin/user/${user.id}">${user.label}</a> 
-					<a href="" onclick="event.preventDefault(); fetch('./user/${user.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+					${user.label}
 				</li>
 			</#list>
 			</ul>

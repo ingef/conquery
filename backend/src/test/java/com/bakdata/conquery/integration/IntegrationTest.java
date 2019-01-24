@@ -84,7 +84,7 @@ public class IntegrationTest {
 		}
 	}
 
-	@ParameterizedTest(name = "{index}: {0}")
+	//@ParameterizedTest(name = "{index}: {0}")
 	@MethodSource("data")
 	public void test(String name, String testSpec) throws Exception {
 		try(StandaloneSupport conquery = CONQUERY.getSupport()) {
