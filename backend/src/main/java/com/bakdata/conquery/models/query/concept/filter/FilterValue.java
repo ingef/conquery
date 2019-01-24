@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.concept.filter;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.common.Range.DoubleRange;
 import com.bakdata.conquery.models.common.Range.LongRange;
@@ -80,7 +80,7 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "DECIMAL_RANGE", base = FilterValue.class)
 	public static class CQDecimalRangeFilter extends FilterValue<Range<BigDecimal>> {
-		public CQDecimalRangeFilter(@IdReference Filter<?> filter, Range<BigDecimal> value) {
+		public CQDecimalRangeFilter(@NsIdRef Filter<?> filter, Range<BigDecimal> value) {
 			super(filter, value);
 		}
 	}
