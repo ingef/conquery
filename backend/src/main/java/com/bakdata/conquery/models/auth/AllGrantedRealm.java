@@ -13,8 +13,6 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j

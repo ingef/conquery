@@ -2,8 +2,6 @@ package com.bakdata.conquery.integration.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.EnumSet;
-
 import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
