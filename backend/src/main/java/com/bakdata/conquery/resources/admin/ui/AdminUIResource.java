@@ -91,6 +91,7 @@ public class AdminUIResource {
 	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
 	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
 		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
+	}
 
 	@Produces(ExtraMimeTypes.CSV_STRING)
 	@Consumes(ExtraMimeTypes.JSON_STRING)

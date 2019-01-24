@@ -38,32 +38,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 			config,
 			new File(config.getDirectory(), "meta")
 		);
-		this.meta = StoreInfo.NAMESPACES.singleton(this);
-		this.queries = StoreInfo.QUERIES.identifiable(this, namespaces);
-		
-		MasterMetaStorage storage = this;
-		this.authMandator = new IdentifiableStore<>(
-					storage.getCentralRegistry(),
-					StoreInfo.AUTH_MANDATOR.cached(storage)
-				);
-		this.authUser = new IdentifiableStore<>(
-				storage.getCentralRegistry(),
-				StoreInfo.AUTH_USER.cached(storage)
-			);
-		this.authPermissions = new IdentifiableStore<>(
-				storage.getCentralRegistry(),
-				StoreInfo.AUTH_PERMISSIONS.cached(storage)
-			){
-			@Override
-			protected void addToRegistry(CentralRegistry centralRegistry, ConqueryPermission value) throws Exception {
-				value.getOwnerId().getOwner(storage).addPermissionLocal(value);
-			}
-			
-			@Override
-			protected void removeFromRegistry(CentralRegistry centralRegistry, ConqueryPermission value) {
-				value.getOwnerId().getOwner(storage).removePermissionLocal(value);
-			}
-		};
 	}
 
 	@Override
@@ -72,10 +46,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		this.queries = StoreInfo.QUERIES.identifiable(this);
 		
 		MasterMetaStorage storage = this;
-		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage)
-			.onAdd(value->value.setStorage(storage));
-		this.authUser = StoreInfo.AUTH_USER.<User>identifiable(storage)
-			.onAdd(value->value.setStorage(storage));
+		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage);
+		this.authUser = StoreInfo.AUTH_USER.<User>identifiable(storage);
 		this.authPermissions = StoreInfo.AUTH_PERMISSIONS.<ConqueryPermission>identifiable(storage)
 			.onAdd(value->		value.getOwnerId().getOwner(storage).addPermissionLocal(value))
 			.onRemove(value->	value.getOwnerId().getOwner(storage).removePermissionLocal(value));
