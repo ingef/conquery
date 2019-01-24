@@ -114,16 +114,16 @@ public class IntegrationTest {
 	
 	
 	public static Stream<Arguments> testClasses() throws InstantiationException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchMethodException, SecurityException {
-		List<IConqueryTest<?>> tests = new ArrayList<>();
+		List<IConqueryTest> tests = new ArrayList<>();
 		for(Class<?> testClass : CPSTypeIdResolver.listImplementations(IConqueryTest.class)) {
-			tests.add((IConqueryTest<?>) testClass.getConstructor().newInstance());
+			tests.add((IConqueryTest) testClass.getConstructor().newInstance());
 		}
 		return tests.stream().map(test -> Arguments.of(test));
 	}
 	
 	@ParameterizedTest(name = "{index}: {0}")
 	@MethodSource("testClasses")
-	public void test(IConqueryTest<TestConquery> conqueryTest) throws Exception {
+	public void test(IConqueryTest conqueryTest) throws Exception {
 		try(StandaloneSupport conquery = CONQUERY.getSupport()) {
 			conqueryTest.init(CONQUERY);
 			conqueryTest.execute();

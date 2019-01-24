@@ -4,9 +4,6 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.util.support.TestConquery;
 
 @CPSBase
-public interface IConqueryTest<T extends TestConquery> {
-
-	void init(T conquery);
-	void execute();
-	void finish();
+public interface IConqueryTest extends IConqueryTestGen<TestConquery> {
+	
 }
