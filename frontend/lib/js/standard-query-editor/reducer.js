@@ -314,6 +314,10 @@ const setNodeFilterProperties = (state, action, obj) => {
   const properties = stripObject(obj);
 
   if ('options' in properties) {
+    // From performance reasons and for system protection
+    if (filter.options.length > 1000)
+      filter.options = filter.options.splice(0, 1000);
+
     // The properties object contains an 'options' key, but its value might
     // be undefined (because of stripObject above)
     const newOptions = (properties.options || filter.options || []);
@@ -685,7 +689,7 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
       value: resolutionResult.filter.value,
       tableIdx: parameters.tableIdx,
       filterIdx: parameters.filterIdx,
-      options: resolutionResult.filter.value
+      // options: resolutionResult.filter.value
     }
   });
 }
