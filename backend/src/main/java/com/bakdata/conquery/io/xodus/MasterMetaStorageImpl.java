@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
 
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -34,6 +35,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<ConqueryPermission> authPermissions;
 	private IdentifiableStore<Mandator> authMandator;
+	private Namespaces namespaces;
 
 	public MasterMetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {
 		super(
@@ -41,15 +43,13 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 			config,
 			new File(config.getDirectory(), "meta")
 		);
-		this.meta = StoreInfo.NAMESPACES.singleton(this);
-		this.queries = StoreInfo.QUERIES.identifiable(this, namespaces);
-		
+		this.namespaces = namespaces;
 	}
 
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		this.meta = StoreInfo.NAMESPACES.singleton(this);
-		this.queries = StoreInfo.QUERIES.identifiable(this);
+		this.queries = StoreInfo.QUERIES.identifiable(this, namespaces);
 		
 		MasterMetaStorage storage = this;
 		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage)

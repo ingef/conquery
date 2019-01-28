@@ -15,4 +15,6 @@ public interface ConqueryStorage extends Closeable {
 	Validator getValidator();
 	Environment getEnvironment();
 	CentralRegistry getCentralRegistry();
+	
+	void loadData();
 }

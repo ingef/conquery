@@ -32,14 +32,14 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		this.directory = directory;
 		this.validator = validator;
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
-		createStores(stores::add);
-		loadData();
 	}
 
 	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {
 	}
 	
-	protected void loadData() {
+	@Override
+	public void loadData() {
+		createStores(stores::add);
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
 		Stopwatch all = Stopwatch.createStarted();
 		for(KeyIncludingStore<?, ?> store : stores) {
