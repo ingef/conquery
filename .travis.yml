@@ -24,7 +24,7 @@ cache:
 
 script:
   >
-    mvn install test verify checkstyle:checkstyle -B -DskipDockerTests=true -P test-coverage,reportCoverage &&
+    mvn install test verify -B -DskipDockerTests=true -P test-coverage,reportCoverage &&
     mvn -pl coverage-reporter exec:java@report -P test-coverage
 
 deploy:
