@@ -110,6 +110,7 @@
 						<exclude>**/*SuiteTest.java</exclude>
 					</excludes>
 					<trimStackTrace>false</trimStackTrace>
+					<argLine>-Xmx1G</argLine>
 				</configuration>
 			</plugin>
         </plugins>
