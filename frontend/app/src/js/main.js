@@ -13,7 +13,7 @@ const environment = {
   basename: isProduction
     ? '/' // Possibly: Run under a subpath in production
     : '/',
-    apiUrl: '/api'
+    apiUrl: 'http://localhost:8080/api'
 };
 
 const tabs = {
