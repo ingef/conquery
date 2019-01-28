@@ -11,6 +11,7 @@ import org.junit.jupiter.api.extension.RegisterExtension;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.integration.IntegrationTestFactory;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -30,7 +31,7 @@ public class MetadataCollectionTest {
 
 	@BeforeAll
 	public static void init() {
-		IntegrationTest.reduceLogging();
+		IntegrationTestFactory.reduceLogging();
 	}
 	
 	@Test

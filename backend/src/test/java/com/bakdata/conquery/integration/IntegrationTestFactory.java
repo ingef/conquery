@@ -12,6 +12,8 @@ import java.util.stream.Stream;
 import javax.validation.Validator;
 
 import org.apache.commons.lang3.StringUtils;
+import org.junit.jupiter.api.DynamicContainer;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -34,52 +36,58 @@ import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class IntegrationTest {
+public class IntegrationTestFactory {
 
-	protected static Stream<Arguments> read(Path path) {
+	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER
+		.readerFor(ConqueryTestSpec.class);
+	private static final Path DEFAULT_TEST_ROOT = Paths.get("tests/");
+	
+	@RegisterExtension
+	public static final TestConquery CONQUERY = new TestConquery();
+	private static final PathMatcher TEST_SPEC_MATCHER = FileSystems.getDefault()
+		.getPathMatcher("glob:**.test.json");
+
+	@TestFactory
+	public static Stream<DynamicContainer> data() throws IOException {
+		reduceLogging();
+		Path testRoot = DEFAULT_TEST_ROOT;
+		//TODO override if system variable is set
+		if (testRoot.toFile().isDirectory()) {
+			return Files.walk(testRoot)
+						.filter(IntegrationTestFactory::isTestSpecFile)
+						.sorted()
+						.map(IntegrationTestFactory::read);
+		}
+		else {
+			log.warn("Could not find test directory {}", testRoot.toAbsolutePath());
+			return Stream.empty();
+		}
+	}
+
+	public static void reduceLogging() {
+		Logger logger = (Logger) LoggerFactory.getLogger("org.hibernate");
+		logger.setLevel(Level.WARN);
+	}
+
+	protected static boolean isTestSpecFile(Path path) {
+		return path.toFile().isFile() && TEST_SPEC_MATCHER.matches(path);
+	}
+
+	protected static DynamicContainer readTest(Path testRoot, Path path) {
 		File file = path.toFile();
 		try {
 			String content = In.file(file).withUTF8().readAll();
-			return Stream.of(Arguments.of(
-				TEST_ROOT.relativize(path.getParent()).toString(),
+			
+			String name = testRoot.relativize(path.getParent()).toString();
+			
+			DynamicContainer.dynamicContainer()
+			return Arguments.of(
+				,
 				content
-			));
+			);
 		}
 		catch (IOException e) {
 			throw new RuntimeException("Unable to read testSpec " + path, e);
 		}
-	}
-
-	@ParameterizedTest(name = "{index}: {0}")
-	@MethodSource("data")
-	public void test(String name, String testSpec) throws Exception {
-		try(StandaloneSupport conquery = CONQUERY.getSupport()) {
-			ConqueryTestSpec test = readTest(conquery.getDataset().getId(), testSpec);
-	
-			Validator validator = Validators.newValidator();
-			ValidatorHelper.failOnError(log, validator.validate(test));
-	
-	
-			test.importRequiredData(conquery);
-
-			//ensure the metadata is collected
-			for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
-				slave.getJobManager().addSlowJob(new UpdateMatchingStats(slave.getWorkers()));
-			}
-			
-			conquery.waitUntilWorkDone();
-	
-			test.executeTest(conquery);
-		}
-	}
-
-	public static ConqueryTestSpec readTest(DatasetId dataset, String testSpec) throws IOException {
-		//replace ${dataset} with real dataset name
-		testSpec = StringUtils.replace(
-			testSpec,
-			"${dataset}",
-			dataset.toString()
-		);
-		return TEST_SPEC_READER.readValue(testSpec);
 	}
 }

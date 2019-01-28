@@ -105,6 +105,7 @@
 						<include>**/*Test.java</include>
 						<include>**/*Tests.java</include>
 						<include>**/*TestSuite.java</include>
+						<include>**/*TestFactory.java</include>
 					</includes>
 					<excludes>
 						<exclude>**/*SuiteTest.java</exclude>

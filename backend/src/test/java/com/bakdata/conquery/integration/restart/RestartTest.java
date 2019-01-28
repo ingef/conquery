@@ -6,6 +6,7 @@ import org.junit.jupiter.api.Test;
 
 import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.IntegrationTest;
+import com.bakdata.conquery.integration.IntegrationTestFactory;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -21,7 +22,7 @@ public class RestartTest {
 	@Test
 	public void testRestartingDatabase() throws Exception {
 		//init
-		IntegrationTest.reduceLogging();
+		IntegrationTestFactory.reduceLogging();
 		TestConquery testConquery = new TestConquery();
 		try {
 			//starts the server

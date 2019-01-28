@@ -38,7 +38,7 @@ import lombok.Setter;
  */
 @CPSType(id="PERMISSION_STORAGE_FUNCTION_TEST",base=ConqueryTestSpec.class)
 @Getter @Setter
-public class PermissionStorageFunctionTest implements ConqueryTestSpec {
+public class PermissionStorageFunctionTest extends ConqueryTestSpec {
 
 	@Valid
 	private Mandator [] roles = new Mandator[0];

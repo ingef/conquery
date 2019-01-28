@@ -41,7 +41,7 @@ import lombok.Setter;
  */
 @CPSType(id="PERMISSION_STORAGE_SERIALIZATION_TEST",base=ConqueryTestSpec.class)
 @Getter @Setter
-public class PermissionStorageSerializationTest implements ConqueryTestSpec {
+public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	private static final String STORE_SUFFIX = "SERIALIZATION_TEST";
 	@Valid
 	private Mandator [] roles = new Mandator[0];

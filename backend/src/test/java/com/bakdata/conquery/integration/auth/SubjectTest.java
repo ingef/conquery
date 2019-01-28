@@ -19,7 +19,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 
 
 @CPSType(id="SUBJECT_TEST",base=ConqueryTestSpec.class)
-public class SubjectTest implements ConqueryTestSpec {
+public class SubjectTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
