@@ -1,4 +1,4 @@
-package com.bakdata.conquery.integration;
+package com.bakdata.conquery.integration.json;
 
 import java.io.IOException;
 import java.util.function.Consumer;
@@ -18,17 +18,18 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.jsonFormatVisitors.JsonIntegerFormatVisitor;
 
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@CPSBase @Slf4j
+@Slf4j @CPSBase
 public abstract class ConqueryTestSpec {
 	
 	@Getter @Setter @NotNull
-	private String name;
+	private String label;
 
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
 
@@ -36,7 +37,7 @@ public abstract class ConqueryTestSpec {
 
 	@Override
 	public String toString() {
-		return name;
+		return label;
 	}
 
 	public <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass) throws IOException, JSONException {

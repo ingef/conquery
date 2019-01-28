@@ -1,4 +1,4 @@
-package com.bakdata.conquery.integration;
+package com.bakdata.conquery.integration.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;

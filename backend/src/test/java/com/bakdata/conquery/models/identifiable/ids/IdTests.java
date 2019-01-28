@@ -12,6 +12,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId.Parser;
@@ -22,8 +23,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
-import io.github.classgraph.ClassGraph;
 
 public class IdTests {
 
@@ -132,9 +131,8 @@ public class IdTests {
 	}
 	
 	public static Stream<Arguments> reflectionTest() {
-		return new ClassGraph()
-			.enableClassInfo()
-			.scan()
+		return CPSTypeIdResolver
+			.SCAN_RESULT
 			.getClassesImplementing(Identifiable.class.getName()).loadClasses()
 			.stream()
 			.filter(cl -> !cl.isInterface())

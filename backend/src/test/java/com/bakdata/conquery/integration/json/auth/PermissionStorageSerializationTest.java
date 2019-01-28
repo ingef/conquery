@@ -1,4 +1,4 @@
-package com.bakdata.conquery.integration.auth;
+package com.bakdata.conquery.integration.json.auth;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,8 +13,8 @@ import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.common.RequiredUser;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.MPStore;
