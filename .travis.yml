@@ -7,7 +7,7 @@ os:
 env:
   - DOCKER_COMPOSE_VERSION=1.21.2
 jdk:
-  - openjdk10
+  - openjdk11
 
 before_install:
   - sudo rm /usr/local/bin/docker-compose
