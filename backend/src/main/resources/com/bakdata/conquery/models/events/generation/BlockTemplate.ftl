@@ -215,11 +215,11 @@ public class Block_${suffix} extends Block {
 			//ImmutableMap does not allow for null values: builder.put("${safeJavaString(col.name)}", null)
 			<#else>
 			if(has(event, ${col_index})) {
-			    builder.put("${safeJavaString(col.name)}", imp.getColumns()[${col_index}].getType().createScriptValue(events[event].get${safeName(col.name)?cap_first}()));
+				builder.put("${safeJavaString(col.name)}", imp.getColumns()[${col_index}].getType().createScriptValue(events[event].get${safeName(col.name)?cap_first}()));
 			}
 
 			</#if>
 		</#list>
-        return builder.build();
+		return builder.build();
 	}
 }
