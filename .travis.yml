@@ -23,8 +23,7 @@ cache:
     - "$HOME/.m2"
 
 script:
-  - mvn install test verify -B -DskipDockerTests=true -P test-coverage,reportCoverage
-  - mvn -pl coverage-reporter exec:java@report -P test-coverage
+  - mvn install test verify -B -DskipDockerTests=true
 
 deploy:
   - provider: script
