@@ -90,14 +90,15 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			errors.addAll(validator.validate(ctc));
 			
 			try {
-				ctc.setLocalId(allChildren.size());
+				ctc.setLocalId(localIdMap.size());
 				localIdMap.add(ctc);
 				allChildren.add(ctc);
 				ctc.setDepth(ctc.getParent() == null ? 0 : ctc.getParent().getDepth() + 1);
 
 				ctc.init();
 
-			} catch(Exception e) {
+			}
+			catch(Exception e) {
 				throw new RuntimeException("Error trying to consolidate the node "+ctc.getLabel()+" in "+this.getLabel(), e);
 			}
 			

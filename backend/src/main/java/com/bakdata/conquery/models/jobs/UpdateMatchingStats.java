@@ -72,6 +72,7 @@ public class UpdateMatchingStats extends Job {
 			}
 			sub.done();
 		}
+		progressReporter.done();
 	}
 
 	@Override
