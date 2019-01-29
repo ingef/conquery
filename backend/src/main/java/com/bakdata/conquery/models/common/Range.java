@@ -34,11 +34,11 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		if (isAtLeast()) {
-			return String.format("[%s, +\u221E)", getMin());
+			return String.format("[%s, +∞)", getMin());
 		}
 
 		if (isAtMost()) {
-			return String.format("(-\u221E, %s]", getMax());
+			return String.format("(-∞, %s]", getMax());
 		}
 
 		return String.format("[%s, %s]", getMin(), getMax());
@@ -140,7 +140,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		if (out.getMin() != null && (other.getMin() == null || other.getMin().compareTo(this.getMin()) < 0)) {
-			out = withMin(other.getMin());
+			out = out.withMin(other.getMin());
 		}
 
 		return out;

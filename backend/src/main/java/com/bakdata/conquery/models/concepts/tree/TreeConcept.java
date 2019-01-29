@@ -24,6 +24,7 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -38,6 +39,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private int globalToLocalOffset;
 	@JsonIgnore
 	private transient int maxDepth=-1;
+	@JsonIgnore
+	private List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
 	@JsonIgnore @Getter
 	private IdMap<ConceptTreeChildId, ConceptTreeChild> allChildren = new IdMap<>();
 	@Getter @Setter
@@ -74,6 +77,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Override
 	public void initElements(Validator validator) throws ConfigurationException, JSONException {
 		this.setLocalId(0);
+		localIdMap.add(this);
 		this.setDepth(-1);
 
 		Set<ConstraintViolation<ConceptTreeNode>> errors = new HashSet<>();
@@ -86,13 +90,15 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			errors.addAll(validator.validate(ctc));
 			
 			try {
-				ctc.setLocalId(allChildren.size());
+				ctc.setLocalId(localIdMap.size());
+				localIdMap.add(ctc);
 				allChildren.add(ctc);
 				ctc.setDepth(ctc.getParent() == null ? 0 : ctc.getParent().getDepth() + 1);
 
 				ctc.init();
 
-			} catch(Exception e) {
+			}
+			catch(Exception e) {
 				throw new RuntimeException("Error trying to consolidate the node "+ctc.getLabel()+" in "+this.getLabel(), e);
 			}
 			
@@ -173,4 +179,19 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		}
 	}
 
+	@Override
+	public int countElements() {
+		return 1 + allChildren.size();
+	}
+	
+	/**
+	 * Method to get the element of this concept tree that has the specified local ID.
+	 * This should only be used by the query engine itself as an index.
+	 * @param ids the local id array to look for
+	 * @return the element matching the most specific local id in the array
+	 */
+	public ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids) {
+		int mostSpecific = ids[ids.length-1];
+		return localIdMap.get(mostSpecific);
+	}
 }

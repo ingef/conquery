@@ -13,7 +13,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @CPSType(id="UPDATE_CONCEPT", base=NamespacedMessage.class)
-@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
+@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString
 public class UpdateConcept extends WorkerMessage.Slow {
 
 	private Concept concept;

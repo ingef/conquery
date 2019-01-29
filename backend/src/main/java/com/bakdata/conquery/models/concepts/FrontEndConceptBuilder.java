@@ -55,8 +55,8 @@ public class FrontEndConceptBuilder {
 				.description(c.getDescription())
 				.label(c.getLabel())
 				.additionalInfos(c.getAdditionalInfos())
-				//.matchingEntries(c.getMatchingEntries())
-				.dateRange(c.getConceptDateRange())
+				.matchingEntries(c.getMatchingStats().countEvents())
+				.dateRange(c.getMatchingStats().spanEvents().toSimpleRange())
 				.detailsAvailable(Boolean.TRUE)
 				.codeListResolvable(
 					c instanceof TreeConcept
@@ -116,12 +116,12 @@ public class FrontEndConceptBuilder {
 	
 	private static FENode createCTNode(ConceptElement ce) {
 		FENode n = FENode.builder()
-				.active(/*(ce.getMatchingEntries()==0)?false:*/null)
+				.active(null)
 				.description(ce.getDescription())
 				.label(ce.getLabel())
 				.additionalInfos(ce.getAdditionalInfos())
-				//.matchingEntries(ce.getMatchingEntries())
-				.dateRange(ce.getConceptDateRange())
+				.matchingEntries(ce.getMatchingStats().countEvents())
+				.dateRange(ce.getMatchingStats().spanEvents().toSimpleRange())
 				.build();
 		
 		if(ce instanceof ConceptTreeNode) {
