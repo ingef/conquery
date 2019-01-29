@@ -8,14 +8,49 @@ jdk:
 jobs:
   include:
     - stage: "Tests"
-
+      
+    #build everything and run all non-integration tests
       name: "Unit Tests"
       script: mvn test -B -DskipDockerTests=true -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
+    #build and test only INTEGRATION_PROGRAMMATIC
     - name: "Programmatic Integration Tests"
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_PROGRAMMATIC"
+      install:
+        - cd backend
+        - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      script: cd backend && mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_PROGRAMMATIC"
 
-    - name: "Integration Tests"
+    #build and test only INTEGRATION_JSONs
+    - name: "Integration Tests: Authentication Tests"
+      env:
+        - CONQUERY_TEST_DIRECTORY=tests/auth
+      install:
+        - cd backend
+        - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+
+    - name: "Integration Tests: Filter Tests"
+      env:
+        - CONQUERY_TEST_DIRECTORY=tests/filter
+      install:
+        - cd backend
+        - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+
+    - name: "Integration Tests: Query Tests"
+      env:
+        - CONQUERY_TEST_DIRECTORY=tests/query
+      install:
+        - cd backend
+        - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+
+    - name: "Integration Tests: Aggregator Tests"
+      env:
+        - CONQUERY_TEST_DIRECTORY=tests/aggregator
+      install:
+        - cd backend
+        - mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
       script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
   
 cache:
