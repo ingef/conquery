@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
@@ -16,14 +20,11 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.types.specific.IStringType;
 import com.bakdata.conquery.util.CalculatedValue;
+
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 @RequiredArgsConstructor @Slf4j
 public class CalculateCBlocksJob extends Job {
@@ -98,7 +99,8 @@ public class CalculateCBlocksJob extends Job {
 					if (child != null) {
 						cBlock.getMostSpecificChildren().add(child.getPrefix());
 					}
-					else {//see #174  improve handling by copying the relevant things from the old project
+					else {
+						//see #174  improve handling by copying the relevant things from the old project
 						cBlock.getMostSpecificChildren().add(null);
 					}
 				}

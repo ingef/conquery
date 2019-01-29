@@ -100,8 +100,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
 		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
-		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 		namespaces.getSlaves().put(session.getRemoteAddress(), new SlaveInformation(new NetworkSession(session)));
+		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
 	@Override

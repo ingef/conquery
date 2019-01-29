@@ -25,7 +25,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.util.io.ConfigCloner;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -102,9 +101,6 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			Dataset dataset = ns.getStorage().getDataset();
 			
 			assertThat(namespaces.getSlaves()).hasSize(2);
-			for(SlaveInformation slave : namespaces.getSlaves().values()) {
-				standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addWorker(slave, dataset);
-			}
 			
 			//make tmp subdir and change cfg accordingly
 			File localTmpDir = new File(tmpDir, "tmp_"+name);

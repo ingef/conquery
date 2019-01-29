@@ -140,7 +140,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		if (out.getMin() != null && (other.getMin() == null || other.getMin().compareTo(this.getMin()) < 0)) {
-			out = withMin(other.getMin());
+			out = out.withMin(other.getMin());
 		}
 
 		return out;

@@ -4,7 +4,6 @@ import java.io.File;
 
 import javax.validation.Validator;
 
-import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.models.config.StorageConfig;
 
 import lombok.Getter;
@@ -20,6 +19,5 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
-		this.imports = new IdentifiableStore<>(centralRegistry, StoreInfo.IMPORTS.cached(this));
 	}
 }

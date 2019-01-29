@@ -1,12 +1,18 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
+import lombok.Setter;
+import lombok.experimental.Accessors;
+
+@Accessors(fluent=true) @Setter
 public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 
+	private ThrowingConsumer<VALUE> onAdd;
+	private ThrowingConsumer<VALUE> onRemove;
+	
 	public SingletonStore(Store<Boolean, VALUE> store) {
 		super(store);
-		fillCache();
 	}
 
 	@Override
@@ -29,28 +35,28 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	}
 	
 	public synchronized void remove() {
-		VALUE v = get();
 		super.remove(Boolean.TRUE);
-		onValueRemoved(v);
 	}
-	
+
 	@Override
-	public synchronized void update(VALUE value) throws JSONException {
-		VALUE old = get();
-		if(old != null)
-			onValueRemoved(old);
-		super.update(value);
-		onValueAdded(value);
+	protected void removed(VALUE value) {
+		try {
+			if(value != null && onRemove != null) {
+				onRemove.accept(value);
+			}
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to remove "+value, e);
+		}
 	}
-	
+
 	@Override
-	public void fillCache() {
-		super.fillCache();
-		if(get() != null)
-			onValueAdded(get());
+	protected void added(VALUE value) {
+		try {
+			if(value != null && onAdd != null) {
+				onAdd.accept(value);
+			}
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to add "+value, e);
+		}
 	}
-	
-	protected void onValueAdded(VALUE v) {}
-	
-	protected void onValueRemoved(VALUE v) {}
 }
