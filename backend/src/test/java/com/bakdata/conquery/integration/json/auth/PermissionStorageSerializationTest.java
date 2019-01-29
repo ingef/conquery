@@ -1,4 +1,4 @@
-package com.bakdata.conquery.integration.auth;
+package com.bakdata.conquery.integration.json.auth;
 
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,8 +13,8 @@ import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.common.RequiredUser;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.MPStore;
@@ -41,7 +41,7 @@ import lombok.Setter;
  */
 @CPSType(id="PERMISSION_STORAGE_SERIALIZATION_TEST",base=ConqueryTestSpec.class)
 @Getter @Setter
-public class PermissionStorageSerializationTest implements ConqueryTestSpec {
+public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	private static final String STORE_SUFFIX = "SERIALIZATION_TEST";
 	@Valid
 	private Mandator [] roles = new Mandator[0];

@@ -40,7 +40,7 @@ public class ProgressReporterTest {
 		pr.setMax(100d);
 		pr.report(1d);
 		List<Integer> occurenceOfHour = allOccurencesOf(pr.getEstimate(), "h");
-		for (int i = 0; i < 99; i++) {
+		for (int i = 0; i < 10; i++) {
 			pr.report(1d);
 			Thread.sleep(100);
 			assertThat(occurenceOfHour).isEqualTo(allOccurencesOf(pr.getEstimate(), "h"));

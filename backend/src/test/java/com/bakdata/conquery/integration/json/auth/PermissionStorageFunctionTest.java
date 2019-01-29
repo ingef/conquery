@@ -1,4 +1,4 @@
-package com.bakdata.conquery.integration.auth;
+package com.bakdata.conquery.integration.json.auth;
 
 import static com.bakdata.conquery.integration.common.IntegrationUtils.clearAuthStorage;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -13,8 +13,8 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.common.RequiredUser;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -38,7 +38,7 @@ import lombok.Setter;
  */
 @CPSType(id="PERMISSION_STORAGE_FUNCTION_TEST",base=ConqueryTestSpec.class)
 @Getter @Setter
-public class PermissionStorageFunctionTest implements ConqueryTestSpec {
+public class PermissionStorageFunctionTest extends ConqueryTestSpec {
 
 	@Valid
 	private Mandator [] roles = new Mandator[0];
