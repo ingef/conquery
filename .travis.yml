@@ -9,14 +9,14 @@ jobs:
   include:
     - stage: "Tests"
       
-    #build everything and run all non-integration tests
+    #test frontend
       name: "Frontend Tests"
       install:
         -  cd frontend
         -  mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
       script: mvn test -B -DskipDockerTests=true
 
-    #build everything and run all non-integration tests
+    #build backend and run all non-integration tests
     - name: "Unit Tests"
       install:
         - cd backend
