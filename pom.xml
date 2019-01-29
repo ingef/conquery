@@ -17,7 +17,6 @@
         <junit.minor>4.0-RC1</junit.minor>
 		<junit.version>5.${junit.minor}</junit.version>
 		<junit.platform.version>1.${junit.minor}</junit.platform.version>
-		<jaxb.version>2.2.11</jaxb.version>
     </properties>
     
     <modules>

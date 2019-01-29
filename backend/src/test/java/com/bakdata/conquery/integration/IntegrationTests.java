@@ -79,7 +79,7 @@ public class IntegrationTests {
 				DynamicTest.dynamicTest(
 					c.getClass().getSimpleName(),
 					//classpath URI
-					URI.create("classpath:/"+c.getClass().getName().replace('.', '/')+".java?line=1"),
+					URI.create("classpath:/"+c.getClass().getName().replace('.', '/')+".java"),
 					new IntegrationTest.Wrapper(CONQUERY, c)
 				)
 			);
