@@ -22,7 +22,6 @@
     
     <modules>
         <module>frontend</module>
-        <module>selenium-test</module>
         <module>backend</module>
 		<module>executable</module>
 		<module>coverage-reporter</module>
