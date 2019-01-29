@@ -1,5 +1,6 @@
 {
     "type": "PERMISSION_STORAGE_SERIALIZATION_TEST",
+    "label": "PERMISSION_STORAGE_SERIALIZATION_TEST",
     "roles":[
         {
             "label" : "unused",

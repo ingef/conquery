@@ -1,4 +1,4 @@
-package com.bakdata.conquery.integration;
+package com.bakdata.conquery.integration.json;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
@@ -17,7 +17,10 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
 
-public abstract class AbstractQueryEngineTest implements ConqueryTestSpec {
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	@JsonIgnore
 	protected abstract IQuery getQuery();
@@ -47,6 +50,8 @@ public abstract class AbstractQueryEngineTest implements ConqueryTestSpec {
 		assertThat(actual)
 				.as("Results for %s are not as expected.", this)
 				.containsExactlyInAnyOrderElementsOf(expected);
+		//check that getLastResultCount returns the correct size
+		assertThat(managed.getLastResultCount()).isEqualTo(expected.size()-1);
 
 		log.info(
 				"INTEGRATION TEST SUCCESSFUL {} {} on {} rows",

@@ -88,7 +88,7 @@ public class DatasetsProcessor {
 		//see #144  check duplicate names
 	}
 
-	public void addDataset(String name, ScheduledExecutorService maintenanceService) throws JSONException {
+	public void addDataset(String name) throws JSONException {
 		//create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
