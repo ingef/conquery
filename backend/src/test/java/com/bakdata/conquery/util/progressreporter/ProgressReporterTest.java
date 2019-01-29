@@ -11,9 +11,6 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.util.progressreporter.ImmutableProgressReporter;
-import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import com.bakdata.conquery.util.progressreporter.ProgressReporterImpl;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 
