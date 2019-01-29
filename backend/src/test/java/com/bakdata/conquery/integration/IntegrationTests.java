@@ -43,7 +43,6 @@ public class IntegrationTests {
 
 	@TestFactory @Tag(TestTags.INTEGRATION_JSON)
 	public List<DynamicNode> jsonTests() throws IOException {
-		reduceLogging();
 		File testRoot = DEFAULT_TEST_ROOT;
 		if(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE) != null)
 			testRoot = new File(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE));
@@ -103,11 +102,6 @@ public class IntegrationTests {
 			currentDir.getAbsoluteFile().toURI(),
 			list.stream()
 		);
-	}
-
-	public static void reduceLogging() {
-		Logger logger = (Logger) LoggerFactory.getLogger("org.hibernate");
-		logger.setLevel(Level.WARN);
 	}
 
 	private static boolean isTestSpecFile(File file) {
