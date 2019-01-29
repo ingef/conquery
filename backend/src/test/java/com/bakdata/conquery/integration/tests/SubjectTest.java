@@ -1,10 +1,10 @@
-package com.bakdata.conquery.integration.auth;
+package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.EnumSet;
 
-import com.bakdata.conquery.integration.ConqueryTestSpec;
+import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -17,13 +17,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
-
-@CPSType(id="SUBJECT_TEST",base=ConqueryTestSpec.class)
-public class SubjectTest implements ConqueryTestSpec {
+public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
 
 	@Override
-	public void executeTest(StandaloneSupport support) throws Exception {
-		MasterMetaStorage storage = support.getStandaloneCommand().getMaster().getStorage();
+	public void execute(StandaloneSupport conquery) throws Exception {
+		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
 		
 		Dataset dataset1 = new Dataset();
 		dataset1.setLabel("dataset1");
@@ -46,11 +44,6 @@ public class SubjectTest implements ConqueryTestSpec {
 		user1.addMandator(mandator1);
 		user1.addMandator(mandator1);
 		assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1);
-	}
-
-	@Override
-	public void importRequiredData(StandaloneSupport support) throws Exception {
-
 	}
 
 }

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.integration.filter;
+package com.bakdata.conquery.integration.json.filter;
 
 import java.util.List;
 

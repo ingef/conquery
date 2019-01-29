@@ -1,30 +1,29 @@
-package com.bakdata.conquery.integration.query;
-
-import static org.assertj.core.api.Assertions.fail;
+package com.bakdata.conquery.integration.json.filter;
 
 import java.io.File;
 import java.io.IOException;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.io.FileUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.bakdata.conquery.integration.AbstractQueryEngineTest;
-import com.bakdata.conquery.integration.ConqueryTestSpec;
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
+import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
+import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
+import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -36,16 +35,15 @@ import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
+import com.bakdata.conquery.models.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.query.concept.filter.FilterValue;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.concept.specific.CQDateRestriction;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
 
@@ -53,68 +51,55 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
-@Getter
-@Setter
-@CPSType(id = "QUERY_TEST", base = ConqueryTestSpec.class)
-public class QueryTest extends AbstractQueryEngineTest {
 
-	@NotEmpty
-	private String label;
+@Slf4j @Getter @Setter
+@CPSType(id = "FILTER_TEST", base = ConqueryTestSpec.class)
+public class FilterTest extends AbstractQueryEngineTest {
+
 	@ExistingFile
 	private File expectedCsv;
 
 	@NotNull
-	@JsonProperty("query")
-	private JsonNode rawQuery;
-	@Valid
+	@JsonProperty("filterValue")
+	private ObjectNode rawFilterValue;
+
 	@NotNull
+	@JsonProperty("content")
+	private ObjectNode rawContent;
+
+	@JsonIgnore
 	private RequiredData content;
+
+
 	@NotNull
-	@JsonProperty("concepts")
-	private ArrayNode rawConcepts;
+	@JsonProperty("connector")
+	private ObjectNode rawConnector;
+
+	private Range<LocalDate> dateRange;
 
 	@JsonIgnore
 	private IQuery query;
 
+	@JsonIgnore
+	private Connector connector;
+	private VirtualConcept concept;
+
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
+
+		((ObjectNode) rawContent.get("tables")).put("name", "table");
+
+		content = parseSubTree(support, rawContent, RequiredData.class);
+
 		importTables(support);
 		support.waitUntilWorkDone();
 
 		importConcepts(support);
 		support.waitUntilWorkDone();
+		
 		query = parseQuery(support);
 
 		importTableContents(support);
-		support.waitUntilWorkDone();
-		importPreviousQueries(support);
-	}
-
-	private void importPreviousQueries(StandaloneSupport support) throws JSONException, IOException {
-		// Load previous query results if available
-		int id = 1;
-		for(File queryResults : content.getPreviousQueryResults()) {
-			UUID queryId = new UUID(0L, id++);
-			
-			String[][] data = CSV.streamContent(support.getCfg().getCsv(), queryResults, log)
-				.toArray(String[][]::new);
-
-			ConceptQuery q = new ConceptQuery();
-			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
-			
-			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId);
-			managed.awaitDone(1, TimeUnit.DAYS);
-
-			if (managed.getStatus() == QueryStatus.FAILED) {
-				fail("Query failed");
-			}
-		}
-		
-		//wait only if we actually did anything
-		if(!content.getPreviousQueryResults().isEmpty()) {
-			support.waitUntilWorkDone();
-		}
 	}
 
 	private void importTableContents(StandaloneSupport support) throws IOException, JSONException {
@@ -170,20 +155,61 @@ public class QueryTest extends AbstractQueryEngineTest {
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
 		Dataset dataset = support.getDataset();
 
-		List<Concept<?>> concepts = parseSubTree(
+		concept = new VirtualConcept();
+		concept.setLabel("concept");
+		support.getDatasetsProcessor().addConcept(dataset, concept);
+
+		concept.setDataset(support.getDataset().getId());
+
+		rawConnector.put("name", "connector");
+		rawConnector.put("table", "table");
+
+		((ObjectNode) rawConnector.get("filter")).put("name", "filter");
+
+		connector = parseSubTree(
 				support,
-				rawConcepts,
-				Jackson.MAPPER.getTypeFactory().constructParametricType(List.class, Concept.class),
-				list -> list.forEach(c -> c.setDataset(support.getDataset().getId()))
+				rawConnector,
+				VirtualConceptConnector.class,
+				conn -> conn.setConcept(concept)
 		);
 
-		for (Concept<?> concept : concepts) {
-			support.getDatasetsProcessor().addConcept(dataset, concept);
-		}
+		concept.setConnectors(Collections.singletonList((VirtualConceptConnector) connector));
+		support.getDatasetsProcessor().addConcept(dataset, concept);
 	}
 
 	private IQuery parseQuery(StandaloneSupport support) throws JSONException, IOException {
-		return parseSubTree(support, rawQuery, IQuery.class);
+		rawFilterValue.put("filter", support.getDataset().getName() + ".concept.connector.filter");
+
+
+		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class));
+
+		CQTable cqTable = new CQTable();
+
+		cqTable.setResolvedConnector(connector);
+		cqTable.setFilters(Collections.singletonList(result));
+		cqTable.setId(connector.getId());
+
+		ConceptQuery conceptQuery = new ConceptQuery();
+
+		CQConcept cqConcept = new CQConcept();
+
+		cqTable.setConcept(cqConcept);
+
+		cqConcept.setIds(Collections.singletonList(concept.getId()));
+		cqConcept.setTables(Collections.singletonList(cqTable));
+
+		if (dateRange != null) {
+			CQDateRestriction restriction = new CQDateRestriction();
+			restriction.setDateRange(dateRange);
+			restriction.setChild(cqConcept);
+			conceptQuery.setRoot(restriction);
+		}
+		else {
+			conceptQuery.setRoot(cqConcept);
+		}
+
+
+		return conceptQuery;
 	}
 
 	@Override
@@ -197,10 +223,5 @@ public class QueryTest extends AbstractQueryEngineTest {
 		for (RequiredTable rTable : content.getTables()) {
 			support.getDatasetsProcessor().addTable(dataset, rTable.toTable());
 		}
-	}
-
-	@Override
-	public String toString() {
-		return label;
 	}
 }

@@ -64,7 +64,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		validator = environment.getValidator();
 		this.config = config;
 		
-		maintenanceService = environment
+		this.maintenanceService = environment
 			.lifecycle()
 			.scheduledExecutorService("Maintenance Service")
 			.build();

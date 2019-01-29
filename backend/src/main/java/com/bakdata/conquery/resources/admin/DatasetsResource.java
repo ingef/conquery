@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -57,6 +56,7 @@ import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.dropwizard.views.View;
+import java.util.concurrent.ScheduledExecutorService;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -134,7 +134,7 @@ public class DatasetsResource {
 	
 	@POST @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDataset(@NotEmpty@FormDataParam("dataset_name")String name) throws JSONException {
-		processor.addDataset(name, processor.getMaintenanceService());
+		processor.addDataset(name);
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
 			.build();
