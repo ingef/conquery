@@ -10,9 +10,17 @@ jobs:
     - stage: "Tests"
       
     #build everything and run all non-integration tests
-      name: "Unit Tests"
+      name: "Frontend Tests"
       install:
-          -  mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+        -  cd frontend
+        -  mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+      script: mvn test -B -DskipDockerTests=true
+
+    #build everything and run all non-integration tests
+    - name: "Unit Tests"
+      install:
+        - cd backend
+        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
       script: mvn test -B -DskipDockerTests=true -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
     #build and test only INTEGRATION_PROGRAMMATIC
