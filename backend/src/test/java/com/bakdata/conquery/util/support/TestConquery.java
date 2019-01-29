@@ -99,7 +99,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			String name = UUID.randomUUID().toString();
 			DatasetId id = new DatasetId(name);
 		
-			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addDataset(name, standaloneCommand.getMaster().getMaintenanceService());
+			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addDataset(name);
 			Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
 			Namespace ns = namespaces.get(id);
 			
