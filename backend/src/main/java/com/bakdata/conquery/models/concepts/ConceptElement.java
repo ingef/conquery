@@ -1,13 +1,11 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.common.KeyValue;
-import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -24,7 +22,7 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	@Getter @Setter
 	private List<KeyValue> additionalInfos = Collections.emptyList();
 	@Getter @Setter
-	private Range<LocalDate> conceptDateRange;
+	private MatchingStats matchingStats = new MatchingStats();
 	
 	public ConceptElement<?> getElementById(ConceptElementId<?> conceptElementId) {
 		if(Objects.equals(conceptElementId, this.getId())) {

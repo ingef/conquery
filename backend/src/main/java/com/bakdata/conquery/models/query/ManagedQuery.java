@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
@@ -42,6 +43,12 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private IQuery query;
 	private LocalDateTime creationTime = LocalDateTime.now();
 
+	/**
+	 * The number of contained entities the last time this query was executed.
+	 * @param lastResultCount the new count for JACKSON
+	 * @returns the number of contained entities
+	 */
+	private long lastResultCount;
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private QueryStatus status = QueryStatus.RUNNING;
@@ -101,7 +108,14 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		finishTime = LocalDateTime.now();
 		status = QueryStatus.DONE;
 		execution.countDown();
-		log.info("Finished query {} within {}", queryId, Duration.between(startTime, finishTime));
+		lastResultCount = results.stream().filter(ContainedEntityResult.class::isInstance).count();
+		try {
+			namespace.getStorage().getMetaStorage().updateQuery(this);
+		}
+		catch(JSONException e) {
+			log.error("Failed to store query after finishing: "+this, e);
+		}
+		log.info("Finished query {} within {}",queryId, Duration.between(startTime, finishTime));
 	}
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {

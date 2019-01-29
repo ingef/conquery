@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types.specific;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -16,8 +17,6 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -72,10 +71,10 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	}
 
 	@Override
-	public void storeExternalInfos(NamespacedStorage storage, Consumer<WorkerMessage> messageConsumer) {
+	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {
 		dictionary.setName(dictionaryId.getDictionary());
 		dictionary.setDataset(dictionaryId.getDataset());
-		messageConsumer.accept(new UpdateDictionary(dictionary));
+		dictionaryConsumer.accept(dictionary);
 	}
 
 	@Override
@@ -119,5 +118,10 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	@Override
 	public int size() {
 		return dictionary.size();
+	}
+	
+	@Override
+	public Iterator<String> iterator() {
+		return dictionary.iterator();
 	}
 }

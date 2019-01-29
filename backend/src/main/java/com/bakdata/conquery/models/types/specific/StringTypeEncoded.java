@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.types.specific;
 
+import java.util.Iterator;
+import java.util.stream.IntStream;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.CType;
 import com.google.common.io.BaseEncoding;
@@ -37,7 +40,7 @@ public class StringTypeEncoded extends StringType implements IStringType {
 
 	@Override
 	public int getStringId(String string) {
-		return super.getStringId(new String(encoding.decode(string)));
+		return super.getDictionary().getId(encoding.decode(string));
 	}
 
 	@Override
@@ -80,5 +83,13 @@ public class StringTypeEncoded extends StringType implements IStringType {
 			return getEncoding().decode(chars);
 		}
 
+	}
+	
+	@Override
+	public Iterator<String> iterator() {
+		return IntStream
+			.range(0, getDictionary().size())
+			.mapToObj(this::createScriptValue)
+			.iterator();
 	}
 }

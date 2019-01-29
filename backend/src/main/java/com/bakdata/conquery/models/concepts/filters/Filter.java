@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
@@ -53,6 +54,15 @@ public abstract class Filter<FE_TYPE extends FilterValue<?>> extends Labeled<Fil
 	public FilterId createId() {
 		return new FilterId(connector.getId(), getName());
 	}
+
+	/**
+	 * This method is called once at startup or if the dataset changes for each new import that
+	 * concerns this filter. Use this to collect metadata from the import. It is not guaranteed that
+	 * any blocks or cBlocks exist at this time. Any data created by this method should be volatile
+	 * and @JsonIgnore.
+	 * @param imp the import added
+	 */
+	public void addImport(Import imp) {}
 
 	/*
 	public Condition createSimpleCondition(FE_TYPE qf) {return null;}

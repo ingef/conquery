@@ -42,12 +42,12 @@ public class BlockFactory_${suffix} extends BlockFactory {
 			</#if>
 			}
 			else{
-			    ${col.type.primitiveType.name} value;
-			    <#if t.unboxValue??>
-                value = <@t.unboxValue>events.get(event)[${col_index}]</@t.unboxValue>;
-			    <#else>
-                value = (${col.type.primitiveType.name}) events.get(event)[${col_index}];
-                </#if>
+				${col.type.primitiveType.name} value;
+				<#if t.unboxValue??>
+				value = <@t.unboxValue>events.get(event)[${col_index}]</@t.unboxValue>;
+				<#else>
+				value = (${col.type.primitiveType.name}) events.get(event)[${col_index}];
+				</#if>
 				transformedEvent.set${safeName(col.name)?cap_first}(value);
 			}
 			</#if>

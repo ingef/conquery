@@ -57,4 +57,8 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	public ConceptId createId() {
 		return new ConceptId(Objects.requireNonNull(dataset), getName());
 	}
+	
+	public int countElements() {
+		return 1;
+	}
 }

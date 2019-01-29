@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
 import java.util.Collection;
 import java.util.stream.Collectors;
+import javax.servlet.http.HttpServletRequest;
 
 import jersey.repackaged.com.google.common.collect.Iterators;
 
@@ -24,10 +25,10 @@ public class StoredQueriesProcessor {
 		this.namespaces = namespaces;
 	}
 
-	public List<SQStatus> getAllQueries(User user, Dataset dataset, URLBuilder urlb) {
+	public List<SQStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
 		Collection<ManagedQuery> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllQueries();
 		
-		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(mq, urlb)).collect(Collectors.toList());
+		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(mq, URLBuilder.fromRequest(req))).collect(Collectors.toList());
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedQuery query) {
@@ -59,8 +60,9 @@ public class StoredQueriesProcessor {
 	}
 
 	public SQStatus getQueryWithSource(Dataset dataset, ManagedQueryId queryId) {
-		// see https://github.com/bakdata/conquery/issues/252
-		return null;
+		ManagedQuery query = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getQuery(queryId);
+		
+		return SQStatus.buildFromQuery(query);
 	}
 
 }

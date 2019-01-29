@@ -21,7 +21,6 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBits;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
@@ -56,6 +55,7 @@ public class ImportJob extends Job {
 	private final TableId table;
 	private final File importFile;
 	
+	@SuppressWarnings("unchecked")
 	@Override
 	public void execute() throws JSONException {
 		this.progressReporter.setMax(16);
@@ -118,7 +118,16 @@ public class ImportJob extends Job {
 			this.progressReporter.report(1);
 			log.debug("\tsending secondary dictionaries");
 			for(PPColumn col:header.getColumns()) {
-				col.getType().storeExternalInfos(namespace.getStorage(), (Consumer<WorkerMessage>)(namespace::sendToAll));
+				col.getType().storeExternalInfos(namespace.getStorage(),
+					(Consumer<Dictionary>)(dict -> {
+						try {
+							namespace.getStorage().addDictionary(dict);
+							namespace.sendToAll(new UpdateDictionary(dict));
+						} catch(Exception e) {
+							throw new RuntimeException("Failed to store dictionary "+dict, e);
+						}
+					})
+				);
 			}
 			this.progressReporter.report(1);
 			
@@ -213,7 +222,7 @@ public class ImportJob extends Job {
 							
 						GroupingByteBuffer responsibleAllIdsBuffer = allIdsBuffer.get(responsibleWorker);
 						responsibleAllIdsBuffer.ensureCapacity(size);
-						allIdsBits.get(responsibleWorker).getBits().add(new ImportBits.Bit(entityId, size));
+						allIdsBits.get(responsibleWorker).addBits(new ImportBits.Bit(entityId, size));
 						System.arraycopy(buffer.getBuffer(), 0, responsibleAllIdsBuffer.internalArray(), responsibleAllIdsBuffer.offset(), size);
 						responsibleAllIdsBuffer.advance(size);
 						
@@ -253,7 +262,7 @@ public class ImportJob extends Job {
 					}
 					GroupingByteBuffer responsibleBuffer = buffer.get(responsibleWorker);
 					responsibleBuffer.ensureCapacity(size);
-					bits.get(responsibleWorker).getBits().add(new ImportBits.Bit(entityId, size));
+					bits.get(responsibleWorker).addBits(new ImportBits.Bit(entityId, size));
 					in.readBytes(responsibleBuffer.internalArray(), responsibleBuffer.offset(), size);
 					responsibleBuffer.advance(size);
 					

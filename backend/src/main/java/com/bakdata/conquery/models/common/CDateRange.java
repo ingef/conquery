@@ -76,7 +76,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	@Override
 	public LocalDate getMax() {
-		return CDate.toLocalDate(getMaxValue());
+		return max == Integer.MAX_VALUE ? null : CDate.toLocalDate(getMaxValue());
 	}
 
 	@JsonIgnore
@@ -91,11 +91,11 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	@Override
 	public LocalDate getMin() {
-		return CDate.toLocalDate(getMinValue());
+		return min == Integer.MIN_VALUE ? null : CDate.toLocalDate(getMinValue());
 	}
 
 	@JsonCreator
-	public CDateRange fromArray(int[] values) {
+	public static CDateRange fromArray(int[] values) {
 		if (values.length != 2) {
 			throw new IllegalArgumentException("Array must be exactly of size 2");
 		}
@@ -137,6 +137,18 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	@Override
 	public CDateRange span(CDateRange other) {
 		return new CDateRange(Math.min(getMinValue(), other.getMinValue()), Math.max(getMaxValue(), other.getMaxValue()));
+	}
+
+	public static CDateRange spanOf(CDateRange a, CDateRange b) {
+		if(a == null) {
+			return b;
+		}
+		else if(b  == null) {
+			return a;
+		}
+		else {
+			return a.span(b);
+		}
 	}
 
 	@Override
@@ -244,4 +256,9 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	public boolean hasLowerBound() {
 		return min != Integer.MIN_VALUE;
 	}
+
+	public Range<LocalDate> toSimpleRange() {
+		return new Range<>(getMin(), getMax());
+	}
+
 }

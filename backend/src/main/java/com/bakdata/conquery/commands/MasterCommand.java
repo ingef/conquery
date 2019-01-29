@@ -99,6 +99,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
+		this.storage.loadData();
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
