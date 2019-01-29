@@ -2,11 +2,13 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
+import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -14,8 +16,12 @@ import javax.ws.rs.core.MediaType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
+import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -54,6 +60,21 @@ public class AdminUIResource {
 	@GET @Path("/query")
 	public View getQuery() {
 		return new UIView<>("query.html.ftl", context);
+	}
+	
+	@Produces(ExtraMimeTypes.CSV_STRING)
+	@Consumes(ExtraMimeTypes.JSON_STRING)
+	@POST @Path("/query")
+	public String query(IQuery query) throws JSONException {
+		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query);
+
+		managed.awaitDone(1, TimeUnit.DAYS);
+
+		if (managed.getStatus() == QueryStatus.FAILED) {
+			throw new IllegalStateException("Query failed");
+		}
+
+		return managed.toCSV(config).collect(Collectors.joining("\n"));
 	}
 	
 	@GET @Path("/jobs/")

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.jobs;
 
-import com.bakdata.conquery.util.progress.reporter.ProgressReporter;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

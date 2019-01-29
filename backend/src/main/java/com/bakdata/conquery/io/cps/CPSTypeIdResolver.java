@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
@@ -24,6 +25,8 @@ import lombok.extern.slf4j.Slf4j;
 public class CPSTypeIdResolver implements TypeIdResolver {
 
 	private static HashMap<Class<?>, CPSMap> globalMap;
+
+	public static final ScanResult SCAN_RESULT;
 	
 	private JavaType baseType;
 	private CPSMap cpsMap;
@@ -48,7 +51,8 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 		log.info("Scanning Classpath");
 		//scan classpaths for annotated child classes
 		
-		ScanResult scanRes = new ClassGraph()
+		SCAN_RESULT = new ClassGraph()
+			.enableClassInfo()
 			.enableAnnotationInfo()
 			//blacklist some packages that contain large libraries
 			.blacklistPackages(
@@ -60,10 +64,10 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			)
 			.scan();
 		
-		log.info("Scanned: {} classes in classpath", scanRes.getAllClasses().size());
+		log.info("Scanned: {} classes in classpath", SCAN_RESULT.getAllClasses().size());
 		Set<Class<?>> types = new HashSet<>();
-		types.addAll(scanRes.getClassesWithAnnotation(CPSTypes.class.getName()).loadClasses());
-		types.addAll(scanRes.getClassesWithAnnotation(CPSType.class.getName()).loadClasses());
+		types.addAll(SCAN_RESULT.getClassesWithAnnotation(CPSTypes.class.getName()).loadClasses());
+		types.addAll(SCAN_RESULT.getClassesWithAnnotation(CPSType.class.getName()).loadClasses());
 		
 		globalMap = new HashMap<>();
 		for(Class<?> type:types) {
@@ -84,7 +88,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			}
 		}
 		
-		List<Class<?>> bases = scanRes.getClassesWithAnnotation(CPSBase.class.getName()).loadClasses();
+		List<Class<?>> bases = SCAN_RESULT.getClassesWithAnnotation(CPSBase.class.getName()).loadClasses();
 		for(Class<?> b:bases) {
 			CPSMap map = globalMap.get(b);
 			if(map==null) {
@@ -113,7 +117,13 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	}
 	
 	public static Set<Class<?>> listImplementations(Class<?> base) {
-		return globalMap.get(base).getClasses();
+		CPSMap map = globalMap.get(base);
+		if(map == null) {
+			throw new NoSuchElementException("there are no implementations for "+base);
+		}
+		else {
+			return map.getClasses();
+		}
 	}
 	
 	public static Set<Pair<Class<?>, Class<?>>> listImplementations() {
