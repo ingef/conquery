@@ -14,10 +14,12 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.slf4j.LoggerFactory;
 
+import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -38,14 +40,13 @@ public class IntegrationTests {
 	
 	@RegisterExtension
 	public static final TestConquery CONQUERY = new TestConquery();
-	public static final String TEST_DIRECTORY_ENVIRONMENT_VARIABLE = "CONQUERY_TEST_DIRECTORY";
 
-	@TestFactory
+	@TestFactory @Tag(TestTags.INTEGRATION_JSON)
 	public List<DynamicNode> jsonTests() throws IOException {
 		reduceLogging();
 		File testRoot = DEFAULT_TEST_ROOT;
-		if(System.getenv(TEST_DIRECTORY_ENVIRONMENT_VARIABLE) != null)
-			testRoot = new File(System.getenv(TEST_DIRECTORY_ENVIRONMENT_VARIABLE));
+		if(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE) != null)
+			testRoot = new File(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE));
 
 		
 		//collect tests from directory
@@ -58,7 +59,7 @@ public class IntegrationTests {
 		}
 	}
 	
-	@TestFactory
+	@TestFactory @Tag(TestTags.INTEGRATION_PROGRAMMATIC)
 	public Stream<DynamicNode> programmaticTests() throws IOException {
 		List<Class<?>> programmatic = CPSTypeIdResolver
 			.SCAN_RESULT
