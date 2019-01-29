@@ -1,11 +1,5 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-
-import javax.validation.Validator;
-
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.BlockManager;
@@ -14,9 +8,13 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
+
+import javax.validation.Validator;
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
 
 public interface WorkerStorage extends NamespacedStorage {
 	
