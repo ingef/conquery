@@ -106,7 +106,7 @@
         </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy-all</artifactId>
+            <artifactId>groovy</artifactId>
             <version>2.5.5</version>
             <classifier>indy</classifier>
         </dependency>
@@ -200,5 +200,22 @@
             <artifactId>commons-math3</artifactId>
             <version>3.6.1</version>
         </dependency>
+		<!-- required until Dropwizard 2.0.0 -->
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>2.3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
+		</dependency>
+		<!-- end required until Dropwizard 2.0.0 -->
     </dependencies>
 </project>
