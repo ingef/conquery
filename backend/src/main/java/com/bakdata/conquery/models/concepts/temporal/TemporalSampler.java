@@ -57,7 +57,7 @@ public enum TemporalSampler {
 		}
 	},
 	/**
-	 * Sampler that returns a random date that is inside {@link CDateSet}
+	 * Sampler that returns a random date that is inside {@link CDateSet}.
 	 */
 	RANDOM {
 		Random random = new Random();
@@ -104,7 +104,7 @@ public enum TemporalSampler {
 
 			int sample;
 
-			// Sample values as long as they are not inside the data.
+			// Sample new values as long as they are not inside the data.
 			do {
 				sample = lower + random.nextInt(upper - lower);
 			} while (!data.contains(sample));

@@ -6,7 +6,8 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.temporal.DaysBeforeTemporalQueryNode;
+import com.bakdata.conquery.models.query.temporal.DaysBeforePrecedenceMatcher;
+import com.bakdata.conquery.models.query.temporal.TemporalQueryNode;
 import lombok.Getter;
 
 /**
@@ -31,6 +32,6 @@ public class DaysBeforeTemporalQuery extends AbstractTemporalQuery {
 		QueryPlan precedingPlan = QueryPlan.create();
 		precedingPlan.setRoot(preceding.createQueryPlan(registry, plan));
 
-		return new DaysBeforeTemporalQueryNode(indexPlan, precedingPlan, getSampler(), days, plan.getIncluded());
+		return new TemporalQueryNode(indexPlan, precedingPlan, getSampler(), new DaysBeforePrecedenceMatcher(days), plan.getIncluded());
 	}
 }
