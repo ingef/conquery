@@ -5,7 +5,8 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.temporal.SameTemporalQueryNode;
+import com.bakdata.conquery.models.query.temporal.SameTemporalMatcher;
+import com.bakdata.conquery.models.query.temporal.TemporalQueryNode;
 
 /**
  * Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} at the same time as the events of {@code index}. And the time where this has happened.
@@ -25,6 +26,7 @@ public class SameTemporalQuery extends AbstractTemporalQuery {
 		QueryPlan precedingPlan = QueryPlan.create();
 		precedingPlan.setRoot(preceding.createQueryPlan(registry, plan));
 
-		return new SameTemporalQueryNode(indexPlan, precedingPlan, getSampler(), plan.getIncluded());
+		return new TemporalQueryNode(indexPlan, precedingPlan, getSampler(), new SameTemporalMatcher(), plan.getIncluded()) {
+		};
 	}
 }
