@@ -1,17 +1,10 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.Set;
-
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
-import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -23,9 +16,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
-
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Validator;
+import java.io.File;
+import java.util.Collection;
+import java.util.Set;
 
 @Slf4j
 public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {

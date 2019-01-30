@@ -37,6 +37,10 @@ public class SpecialDateUnion implements Aggregator<CDateSet> {
 		}
 	}
 
+	public void merge(CDateSet other){
+		set.addAll(other);
+	}
+
 	@Override
 	public SpecialDateUnion clone() {
 		return new SpecialDateUnion();
