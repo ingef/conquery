@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.events.Block;
@@ -33,9 +34,20 @@ public class OrNode extends QPParentNode {
 	@Override
 	public boolean isContained() {
 		boolean currently = false;
-		for(QPNode agg:currentTableChildren) {
+		for(QPNode agg:getChildren()) {
 			currently |= agg.isContained();
 		}
 		return currently;
+	}
+	
+	public static QPNode of(Collection<QPNode> children) {
+		switch (children.size()) {
+			case 0:
+				return new Leaf();
+			case 1:
+				return children.iterator().next();
+			default:
+				return new OrNode(new ArrayList<>(children));
+		}
 	}
 }

@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.net.ServerSocket;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -18,7 +17,6 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
@@ -27,15 +25,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.io.ConfigCloner;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
-import io.dropwizard.logging.ConsoleAppenderFactory;
-import io.dropwizard.logging.DefaultLoggingFactory;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
@@ -164,13 +158,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		cfg.getStorage().setPreprocessedRoot(tmpDir);
 		cfg.getStandalone().setNumberOfSlaves(2);
 		//configure logging
-		DefaultLoggingFactory log = new DefaultLoggingFactory();
-		log.setLevel("WARN");
-		ConsoleAppenderFactory consoleAppender = new ConsoleAppenderFactory();
-		consoleAppender.setLogFormat("[%level] [TEST] [%date{yyyy-MM-dd HH:mm:ss}]\t%logger{10}\t%mdc{location}\t%message%n");
-		log.setAppenders(Collections.singletonList(consoleAppender));
-		log.setLoggers(Collections.<String, JsonNode>singletonMap("com.bakdata", new TextNode("INFO")));
-		cfg.setLoggingFactory(log);
+		cfg.setLoggingFactory(new TestLoggingFactory());
 		
 		//set random open ports
 		for(ConnectorFactory con : CollectionUtils.union(
@@ -191,12 +179,12 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		
 		//define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(
-				Conquery.class,
-				cfg,
-				app -> {
-					standaloneCommand = new StandaloneCommand((Conquery) app);
-					return new TestCommandWrapper(cfg, standaloneCommand);
-				}
+			TestBootstrappingConquery.class,
+			cfg,
+			app -> {
+				standaloneCommand = new StandaloneCommand((TestBootstrappingConquery) app);
+				return new TestCommandWrapper(cfg, standaloneCommand);
+			}
 		);
 		
 		//start server
