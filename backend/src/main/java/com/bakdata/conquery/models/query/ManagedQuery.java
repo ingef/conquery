@@ -112,7 +112,7 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		catch(JSONException e) {
 			log.error("Failed to store query after finishing: "+this, e);
 		}
-		log.info("Finished query {} within {}", Duration.between(startTime, finishTime));
+		log.info("Finished query {} within {}", getId(), Duration.between(startTime, finishTime));
 	}
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {
