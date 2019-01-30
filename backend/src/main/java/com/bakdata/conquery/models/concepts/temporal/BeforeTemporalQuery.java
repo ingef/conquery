@@ -7,6 +7,9 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.temporal.BeforeTemporalQueryNode;
 
+/**
+ * Creates a query that will contain all entities where {@code preceding} contains events that happened before the events of {@code index}. And the time where this has happened.
+ */
 @CPSType(id = "BEFORE", base = CQElement.class)
 public class BeforeTemporalQuery extends AbstractTemporalQuery {
 

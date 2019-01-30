@@ -11,8 +11,18 @@ import lombok.Getter;
 @AllArgsConstructor
 public abstract class AbstractTemporalQuery implements CQElement {
 
+	/**
+	 * The query being executed as reference for preceding.
+	 */
 	CQElement index;
+
+	/**
+	 * The query being executed, compared to index. Events in preceding will be cut-off to be always before index, or at the same day, depending on the queries specific implementations.
+	 */
 	CQElement preceding;
 
+	/**
+	 * The sampler to be used.
+	 */
 	TemporalSampler sampler;
 }

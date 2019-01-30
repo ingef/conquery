@@ -8,6 +8,9 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.temporal.DaysBeforeOrNeverTemporalQueryNode;
 import lombok.Getter;
 
+/**
+ * Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} before the events of {@code index}, or no events. And the time where this has happened.
+ */
 @CPSType(id = "DAYS_OR_NO_EVENT_BEFORE", base = CQElement.class)
 public class DaysBeforeOrNeverTemporalQuery extends AbstractTemporalQuery {
 

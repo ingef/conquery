@@ -8,6 +8,9 @@ import java.time.LocalDate;
 import java.util.OptionalInt;
 import java.util.Random;
 
+/**
+ * A class implementing several sampling schemes for {@link CDateSet}.
+ */
 public enum TemporalSampler {
 	EARLIEST {
 		@Override

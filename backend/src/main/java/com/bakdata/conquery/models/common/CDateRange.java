@@ -48,7 +48,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	/**
 	 * Creates a new Range containing containing only the supplied date.
-	 * @param value
+	 * @param value the value the resulting range will contain.
 	 * @return
 	 */
 	public static CDateRange exactly(LocalDate value) {
@@ -56,7 +56,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Copy-constructor from {@link Range<LocalDate>}.
+	 * Copy-constructor from {@link Range}.
 	 * @param value the Range to copy from.
 	 * @return
 	 */
@@ -65,7 +65,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new Range containing all dates after {@code value}, and {@code value}
+	 * Creates a new Range containing all dates after {@code value}, and {@code value}.
 	 * @param value the min value of the range
 	 * @return
 	 */
@@ -74,7 +74,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new Range containing all dates after {@code value}, and {@code value}
+	 * Creates a new Range containing all dates after {@code value}, and {@code value}.
 	 * @param value the min value of the range, in {@link CDate} format
 	 * @return
 	 */
@@ -83,7 +83,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new Range containing all dates before {@code value}, and {@code value}
+	 * Creates a new Range containing all dates before {@code value}, and {@code value}.
 	 * @param value the max value of the range, in {@link CDate} format
 	 * @return
 	 */
@@ -92,7 +92,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new Range containing all dates before {@code value}, and {@code value}
+	 * Creates a new Range containing all dates before {@code value}, and {@code value}.
 	 * @param value the min value of the range
 	 * @return
 	 */
@@ -102,7 +102,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 
 	/**
-	 * Creates a new range containing all values between {@code min} and {@code max}
+	 * Creates a new range containing all values between {@code min} and {@code max}.
 	 * @param min lower bound of the range
 	 * @param max upper bound of the range
 	 * @return
@@ -113,7 +113,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new range containing all valid {@link CDate} values
+	 * Creates a new range containing all valid {@link CDate} values.
 	 * @return
 	 */
 	public static CDateRange all() {
@@ -312,7 +312,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new {@link Range<LocalDate>} that is an equivalent representation of {@code this}.
+	 * Creates a new {@link Range} that is an equivalent representation of {@code this}.
 	 * @return
 	 */
 	public Range<LocalDate> toSimpleRange() {
