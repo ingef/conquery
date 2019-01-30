@@ -82,14 +82,14 @@ const createDateRestriction = (dateRange, concept) => ({
     child: concept
 })
 
-const createSavedQuery = (concept) => ({
+const createSavedQuery = (conceptId) => ({
   type: 'SAVED_QUERY',
-  query: concept.id,
+  query: conceptId,
 })
 
 const createQueryConcept = (concept) =>
   concept.isPreviousQuery
-    ? createSavedQuery(concept)
+    ? createSavedQuery(concept.id)
     : createConcept(concept)
 
 const createConcept = (concept) => ({
@@ -114,13 +114,6 @@ const createQueryConcepts = (query) => {
   })
 }
 
-const transformResultToApi = (result) => {
-  return {
-    id: result.id,
-    timestamp: result.timestamp
-  };
-};
-
 const getDayRange = (condition) => {
   if (condition.operator === DAYS_BEFORE)
     return [
@@ -137,23 +130,27 @@ const getDayRange = (condition) => {
   return [{}, {}];
 };
 
-const transformTimebasedQueryToApi = (query) => {
-  return {
-    type: 'TIME_QUERY',
-    indexResult: query.indexResult,
-    conditions: query.conditions.map(condition => {
-      const [ minDays, maxDays ] = getDayRange(condition);
-
-      return {
-        operator: condition.operator,
-        result0: transformResultToApi(condition.result0),
-        result1: transformResultToApi(condition.result1),
-        ...minDays,
-        ...maxDays,
-      };
-    })
-  };
-};
+const transformTimebasedQueryToApi = (query) => ({
+    type: "CONCEPT_QUERY",
+    root: {
+        type: "AND",
+        children: query.conditions.map(condition => {
+          const [ minDays, maxDays ] = getDayRange(condition);
+          return {
+            type: condition.operator,
+            indexEvent: {
+              index: condition.result0.id,
+              event: createSavedQuery(condition.result0.id)
+            },
+            atLeat: minDays,
+            preceding: {
+              index: condition.result1.id,
+              event: createSavedQuery(condition.result1.id)
+            }
+          }
+        })
+      }
+});
 
 const transformExternalQueryToApi = (query) => createConceptQuery(createExternal(query))
 
