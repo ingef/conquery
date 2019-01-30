@@ -17,7 +17,7 @@ import java.util.Set;
 
 /**
  * QueryNode implementing the logic for TemporalQueries.
- * Executes two queries and compares the times they are included, the entitiy is included according to a specified {@link PrecedenceMatcher}.
+ * Executes two queries and compares the times they are included, the entity is included according to a specified {@link PrecedenceMatcher}.
  */
 @Getter
 public class TemporalQueryNode extends QPNode {
@@ -57,7 +57,6 @@ public class TemporalQueryNode extends QPNode {
 
 	@Override
 	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		//TODO clone matcher?
 		return new TemporalQueryNode(reference.clone(), preceding.clone(), sampler, matcher, clone.getIncluded());
 	}
 
@@ -96,7 +95,7 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	/**
-	 * Calls nextBlock on its children.
+	 * Calls nextBlock on its children.documentation code for refactored matchers.
 	 * @param ctx The new QueryContext
 	 * @param currentTable the new Table
 	 */

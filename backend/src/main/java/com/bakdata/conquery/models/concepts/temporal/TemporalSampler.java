@@ -60,6 +60,9 @@ public enum TemporalSampler {
 	 * Sampler that returns a random date that is inside {@link CDateSet}.
 	 */
 	RANDOM {
+		/**
+		 * A source for random values.
+		 */
 		Random random = new Random();
 
 		/**
@@ -117,7 +120,7 @@ public enum TemporalSampler {
 	/**
 	 * Get a date from within the {@link CDateSet} that is produced according to a sampling scheme.
 	 * @param data the set to be sampled from.
-	 * @return
+	 * @return the date fitting the sampling criteria. Or {@link OptionalInt#empty()} if none is found.
 	 */
 	public abstract OptionalInt sample(CDateSet data);
 
