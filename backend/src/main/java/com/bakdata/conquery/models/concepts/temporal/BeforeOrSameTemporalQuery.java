@@ -10,6 +10,9 @@ import com.bakdata.conquery.models.query.temporal.BeforeOrSameTemporalQueryNode;
 @CPSType(id = "BEFORE_OR_SAME", base = CQElement.class)
 public class BeforeOrSameTemporalQuery extends AbstractTemporalQuery {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	public BeforeOrSameTemporalQuery(CQElement index, CQElement preceding, TemporalSampler sampler) {
 		super(index, preceding, sampler);
 	}

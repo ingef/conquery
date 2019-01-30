@@ -23,6 +23,10 @@ public class QueryPlan implements Cloneable {
 		return plan;
 	}
 
+	/**
+	 * Returns the special Aggregator representing the time the events have been included.
+	 * @return this {@link QueryPlan}'s SpecialDateUnion
+	 */
 	public SpecialDateUnion getIncluded() {
 		return (SpecialDateUnion) aggregators.get(0);
 	}

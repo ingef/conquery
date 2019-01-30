@@ -131,11 +131,20 @@ public class CDateSet {
 		}
 	}
 
+	/**
+	 * Tests if the supplied {@link LocalDate} is contained by this Set.
+	 * @param value the Date to check
+	 * @return true iff any Set contains the value
+	 */
 	public boolean contains(LocalDate value) {
-		return rangeContaining(CDate.ofLocalDate(value)) != null;
+		return contains(CDate.ofLocalDate(value));
 	}
 
-
+	/**
+	 * Tests if the supplied {@link CDate} is contained by this Set.
+	 * @param value the Date to check
+	 * @return true iff any Set contains the value
+	 */
 	public boolean contains(int value) {
 		return rangeContaining(value) != null;
 	}

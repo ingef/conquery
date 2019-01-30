@@ -37,6 +37,10 @@ public class SpecialDateUnion implements Aggregator<CDateSet> {
 		}
 	}
 
+	/**
+	 * Helper method to insert dates from outside.
+	 * @param other CDateSet to be included.
+	 */
 	public void merge(CDateSet other){
 		set.addAll(other);
 	}

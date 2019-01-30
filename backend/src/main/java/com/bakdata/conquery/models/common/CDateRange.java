@@ -37,39 +37,85 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		}
 	}
 
+	/**
+	 * Create a Range containing only the supplied date. The value needs to be a valid CDate.
+	 * @param value The value this range contains, as {@link CDate}.
+	 * @return
+	 */
 	public static CDateRange exactly(int value) {
 		return new CDateRange(value, value);
 	}
 
+	/**
+	 * Creates a new Range containing containing only the supplied date.
+	 * @param value
+	 * @return
+	 */
 	public static CDateRange exactly(LocalDate value) {
 		return exactly(CDate.ofLocalDate(value));
 	}
 
+	/**
+	 * Copy-constructor from {@link Range<LocalDate>}.
+	 * @param value the Range to copy from.
+	 * @return
+	 */
 	public static CDateRange of(Range<LocalDate> value) {
 		return new CDateRange(CDate.ofLocalDate(value.getMin()), CDate.ofLocalDate(value.getMax()));
 	}
 
+	/**
+	 * Creates a new Range containing all dates after {@code value}, and {@code value}
+	 * @param value the min value of the range
+	 * @return
+	 */
 	public static CDateRange atLeast(LocalDate value) {
 		return atLeast(CDate.ofLocalDate(value));
 	}
 
+	/**
+	 * Creates a new Range containing all dates after {@code value}, and {@code value}
+	 * @param value the min value of the range, in {@link CDate} format
+	 * @return
+	 */
 	public static CDateRange atLeast(int value) {
 		return new CDateRange(value, Integer.MAX_VALUE);
 	}
 
+	/**
+	 * Creates a new Range containing all dates before {@code value}, and {@code value}
+	 * @param value the max value of the range, in {@link CDate} format
+	 * @return
+	 */
 	public static CDateRange atMost(int value) {
 		return new CDateRange(Integer.MIN_VALUE, value);
 	}
 
+	/**
+	 * Creates a new Range containing all dates before {@code value}, and {@code value}
+	 * @param value the min value of the range
+	 * @return
+	 */
 	public static CDateRange atMost(LocalDate value) {
 		return atMost(CDate.ofLocalDate(value));
 	}
 
+
+	/**
+	 * Creates a new range containing all values between {@code min} and {@code max}
+	 * @param min lower bound of the range
+	 * @param max upper bound of the range
+	 * @return
+	 */
 	@JsonCreator
 	public static CDateRange of(LocalDate min, LocalDate max) {
 		return new CDateRange(CDate.ofLocalDate(min), CDate.ofLocalDate(max));
 	}
 
+	/**
+	 * Creates a new range containing all valid {@link CDate} values
+	 * @return
+	 */
 	public static CDateRange all() {
 		return new CDateRange(Integer.MIN_VALUE, Integer.MAX_VALUE);
 	}
@@ -249,14 +295,26 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		return String.format("%s/%s", getMin(), getMax());
 	}
 
+	/**
+	 * Tests if the Range has an upper bound.
+	 * @return {@code true} if the Range has an upper bound
+	 */
 	public boolean hasUpperBound() {
 		return max != Integer.MAX_VALUE;
 	}
 
+	/**
+	 * Tests if the Range has a lower bound.
+	 * @return {@code true} if the Range has a lower bound
+	 */
 	public boolean hasLowerBound() {
 		return min != Integer.MIN_VALUE;
 	}
 
+	/**
+	 * Creates a new {@link Range<LocalDate>} that is an equivalent representation of {@code this}.
+	 * @return
+	 */
 	public Range<LocalDate> toSimpleRange() {
 		return new Range<>(getMin(), getMax());
 	}
