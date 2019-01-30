@@ -9,6 +9,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 
 import java.util.OptionalInt;
 
+/**
+ * Tests if the preceding date is the same day or any day before the reference date.
+ */
 public class BeforeOrSameTemporalMatcher implements PrecedenceMatcher {
 
 	@Override

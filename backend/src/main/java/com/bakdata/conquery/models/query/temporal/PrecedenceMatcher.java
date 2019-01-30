@@ -4,7 +4,16 @@ import com.bakdata.conquery.models.common.CDateSet;
 
 import java.util.OptionalInt;
 
+/**
+ * Interface for handling of TemporalQuery logic.
+ */
 public interface PrecedenceMatcher {
+
+	/**
+	 * Remove days before {@code sample} according to specified logic.
+	 * @param preceding the set to manipulate
+	 * @param sample the last {@link com.bakdata.conquery.models.common.CDate} to be included.
+	 */
 	void removePreceding(CDateSet preceding, int sample);
 
 	/**

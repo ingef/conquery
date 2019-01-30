@@ -9,6 +9,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 
 import java.util.OptionalInt;
 
+/**
+ * Tests if the preceding date is {@link #days} before the reference, if not it must not be present.
+ */
 public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 
 	private final int days;
@@ -16,6 +19,7 @@ public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 	public DaysBeforeOrNeverPrecedenceMatcher(int days) {
 		this.days = days;
 	}
+
 
 	@Override
 	public void removePreceding(CDateSet preceding, int sample) {
@@ -26,10 +30,11 @@ public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 
 	@Override
 	public boolean isContained(OptionalInt reference, OptionalInt preceding) {
-		if (!preceding.isPresent() || !reference.isPresent()) {
+		if (!reference.isPresent()) {
 			return false;
 		}
 
-		return (reference.getAsInt() - preceding.getAsInt()) >= days;
+		return !preceding.isPresent() || (reference.getAsInt() - preceding.getAsInt()) >= days;
+
 	}
 }

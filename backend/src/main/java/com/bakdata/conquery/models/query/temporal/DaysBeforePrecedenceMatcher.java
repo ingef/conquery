@@ -10,6 +10,10 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 
 import java.util.OptionalInt;
 
+
+/**
+ * Tests if the days between reference and preceding are within {@link #days}.
+ */
 public class DaysBeforePrecedenceMatcher implements PrecedenceMatcher {
 
 	private final Range.IntegerRange days;

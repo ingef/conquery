@@ -10,13 +10,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 import java.util.OptionalInt;
 
 /**
- * Entity is contained when the supplied dates are on the same day.
+ * Tests if reference and preceding are on the same day.
  */
 public class SameTemporalMatcher implements PrecedenceMatcher {
 
 	@Override
 	public void removePreceding(CDateSet preceding, int sample) {
-		// Only consider samples that are before reference's sample event
 		preceding.remove(CDateRange.atLeast(sample + 1));
 	}
 

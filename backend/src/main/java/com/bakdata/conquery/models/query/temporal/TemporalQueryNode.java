@@ -11,17 +11,20 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import lombok.Getter;
-import org.apache.commons.lang3.NotImplementedException;
 
 import java.util.OptionalInt;
 import java.util.Set;
 
 /**
- * Abstract implementation of a TemporalQueryNode, implements common functionality between all TemporalQueries.
+ * QueryNode implementing the logic for TemporalQueries.
+ * Executes two queries and compares the times they are included, the entitiy is included according to a specified {@link PrecedenceMatcher}.
  */
 @Getter
 public class TemporalQueryNode extends QPNode {
 
+	/**
+	 * Matcher to be used when testing for inclusion.
+	 */
 	private PrecedenceMatcher matcher;
 
 	/**
@@ -45,21 +48,22 @@ public class TemporalQueryNode extends QPNode {
 	private SpecialDateUnion dateUnion;
 
 	public TemporalQueryNode(QueryPlan reference, QueryPlan preceding, TemporalSampler sampler, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
-		TemporalQueryNode.this.reference = reference;
-		TemporalQueryNode.this.preceding = preceding;
-		TemporalQueryNode.this.sampler = sampler;
+		this.reference = reference;
+		this.preceding = preceding;
+		this.sampler = sampler;
 		this.matcher = matcher;
-		TemporalQueryNode.this.dateUnion = dateUnion;
+		this.dateUnion = dateUnion;
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone){
+	public QPNode clone(QueryPlan plan, QueryPlan clone) {
 		//TODO clone matcher?
 		return new TemporalQueryNode(reference.clone(), preceding.clone(), sampler, matcher, clone.getIncluded());
 	}
 
 	/**
 	 * Collects required tables of {@link #reference} and {@link #preceding} into {@code out}.
+	 *
 	 * @param out the set to be filled with data.
 	 */
 	@Override
@@ -70,6 +74,7 @@ public class TemporalQueryNode extends QPNode {
 
 	/**
 	 * Initializes the {@link TemporalQueryNode} and its children.
+	 *
 	 * @param entity the Entity to be worked on.
 	 */
 	@Override
@@ -80,18 +85,33 @@ public class TemporalQueryNode extends QPNode {
 		preceding.getRoot().init(entity);
 	}
 
+	/**
+	 * Calls nextBlock on its children.
+	 * @param block the new Block
+	 */
 	@Override
 	public void nextBlock(Block block) {
 		reference.getRoot().nextBlock(block);
 		preceding.getRoot().nextBlock(block);
 	}
 
+	/**
+	 * Calls nextBlock on its children.
+	 * @param ctx The new QueryContext
+	 * @param currentTable the new Table
+	 */
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		reference.getRoot().nextTable(ctx, currentTable);
 		preceding.getRoot().nextTable(ctx, currentTable);
 	}
 
+	/**
+	 * Delegates aggregation to {@link #reference} and {@link #preceding}.
+	 * @param block the specific Block
+	 * @param event the event to aggregate over
+	 * @return always true.
+	 */
 	@Override
 	public boolean nextEvent(Block block, int event) {
 		reference.getRoot().aggregate(block, event);
