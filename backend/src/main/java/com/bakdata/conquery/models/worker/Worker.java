@@ -53,4 +53,9 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		queryExecutor.close();
 		storage.close();
 	}
+	
+	@Override
+	public String toString() {
+		return "Worker[" + info.getId() + ", " + session.getLocalAddress() + "]";
+	}
 }
