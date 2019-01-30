@@ -104,8 +104,8 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private void finish() {
 		finishTime = LocalDateTime.now();
 		status = QueryStatus.DONE;
-		execution.countDown();
 		lastResultCount = results.stream().filter(ContainedEntityResult.class::isInstance).count();
+		execution.countDown();
 		try {
 			namespace.getStorage().getMetaStorage().updateQuery(this);
 		}
