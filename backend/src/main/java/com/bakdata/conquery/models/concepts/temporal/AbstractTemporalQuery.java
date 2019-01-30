@@ -5,7 +5,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * Abstract data class specifying the data needed for a TemporalQuery
+ * Abstract data class specifying the data needed for a TemporalQuery.
  */
 @Getter
 @AllArgsConstructor
