@@ -16,6 +16,7 @@ import javax.ws.rs.client.Client;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
+import org.glassfish.jersey.servlet.WebConfig.ConfigType;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -168,14 +169,10 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		log.info("Working in temporary directory {}", tmpDir);
 		
 		config = getConfig();
-		Optional<Object> instanceOpt = context.getTestInstance();
-		if(instanceOpt.isPresent()) {
-			Object instance = instanceOpt.get();
-			if(instance instanceof ConfigOverride) {
-				((ConfigOverride)instance).override(config);
-			}
-			
-		}
+		context.getTestInstance()
+			.filter(ConfigOverride.class::isInstance)
+			.map(ConfigOverride.class::cast)
+			.ifPresent(co -> co.override(config));
 
 		//define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(
