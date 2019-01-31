@@ -23,7 +23,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -54,6 +53,14 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
+	
+	/**
+	 * Returns the extension context used by the beforeAll-callback.
+	 *
+	 * @return The context.
+	 */
+	@Getter
+	private ExtensionContext beforeAllContext;
 	
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
 		try {
@@ -157,6 +164,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
+		this.beforeAllContext = context;
 		//create tmp dir if it was not already created
 		if(tmpDir == null) {
 			tmpDir = Files.createTempDir();
@@ -164,6 +172,10 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		log.info("Working in temporary directory {}", tmpDir);
 		
 		config = getConfig();
+		context.getTestInstance()
+			.filter(ConfigOverride.class::isInstance)
+			.map(ConfigOverride.class::cast)
+			.ifPresent(co -> co.override(config));
 
 		//define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(

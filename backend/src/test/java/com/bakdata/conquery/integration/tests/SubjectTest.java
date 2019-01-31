@@ -2,18 +2,13 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.EnumSet;
-
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
 public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {

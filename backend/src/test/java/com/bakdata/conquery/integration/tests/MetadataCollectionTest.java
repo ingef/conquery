@@ -4,13 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalDate;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.common.CDateRange;
@@ -19,7 +14,6 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 
 import lombok.extern.slf4j.Slf4j;
