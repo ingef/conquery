@@ -55,7 +55,14 @@ public abstract class IdMappingConfig {
 	abstract public List<String> getHeader();
 
 	public String[] toExternal(String csvId, Namespace namespace) {
-		return namespace.getStorage().getIdMapping().get(csvId).toArray(new String[0]);
+		Map<String, List<String>> mapping = namespace.getStorage().getIdMapping();
+		if (mapping != null){
+			return mapping.get(csvId).toArray(new String[0]);
+		}
+		else {
+			return new String[]{csvId};
+		}
+
 	}
 
 	public IdAccessor mappingFromCsvHeader(String[] csvHeader) {

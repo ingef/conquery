@@ -18,11 +18,11 @@ public class SimpleIdMappingConfig extends IdMappingConfig {
 
 
 	@Override public List<String> getPrintIdFields() {
-		return Collections.singletonList("csvId");
+		return Collections.singletonList("result");
 	}
 
 	@Override public List<String> getHeader() {
-		return Arrays.asList("id", "csvId");
+		return Arrays.asList("id", "result");
 	}
 
 }
