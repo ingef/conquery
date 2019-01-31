@@ -57,7 +57,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		//stop dropwizard directly so COnquerySupport does not delete the tmp directory
 		testConquery.getDropwizard().after();
 		//restart
-		testConquery.beforeAll(null);
+		testConquery.beforeAll(testConquery.getBeforeAllContext());
 		
 		try(StandaloneSupport conquery = testConquery.openDataset(dataset)) {
 			test.executeTest(conquery);

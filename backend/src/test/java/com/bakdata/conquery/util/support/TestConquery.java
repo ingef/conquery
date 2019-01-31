@@ -55,6 +55,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
+	@Getter
+	private ExtensionContext beforeAllContext;
 	
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
 		try {
@@ -158,6 +160,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
+		this.beforeAllContext = context;
 		//create tmp dir if it was not already created
 		if(tmpDir == null) {
 			tmpDir = Files.createTempDir();
