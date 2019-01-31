@@ -45,17 +45,18 @@ public class QueryPart implements Callable<EntityResult> {
 			}
 	
 			if(root.isContained()) {
-				return result(entity, queryPlan);
+				return result(queryPlan);
 			}
 			else {
 				return EntityResult.notContained();
 			}
-		} catch(Exception e) {
+		}
+		catch(Exception e) {
 			return EntityResult.failed(entity.getId(), e);
 		}
 	}
 
-	private EntityResult result(Entity entity2, QueryPlan queryPlan) {
+	private EntityResult result(QueryPlan queryPlan) {
 		String[] values = new String[queryPlan.getAggregators().size()];
 		for(int i=0;i<values.length;i++)
 			values[i] = Objects.toString(queryPlan.getAggregators().get(i).getAggregationResult());

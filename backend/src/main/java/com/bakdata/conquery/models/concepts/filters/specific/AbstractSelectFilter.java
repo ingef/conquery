@@ -6,13 +6,21 @@ import java.util.Map;
 
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
+import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.specific.IStringType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Sets;
 import com.zigurs.karlis.utils.search.QuickSearch;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -23,12 +31,11 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @RequiredArgsConstructor
-public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> extends SingleColumnFilter<FE_TYPE>
-		implements ISelectFilter {
+public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
 
+	protected Set<String> values;
 	protected Map<String, String> labels = Collections.emptyMap();
 	protected boolean matchLabels = false;
-	protected boolean allowDropFile = false;
 	@JsonIgnore
 	protected Map<String, String> realLabels;
 	@JsonIgnore
@@ -41,8 +48,6 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 	@JsonIgnore
 	private final FEFilterType filterType;
 
-	private Dictionary dictionary;
-
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
@@ -52,41 +57,19 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setType(filterType);
 
-		//Column c = getColumn();
-		//if (!c.getType().equals(MajorTypeId.STRING)) {
-		//	throw new ConceptConfigurationException(getConnector(),
-		//			filterType + " filter is incompatible with columns of type " + c.getType());
-		//}
-		//
-		//if (maximumSize != -1 && dictionary.size() > maximumSize) {
-		//	throw new ConceptConfigurationException(getConnector(), "Too many possible values (" + dictionary.size()
-		//			+ " of " + maximumSize + ") in filter " + this.getId() + ".");
-		//}
-		//
-		//realLabels = dictionary.values().stream().collect(Collectors.toMap(Function.identity(), e -> {
-		//	String r = labels.get(e);
-		//	if (r == null) {
-		//		if (!labels.isEmpty()) {
-		//			log.warn("The value '{}' could not be mapped with the given labels of {}.{}", e,
-		//					this.getConnector().getLabel(), this.getLabel());
-		//		}
-		//		return e;
-		//	} else {
-		//		return r;
-		//	}
-		//}));
-		//
-		//if (matchLabels) {
-		//	// Build the inverse of realLabels to speed up value resolution later
-		//	labelsToRealLabels = realLabels.entrySet().stream()
-		//			.collect(Collectors.toMap(Entry::getValue, Entry::getKey));
-		//} else {
-		//	labelsToRealLabels = new HashMap<>();
-		//}
-		//
-		//if (maximumSize > 0) {
-		//	f.setOptions(FEValue.fromLabels(realLabels));
-		//}
+//		if (maximumSize != -1 && values.size() > maximumSize) {
+//			throw new ConceptConfigurationException(getConnector(),
+//				String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
+//		}
+		if (values != null) {
+			realLabels = values.stream()
+				.collect(Collectors.toMap(Function.identity(), e -> {
+					String r = labels.get(e);
+					return r == null ? e : r;
+				}));
+
+			f.setOptions(FEValue.fromLabels(realLabels));
+		}
 	}
 
 	public String resolveValueToRealValue(String value) {
@@ -97,5 +80,12 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 			return labelsToRealLabels.get(value);
 		}
 		return null;
+	}
+
+	@Override
+	public void addImport(Import imp) {
+		if (values == null)
+			values = new HashSet<String>();
+		values.addAll(Sets.newHashSet(((IStringType) getColumn().getTypeFor(imp)).iterator()));
 	}
 }

@@ -25,7 +25,6 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
-		this.imports = new IdentifiableStore<>(centralRegistry, StoreInfo.IMPORTS.cached(this));
 		this.idMapping = StoreInfo.ID_MAPPING.singleton(this);
 	}
 

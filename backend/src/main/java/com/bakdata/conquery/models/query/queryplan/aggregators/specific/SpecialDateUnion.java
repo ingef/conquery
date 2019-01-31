@@ -31,8 +31,10 @@ public class SpecialDateUnion implements Aggregator<CDateSet> {
 				return;
 			}
 		}
-
-		set.addAll(dateRestriction);
+		
+		if(dateRestriction.countDays() != null) {
+			set.addAll(dateRestriction);
+		}
 	}
 
 	@Override

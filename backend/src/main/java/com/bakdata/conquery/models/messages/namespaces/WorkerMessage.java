@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.messages.namespaces;
 
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.util.progress.reporter.ProgressReporter;
+import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;

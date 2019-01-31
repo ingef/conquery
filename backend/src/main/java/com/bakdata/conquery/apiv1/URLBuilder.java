@@ -25,12 +25,12 @@ public class URLBuilder {
 	}
 
 	public URLBuilder to(URLBuilderPath path) {
-		builder = builder.path(path.getClazz()).path(path.getClazz(), path.getMethod());
+		builder.path(path.getClazz()).path(path.getClazz(), path.getMethod());
 		return this;
 	}
 
 	public URLBuilder set(String key, String value) {
-		builder = builder.resolveTemplate(key, value);
+		builder.resolveTemplate(key, value);
 		queryParams.put(key, value);
 		return this;
 	}

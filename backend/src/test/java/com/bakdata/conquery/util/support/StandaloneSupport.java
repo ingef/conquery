@@ -5,6 +5,7 @@ import java.io.File;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
+import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
@@ -34,7 +35,7 @@ public class StandaloneSupport implements Closeable {
 	@Getter
 	private final File tmpDir;
 	@Getter
-	private final ConqueryConfig cfg;
+	private final ConqueryConfig config;
 	@Getter
 	private final DatasetsProcessor datasetsProcessor;
 
@@ -58,8 +59,8 @@ public class StandaloneSupport implements Closeable {
 	public void preprocessTmp() {
 		DropwizardTestSupport<ConqueryConfig> prepro = new DropwizardTestSupport<>(
 			Conquery.class,
-			cfg,
-			app -> new TestCommandWrapper(cfg, new PreprocessorCommand())
+			config,
+			app -> new TestCommandWrapper(config, new PreprocessorCommand())
 		);
 		prepro.before();
 		prepro.after();
@@ -72,5 +73,25 @@ public class StandaloneSupport implements Closeable {
 
 	public Validator getValidator() {
 		return standaloneCommand.getMaster().getValidator();
+	}
+	
+	/**
+	 * Retrieves the port of the admin API.
+	 * @return The port.
+	 */
+	public int getAdminPort() {
+		return testConquery.getDropwizard().getAdminPort();
+	}
+
+	public Client getClient() {
+		return testConquery.getClient();
+	}
+
+	/**
+	 * Retrieves the port of the main API.
+	 * @return The port.
+	 */
+	public int getLocalPort() {
+		return testConquery.getDropwizard().getLocalPort();
 	}
 }

@@ -99,6 +99,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
+		this.storage.loadData();
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
@@ -127,9 +128,9 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
-		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
+		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
 		namespaces.getSlaves().put(session.getRemoteAddress(), new SlaveInformation(new NetworkSession(session)));
+		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
 	@Override

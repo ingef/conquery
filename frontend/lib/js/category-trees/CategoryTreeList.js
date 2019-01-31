@@ -2,8 +2,10 @@
 
 import React                        from 'react';
 import { connect }                  from 'react-redux';
+import T                            from 'i18n-react';
 
 import type { StateType }           from '../app/reducers';
+import { ErrorMessage }             from '../error-message';
 
 import { getConceptById }           from './globalTreeStoreHelper';
 import {
@@ -30,6 +32,7 @@ class CategoryTreeList extends React.Component<PropsType> {
   render() {
     const { search } = this.props;
     const searching = search && search.searching
+
     return !search.loading && (
       <div className="category-tree-list" style={{
         // Only hide the category trees when the tab is not selected
@@ -43,43 +46,48 @@ class CategoryTreeList extends React.Component<PropsType> {
         display: this.props.activeTab !== 'categoryTrees' ? 'none' : ''
       }}>
         {
-          Object
-            .keys(this.props.trees)
-            // Only take those that don't have a parent, they must be root
-            .filter(treeId => !this.props.trees[treeId].parent)
-            .map((treeId, i) => {
-              const tree = this.props.trees[treeId];
-              const rootConcept = getConceptById(treeId);
+          this.props.trees
+            ? Object
+                .keys(this.props.trees)
+                // Only take those that don't have a parent, they must be root
+                .filter(treeId => !this.props.trees[treeId].parent)
+                .map((treeId, i) => {
+                  const tree = this.props.trees[treeId];
+                  const rootConcept = getConceptById(treeId);
 
-              const render = searching
-              ? isInSearchResult(treeId, tree.children, search)
-              : true;
+                  const render = searching
+                  ? isInSearchResult(treeId, tree.children, search)
+                  : true;
 
-              if (!render) return null;
+                  if (!render) return null;
 
-              return tree.detailsAvailable
-                ? <CategoryTree
-                    key={i}
-                    id={treeId}
-                    label={tree.label}
-                    tree={rootConcept}
-                    treeId={treeId}
-                    loading={!!tree.loading}
-                    error={tree.error}
-                    depth={0}
-                    search={this.props.search}
-                  />
-                : <CategoryTreeFolder
-                    key={i}
-                    trees={this.props.trees}
-                    tree={tree}
-                    treeId={treeId}
-                    depth={0}
-                    active={tree.active}
-                    openInitially
-                    search={this.props.search}
-                  />;
-            })
+                  return tree.detailsAvailable
+                    ? <CategoryTree
+                        key={i}
+                        id={treeId}
+                        label={tree.label}
+                        tree={rootConcept}
+                        treeId={treeId}
+                        loading={!!tree.loading}
+                        error={tree.error}
+                        depth={0}
+                        search={this.props.search}
+                      />
+                    : <CategoryTreeFolder
+                        key={i}
+                        trees={this.props.trees}
+                        tree={tree}
+                        treeId={treeId}
+                        depth={0}
+                        active={tree.active}
+                        openInitially
+                        search={this.props.search}
+                      />;
+                })
+          : <ErrorMessage
+              className="category-tree-list__error-tree"
+              message={T.translate('categoryTreeList.noTrees')}
+            />
         }
       </div>
     );

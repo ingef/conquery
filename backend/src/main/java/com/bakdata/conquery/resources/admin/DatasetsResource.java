@@ -62,7 +62,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
 @Slf4j
 @Getter
@@ -73,7 +73,7 @@ public class DatasetsResource {
 	private final UIContext ctx;
 	private final DatasetsProcessor processor;
 	private final Namespaces namespaces;
-	
+
 	public DatasetsResource(ConqueryConfig config, MasterMetaStorage storage, Namespaces namespaces, JobManager jobManager, ScheduledExecutorService maintenanceService) {
 		this.ctx = new UIContext(namespaces);
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
@@ -85,9 +85,10 @@ public class DatasetsResource {
 	public View getDatasets() {
 		return new UIView<>("datasets.html.ftl", ctx, namespaces.getAllDatasets());
 	}
-	
-	@GET @Path("/{"+DATASET_NAME+"}")
-	public View getDataset(@PathParam(DATASET_NAME)DatasetId dataset) {
+
+	@GET
+	@Path("/{" + DATASET_NAME + "}")
+	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
 		return new FileView<>(
 			"dataset.html.ftl",
 			ctx,
@@ -130,16 +131,16 @@ public class DatasetsResource {
 		Namespace ns = namespaces.get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
 		Table table = dataset
-				.getTables()
-				.getOrFail(tableParam);
-		
+			.getTables()
+			.getOrFail(tableParam);
+
 		List<Import> imports = ns
-				.getStorage()
-				.getAllImports()
-				.stream()
-				.filter(imp->imp.getTable().equals(table.getId()))
-				.collect(Collectors.toList());
-		
+			.getStorage()
+			.getAllImports()
+			.stream()
+			.filter(imp -> imp.getTable().equals(table.getId()))
+			.collect(Collectors.toList());
+
 		return new UIView<>(
 			"table.html.ftl",
 			ctx,
@@ -150,33 +151,37 @@ public class DatasetsResource {
 			)
 		);
 	}
-	
-	@GET @Path("/{"+DATASET_NAME+"}/concepts/{"+CONCEPT_NAME+"}")
-	public View getConcept(@PathParam(DATASET_NAME)DatasetId datasetId, @PathParam(CONCEPT_NAME)ConceptId conceptParam) {
+
+	@GET
+	@Path("/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
+	public View getConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(CONCEPT_NAME) ConceptId conceptParam) {
 		Namespace ns = namespaces.get(datasetId);
 		Concept<?> concept = ns
 			.getStorage()
 			.getConcept(conceptParam);
-		
+
 		return new UIView<>(
 			"concept.html.ftl",
 			ctx,
 			concept
 		);
 	}
-	
-	@POST @Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addDataset(@NotEmpty@FormDataParam("dataset_name")String name) throws JSONException {
-		processor.addDataset(name, processor.getMaintenanceService());
+
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
+		processor.addDataset(name);
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
 			.build();
 	}
-	
-	@POST @Path("/{"+DATASET_NAME+"}/tables") @Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addTable(@PathParam(DATASET_NAME)DatasetId datasetId, @FormDataParam("table_schema")FormDataBodyPart schemas) throws IOException, JSONException {
-		Dataset dataset =  namespaces.get(datasetId).getStorage().getDataset();
-		for(BodyPart part : schemas.getParent().getBodyParts()){
+
+	@POST
+	@Path("/{" + DATASET_NAME + "}/tables")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response addTable(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
+		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();
+		for (BodyPart part : schemas.getParent().getBodyParts()) {
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
 				// ContentDisposition meta = part.getContentDisposition();
 				Table t = mapper.readValue(is, Table.class);
@@ -187,48 +192,65 @@ public class DatasetsResource {
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
 			.build();
 	}
-	
-	@POST @Path("/{"+DATASET_NAME+"}/imports")
-	public Response addImport(@PathParam(DATASET_NAME)DatasetId datasetId, @QueryParam("file")File file) throws IOException, JSONException {
+
+	@POST
+	@Path("/{" + DATASET_NAME + "}/imports")
+	public Response addImport(@PathParam(DATASET_NAME) DatasetId datasetId, @QueryParam("file") File file) throws IOException, JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
-		if(ns == null) {
-			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
+		if (ns == null) {
+			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
 		}
 
 		File selectedFile = new File(processor.getConfig().getStorage().getPreprocessedRoot(), file.toString());
 		if (!selectedFile.exists()) {
 			throw new WebApplicationException("Could not find file " + selectedFile, Status.NOT_FOUND);
 		}
-		
+
 		processor.addImport(ns.getStorage().getDataset(), selectedFile);
 		return Response.ok().build();
 	}
-	
-	@DELETE @Path("/{"+DATASET_NAME+"}/tables/{"+TABLE_NAME+"}")
-	public Response removeTable(@PathParam(DATASET_NAME)DatasetId datasetId, @PathParam(TABLE_NAME)TableId tableParam) throws IOException, JSONException {
+
+	@DELETE
+	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+	public Response removeTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) throws IOException, JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
 		dataset.getTables().remove(tableParam);
 		ns.getStorage().updateDataset(dataset);
-		for(WorkerInformation w : ns.getWorkers()) {
+		for (WorkerInformation w : ns.getWorkers()) {
 			w.send(new UpdateDataset(dataset));
 		}
 		return Response.ok().build();
 	}
-	
-	@POST @Path("/{"+DATASET_NAME+"}/concepts") @Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addConcept(@PathParam(DATASET_NAME)DatasetId datasetId, @FormDataParam("concept_schema")InputStream schema) throws IOException, JSONException, ConfigurationException {
+
+	@POST
+	@Path("/{" + DATASET_NAME + "}/concepts")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response addConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("concept_schema") InputStream schema) throws IOException, JSONException, ConfigurationException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
-		try(schema) {
+		try (schema) {
 			Concept<?> c = dataset
-					.injectInto(mapper.readerFor(Concept.class))
-					.readValue(schema);
+				.injectInto(mapper.readerFor(Concept.class))
+				.readValue(schema);
 			processor.addConcept(dataset, c);
 			return Response
 				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
 				.build();
 		}
-		
+
+	}
+
+	@DELETE
+	@Path("/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
+	public Response removeConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(CONCEPT_NAME) ConceptId conceptId) throws IOException, JSONException {
+		Namespace ns = ctx.getNamespaces().get(datasetId);
+		Dataset dataset = ns.getStorage().getDataset();
+		dataset.getConcepts().removeIf(c -> c.getId().equals(conceptId));
+		ns.getStorage().updateDataset(dataset);
+		for (WorkerInformation w : ns.getWorkers()) {
+			w.send(new UpdateDataset(dataset));
+		}
+		return Response.ok().build();
 	}
 }

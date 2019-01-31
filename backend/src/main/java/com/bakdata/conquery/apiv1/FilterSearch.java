@@ -18,10 +18,6 @@ import com.zigurs.karlis.utils.search.QuickSearch;
 
 import lombok.extern.slf4j.Slf4j;
 
-/**
- *
- * @author Marcus Baitz
- */
 @Slf4j
 public class FilterSearch {
 

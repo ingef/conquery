@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
@@ -43,7 +44,12 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private UUID queryId = UUID.randomUUID();
 	private IQuery query;
 	private LocalDateTime creationTime = LocalDateTime.now();
-
+	/**
+	 * The number of contained entities the last time this query was executed.
+	 * @param lastResultCount the new count for JACKSON
+	 * @returns the number of contained entities
+	 */
+	private long lastResultCount;
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private QueryStatus status = QueryStatus.RUNNING;
@@ -102,8 +108,15 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private void finish() {
 		finishTime = LocalDateTime.now();
 		status = QueryStatus.DONE;
+		lastResultCount = results.stream().filter(ContainedEntityResult.class::isInstance).count();
 		execution.countDown();
-		log.info("Finished query {} within {}", Duration.between(startTime, finishTime));
+		try {
+			namespace.getStorage().getMetaStorage().updateQuery(this);
+		}
+		catch(JSONException e) {
+			log.error("Failed to store query after finishing: "+this, e);
+		}
+		log.info("Finished query {} within {}", getId(), Duration.between(startTime, finishTime));
 	}
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {
@@ -120,6 +133,13 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 				.map(cer -> Joiner.on(',').join(mappingConfig.toExternal(dict.getElement(cer.getEntityId()), namespace)) + "," + Joiner.on(',').join(cer.getValues()))
 				.map(Objects::toString)
 		);
+	}
+	
+	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
+		return results
+				.stream()
+				.filter(ContainedEntityResult.class::isInstance)
+				.map(ContainedEntityResult.class::cast);
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {

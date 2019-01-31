@@ -20,13 +20,12 @@ import javax.validation.Payload;
 
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFileList;
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFileValidator;
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFilesValidator;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Target({FIELD, METHOD, PARAMETER, ANNOTATION_TYPE, TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
-@Constraint(validatedBy = {ExistingFileValidator.class, ExistingFilesValidator.class})
+@Constraint(validatedBy = ExistingFileValidator.class)
 @Documented
 @Repeatable(ExistingFileList.class)
 public @interface ExistingFile {
@@ -47,7 +46,7 @@ public @interface ExistingFile {
 	}
 
 	@Slf4j
-	public static class ExistingFileValidator implements ConstraintValidator<ExistingFile, File> {
+	class ExistingFileValidator implements ConstraintValidator<ExistingFile, File> {
 
 		private boolean directory;
 
@@ -88,26 +87,5 @@ public @interface ExistingFile {
 				}
 			}
 		}
-
-	}
-
-	public static class ExistingFilesValidator implements ConstraintValidator<ExistingFile, File[]> {
-
-		private final ExistingFileValidator parent = new ExistingFileValidator();
-
-		@Override
-		public void initialize(ExistingFile constraintAnnotation) {
-			parent.initialize(constraintAnnotation);
-		}
-
-		@Override
-		public boolean isValid(File[] value, ConstraintValidatorContext context) {
-			boolean res = true;
-			for (File f : value) {
-				res &= parent.isValid(f, context);
-			}
-			return res;
-		}
-
 	}
 }

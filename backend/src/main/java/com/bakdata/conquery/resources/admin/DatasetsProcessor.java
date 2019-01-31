@@ -3,8 +3,6 @@ package com.bakdata.conquery.resources.admin;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 
@@ -39,6 +37,8 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.google.common.util.concurrent.Uninterruptibles;
+import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -87,17 +87,15 @@ import lombok.extern.slf4j.Slf4j;
 			}
 		}
 
-		dataset.addConcept(c);
 		c.setDataset(dataset.getId());
-		jobManager.addSlowJob(new SimpleJob(
-			"Adding concept " + c.getId(),
-			() -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
-
-		namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c));
+		jobManager.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
+		jobManager.addSlowJob(new SimpleJob("sendToAll " + c.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
 		//see #144  check duplicate names
+
+		Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 	}
 
-	public void addDataset(String name, ScheduledExecutorService maintenanceService) throws JSONException {
+	public void addDataset(String name) throws JSONException {
 		//create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
@@ -119,20 +117,17 @@ import lombok.extern.slf4j.Slf4j;
 		dataset.getTables().add(allIdsTable);
 
 		//store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
-			storage.getValidator(),
-			config.getStorage(),
-			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
-
+		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_" + name));
+		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
 		ns.initMaintenance(maintenanceService);
 		ns.getStorage().updateDataset(dataset);
 		namespaces.add(ns);
 
-		List<SlaveInformation> slaves = new ArrayList<>(namespaces.getSlaves().values());
-		for (SlaveInformation s : slaves) {
-			addWorker(s, dataset);
+		//for now we just add one worker to every slave
+		for (SlaveInformation slave : namespaces.getSlaves().values()) {
+			this.addWorker(slave, dataset);
 		}
 	}
 

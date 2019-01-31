@@ -1,13 +1,11 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.time.LocalDate;
 import java.util.Collections;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import com.bakdata.conquery.models.common.KeyValue;
-import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -23,8 +21,8 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	private String description;
 	@Getter @Setter
 	private List<KeyValue> additionalInfos = Collections.emptyList();
-	@Getter @Setter
-	private Range<LocalDate> conceptDateRange;
+	@Getter @Setter @JsonIgnore
+	private MatchingStats matchingStats = new MatchingStats();
 	
 	public ConceptElement<?> getElementById(ConceptElementId<?> conceptElementId) {
 		if(Objects.equals(conceptElementId, this.getId())) {
@@ -48,22 +46,6 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	public String toString() {
 		return getLabel();
 	}
-	
-
-	//see #155
-		/*updateConceptDateRange(newConceptDateRange);
-	}
-
-	// Initializes conceptDateRange or sets it to the combined range from old and new range
-	private void updateConceptDateRange(Range<LocalDate> newConceptDateRange) {
-		if (newConceptDateRange != null) {
-			if(this.conceptDateRange == null) {
-				this.conceptDateRange = newConceptDateRange;
-			} else {
-				this.conceptDateRange = this.conceptDateRange.span(newConceptDateRange);
-			}
-		}
-	}*/
 	
 	@JsonIgnore
 	public abstract Concept<?> getConcept();

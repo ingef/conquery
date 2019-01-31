@@ -24,7 +24,9 @@ public interface NamespaceStorage extends NamespacedStorage {
 			return null;
 		}
 
-		return new NamespaceStorageImpl(validator, config, directory);
+		NamespaceStorage storage = new NamespaceStorageImpl(validator, config, directory);
+		storage.loadData();
+		return storage;
 	}
 	
 	MasterMetaStorage getMetaStorage();

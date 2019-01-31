@@ -50,6 +50,10 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 	public SocketAddress getRemoteAddress() {
 		return session.getRemoteAddress();
 	}
+	
+	public SocketAddress getLocalAddress() {
+		return session.getLocalAddress();
+	}
 
 	public void awaitClose() {
 		session.closeOnFlush().awaitUninterruptibly();

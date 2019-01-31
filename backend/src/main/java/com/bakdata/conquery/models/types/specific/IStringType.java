@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.types.specific;
 
 /**every implementation must guarantee IDs between 0 and size**/
-public interface IStringType {
+public interface IStringType extends Iterable<String> {
 
 	String createScriptValue(Integer id);
 

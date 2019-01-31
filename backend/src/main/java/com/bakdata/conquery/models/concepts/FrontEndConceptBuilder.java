@@ -7,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
@@ -18,7 +19,6 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -34,52 +34,55 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class FrontEndConceptBuilder {
 
-	public static FERoot createRoot(Dataset dataset) {
+	public static FERoot createRoot(NamespaceStorage storage) {
 
 		FERoot root = new FERoot();
 
 		Map<IId<?>, FENode> roots = new LinkedHashMap<>();
 		//add all real roots
-		for (Concept<?> c : dataset.getConcepts()) {
+		for (Concept<?> c : storage.getAllConcepts()) {
 			roots.put(c.getId(), createCTRoot(c));
 		}
 		//add the structure tree
-		dataset
-			.streamAllStructureNodes()
-			.forEach(sn -> roots.put(sn.getId(), createStructureNode(sn)));
+//		dataset
+//			.streamAllStructureNodes()
+//			.forEach(sn -> roots.put(sn.getId(), createStructureNode(sn)));
 		root.setConcepts(roots);
 		return root;
 	}
 
 	private static FENode createCTRoot(Concept<?> c) {
+		MatchingStats matchingStats = c.getMatchingStats();
 		FENode n = FENode.builder()
-			.active(c instanceof VirtualConcept)
-			.description(c.getDescription())
-			.label(c.getLabel())
-			.additionalInfos(c.getAdditionalInfos())
-			//.matchingEntries(c.getMatchingEntries())
-			.dateRange(c.getConceptDateRange())
-			.detailsAvailable(Boolean.TRUE)
-			.codeListResolvable(
-				c instanceof TreeConcept
-				|| (c instanceof VirtualConcept
-				&& ((VirtualConcept) c).getConnectors()
-					.stream()
-					.map(VirtualConceptConnector::getFilter)
-					.anyMatch(AbstractSelectFilter.class::isInstance))
-			)
-			.parent(c.getStructureParent() == null ? null : c.getStructureParent().getId())
-			.tables(c
-				.getConnectors()
-				.stream()
-				.map(FrontEndConceptBuilder::createTable)
-				.collect(Collectors.toList())
-			)
-			.build();
-
-		if (c instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>) c;
-			if (tree.getChildren() != null) {
+				.active(c instanceof VirtualConcept)
+				.description(c.getDescription())
+				.label(c.getLabel())
+				.additionalInfos(c.getAdditionalInfos())
+				.matchingEntries(matchingStats.countEvents())
+				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+				.detailsAvailable(Boolean.TRUE)
+				.codeListResolvable(
+					c instanceof TreeConcept
+					|| (
+							c instanceof VirtualConcept
+							&& ((VirtualConcept)c).getConnectors()
+								.stream()
+								.map(VirtualConceptConnector::getFilter)
+								.anyMatch(AbstractSelectFilter.class::isInstance)
+					)
+				)
+				.parent(c.getStructureParent()==null?null:c.getStructureParent().getId())
+				.tables(c
+						.getConnectors()
+						.stream()
+						.map(FrontEndConceptBuilder::createTable)
+						.collect(Collectors.toList())
+				)
+				.build();
+		
+		if(c instanceof ConceptTreeNode) {
+			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)c;
+			if(tree.getChildren()!=null) {
 				n.setChildren(
 					tree
 						.getChildren()
@@ -115,18 +118,19 @@ public class FrontEndConceptBuilder {
 	}
 
 	private static FENode createCTNode(ConceptElement ce) {
+		MatchingStats matchingStats = ce.getMatchingStats();
 		FENode n = FENode.builder()
-			.active(/*(ce.getMatchingEntries()==0)?false:*/null)
-			.description(ce.getDescription())
-			.label(ce.getLabel())
-			.additionalInfos(ce.getAdditionalInfos())
-			//.matchingEntries(ce.getMatchingEntries())
-			.dateRange(ce.getConceptDateRange())
-			.build();
-
-		if (ce instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>) ce;
-			if (tree.getChildren() != null) {
+				.active(null)
+				.description(ce.getDescription())
+				.label(ce.getLabel())
+				.additionalInfos(ce.getAdditionalInfos())
+				.matchingEntries(matchingStats.countEvents())
+				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
+				.build();
+		
+		if(ce instanceof ConceptTreeNode) {
+			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)ce;
+			if(tree.getChildren()!=null) {
 				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
 			}
 			if (tree.getParent() != null) {

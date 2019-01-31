@@ -1,16 +1,18 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.Optional;
-
 import org.apache.shiro.authc.AuthenticationInfo;
 
 import com.bakdata.conquery.models.auth.subjects.User;
 
+/**
+ * Default dummy implementation for the UnknownUserHandler.
+ *
+ */
 public class DefaultUnknownUserHandler implements UnknownUserHandler {
 
 	@Override
-	public Optional<User> handle(AuthenticationInfo info) {
-		return Optional.empty();
+	public User handle(AuthenticationInfo info) {
+		return null;
 	}
 
 }

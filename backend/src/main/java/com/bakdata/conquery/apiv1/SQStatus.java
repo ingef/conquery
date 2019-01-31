@@ -4,7 +4,6 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
@@ -76,13 +75,13 @@ public class SQStatus {
 		this.requiredTime = requiredTime;
 		this.resultUrl = resultUrl;
 	}
-
-	public static SQStatus buildFromQuery(ManagedQuery query, URLBuilder urlb, ConqueryConfig config) {
-		String resultUrl = urlb
-			.set(ResourceConstants.DATASET, query.getDataset().getName())
-			.set(ResourceConstants.QUERY, query.getId().toString())
-			.to(ResultCSVResource.GET_CSV_PATH).get();
-		
+	
+	public static SQStatus buildFromQuery(ManagedQuery query) {
+		return buildFromQuery(query, null);
+	}
+	
+	public static SQStatus buildFromQuery(ManagedQuery query, URLBuilder urlb) {
+		Long numberOfResults = Long.valueOf(query.fetchContainedEntityResult().count());
 		return builder()
 			.id(query.getId())
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
@@ -91,8 +90,16 @@ public class SQStatus {
 				? ChronoUnit.MILLIS.between(query.getStartTime(), query.getFinishTime())
 				: null)
 			.status(query.getStatus())
-			.resultUrl(resultUrl)
-			.numberOfResults(query.toCSV(config).count() - 1) // -1 remove header
+			.numberOfResults(numberOfResults > 0 ? numberOfResults : query.getLastResultCount())
+			.resultUrl(
+				urlb != null
+				? urlb
+					.set(ResourceConstants.DATASET, query.getDataset().getName())
+					.set(ResourceConstants.QUERY, query.getId().toString())
+					.to(ResultCSVResource.GET_CSV_PATH).get()
+				: null
+			)
 			.build();
 	}
+	
 }

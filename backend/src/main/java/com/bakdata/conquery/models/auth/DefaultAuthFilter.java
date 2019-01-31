@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.auth;
 
+import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import java.io.IOException;
+import java.util.NoSuchElementException;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -21,54 +23,76 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This filter hooks into dropwizard's request handling to extract and process
- * security relevant information for protected resources. Under the hood it sets up
- * shiro's security management, for the authentication of the requests.
- * This security management is then also used for authorizations based on permissions,
- * that the handling of a request triggers.
+ * security relevant information for protected resources. Under the hood it sets
+ * up shiro's security management, for the authentication of the requests. This
+ * security management is then also used for authorizations based on
+ * permissions, that the handling of a request triggers.
  */
 @Slf4j
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User>{
+public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 
 	private final TokenExtractor tokenExtractor;
 
 	@Override
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
-		
+
 		ConqueryToken credentials = tokenExtractor.extract(requestContext);
 
 		try {
 			// sets the security context in the request AND does the authentication
-			if(!authenticate(requestContext, credentials, SecurityContext.BASIC_AUTH)) {
+			if (!authenticate(requestContext, credentials, SecurityContext.BASIC_AUTH)) {
 				throw new NotAuthorizedException("Failed to authenticate request");
 			}
-		} catch(AuthenticationException e) {
-			log.warn("Shiro failed to authenticate the request. See the following trace:\n{}", e);
+		}
+		catch (AuthenticationException e) {
+			log.warn("Shiro failed to authenticate the request. See the following trace:", e);
 			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.", e);
 		}
 	}
 
-	public static class Builder extends AuthFilterBuilder<ConqueryToken, User, DefaultAuthFilter> {
-		
-		
+	private static class DefaultAuthFilterBuilder extends AuthFilterBuilder<ConqueryToken, User, DefaultAuthFilter> {
+
 		private TokenExtractor tokenExtractor = new DefaultTokenExtractor();
-		
-		public Builder setTokenExtractor(TokenExtractor tokenExtractor) {
+
+		public DefaultAuthFilterBuilder setTokenExtractor(TokenExtractor tokenExtractor) {
 			this.tokenExtractor = tokenExtractor;
 			return this;
 		}
-		
+
 		@Override
 		protected DefaultAuthFilter newInstance() {
 			return new DefaultAuthFilter(tokenExtractor);
+			
+//			TokenExtractor tokenParser = null;
+//			try {
+//				for(Class<?> parser : CPSTypeIdResolver.listImplementations(TokenExtractor.class)) {
+//					try {
+//						tokenParser = (TokenExtractor) parser.getConstructor().newInstance();
+//					} catch (Exception e) {
+//						log.error("Could not create an instance of {}", parser, e);
+//					}
+//				}
+//			} catch(NoSuchElementException e) {
+//				throw new RuntimeException("No TokenParser found or none of the provided ones could be instanciated.", e);
+//			}
+//			
+//			if(tokenParser == null) {
+//				throw new RuntimeException("No TokenParser found or none of the provided ones could be instanciated.");
+//			}
+//			return new DefaultAuthFilter(tokenParser);
 		}
 	}
-	
+
+	public static DefaultAuthFilterBuilder builder() {
+		return new DefaultAuthFilterBuilder();
+	}
+
 	public static AuthDynamicFeature asDropwizardFeature(MasterMetaStorage storage, AuthConfig config) {
 		AuthorizingRealm realm = config.getRealm(storage);
 		UnknownUserHandler uuHandler = config.getUnknownUserHandler(storage);
-		
-		Builder builder = new Builder();
+
+		DefaultAuthFilterBuilder builder = DefaultAuthFilter.builder();
 		AuthFilter<ConqueryToken, User> authFilter = builder
 			.setTokenExtractor(config.getTokenExtractor())
 			.setAuthenticator(new ConqueryAuthenticator(storage, realm, uuHandler))

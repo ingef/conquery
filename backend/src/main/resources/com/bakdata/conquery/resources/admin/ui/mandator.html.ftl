@@ -1,17 +1,26 @@
 <#import "templates/template.html.ftl" as layout>
+<#import "templates/permissionTable.html.ftl" as permissionTable>
 <@layout.layout>
 	<div class="row">
 		<div class="col">
-			<form action="/admin/mandator" method="POST" enctype="multipart/form-data">
-				<div class="form-group">
-					<h3>New Mandator</h3>
-				  <label for="mandantor_name">Name:</label>
-				  <input id="mandator_name" name="mandantor_name" class="form-control text-monospace" style="font-family:monospace;">
-				  <label for="mandantor_id">ID:</label>
-				  <input id="mandantor_id" name="mandantor_id"  class="form-control text-monospace" style="font-family:monospace;">
-				  <input class="btn btn-primary" type="submit"/>
-				</div> 
-			</form>
+		<h3>Dataset Permissions</h3>
+		<@permissionTable.permissionTable permissions=c.datasetPermissions />
+		<h3>Query Permissions</h3>
+		<@permissionTable.permissionTable permissions=c.queryPermissions />
+		<h3>Other Permissions</h3>
+		<@permissionTable.permissionTable permissions=c.otherPermissions />
+		</div>
+	</div>
+	<div class="row">
+		<h3>Users</h3>
+		<div class="col">
+			<ul>
+			<#list c.users as user>
+				<li>
+					${user.label}
+				</li>
+			</#list>
+			</ul>
 		</div>
 	</div>
 </@layout.layout>

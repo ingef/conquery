@@ -10,6 +10,7 @@ import com.bakdata.conquery.commands.RESTServer;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
+import com.bakdata.conquery.resources.admin.ui.AdminUIProcessor;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -38,7 +39,7 @@ public class AdminUIServlet {
 		jerseyConfig.register(new JacksonMessageBodyProvider(masterCommand.getEnvironment().getObjectMapper()));
 
 		//jerseyConfig.getSingletons().add(new UnitOfWorkResourceMethodDispatchAdapter(hibernateBundle.getSessionFactory()));
-		jerseyConfig.register(new AdminUIResource(masterCommand.getConfig(), masterCommand.getNamespaces(), masterCommand.getJobManager(), masterCommand.getStorage()));
+		jerseyConfig.register(new AdminUIResource(masterCommand.getConfig(), masterCommand.getNamespaces(), masterCommand.getJobManager(), new AdminUIProcessor(masterCommand.getStorage())));
 		DatasetsResource datasets = new DatasetsResource(masterCommand.getConfig(), masterCommand.getStorage(), masterCommand.getNamespaces(), masterCommand.getJobManager(), masterCommand.getMaintenanceService());
 		datasetsProcessor = datasets.getProcessor();
 		jerseyConfig.register(datasets);
