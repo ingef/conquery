@@ -20,7 +20,6 @@ import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
 
-import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
@@ -104,7 +103,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			String name = UUID.randomUUID().toString();
 			DatasetId id = new DatasetId(name);
 		
-			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addDataset(name, standaloneCommand.getMaster().getMaintenanceService());
+			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addDataset(name);
 			Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
 			Namespace ns = namespaces.get(id);
 			
@@ -162,6 +161,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		config.getStorage().setDirectory(tmpDir);
 		config.getStorage().setPreprocessedRoot(tmpDir);
 		config.getStandalone().setNumberOfSlaves(2);
+		//configure logging
+		config.setLoggingFactory(new TestLoggingFactory());
 		
 		//set random open ports
 		for(ConnectorFactory con : CollectionUtils.union(
@@ -190,16 +191,16 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		}
 		log.info("Working in temporary directory {}", tmpDir);
 		
-		cfg = getConfig();
+		config = getConfig();
 
 		//define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(
-				Conquery.class,
-				cfg,
-				app -> {
-					standaloneCommand = new StandaloneCommand((Conquery) app);
-					return new TestCommandWrapper(cfg, standaloneCommand);
-				}
+			TestBootstrappingConquery.class,
+			config,
+			app -> {
+				standaloneCommand = new StandaloneCommand((TestBootstrappingConquery) app);
+				return new TestCommandWrapper(config, standaloneCommand);
+			}
 		);
 
 		//start server

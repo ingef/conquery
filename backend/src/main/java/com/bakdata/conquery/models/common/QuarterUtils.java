@@ -1,33 +1,27 @@
 package com.bakdata.conquery.models.common;
 
+import lombok.experimental.UtilityClass;
+
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
-import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
-
-import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public final class QuarterUtils {
 
-	private static final TemporalAdjuster FIRST_MONTH_IN_QUARTER_ADJUSTER = new TemporalAdjuster() {
-		@Override
-		public Temporal adjustInto(Temporal temporal) {
+	private static final TemporalAdjuster FIRST_MONTH_IN_QUARTER_ADJUSTER =
+			temporal -> temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR)).getValue());
 
-			int quarter = temporal.get(IsoFields.QUARTER_OF_YEAR);
-
-			return YearMonth.from(temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(quarter).getValue()));
-		}
-	};
 	private static final TemporalAdjuster FIRST_DAY_OF_QUARTER_ADJUSTER =
 			temporal -> TemporalAdjusters.firstDayOfMonth().adjustInto(firstMonthInQuarterAdjuster().adjustInto(temporal));
 
 	private static final TemporalAdjuster LAST_DAY_OF_QUARTER_ADJUSTER =
-			temporal -> ((LocalDate) TemporalAdjusters.firstDayOfMonth().adjustInto(nextQuarterAdjuster().adjustInto(temporal))).minusDays(1);
+			temporal -> (TemporalAdjusters.firstDayOfMonth().adjustInto(nextQuarterAdjuster().adjustInto(temporal))).minus(1, ChronoUnit.DAYS);
 
 
 	public static boolean isFirstMonthOfQuarter(LocalDate date) {
