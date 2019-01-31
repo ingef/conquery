@@ -58,9 +58,10 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
 		try {
 			log.info("loading dataset");
-			String name = datasetId.getName();
 
-		} catch(Exception e) {
+			return createSupport(datasetId, datasetId.getName());
+		}
+		catch(Exception e) {
 			return fail(e);
 		}
 	}
@@ -72,7 +73,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			DatasetId datasetId = new DatasetId(name);
 			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addDataset(name);
 			return createSupport(datasetId, name);
-		} catch(Exception e) {
+		}
+		catch(Exception e) {
 			return fail(e);
 		}
 	}
@@ -87,7 +89,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		//make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_"+name);
 		localTmpDir.mkdir();
-		ConqueryConfig localCfg = ConfigCloner.clone(cfg);
+		ConqueryConfig localCfg = ConfigCloner.clone(config);
 		localCfg.getPreprocessor().setDirectories(
 			new PreprocessingDirectories[]{
 				new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir)
