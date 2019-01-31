@@ -157,6 +157,9 @@ public class Block_${suffix} extends Block {
 
 	@Override
 	public boolean eventIsContainedIn(int event, Column column, CDateRange dateRange) {
+		if(!this.has(event, column)) {
+			return false;
+		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
 			<#if col.type.typeId == "DATE">
@@ -174,6 +177,9 @@ public class Block_${suffix} extends Block {
 	
 	@Override
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
+		if(!this.has(event, column)) {
+			return false;
+		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
 			<#if col.type.typeId == "DATE">
@@ -191,6 +197,9 @@ public class Block_${suffix} extends Block {
 	
 	@Override
 	public CDateRange getAsDateRange(int event, Column column) {
+		if(!this.has(event, column)) {
+			return null;
+		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
 			<#if col.type.typeId == "DATE">
