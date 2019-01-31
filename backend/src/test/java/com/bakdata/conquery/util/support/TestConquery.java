@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.net.ServerSocket;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -164,6 +165,14 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		log.info("Working in temporary directory {}", tmpDir);
 		
 		config = getConfig();
+		Optional<Object> instanceOpt = context.getTestInstance();
+		if(instanceOpt.isPresent()) {
+			Object instance = instanceOpt.get();
+			if(instance instanceof ConfigOverride) {
+				((ConfigOverride)instance).override(config);
+			}
+			
+		}
 
 		//define server
 		dropwizard = new DropwizardTestSupport<ConqueryConfig>(

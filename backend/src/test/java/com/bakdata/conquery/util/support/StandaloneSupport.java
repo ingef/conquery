@@ -82,4 +82,8 @@ public class StandaloneSupport implements Closeable {
 	public Client getClient() {
 		return testConquery.getClient();
 	}
+
+	public Object getLocalPort() {
+		return testConquery.getDropwizard().getLocalPort();
+	}
 }
