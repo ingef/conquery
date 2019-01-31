@@ -32,6 +32,7 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -66,6 +67,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Getter
 @Path("/datasets")
+@AuthCookie
 public class DatasetsResource {
 
 	private final ObjectMapper mapper;
