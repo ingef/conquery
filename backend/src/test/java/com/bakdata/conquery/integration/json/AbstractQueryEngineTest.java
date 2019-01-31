@@ -40,7 +40,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			fail("Query failed");
 		}
 
-		List<String> actual = managed.toCSV(standaloneSupport.getCfg()).collect(Collectors.toList());
+		List<String> actual = managed.toCSV(standaloneSupport.getConfig()).collect(Collectors.toList());
 
 		File expectedCsv = getExpectedCsv();
 
@@ -48,10 +48,12 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 
 		assertThat(actual)
-				.as("Results for %s are not as expected.", this)
-				.containsExactlyInAnyOrderElementsOf(expected);
+			.as("Results for %s are not as expected.", this)
+			.containsExactlyInAnyOrderElementsOf(expected);
 		//check that getLastResultCount returns the correct size
-		assertThat(managed.getLastResultCount()).isEqualTo(expected.size()-1);
+		assertThat(managed.getLastResultCount())
+			.as("Result count for %s is not as expected.", this)
+			.isEqualTo(expected.size()-1);
 
 		log.info(
 				"INTEGRATION TEST SUCCESSFUL {} {} on {} rows",

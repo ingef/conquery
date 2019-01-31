@@ -6,30 +6,33 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.AuthorizationException;
+import javax.validation.constraints.NotNull;
+
 import org.apache.shiro.authz.Permission;
 
-import com.bakdata.conquery.io.jackson.serializer.IdReferenceCollection;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 
 public class User extends PermissionOwner<UserId> implements Principal{
 	@Getter @Setter
-	@IdReferenceCollection
 	private Set<Mandator> roles = new HashSet<>();
+	@Getter @Setter @NonNull @NotNull
+	private String email;
+	@Getter @Setter @NonNull @NotNull
+	private String label;
 
-	@JsonCreator
-	public User(SinglePrincipalCollection principals) {
-		super(principals);
+	public User(String email, String label) {
+		this.email = email;
+		this.label = label;
 	}
-
+	
 	@Override
 	public boolean isPermitted(Permission permission) {
 		if(isPermittedSelfOnly((ConqueryPermission)permission)) {
@@ -57,31 +60,11 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		}
 		return true;
 	}
-
-	@Override
-	public void checkPermission(Permission permission) throws AuthorizationException {
-		SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
-	}
-
-	@Override
-	public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
-		SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
-	}
-
+	
 	@Override
 	public UserId createId() {
-		return (UserId) getPrincipals().getPrimaryPrincipal();
+		return new UserId(email);
 	}
-	
-	public void addRole(Mandator mandator) {
-		roles.add(mandator);
-	}
-	
-	public void addRoles(List<Mandator> mandators) {
-		roles.addAll(mandators);
-	}
-	
-	
 	
 	public void removeRole(Mandator mandator) {
 		roles.remove(mandator);
@@ -96,21 +79,27 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		return false;
 	}
 
-	public void addMandator(Mandator mandator) throws JSONException {
+	public void addMandator(MasterMetaStorage storage, Mandator mandator) throws JSONException {
 		if(!roles.contains(mandator)) {
 			addMandatorLocal(mandator);
-			this.getStorage().updateUser(this);
+			storage.updateUser(this);
 		}
 	}
 	
-	public void removeMandatorLocal(Mandator mandator) throws JSONException {
+	public void removeMandatorLocal(MasterMetaStorage storage, Mandator mandator) throws JSONException {
 		if(roles.contains(mandator)) {
 			roles.remove(mandator);
-			this.getStorage().updateUser(this);
+			storage.updateUser(this);
 		}
 	}
 
 	public void addMandatorLocal(Mandator mandator) {
 		roles.add(mandator);
+	}
+
+	@Override
+	@JsonIgnore
+	public String getName() {
+		return email;
 	}
 }

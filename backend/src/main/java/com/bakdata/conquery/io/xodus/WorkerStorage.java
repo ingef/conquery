@@ -44,7 +44,9 @@ public interface WorkerStorage extends NamespacedStorage {
 			return null;
 		}
 		
-		return new WorkerStorageImpl(validator, config, directory);
+		WorkerStorage storage = new WorkerStorageImpl(validator, config, directory);
+		storage.loadData();
+		return storage;
 	}
 	
 	void setBlockManager(BlockManager blockManager);

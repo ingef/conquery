@@ -117,7 +117,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 			FileUtils.copyFileToDirectory(rTable.getCsv(), support.getTmpDir());
 
 			//create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getCfg().getPreprocessor().getDirectories()[0], name);
+			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);
 			ImportDescriptor desc = new ImportDescriptor();
 			desc.setInputFile(inputFile);
 			desc.setName(rTable.getName() + "_import");

@@ -33,7 +33,10 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor
-@Getter @Setter @ToString @Slf4j
+@Getter
+@Setter
+@ToString
+@Slf4j
 public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 
 	private DatasetId dataset;
@@ -46,7 +49,6 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	 * @returns the number of contained entities
 	 */
 	private long lastResultCount;
-	
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private QueryStatus status = QueryStatus.RUNNING;
@@ -62,7 +64,7 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private List<EntityResult> results = new ArrayList<>();
 	@JsonIgnore
 	private Namespace namespace;
-	
+
 	public ManagedQuery(IQuery query, Namespace namespace) {
 		this.query = query;
 		this.namespace = namespace;
@@ -70,15 +72,15 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		execution = new CountDownLatch(1);
 		dataset = namespace.getStorage().getDataset().getId();
 	}
-	
+
 	@Override
 	public ManagedQueryId createId() {
 		return new ManagedQueryId(dataset, queryId);
 	}
 
 	public void addResult(ShardResult result) {
-		for(EntityResult er : result.getResults()) {
-			if(er.isFailed() && status == QueryStatus.RUNNING) {
+		for (EntityResult er : result.getResults()) {
+			if (er.isFailed() && status == QueryStatus.RUNNING) {
 				synchronized (execution) {
 					status = QueryStatus.FAILED;
 					finishTime = LocalDateTime.now();
@@ -96,38 +98,43 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		synchronized (execution) {
 			executingThreads--;
 			results.addAll(result.getResults());
-			if(executingThreads == 0 && status == QueryStatus.RUNNING)
+			if (executingThreads == 0 && status == QueryStatus.RUNNING) {
 				finish();
+			}
 		}
 	}
-	
+
 	private void finish() {
 		finishTime = LocalDateTime.now();
 		status = QueryStatus.DONE;
-		execution.countDown();
 		lastResultCount = results.stream().filter(ContainedEntityResult.class::isInstance).count();
+		execution.countDown();
 		try {
 			namespace.getStorage().getMetaStorage().updateQuery(this);
 		}
 		catch(JSONException e) {
 			log.error("Failed to store query after finishing: "+this, e);
 		}
-		log.info("Finished query {} within {}", Duration.between(startTime, finishTime));
+		log.info("Finished query {} within {}", getId(), Duration.between(startTime, finishTime));
 	}
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {
 		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset));
 		return Stream.concat(
 			Stream.of("result,dates"),
-			results
-				.stream()
-				.filter(ContainedEntityResult.class::isInstance)
-				.map(ContainedEntityResult.class::cast)
-				.map(cer -> dict.getElement(cer.getEntityId())+","+Joiner.on(',').join(cer.getValues()))
+			fetchContainedEntityResult()
+				.map(cer -> dict.getElement(cer.getEntityId()) + "," + Joiner.on(',').join(cer.getValues()))
 				.map(Objects::toString)
 		);
 	}
 	
+	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
+		return results
+				.stream()
+				.filter(ContainedEntityResult.class::isInstance)
+				.map(ContainedEntityResult.class::cast);
+	}
+
 	public void awaitDone(int time, TimeUnit unit) {
 		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 	}

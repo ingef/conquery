@@ -18,8 +18,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 public class ConquerySerializersModule extends SimpleModule {
 
 	private static final long serialVersionUID = 1L;
+	public static final ConquerySerializersModule INSTANCE = new ConquerySerializersModule();
 
-	public ConquerySerializersModule() {
+	private ConquerySerializersModule() {
 		super("Conquery Module", PackageVersion.VERSION);
 		addDeserializer(CurrencyUnit.class, new CurrencyUnitDeserializer());
 		addSerializer(CurrencyUnit.class, new CurrencyUnitSerializer());

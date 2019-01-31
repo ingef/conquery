@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.xodus.stores;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -17,8 +18,15 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 	private ThrowingConsumer<VALUE> onRemove;
 	
 	public IdentifiableStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
+		this(centralRegistry, store, new SingletonNamespaceCollection(centralRegistry));
+	}
+	
+	public IdentifiableStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store, Injectable... injectables) {
 		super(store);
-		store.inject(new SingletonNamespaceCollection(centralRegistry));
+		for(Injectable injectable : injectables) {
+			store.inject(injectable);
+		}
+		store.inject(centralRegistry);
 		this.centralRegistry = centralRegistry;
 	}
 
