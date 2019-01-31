@@ -40,7 +40,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			fail("Query failed");
 		}
 
-		List<String> actual = managed.toCSV(standaloneSupport.getCfg()).collect(Collectors.toList());
+		List<String> actual = managed.toCSV(standaloneSupport.getConfig()).collect(Collectors.toList());
 
 		File expectedCsv = getExpectedCsv();
 

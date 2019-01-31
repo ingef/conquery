@@ -140,7 +140,7 @@ public class DatasetsResource {
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
-		processor.addDataset(name, processor.getMaintenanceService());
+		processor.addDataset(name);
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
 			.build();

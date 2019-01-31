@@ -50,7 +50,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
 	private File tmpDir;
-	private ConqueryConfig cfg;
+	private ConqueryConfig config;
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
@@ -70,7 +70,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			//make tmp subdir and change cfg accordingly
 			File localTmpDir = new File(tmpDir, "tmp_"+name);
 			localTmpDir.mkdir();
-			ConqueryConfig localCfg = ConfigCloner.clone(cfg);
+			ConqueryConfig localCfg = ConfigCloner.clone(config);
 			localCfg.getPreprocessor().setDirectories(
 				new PreprocessingDirectories[]{
 					new PreprocessingDirectories(localTmpDir, localTmpDir, tmpDir)
@@ -114,7 +114,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			//make tmp subdir and change cfg accordingly
 			File localTmpDir = new File(tmpDir, "tmp_"+name);
 			localTmpDir.mkdir();
-			ConqueryConfig localCfg = ConfigCloner.clone(cfg);
+			ConqueryConfig localCfg = ConfigCloner.clone(config);
 			localCfg.getPreprocessor().setDirectories(
 				new PreprocessingDirectories[]{
 					new PreprocessingDirectories(localTmpDir, localTmpDir, tmpDir)
