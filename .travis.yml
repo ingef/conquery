@@ -69,15 +69,25 @@ jobs:
     #Deploy
     - stage: "Deploy Tag to NPM"
       if: tag IS present
-      script: chmod +x frontend/scripts/deploy-npm.sh && sh frontend/scripts/deploy-npm.sh
+      install:
+        - cd frontend
+        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+        - chmod +x frontend/scripts/deploy-npm.sh
+      script: sh frontend/scripts/deploy-npm.sh
 
     - stage: "Deploy Develop to Heroku"
       if: branch = develop
-      script: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh && bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
+      install: 
+        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+        - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+      script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
 
     - stage: "Deploy Master to Heroku"
       if: branch = master
-      script: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh && bash frontend/scripts/deploy-heroku-docker.sh conquery
+      install: 
+        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+        - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
+      script: bash frontend/scripts/deploy-heroku-docker.sh conquery
 
 
 cache:
