@@ -50,38 +50,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			log.info("loading dataset");
 			String name = datasetId.getName();
 		
-			Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
-			Namespace ns = namespaces.get(datasetId);
-			
-			Dataset dataset = ns.getStorage().getDataset();
-			
-			assertThat(namespaces.getSlaves()).hasSize(2);
-			
-			//make tmp subdir and change cfg accordingly
-			File localTmpDir = new File(tmpDir, "tmp_"+name);
-			localTmpDir.mkdir();
-			ConqueryConfig localCfg = ConfigCloner.clone(cfg);
-			localCfg.getPreprocessor().setDirectories(
-				new PreprocessingDirectories[]{
-					new PreprocessingDirectories(localTmpDir, localTmpDir, tmpDir)
-				}
-			);
-			
-			StandaloneSupport support = new StandaloneSupport(
-				this,
-				standaloneCommand,
-				ns,
-				ns.getStorage().getDataset(),
-				localTmpDir,
-				localCfg,
-				standaloneCommand.getMaster().getAdmin().getDatasetsProcessor()
-			);
-			while(ns.getWorkers().size() < namespaces.getSlaves().size()) {
-				Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-			}
-			support.waitUntilWorkDone();
-			openSupports.add(support);
-			return support;
+			return createSupport(datasetId, name);
 		} catch(Exception e) {
 			return fail(e);
 		}
@@ -91,44 +60,47 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		try {
 			log.info("Setting up dataset");
 			String name = UUID.randomUUID().toString();
-			DatasetId id = new DatasetId(name);
-		
+			DatasetId datasetId = new DatasetId(name);
 			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addDataset(name);
-			Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
-			Namespace ns = namespaces.get(id);
 			
-			Dataset dataset = ns.getStorage().getDataset();
-			
-			assertThat(namespaces.getSlaves()).hasSize(2);
-			
-			//make tmp subdir and change cfg accordingly
-			File localTmpDir = new File(tmpDir, "tmp_"+name);
-			localTmpDir.mkdir();
-			ConqueryConfig localCfg = ConfigCloner.clone(cfg);
-			localCfg.getPreprocessor().setDirectories(
-				new PreprocessingDirectories[]{
-					new PreprocessingDirectories(localTmpDir, localTmpDir, tmpDir)
-				}
-			);
-			
-			StandaloneSupport support = new StandaloneSupport(
-				this,
-				standaloneCommand,
-				ns,
-				ns.getStorage().getDataset(),
-				localTmpDir,
-				localCfg,
-				standaloneCommand.getMaster().getAdmin().getDatasetsProcessor()
-			);
-			while(ns.getWorkers().size() < namespaces.getSlaves().size()) {
-				Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
-			}
-			support.waitUntilWorkDone();
-			openSupports.add(support);
-			return support;
+			return createSupport(datasetId, name);
 		} catch(Exception e) {
 			return fail(e);
 		}
+	}
+	
+	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
+		Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
+		Namespace ns = namespaces.get(datasetId);
+		
+		assertThat(namespaces.getSlaves()).hasSize(2);
+		
+		
+		//make tmp subdir and change cfg accordingly
+		File localTmpDir = new File(tmpDir, "tmp_"+name);
+		localTmpDir.mkdir();
+		ConqueryConfig localCfg = ConfigCloner.clone(cfg);
+		localCfg.getPreprocessor().setDirectories(
+			new PreprocessingDirectories[]{
+				new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir)
+			}
+		);
+		
+		StandaloneSupport support = new StandaloneSupport(
+			this,
+			standaloneCommand,
+			ns,
+			ns.getStorage().getDataset(),
+			localTmpDir,
+			localCfg,
+			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor()
+		);
+		while(ns.getWorkers().size() < ns.getNamespaces().getSlaves().size()) {
+			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+		}
+		support.waitUntilWorkDone();
+		openSupports.add(support);
+		return support;
 	}
 	
 	/*package*/ synchronized void stop(StandaloneSupport support) {
