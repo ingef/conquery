@@ -4,6 +4,10 @@ import org.apache.shiro.authc.AuthenticationInfo;
 
 import com.bakdata.conquery.models.auth.subjects.User;
 
+/**
+ * Default dummy implementation for the UnknownUserHandler.
+ *
+ */
 public class DefaultUnknownUserHandler implements UnknownUserHandler {
 
 	@Override

@@ -43,7 +43,6 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private UUID queryId = UUID.randomUUID();
 	private IQuery query;
 	private LocalDateTime creationTime = LocalDateTime.now();
-
 	/**
 	 * The number of contained entities the last time this query was executed.
 	 * @param lastResultCount the new count for JACKSON
@@ -108,15 +107,15 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private void finish() {
 		finishTime = LocalDateTime.now();
 		status = QueryStatus.DONE;
-		execution.countDown();
 		lastResultCount = results.stream().filter(ContainedEntityResult.class::isInstance).count();
+		execution.countDown();
 		try {
 			namespace.getStorage().getMetaStorage().updateQuery(this);
 		}
 		catch(JSONException e) {
 			log.error("Failed to store query after finishing: "+this, e);
 		}
-		log.info("Finished query {} within {}", Duration.between(startTime, finishTime));
+		log.info("Finished query {} within {}", getId(), Duration.between(startTime, finishTime));
 	}
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {

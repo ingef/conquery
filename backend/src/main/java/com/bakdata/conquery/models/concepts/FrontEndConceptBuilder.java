@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.concepts;
 
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -8,6 +7,7 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;

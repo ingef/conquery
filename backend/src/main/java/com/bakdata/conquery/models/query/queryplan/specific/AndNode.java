@@ -34,7 +34,7 @@ public class AndNode extends QPParentNode {
 	@Override
 	public boolean isContained() {
 		boolean currently = true;
-		for (QPNode agg : currentTableChildren) {
+		for (QPNode agg : getChildren()) {
 			currently &= agg.isContained();
 		}
 		return currently;

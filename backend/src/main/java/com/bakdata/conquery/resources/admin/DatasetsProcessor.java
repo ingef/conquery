@@ -94,7 +94,7 @@ public class DatasetsProcessor {
 		Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 	}
 
-	public void addDataset(String name, ScheduledExecutorService maintenanceService) throws JSONException {
+	public void addDataset(String name) throws JSONException {
 		//create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);

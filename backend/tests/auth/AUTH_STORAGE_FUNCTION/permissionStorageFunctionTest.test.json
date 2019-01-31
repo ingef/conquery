@@ -1,18 +1,17 @@
 {
     "type": "PERMISSION_STORAGE_FUNCTION_TEST",
+    "label": "PERMISSION_STORAGE_FUNCTION_TEST",
     "roles":[
         {
-            "label" : "unused",
-            "name" : "unused",
-            "principals": "mandator.testCompany"
+            "label" : "testCompany",
+            "name" : "testCompany"
         }
     ],
     "users": [
         {
             "user" : {
                 "label" : "unused",
-                "name" : "unused",
-                "principals": "user.user1"
+                "email" : "user1"
             },
             "rolesInjected": [
                 "mandator.testCompany"
@@ -21,8 +20,7 @@
         {
             "user" : {
                 "label" : "unused",
-                "name" : "unused",
-                "principals": "user.user2"
+                "email" : "user2"
             }
         }
     ],

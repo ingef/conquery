@@ -1,6 +1,7 @@
 package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
+
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -86,11 +87,10 @@ public class AdminUIResource {
 		processor.createMandator(name, idString);
 		return Response.ok().build();
 	}
-
-	@GET
-	@Path("/mandators/{" + MANDATOR_NAME + "}")
-	public View getMandator(@PathParam(MANDATOR_NAME) MandatorId mandatorId) {
-		return new UIView<>("mandator.html.ftl", context, processor.getUsers(mandatorId));
+	
+	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
+	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
+		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
 	}
 
 	@Produces(ExtraMimeTypes.CSV_STRING)

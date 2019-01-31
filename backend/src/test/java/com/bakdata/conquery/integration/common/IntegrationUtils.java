@@ -47,7 +47,7 @@ public class IntegrationUtils {
 				owner = storage.getMandator((MandatorId) ownerId);
 			}
 			
-			owner.addPermission(permission);
+			owner.addPermission(storage, permission);
 		}
 	}
 	

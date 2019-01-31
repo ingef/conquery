@@ -9,6 +9,10 @@ import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 
+/**
+ * Helper for easier and cleaner authorization.
+ *
+ */
 public class AuthorizationHelper {
 	
 	// Dataset Instances
