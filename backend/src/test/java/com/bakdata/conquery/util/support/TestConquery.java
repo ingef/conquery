@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import java.io.File;
 import java.net.ServerSocket;
 import java.util.HashSet;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -16,7 +15,6 @@ import javax.ws.rs.client.Client;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
-import org.glassfish.jersey.servlet.WebConfig.ConfigType;
 import org.junit.jupiter.api.extension.AfterAllCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
@@ -25,7 +23,6 @@ import org.junit.jupiter.api.extension.ExtensionContext;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -56,6 +53,12 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
+	
+	/**
+	 * Returns the extension context used by the beforeAll-callback.
+	 *
+	 * @return The context.
+	 */
 	@Getter
 	private ExtensionContext beforeAllContext;
 	
