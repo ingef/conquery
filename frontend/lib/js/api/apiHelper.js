@@ -138,15 +138,9 @@ const transformTimebasedQueryToApi = (query) => ({
           const [ minDays, maxDays ] = getDayRange(condition);
           return {
             type: condition.operator,
-            indexEvent: {
-              index: condition.result0.id,
-              event: createSavedQuery(condition.result0.id)
-            },
-            atLeat: minDays,
-            preceding: {
-              index: condition.result1.id,
-              event: createSavedQuery(condition.result1.id)
-            }
+            sampler: "EARLIEST",
+            index: createSavedQuery(condition.result0.id),
+            preceding: createSavedQuery(condition.result1.id)
           }
         })
       }
