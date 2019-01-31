@@ -37,6 +37,7 @@ public class AddWorker extends SlaveMessage.Slow {
 		info.setIncludedBuckets(new IntArrayList());
 		info.setName(dir.getName());
 		WorkerStorage workerStorage = new WorkerStorageImpl(context.getValidator(), config.getStorage(), dir);
+		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
 		Worker worker = new Worker(
 			info,

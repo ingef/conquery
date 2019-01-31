@@ -93,7 +93,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		for(File queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
 			
-			String[][] data = CSV.streamContent(support.getCfg().getCsv(), queryResults, log)
+			String[][] data = CSV.streamContent(support.getConfig().getCsv(), queryResults, log)
 				.toArray(String[][]::new);
 
 			ConceptQuery q = new ConceptQuery();
@@ -128,7 +128,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			FileUtils.copyFileToDirectory(rTable.getCsv(), support.getTmpDir());
 
 			//create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getCfg().getPreprocessor().getDirectories()[0], name);
+			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);
 			ImportDescriptor desc = new ImportDescriptor();
 			desc.setInputFile(inputFile);
 			desc.setName(rTable.getName() + "_import");

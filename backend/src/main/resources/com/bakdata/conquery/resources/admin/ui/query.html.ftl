@@ -18,7 +18,7 @@
 		]
 	}
 }</textarea>
-				  <input class="btn btn-primary" type="submit"  onclick="event.preventDefault(); fetch('/admin/query/', {method: 'post', body: document.getElementById('query').value, headers: {'Content-Type': 'application/json'}}).then(response => response.blob()).then(blob => {var url = window.URL.createObjectURL(blob);var a = document.createElement('a');a.href = url;a.download = 'result.csv';document.body.appendChild(a);a.click();a.remove();})"/>
+				  <input class="btn btn-primary" type="submit"  onclick="event.preventDefault(); fetch('/admin/query', {method: 'post', body: document.getElementById('query').value, headers: {'Content-Type': 'application/json'}}).then(response => response.blob()).then(blob => {var url = window.URL.createObjectURL(blob);var a = document.createElement('a');a.href = url;a.download = 'result.csv';document.body.appendChild(a);a.click();a.remove();})"/>
 				</div> 
 			</form>
 		</div>

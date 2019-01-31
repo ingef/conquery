@@ -21,7 +21,7 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	private String description;
 	@Getter @Setter
 	private List<KeyValue> additionalInfos = Collections.emptyList();
-	@Getter @Setter
+	@Getter @Setter @JsonIgnore
 	private MatchingStats matchingStats = new MatchingStats();
 	
 	public ConceptElement<?> getElementById(ConceptElementId<?> conceptElementId) {

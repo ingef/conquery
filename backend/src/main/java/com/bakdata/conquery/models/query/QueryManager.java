@@ -25,6 +25,10 @@ public class QueryManager {
 	private final IdMap<ManagedQueryId, ManagedQuery> queries = new IdMap<>();
 
 	public void initMaintenance(ScheduledExecutorService service) {
+		if (service == null) {
+			return;
+		}
+
 		service.scheduleAtFixedRate(
 			this::maintain,
 			0,
@@ -32,12 +36,12 @@ public class QueryManager {
 			TimeUnit.MINUTES
 		);
 	}
-	
+
 	public void maintain() {
 		LocalDateTime threshhold = LocalDateTime.now().minus(10L, ChronoUnit.MINUTES);
-		
-		for(ManagedQuery mq : queries.values()) {
-			if(mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshhold)) {
+
+		for (ManagedQuery mq : queries.values()) {
+			if (mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshhold)) {
 				queries.remove(mq.getId());
 			}
 		}
@@ -66,6 +70,10 @@ public class QueryManager {
 	public void addQueryResult(ShardResult result) {
 		ManagedQuery managedQuery = queries.getOrFail(result.getQueryId());
 		managedQuery.addResult(result);
+	}
+
+	public ManagedQuery getQuery(ManagedQueryId id) {
+		return queries.getOrFail(id);
 	}
 
 }

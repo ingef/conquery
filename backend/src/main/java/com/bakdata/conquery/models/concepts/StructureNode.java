@@ -6,7 +6,7 @@ import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
-import com.bakdata.conquery.io.jackson.serializer.IdReferenceCollection;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -31,8 +31,7 @@ public class StructureNode extends Labeled<StructureNodeId> {
 	private List<StructureNode> children = Collections.emptyList();
 	@JsonBackReference(MANAGED_STRUCTURE_STRUCTURE)
 	private StructureNode parent;
-	@IdReferenceCollection
-	private List<Concept<?>> containedRoots = Collections.emptyList();
+	private List<@NsIdRef Concept<?>> containedRoots = Collections.emptyList();
 	private List<KeyValue> additionalInfos = Collections.emptyList();
 	
 	@Override
