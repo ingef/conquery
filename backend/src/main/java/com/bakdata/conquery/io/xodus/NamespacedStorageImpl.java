@@ -8,6 +8,7 @@ import java.util.Optional;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -129,6 +130,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	public Dictionary getDictionary(DictionaryId id) {
 		return dictionaries.get(id);
+	}
+
+	@Override
+	public Dictionary getPrimaryDictionary() {
+		return dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()));
 	}
 
 	@Override

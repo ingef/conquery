@@ -1,12 +1,13 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
+import java.util.List;
+import java.util.Map;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -29,6 +30,6 @@ public interface NamespaceStorage extends NamespacedStorage {
 	MasterMetaStorage getMetaStorage();
 	void setMetaStorage(@NonNull MasterMetaStorage storage);
 	
-	IdMapping getIdMapping();
-	void updateIdMapping(IdMapping idMapping) throws JSONException;
+	Map<String, List<String>> getIdMapping();
+	void updateIdMapping(Map idMapping) throws JSONException;
 }

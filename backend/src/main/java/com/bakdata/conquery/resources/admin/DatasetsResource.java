@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
@@ -44,7 +45,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -98,7 +98,7 @@ public class DatasetsResource {
 	@GET
 	@Path("/{" + DATASET_NAME + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
-		IdMapping mapping = namespaces.get(datasetId).getStorage().getIdMapping();
+		Map mapping = namespaces.get(datasetId).getStorage().getIdMapping();
 		if (mapping != null) {
 			return new UIView<>(
 				"idmapping.html.ftl",
@@ -118,7 +118,7 @@ public class DatasetsResource {
 	@Consumes(MediaType.WILDCARD)
 	@Path("/{" + DATASET_NAME + "}/mapping")
 	public Response addIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("data_csv") InputStream data) throws IOException, JSONException {
-		processor.addIdMaping(data, namespaces.get(datasetId));
+		processor.setIdMapping(data, namespaces.get(datasetId));
 		return Response
 				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
 				.build();

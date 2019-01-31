@@ -5,6 +5,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.auth.AuthConfig;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+import com.bakdata.conquery.models.identifiable.mapping.SimpleIdMappingConfig;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
@@ -36,7 +38,9 @@ public class ConqueryConfig extends Configuration {
 	private QueryConfig queries = new QueryConfig();
 	@Valid @NotNull
 	private APIConfig api = new APIConfig();
-	
+
+	private IdMappingConfig idMapping = new SimpleIdMappingConfig();
+
 	private AuthConfig authentication = new DevAuthConfig();
 	/**
 	 * null means here that we try to deduce from an attached agent

@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
@@ -107,21 +108,17 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 
 	public Stream<String> toCSV(ConqueryConfig cfg) {
 		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset));
+		IdMappingConfig mappingConfig = cfg.getIdMapping();
+
 		return Stream.concat(
-				Stream.of(Joiner.on(',').join(mapping.getPrintIdFields())+",dates"),
-				results
-						.stream()
-						.filter(ContainedEntityResult.class::isInstance)
-						.map(ContainedEntityResult.class::cast)
-						.filter(cer -> mapping.forCsv(dict.getElement(cer.getEntityId())) != null)
-						.map(cer -> Joiner.on(',').join(mapping.forCsv(dict.getElement(cer.getEntityId()))) + "," + Joiner.on(',').join(cer.getValues()))
-						.map(Objects::toString)
-						.onClose(() -> {
-							if (unmapableTuples > 0) {
-								log.warn(unmapableTuples + " Tuples could not be mapped");
-								// TODO give some (10?) examples
-							}
-						})
+			Stream.of(Joiner.on(',').join(mappingConfig.getPrintIdFields())+",dates"),
+			results
+				.stream()
+				.filter(ContainedEntityResult.class::isInstance)
+				.map(ContainedEntityResult.class::cast)
+				.filter(cer -> mappingConfig.toExternal(dict.getElement(cer.getEntityId()), namespace) != null)
+				.map(cer -> Joiner.on(',').join(mappingConfig.toExternal(dict.getElement(cer.getEntityId()), namespace)) + "," + Joiner.on(',').join(cer.getValues()))
+				.map(Objects::toString)
 		);
 	}
 

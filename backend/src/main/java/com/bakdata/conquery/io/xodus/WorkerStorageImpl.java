@@ -12,6 +12,7 @@ import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.CBlock;
@@ -62,7 +63,11 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 			blockManager.init(this.getWorker());
 		}
 	}
-	
+
+	@Override public Dictionary getPrimaryDictionary() {
+		return null;
+	}
+
 	@Override
 	public void updateConcept(Concept<?> concept) throws JSONException {
 		concepts.update(concept);

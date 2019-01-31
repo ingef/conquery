@@ -27,8 +27,7 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMapping;
-import com.bakdata.conquery.models.identifiable.mapping.SimpleIdMapping;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -45,10 +44,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter
-@Slf4j
-@RequiredArgsConstructor
-public class DatasetsProcessor {
+@Getter @Slf4j @RequiredArgsConstructor public class DatasetsProcessor {
 
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;
@@ -61,7 +57,8 @@ public class DatasetsProcessor {
 		Objects.requireNonNull(table);
 		if (table.getDataset() == null) {
 			table.setDataset(dataset);
-		} else if (!table.getDataset().equals(dataset)) {
+		}
+		else if (!table.getDataset().equals(dataset)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -92,7 +89,9 @@ public class DatasetsProcessor {
 
 		dataset.addConcept(c);
 		c.setDataset(dataset.getId());
-		jobManager.addSlowJob(new SimpleJob("Adding concept "+c.getId(), ()->namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
+		jobManager.addSlowJob(new SimpleJob(
+			"Adding concept " + c.getId(),
+			() -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
 
 		namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c));
 		//see #144  check duplicate names
@@ -102,7 +101,6 @@ public class DatasetsProcessor {
 		//create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
-
 
 		//add allIds table
 		Table allIdsTable = new Table();
@@ -121,7 +119,10 @@ public class DatasetsProcessor {
 		dataset.getTables().add(allIdsTable);
 
 		//store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_"+name));
+		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
+			storage.getValidator(),
+			config.getStorage(),
+			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 
 		datasetStorage.setMetaStorage(storage);
 		Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
@@ -136,8 +137,7 @@ public class DatasetsProcessor {
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
-		try (HCFile hcFile = new HCFile(selectedFile, false);
-			InputStream in = hcFile.readHeader()) {
+		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
 			PPHeader header = Jackson.BINARY_MAPPER.readValue(in, PPHeader.class);
 
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
@@ -155,9 +155,9 @@ public class DatasetsProcessor {
 		slave.send(new AddWorker(dataset));
 	}
 
-	public void addIdMaping(InputStream data, Namespace namespace) throws JSONException, IOException {
+	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
 		CSV csvData = new CSV(new CSVConfig(), data);
-		IdMapping mapping = new SimpleIdMapping(csvData);
-		namespace.getStorage().updateIdMapping(mapping);
+		IdMappingConfig mappingConfig = config.getIdMapping();
+		mappingConfig.updateCsvData(csvData, namespace);
 	}
 }
