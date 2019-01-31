@@ -71,11 +71,11 @@ jobs:
       if: tag IS present
       script: chmod +x frontend/scripts/deploy-npm.sh && sh frontend/scripts/deploy-npm.sh
 
-    - stage: "Deploy Develop to Heroku"   
+    - stage: "Deploy Develop to Heroku"
       if: branch = develop
       script: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh && bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
 
-    - stage: "Deploy Master to Heroku" 
+    - stage: "Deploy Master to Heroku"
       if: branch = master
       script: curl https://cli-assets.heroku.com/install-ubuntu.sh | sh && bash frontend/scripts/deploy-heroku-docker.sh conquery
 
