@@ -117,6 +117,7 @@ public class DatasetsProcessor {
 
 		//store dataset in own storage
 		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_" + name));
+		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
 		ns.initMaintenance(maintenanceService);

@@ -34,8 +34,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.bakdata.conquery.util.ResourceUtil;
 import com.zigurs.karlis.utils.search.QuickSearch;
+import javax.ws.rs.WebApplicationException;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -48,12 +48,10 @@ public class ContentTreeProcessor {
 
 	private ConceptSearch conceptSearch;
 	private Namespaces namespaces;
-	private ResourceUtil dsUtil;
 
 	public ContentTreeProcessor(Namespaces namespaces) {
 		this.namespaces = namespaces;
 		this.conceptSearch = new ConceptSearch(namespaces.getAllDatasets());
-		this.dsUtil = new ResourceUtil(namespaces);
 		FilterSearch.init(namespaces.getAllDatasets());
 	}
 
@@ -69,7 +67,13 @@ public class ContentTreeProcessor {
 
 		QuickSearch<FilterSearchItem> search = tf.getSourceSearch();
 		if (search != null) {
-			result = createSourceSearchResult(search, text);
+			result = createSourceSearchResult(tf.getSourceSearch(), text);
+		}
+		
+		if (tf.getRealLabels() != null) {
+			result.addAll(tf.getRealLabels().entrySet().stream()
+				.filter(r -> r.getValue().equalsIgnoreCase(text))
+				.map(r -> new FEValue(r.getKey(), r.getValue())).collect(Collectors.toList()));
 		}
 
 		// see https://github.com/bakdata/conquery/issues/235
@@ -159,9 +163,9 @@ public class ContentTreeProcessor {
 	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, String... values) {
 		List<FilterSearchItem> result = new LinkedList<>();
 		for (String value : values) {
-			result.addAll(search.findItems(value, 10));
+			result.addAll(search.findItems(value, 50));
 		}
-
+		
 		return result
 			.stream()
 			.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
@@ -175,26 +179,40 @@ public class ContentTreeProcessor {
 			BigMultiSelectFilter bmsf = (BigMultiSelectFilter) filter;
 			result.setColumn(bmsf.getColumn());
 			result.setRealLabels(bmsf.getRealLabels());
-		}
-		else {
+			result.setSourceSearch(bmsf.getSourceSearch());
+		} else if (filter instanceof MultiSelectFilter) {
 			MultiSelectFilter msf = (MultiSelectFilter) filter;
 			result.setColumn(msf.getColumn());
 			result.setRealLabels(msf.getRealLabels());
+			result.setSourceSearch(msf.getSourceSearch());
+		} else {
+			try {
+				throw new WebApplicationException(String.format("Could not resolved Filter values for this Type. Filter: %s", filter.getName()));
+			} catch (WebApplicationException ex) {
+				log.error(ex.getMessage());
+			}
 		}
+		
 
 		return result;
 	}
 
 	public ResolvedConceptsResult resolveFilterValues(Dataset dataset, Table table, Filter filter, List<String> values) {
-		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
+		ResolvedFilter rf = createResolvedFilter(filter);
 
 		List<FEValue> filterValues = new LinkedList<>();
-		QuickSearch<FilterSearchItem> search = tf.getSourceSearch();
+		QuickSearch<FilterSearchItem> search = rf.getSourceSearch();
 		if (search != null) {
 			filterValues.addAll(createSourceSearchResult(search, values.toArray(new String[values.size()])));
 		}
-
-		ResolvedFilter rf = createResolvedFilter(filter);
+		
+		if (rf.getRealLabels() != null) {
+			List<String> resolveFilterValues = new ArrayList<>(rf.getRealLabels().values());
+			List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
+			resolveFilterValues.removeIf(fv -> !toRemove.contains(fv) && !values.contains(fv));
+			filterValues = resolveFilterValues.stream().map(v -> new FEValue(rf.getRealLabels().get(v), v)).collect(Collectors.toList());
+			values.removeAll(resolveFilterValues);
+		}
 
 		// see https://github.com/bakdata/conquery/issues/251
 		return new ResolvedConceptsResult(
@@ -239,5 +257,6 @@ public class ContentTreeProcessor {
 
 		private Column column;
 		private Map<String, String> realLabels;
+		private QuickSearch sourceSearch;
 	}
 }

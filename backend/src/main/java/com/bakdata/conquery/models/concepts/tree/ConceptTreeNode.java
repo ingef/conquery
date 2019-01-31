@@ -27,17 +27,4 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	public void setChildIndex(TreeChildPrefixIndex childIndex);
 	
 	public MatchingStats getMatchingStats();
-	
-	public default ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids) {
-		return getElementByLocalId(ids, 0);
-	}
-	
-	public default ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids, int index) {
-		if(index == ids.length ) {
-			return this;
-		}
-		else {
-			return getChildren().get(ids[index]).getElementByLocalId(ids, index+1);
-		}
-	}
 }

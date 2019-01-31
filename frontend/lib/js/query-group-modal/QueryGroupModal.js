@@ -81,7 +81,12 @@ const QueryGroupModal = (props) => {
   }
 
   return (
-    <Modal closeModal={props.onCloseModal} doneButton tabIndex={3}>
+    <Modal
+      closeModal={props.onCloseModal}
+      doneButton
+      tabIndex={3}
+      disabled={(minDate && !maxDate) || (!minDate && maxDate)}
+    >
       <div className="query-group-modal">
         <h3 className="query-group-modal__headline">
           {

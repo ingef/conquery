@@ -49,7 +49,6 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	 * @returns the number of contained entities
 	 */
 	private long lastResultCount;
-	
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private QueryStatus status = QueryStatus.RUNNING;

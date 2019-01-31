@@ -81,6 +81,7 @@ public class SQStatus {
 	}
 	
 	public static SQStatus buildFromQuery(ManagedQuery query, URLBuilder urlb) {
+		Long numberOfResults = Long.valueOf(query.fetchContainedEntityResult().count());
 		return builder()
 			.id(query.getId())
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
@@ -89,7 +90,7 @@ public class SQStatus {
 				? ChronoUnit.MILLIS.between(query.getStartTime(), query.getFinishTime())
 				: null)
 			.status(query.getStatus())
-			.numberOfResults(Long.valueOf(query.fetchContainedEntityResult().count()))
+			.numberOfResults(numberOfResults > 0 ? numberOfResults : query.getLastResultCount())
 			.resultUrl(
 				urlb != null
 				? urlb
