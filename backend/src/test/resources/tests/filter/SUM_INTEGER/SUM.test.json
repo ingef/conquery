@@ -1,0 +1,41 @@
+{
+  "type": "FILTER_TEST",
+  "label": "SUM_INTEGER Test",
+  "expectedCsv": "tests/filter/SUM_INTEGER/expected_SUM_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/SUM_INTEGER/content_SUM_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "plus",
+          "type": "INTEGER"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "column": "table.plus",
+      "type": "SUM"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 100,
+      "max": 200
+    }
+  }
+}

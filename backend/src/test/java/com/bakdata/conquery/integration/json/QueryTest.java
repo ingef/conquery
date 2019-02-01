@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -19,6 +20,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
+import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -44,6 +46,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
 
@@ -57,8 +60,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "QUERY_TEST", base = ConqueryTestSpec.class)
 public class QueryTest extends AbstractQueryEngineTest {
 
-	@ExistingFile
-	private File expectedCsv;
+	private ResourceFile expectedCsv;
 
 	@NotNull
 	@JsonProperty("query")
@@ -90,10 +92,14 @@ public class QueryTest extends AbstractQueryEngineTest {
 	private void importPreviousQueries(StandaloneSupport support) throws JSONException, IOException {
 		// Load previous query results if available
 		int id = 1;
-		for(File queryResults : content.getPreviousQueryResults()) {
+		for(ResourceFile queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
 			
-			String[][] data = CSV.streamContent(support.getConfig().getCsv(), queryResults, log)
+			String[][] data = CSV.streamContent(
+				support.getConfig().getCsv(), 
+				In.resource(queryResults.toString()).asStream(), 
+				log
+			)
 				.toArray(String[][]::new);
 
 			ConceptQuery q = new ConceptQuery();
@@ -125,7 +131,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		for (RequiredTable rTable : content.getTables()) {
 			//copy csv to tmp folder
 			String name = rTable.getCsv().getName().substring(0, rTable.getCsv().getName().lastIndexOf('.'));
-			FileUtils.copyFileToDirectory(rTable.getCsv(), support.getTmpDir());
+			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
 			//create import descriptor
 			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);

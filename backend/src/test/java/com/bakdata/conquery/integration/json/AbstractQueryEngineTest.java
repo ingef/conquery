@@ -5,10 +5,12 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -25,7 +27,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	@JsonIgnore
 	protected abstract IQuery getQuery();
 
-	protected abstract File getExpectedCsv();
+	protected abstract ResourceFile getExpectedCsv();
 
 
 	@Override
@@ -42,9 +44,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		List<String> actual = managed.toCSV(standaloneSupport.getConfig()).collect(Collectors.toList());
 
-		File expectedCsv = getExpectedCsv();
+		ResourceFile expectedCsv = getExpectedCsv();
 
-		List<String> expected = In.file(expectedCsv).readLines();
+		List<String> expected = In.stream(expectedCsv.stream()).readLines();
 
 
 		assertThat(actual)
