@@ -8,7 +8,8 @@ import type {
   MultiSelectFilterType,
   MultiSelectFilterValueType,
   SelectFilterType,
-  SelectFilterValueType
+  SelectFilterValueType,
+  DateRangeType
 } from '../common/types/backend';
 
 export type CurrencyType = {
