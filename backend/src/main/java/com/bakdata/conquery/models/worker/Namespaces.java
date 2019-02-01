@@ -2,10 +2,10 @@ package com.bakdata.conquery.models.worker;
 
 import java.net.SocketAddress;
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
@@ -23,14 +23,14 @@ import lombok.Setter;
 
 public class Namespaces implements NamespaceCollection {
 
-	private Map<DatasetId, Namespace> datasets = new HashMap<>();
+	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
 	@Getter
 	@Setter
 	private IdMap<WorkerId, WorkerInformation> workers = new IdMap<>();
 	@Getter
 	@JsonIgnore
-	private transient Map<SocketAddress, SlaveInformation> slaves = new HashMap<>();
+	private transient ConcurrentMap<SocketAddress, SlaveInformation> slaves = new ConcurrentHashMap<>();
 
 	public void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);
