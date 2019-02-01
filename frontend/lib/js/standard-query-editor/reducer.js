@@ -315,8 +315,8 @@ const setNodeFilterProperties = (state, action, obj) => {
 
   if ('options' in properties) {
     // From performance reasons and for system protection
-    if (filter.options.length > 1000)
-      filter.options = filter.options.splice(0, 1000);
+    if (filter.options.length > 200)
+      filter.options = filter.options.splice(0, 200);
 
     // The properties object contains an 'options' key, but its value might
     // be undefined (because of stripObject above)

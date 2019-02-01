@@ -76,14 +76,14 @@ jobs:
       script: sh frontend/scripts/deploy-npm.sh
 
     - stage: "Deploy Develop to Heroku"
-      if: branch = develop
+      if: branch = develop AND type = push
       install: 
         - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
 
     - stage: "Deploy Master to Heroku"
-      if: branch = master
+      if: branch = master AND type = push
       install: 
         - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
