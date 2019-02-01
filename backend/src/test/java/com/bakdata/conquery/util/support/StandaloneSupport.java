@@ -74,12 +74,24 @@ public class StandaloneSupport implements Closeable {
 	public Validator getValidator() {
 		return standaloneCommand.getMaster().getValidator();
 	}
-
+	
+	/**
+	 * Retrieves the port of the admin API.
+	 * @return The port.
+	 */
 	public int getAdminPort() {
 		return testConquery.getDropwizard().getAdminPort();
 	}
 
 	public Client getClient() {
 		return testConquery.getClient();
+	}
+
+	/**
+	 * Retrieves the port of the main API.
+	 * @return The port.
+	 */
+	public int getLocalPort() {
+		return testConquery.getDropwizard().getLocalPort();
 	}
 }

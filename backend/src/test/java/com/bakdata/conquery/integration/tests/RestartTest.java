@@ -2,10 +2,6 @@ package com.bakdata.conquery.integration.tests;
 
 import javax.validation.Validator;
 
-import org.junit.jupiter.api.Test;
-
-import com.bakdata.conquery.integration.IntegrationTest;
-import com.bakdata.conquery.integration.IntegrationTests;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -57,7 +53,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		//stop dropwizard directly so COnquerySupport does not delete the tmp directory
 		testConquery.getDropwizard().after();
 		//restart
-		testConquery.beforeAll(null);
+		testConquery.beforeAll(testConquery.getBeforeAllContext());
 		
 		try(StandaloneSupport conquery = testConquery.openDataset(dataset)) {
 			test.executeTest(conquery);
