@@ -97,7 +97,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			
 			String[][] data = CSV.streamContent(
 				support.getConfig().getCsv(), 
-				In.resource(queryResults.toString()).asStream(), 
+				queryResults.stream(), 
 				log
 			)
 				.toArray(String[][]::new);
