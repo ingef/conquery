@@ -23,7 +23,7 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new ContentTreeResources(namespaces));
 		environment.register(new FormResource(namespaces));
 		environment.register(new ImportResource(namespaces));
-		environment.register(new QueryResource(namespaces));
+		environment.register(new QueryResource(namespaces, master.getStorage()));
 		environment.register(new ResultCSVResource(namespaces, master.getConfig()));
 		environment.register(new StoredQueriesResource(namespaces));
 		environment.register(IdParamConverter.Provider.INSTANCE);

@@ -7,10 +7,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 
-/**
- *
- * @author Marcus Baitz
- */
 public class ResourceUtil {
 
 	private final Namespaces namespaces;

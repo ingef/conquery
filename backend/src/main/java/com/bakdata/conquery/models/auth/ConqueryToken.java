@@ -14,9 +14,21 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class ConqueryToken implements AuthenticationToken {
 	private static final long serialVersionUID = 1L;
+	
+	/**
+	 *  Holds the credentials that verifies a subject.
+	 *
+	 *  @return The provided credentials (e.g. email address)
+	 */
 	@Getter
 	private final String credentials;
 	
+	/**
+	 * This operation is not supported in this project.
+	 *
+	 * @return Nothing.
+	 * @throws UnsupportedOperationException on use.
+	 */
 	@Override @JsonIgnore
 	public Object getPrincipal() {
 		throw new UnsupportedOperationException();

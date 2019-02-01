@@ -23,31 +23,37 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * The base class of security subjects in this project. Used to represent persons and groups with permissions.
+ *
+ * @param <T> The id type by which an instance is identified
+ */
 @Slf4j
-@RequiredArgsConstructor
-@JsonIgnoreProperties({"session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered"})
-public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends Labeled<T> implements  Subject {
-	
-	@Getter
-	private final SinglePrincipalCollection principals;
+@JsonIgnoreProperties({"session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals"})
+public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements  Subject {
 	
 	@Getter
 	private transient final Set<ConqueryPermission> permissions = new HashSet<>();
-	@Getter @Setter
-	private transient MasterMetaStorage storage;
 
 	@Override
 	public Object getPrincipal() {
-		return principals.getPrimaryPrincipal();
+		return getId();
+	}
+	
+	@Override
+	public PrincipalCollection getPrincipals() {
+		return new SinglePrincipalCollection(getId());
 	}
 	
 	@Override
@@ -225,7 +231,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return Returns the added Permission (Id might changed when the owner changed or
 	 * permissions are aggregated
 	 */
-	public ConqueryPermission addPermission(ConqueryPermission permission) throws JSONException{
+	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException{
 		ConqueryPermission ownedPermission = permission;
 		if(!permission.getOwnerId().equals(this.getId())) {
 			ownedPermission = permission.withOwner(this.getId());
@@ -255,9 +261,12 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	
 	/**
 	 * Removes a permission from the storage and from the locally stored permissions by calling
-	 * indirectly {@link #removePermissionLocal(ConqueryPermission)}.
+	 * {@link #removePermissionLocal(ConqueryPermission)}.
+	 * @param storage The storage in which the permission persists.
+	 * @param permission The permission to be deleted.
 	 */
-	public void removePermission(ConqueryPermission permission) {
+	public void removePermission(MasterMetaStorage storage, ConqueryPermission permission) {
+		removePermissionLocal(permission);
 		storage.removePermission(permission.getId());
 	}
 	
@@ -271,15 +280,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		}
 		return Optional.empty();
 		
-	}
-	
-	@Override
-	public String getLabel() {
-		String ret = super.getLabel();
-		if(ret == null) {
-			ret = getId().toString();
-		}
-		return ret;
 	}
 	
 	/**

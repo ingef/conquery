@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-
 import com.bakdata.conquery.apiv1.ContentTreeResources.SearchResult;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FENode;

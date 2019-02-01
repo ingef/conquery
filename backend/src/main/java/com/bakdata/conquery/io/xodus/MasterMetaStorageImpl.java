@@ -1,5 +1,10 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.Collection;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -11,7 +16,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -48,13 +52,10 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		this.queries = StoreInfo.QUERIES.identifiable(this, namespaces);
 		
 		MasterMetaStorage storage = this;
-		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage)
-			.onAdd(value->value.setStorage(storage));
-		this.authUser = StoreInfo.AUTH_USER.<User>identifiable(storage)
-			.onAdd(value->value.setStorage(storage));
+		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage);
+		this.authUser = StoreInfo.AUTH_USER.<User>identifiable(storage);
 		this.authPermissions = StoreInfo.AUTH_PERMISSIONS.<ConqueryPermission>identifiable(storage)
-			.onAdd(value->		value.getOwnerId().getOwner(storage).addPermissionLocal(value))
-			.onRemove(value->	value.getOwnerId().getOwner(storage).removePermissionLocal(value));
+			.onAdd(value->		value.getOwnerId().getOwner(storage).addPermissionLocal(value));
 		
 		collector
 			.collect(meta)
@@ -118,12 +119,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		authPermissions.remove(permissionId);
 	}
 	
-	public void removePermissionAll() {
-		for(ConqueryPermission p :authPermissions.getAll()) {
-			authPermissions.remove(p.getId());
-		}
-	}
-	
 	public void addUser(User user) throws JSONException {
 		authUser.add(user);
 	}
@@ -138,12 +133,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	
 	public void removeUser(UserId userId) {
 		authUser.remove(userId);
-	}
-	
-	public void removeUserAll() {
-		for(User u :authUser.getAll()) {
-			authUser.remove(u.getId());
-		}
 	}
 
 	public void addMandator(Mandator mandator) throws JSONException {
@@ -162,12 +151,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	public void removeMandator(MandatorId mandatorId)  {
 		authMandator.remove(mandatorId);
 	}
-	
-	public void removeMandatorAll() {
-		for(Mandator m :authMandator.getAll()) {
-			authMandator.remove(m.getId());
-		}
-	}
 
 	@Override
 	public void updateUser(User user) throws JSONException {
@@ -177,11 +160,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Override
 	public ConqueryPermission getPermission(PermissionId id) {
 		return authPermissions.get(id);
-	}
-
-	@Override
-	public Set<ConqueryPermission> getPermissions(PermissionOwnerId<?> ownerId) {
-		return ownerId.getOwner(this).getPermissions();
 	}
 
 	@Override

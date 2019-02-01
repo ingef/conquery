@@ -14,8 +14,6 @@ import io.dropwizard.setup.Environment;
  * The URL rewriting (in a Dropwizard application) to allow for use of React
  * Router's BrowserHistory. The purpose is to allow for using HTML5 URLs
  * (without the #).
- *
- * @author Marcus Baitz
  */
 public class UrlRewriteBundle implements ConfiguredBundle<ConqueryConfig> {
 

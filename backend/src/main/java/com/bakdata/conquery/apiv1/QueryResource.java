@@ -19,6 +19,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -42,8 +43,8 @@ public class QueryResource {
 	private QueryProcessor processor;
 	private ResourceUtil resourceUtil;
 
-	public QueryResource(Namespaces namespaces) {
-		this.processor = new QueryProcessor(namespaces);
+	public QueryResource(Namespaces namespaces, MasterMetaStorage storage) {
+		this.processor = new QueryProcessor(namespaces, storage);
 		this.resourceUtil = new ResourceUtil(namespaces);
 	}
 
