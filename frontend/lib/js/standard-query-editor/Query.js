@@ -23,7 +23,7 @@ import type {
   DraggedFileType,
   GenericFileType
 }                                 from '../file-upload/types';
-import type { DateRangeType }     from '../common/types/backend'
+import type { DateRangeType }     from '../common/types/backend';
 
 import {
   dropAndNode,

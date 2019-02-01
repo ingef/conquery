@@ -28,9 +28,11 @@ import lombok.extern.slf4j.Slf4j;
 public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>{
 	
 	private final MasterMetaStorage storage;
+	private final UnknownUserHandler uuHandler;
 	
-	public ConqueryAuthenticator(MasterMetaStorage storage, Realm realm) {
+	public ConqueryAuthenticator(MasterMetaStorage storage, Realm realm, UnknownUserHandler uuHandler) {
 		this.storage = storage;
+		this.uuHandler = uuHandler;
 		
 		SecurityManager securityManager = new DefaultSecurityManager(realm);
 		SecurityUtils.setSecurityManager(securityManager);
@@ -43,10 +45,13 @@ public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
 		User user = storage.getUser((UserId)info.getPrincipals().getPrimaryPrincipal());
 		if(user == null) {
-			throw new org.apache.shiro.authc.AuthenticationException("User not found");
+			user = uuHandler.handle(info);
+			if(user == null) {
+				throw new org.apache.shiro.authc.AuthenticationException("User not found");
+			}
 		}
 		ConqueryMDC.setLocation(user.getId().toString());
-		return Optional.of(user);
+		return Optional.ofNullable(user);
 	}
 
 }
