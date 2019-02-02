@@ -15,49 +15,49 @@
         <maven.compiler.target>10</maven.compiler.target>
         <version.jgitflow>1.0-m5.1</version.jgitflow>
         <junit.minor>4.0-RC1</junit.minor>
-		<junit.version>5.${junit.minor}</junit.version>
-		<junit.platform.version>1.${junit.minor}</junit.platform.version>
+        <junit.version>5.${junit.minor}</junit.version>
+        <junit.platform.version>1.${junit.minor}</junit.platform.version>
     </properties>
     
     <modules>
         <module>frontend</module>
         <module>backend</module>
-		<module>executable</module>
-		<module>coverage-reporter</module>
+        <module>executable</module>
+        <module>coverage-reporter</module>
     </modules>
     
     <dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>io.dropwizard</groupId>
-				<artifactId>dropwizard-bom</artifactId>
-				<version>1.3.8</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.dropwizard</groupId>
+                <artifactId>dropwizard-bom</artifactId>
+                <version>1.3.8</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- <dependency>
-			<groupId>org.junit.platform</groupId>
-			<artifactId>junit-platform-launcher</artifactId>
-			<version>${junit.platform.version}</version>
-			<scope>test</scope>
-		</dependency> -->
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-	</dependencies>
+    <dependencies>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-params</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <!-- <dependency>
+                <groupId>org.junit.platform</groupId>
+                <artifactId>junit-platform-launcher</artifactId>
+                <version>${junit.platform.version}</version>
+                <scope>test</scope>
+        </dependency> -->
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
     
     <build>
         <plugins>
@@ -85,67 +85,67 @@
                 </configuration>
             </plugin>
             <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
-				<configuration>
-					<source>10</source>
-					<target>10</target>
-					<parameters>true</parameters>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.22.1</version>
-				<configuration>
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*Tests.java</include>
-						<include>**/*TestSuite.java</include>
-						<include>**/*TestFactory.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/*SuiteTest.java</exclude>
-					</excludes>
-					<trimStackTrace>false</trimStackTrace>
-					<argLine>-Xmx1G</argLine>
-				</configuration>
-			</plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>10</source>
+                    <target>10</target>
+                    <parameters>true</parameters>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.22.1</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                        <include>**/*Tests.java</include>
+                        <include>**/*TestSuite.java</include>
+                        <include>**/*TestFactory.java</include>
+                    </includes>
+                    <excludes>
+                        <exclude>**/*SuiteTest.java</exclude>
+                    </excludes>
+                    <trimStackTrace>false</trimStackTrace>
+                    <argLine>-Xmx2G</argLine>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
     <profiles>
-		<profile>
-			<id>test-coverage</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.1</version>
-						<executions>
-							<execution>
-								<id>default-prepare-agent</id>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>default-report</id>
-								<goals>
-									<goal>report</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<excludes>
-								<exclude>**/*MethodAccess*</exclude>
-							</excludes>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
+        <profile>
+            <id>test-coverage</id>
+            <build>
+                <plugins>
+                    <plugin>
+                        <groupId>org.jacoco</groupId>
+                        <artifactId>jacoco-maven-plugin</artifactId>
+                        <version>0.8.1</version>
+                        <executions>
+                            <execution>
+                                <id>default-prepare-agent</id>
+                                <goals>
+                                    <goal>prepare-agent</goal>
+                                </goals>
+                            </execution>
+                            <execution>
+                                <id>default-report</id>
+                                <goals>
+                                    <goal>report</goal>
+                                </goals>
+                            </execution>
+                        </executions>
+                        <configuration>
+                            <excludes>
+                                <exclude>**/*MethodAccess*</exclude>
+                            </excludes>
+                        </configuration>
+                    </plugin>
+                </plugins>
+            </build>
+        </profile>
+    </profiles>
 </project>
