@@ -124,10 +124,10 @@ public class DatasetsProcessor {
 		ns.getStorage().updateDataset(dataset);
 		namespaces.add(ns);
 
-		//for now we just add one worker to every slave
-		for (SlaveInformation slave : namespaces.getSlaves().values()) {
-			this.addWorker(slave, dataset);
-		}
+        //for now we just add one worker to every slave
+        namespaces.getSlaves().values().forEach((slave) -> {
+            this.addWorker(slave, dataset);
+        });
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
