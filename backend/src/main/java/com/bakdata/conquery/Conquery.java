@@ -62,7 +62,7 @@ public class Conquery extends Application<ConqueryConfig> {
 			}
 		});
 		//register frontend
-		bootstrap.addBundle(new AssetsBundle("/frontend/app", "/", "index.de.html"));
+		bootstrap.addBundle(new AssetsBundle("/frontend/app", "/", "index.html"));
 
 		//freemarker support
 		bootstrap.addBundle(new ViewBundle<>());
