@@ -1,6 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = Object.assign({}, ...['en', 'de'].map(lang => ({
   [lang]: {
@@ -9,6 +10,11 @@ module.exports = Object.assign({}, ...['en', 'de'].map(lang => ({
         template: path.join(__dirname, 'src/index.tpl.html'),
         inject: 'body',
         filename: `index.${lang}.html`
+      }),
+      new HtmlWebpackPlugin({
+        template: path.join(__dirname, 'src/index.tpl.html'),
+        inject: 'body',
+        filename: `index.html`
       }),
       new webpack.NoEmitOnErrorsPlugin(),
       new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /de/)
