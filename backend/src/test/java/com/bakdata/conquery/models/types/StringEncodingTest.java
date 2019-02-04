@@ -13,6 +13,8 @@ import java.util.stream.Stream;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
+import org.junit.jupiter.api.parallel.Execution;
+import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.specific.StringType;
@@ -51,7 +53,7 @@ public class StringEncodingTest {
 				.limit(100);
 	}
 
-	@TestFactory
+	@TestFactory @Execution(ExecutionMode.SAME_THREAD)
 	public Stream<DynamicTest> testHexType() throws ParsingException {
 		StringType stringType = new StringType();
 
