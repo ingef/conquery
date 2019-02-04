@@ -20,24 +20,18 @@ public class CQDaysBeforeOrNeverTemporalQuery extends CQAbstractTemporalQuery {
 	@Getter
 	private int days;
 
-	public CQDaysBeforeOrNeverTemporalQuery(CQElement index, CQElement preceding, TemporalSampler sampler, int days) {
-		super(index, preceding, sampler);
+	public CQDaysBeforeOrNeverTemporalQuery(CQSampled index, CQSampled preceding, int days) {
+		super(index, preceding);
 		this.days = days;
 	}
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext registry, QueryPlan plan) {
-		QueryPlan indexPlan = QueryPlan.create();
-		indexPlan.setRoot(index.createQueryPlan(registry, plan));
-
-		QueryPlan precedingPlan = QueryPlan.create();
-		precedingPlan.setRoot(preceding.createQueryPlan(registry, plan));
-
-		return new TemporalQueryNode(indexPlan, precedingPlan, getSampler(), new DaysBeforeOrNeverPrecedenceMatcher(days), plan.getIncluded());
+		return new TemporalQueryNode(index.createQueryPlan(registry, plan), preceding.createQueryPlan(registry, plan), new DaysBeforeOrNeverPrecedenceMatcher(days), plan.getIncluded());
 	}
 	
 	@Override
 	public CQDaysBeforeOrNeverTemporalQuery resolve(QueryResolveContext context) {
-		return new CQDaysBeforeOrNeverTemporalQuery(index.resolve(context), preceding.resolve(context), sampler, days);
+		return new CQDaysBeforeOrNeverTemporalQuery(index.resolve(context), preceding.resolve(context), days);
 	}
 }

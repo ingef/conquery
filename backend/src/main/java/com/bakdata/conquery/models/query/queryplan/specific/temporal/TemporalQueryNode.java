@@ -1,19 +1,19 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
+import java.util.OptionalInt;
+import java.util.Set;
+
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
-import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import lombok.Getter;
 
-import java.util.OptionalInt;
-import java.util.Set;
+import lombok.Getter;
 
 /**
  * QueryNode implementing the logic for TemporalQueries.
@@ -30,34 +30,28 @@ public class TemporalQueryNode extends QPNode {
 	/**
 	 * QueryPlan for the events to be compared to.
 	 */
-	private QueryPlan reference;
+	private SampledNode reference;
 
 	/**
 	 * QueryPlan for the events being compared.
 	 */
-	private QueryPlan preceding;
-
-	/**
-	 * The specific sampler to be used for drawing events from {@link #preceding} and {@link #reference}
-	 */
-	private TemporalSampler sampler;
+	private SampledNode preceding;
 
 	/**
 	 * The {@link SpecialDateUnion} to be fed with the included dataset.
 	 */
 	private SpecialDateUnion dateUnion;
 
-	public TemporalQueryNode(QueryPlan reference, QueryPlan preceding, TemporalSampler sampler, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
+	public TemporalQueryNode(SampledNode reference, SampledNode preceding, PrecedenceMatcher matcher, SpecialDateUnion dateUnion) {
 		this.reference = reference;
 		this.preceding = preceding;
-		this.sampler = sampler;
 		this.matcher = matcher;
 		this.dateUnion = dateUnion;
 	}
 
 	@Override
 	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		return new TemporalQueryNode(reference.clone(), preceding.clone(), sampler, matcher, clone.getIncluded());
+		return new TemporalQueryNode(reference.clone(), preceding.clone(), matcher, clone.getIncluded());
 	}
 
 	/**
@@ -67,8 +61,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {
-		reference.getRoot().collectRequiredTables(out);
-		preceding.getRoot().collectRequiredTables(out);
+		reference.getChild().getRoot().collectRequiredTables(out);
+		preceding.getChild().getRoot().collectRequiredTables(out);
 	}
 
 	/**
@@ -80,8 +74,8 @@ public class TemporalQueryNode extends QPNode {
 	public void init(Entity entity) {
 		super.init(entity);
 
-		reference.getRoot().init(entity);
-		preceding.getRoot().init(entity);
+		reference.getChild().getRoot().init(entity);
+		preceding.getChild().getRoot().init(entity);
 	}
 
 	/**
@@ -90,8 +84,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public void nextBlock(Block block) {
-		reference.getRoot().nextBlock(block);
-		preceding.getRoot().nextBlock(block);
+		reference.getChild().getRoot().nextBlock(block);
+		preceding.getChild().getRoot().nextBlock(block);
 	}
 
 	/**
@@ -101,8 +95,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		reference.getRoot().nextTable(ctx, currentTable);
-		preceding.getRoot().nextTable(ctx, currentTable);
+		reference.getChild().getRoot().nextTable(ctx, currentTable);
+		preceding.getChild().getRoot().nextTable(ctx, currentTable);
 	}
 
 	/**
@@ -113,8 +107,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public boolean nextEvent(Block block, int event) {
-		reference.getRoot().aggregate(block, event);
-		preceding.getRoot().aggregate(block, event);
+		reference.getChild().getRoot().aggregate(block, event);
+		preceding.getChild().getRoot().aggregate(block, event);
 
 		return true;
 	}
@@ -128,23 +122,23 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public final boolean isContained() {
-		if (!(reference.getRoot().isContained() && preceding.getRoot().isContained())) {
+		if (!(reference.getChild().getRoot().isContained() && preceding.getChild().getRoot().isContained())) {
 			return false;
 		}
 
-		CDateSet referenceDurations = getReference().getIncluded().getAggregationResult();
+		CDateSet referenceDurations = getReference().getChild().getIncluded().getAggregationResult();
 		// Create copy as we are mutating the set
-		CDateSet precedingDurations = CDateSet.create(getPreceding().getIncluded().getAggregationResult());
+		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getIncluded().getAggregationResult());
 
 
-		OptionalInt sampledReference = getSampler().sample(referenceDurations);
+		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);
 
 		if (!sampledReference.isPresent())
 			return false;
 
 		matcher.removePreceding(precedingDurations, sampledReference.getAsInt());
 
-		OptionalInt sampledPreceding = sampler.sample(precedingDurations);
+		OptionalInt sampledPreceding = getReference().getSampler().sample(precedingDurations);
 
 		if (!precedingDurations.isEmpty() && matcher.isContained(sampledReference, sampledPreceding)) {
 			dateUnion.merge(precedingDurations);
