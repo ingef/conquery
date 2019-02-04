@@ -26,4 +26,7 @@ public abstract class CQAbstractTemporalQuery implements CQElement {
 	 * The sampler to be used.
 	 */
 	protected final TemporalSampler sampler;
+	
+	@Override
+	public abstract CQAbstractTemporalQuery resolve(QueryResolveContext context);
 }

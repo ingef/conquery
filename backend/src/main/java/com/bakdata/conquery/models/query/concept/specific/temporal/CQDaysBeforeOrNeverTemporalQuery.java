@@ -35,4 +35,9 @@ public class CQDaysBeforeOrNeverTemporalQuery extends CQAbstractTemporalQuery {
 
 		return new TemporalQueryNode(indexPlan, precedingPlan, getSampler(), new DaysBeforeOrNeverPrecedenceMatcher(days), plan.getIncluded());
 	}
+	
+	@Override
+	public CQDaysBeforeOrNeverTemporalQuery resolve(QueryResolveContext context) {
+		return new CQDaysBeforeOrNeverTemporalQuery(index.resolve(context), preceding.resolve(context), sampler, days);
+	}
 }

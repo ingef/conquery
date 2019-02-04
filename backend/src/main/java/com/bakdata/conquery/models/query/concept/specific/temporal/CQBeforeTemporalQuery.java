@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -29,5 +30,10 @@ public class CQBeforeTemporalQuery extends CQAbstractTemporalQuery {
 		precedingPlan.setRoot(preceding.createQueryPlan(registry, plan));
 
 		return new TemporalQueryNode(indexPlan, precedingPlan, getSampler(), new BeforeTemporalPrecedenceMatcher(), plan.getIncluded());
+	}
+	
+	@Override
+	public CQBeforeTemporalQuery resolve(QueryResolveContext context) {
+		return new CQBeforeTemporalQuery(index.resolve(context), preceding.resolve(context), sampler);
 	}
 }
