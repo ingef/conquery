@@ -15,7 +15,7 @@ jobs:
       name: "Frontend Tests"
       install:
         -  cd frontend
-        -  mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+        -  mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
       script: mvn test -B -DskipDockerTests=true
 
     #build backend and run all non-integration tests
@@ -91,6 +91,8 @@ jobs:
 
 
 cache:
+  yarn: true
   directories:
     - "$HOME/.cache"
     - "$HOME/.m2"
+    - "$TRAVIS_BUILD_DIR/frontend/node_modules"
