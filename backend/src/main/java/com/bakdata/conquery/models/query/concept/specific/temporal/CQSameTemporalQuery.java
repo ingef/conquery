@@ -15,24 +15,17 @@ import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQue
 @CPSType(id = "SAME", base = CQElement.class)
 public class CQSameTemporalQuery extends CQAbstractTemporalQuery {
 
-	public CQSameTemporalQuery(CQElement index, CQElement preceding, TemporalSampler sampler) {
-		super(index, preceding, sampler);
+	public CQSameTemporalQuery(CQSampled index, CQSampled preceding) {
+		super(index, preceding);
 	}
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext registry, QueryPlan plan) {
-		QueryPlan indexPlan = QueryPlan.create();
-		indexPlan.setRoot(index.createQueryPlan(registry, plan));
-
-		QueryPlan precedingPlan = QueryPlan.create();
-		precedingPlan.setRoot(preceding.createQueryPlan(registry, plan));
-
-		return new TemporalQueryNode(indexPlan, precedingPlan, getSampler(), new SameTemporalMatcher(), plan.getIncluded()) {
-		};
+		return new TemporalQueryNode(index.createQueryPlan(registry, plan), preceding.createQueryPlan(registry, plan), new SameTemporalMatcher(), plan.getIncluded());
 	}
 	
 	@Override
 	public CQSameTemporalQuery resolve(QueryResolveContext context) {
-		return new CQSameTemporalQuery(index.resolve(context), preceding.resolve(context), sampler);
+		return new CQSameTemporalQuery(index.resolve(context), preceding.resolve(context));
 	}
 }

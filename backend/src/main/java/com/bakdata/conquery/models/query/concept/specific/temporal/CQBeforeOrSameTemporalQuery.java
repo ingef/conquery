@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.BeforeOrSameTemporalMatcher;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.BeforeTemporalPrecedenceMatcher;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.DaysBeforePrecedenceMatcher;
+import com.bakdata.conquery.models.query.queryplan.specific.temporal.SampledNode;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
 
 /**
@@ -17,23 +18,22 @@ import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQue
 @CPSType(id = "BEFORE_OR_SAME", base = CQElement.class)
 public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 
-	public CQBeforeOrSameTemporalQuery(CQElement index, CQElement preceding, TemporalSampler sampler) {
-		super(index, preceding, sampler);
+	public CQBeforeOrSameTemporalQuery(CQSampled index, CQSampled preceding) {
+		super(index, preceding);
 	}
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext registry, QueryPlan plan) {
-		QueryPlan indexPlan = QueryPlan.create();
-		indexPlan.setRoot(index.createQueryPlan(registry, plan));
-
-		QueryPlan precedingPlan = QueryPlan.create();
-		precedingPlan.setRoot(preceding.createQueryPlan(registry, plan));
-
-		return new TemporalQueryNode(indexPlan, precedingPlan, getSampler(), new BeforeOrSameTemporalMatcher(), plan.getIncluded());
+	public QPNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
+		return new TemporalQueryNode(
+			index.createQueryPlan(ctx, plan), 
+			preceding.createQueryPlan(ctx, plan), 
+			new BeforeOrSameTemporalMatcher(), 
+			plan.getIncluded()
+		);
 	}
 	
 	@Override
 	public CQBeforeOrSameTemporalQuery resolve(QueryResolveContext context) {
-		return new CQBeforeOrSameTemporalQuery(index.resolve(context), preceding.resolve(context), sampler);
+		return new CQBeforeOrSameTemporalQuery(index.resolve(context), preceding.resolve(context));
 	}
 }
