@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.xodus.stores;
 
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
-
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
