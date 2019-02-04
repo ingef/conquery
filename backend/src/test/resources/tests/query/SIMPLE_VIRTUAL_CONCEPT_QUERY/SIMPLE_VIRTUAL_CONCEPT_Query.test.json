@@ -9,7 +9,7 @@
                 "${dataset}.geschlecht_select"
             ],
             "type": "CONCEPT",
-            "label": "Geschlecht SELECT",
+          "label": "geschlecht_select",
             "tables": [
                 {
                     "id": "${dataset}.geschlecht_select.geschlecht_connector",
@@ -28,7 +28,7 @@
     },
     "concepts": [
         {
-            "label": "Geschlecht SELECT",
+          "label": "geschlecht_select",
             "type": "VIRTUAL",
             "connectors": [
                 {
@@ -36,7 +36,7 @@
                     "table": "vers_stamm",
                     "validityDates": {"label": "datum" ,"column": "vers_stamm.datum"},
                     "filter": {
-                        "label": "Geschlecht",
+                      "label": "geschlecht",
                         "description": "Geschlecht zur gegebenen Datumseinschränkung",
                         "column": "vers_stamm.geschlecht",
                         "type": "SELECT"
