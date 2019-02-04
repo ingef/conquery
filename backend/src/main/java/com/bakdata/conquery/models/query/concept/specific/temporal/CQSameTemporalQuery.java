@@ -1,20 +1,20 @@
-package com.bakdata.conquery.models.concepts.temporal;
+package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.temporal.SameTemporalMatcher;
-import com.bakdata.conquery.models.query.temporal.TemporalQueryNode;
+import com.bakdata.conquery.models.query.queryplan.specific.temporal.SameTemporalMatcher;
+import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
 
 /**
  * Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} at the same time as the events of {@code index}. And the time where this has happened.
  */
 @CPSType(id = "SAME", base = CQElement.class)
-public class SameTemporalQuery extends AbstractTemporalQuery {
+public class CQSameTemporalQuery extends CQAbstractTemporalQuery {
 
-	public SameTemporalQuery(CQElement index, CQElement preceding, TemporalSampler sampler) {
+	public CQSameTemporalQuery(CQElement index, CQElement preceding, TemporalSampler sampler) {
 		super(index, preceding, sampler);
 	}
 

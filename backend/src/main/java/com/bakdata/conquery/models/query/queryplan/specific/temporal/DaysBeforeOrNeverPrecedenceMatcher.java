@@ -1,8 +1,8 @@
-package com.bakdata.conquery.models.query.temporal;
+package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.concepts.temporal.TemporalSampler;
+import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
@@ -10,22 +10,31 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialD
 import java.util.OptionalInt;
 
 /**
- * Tests if the preceding date is the same day or any day before the reference date.
+ * Tests if the preceding date is {@link #days} before the reference, if not it must not be present.
  */
-public class BeforeOrSameTemporalMatcher implements PrecedenceMatcher {
+public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
+
+	private final int days;
+
+	public DaysBeforeOrNeverPrecedenceMatcher(int days) {
+		this.days = days;
+	}
+
 
 	@Override
 	public void removePreceding(CDateSet preceding, int sample) {
 		// Only consider samples that are before reference's sample event
-		preceding.remove(CDateRange.atLeast(sample + 1));
+		preceding.remove(CDateRange.atLeast(sample));
 	}
+
 
 	@Override
 	public boolean isContained(OptionalInt reference, OptionalInt preceding) {
-		if (!preceding.isPresent() || !reference.isPresent()) {
+		if (!reference.isPresent()) {
 			return false;
 		}
 
-		return reference.getAsInt() >= preceding.getAsInt();
+		return !preceding.isPresent() || (reference.getAsInt() - preceding.getAsInt()) >= days;
+
 	}
 }

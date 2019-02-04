@@ -1,5 +1,6 @@
-package com.bakdata.conquery.models.concepts.temporal;
+package com.bakdata.conquery.models.query.concept.specific.temporal;
 
+import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,20 +10,20 @@ import lombok.Getter;
  */
 @Getter
 @AllArgsConstructor
-public abstract class AbstractTemporalQuery implements CQElement {
+public abstract class CQAbstractTemporalQuery implements CQElement {
 
 	/**
 	 * The query being executed as reference for preceding.
 	 */
-	CQElement index;
+	protected final CQElement index;
 
 	/**
 	 * The query being executed, compared to index. Events in preceding will be cut-off to be always before index, or at the same day, depending on the queries specific implementations.
 	 */
-	CQElement preceding;
+	protected final CQElement preceding;
 
 	/**
 	 * The sampler to be used.
 	 */
-	TemporalSampler sampler;
+	protected final TemporalSampler sampler;
 }

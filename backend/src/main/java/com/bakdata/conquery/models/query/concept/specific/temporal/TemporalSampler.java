@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.temporal;
+package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateRange;
@@ -63,7 +63,7 @@ public enum TemporalSampler {
 		/**
 		 * A source for random values.
 		 */
-		Random random = new Random();
+		private Random random = new Random();
 
 		/**
 		 *

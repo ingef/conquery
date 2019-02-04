@@ -9,7 +9,7 @@ import java.util.Arrays;
 
 import static com.bakdata.conquery.models.common.CDate.ofLocalDate;
 import static com.bakdata.conquery.models.common.CDateRange.*;
-import static com.bakdata.conquery.models.concepts.temporal.TemporalSampler.*;
+import static com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler.*;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class TemporalSamplerTest {

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.query.temporal;
+package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import com.bakdata.conquery.models.common.CDateSet;
 

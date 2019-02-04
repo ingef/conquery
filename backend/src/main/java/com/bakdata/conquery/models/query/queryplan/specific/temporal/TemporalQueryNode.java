@@ -1,11 +1,11 @@
-package com.bakdata.conquery.models.query.temporal;
+package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.concepts.temporal.TemporalSampler;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
