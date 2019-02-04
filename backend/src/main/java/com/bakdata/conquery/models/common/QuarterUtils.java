@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.common;
 
-import lombok.experimental.UtilityClass;
-
 import java.time.LocalDate;
 import java.time.Month;
 import java.time.YearMonth;
@@ -11,6 +9,9 @@ import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 
+import com.google.common.collect.Range;
+
+import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class QuarterUtils {
 
@@ -39,6 +40,27 @@ public final class QuarterUtils {
 
 	public static boolean isEndOfQuarter(LocalDate date) {
 		return isBeginOfQuarter(date.plusDays(1));
+	}
+	
+	/**
+	 * Returns the numerical value of the quarter the date in in.
+	 * @param date
+	 * @return The quarter
+	 */
+	public static int getQuarter(LocalDate date) {
+		return date.getMonth().getValue()/4+1;
+	}
+	
+	/**
+	 * Does the increment and value-wrapping of quarters.
+	 * @param quarter The current quarter
+	 * @return The incremented/wrapped quarter
+	 */
+	public static int getNextQuarter(int quarter) {
+		if(quarter<1 || 4<quarter) {
+			throw new IllegalArgumentException("The value specified is not a valid quarter, must be in [1..4], was: "+ quarter);
+		}
+		return (quarter)%4+1;
 	}
 
 	public static Month getFirstMonthOfQuarter(int quarter) {

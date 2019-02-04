@@ -3,6 +3,10 @@ package com.bakdata.conquery.models.common;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -28,13 +32,14 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	public CDateRange(LocalDate min, LocalDate max) {
 		this(CDate.ofLocalDate(min), CDate.ofLocalDate(max));
 	}
-	
+
 	public CDateRange(int min, int max) {
 		this.min = min;
 		this.max = max;
 
 		if (min > max) {
-			throw new IllegalArgumentException(String.format("Min(%s) is not less than max(%s)", CDate.toLocalDate(min), CDate.toLocalDate(max)));
+			throw new IllegalArgumentException(
+				String.format("Min(%s) is not less than max(%s)", CDate.toLocalDate(min), CDate.toLocalDate(max)));
 		}
 	}
 
@@ -45,7 +50,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	public static CDateRange exactly(LocalDate value) {
 		return new CDateRange(CDate.ofLocalDate(value), CDate.ofLocalDate(value));
 	}
-	
+
 	public static CDateRange of(Range<LocalDate> value) {
 		return new CDateRange(CDate.ofLocalDate(value.getMin()), CDate.ofLocalDate(value.getMax()));
 	}
@@ -106,7 +111,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	@JsonValue
 	public int[] asArray() {
-		return new int[]{min, max};
+		return new int[] { min, max };
 	}
 
 	public Range<Integer> asIntegerRange() {
@@ -131,12 +136,12 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	public CDateRange span(CDateRange other) {
 		return new CDateRange(Math.min(getMinValue(), other.getMinValue()), Math.max(getMaxValue(), other.getMaxValue()));
 	}
-	
+
 	public static CDateRange spanOf(CDateRange a, CDateRange b) {
-		if(a == null) {
+		if (a == null) {
 			return b;
 		}
-		else if(b  == null) {
+		else if (b == null) {
 			return a;
 		}
 		else {
@@ -192,29 +197,26 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 		return other.contains(this.getMinValue())
 			|| other.contains(this.getMaxValue())
-			
+
 			|| this.contains(other.getMinValue())
 			|| this.contains(other.getMaxValue());
 	}
-	
+
 	public boolean isConnected(CDateRange other) {
 		if (other == null) {
 			return false;
 		}
-		
-		//either they intersect or they are right next to each other
-		return this.intersects(other)
-			|| this.getMinValue()-1 == other.getMaxValue()
-			|| this.getMaxValue() == other.getMinValue()-1;
+
+		// either they intersect or they are right next to each other
+		return this.intersects(other) || this.getMinValue() - 1 == other.getMaxValue() || this.getMaxValue() == other.getMinValue() - 1;
 	}
-	
+
 	public boolean encloses(CDateRange other) {
 		if (other == null) {
 			return false;
 		}
-		
-		return getMaxValue() >= other.getMaxValue()
-			&& getMinValue() <= other.getMinValue();
+
+		return getMaxValue() >= other.getMaxValue() && getMinValue() <= other.getMinValue();
 	}
 
 	public Stream<LocalDate> stream(TemporalUnit unit) {
@@ -227,7 +229,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		if (isAll()) {
 			return "-∞/+∞";
 		}
-		
+
 		if (isAtLeast()) {
 			return String.format("%s/+∞", getMin());
 		}
@@ -245,5 +247,46 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	public Range<LocalDate> toSimpleRange() {
 		return new Range<>(getMin(), getMax());
+	}
+
+	/**
+	 * Returns the years that are part of this date range.
+	 *
+	 * @return The years as date ranges, from the first date in range to the last.
+	 */
+	public List<CDateRange> getCoveredYears() {
+		int startYear = this.getMin().getYear();
+		int endYear = this.getMax().getYear();
+
+		return IntStream
+			.rangeClosed(startYear, endYear)
+			/* Create date range with first days of year and the last day */
+			.mapToObj(year -> new CDateRange(LocalDate.ofYearDay(year, 1), LocalDate.of(year, 12, 31)))
+			.collect(Collectors.toList());
+	}
+
+	/**
+	 * Returns the quarters that are part of this date range.
+	 *
+	 * @return The quarters as date ranges, from the first date in range to the
+	 *         last.
+	 */
+	public List<CDateRange> getCoveredQuarters() {
+		int startYear = this.getMin().getYear();
+		int startQuarter = QuarterUtils.getQuarter(this.getMin());
+		int endYear = this.getMax().getYear();
+		int endQuarter = QuarterUtils.getQuarter(this.getMax());
+
+		List<CDateRange> quarterList = new ArrayList<>();
+		int currentQuarter = startQuarter;
+		for (int year = startYear; !(year >= endYear && currentQuarter > endQuarter);) {
+			quarterList.add(QuarterUtils.fromQuarter(year, currentQuarter));
+			if (currentQuarter >= 4) {
+				year++;
+			}
+			currentQuarter = QuarterUtils.getNextQuarter(currentQuarter);
+		}
+
+		return quarterList;
 	}
 }
