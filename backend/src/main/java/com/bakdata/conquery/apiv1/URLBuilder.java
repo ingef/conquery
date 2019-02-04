@@ -1,15 +1,14 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.API;
-
-import java.util.HashMap;
-import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.Data;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.UriBuilder;
+import java.util.HashMap;
+import java.util.Map;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import static com.bakdata.conquery.apiv1.ResourceConstants.API;
 
 public class URLBuilder {
 

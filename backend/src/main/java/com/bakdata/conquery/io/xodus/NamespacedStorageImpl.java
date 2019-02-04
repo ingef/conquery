@@ -1,12 +1,5 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-
-import javax.validation.Validator;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
@@ -25,8 +18,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.functions.Collector;
-
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.Validator;
+import java.io.File;
+import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 @Slf4j
 public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {

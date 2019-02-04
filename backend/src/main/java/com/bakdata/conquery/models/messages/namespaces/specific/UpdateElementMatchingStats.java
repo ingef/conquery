@@ -18,7 +18,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @CPSType(id="UPDATE_METADATA", base=NamespacedMessage.class)
-@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
+@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString
 public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
 	
 	private final WorkerId source;

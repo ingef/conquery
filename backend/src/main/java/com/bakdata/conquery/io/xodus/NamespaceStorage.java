@@ -1,14 +1,12 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
-
-import javax.validation.Validator;
-
 import com.bakdata.conquery.models.config.StorageConfig;
-
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
+
+import javax.validation.Validator;
+import java.io.File;
 
 public interface NamespaceStorage extends NamespacedStorage {
 	

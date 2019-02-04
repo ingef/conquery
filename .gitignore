@@ -57,3 +57,5 @@ nbactions.xml
 **/pom.properties
 **/dumps
 **/target/
+
+**.iml

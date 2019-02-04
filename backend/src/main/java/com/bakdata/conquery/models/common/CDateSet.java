@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.common;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -129,7 +130,21 @@ public class CDateSet {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * Tests if the supplied {@link LocalDate} is contained by this Set.
+	 * @param value the Date to check
+	 * @return true iff any Set contains the value
+	 */
+	public boolean contains(LocalDate value) {
+		return contains(CDate.ofLocalDate(value));
+	}
+
+	/**
+	 * Tests if the supplied {@link CDate} is contained by this Set.
+	 * @param value the Date to check
+	 * @return true iff any Set contains the value
+	 */
 	public boolean contains(int value) {
 		return rangeContaining(value) != null;
 	}
