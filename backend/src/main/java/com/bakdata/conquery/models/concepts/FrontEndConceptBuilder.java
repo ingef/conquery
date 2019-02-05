@@ -1,15 +1,9 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
+import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
@@ -25,6 +19,13 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
+import com.bakdata.conquery.models.query.select.Select;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
@@ -32,129 +33,137 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 public class FrontEndConceptBuilder {
 
 	public static FERoot createRoot(long version, Dataset dataset) {
-		
+
 		FERoot root = new FERoot();
 		root.setVersion(version);
-		
-		Map<IId<?>,FENode> roots = new LinkedHashMap<>();
+
+		Map<IId<?>, FENode> roots = new LinkedHashMap<>();
 		//add all real roots
-		for(Concept<?> c:dataset.getConcepts()) {
-			roots.put(c.getId(),createCTRoot(c));
+		for (Concept<?> c : dataset.getConcepts()) {
+			roots.put(c.getId(), createCTRoot(c));
 		}
 		//add the structure tree
 		dataset
-			.streamAllStructureNodes()
-			.forEach(sn->roots.put(sn.getId(),createStructureNode(sn)));
+				.streamAllStructureNodes()
+				.forEach(sn -> roots.put(sn.getId(), createStructureNode(sn)));
 		root.setConcepts(roots);
 		return root;
 	}
 
 	private static FENode createCTRoot(Concept<?> c) {
 		FENode n = FENode.builder()
-				.active(c instanceof VirtualConcept)
-				.description(c.getDescription())
-				.label(c.getLabel())
-				.additionalInfos(c.getAdditionalInfos())
-				//.matchingEntries(c.getMatchingEntries())
-				.dateRange(c.getConceptDateRange())
-				.detailsAvailable(Boolean.TRUE)
-				.codeListResolvable(
-					c instanceof TreeConcept
-					|| (
-							c instanceof VirtualConcept
-							&& ((VirtualConcept)c).getConnectors()
-								.stream()
-								.map(VirtualConceptConnector::getFilter)
-								.anyMatch(AbstractSelectFilter.class::isInstance)
-					)
-				)
-				.parent(c.getStructureParent()==null?null:c.getStructureParent().getId())
-				.tables(c
-						.getConnectors()
-						.stream()
-						.map(FrontEndConceptBuilder::createTable)
-						.collect(Collectors.toList())
-				)
-				.build();
-		
-		if(c instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)c;
-			if(tree.getChildren()!=null) {
+						 .active(c instanceof VirtualConcept)
+						 .description(c.getDescription())
+						 .label(c.getLabel())
+						 .additionalInfos(c.getAdditionalInfos())
+						 //.matchingEntries(c.getMatchingEntries())
+						 .dateRange(c.getConceptDateRange())
+						 .detailsAvailable(Boolean.TRUE)
+						 .codeListResolvable(
+								 c instanceof TreeConcept
+								 || (
+										 c instanceof VirtualConcept
+										 && ((VirtualConcept) c).getConnectors()
+																.stream()
+																.map(VirtualConceptConnector::getFilter)
+																.anyMatch(AbstractSelectFilter.class::isInstance)
+								 )
+						 )
+						 .parent(c.getStructureParent() == null ? null : c.getStructureParent().getId())
+						 .tables(c
+										 .getConnectors()
+										 .stream()
+										 .map(FrontEndConceptBuilder::createTable)
+										 .collect(Collectors.toList())
+						 )
+						 .build();
+
+		if (c instanceof ConceptTreeNode) {
+			ConceptTreeNode<?> tree = (ConceptTreeNode<?>) c;
+			if (tree.getChildren() != null) {
 				n.setChildren(
-					tree
-						.getChildren()
-						.stream()
-						.map(ConceptTreeChild::getId)
-						.toArray(ConceptTreeChildId[]::new)
+						tree
+								.getChildren()
+								.stream()
+								.map(ConceptTreeChild::getId)
+								.toArray(ConceptTreeChildId[]::new)
 				);
 			}
 		}
 		return n;
 	}
-	
+
 	private static FENode createStructureNode(StructureNode cn) {
 		return FENode.builder()
-			.active(false)
-			.description(cn.getDescription())
-			.label(cn.getLabel())
-			.detailsAvailable(Boolean.FALSE)
-			.codeListResolvable(false)
-			.additionalInfos(cn.getAdditionalInfos())
-			.parent(cn.getParent()==null?null:cn.getParent().getId())
-			.children(
-				ArrayUtils.addAll(
-					cn.getChildren().stream()
-						.map(IdentifiableImpl::getId)
-						.toArray(ConceptTreeChildId[]::new),
-					cn.getContainedRoots().stream()
-					.map(Concept::getId)
-						.toArray(ConceptTreeChildId[]::new)
-				)
-			)
-			.build();
+					 .active(false)
+					 .description(cn.getDescription())
+					 .label(cn.getLabel())
+					 .detailsAvailable(Boolean.FALSE)
+					 .codeListResolvable(false)
+					 .additionalInfos(cn.getAdditionalInfos())
+					 .parent(cn.getParent() == null ? null : cn.getParent().getId())
+					 .children(
+							 ArrayUtils.addAll(
+									 cn.getChildren().stream()
+									   .map(IdentifiableImpl::getId)
+									   .toArray(ConceptTreeChildId[]::new),
+									 cn.getContainedRoots().stream()
+									   .map(Concept::getId)
+									   .toArray(ConceptTreeChildId[]::new)
+							 )
+					 )
+					 .build();
 	}
-	
+
 	private static FENode createCTNode(ConceptElement ce) {
 		FENode n = FENode.builder()
-				.active(/*(ce.getMatchingEntries()==0)?false:*/null)
-				.description(ce.getDescription())
-				.label(ce.getLabel())
-				.additionalInfos(ce.getAdditionalInfos())
-				//.matchingEntries(ce.getMatchingEntries())
-				.dateRange(ce.getConceptDateRange())
-				.build();
-		
-		if(ce instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)ce;
-			if(tree.getChildren()!=null) {
+						 .active(/*(ce.getMatchingEntries()==0)?false:*/null)
+						 .description(ce.getDescription())
+						 .label(ce.getLabel())
+						 .additionalInfos(ce.getAdditionalInfos())
+						 //.matchingEntries(ce.getMatchingEntries())
+						 .dateRange(ce.getConceptDateRange())
+						 .build();
+
+		if (ce instanceof ConceptTreeNode) {
+			ConceptTreeNode<?> tree = (ConceptTreeNode<?>) ce;
+			if (tree.getChildren() != null) {
 				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
 			}
-			if(tree.getParent()!=null) {
+			if (tree.getParent() != null) {
 				n.setParent(tree.getParent().getId());
 			}
 		}
 		return n;
 	}
-		
+
 	public static FETable createTable(Connector con) {
-		return FETable.builder()
-			.id(con.getId())
-			.label(con.getLabel())
-			.filters(con
-				.getAllFilters()
-				.stream()
-				.map(FrontEndConceptBuilder::createFilter)
-				.collect(Collectors.toList())
-			).build();
+		return
+				FETable.builder()
+					   .id(con.getId())
+					   .label(con.getLabel())
+					   .filters(
+							   con.getAllFilters()
+								  .stream()
+								  .map(FrontEndConceptBuilder::createFilter)
+								  .collect(Collectors.toList())
+					   )
+					   .selects(
+							   con.getAllSelects()
+								  .stream()
+								  .map(FrontEndConceptBuilder::createSelect)
+								  .collect(Collectors.toList())
+					   )
+					   .build();
 	}
-	
+
 	public static FEFilter createFilter(Filter<?> filter) {
 		FEFilter f = FEFilter.builder()
-				.id(filter.getId())
-				.label(filter.getLabel())
-				.description(filter.getDescription())
-				.unit(filter.getUnit())
-				.build();
+							 .id(filter.getId())
+							 .label(filter.getLabel())
+							 .description(filter.getDescription())
+							 .unit(filter.getUnit())
+							 .build();
 		try {
 			filter.configureFrontend(f);
 		} catch (ConceptConfigurationException e) {
@@ -163,21 +172,28 @@ public class FrontEndConceptBuilder {
 		return f;
 	}
 
+	public static FESelect createSelect(Select select) {
+		return FESelect.builder()
+					   .id(select.getId())
+					   .label(select.getLabel())
+					   .build();
+	}
+
 	public static Map<ConceptId, Map<ConceptElementId<?>, FENode>> createTreeMap(List<Concept<?>> concepts) {
 		Map<ConceptId, Map<ConceptElementId<?>, FENode>> rootedMap = new LinkedHashMap<>();
 
-		for(Concept<?> c : concepts) {
+		for (Concept<?> c : concepts) {
 			Map<ConceptElementId<?>, FENode> map = new LinkedHashMap<>();
 			rootedMap.put(c.getId(), map);
-			fillTreeMap(c,map);
+			fillTreeMap(c, map);
 		}
 		return rootedMap;
 	}
-	
+
 	private static void fillTreeMap(ConceptElement<?> ce, Map<ConceptElementId<?>, FENode> map) {
 		map.put(ce.getId(), createCTNode(ce));
-		if(ce instanceof ConceptTreeNode && ((ConceptTreeNode)ce).getChildren()!=null) {
-			for(ConceptTreeChild c:((ConceptTreeNode<?>)ce).getChildren()) {
+		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode) ce).getChildren() != null) {
+			for (ConceptTreeChild c : ((ConceptTreeNode<?>) ce).getChildren()) {
 				fillTreeMap(c, map);
 			}
 		}
