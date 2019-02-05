@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.select.Select;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
@@ -51,8 +53,12 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	@JsonBackReference
 	private Concept<?> concept;
+
 	@JsonIgnore @Getter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFilters;
+
+	@JsonIgnore @Getter(AccessLevel.NONE)
+	private IdMap<SelectId, Select> allSelects;
 
 	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
 	public void setSelectableDates(List<Column> cols) {
@@ -158,14 +164,31 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	protected abstract Collection<Filter<?>> collectAllFilters();
 
 	@JsonIgnore
+	protected abstract Collection<Select> collectAllSelects();
+
+	@JsonIgnore
 	public IdMap<FilterId, Filter<?>> getAllFilters() {
 		if(allFilters==null) {
 			allFilters = new IdMap<>(collectAllFilters());
 		}
 		return allFilters;
 	}
+
+	@JsonIgnore
+	public IdMap<SelectId, Select> getAllSelects() {
+		if(allSelects==null) {
+			allSelects = new IdMap<>(collectAllSelects());
+		}
+		return allSelects;
+	}
+
+
 	public <T extends Filter> T getFilter(FilterId id) {
 		return (T)getAllFilters().getOrFail(id);
+	}
+
+	public <T extends Select> T getSelect(SelectId id) {
+		return (T)getAllSelects().getOrFail(id);
 	}
 
 	public Column getValidityDateColumn(String name) {

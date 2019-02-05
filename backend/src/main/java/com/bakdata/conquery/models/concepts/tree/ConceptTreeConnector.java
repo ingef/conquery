@@ -7,6 +7,7 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.query.select.Select;
 import org.apache.commons.collections4.CollectionUtils;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -30,6 +31,10 @@ public class ConceptTreeConnector extends Connector {
 	@Valid @JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();
 
+	@Valid @JsonManagedReference
+	private List<Select> selects = new ArrayList<>();
+
+
 	@Override @JsonIgnore
 	public Table getTable() {
 		return column.getTable();
@@ -41,6 +46,11 @@ public class ConceptTreeConnector extends Connector {
 		CollectionUtils.addIgnoreNull(l, getDateSelectionFilter());
 		l.addAll(filters);
 		return l;
+	}
+
+	@Override
+	protected Collection<Select> collectAllSelects() {
+		return new ArrayList<>(selects);
 	}
 
 	/*

@@ -13,17 +13,10 @@
       "tables": [
         {
           "id": "${dataset}.geschlecht_select.geschlecht_connector",
-          "select" : {
-            "type": "COUNT",
-            "column": "vers_stamm.geschlecht"
-          }
+          "select" : [
+            "${dataset}.geschlecht_select.geschlecht_connector.count_genders"
+          ]
         }
-      ],
-      "select": [
-//        {
-//          "type": "COUNT",
-//          "column": "vers_stamm.geschlecht"
-//        }
       ]
     }
   },
@@ -38,7 +31,14 @@
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"
-          }
+          },
+          "select":
+            {
+              "name" : "count_genders",
+              "type": "COUNT",
+              "column": "vers_stamm.geschlecht"
+            }
+
         }
       ]
     }

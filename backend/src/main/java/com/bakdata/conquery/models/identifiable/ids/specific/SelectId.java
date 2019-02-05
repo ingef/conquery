@@ -12,16 +12,11 @@ import java.util.Iterator;
 import java.util.List;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class SelectId extends AId<Select> implements NamespacedId {
+public class SelectId extends AId<Select> {
 
 	private final ConnectorId connector;
 	private final String select;
-	
-	@Override
-	public DatasetId getDataset() {
-		return connector.getDataset();
-	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		connector.collectComponents(components);
