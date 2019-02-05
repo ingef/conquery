@@ -54,7 +54,9 @@ public class FrontEndConceptBuilder {
 	}
 
 	private static FENode createCTRoot(Concept<?> c) {
+
 		MatchingStats matchingStats = c.getMatchingStats();
+
 		FENode n = FENode.builder()
 				.active(c instanceof VirtualConcept)
 				.description(c.getDescription())
@@ -143,16 +145,23 @@ public class FrontEndConceptBuilder {
 	}
 
 	public static FETable createTable(Connector con) {
-		return FETable.builder()
-			.id(con.getTable().getId())
-			.connectorId(con.getId())
-			.label(con.getTable().getLabel())
-			.filters(con
-				.getAllFilters()
-				.stream()
-				.map(FrontEndConceptBuilder::createFilter)
-				.collect(Collectors.toList())
-			).build();
+		return
+				FETable.builder()
+					   .id(con.getTable().getId())
+					   .label(con.getLabel())
+					   .filters(
+							   con.getAllFilters()
+								  .stream()
+								  .map(FrontEndConceptBuilder::createFilter)
+								  .collect(Collectors.toList())
+					   )
+					   .selects(
+							   con.getAllSelects()
+								  .stream()
+								  .map(FrontEndConceptBuilder::createSelect)
+								  .collect(Collectors.toList())
+					   )
+					   .build();
 	}
 
 	public static FEFilter createFilter(Filter<?> filter) {
@@ -172,6 +181,13 @@ public class FrontEndConceptBuilder {
 			throw new IllegalStateException(e);
 		}
 		return f;
+	}
+
+	public static FESelect createSelect(Select select) {
+		return FESelect.builder()
+					   .id(select.getId())
+					   .label(select.getLabel())
+					   .build();
 	}
 
 	public static Map<ConceptId, Map<ConceptElementId<?>, FENode>> createTreeMap(List<Concept<?>> concepts) {
