@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.concept.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -74,8 +73,8 @@ public class CQConcept implements CQElement {
 
 			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
 			//add filter to children
-			for(FilterValue<?> f : t.getFilters()) {
-				FilterNode<?,?> agg = ((Filter)f.getFilter()).createAggregator(f);
+			for(FilterValue f : t.getFilters()) {
+				FilterNode agg = f.getFilter().createAggregator(f);
 				if(agg != null) {
 					filters.add(agg);
 				}
@@ -108,16 +107,16 @@ public class CQConcept implements CQElement {
 	}
 
 	private Select[] resolveSelects(List<SelectId> select, CentralRegistry centralRegistry) {
-		return select.stream().map(name -> centralRegistry.resolve(name.getConnector()).getSelect(name)).toArray(Select[]::new);
+		return select.stream()
+					 .map(name -> centralRegistry.resolve(name.getConnector()).getSelect(name))
+					 .toArray(Select[]::new);
 	}
 
 	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return ids
-					   .stream()
-					   .map(id ->
-									centralRegistry.resolve(id.findConcept()).getElementById(id)
-					   )
-					   .toArray(ConceptElement[]::new);
+		return
+				ids.stream()
+				   .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+				   .toArray(ConceptElement[]::new);
 	}
 
 	private QPNode conceptChild(List<FilterNode<?, ?>> filters, List<QPNode> aggregators) {
