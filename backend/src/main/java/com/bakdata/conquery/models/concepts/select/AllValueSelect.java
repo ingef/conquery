@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.query.select.Select;
 public class AllValueSelect extends ColumnSelect {
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new AllValuesAggregator(getColumn());
 	}
 }

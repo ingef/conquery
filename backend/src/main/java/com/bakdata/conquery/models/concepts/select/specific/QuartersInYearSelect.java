@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.query.select.Select;
 @CPSType(id = "QUARTERS_IN_YEAR", base = Select.class)
 public class QuartersInYearSelect extends ColumnSelect {
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new QuartersInYearAggregator(getColumn());
 	}
 }

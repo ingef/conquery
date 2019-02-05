@@ -12,7 +12,7 @@ public class LastValueSelect extends ColumnSelect {
 
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE:
 				return new LastDateAggregator(getColumn());

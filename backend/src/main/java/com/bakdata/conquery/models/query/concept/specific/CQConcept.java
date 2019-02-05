@@ -129,7 +129,7 @@ public class CQConcept implements CQElement {
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
 		for (Select s : select) {
-			AggregatorNode<?> agg = s.createAggregator(plan.getAggregators().size());
+			AggregatorNode<?> agg = s.createAggregatorNode(plan.getAggregators().size());
 			plan.getAggregators().add(agg.getAggregator());
 			nodes.add(agg);
 		}

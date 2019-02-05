@@ -24,7 +24,6 @@ import java.util.EnumSet;
 @CPSType(id = "COUNT", base = Filter.class)
 public class CountFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
 
-
 	private boolean distinct;
 
 	@Override
@@ -44,7 +43,7 @@ public class CountFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
 			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode(new CountAggregator(getColumn()), getColumn()));
 		}
 		else {
-			return new RangeFilterNode(this, filterValue, new CountAggregator(getColumn()));
+			return new RangeFilterNode(this, filterValue, getSelect().createAggregator());
 		}
 	}
 }

@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.query.select.Select;
 public class DistinctValueSelect extends ColumnSelect {
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE:
 				return new DistinctDatesAggregator(getColumn());

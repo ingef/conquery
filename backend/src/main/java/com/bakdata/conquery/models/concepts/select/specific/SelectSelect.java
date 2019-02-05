@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.MultiSelectAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SelectAggregator;
 import com.bakdata.conquery.models.query.select.Select;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +17,7 @@ public class SelectSelect extends ColumnSelect {
 	private String[] selection;
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		if (selection.length == 1) {
 			return new SelectAggregator(getColumn(), selection[0]);
 		}
