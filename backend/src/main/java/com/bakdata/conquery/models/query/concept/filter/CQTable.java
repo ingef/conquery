@@ -22,8 +22,10 @@ public class CQTable {
 	private ConnectorId id;
 	@Valid @NotNull
 	private List<FilterValue> filters = Collections.emptyList();
+
 	@Valid @NotNull
 	private List<Select> select = Collections.emptyList();
+
 	@JsonBackReference
 	private CQConcept concept;
 
