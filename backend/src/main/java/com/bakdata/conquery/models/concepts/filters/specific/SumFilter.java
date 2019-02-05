@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.DecimalDiffSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.IntegerDiffSumAggregator;
@@ -82,7 +82,7 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 
 	@Override
 	public FilterNode createAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
-		Aggregator<?> aggregator = getAggregator(filterValue);
+		ColumnAggregator<?> aggregator = getAggregator(filterValue);
 
 		if (distinct)
 			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
@@ -90,7 +90,7 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 		return new RangeFilterNode(this, filterValue, aggregator);
 	}
 
-	private Aggregator<?> getAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
+	private ColumnAggregator<?> getAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
 		if (getSubtractColumn() == null) {
 			switch (getColumn().getType()) {
 				case MONEY:

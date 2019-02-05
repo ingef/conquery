@@ -18,15 +18,13 @@ public class RandomStringAggregator extends SingleColumnAggregator<String> {
 	}
 
 	/**
-	 * length of sequence = m, but not known at event of sampling
+	 * length of sequence = m, but not known at time of sampling
 	 * <p>
 	 * P(switching n-th value) = 1/n
-	 * <p>
-	 * P(n-th value = output) 	= P(switching n-th value) * P(not switching values > n)
-	 * = 1/n * n/m = 1/m
 	 *
-	 * @param block
-	 * @param event
+	 * P(n-th value = output) 	= P(switching n-th value) * P(not switching values > n)
+	 * 	= 1/n * n/m = 1/m
+	 * </p>
 	 */
 	@Override
 	public void aggregateEvent(Block block, int event) {

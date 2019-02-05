@@ -4,6 +4,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.DecimalDiffSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.IntegerDiffSumAggregator;
@@ -35,7 +36,7 @@ public class SumSelect extends Select {
 	@Override
 	protected Aggregator<?> createAggregator() {
 		if (distinct)
-			return new DistinctValuesWrapperAggregatorNode<>(getAggregator(), getColumn());
+			return new DistinctValuesWrapperAggregatorNode((ColumnAggregator) getAggregator(), getColumn());
 		else
 			return getAggregator();
 	}
