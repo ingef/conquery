@@ -15,18 +15,13 @@ public abstract class CQAbstractTemporalQuery implements CQElement {
 	/**
 	 * The query being executed as reference for preceding.
 	 */
-	protected final CQElement index;
+	protected final CQSampled index;
 
 	/**
 	 * The query being executed, compared to index. Events in preceding will be cut-off to be always before index, or at the same day, depending on the queries specific implementations.
 	 */
-	protected final CQElement preceding;
+	protected final CQSampled preceding;
 
-	/**
-	 * The sampler to be used.
-	 */
-	protected final TemporalSampler sampler;
-	
 	@Override
 	public abstract CQAbstractTemporalQuery resolve(QueryResolveContext context);
 }

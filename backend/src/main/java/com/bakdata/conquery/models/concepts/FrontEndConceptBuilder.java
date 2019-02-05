@@ -43,7 +43,9 @@ public class FrontEndConceptBuilder {
 		Map<IId<?>, FENode> roots = new LinkedHashMap<>();
 		//add all real roots
 		for (Concept<?> c : storage.getAllConcepts()) {
-			roots.put(c.getId(), createCTRoot(c, storage.getStructure()));
+			if(!c.isHidden()) {
+				roots.put(c.getId(), createCTRoot(c, storage.getStructure()));
+			}
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
