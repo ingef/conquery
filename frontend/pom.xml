@@ -82,6 +82,17 @@
                         <phase>generate-resources</phase>
 
                         <configuration>
+                            <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn build app</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                        <configuration>
                             <arguments>build-app</arguments>
                         </configuration>
                     </execution>
