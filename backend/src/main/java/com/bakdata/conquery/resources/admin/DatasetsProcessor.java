@@ -151,7 +151,7 @@ public class DatasetsProcessor {
 		slave.send(new AddWorker(dataset));
 	}
 
-	public void setStructure(Dataset dataset, StructureNode[] structure) {
-		namespaces.get(dataset);
+	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {
+		namespaces.get(dataset.getId()).getStorage().updateStructure(structure);
 	}
 }

@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.apache.commons.lang3.builder.ToStringExclude;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.MatchingStats;
@@ -22,20 +27,25 @@ import lombok.ToString;
 public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
 	
 	private final WorkerId source;
-	private final ConceptElementId<?> target;
-	private final MatchingStats.Entry value;
+	@ToStringExclude
+	private final Map<ConceptElementId<?>, MatchingStats.Entry> values;
 	
 	@Override
 	public void react(Namespace context) throws Exception {
-		Concept<?> c = context.getStorage().getConcept(target.findConcept());
-		//if a child node
-		if(target instanceof ConceptTreeChildId) {
-			ConceptTreeNode<?> child = c.getChildById((ConceptTreeChildId) target);
-			child.getMatchingStats().updateEntry(source, value);
-		}
-		//otherwise just update the concept
-		else {
-			c.getMatchingStats().updateEntry(source, value);
+		for(Entry<ConceptElementId<?>, MatchingStats.Entry> entry : values.entrySet()) {
+			ConceptElementId<?> target = entry.getKey();
+			MatchingStats.Entry value = entry.getValue();
+			
+			Concept<?> c = context.getStorage().getConcept(target.findConcept());
+			//if a child node
+			if(target instanceof ConceptTreeChildId) {
+				ConceptTreeNode<?> child = c.getChildById((ConceptTreeChildId) target);
+				child.getMatchingStats().updateEntry(source, value);
+			}
+			//otherwise just update the concept
+			else {
+				c.getMatchingStats().updateEntry(source, value);
+			}
 		}
 	}
 	

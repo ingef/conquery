@@ -62,10 +62,10 @@
 	<div class="row">
 		<div class="col">
 			<h3>Structure Nodes</h3>
-			<form action="/admin/datasets/${c.id}/structure" method="post" enctype="multipart/form-data">
+			<form onsubmit="postFile(event, '/admin/datasets/${c.id}/structure');">
 				<div class="form-group">
 					<label for="structure_schema">Set Structure Nodes</label>
-					<input type="file" name="structure_schema" title="Schema of the Structure Nodes" accept="structure.json" required>
+					<input type="file" class="restparam" name="structure_schema" title="Schema of the Structure Nodes" accept="structure.json" required>
 				</div>
 				<input class="btn btn-primary" type="submit"/>
 			</form>
