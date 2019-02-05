@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.exceptions.QueryExecutionException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -49,7 +48,7 @@ public class QueryResource {
 	}
 
 	@POST
-	public SQStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws QueryExecutionException, JSONException {
+	public SQStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 		// Check reused query
 		for(ManagedQueryId requiredQueryId : query.collectRequiredQueries()) {

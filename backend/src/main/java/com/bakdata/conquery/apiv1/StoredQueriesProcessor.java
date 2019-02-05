@@ -1,20 +1,26 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
-import com.fasterxml.jackson.databind.JsonNode;
-import jersey.repackaged.com.google.common.collect.Iterators;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
-import javax.servlet.http.HttpServletRequest;
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import javax.servlet.http.HttpServletRequest;
+
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.Namespaces;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import jersey.repackaged.com.google.common.collect.Iterators;
 
 public class StoredQueriesProcessor {
 
@@ -35,27 +41,25 @@ public class StoredQueriesProcessor {
 
 	}
 
-	public SQStatus patchQuery(User user, Dataset dataset, ManagedQueryId queryId, JsonNode patch) {
-
-		// see https://github.com/bakdata/conquery/issues/253
+	public void patchQuery(User user, Dataset dataset, ManagedQueryId queryId, JsonNode patch) throws JSONException {
+		MasterMetaStorage storage = namespaces.get(dataset.getId()).getStorage().getMetaStorage();
+		ManagedQuery query = storage.getQuery(queryId);
 		if (patch.has("tags")) {
 			authorize(user, queryId, Ability.TAG);
-			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)),
-					String.class);
-			// meta.updateQueryTags(queryId, newTags);
+			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)), String.class);
+			query.setTags(newTags);
+			storage.updateQuery(query);
 		} else if (patch.has("label")) {
 			authorize(user, queryId, Ability.LABEL);
-			// meta.updateQueryLabel(queryId, patch.get("label").asText());
+			query.setLabel(patch.get("label").textValue());
+			storage.updateQuery(query);
 		} else if (patch.has("shared")) {
 			authorize(user, queryId, Ability.SHARE);
-			// meta.updateQueryShared(queryId, patch.get("shared").asBoolean());
-		} else
-			return null;
-
-		// SQStatus status = meta.getQueryStatus(queryId, dataset);
-		// status.setOwn(user.getId() == status.getOwner());
-		// return status;
-		return null;
+			for(Mandator mandator : user.getRoles()) {
+				//copy the permission of the user except the share permission for the mandator
+				//mandator.addPermission(storage, new QueryPermission(mandator, abilities, instanceId))
+			}
+		} 
 	}
 
 	public SQStatus getQueryWithSource(Dataset dataset, ManagedQueryId queryId) {
