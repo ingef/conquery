@@ -8,18 +8,19 @@ import java.util.HashSet;
 import java.util.Set;
 
 /**
- * Event is included only, when the value has not been seen before.
+ * Aggregator node forwarding only events with distinct values to {@code aggregator}.
+ * @param <VALUE>
  */
 public class DistinctValuesWrapperAggregatorNode<VALUE> extends ColumnAggregator<VALUE> {
 
 
-	private final Aggregator<VALUE> aggregator;
+	private final ColumnAggregator<VALUE> aggregator;
 	private Set<Object> observed = new HashSet<>();
 
 	@Getter
 	private final Column column;
 
-	public DistinctValuesWrapperAggregatorNode(Aggregator<VALUE> aggregator, Column column) {
+	public DistinctValuesWrapperAggregatorNode(ColumnAggregator<VALUE> aggregator, Column column) {
 		this.column = column;
 		this.aggregator = aggregator;
 	}
