@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.select;
+package com.bakdata.conquery.models.concepts.select.specific;
 
 import javax.validation.constraints.NotNull;
 
