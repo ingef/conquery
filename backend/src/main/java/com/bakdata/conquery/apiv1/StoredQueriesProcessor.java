@@ -45,7 +45,7 @@ public class StoredQueriesProcessor {
 			// meta.updateQueryTags(queryId, newTags);
 		} else if (patch.has("label")) {
 			authorize(user, queryId, Ability.LABEL);
-			// meta.updateQueryLabel(queryId, patch.get("label").asText());
+			 meta.updateQueryLabel(queryId, patch.get("label").asText());
 		} else if (patch.has("shared")) {
 			authorize(user, queryId, Ability.SHARE);
 			// meta.updateQueryShared(queryId, patch.get("shared").asBoolean());

@@ -5,7 +5,6 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.io.BufferedWriter;
-import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
@@ -57,19 +56,16 @@ public class ResultCSVResource {
 		String csv = query.toCSV(config).collect(Collectors.joining("\n"));
 
 		log.info("Querying results for {}", queryId);
-		StreamingOutput out = new StreamingOutput() {
-			@Override
-			public void write(OutputStream os) throws IOException, WebApplicationException {
-				try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
-					writer.write(csv);
-					writer.flush();
-				} catch (EofException e) {
-					log.info("User canceled download of {}", queryId);
-				} catch (Exception e) {
-					throw new WebApplicationException("Failed to load result " + queryId, e);
-				}
-			}
-		};
+		StreamingOutput out = (OutputStream os) -> {
+            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
+                writer.write(csv);
+                writer.flush();
+            } catch (EofException e) {
+                log.info("User canceled download of {}", queryId);
+            } catch (Exception e) {
+                throw new WebApplicationException("Failed to load result " + queryId, e);
+            }
+        };
 
 		return Response.ok(out).build();
 	}

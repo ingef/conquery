@@ -80,9 +80,10 @@ public class SQStatus {
 	}
 	
 	public static SQStatus buildFromQuery(ManagedQuery query, URLBuilder urlb) {
-		Long numberOfResults = Long.valueOf(query.fetchContainedEntityResult().count());
+		Long numberOfResults = query.fetchContainedEntityResult().count();
 		return builder()
 			.id(query.getId())
+            .own(true)
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
 			.query(query)
 			.requiredTime((query.getStartTime() != null && query.getFinishTime() != null)

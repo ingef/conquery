@@ -16,10 +16,8 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriBuilderException;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -43,8 +41,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FormResource {
 
-	private FormProcessor processor;
-	private ResourceUtil dsUtil;
+	private final FormProcessor processor;
+	private final ResourceUtil dsUtil;
 
 	public FormResource(Namespaces namespaces) {
 		this.processor = new FormProcessor();
@@ -67,16 +65,11 @@ public class FormResource {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 		
-		Dataset dataset = dsUtil.getDataset(datasetId);
-		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
-
-		SQStatus status = processor.get(dataset, query, URLBuilder.fromRequest(req));
-
-		if (status != null) {
-			return status;
-		}
-
-		throw new WebApplicationException("No form query " + queryId + " found", Status.NOT_FOUND);
+		return processor.get(
+                dsUtil.getDataset(datasetId),
+                dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId),
+                URLBuilder.fromRequest(req)
+        );
 	}
 
 	@DELETE
@@ -85,9 +78,10 @@ public class FormResource {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 		
-		Dataset dataset = dsUtil.getDataset(datasetId);
-		ManagedQuery query = dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId);
-		processor.cancel(dataset, query);
+		processor.cancel(
+                dsUtil.getDataset(datasetId),
+                dsUtil.getStorage(datasetId).getMetaStorage().getQuery(queryId)
+        );
 		return get(user, datasetId, queryId, req);
 	}
 
