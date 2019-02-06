@@ -11,11 +11,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 
 public class SpecialDateUnion extends Aggregator<CDateSet> {
 
-	@Override
-	public SelectId getId() {
-		return null;
-	}
-
 	private CDateSet set = CDateSet.create();
 	private Column currentColumn;
 	private CDateSet dateRestriction;

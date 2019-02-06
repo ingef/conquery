@@ -24,7 +24,7 @@ public class SpecialDateUnionAggregatorNode extends AggregatorNode<CDateSet> {
 	
 	@Override
 	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		SpecialDateUnion aggClone = (SpecialDateUnion) clone.getAggregators().get(null);
+		SpecialDateUnion aggClone = (SpecialDateUnion) clone.getAggregators().get(getAggregator().getId());
 		return new SpecialDateUnionAggregatorNode(requiredTable, aggClone);
 	}
 }

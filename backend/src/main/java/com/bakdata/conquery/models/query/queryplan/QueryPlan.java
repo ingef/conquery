@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,10 +18,12 @@ public class QueryPlan implements Cloneable {
 
 	private final Map<SelectId, Aggregator<?>> aggregators = new HashMap<>();
 
+	public void addAggregator(Aggregator<?> aggregator){
+		aggregators.put(aggregator.getId(), aggregator);
+	}
 
 	public static QueryPlan create() {
 		QueryPlan plan = new QueryPlan();
-		plan.aggregators.put(null, new SpecialDateUnion(null));
 		return plan;
 	}
 

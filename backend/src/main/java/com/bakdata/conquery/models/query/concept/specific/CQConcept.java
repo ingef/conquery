@@ -60,6 +60,11 @@ public class CQConcept implements CQElement {
 
 		Map<SelectId, AggregatorNode<?>> queryAggregators = createConceptAggregators(plan, selects);
 
+
+		//TODO How do I properly setup this aggregators' Id?
+		SelectId included = new SelectId(null, "dates");
+		plan.addAggregator(new SpecialDateUnion(included));
+
 		Concept<?> c = concepts[0].getConcept();
 
 		List<QPNode> tableNodes = new ArrayList<>();
@@ -78,6 +83,10 @@ public class CQConcept implements CQElement {
 
 			List<QPNode> aggregators = new ArrayList<>();
 			//add aggregators
+			aggregators.add(new SpecialDateUnionAggregatorNode(
+					table.getResolvedConnector().getTable().getId(),
+					(SpecialDateUnion) plan.getAggregators().get(included)
+			));
 
 			aggregators.addAll(queryAggregators.values());
 
@@ -85,26 +94,9 @@ public class CQConcept implements CQElement {
 
 			aggregators.addAll(tableAggregators.values());
 
-			//TODO SpecialDateUnion custom ID
-
-			aggregators.add(new SpecialDateUnionAggregatorNode(
-					table.getResolvedConnector().getTable().getId(),
-					(SpecialDateUnion) plan.getAggregators().get(null)
-			));
-
-
 			List<FilterNode<?, ?>> filters = new ArrayList<>(table.getFilters().size());
 			//add filter to children
 			for (FilterValue filterValue : table.getFilters()) {
-
-				//TODO This is a hack
-				//				filterValue
-				//						.getFilter()
-				//						.setSelect(
-				//								context.getCentralRegistry()
-				//									   .resolve(filterValue.getFilter().getSelectId().getConnector())
-				//									   .getSelect(filterValue.getFilter().getSelectId()));
-
 
 				FilterNode agg = filterValue.getFilter().createFilter(filterValue, tableAggregators.get(filterValue.getFilter().getSelectId()).getAggregator());
 				if (agg != null) {
@@ -148,15 +140,13 @@ public class CQConcept implements CQElement {
 	}
 
 	private Map<SelectId, AggregatorNode<?>> createConceptAggregators(QueryPlan plan, Select[] selects) {
-		if (selects.length == 0)
-			return Collections.emptyMap();
 
 		Map<SelectId, AggregatorNode<?>> nodes = new HashMap<>(selects.length);
 
 		for (Select select : selects) {
 			AggregatorNode<?> agg = select.createAggregatorNode(plan.getAggregators().size());
 
-			plan.getAggregators().put(select.getId(), agg.getAggregator());
+			plan.addAggregator(agg.getAggregator());
 
 			nodes.put(select.getId(), agg);
 		}
