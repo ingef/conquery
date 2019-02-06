@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
@@ -34,6 +33,7 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
@@ -53,7 +53,7 @@ public class CQConcept implements CQElement {
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		ConceptElement[] concepts = resolveConcepts(ids, context.getCentralRegistry());
-		Select[] selects = resolveSelects(select, context.getCentralRegistry());
+		List<Select> selects = resolveSelects(select, context.getCentralRegistry());
 
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
 
@@ -84,7 +84,7 @@ public class CQConcept implements CQElement {
 			//add aggregators
 
 			aggregators.addAll(conceptAggregators);
-			aggregators.addAll(createConceptAggregators(plan, t.getSelect()));
+			aggregators.addAll(createConceptAggregators(plan, resolveSelects(t.getSelect(), context.getCentralRegistry())));
 
 			if(!excludeFromTimeAggregation) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
@@ -92,7 +92,7 @@ public class CQConcept implements CQElement {
 					plan.getIncluded()
 				));
 			}
-			
+
 			tableNodes.add(
 				new ConceptNode(
 					concepts,
@@ -106,10 +106,10 @@ public class CQConcept implements CQElement {
 		return OrNode.of(tableNodes);
 	}
 
-	private Select[] resolveSelects(List<SelectId> select, CentralRegistry centralRegistry) {
+	private List<Select> resolveSelects(List<SelectId> select, CentralRegistry centralRegistry) {
 		return select.stream()
-					 .map(name -> centralRegistry.resolve(name.getConnector()).getSelect(name))
-					 .toArray(Select[]::new);
+					 .map(name -> centralRegistry.resolve(name.getConnector()).<Select>getSelect(name))
+					 .collect(Collectors.toList());
 	}
 
 	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
@@ -127,9 +127,7 @@ public class CQConcept implements CQElement {
 		return result;
 	}
 
-	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, Select[] select) {
-		if (select.length == 0)
-			return Collections.emptyList();
+	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
