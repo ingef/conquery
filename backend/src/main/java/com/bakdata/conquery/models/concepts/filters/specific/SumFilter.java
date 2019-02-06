@@ -10,16 +10,9 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.DecimalDiffSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.IntegerDiffSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.MoneyDiffSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.RealDiffSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.DecimalSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import lombok.Getter;
 import lombok.Setter;
@@ -81,43 +74,11 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 	private boolean distinct = false;
 
 	@Override
-	public FilterNode createAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
-		ColumnAggregator<?> aggregator = getAggregator(filterValue);
+	public FilterNode createFilter(FilterValue<? extends IRange<?, ?>> filterValue, Aggregator<?> aggregator) {
 
 		if (distinct)
-			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
+			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode((ColumnAggregator) aggregator, getColumn()));
 
 		return new RangeFilterNode(this, filterValue, aggregator);
-	}
-
-	private ColumnAggregator<?> getAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
-		if (getSubtractColumn() == null) {
-			switch (getColumn().getType()) {
-				case MONEY:
-					return new MoneySumAggregator(getColumn());
-				case INTEGER:
-					return new IntegerSumAggregator(getColumn());
-				case DECIMAL:
-					return new DecimalSumAggregator(getColumn());
-				case REAL:
-					return new RealSumAggregator(getColumn());
-				default:
-					throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
-			}
-		}
-		else {
-			switch (getColumn().getType()) {
-				case MONEY:
-					return new MoneyDiffSumAggregator(getColumn(), getSubtractColumn());
-				case INTEGER:
-					return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
-				case DECIMAL:
-					return new DecimalDiffSumAggregator(getColumn(), getSubtractColumn());
-				case REAL:
-					return new RealDiffSumAggregator(getColumn(), getSubtractColumn());
-				default:
-					throw new IllegalStateException("No Sum Filter for type " + getColumn().getType().name());
-			}
-		}
 	}
 }

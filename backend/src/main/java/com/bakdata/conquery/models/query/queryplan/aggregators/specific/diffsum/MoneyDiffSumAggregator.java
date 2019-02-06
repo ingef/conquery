@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-
 import lombok.Getter;
 
 public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
@@ -15,14 +15,15 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	private Column subtrahendColumn;
 	private long sum = 0L;
 
-	public MoneyDiffSumAggregator(Column addend, Column subtrahend) {
+	public MoneyDiffSumAggregator(SelectId id, Column addend, Column subtrahend) {
+		super(id);
 		this.addendColumn = addend;
 		this.subtrahendColumn = subtrahend;
 	}
 
 	@Override
 	public MoneyDiffSumAggregator clone() {
-		return new MoneyDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
+		return new MoneyDiffSumAggregator(getId(), getAddendColumn(), getSubtrahendColumn());
 	}
 
 	@Override

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Set;
-
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -9,15 +7,17 @@ import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+
+import java.util.Set;
 
 @RequiredArgsConstructor @Getter @ToString(of = "aggregator")
 public class AggregatorNode<T> extends QPNode  {
 
 	private final int position;
+	@Getter
 	private final Aggregator<T> aggregator;
 	private boolean triggered = false;
 	
@@ -35,7 +35,7 @@ public class AggregatorNode<T> extends QPNode  {
 	
 	@Override
 	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		Aggregator<T> aggClone = (Aggregator<T>) clone.getAggregators().get(position);
+		Aggregator<T> aggClone = (Aggregator<T>) clone.getAggregators().get(getAggregator().getId());
 		return new AggregatorNode<>(position, aggClone);
 	}
 

@@ -14,11 +14,11 @@ public class RandomValueSelect extends ColumnSelect {
 	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE:
-				return new RandomDateAggregator(getColumn());
+				return new RandomDateAggregator(getId(), getColumn());
 			case STRING:
-				return new RandomStringAggregator(getColumn());
+				return new RandomStringAggregator(getId(), getColumn());
 			default:
-				return new RandomValueAggregator(getColumn());
+				return new RandomValueAggregator(getId(), getColumn());
 		}
 	}
 }

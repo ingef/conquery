@@ -19,9 +19,9 @@ public class CountQuartersSelect extends ColumnSelect {
 	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE_RANGE:
-				return new CountQuartersOfDateRangeAggregator(getColumn());
+				return new CountQuartersOfDateRangeAggregator(getId(), getColumn());
 			case DATE:
-				return new CountQuartersOfDatesAggregator(getColumn());
+				return new CountQuartersOfDatesAggregator(getId(), getColumn());
 			default:
 				throw new IllegalArgumentException(String.format("Column '%s' is not of Date (-Range) Type but '%s'", getColumn(), getColumn().getType()));
 		}

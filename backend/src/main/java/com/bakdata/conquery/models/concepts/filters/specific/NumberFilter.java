@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
-import java.math.BigDecimal;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
@@ -17,10 +15,12 @@ import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.NumberFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
-
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.math.BigDecimal;
 
 /**
  * This filter represents a filter on an integer columnof each event.
@@ -58,7 +58,7 @@ public class NumberFilter extends SingleColumnFilter<FilterValue<? extends IRang
 	}
 
 	@Override
-	public NumberFilterNode createAggregator(FilterValue<? extends IRange<? extends Number, ?>> filterValue) {
+	public NumberFilterNode createFilter(FilterValue<? extends IRange<? extends Number, ?>> filterValue, Aggregator<?> aggregator) {
 		switch (getColumn().getType()) {
 			case MONEY:
 				return new MoneyFilterNode(this, (FilterValue.CQIntegerRangeFilter) filterValue);

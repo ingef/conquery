@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.s
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.types.CType;
 
@@ -16,8 +17,8 @@ public class AllStringsAggregator extends SingleColumnAggregator<Set<String>> {
 
 	private final Set<String> entries = new HashSet<>();
 
-	public AllStringsAggregator(Column column) {
-		super(column);
+	public AllStringsAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -34,6 +35,6 @@ public class AllStringsAggregator extends SingleColumnAggregator<Set<String>> {
 
 	@Override
 	public AllStringsAggregator clone() {
-		return new AllStringsAggregator(getColumn());
+		return new AllStringsAggregator(getId(), getColumn());
 	}
 }

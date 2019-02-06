@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum;
 
-import java.math.BigDecimal;
-
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-
 import lombok.Getter;
+
+import java.math.BigDecimal;
 
 public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
@@ -16,14 +16,15 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	private Column subtrahendColumn;
 	private BigDecimal sum = BigDecimal.ZERO;
 
-	public DecimalDiffSumAggregator(Column addend, Column subtrahend) {
+	public DecimalDiffSumAggregator(SelectId id, Column addend, Column subtrahend) {
+		super(id);
 		this.addendColumn = addend;
 		this.subtrahendColumn = subtrahend;
 	}
 
 	@Override
 	public DecimalDiffSumAggregator clone() {
-		return new DecimalDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
+		return new DecimalDiffSumAggregator(getId(), getAddendColumn(), getSubtrahendColumn());
 	}
 
 	@Override

@@ -1,0 +1,79 @@
+{
+  "type": "QUERY_TEST",
+  "label": "SIMPLE_VIRTUAL_CONCEPT_QUERY Test",
+  "expectedCsv": "tests/aggregator/COUNT_FILTER_BY_ID/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "ids": [
+        "${dataset}.geschlecht_select"
+      ],
+      "type": "CONCEPT",
+      "label": "Geschlecht SELECT",
+      "tables": [
+        {
+          "id": "${dataset}.geschlecht_select.geschlecht_connector",
+          "select": [
+            "${dataset}.geschlecht_select.geschlecht_connector.count_genders"
+          ]  ,
+          "filters" : {
+            "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlechter",
+            "type": "INTEGER_RANGE",
+            "value": {
+              "min" : 0,
+              "max" : 1
+            }
+          }
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "geschlecht_select",
+      "type": "VIRTUAL",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "vers_stamm",
+          "validityDates": {
+            "label": "datum",
+            "column": "vers_stamm.datum"
+          },
+          "select": {
+            "name": "count_genders",
+            "type": "COUNT",
+            "column": "vers_stamm.geschlecht"
+          },
+          "filter" : {
+            "name": "geschlechter",
+            "select": "geschlecht_select.geschlecht_connector.count_genders",
+            "type": "RANGE"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/aggregator/COUNT_FILTER_BY_ID/content.csv",
+        "name": "vers_stamm",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

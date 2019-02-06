@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.query.queryplan.aggregators;
 
 import com.bakdata.conquery.io.jackson.serializer.IdReference;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,7 +11,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
-@AllArgsConstructor
 public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 
 	@Valid
@@ -20,6 +19,11 @@ public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 	@Setter
 	@IdReference
 	protected Column column;
+
+	public SingleColumnAggregator(SelectId id, Column column) {
+		super(id);
+		setColumn(column);
+	}
 
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {

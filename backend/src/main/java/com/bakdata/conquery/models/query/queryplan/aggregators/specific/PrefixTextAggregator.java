@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entity is included when the number of values for a specified column are
@@ -16,8 +17,8 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	private final Set<String> entries = new HashSet<>();
 	private final String prefix;
 
-	public PrefixTextAggregator(Column column, String prefix) {
-		super(column);
+	public PrefixTextAggregator(SelectId id, Column column, String prefix) {
+		super(id, column);
 		this.prefix = prefix;
 	}
 
@@ -46,6 +47,6 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 
 	@Override
 	public PrefixTextAggregator clone() {
-		return new PrefixTextAggregator(getColumn(), prefix);
+		return new PrefixTextAggregator(getId(), getColumn(), prefix);
 	}
 }

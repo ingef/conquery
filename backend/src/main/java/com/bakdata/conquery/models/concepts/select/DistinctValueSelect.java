@@ -14,11 +14,11 @@ public class DistinctValueSelect extends ColumnSelect {
 	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE:
-				return new DistinctDatesAggregator(getColumn());
+				return new DistinctDatesAggregator(getId(), getColumn());
 			case STRING:
-				return new DistinctStringsAggregator(getColumn());
+				return new DistinctStringsAggregator(getId(), getColumn());
 			default:
-				return new DistinctValuesAggregator(getColumn());
+				return new DistinctValuesAggregator(getId(), getColumn());
 		}
 	}
 }

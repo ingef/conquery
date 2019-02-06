@@ -2,9 +2,9 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.types.specific.IStringType;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -14,8 +14,9 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	private long hits = 0;
 	private int selectedId = -1;
 
-	public SelectAggregator(Column column, String selected) {
-		super(column);
+	public SelectAggregator(SelectId id,  Column column, String selected) {
+		super(id, column);
+
 		this.selected = selected;
 	}
 
@@ -48,6 +49,6 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public SelectAggregator clone() {
-		return new SelectAggregator(getColumn(), selected);
+		return new SelectAggregator(getId(), getColumn(), selected);
 	}
 }

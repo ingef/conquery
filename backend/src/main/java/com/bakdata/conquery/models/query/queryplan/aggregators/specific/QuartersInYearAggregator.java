@@ -1,16 +1,17 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.time.LocalDate;
-import java.time.Month;
-import java.time.temporal.IsoFields;
-import java.util.EnumSet;
-
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.esotericsoftware.kryo.util.IntMap;
+
+import java.time.LocalDate;
+import java.time.Month;
+import java.time.temporal.IsoFields;
+import java.util.EnumSet;
 
 /**
  * Entity is included when the the number of quarters with events is within a
@@ -20,8 +21,8 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
 	private final IntMap<EnumSet<Month>> quartersInYear = new IntMap<>();
 
-	public QuartersInYearAggregator(Column column) {
-		super(column);
+	public QuartersInYearAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -61,6 +62,6 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public QuartersInYearAggregator clone() {
-		return new QuartersInYearAggregator(getColumn());
+		return new QuartersInYearAggregator(getId(), getColumn());
 	}
 }

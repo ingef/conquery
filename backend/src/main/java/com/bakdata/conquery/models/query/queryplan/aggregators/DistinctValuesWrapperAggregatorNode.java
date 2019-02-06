@@ -21,6 +21,8 @@ public class DistinctValuesWrapperAggregatorNode<VALUE> extends ColumnAggregator
 	private final Column column;
 
 	public DistinctValuesWrapperAggregatorNode(ColumnAggregator<VALUE> aggregator, Column column) {
+		super(aggregator.getId());
+
 		this.column = column;
 		this.aggregator = aggregator;
 	}

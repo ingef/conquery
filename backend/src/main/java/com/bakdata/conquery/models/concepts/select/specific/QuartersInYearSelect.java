@@ -13,6 +13,6 @@ import com.bakdata.conquery.models.query.select.Select;
 public class QuartersInYearSelect extends ColumnSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new QuartersInYearAggregator(getColumn());
+		return new QuartersInYearAggregator(getId(), getColumn());
 	}
 }

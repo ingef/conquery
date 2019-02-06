@@ -4,6 +4,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
@@ -12,8 +13,8 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
 
-	public DurationSumAggregatorNode(Column column) {
-		super(column);
+	public DurationSumAggregatorNode(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -42,7 +43,7 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 
 	@Override
 	public DurationSumAggregatorNode clone() {
-		return new DurationSumAggregatorNode(getColumn());
+		return new DurationSumAggregatorNode(getId(), getColumn());
 	}
 
 	@Override

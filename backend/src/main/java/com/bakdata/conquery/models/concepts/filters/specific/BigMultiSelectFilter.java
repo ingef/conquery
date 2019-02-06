@@ -5,13 +5,13 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQMultiSelectFilter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 import lombok.Setter;
 
 /**
- * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
+ * This filter represents a selectId in the front end. This means that the user can selectId one or more values from a list of values.
  */
 @Getter
 @Setter
@@ -25,7 +25,7 @@ public class BigMultiSelectFilter extends AbstractSelectFilter<CQMultiSelectFilt
 	}
 
 	@Override
-	public FilterNode createAggregator(CQMultiSelectFilter filterValue) {
+	public FilterNode createFilter(CQMultiSelectFilter filterValue, Aggregator<?> aggregator) {
 		//		if (filterValue.getValue().length == 1) {
 		//			return new ValueAboveZeroFilterNode<>(this, filterValue, new SelectAggregator(getColumn(), filterValue.getValue()[0]));
 		//		}

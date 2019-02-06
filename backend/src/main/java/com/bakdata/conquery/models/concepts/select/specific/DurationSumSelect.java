@@ -13,7 +13,7 @@ public class DurationSumSelect extends ColumnSelect {
 	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE_RANGE:
-				return new DurationSumAggregatorNode(getColumn());
+				return new DurationSumAggregatorNode(getId(), getColumn());
 			default:
 				throw new IllegalStateException(String.format("Duration Sum requires either DateRange or Dates, not %s", getColumn()));
 		}

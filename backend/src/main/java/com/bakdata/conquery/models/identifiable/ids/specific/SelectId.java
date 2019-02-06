@@ -12,9 +12,10 @@ import java.util.Iterator;
 import java.util.List;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class SelectId extends AId<Select> {
+public class SelectId extends AId<Select> implements NamespacedId {
 
 	private final ConnectorId connector;
+
 	private final String select;
 
 	@Override
@@ -22,7 +23,12 @@ public class SelectId extends AId<Select> {
 		connector.collectComponents(components);
 		components.add(select);
 	}
-	
+
+	@Override
+	public DatasetId getDataset() {
+		return connector.getDataset();
+	}
+
 	public static enum Parser implements IId.Parser<SelectId> {
 		INSTANCE;
 		

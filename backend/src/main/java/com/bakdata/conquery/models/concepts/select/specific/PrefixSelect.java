@@ -17,6 +17,6 @@ public class PrefixSelect extends ColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new PrefixTextAggregator(getColumn(), selection);
+		return new PrefixTextAggregator(getId(), getColumn(), selection);
 	}
 }

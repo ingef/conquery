@@ -5,14 +5,24 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 
-public class SpecialDateUnion implements Aggregator<CDateSet> {
+public class SpecialDateUnion extends Aggregator<CDateSet> {
+
+	@Override
+	public SelectId getId() {
+		return null;
+	}
 
 	private CDateSet set = CDateSet.create();
 	private Column currentColumn;
 	private CDateSet dateRestriction;
+
+	public SpecialDateUnion(SelectId id) {
+		super(id);
+	}
 
 	@Override
 	public void nextTable(QueryContext ctx, Table table) {
@@ -39,7 +49,7 @@ public class SpecialDateUnion implements Aggregator<CDateSet> {
 
 	@Override
 	public SpecialDateUnion clone() {
-		return new SpecialDateUnion();
+		return new SpecialDateUnion(getId());
 	}
 
 	@Override

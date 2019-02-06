@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
 import java.util.Random;
@@ -12,8 +13,8 @@ public class RandomValueAggregator extends SingleColumnAggregator<Object> {
 	private int nValues = 0;
 	private final Random random = new Random();
 
-	public RandomValueAggregator(Column column) {
-		super(column);
+	public RandomValueAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	/**
@@ -48,6 +49,6 @@ public class RandomValueAggregator extends SingleColumnAggregator<Object> {
 
 	@Override
 	public RandomValueAggregator clone() {
-		return new RandomValueAggregator(getColumn());
+		return new RandomValueAggregator(getId(), getColumn());
 	}
 }

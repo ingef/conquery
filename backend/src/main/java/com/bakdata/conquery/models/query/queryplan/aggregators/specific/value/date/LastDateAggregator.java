@@ -4,6 +4,7 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
@@ -20,8 +21,8 @@ public class LastDateAggregator extends SingleColumnAggregator<LocalDate> {
 
 	private Column validityDateColumn;
 
-	public LastDateAggregator(Column column) {
-		super(column);
+	public LastDateAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -50,6 +51,6 @@ public class LastDateAggregator extends SingleColumnAggregator<LocalDate> {
 
 	@Override
 	public LastDateAggregator clone() {
-		return new LastDateAggregator(getColumn());
+		return new LastDateAggregator(getId(), getColumn());
 	}
 }

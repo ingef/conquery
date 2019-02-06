@@ -19,9 +19,9 @@ public class SelectSelect extends ColumnSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
 		if (selection.length == 1) {
-			return new SelectAggregator(getColumn(), selection[0]);
+			return new SelectAggregator(getId(), getColumn(), selection[0]);
 		}
 
-		return new MultiSelectAggregator(getColumn(), selection);
+		return new MultiSelectAggregator(getId(), getColumn(), selection);
 	}
 }

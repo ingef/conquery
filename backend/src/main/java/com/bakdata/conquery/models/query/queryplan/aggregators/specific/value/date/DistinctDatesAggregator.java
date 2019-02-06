@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.d
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
 import java.time.LocalDate;
@@ -17,8 +18,8 @@ public class DistinctDatesAggregator extends SingleColumnAggregator<List<LocalDa
 
 	private final List<LocalDate> entries = new ArrayList<>();
 
-	public DistinctDatesAggregator(Column column) {
-		super(column);
+	public DistinctDatesAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -35,6 +36,6 @@ public class DistinctDatesAggregator extends SingleColumnAggregator<List<LocalDa
 
 	@Override
 	public DistinctDatesAggregator clone() {
-		return new DistinctDatesAggregator(getColumn());
+		return new DistinctDatesAggregator(getId(), getColumn());
 	}
 }

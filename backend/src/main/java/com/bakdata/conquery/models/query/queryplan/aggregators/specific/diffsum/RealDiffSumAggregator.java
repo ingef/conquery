@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-
 import lombok.Getter;
 
 public class RealDiffSumAggregator extends ColumnAggregator<Double> {
@@ -15,14 +15,15 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 	private double sum = 0;
 
-	public RealDiffSumAggregator(Column addend, Column subtrahend) {
+	public RealDiffSumAggregator(SelectId id, Column addend, Column subtrahend) {
+		super(id);
 		this.addendColumn = addend;
 		this.subtrahendColumn = subtrahend;
 	}
 
 	@Override
 	public RealDiffSumAggregator clone() {
-		return new RealDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
+		return new RealDiffSumAggregator(getId(), getAddendColumn(), getSubtrahendColumn());
 	}
 
 	@Override

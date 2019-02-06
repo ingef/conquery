@@ -15,11 +15,11 @@ public class LastValueSelect extends ColumnSelect {
 	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE:
-				return new LastDateAggregator(getColumn());
+				return new LastDateAggregator(getId(), getColumn());
 			case STRING:
-				return new LastStringAggregator(getColumn());
+				return new LastStringAggregator(getId(), getColumn());
 			default:
-				return new LastValueAggregator(getColumn());
+				return new LastValueAggregator(getId(), getColumn());
 		}
 	}
 }

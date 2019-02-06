@@ -1,23 +1,24 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum;
 
-import java.math.BigDecimal;
-
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+
+import java.math.BigDecimal;
 
 public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 
 
 	private BigDecimal sum = BigDecimal.ZERO;
 
-	public DecimalSumAggregator(Column column) {
-		super(column);
+	public DecimalSumAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
 	public DecimalSumAggregator clone() {
-		return new DecimalSumAggregator(getColumn());
+		return new DecimalSumAggregator(getId(), getColumn());
 	}
 
 	@Override

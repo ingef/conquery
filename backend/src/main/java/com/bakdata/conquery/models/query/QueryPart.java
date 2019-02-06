@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import lombok.RequiredArgsConstructor;
 
@@ -56,11 +57,11 @@ public class QueryPart implements Callable<EntityResult> {
 	}
 
 	private EntityResult result(QueryPlan queryPlan) {
-		String[] values = new String[queryPlan.getAggregators().size()];
-		for (int i = 0; i < values.length; i++) {
-			Object aggregationResult = queryPlan.getAggregators().get(i).getAggregationResult();
-			values[i] = aggregationResult == null ? "" : Objects.toString(aggregationResult);
-		}
+		String[] values = queryPlan.getAggregators().values().stream()
+								   .map(Aggregator::getAggregationResult)
+								   .map(val -> val == null ? "" : Objects.toString(val))
+								   .toArray(String[]::new);
+
 		return EntityResult.of(entity.getId(), values);
 	}
 

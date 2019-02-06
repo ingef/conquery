@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.s
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.types.CType;
@@ -18,8 +19,8 @@ public class FirstStringAggregator extends SingleColumnAggregator<String> {
 
 	private Column validityDateColumn;
 
-	public FirstStringAggregator(Column column) {
-		super(column);
+	public FirstStringAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -48,6 +49,6 @@ public class FirstStringAggregator extends SingleColumnAggregator<String> {
 
 	@Override
 	public FirstStringAggregator clone() {
-		return new FirstStringAggregator(getColumn());
+		return new FirstStringAggregator(getId(), getColumn());
 	}
 }

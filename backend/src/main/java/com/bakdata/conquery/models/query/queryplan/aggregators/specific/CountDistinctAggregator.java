@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entity is included when the number of values for a specified column are
@@ -15,8 +16,8 @@ public class CountDistinctAggregator extends SingleColumnAggregator<Long> {
 
 	private final Set<Object> entries = new HashSet<>();
 
-	public CountDistinctAggregator(Column column) {
-		super(column);
+	public CountDistinctAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -33,6 +34,6 @@ public class CountDistinctAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public CountDistinctAggregator clone() {
-		return new CountDistinctAggregator(getColumn());
+		return new CountDistinctAggregator(getId(), getColumn());
 	}
 }

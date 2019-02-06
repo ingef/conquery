@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
 import java.util.HashSet;
@@ -15,8 +16,8 @@ public class AllValuesAggregator extends SingleColumnAggregator<Set<Object>> {
 
 	private final Set<Object> entries = new HashSet<>();
 
-	public AllValuesAggregator(Column column) {
-		super(column);
+	public AllValuesAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -33,6 +34,6 @@ public class AllValuesAggregator extends SingleColumnAggregator<Set<Object>> {
 
 	@Override
 	public AllValuesAggregator clone() {
-		return new AllValuesAggregator(getColumn());
+		return new AllValuesAggregator(getId(), getColumn());
 	}
 }

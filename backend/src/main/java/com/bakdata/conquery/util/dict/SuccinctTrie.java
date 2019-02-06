@@ -1,26 +1,24 @@
 package com.bakdata.conquery.util.dict;
 
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-
-import org.apache.mina.core.buffer.IoBuffer;
-
 import com.bakdata.conquery.util.BufferUtil;
 import com.esotericsoftware.kryo.util.IntMap.Entry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.AbstractIterator;
-
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
 import lombok.Data;
 import lombok.Getter;
+import org.apache.mina.core.buffer.IoBuffer;
+
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
 
 public class SuccinctTrie implements Iterable<String> {
 
@@ -177,7 +175,7 @@ public class SuccinctTrie implements Iterable<String> {
 	}
 
 	/*
-	 * select(n) - returns the position of the nth 0 in the bit store.
+	 * selectId(n) - returns the position of the nth 0 in the bit store.
 	 */
 
 	private int select0(int positionForZero) {

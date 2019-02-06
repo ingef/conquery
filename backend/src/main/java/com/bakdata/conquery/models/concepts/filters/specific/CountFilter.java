@@ -7,8 +7,7 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQIntegerRangeFilter;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
@@ -17,7 +16,7 @@ import lombok.Setter;
 import java.util.EnumSet;
 
 /**
- * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
+ * This filter represents a selectId in the front end. This means that the user can selectId one or more values from a list of values.
  */
 @Getter
 @Setter
@@ -38,12 +37,7 @@ public class CountFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
 	}
 
 	@Override
-	public FilterNode createAggregator(CQIntegerRangeFilter filterValue) {
-		if (distinct) {
-			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode(new CountAggregator(getColumn()), getColumn()));
-		}
-		else {
-			return new RangeFilterNode(this, filterValue, getSelect().createAggregator());
-		}
+	public FilterNode createFilter(CQIntegerRangeFilter filterValue, Aggregator<?> aggregator) {
+		return new RangeFilterNode(this, filterValue, aggregator);
 	}
 }

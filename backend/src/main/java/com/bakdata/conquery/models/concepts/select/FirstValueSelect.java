@@ -14,11 +14,11 @@ public class FirstValueSelect extends ColumnSelect {
 	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE:
-				return new FirstDateAggregator(getColumn());
+				return new FirstDateAggregator(getId(), getColumn());
 			case STRING:
-				return new FirstStringAggregator(getColumn());
+				return new FirstStringAggregator(getId(), getColumn());
 			default:
-				return new FirstValueAggregator(getColumn());
+				return new FirstValueAggregator(getId(), getColumn());
 		}
 	}
 }

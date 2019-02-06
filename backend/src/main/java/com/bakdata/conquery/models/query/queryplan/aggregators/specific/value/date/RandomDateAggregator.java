@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.d
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
 import java.time.LocalDate;
@@ -14,8 +15,8 @@ public class RandomDateAggregator extends SingleColumnAggregator<LocalDate> {
 	private int nValues = 0;
 	private final Random random = new Random();
 
-	public RandomDateAggregator(Column column) {
-		super(column);
+	public RandomDateAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	/**
@@ -50,6 +51,6 @@ public class RandomDateAggregator extends SingleColumnAggregator<LocalDate> {
 
 	@Override
 	public RandomDateAggregator clone() {
-		return new RandomDateAggregator(getColumn());
+		return new RandomDateAggregator(getId(), getColumn());
 	}
 }

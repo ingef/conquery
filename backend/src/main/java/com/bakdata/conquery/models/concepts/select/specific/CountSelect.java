@@ -20,10 +20,10 @@ public class CountSelect extends ColumnSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregatorNode<>(new CountDistinctAggregator(getColumn()), getColumn());
+			return new DistinctValuesWrapperAggregatorNode<>(new CountDistinctAggregator(getId(), getColumn()), getColumn());
 		}
 		else {
-			return new CountAggregator(getColumn());
+			return new CountAggregator(getId(), getColumn());
 		}
 	}
 }

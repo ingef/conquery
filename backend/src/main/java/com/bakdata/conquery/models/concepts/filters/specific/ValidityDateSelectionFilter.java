@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
@@ -10,11 +8,13 @@ import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
+import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.stream.Collectors;
 
 @Getter @Setter @Slf4j
 @CPSType(id="VALIDITY_DATE_SELECTION", base=Filter.class)
@@ -41,7 +41,7 @@ public class ValidityDateSelectionFilter extends Filter<CQSelectFilter> implemen
 	}
 	
 	@Override
-	public FilterNode createAggregator(CQSelectFilter filterValue) {
+	public FilterNode createFilter(CQSelectFilter filterValue, Aggregator<?> aggregator) {
 		return null;
 	}
 }

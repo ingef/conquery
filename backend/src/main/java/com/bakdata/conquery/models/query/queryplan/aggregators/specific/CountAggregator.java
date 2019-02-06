@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
 /**
@@ -12,8 +13,8 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 
 	private long count = 0;
 
-	public CountAggregator(Column column) {
-		super(column);
+	public CountAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -30,6 +31,6 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public CountAggregator clone() {
-		return new CountAggregator(getColumn());
+		return new CountAggregator(getId(), getColumn());
 	}
 }

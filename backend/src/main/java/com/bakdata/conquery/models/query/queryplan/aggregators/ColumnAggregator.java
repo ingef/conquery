@@ -1,12 +1,17 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
-import java.util.Set;
-
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 
-public abstract class ColumnAggregator<T> implements Aggregator<T> {
+import java.util.Set;
+
+public abstract class ColumnAggregator<T> extends Aggregator<T> {
+
+	public ColumnAggregator(SelectId id) {
+		super(id);
+	}
 
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {

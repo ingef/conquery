@@ -10,6 +10,6 @@ public class AllValueSelect extends ColumnSelect {
 
 	@Override
 	public Aggregator<?> createAggregator() {
-		return new AllValuesAggregator(getColumn());
+		return new AllValuesAggregator(getId(), getColumn());
 	}
 }

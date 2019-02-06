@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.s
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.types.CType;
 
@@ -16,8 +17,8 @@ public class DistinctStringsAggregator extends SingleColumnAggregator<List<Strin
 
 	private final List<String> entries = new ArrayList<>();
 
-	public DistinctStringsAggregator(Column column) {
-		super(column);
+	public DistinctStringsAggregator(SelectId id, Column column) {
+		super(id, column);
 	}
 
 	@Override
@@ -34,6 +35,6 @@ public class DistinctStringsAggregator extends SingleColumnAggregator<List<Strin
 
 	@Override
 	public DistinctStringsAggregator clone() {
-		return new DistinctStringsAggregator(getColumn());
+		return new DistinctStringsAggregator(getId(), getColumn());
 	}
 }
