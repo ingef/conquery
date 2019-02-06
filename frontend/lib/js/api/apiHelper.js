@@ -96,6 +96,7 @@ const createConcept = (concept) => ({
   type: 'CONCEPT',
   ids: concept.ids,
   label: concept.label,
+  excludeFromTimeAggregation: concept.excludeTimestamps,
   tables: transformTablesToApi(concept.tables)
 })
 
