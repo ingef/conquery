@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -29,6 +30,8 @@ import java.util.List;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import java.util.stream.Collectors;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)
@@ -50,7 +53,9 @@ public class StoredQueriesResource {
 		
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-		return processor.getAllQueries(dataset, req);
+		return processor.getAllQueries(dataset, req).stream()
+                .filter(status -> user.isPermitted(new DatasetPermission(user.getId(), Ability.READ.AS_SET, status.getId().getDataset())))
+                .collect(Collectors.toList());
 	}
 
 	@GET
