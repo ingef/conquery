@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
 
-/*package*/ class DefaultIdAccessor extends IdAccessor {
+public class DefaultIdAccessor extends IdAccessor {
 
-	/*package*/ DefaultIdAccessor() {
+	public DefaultIdAccessor() {
 		super(null,null);
 	}
 

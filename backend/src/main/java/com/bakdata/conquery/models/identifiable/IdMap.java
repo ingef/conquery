@@ -60,7 +60,7 @@ public class IdMap<ID extends IId<? extends V>, V extends Identifiable<? extends
 	}
 
 	private void addToMap(V entry) {
-		V old = (V)map.put(entry.getId(), entry);
+		V old = map.put(entry.getId(), entry);
 		if(old != null && !old.equals(entry)) {
 			throw new IllegalStateException("The element "+entry.getId()+" is present twice in this map.");
 		}

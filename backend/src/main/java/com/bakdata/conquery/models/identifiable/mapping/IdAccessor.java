@@ -7,12 +7,15 @@ import java.util.Map;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class IdAccessor {
-	/*package*/ final IdMappingAccessor accessor;
-	/*package*/ final Map<Integer, Integer> applicationMapping;
+	@Getter
+	private final IdMappingAccessor accessor;
+	@Getter
+	private final Map<Integer, Integer> applicationMapping;
 	private NamespaceStorage storage;
 
 	public static String[] removeNonIdFields(String[] csvLine, List<CQExternal.FormatColumn> formatColumns){
@@ -39,8 +42,9 @@ public class IdAccessor {
 	}
 
 	/*
-	@returns Outputs a csvLine like the one in the original uploaded id mapping CSV
-	 */
+	* Reorder takes a line from an uploaded CSV an reorders the id columns, to match the specified format.
+	* @returns Outputs a csvLine like the one in the original uploaded id mapping CSV
+ 	*/
 	private List<String> reorder(String[] csvLine) {
 		List<String> reorderedCsvLine = new ArrayList<>(accessor.getMapping().getHeaderSize());
 		for (int i = 0; i < csvLine.length; i++) {

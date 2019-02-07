@@ -21,11 +21,11 @@ public class IdMappingAccessor {
 		return "Using Fields: " + idsUsed;
 	}
 
-	/*package*/ boolean canBeApplied(List<String> csvHeader) {
+	public boolean canBeApplied(List<String> csvHeader) {
 		return mapping.getHeader().containsAll(csvHeader);
 	}
 
-	/*package*/ IdAccessor getApplicationMapping(List<String> csvHeader) {
+	public IdAccessor getApplicationMapping(List<String> csvHeader) {
 		// We assume canBeApplied has been checked before
 		// applicationMapping maps from CsvHeader to IdMappingCsv Indices
 		Map<Integer, Integer> applicationMapping = new HashMap<>();
@@ -39,7 +39,7 @@ public class IdMappingAccessor {
 		return new IdAccessor(this, applicationMapping);
 	}
 
-	/*package*/ List<String> extract(List<String> dataLine) {
+	public List<String> extract(List<String> dataLine) {
 		List<String> output = new ArrayList<>();
 		for (Integer index : idsUsed) {
 			output.add(dataLine.get(index));

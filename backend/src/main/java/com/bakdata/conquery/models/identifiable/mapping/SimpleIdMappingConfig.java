@@ -16,7 +16,6 @@ public class SimpleIdMappingConfig extends IdMappingConfig {
 		return idAccessors;
 	}
 
-
 	@Override public List<String> getPrintIdFields() {
 		return Collections.singletonList("result");
 	}
