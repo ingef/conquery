@@ -4,8 +4,14 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
+import com.bakdata.conquery.db.DBMaster;
+import com.bakdata.conquery.db.DateUnit;
+import com.bakdata.conquery.models.Dataset;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.forms.EventPeriods.IndexMode;
+import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
+import com.bakdata.conquery.models.time.TimeAccessedResult;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -48,16 +54,14 @@ public class DateContext {
 	 * @return All date ranges as wrapped into {@link DateContext} that were in the
 	 *         mask.
 	 */
-	public static List<DateContext> generateAbsoluteContexts(CDateSet dates, CDateRange dateRangeMask, DateContextMode resultMode) {
+	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode resultMode) {
 		List<DateContext> dcList = new ArrayList<>();
 
 		if (resultMode == DateContextMode.COMPLETE) {
-			for (CDateRange entryDateRange : dates.asRanges()) {
-				if (dateRangeMask.intersects(entryDateRange)) {
-					DateContext dc = new DateContext(dateRangeMask);
-					dc.setFeatureGroups(EnumSet.of(FeatureGroup.OUTCOME));
-					dcList.add(dc);
-				}
+			if (dateRangeMask.intersects(entryDateRange)) {
+				DateContext dc = new DateContext(dateRangeMask);
+				dc.setFeatureGroups(EnumSet.of(FeatureGroup.OUTCOME));
+				dcList.add(dc);
 			}
 		}
 
@@ -90,5 +94,10 @@ public class DateContext {
 		}
 
 		return dcList;
+	}
+	
+	
+	public static List<DateContext> generateRelativeContexts(DBMaster dbMaster, TimeAccessedResult result, IndexMode indexDate, DateUnit timeUnit, int timeCountBefore, int timeCountAfter, Dataset dataset, int shards, boolean generateQuarterWiseResults) {
+		
 	}
 }

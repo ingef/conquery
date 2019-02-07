@@ -48,6 +48,7 @@ public class CQConcept implements CQElement {
 	private List<CQTable> tables;
 	@Valid @NotNull
 	private List<Select> select = Collections.emptyList();
+	private boolean excludeFromTimeAggregation = false;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
@@ -80,10 +81,12 @@ public class CQConcept implements CQElement {
 			//add aggregators
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, t.getSelect()));
-			aggregators.add(new SpecialDateUnionAggregatorNode(
+			if(!excludeFromTimeAggregation) {
+				aggregators.add(new SpecialDateUnionAggregatorNode(
 					t.getResolvedConnector().getTable().getId(),
-					(SpecialDateUnion) plan.getAggregators().get(0)
-			));
+					plan.getIncluded()
+				));
+			}
 			
 			tableNodes.add(
 				new ConceptNode(

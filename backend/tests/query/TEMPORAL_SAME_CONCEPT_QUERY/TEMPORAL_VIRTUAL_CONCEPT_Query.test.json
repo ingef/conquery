@@ -1,0 +1,93 @@
+{
+  "type": "QUERY_TEST",
+  "label": "TEMPORAL_BEFORE_CONCEPT_QUERY Test",
+  "expectedCsv": "tests/query/TEMPORAL_SAME_CONCEPT_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "SAME",
+      "sampler": "EARLIEST",
+      "index": {
+        "ids": [
+          "${dataset}.geschlecht_select"
+        ],
+        "type": "CONCEPT",
+        "label": "Geschlecht SELECT",
+        "tables": [
+          {
+            "id": "${dataset}.geschlecht_select.geschlecht_connector",
+            "filters": [
+              {
+                "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                "type": "SELECT",
+                "value": "f"
+              }
+            ]
+          }
+        ]
+      },
+      "preceding": {
+        "ids": [
+          "${dataset}.geschlecht_select"
+        ],
+        "type": "CONCEPT",
+        "label": "Geschlecht SELECT",
+        "tables": [
+          {
+            "id": "${dataset}.geschlecht_select.geschlecht_connector",
+            "filters": [
+              {
+                "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                "type": "SELECT",
+                "value": "m"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "concepts": [
+    {
+      "label": "Geschlecht SELECT",
+      "type": "VIRTUAL",
+      "connectors": [
+        {
+          "label": "geschlecht_connector",
+          "table": "vers_stamm",
+          "validityDates": {
+            "label": "datum",
+            "column": "vers_stamm.datum"
+          },
+          "filter": {
+            "label": "geschlecht",
+            "column": "vers_stamm.geschlecht",
+            "type": "SINGLE_SELECT"
+          }
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/TEMPORAL_SAME_CONCEPT_QUERY/content.csv",
+        "name": "vers_stamm",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "datum",
+            "type": "DATE"
+          },
+          {
+            "name": "geschlecht",
+            "type": "STRING"
+          }
+        ]
+      }
+    ]
+  }
+}

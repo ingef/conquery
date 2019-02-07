@@ -1,9 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-
-import java.util.List;
-
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -11,11 +7,14 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
-import java.util.Collection;
-import java.util.stream.Collectors;
-import javax.servlet.http.HttpServletRequest;
-
 import jersey.repackaged.com.google.common.collect.Iterators;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 public class StoredQueriesProcessor {
 
