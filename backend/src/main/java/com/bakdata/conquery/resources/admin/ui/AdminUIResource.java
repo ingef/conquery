@@ -125,8 +125,7 @@ public class AdminUIResource {
 					.collect(Collectors.toMap(
 						si -> si.getRemoteAddress().toString(),
 						SlaveInformation::getJobManagerStatus
-					)
-					)
+					))
 			)
 			.build();
 		return new UIView<>("jobs.html.ftl", context, status);

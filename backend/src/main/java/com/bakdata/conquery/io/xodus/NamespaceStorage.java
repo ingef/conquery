@@ -1,6 +1,9 @@
 package com.bakdata.conquery.io.xodus;
 
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.exceptions.JSONException;
+
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
@@ -26,4 +29,7 @@ public interface NamespaceStorage extends NamespacedStorage {
 	
 	MasterMetaStorage getMetaStorage();
 	void setMetaStorage(@NonNull MasterMetaStorage storage);
+	
+	StructureNode[] getStructure();
+	void updateStructure(StructureNode[] structure) throws JSONException;
 }

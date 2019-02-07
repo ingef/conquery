@@ -14,6 +14,7 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
@@ -148,5 +149,9 @@ public class DatasetsProcessor {
 
 	public void addWorker(SlaveInformation slave, Dataset dataset) {
 		slave.send(new AddWorker(dataset));
+	}
+
+	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {
+		namespaces.get(dataset.getId()).getStorage().updateStructure(structure);
 	}
 }
