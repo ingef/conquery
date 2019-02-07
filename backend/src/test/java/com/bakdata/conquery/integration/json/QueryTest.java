@@ -171,10 +171,10 @@ public class QueryTest extends AbstractQueryEngineTest {
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTree(
-			support,
-			rawConcepts,
-			Jackson.MAPPER.getTypeFactory().constructParametricType(List.class, Concept.class),
-			list -> list.forEach(c -> c.setDataset(support.getDataset().getId()))
+				support,
+				rawConcepts,
+				Jackson.MAPPER.getTypeFactory().constructParametricType(List.class, Concept.class),
+				list -> list.forEach(c -> c.setDataset(support.getDataset().getId()))
 		);
 
 		for (Concept<?> concept : concepts) {

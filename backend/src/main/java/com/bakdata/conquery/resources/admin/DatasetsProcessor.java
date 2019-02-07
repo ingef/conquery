@@ -45,7 +45,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Slf4j @RequiredArgsConstructor public class DatasetsProcessor {
+@Getter
+@Slf4j
+@RequiredArgsConstructor
+public class DatasetsProcessor {
 
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;
@@ -58,8 +61,7 @@ import lombok.extern.slf4j.Slf4j;
 		Objects.requireNonNull(table);
 		if (table.getDataset() == null) {
 			table.setDataset(dataset);
-		}
-		else if (!table.getDataset().equals(dataset)) {
+		} else if (!table.getDataset().equals(dataset)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -133,7 +135,8 @@ import lombok.extern.slf4j.Slf4j;
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
-		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
+		try (HCFile hcFile = new HCFile(selectedFile, false);
+			InputStream in = hcFile.readHeader()) {
 			PPHeader header = Jackson.BINARY_MAPPER.readValue(in, PPHeader.class);
 
 			TableId tableName = new TableId(dataset.getId(), header.getTable());

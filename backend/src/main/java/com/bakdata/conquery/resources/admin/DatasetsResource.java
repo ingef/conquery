@@ -131,6 +131,7 @@ public class DatasetsResource {
 				.build();
 	}
 
+
 	@GET @Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
 	public View getTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) {
