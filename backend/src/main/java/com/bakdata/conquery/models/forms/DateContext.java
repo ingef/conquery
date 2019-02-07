@@ -24,7 +24,7 @@ public class DateContext {
 	 * @return The date range
 	 */
 	@Getter
-	private final CDateRange dateRanges;
+	private final CDateRange dateRange;
 
 	/**
 	 * Indicates to which group the context belongs.
