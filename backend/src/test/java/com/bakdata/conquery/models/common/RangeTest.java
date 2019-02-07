@@ -99,14 +99,14 @@ class RangeTest {
 		CDateRange dateRange = new CDateRange(LocalDate.of(2000, 9, 2), LocalDate.of(2005, 3, 15));
 		
 		List<CDateRange> expected = new ArrayList<>();
-		expected.add(new CDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 12, 31)));
+		expected.add(new CDateRange(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 12, 31)));
 		expected.add(new CDateRange(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 12, 31)));
 		expected.add(new CDateRange(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)));
 		expected.add(new CDateRange(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)));
 		expected.add(new CDateRange(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 12, 31)));
+		expected.add(new CDateRange(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 3, 15)));
 		
-		assertThat(dateRange.getCoveredYears()).containsExactlyElementsOf(expected);
+		assertThat(dateRange.getCoveredYears()).containsAll(expected);
 	}
 	
 	@Test

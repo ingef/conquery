@@ -4,6 +4,7 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -12,14 +13,10 @@ import java.util.stream.Stream;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
+
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Wither;
-
-import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
-import java.time.temporal.TemporalUnit;
-import java.util.stream.Stream;
 
 @NoArgsConstructor
 @Wither
@@ -338,11 +335,26 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		int startYear = this.getMin().getYear();
 		int endYear = this.getMax().getYear();
 
-		return IntStream
-			.rangeClosed(startYear, endYear)
-			/* Create date range with first days of year and the last day */
-			.mapToObj(year -> new CDateRange(LocalDate.ofYearDay(year, 1), LocalDate.of(year, 12, 31)))
-			.collect(Collectors.toList());
+		if(startYear == endYear) {
+			return Arrays.asList(this);
+		}
+		// Range covers multiple years
+		List<CDateRange> ranges = new ArrayList<>();
+		
+		// First year begins with this range
+		ranges.add(CDateRange.of(this.getMin(), LocalDate.of(startYear, 12, 31)));
+		// Last year end with this range
+		ranges.add(CDateRange.of(LocalDate.of(endYear, 1, 1), this.getMax()));
+		
+		// Years in between
+		if(endYear-startYear > 1) {
+			ranges.addAll(IntStream
+				.rangeClosed(startYear+1, endYear-1)
+				// Create date range with first days of year and the last day 
+				.mapToObj(year -> CDateRange.of(LocalDate.ofYearDay(year, 1), LocalDate.of(year, 12, 31)))
+				.collect(Collectors.toList()));
+		}
+		return ranges;
 	}
 
 	/**
