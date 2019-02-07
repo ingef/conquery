@@ -1,6 +1,8 @@
 package com.bakdata.conquery.apiv1;
 
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
 
 import java.util.Collection;
 import java.util.List;
@@ -10,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -55,9 +58,16 @@ public class StoredQueriesProcessor {
 			storage.updateQuery(query);
 		} else if (patch.has("shared")) {
 			authorize(user, queryId, Ability.SHARE);
-			for(Mandator mandator : user.getRoles()) {
-				//copy the permission of the user except the share permission for the mandator
-				//mandator.addPermission(storage, new QueryPermission(mandator, abilities, instanceId))
+			if(patch.get("shared").asBoolean()) {
+				for(Mandator mandator : user.getRoles()) {
+					// add query execution permissions to mandators
+					addPermission(mandator, new QueryPermission(null, AbilitySets.QUERY_EXECUTOR, queryId), storage);
+				}
+			} else {
+				for(Mandator mandator : user.getRoles()) {
+					// remove query execution permissions to mandators
+					removePermission(mandator, new QueryPermission(null, AbilitySets.QUERY_EXECUTOR, queryId), storage);
+				}
 			}
 		} 
 	}
