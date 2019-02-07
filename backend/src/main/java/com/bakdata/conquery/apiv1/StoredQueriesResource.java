@@ -1,8 +1,8 @@
 package com.bakdata.conquery.apiv1;
 
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.QueryTranslationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
@@ -21,6 +21,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import java.util.stream.Collectors;
 import java.util.List;
 
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
@@ -45,17 +46,18 @@ public class StoredQueriesResource {
     public List<SQStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
         authorize(user, datasetId, Ability.READ);
 
-        return processor.getAllQueries(dsUtil.getDataset(datasetId), req);
+        return processor.getAllQueries(dsUtil.getDataset(datasetId), req).stream()
+                .filter(status -> user.isPermitted(new QueryPermission(user.getId(), Ability.READ.AS_SET, status.getId())))
+                .collect(Collectors.toList());
     }
 
     @GET
     @Path("{" + QUERY + "}")
     public SQStatus getQueryWithSource(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId) throws QueryTranslationException {
-        Dataset dataset = dsUtil.getDataset(datasetId);
         authorize(user, datasetId, Ability.READ);
         authorize(user, queryId, Ability.READ);
 
-        return processor.getQueryWithSource(dataset, queryId);
+        return processor.getQueryWithSource(dsUtil.getDataset(datasetId), queryId);
     }
 
     @PATCH
