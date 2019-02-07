@@ -6,12 +6,16 @@ import java.util.Map;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
+
+import javax.validation.Validator;
+import java.io.File;
 
 public interface NamespaceStorage extends NamespacedStorage {
 	
@@ -31,6 +35,9 @@ public interface NamespaceStorage extends NamespacedStorage {
 	
 	MasterMetaStorage getMetaStorage();
 	void setMetaStorage(@NonNull MasterMetaStorage storage);
+	
+	StructureNode[] getStructure();
+	void updateStructure(StructureNode[] structure) throws JSONException;
 	
 	Map<String, List<String>> getIdMapping();
 	void updateIdMapping(Map idMapping) throws JSONException;

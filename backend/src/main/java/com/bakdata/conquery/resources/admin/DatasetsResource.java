@@ -13,6 +13,8 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -33,9 +35,11 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
@@ -61,12 +65,13 @@ import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-@Produces(MediaType.TEXT_HTML)
+@Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
 @Slf4j
 @Getter
 @Path("/datasets")
+@AuthCookie
 public class DatasetsResource {
 
 	private final ObjectMapper mapper;
@@ -81,12 +86,12 @@ public class DatasetsResource {
 		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager, maintenanceService);
 	}
 
-	@GET
+	@GET @Produces(MediaType.TEXT_HTML)
 	public View getDatasets() {
 		return new UIView<>("datasets.html.ftl", ctx, namespaces.getAllDatasets());
 	}
 
-	@GET
+	@GET @Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}")
 	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
 		return new FileView<>(
@@ -96,6 +101,7 @@ public class DatasetsResource {
 			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
 	}
 
+	
 	@GET
 	@Path("/{" + DATASET_NAME + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
@@ -125,7 +131,7 @@ public class DatasetsResource {
 				.build();
 	}
 
-	@GET
+	@GET @Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
 	public View getTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) {
 		Namespace ns = namespaces.get(datasetId);
@@ -152,7 +158,7 @@ public class DatasetsResource {
 		);
 	}
 
-	@GET
+	@GET @Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
 	public View getConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(CONCEPT_NAME) ConceptId conceptParam) {
 		Namespace ns = namespaces.get(datasetId);
@@ -239,6 +245,14 @@ public class DatasetsResource {
 				.build();
 		}
 
+	}
+	
+	@POST
+	@Path("/{" + DATASET_NAME + "}/structure")
+	public void setStructure(@PathParam(DATASET_NAME) DatasetId datasetId, @NotNull@Valid StructureNode[] structure) throws JSONException {
+		Namespace ns = ctx.getNamespaces().get(datasetId);
+		Dataset dataset = ns.getStorage().getDataset();
+		processor.setStructure(dataset, structure);
 	}
 
 	@DELETE

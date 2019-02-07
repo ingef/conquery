@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -49,9 +50,10 @@ public enum StoreInfo implements IStoreInfo {
 	C_BLOCKS		("C_BLOCKS", 		CBlock.class,				CBlockId.class),
 	WORKER			("WORKER",			WorkerInformation.class,	Boolean.class),
 	QUERIES			("QUERIES", 		ManagedQuery.class,			ManagedQueryId.class),
-	AUTH_PERMISSIONS("AUTH_PERMISSIONS", ConqueryPermission.class,	PermissionId.class),
+	AUTH_PERMISSIONS("AUTH_PERMISSIONS",ConqueryPermission.class,	PermissionId.class),
 	AUTH_MANDATOR	("AUTH_MANDATOR", 	Mandator.class,				MandatorId.class),
-	AUTH_USER		("AUTH_USER", 	User.class,				UserId.class);
+	AUTH_USER		("AUTH_USER", 		User.class,					UserId.class),
+	STRUCTURE		("STRUCTURE", 		StructureNode[].class,		Boolean.class),
 	;
 	
 	private final String xodusName;

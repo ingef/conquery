@@ -10,6 +10,7 @@ import com.bakdata.conquery.commands.RESTServer;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
+import com.bakdata.conquery.models.auth.AuthCookieFilter;
 import com.bakdata.conquery.resources.admin.ui.AdminUIProcessor;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 
@@ -49,5 +50,6 @@ public class AdminUIServlet {
 		jerseyConfig.register(masterCommand.getAuthDynamicFeature());
 		jerseyConfig.register(IdParamConverter.Provider.INSTANCE);
 		jerseyConfig.register(CORSResponseFilter.class);
+		jerseyConfig.register(AuthCookieFilter.class);
 	}
 }

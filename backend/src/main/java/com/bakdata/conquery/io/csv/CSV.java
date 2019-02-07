@@ -32,7 +32,7 @@ public class CSV implements Closeable {
 	private final CSVConfig config;
 	private BufferedReader reader;
 	private CountingInputStream counter;
-	private final long totalSizeToRead;
+	private long totalSizeToRead;
 	private long read = 0;
 
 	public CSV(CSVConfig config, InputStream inputStream) throws IOException {
@@ -57,6 +57,11 @@ public class CSV implements Closeable {
 	}
 
 	public CSV(CSVConfig config, File file) throws IOException {
+		this(config, new FileInputStream(file), file.getName().endsWith(".gz"));
+		totalSizeToRead = file.length();
+	}
+	
+	public CSV(CSVConfig config, InputStream input, boolean gzip) throws IOException {
 		this.config = config;
 		CsvFormat format = new CsvFormat();
 		{
@@ -72,16 +77,25 @@ public class CSV implements Closeable {
 			settings.setFormat(format);
 		}
 		
-		totalSizeToRead = file.length();
-		counter = new CountingInputStream(new FileInputStream(file));
 		
-		InputStream in = file.getName().endsWith(".gz")?new GZIPInputStream(counter):counter;
+		counter = new CountingInputStream(input);
+		
+		InputStream in = gzip?new GZIPInputStream(counter):counter;
 			
 		reader = new BufferedReader(new InputStreamReader(in, config.getEncoding()));
 	}
 
 	public static Stream<String[]> streamContent(CSVConfig config, File file, Logger log) throws IOException {
 		CSV csv = new CSV(config, file);
+		return StreamSupport.stream(
+			Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED),
+			false
+		)
+		.onClose(csv::closeUnchecked);
+	}
+	
+	public static Stream<String[]> streamContent(CSVConfig config, InputStream input, Logger log) throws IOException {
+		CSV csv = new CSV(config, input, false);
 		return StreamSupport.stream(
 			Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED),
 			false

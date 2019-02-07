@@ -68,10 +68,7 @@ public class UpdateMatchingStats extends Job {
 					
 					sub.report(1);
 				}
-				
-				for(Entry<ConceptElementId<?>, MatchingStats.Entry> e : messages.entrySet()) {
-					w.send(new UpdateElementMatchingStats(w.getInfo().getId(), e.getKey(), e.getValue()));
-				}
+				w.send(new UpdateElementMatchingStats(w.getInfo().getId(), messages));
 			}
 			sub.done();
 		}

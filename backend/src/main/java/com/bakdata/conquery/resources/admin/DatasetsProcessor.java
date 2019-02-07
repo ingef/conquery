@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -154,5 +155,9 @@ import lombok.extern.slf4j.Slf4j;
 		CSV csvData = new CSV(new CSVConfig(), data);
 		IdMappingConfig mappingConfig = config.getIdMapping();
 		mappingConfig.updateCsvData(csvData, namespace);
+	}
+
+	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {
+		namespaces.get(dataset.getId()).getStorage().updateStructure(structure);
 	}
 }

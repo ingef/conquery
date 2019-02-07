@@ -10,14 +10,13 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.io.FileUtils;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
+import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
-import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.Range;
@@ -27,7 +26,6 @@ import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
@@ -56,8 +54,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "FILTER_TEST", base = ConqueryTestSpec.class)
 public class FilterTest extends AbstractQueryEngineTest {
 
-	@ExistingFile
-	private File expectedCsv;
+	private ResourceFile expectedCsv;
 
 	@NotNull
 	@JsonProperty("filterValue")
@@ -114,7 +111,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		for (RequiredTable rTable : content.getTables()) {
 			//copy csv to tmp folder
 			String name = rTable.getCsv().getName().substring(0, rTable.getCsv().getName().lastIndexOf('.'));
-			FileUtils.copyFileToDirectory(rTable.getCsv(), support.getTmpDir());
+			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
 			//create import descriptor
 			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);

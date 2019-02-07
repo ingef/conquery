@@ -9,19 +9,32 @@ import javax.validation.Validator;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
+import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
+import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
+import com.bakdata.conquery.io.xodus.stores.SingletonStore;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.util.functions.Collector;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
+import javax.validation.Validator;
+import java.io.File;
+import java.util.Objects;
+
+@Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
 	
 	@Getter @Setter @NonNull
 	private MasterMetaStorage metaStorage;
 	private final SingletonStore<Map> idMapping;
+	protected SingletonStore<StructureNode[]> structure;
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
@@ -42,5 +55,21 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	@Override
 	public void updateIdMapping(Map idMapping) throws JSONException {
 		this.idMapping.update(idMapping);
+	}
+	
+	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
+		super.createStores(collector);
+		structure = StoreInfo.STRUCTURE.singleton(this);
+		collector.collect(structure);
+	}
+
+	@Override
+	public StructureNode[] getStructure() {
+		return Objects.requireNonNullElseGet(structure.get(), ()->new StructureNode[0]);
+	}
+
+	@Override
+	public void updateStructure(StructureNode[] structure) throws JSONException {
+		this.structure.update(structure);
 	}
 }

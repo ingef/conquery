@@ -1,25 +1,20 @@
 package com.bakdata.conquery.models.auth;
 
-import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import java.io.IOException;
-import java.util.NoSuchElementException;
-
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.SecurityContext;
-
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.realm.AuthorizingRealm;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.User;
-
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.realm.AuthorizingRealm;
+
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.SecurityContext;
+import java.io.IOException;
 
 /**
  * This filter hooks into dropwizard's request handling to extract and process
@@ -63,24 +58,6 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 		@Override
 		protected DefaultAuthFilter newInstance() {
 			return new DefaultAuthFilter(tokenExtractor);
-			
-//			TokenExtractor tokenParser = null;
-//			try {
-//				for(Class<?> parser : CPSTypeIdResolver.listImplementations(TokenExtractor.class)) {
-//					try {
-//						tokenParser = (TokenExtractor) parser.getConstructor().newInstance();
-//					} catch (Exception e) {
-//						log.error("Could not create an instance of {}", parser, e);
-//					}
-//				}
-//			} catch(NoSuchElementException e) {
-//				throw new RuntimeException("No TokenParser found or none of the provided ones could be instanciated.", e);
-//			}
-//			
-//			if(tokenParser == null) {
-//				throw new RuntimeException("No TokenParser found or none of the provided ones could be instanciated.");
-//			}
-//			return new DefaultAuthFilter(tokenParser);
 		}
 	}
 
