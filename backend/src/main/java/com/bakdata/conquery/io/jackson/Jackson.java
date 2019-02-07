@@ -49,7 +49,7 @@ public class Jackson {
 				.registerModule(new JavaTimeModule())
 				.registerModule(new ParameterNamesModule())
 				.registerModule(new GuavaModule())
-				.registerModule(new ConquerySerializersModule())
+				.registerModule(ConquerySerializersModule.INSTANCE)
 				.setSerializationInclusion(Include.NON_NULL)
 				//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
 				.setInjectableValues(new MutableInjectableValues());

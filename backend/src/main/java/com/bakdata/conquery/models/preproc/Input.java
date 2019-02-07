@@ -31,16 +31,16 @@ public class Input implements Serializable {
 			LocalDate.class,
 			Range.class
 		).map(Class::getName).toArray(String[]::new);
-	
+
+	@NotNull @ExistingFile
+	private File sourceFile;
+	private String filter;
 	@Valid
 	private AutoOutput autoOutput;
 	@NotNull @Valid
 	private Output primary;
 	@Valid
 	private Output[] output;
-	@NotNull @ExistingFile
-	private File sourceFile;
-	private String filter;
 	
 	@JsonIgnore
 	private transient GroovyPredicate script;

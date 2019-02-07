@@ -177,7 +177,7 @@ public class SuccinctTrie implements Iterable<String> {
 	}
 
 	/*
-	 * select(n) - returns the position of the nth 0 in the bit store.
+	 * select0(n) - returns the position of the nth 0 in the bit store.
 	 */
 
 	private int select0(int positionForZero) {

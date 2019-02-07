@@ -20,7 +20,7 @@ public class FENode {
 	private String label;
 	private String description;
 	private Boolean active;
-	private ConceptElementId[] children;
+	private IId<?>[] children;
 	private List<KeyValue> additionalInfos;
 	private long matchingEntries;
 	private Range<LocalDate> dateRange;

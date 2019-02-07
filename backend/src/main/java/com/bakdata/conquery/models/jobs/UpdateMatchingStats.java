@@ -47,13 +47,16 @@ public class UpdateMatchingStats extends Job {
 					
 					for(int event=0;event<block.size();event++) {
 						if(concept instanceof TreeConcept) {
-							ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(cBlock.getMostSpecificChildren().get(event));
-							
-							while(e != null) {
-								messages
-									.computeIfAbsent(e.getId(), (x)->new MatchingStats.Entry())
-									.addEvent(table, block, cBlock, event);
-								e = e.getParent();
+							int[] localIds = cBlock.getMostSpecificChildren().get(event);
+							if(localIds != null) {
+								ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
+								
+								while(e != null) {
+									messages
+										.computeIfAbsent(e.getId(), (x)->new MatchingStats.Entry())
+										.addEvent(table, block, cBlock, event);
+									e = e.getParent();
+								}
 							}
 						}
 						else {
@@ -65,13 +68,11 @@ public class UpdateMatchingStats extends Job {
 					
 					sub.report(1);
 				}
-				
-				for(Entry<ConceptElementId<?>, MatchingStats.Entry> e : messages.entrySet()) {
-					w.send(new UpdateElementMatchingStats(w.getInfo().getId(), e.getKey(), e.getValue()));
-				}
+				w.send(new UpdateElementMatchingStats(w.getInfo().getId(), messages));
 			}
 			sub.done();
 		}
+		progressReporter.done();
 	}
 
 	@Override

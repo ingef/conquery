@@ -1,14 +1,15 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
-
-import javax.validation.Validator;
-
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.exceptions.JSONException;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
+
+import javax.validation.Validator;
+import java.io.File;
 
 public interface NamespaceStorage extends NamespacedStorage {
 	
@@ -21,9 +22,14 @@ public interface NamespaceStorage extends NamespacedStorage {
 			return null;
 		}
 
-		return new NamespaceStorageImpl(validator, config, directory);
+		NamespaceStorage storage = new NamespaceStorageImpl(validator, config, directory);
+		storage.loadData();
+		return storage;
 	}
 	
 	MasterMetaStorage getMetaStorage();
 	void setMetaStorage(@NonNull MasterMetaStorage storage);
+	
+	StructureNode[] getStructure();
+	void updateStructure(StructureNode[] structure) throws JSONException;
 }

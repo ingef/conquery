@@ -33,7 +33,7 @@ public class IntegrationUtils {
 			MandatorId [] rolesInjected = rUser.getRolesInjected();
 			
 			for(MandatorId mandatorId : rolesInjected) {
-				user.addRole(storage.getMandator(mandatorId));
+				user.addMandatorLocal(storage.getMandator(mandatorId));
 			}
 			storage.addUser(user);
 		}
@@ -47,7 +47,7 @@ public class IntegrationUtils {
 				owner = storage.getMandator((MandatorId) ownerId);
 			}
 			
-			owner.addPermission(permission);
+			owner.addPermission(storage, permission);
 		}
 	}
 	

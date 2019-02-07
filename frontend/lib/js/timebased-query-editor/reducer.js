@@ -12,7 +12,7 @@ import {
 } from '../common/constants/timebasedQueryOperatorTypes';
 
 import {
-  FIRST,
+  EARLIEST,
 
   TIMEBASED_TIMESTAMP_TYPES
 } from '../common/constants/timebasedQueryTimestampTypes';
@@ -76,7 +76,7 @@ const setNode = (state, action, node) => {
   const attributes = {
     [`result${resultIdx}`]: {
       ...node,
-      timestamp: node.timestamp || FIRST
+      timestamp: node.timestamp || EARLIEST
     }
   };
 

@@ -15,6 +15,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id="NEGATION", base=CQElement.class)
+@Setter
+@Getter
 public class CQNegation implements CQElement {
 
 	@Valid @NotNull @Getter @Setter
