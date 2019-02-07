@@ -3,8 +3,28 @@
 <@layout.layout>
 	<div class="row">
 		<div class="col">
+		<h2>${c.self.label}</h2>
 		<h3>Dataset Permissions</h3>
 		<@permissionTable.permissionTable permissions=c.datasetPermissions />
+		
+		<form action="/admin/permissions/dataset" method="POST" enctype="multipart/form-data">
+			<h4>New Dataset Permission</h4>
+			<div class="form-row">
+  				<div class="form-group col">
+					<label for="permissionowner_id">Owner:</label>
+					<input type="text" id="permissionowner_id"  class="form-control" name="permissionowner_id" value="${c.self.id}" readonly>
+				</div>
+  				<div class="form-group col">
+					<label for="dataset_id">Dataset:</label>
+					<select class="form-control" id="dataset_id" name="dataset_id">
+						<#list c.datasets as dataset>
+							<option value="${dataset.id}">${dataset.label}</option>
+						</#list>
+					</select>
+				</div>
+				<input class="btn btn-primary" type="submit"/>
+			</div> 
+		</form>
 		<h3>Query Permissions</h3>
 		<@permissionTable.permissionTable permissions=c.queryPermissions />
 		<h3>Other Permissions</h3>
