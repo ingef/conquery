@@ -1,19 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import java.io.File;
-import java.net.InetSocketAddress;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
-import javax.validation.Validator;
-
-import org.apache.mina.core.RuntimeIoException;
-import org.apache.mina.core.future.ConnectFuture;
-import org.apache.mina.core.service.IoHandler;
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.transport.socket.nio.NioSocketConnector;
-
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -36,13 +22,24 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.apache.mina.core.RuntimeIoException;
+import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.service.IoHandler;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.transport.socket.nio.NioSocketConnector;
+
+import javax.validation.Validator;
+import java.io.File;
+import java.net.InetSocketAddress;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j @Getter
 public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed {
@@ -83,7 +80,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			30, 5, TimeUnit.SECONDS
 		);
 		
-		scheduler.scheduleAtFixedRate(() -> jobManager.addSlowJob(new UpdateMatchingStats(workers)), 30, 5, TimeUnit.MINUTES);
+		scheduler.scheduleAtFixedRate(() -> jobManager.addSlowJob(new UpdateMatchingStats(workers)), 30, 300, TimeUnit.SECONDS);
 
 		this.config = config;
 		validator = environment.getValidator();

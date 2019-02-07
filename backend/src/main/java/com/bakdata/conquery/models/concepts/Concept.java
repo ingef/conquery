@@ -1,13 +1,5 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-
-import javax.validation.Valid;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -16,10 +8,16 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import javax.validation.Valid;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -33,8 +31,6 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	private boolean hidden = false;
 	@JsonManagedReference @Valid @Getter @Setter
 	private List<CONNECTOR> connectors=Collections.emptyList();
-	@JsonIgnore @Setter @Getter
-	private StructureNode structureParent;
 	@NotNull @Getter @Setter
 	private DatasetId dataset;
 	

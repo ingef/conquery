@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.concepts.tree;
 
-import java.util.List;
-
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.MatchingStats;
 import com.bakdata.conquery.models.identifiable.Named;
@@ -9,7 +7,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
-import lombok.NonNull;
+import java.util.List;
 
 public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Named<ID> {
 
@@ -27,17 +25,4 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	public void setChildIndex(TreeChildPrefixIndex childIndex);
 	
 	public MatchingStats getMatchingStats();
-	
-	public default ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids) {
-		return getElementByLocalId(ids, 0);
-	}
-	
-	public default ConceptTreeNode<?> getElementByLocalId(@NonNull int[] ids, int index) {
-		if(index == ids.length ) {
-			return this;
-		}
-		else {
-			return getChildren().get(ids[index]).getElementByLocalId(ids, index+1);
-		}
-	}
 }

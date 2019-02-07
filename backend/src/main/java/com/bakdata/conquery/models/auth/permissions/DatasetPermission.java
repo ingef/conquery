@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import java.util.EnumSet;
+import java.util.Set;
 import java.util.UUID;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -10,12 +10,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 @CPSType(id="DATASET_PERMISSION", base=ConqueryPermission.class)
 public class DatasetPermission extends IdentifiableInstancePermission<DatasetId> {
-	public DatasetPermission(PermissionOwnerId<?> ownerId, EnumSet<Ability> abilities, DatasetId instanceId) {
+	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId instanceId) {
 		super(ownerId, abilities, instanceId);
 	}
 
 	@JsonCreator
-	public DatasetPermission(PermissionOwnerId<?> ownerId, EnumSet<Ability> abilities,  DatasetId instanceId, UUID jsonId) {
+	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities,  DatasetId instanceId, UUID jsonId) {
 		super(ownerId, abilities, instanceId, jsonId);
 	}
 

@@ -1,5 +1,15 @@
 package com.bakdata.conquery.io.cps;
 
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
+import com.fasterxml.jackson.databind.DatabindContext;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
+import com.fasterxml.jackson.databind.type.TypeFactory;
+import io.github.classgraph.ClassGraph;
+import io.github.classgraph.ScanResult;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -9,22 +19,12 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.fasterxml.jackson.databind.DatabindContext;
-import com.fasterxml.jackson.databind.JavaType;
-import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
-import com.fasterxml.jackson.databind.type.TypeFactory;
-
-import io.github.classgraph.ClassGraph;
-import io.github.classgraph.ScanResult;
-import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 public class CPSTypeIdResolver implements TypeIdResolver {
 
 	private static HashMap<Class<?>, CPSMap> globalMap;
+
+	public static final ScanResult SCAN_RESULT;
 	
 	private JavaType baseType;
 	private CPSMap cpsMap;
@@ -49,7 +49,8 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 		log.info("Scanning Classpath");
 		//scan classpaths for annotated child classes
 		
-		ScanResult scanRes = new ClassGraph()
+		SCAN_RESULT = new ClassGraph()
+			.enableClassInfo()
 			.enableAnnotationInfo()
 			//blacklist some packages that contain large libraries
 			.blacklistPackages(
@@ -61,10 +62,10 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			)
 			.scan();
 		
-		log.info("Scanned: {} classes in classpath", scanRes.getAllClasses().size());
+		log.info("Scanned: {} classes in classpath", SCAN_RESULT.getAllClasses().size());
 		Set<Class<?>> types = new HashSet<>();
-		types.addAll(scanRes.getClassesWithAnnotation(CPSTypes.class.getName()).loadClasses());
-		types.addAll(scanRes.getClassesWithAnnotation(CPSType.class.getName()).loadClasses());
+		types.addAll(SCAN_RESULT.getClassesWithAnnotation(CPSTypes.class.getName()).loadClasses());
+		types.addAll(SCAN_RESULT.getClassesWithAnnotation(CPSType.class.getName()).loadClasses());
 		
 		globalMap = new HashMap<>();
 		for(Class<?> type:types) {
@@ -85,7 +86,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			}
 		}
 		
-		List<Class<?>> bases = scanRes.getClassesWithAnnotation(CPSBase.class.getName()).loadClasses();
+		List<Class<?>> bases = SCAN_RESULT.getClassesWithAnnotation(CPSBase.class.getName()).loadClasses();
 		for(Class<?> b:bases) {
 			CPSMap map = globalMap.get(b);
 			if(map==null) {

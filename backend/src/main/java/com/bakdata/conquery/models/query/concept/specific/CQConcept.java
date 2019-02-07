@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
+import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
 import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -47,6 +48,7 @@ public class CQConcept implements CQElement {
 	private List<CQTable> tables;
 	@Valid @NotNull
 	private List<Select> select = Collections.emptyList();
+	private boolean excludeFromTimeAggregation = false;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
@@ -79,10 +81,12 @@ public class CQConcept implements CQElement {
 			//add aggregators
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, t.getSelect()));
-			aggregators.add(new SpecialDateUnionAggregatorNode(
+			if(!excludeFromTimeAggregation) {
+				aggregators.add(new SpecialDateUnionAggregatorNode(
 					t.getResolvedConnector().getTable().getId(),
-					(SpecialDateUnion) plan.getAggregators().get(0)
-			));
+					plan.getIncluded()
+				));
+			}
 			
 			tableNodes.add(
 				new ConceptNode(
@@ -94,7 +98,7 @@ public class CQConcept implements CQElement {
 			);
 		}
 		
-		return AndNode.of(tableNodes);
+		return OrNode.of(tableNodes);
 	}
 
 	private QPNode conceptChild(List<FilterNode<?, ?>> filters, List<QPNode> aggregators) {
