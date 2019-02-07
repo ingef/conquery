@@ -17,6 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.Streams;
 
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 @CPSBase
@@ -65,6 +66,7 @@ public abstract class IdMappingConfig {
 
 	}
 
+	@NonNull
 	public IdAccessor mappingFromCsvHeader(String[] csvHeader) {
 		for (IdMappingAccessor accessor : getIdAccessors()) {
 			if (accessor.canBeApplied(Arrays.asList(csvHeader))) {

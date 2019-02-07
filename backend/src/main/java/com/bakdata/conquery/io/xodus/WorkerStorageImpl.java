@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -44,7 +45,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override public Dictionary getPrimaryDictionary() {
-		return null;
+		return getDictionary(ConqueryConstants.getPrimaryDictionary(dataset.get()));
 	}
 
 	@Override

@@ -93,6 +93,8 @@ public class QueryTest extends AbstractQueryEngineTest {
 		for(File queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
 
+			support.getConfig().getCsv().setSkipHeader(false);
+
 			String[][] data = CSV.streamContent(support.getConfig().getCsv(), queryResults, log)
 				.toArray(String[][]::new);
 

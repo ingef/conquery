@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.identifiable.mapping.SimpleIdMappingConfig;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -56,6 +55,7 @@ import lombok.extern.slf4j.Slf4j;
 		Int2ObjectMap<CDateSet> includedEntities = new Int2ObjectOpenHashMap<>();
 
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
+
 		IdAccessor idAccessor = mapping.mappingFromCsvHeader(values[0]);
 
 		// ignore the first row, because this is the header
@@ -79,8 +79,8 @@ import lombok.extern.slf4j.Slf4j;
 						throw new RuntimeException(e);
 					}
 				}).orElseGet(CDateSet::createFull);
-
-				includedEntities.put(primary.getId(idAccessor.apply(row)) , Objects.requireNonNull(dates));
+				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
+				includedEntities.put(primary.getId(idAccessor.apply(IdAccessor.removeNonIdFields(row, format))) , Objects.requireNonNull(dates));
 			}
 			catch (Exception e) {
 				log.warn("failed to parse dates from " + Arrays.toString(row), e);

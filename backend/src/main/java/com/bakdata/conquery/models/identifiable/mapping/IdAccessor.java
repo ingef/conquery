@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 
 import lombok.RequiredArgsConstructor;
 
@@ -13,6 +14,17 @@ public class IdAccessor {
 	/*package*/ final IdMappingAccessor accessor;
 	/*package*/ final Map<Integer, Integer> applicationMapping;
 	private NamespaceStorage storage;
+
+	public static String[] removeNonIdFields(String[] csvLine, List<CQExternal.FormatColumn> formatColumns){
+		List<String> result = new ArrayList<>();
+		for (int i = 0; i < csvLine.length; i++) {
+			if(formatColumns.get(i) == CQExternal.FormatColumn.ID){
+				result.add(csvLine[i]);
+			}
+		}
+
+		return result.toArray(new String[0]);
+	}
 
 	public String apply(String[] csvLine) {
 		List<String> reorderedCsvLine = reorder(csvLine);

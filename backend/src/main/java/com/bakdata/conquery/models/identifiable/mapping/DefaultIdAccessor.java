@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
-import java.util.Map;
 
 /*package*/ class DefaultIdAccessor extends IdAccessor {
 

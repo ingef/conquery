@@ -12,9 +12,6 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.PackageVersion;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
-
 public class ConquerySerializersModule extends SimpleModule {
 
 	private static final long serialVersionUID = 1L;
