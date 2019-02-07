@@ -6,44 +6,49 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "SAME",
-      "sampler": "EARLIEST",
       "index": {
-        "ids": [
-          "${dataset}.geschlecht_select"
-        ],
-        "type": "CONCEPT",
-        "label": "Geschlecht SELECT",
-        "tables": [
-          {
-            "id": "${dataset}.geschlecht_select.geschlecht_connector",
-            "filters": [
-              {
-                "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
-                "type": "SELECT",
-                "value": "f"
-              }
-            ]
-          }
-        ]
+        "sampler": "EARLIEST",
+        "child": {
+          "ids": [
+            "${dataset}.geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "${dataset}.geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "SELECT",
+                  "value": "f"
+                }
+              ]
+            }
+          ]
+        }
       },
       "preceding": {
-        "ids": [
-          "${dataset}.geschlecht_select"
-        ],
-        "type": "CONCEPT",
-        "label": "Geschlecht SELECT",
-        "tables": [
-          {
-            "id": "${dataset}.geschlecht_select.geschlecht_connector",
-            "filters": [
-              {
-                "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
-                "type": "SELECT",
-                "value": "m"
-              }
-            ]
-          }
-        ]
+        "sampler": "EARLIEST",
+        "child": {
+          "ids": [
+            "${dataset}.geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "Geschlecht SELECT",
+          "tables": [
+            {
+              "id": "${dataset}.geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "SELECT",
+                  "value": "m"
+                }
+              ]
+            }
+          ]
+        }
       }
     }
   },
