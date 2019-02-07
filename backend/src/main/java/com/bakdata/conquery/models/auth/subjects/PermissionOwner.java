@@ -208,20 +208,12 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * For keeping local permissions in sync with stored permissions.
 	 * Is used by the storage.
 	 */
-	public void addPermissionLocal(ConqueryPermission permission) {
+	public synchronized void addPermissionLocal(ConqueryPermission permission) {
 		ConqueryPermission ownedPermission = permission;
 		if(!permission.getOwnerId().equals(this.getId())) {
 			ownedPermission = permission.withOwner(this.getId());
 		}
 		permissions.add(ownedPermission);
-	}
-
-	/**
-	 * For keeping local permissions in sync with stored permissions.
-	 * Is used by the storage.
-	 */
-	public void removePermissionLocal(ConqueryPermission permission) {
-		permissions.remove(permission);
 	}
 	
 	/**
@@ -231,7 +223,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return Returns the added Permission (Id might changed when the owner changed or
 	 * permissions are aggregated
 	 */
-	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException{
+	public synchronized ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException{
 		ConqueryPermission ownedPermission = permission;
 		if(!permission.getOwnerId().equals(this.getId())) {
 			ownedPermission = permission.withOwner(this.getId());
@@ -265,8 +257,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @param storage The storage in which the permission persists.
 	 * @param permission The permission to be deleted.
 	 */
-	public void removePermission(MasterMetaStorage storage, ConqueryPermission permission) {
-		removePermissionLocal(permission);
+	public synchronized void removePermission(MasterMetaStorage storage, ConqueryPermission permission) {
+		permissions.remove(permission);
 		storage.removePermission(permission.getId());
 	}
 	
