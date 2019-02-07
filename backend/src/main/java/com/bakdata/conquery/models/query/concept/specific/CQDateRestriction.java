@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
+import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -37,7 +38,7 @@ public class CQDateRestriction implements CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		QPNode childAgg = child.createQueryPlan(context, plan);
 
-		//insert behind every ConceptAggregator
+		//insert behind every ValidityDateNode
 		List<QPNode> openList = new ArrayList<>();
 
 		openList.add(childAgg);
@@ -46,11 +47,11 @@ public class CQDateRestriction implements CQElement {
 
 		while (i < openList.size()) {
 			QPNode current = openList.get(i);
-			if (current instanceof ConceptNode) {
-				ConceptNode ca = (ConceptNode) current;
-				ca.setChild(new DateRestrictingNode(
+			if (current instanceof ValidityDateNode) {
+				ValidityDateNode validityDateNode = (ValidityDateNode) current;
+				validityDateNode.setChild(new DateRestrictingNode(
 					CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
-					ca.getChild()
+					validityDateNode.getChild()
 				));
 			}
 			else {
