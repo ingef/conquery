@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -101,9 +102,10 @@ public class AdminUIResource {
 	@Path("/permissions/dataset")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postDatasetPermission(
-		@FormDataParam("permissionowner_id") PermissionOwnerId<?> ownerId,
-		@FormDataParam("dataset_id") DatasetId datasetId) throws JSONException {
-		processor.createDatasetPermission(ownerId, datasetId);
+		@NotNull @FormDataParam("permissionowner_id") PermissionOwnerId<?> ownerId,
+		@NotEmpty @FormDataParam("abilities") List<String> abilities,
+		@NotNull @FormDataParam("dataset_id") DatasetId datasetId) throws JSONException {
+		processor.createDatasetPermission(ownerId, abilities, datasetId);
 		return Response.ok().build();
 	}
 

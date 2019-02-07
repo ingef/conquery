@@ -15,6 +15,17 @@
 					<input type="text" id="permissionowner_id"  class="form-control" name="permissionowner_id" value="${c.self.id}" readonly>
 				</div>
   				<div class="form-group col">
+				  <label for="abilities">Abilities:</label>
+					<#list c.abilities as ability>
+						<div class="form-check">
+							<input class="form-check-input" type="checkbox" name="abilities" value="${ability}" id="defaultCheck1">
+							<label class="form-check-label" for="abilities">
+								${ability}
+							</label>
+						</div>
+					</#list>
+				</div>
+  				<div class="form-group col">
 					<label for="dataset_id">Dataset:</label>
 					<select class="form-control" id="dataset_id" name="dataset_id">
 						<#list c.datasets as dataset>

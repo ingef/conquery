@@ -1,7 +1,9 @@
 package com.bakdata.conquery.resources.admin.ui;
 
 import java.util.List;
+import java.util.Set;
 
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -22,6 +24,7 @@ public class FEMandatorContent {
 	public List<QueryPermission> queryPermissions;
 	public List<ConqueryPermission> otherPermissions;
 	
+	public Set<Ability> abilities;
 	public List<Dataset> datasets;
 
 }

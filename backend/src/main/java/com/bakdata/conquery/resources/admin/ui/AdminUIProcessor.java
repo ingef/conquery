@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -15,7 +16,6 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -79,11 +79,13 @@ public class AdminUIProcessor {
 			datasetPermissions,
 			queryPermissions,
 			otherPermissions,
+			Ability.READ.AS_SET,
 			datasets);
 	}
 	
-	public void createDatasetPermission(PermissionOwnerId<?> ownerId, DatasetId datasetId) throws JSONException {
+	public void createDatasetPermission(PermissionOwnerId<?> ownerId, List<String> abilities, DatasetId datasetId) throws JSONException {
 		PermissionOwner<?> owner =  ownerId.getOwner(storage);
-		AuthorizationHelper.addPermission(owner, new DatasetPermission(ownerId, Ability.READ.AS_SET, datasetId), storage);
+		Set<Ability> abilitSet = abilities.stream().map(a -> Ability.valueOf(Ability.class, a)).collect(Collectors.toSet());
+		AuthorizationHelper.addPermission(owner, new DatasetPermission(ownerId, abilitSet, datasetId), storage);
 	}
 }
