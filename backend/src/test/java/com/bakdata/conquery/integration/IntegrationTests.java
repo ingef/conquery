@@ -4,13 +4,20 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
@@ -30,31 +37,41 @@ import com.fasterxml.jackson.databind.JsonNode;
 
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
+import io.github.classgraph.Resource;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class IntegrationTests {
 
 	
-	private static final File DEFAULT_TEST_ROOT = new File("tests/");
+	private static final String DEFAULT_TEST_ROOT = "tests/";
 	
 	@RegisterExtension
 	public static final TestConquery CONQUERY = new TestConquery();
 
 	@TestFactory @Tag(TestTags.INTEGRATION_JSON)
 	public List<DynamicNode> jsonTests() throws IOException {
-		File testRoot = DEFAULT_TEST_ROOT;
-		if(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE) != null)
-			testRoot = new File(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE));
-
+		final String testRoot = Objects.requireNonNullElse(
+			System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
+			DEFAULT_TEST_ROOT
+		);
+		
+		ResourceTree tree = new ResourceTree(null, null);
+		tree.addAll(
+			CPSTypeIdResolver.SCAN_RESULT
+				.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + ".*\\.test\\.json$"))
+		);
 		
 		//collect tests from directory
-		if (testRoot.isDirectory()) {
-			return collectTests(testRoot, testRoot).getChildren().collect(Collectors.toList());
+		if (tree.getChildren().isEmpty()) {
+			log.warn("Could not find tests in {}", testRoot);
+			return Collections.emptyList();
 		}
 		else {
-			log.warn("Could not find test directory {}", testRoot.getAbsolutePath());
-			return Collections.emptyList();
+			return tree.reduce().getChildren().values()
+				.stream()
+				.map(this::collectTests)
+				.collect(Collectors.toList());
 		}
 	}
 	
@@ -85,33 +102,30 @@ public class IntegrationTests {
 			);
 	}
 
-	private static DynamicContainer collectTests(File testRoot, File currentDir) {
+	private DynamicContainer collectTests(ResourceTree currentDir) {
 		List<DynamicNode> list = new ArrayList<>();
 		
-		for(File child : currentDir.listFiles()) {
-			if(child.isDirectory()) {
-				list.add(collectTests(testRoot, child));
+		for(ResourceTree child : currentDir.getChildren().values()) {
+			if(!child.getChildren().isEmpty()) {
+				list.add(collectTests(child));
 			}
-			else if(child.isFile() && isTestSpecFile(child)) {
-				list.add(readTest(child));
+			else if(child.getValue() != null) {
+				list.add(readTest(child.getValue(), child.getName()));
 			}
 		}
 		
 		return dynamicContainer(
 			currentDir.getName(),
-			currentDir.getAbsoluteFile().toURI(),
+			URI.create("classpath:/"+currentDir.getFullName()),
 			list.stream()
 		);
 	}
 
-	private static boolean isTestSpecFile(File file) {
-		return file.isFile() && file.getName().endsWith(".test.json");
-	}
-
-	private static DynamicTest readTest(File testFile) {
-		try {
-			JsonNode node = Jackson.MAPPER.readTree(testFile);
-			String name = testFile.getName();
+	private static DynamicTest readTest(Resource resource, String name) {
+		try(InputStream in = resource.open()) {
+			JsonNode node = Jackson.MAPPER.readTree(in);
+			
+			
 			if(node.get("label") != null)
 				name = node.get("label").asText();
 			
@@ -119,18 +133,29 @@ public class IntegrationTests {
 			
 			return DynamicTest.dynamicTest(
 				name,
-				testFile.getAbsoluteFile().toURI(),
+				resource.getURL().toURI(),
 				new IntegrationTest.Wrapper(CONQUERY, new JsonIntegrationTest(node))
 			);
 		}
 		catch(Exception e) {
-			return DynamicTest.dynamicTest(
-				testFile.getParent(),
-				testFile.getAbsoluteFile().toURI(),
-				() -> {
-					throw e;
-				}
-			);
+			try {
+				return DynamicTest.dynamicTest(
+					name,
+					resource.getURL().toURI(),
+					() -> {
+						throw e;
+					}
+				);
+			}
+			catch (URISyntaxException e1) {
+				log.error("Failed while trying to create errored test", e1);
+				return DynamicTest.dynamicTest(
+					name,
+					() -> {
+						throw e;
+					}
+				);
+			}
 		}
 	}
 }

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.concepts;
 
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
+import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 
 import lombok.AllArgsConstructor;
 
@@ -41,18 +43,27 @@ public class FrontEndConceptBuilder {
 		Map<IId<?>, FENode> roots = new LinkedHashMap<>();
 		//add all real roots
 		for (Concept<?> c : storage.getAllConcepts()) {
-			roots.put(c.getId(), createCTRoot(c));
+			if(!c.isHidden()) {
+				roots.put(c.getId(), createCTRoot(c, storage.getStructure()));
+			}
 		}
 		//add the structure tree
-//		dataset
-//			.streamAllStructureNodes()
-//			.forEach(sn -> roots.put(sn.getId(), createStructureNode(sn)));
+		for(StructureNode sn : storage.getStructure()) {
+			roots.put(sn.getId(), createStructureNode(sn));
+		}
 		root.setConcepts(roots);
 		return root;
 	}
 
-	private static FENode createCTRoot(Concept<?> c) {
+	private static FENode createCTRoot(Concept<?> c, StructureNode[] structureNodes) {
 		MatchingStats matchingStats = c.getMatchingStats();
+		StructureNodeId structureParent = Arrays
+			.stream(structureNodes)
+			.filter(sn->sn.getContainedRoots().contains(c.getId()))
+			.findAny()
+			.map(StructureNode::getId)
+			.orElse(null);
+		
 		FENode n = FENode.builder()
 				.active(c instanceof VirtualConcept)
 				.description(c.getDescription())
@@ -71,7 +82,7 @@ public class FrontEndConceptBuilder {
 								.anyMatch(AbstractSelectFilter.class::isInstance)
 					)
 				)
-				.parent(c.getStructureParent()==null?null:c.getStructureParent().getId())
+				.parent(structureParent)
 				.tables(c
 						.getConnectors()
 						.stream()
@@ -108,10 +119,9 @@ public class FrontEndConceptBuilder {
 				ArrayUtils.addAll(
 					cn.getChildren().stream()
 						.map(IdentifiableImpl::getId)
-						.toArray(ConceptTreeChildId[]::new),
+						.toArray(IId[]::new),
 					cn.getContainedRoots().stream()
-						.map(Concept::getId)
-						.toArray(ConceptTreeChildId[]::new)
+						.toArray(IId[]::new)
 				)
 			)
 			.build();
