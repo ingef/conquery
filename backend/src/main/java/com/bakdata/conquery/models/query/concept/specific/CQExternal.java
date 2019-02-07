@@ -56,7 +56,7 @@ import lombok.extern.slf4j.Slf4j;
 
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
-		IdAccessor idAccessor = mapping.mappingFromCsvHeader(values[0]);
+		IdAccessor idAccessor = mapping.mappingFromCsvHeader(values[0], context.getNamespace().getStorage());
 
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
@@ -80,7 +80,9 @@ import lombok.extern.slf4j.Slf4j;
 					}
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				includedEntities.put(primary.getId(idAccessor.apply(IdAccessor.removeNonIdFields(row, format))) , Objects.requireNonNull(dates));
+				includedEntities.put(
+					primary.getId(idAccessor.apply(IdAccessor.removeNonIdFields(row, format)).getCsvId()),
+					Objects.requireNonNull(dates));
 			}
 			catch (Exception e) {
 				log.warn("failed to parse dates from " + Arrays.toString(row), e);

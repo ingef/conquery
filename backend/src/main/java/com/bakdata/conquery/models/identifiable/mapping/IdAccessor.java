@@ -16,7 +16,7 @@ public class IdAccessor {
 	private final IdMappingAccessor accessor;
 	@Getter
 	private final Map<Integer, Integer> applicationMapping;
-	private NamespaceStorage storage;
+	private final NamespaceStorage storage;
 
 	public static String[] removeNonIdFields(String[] csvLine, List<CQExternal.FormatColumn> formatColumns){
 		List<String> result = new ArrayList<>();
@@ -29,28 +29,27 @@ public class IdAccessor {
 		return result.toArray(new String[0]);
 	}
 
-	public String apply(String[] csvLine) {
-		List<String> reorderedCsvLine = reorder(csvLine);
-		List<String> partOfId = this.accessor.extract(reorderedCsvLine);
-		for (Map.Entry<String, List<String>> data : storage.getIdMapping().entrySet()) {
-			if (accessor.extract(data.getValue()).equals(partOfId)) {
-				return data.getKey();
-			}
+	public CsvId apply(String[] csvLine) {
+		String[] reorderedCsvLine = reorder(csvLine);
+		String[] partOfId = this.accessor.extract(reorderedCsvLine);
+		CsvId csvId = storage.getIdMapping().getExternalIdPartCsvIdMap().get(new ExternalIdPart(this.accessor, partOfId));
+		if(csvId != null){
+			return csvId;
 		}
 		// fallback: we join everything relevant together
-		return String.join("|", partOfId);
+		return CsvId.getFallbackCsvId(partOfId);
 	}
 
 	/*
 	* Reorder takes a line from an uploaded CSV an reorders the id columns, to match the specified format.
 	* @returns Outputs a csvLine like the one in the original uploaded id mapping CSV
  	*/
-	private List<String> reorder(String[] csvLine) {
-		List<String> reorderedCsvLine = new ArrayList<>(accessor.getMapping().getHeaderSize());
+	private String[] reorder(String[] csvLine) {
+		String[] reorderedCsvLine = new String[accessor.getMapping().getHeaderSize()];
 		for (int i = 0; i < csvLine.length; i++) {
 			int indexInHeader = applicationMapping.get(i);
 			if (indexInHeader != -1) {
-				reorderedCsvLine.set(indexInHeader, csvLine[i]);
+				reorderedCsvLine[indexInHeader] = csvLine[i];
 			}
 		}
 		return reorderedCsvLine;

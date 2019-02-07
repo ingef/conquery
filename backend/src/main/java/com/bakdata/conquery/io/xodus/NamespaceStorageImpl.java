@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.mapping.PersistingIdMap;
 import com.bakdata.conquery.util.functions.Collector;
 
 import lombok.Getter;
@@ -26,7 +27,7 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	
 	@Getter @Setter @NonNull
 	private MasterMetaStorage metaStorage;
-	protected SingletonStore<Map> idMapping;
+	protected SingletonStore<PersistingIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
@@ -40,12 +41,13 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	}
 
 	@Override
-	public Map getIdMapping() {
+	public PersistingIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
+
 	@Override
-	public void updateIdMapping(Map idMapping) throws JSONException {
+	public void updateIdMapping(PersistingIdMap idMapping) throws JSONException {
 		this.idMapping.update(idMapping);
 	}
 

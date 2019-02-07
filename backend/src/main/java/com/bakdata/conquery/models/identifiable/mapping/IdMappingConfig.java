@@ -1,16 +1,15 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.csv.CSV;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -26,24 +25,29 @@ import lombok.RequiredArgsConstructor;
 public abstract class IdMappingConfig {
 
 	public void updateCsvData(CSV csvData, Namespace namespace) throws IOException, JSONException {
-		List<Pair<String, List<String>>> data = new ArrayList<>();
 		Iterator<String[]> csvIterator = csvData.iterateContent(null);
 
-		// Ensure header matches the expected Header
+		PersistingIdMap mapping = namespace.getStorage().getIdMapping();
+
 		if (!Streams.zip(this.getHeader().stream(), Arrays.stream(csvIterator.next()), String::equalsIgnoreCase).allMatch(t -> t)) {
 			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
 		}
 
-		// first column is the external key, the rest is part of the print key
-		csvIterator.forEachRemaining(s -> data.add(Pair.of(s[0], Arrays.asList(Arrays.copyOfRange(s, 1, getHeaderSize())))));
-		checkIntegrity(data);
-		Map mapping = namespace.getStorage().getIdMapping();
-		for (Pair<String, List<String>> entry : data) {
-			mapping.put(entry.getKey(), entry.getValue());
+		csvIterator.forEachRemaining(
+			// first column is the external key, the rest is part of the print key
+			(s)-> mapping.getCsvIdToExternalIdMap().put(new CsvId(s[0]), new ExternalId(Arrays.copyOfRange(s,1,s.length)))
+		);
+
+		checkIntegrity(mapping.getCsvIdToExternalIdMap());
+		for (IdMappingAccessor accessor : getIdAccessors()) {
+			accessor.updateMapping(namespace.getStorage().getIdMapping());
 		}
-
 		namespace.getStorage().updateIdMapping(mapping);
+	}
 
+	@JsonIgnore
+	public Integer getHeaderSize() {
+		return getHeader().size();
 	}
 
 	@JsonIgnore
@@ -55,37 +59,36 @@ public abstract class IdMappingConfig {
 	@JsonIgnore
 	abstract public List<String> getHeader();
 
-	public String[] toExternal(String csvId, Namespace namespace) {
-		Map<String, List<String>> mapping = namespace.getStorage().getIdMapping();
+	public ExternalId toExternal(CsvId csvId, Namespace namespace) {
+		PersistingIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null){
-			return mapping.get(csvId).toArray(new String[0]);
+			return mapping.getCsvIdToExternalIdMap().get(csvId);
 		}
 		else {
-			return new String[]{csvId};
+			return ExternalId.fromCsvId(csvId);
 		}
 
 	}
 
 	@NonNull
-	public IdAccessor mappingFromCsvHeader(String[] csvHeader) {
+	public IdAccessor mappingFromCsvHeader(String[] csvHeader, NamespaceStorage namespaceStorage) {
 		for (IdMappingAccessor accessor : getIdAccessors()) {
 			if (accessor.canBeApplied(Arrays.asList(csvHeader))) {
-				return accessor.getApplicationMapping(Arrays.asList(csvHeader));
+				return accessor.getApplicationMapping(Arrays.asList(csvHeader), namespaceStorage);
 			}
 		}
 		return new DefaultIdAccessor();
 	}
 
-	private void checkIntegrity(List<Pair<String, List<String>>> data) {
-		// check if all csv id's are unique
-		long distinctSize = data.stream().map(Pair::getKey).distinct().count();
-		if (distinctSize != data.size()) {
-			throw new IllegalArgumentException("The inserted csv ids are not unique");
-		}
 
+	/**
+	 * Checks if the given CsvContent produces unique results in perspective to all IdMappinAccessors.
+	 * @param data Map of CsvId to External Ids as read from the given CSV
+	 */
+	private void checkIntegrity(Map<CsvId,ExternalId> data) {
 		// check that each idMappingAccessor leads to at most one tuple
 		for (IdMappingAccessor idMappingAccessor : getIdAccessors()) {
-			distinctSize = data.stream().map(p -> idMappingAccessor.extract(p.getValue())).distinct().count();
+			long distinctSize = data.values().stream().map(p -> idMappingAccessor.extract(p.getExternalId())).distinct().count();
 			// check if we still have the same size as before
 			if (distinctSize != data.size()) {
 				throw new IllegalArgumentException("The inserted print ids are not unique respective to the idMapping Accessor "
@@ -93,11 +96,5 @@ public abstract class IdMappingConfig {
 			}
 		}
 	}
-
-	@JsonIgnore
-	public Integer getHeaderSize() {
-		return getHeader().size();
-	}
-
 }
 

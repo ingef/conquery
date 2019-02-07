@@ -9,6 +9,9 @@ import javax.validation.Validator;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.mapping.CsvId;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistingIdMap;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -39,6 +42,6 @@ public interface NamespaceStorage extends NamespacedStorage {
 	StructureNode[] getStructure();
 	void updateStructure(StructureNode[] structure) throws JSONException;
 	
-	Map<String, List<String>> getIdMapping();
-	void updateIdMapping(Map idMapping) throws JSONException;
+	PersistingIdMap getIdMapping();
+	void updateIdMapping(PersistingIdMap idMap) throws JSONException;
 }
