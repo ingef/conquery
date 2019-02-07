@@ -27,6 +27,7 @@ import lombok.Setter;
 import javax.validation.Validator;
 import java.io.File;
 import java.util.Objects;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {

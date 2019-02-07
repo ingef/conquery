@@ -97,7 +97,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 			support.getConfig().getCsv().setSkipHeader(false);
 
-			String[][] data = CSV.streamContent(support.getConfig().getCsv(), queryResults, log)
+			String[][] data = CSV.streamContent(support.getConfig().getCsv(), queryResults.stream(), log)
 				.toArray(String[][]::new);
 
 			ConceptQuery q = new ConceptQuery();

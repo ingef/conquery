@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.xodus;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
