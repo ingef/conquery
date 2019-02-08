@@ -3,10 +3,22 @@ package com.bakdata.conquery.models.common;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
+import java.time.LocalDate;
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.primitives.Ints;
 
 
 class RangeTest {
@@ -89,5 +101,40 @@ class RangeTest {
 
 		assertThat(Range.of(5, 7).span(Range.exactly(6)))
 				.isEqualTo(Range.of(5, 7));
+	}
+	
+	public static List<Arguments> deserialize() {
+		return Arrays.asList(
+			Arguments.of(
+				"{\"min\":\"2017-01-01\", \"max\":\"2017-01-01\"}", 
+				new Range<>(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 1)), 
+				CDateRange.of(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 1))
+			),
+			Arguments.of(
+				"{\"min\":\"2017-01-01\"}", 
+				new Range<>(LocalDate.of(2017, 1, 1), null), 
+				CDateRange.atLeast(LocalDate.of(2017, 1, 1))
+			)
+			,
+			Arguments.of(
+				"{\"max\":\"2017-01-01\"}", 
+				new Range<>(null, LocalDate.of(2017, 1, 1)), 
+				CDateRange.atMost(LocalDate.of(2017, 1, 1))
+			)
+		);
+	}
+	
+	@ParameterizedTest(name="{0}") @MethodSource
+	public void deserialize(String json, Range<LocalDate> expected, CDateRange expectedCDateRange) throws IOException {
+		ObjectReader reader = Jackson.MAPPER.readerFor(
+			Jackson.MAPPER.getTypeFactory().constructParametricType(Range.class, LocalDate.class)
+		);
+		Range<LocalDate> range = reader.readValue(json);
+		assertThat(range).isEqualTo(expected);
+		assertThat(range).isEqualToComparingFieldByFieldRecursively(expected);
+		
+		CDateRange cDateRange = CDateRange.of(range);
+		assertThat(cDateRange).isEqualTo(expectedCDateRange);
+		assertThat(cDateRange).isEqualToComparingFieldByFieldRecursively(expectedCDateRange);
 	}
 }
