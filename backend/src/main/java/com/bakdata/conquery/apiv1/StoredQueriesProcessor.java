@@ -1,8 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,7 +21,13 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import jersey.repackaged.com.google.common.collect.Iterators;
+import lombok.extern.slf4j.Slf4j;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
+
+@Slf4j
 public class StoredQueriesProcessor {
 
 	private final Namespaces namespaces;
@@ -35,7 +38,7 @@ public class StoredQueriesProcessor {
 
 	public List<SQStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
 		Collection<ManagedQuery> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllQueries();
-		
+
 		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(mq, URLBuilder.fromRequest(req))).collect(Collectors.toList());
 	}
 
@@ -58,23 +61,24 @@ public class StoredQueriesProcessor {
 			storage.updateQuery(query);
 		} else if (patch.has("shared")) {
 			authorize(user, queryId, Ability.SHARE);
-			if(patch.get("shared").asBoolean()) {
-				for(Mandator mandator : user.getRoles()) {
-					// add query execution permissions to mandators
-					addPermission(mandator, new QueryPermission(null, AbilitySets.QUERY_EXECUTOR, queryId), storage);
+			QueryPermission queryPermission = new QueryPermission(null, AbilitySets.QUERY_EXECUTOR, queryId);
+			boolean shared = patch.get("shared").asBoolean();
+			user.getRoles().forEach((Mandator mandator) -> {
+				try {
+					if (shared)
+						addPermission(mandator, queryPermission, storage);
+					else
+						removePermission(mandator, queryPermission, storage);
+				} catch (JSONException e) {
+					log.error("", e);
 				}
-			} else {
-				for(Mandator mandator : user.getRoles()) {
-					// remove query execution permissions to mandators
-					removePermission(mandator, new QueryPermission(null, AbilitySets.QUERY_EXECUTOR, queryId), storage);
-				}
-			}
-		} 
+			});
+		}
 	}
 
 	public SQStatus getQueryWithSource(Dataset dataset, ManagedQueryId queryId) {
 		ManagedQuery query = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getQuery(queryId);
-		
+
 		return SQStatus.buildFromQuery(query);
 	}
 
