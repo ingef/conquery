@@ -6,6 +6,7 @@ import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
@@ -47,16 +48,16 @@ public class QueryManager {
 		}
 	}
 
-	public ManagedQuery createQuery(IQuery query) throws JSONException {
-		return createQuery(query, UUID.randomUUID());
+	public ManagedQuery createQuery(IQuery query, User user) throws JSONException {
+		return createQuery(query, UUID.randomUUID(), user);
 	}
 	
-	public ManagedQuery createQuery(IQuery query, UUID queryId) throws JSONException {
+	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) throws JSONException {
 		query = query.resolve(new QueryResolveContext(
 			namespace.getStorage().getMetaStorage(),
 			namespace
 		));
-		ManagedQuery managed = new ManagedQuery(query, namespace);
+		ManagedQuery managed = new ManagedQuery(query, namespace, user);
 		managed.setQueryId(queryId);
 		namespace.getStorage().getMetaStorage().addQuery(managed);
 		queries.add(managed);

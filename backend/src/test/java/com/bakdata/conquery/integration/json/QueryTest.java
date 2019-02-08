@@ -105,7 +105,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			ConceptQuery q = new ConceptQuery();
 			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 			
-			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId);
+			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId, null);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getStatus() == QueryStatus.FAILED) {
