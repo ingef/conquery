@@ -1,24 +1,17 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.mapping.CsvId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistingIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
-
-import javax.validation.Validator;
-import java.io.File;
 
 public interface NamespaceStorage extends NamespacedStorage {
 	
@@ -42,6 +35,6 @@ public interface NamespaceStorage extends NamespacedStorage {
 	StructureNode[] getStructure();
 	void updateStructure(StructureNode[] structure) throws JSONException;
 	
-	PersistingIdMap getIdMapping();
-	void updateIdMapping(PersistingIdMap idMap) throws JSONException;
+	PersistentIdMap getIdMapping();
+	void updateIdMapping(PersistentIdMap idMap) throws JSONException;
 }

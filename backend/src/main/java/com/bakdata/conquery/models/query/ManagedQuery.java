@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvId;
+import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
@@ -129,10 +129,10 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 				.stream()
 				.filter(ContainedEntityResult.class::isInstance)
 				.map(ContainedEntityResult.class::cast)
-				.filter(cer -> mappingConfig.toExternal(new CsvId(dict.getElement(cer.getEntityId())), namespace) != null)
+				.filter(cer -> mappingConfig.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace) != null)
 				.map(cer -> Joiner.on(',')
 					.join(mappingConfig
-						.toExternal(new CsvId(dict.getElement(cer.getEntityId())), namespace)
+						.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace)
 						.getExternalId()) + "," + Joiner.on(',')
 					.join(cer.getValues()))
 				.map(Objects::toString)

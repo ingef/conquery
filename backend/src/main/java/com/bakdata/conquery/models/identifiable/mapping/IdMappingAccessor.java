@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -11,10 +10,8 @@ import lombok.Getter;
 
 public class IdMappingAccessor {
 
-	@Getter
-	private final List<Integer> idsUsed = new ArrayList<>();
-	@Getter
-	private final IdMappingConfig mapping;
+	@Getter private final List<Integer> idsUsed = new ArrayList<>();
+	@Getter private final IdMappingConfig mapping;
 
 	public IdMappingAccessor(IdMappingConfig mapping, List<Integer> idsUsed) {
 		this.idsUsed.addAll(idsUsed);
@@ -29,18 +26,19 @@ public class IdMappingAccessor {
 		return mapping.getHeader().containsAll(csvHeader);
 	}
 
-	public IdAccessor getApplicationMapping(List<String> csvHeader, NamespaceStorage storage) {
+	public IdAccessorImpl getApplicationMapping(List<String> csvHeader, NamespaceStorage storage) {
 		// We assume canBeApplied has been checked before
 		// applicationMapping maps from CsvHeader to IdMappingCsv Indices
-		Map<Integer, Integer> applicationMapping = new HashMap<>();
+
+		int[] applicationMapping = new int[csvHeader.size()];
 		for (int indexInHeader = 0; indexInHeader < csvHeader.size(); indexInHeader++) {
 			String csvHeaderField = csvHeader.get(indexInHeader);
 			int indexInCsvHeader = mapping.getHeader().indexOf(csvHeaderField);
 			if (indexInCsvHeader != -1) {
-				applicationMapping.put(indexInHeader, indexInCsvHeader);
+				applicationMapping[indexInHeader] = indexInCsvHeader;
 			}
 		}
-		return new IdAccessor(this, applicationMapping, storage);
+		return new IdAccessorImpl(this, applicationMapping, storage);
 	}
 
 	public String[] extract(String[] dataLine) {
@@ -51,9 +49,10 @@ public class IdMappingAccessor {
 		return output;
 	}
 
-	public void updateMapping(PersistingIdMap mapping) {
-		for(Map.Entry<CsvId, ExternalId> entry: mapping.getCsvIdToExternalIdMap().entrySet()){
-			mapping.getExternalIdPartCsvIdMap().put(new ExternalIdPart(this, extract(entry.getValue().getExternalId())), entry.getKey());
+	public void updateMapping(PersistentIdMap mapping) {
+		for (Map.Entry<CsvEntityId, ExternalEntityId> entry : mapping.getCsvIdToExternalIdMap().entrySet()) {
+			mapping.getExternalIdPartCsvIdMap()
+				.put(new SufficientExternalEntityId(this, extract(entry.getValue().getExternalId())), entry.getKey());
 		}
 	}
 }

@@ -27,7 +27,7 @@ public abstract class IdMappingConfig {
 	public void updateCsvData(CSV csvData, Namespace namespace) throws IOException, JSONException {
 		Iterator<String[]> csvIterator = csvData.iterateContent(null);
 
-		PersistingIdMap mapping = namespace.getStorage().getIdMapping();
+		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
 
 		if (!Streams.zip(this.getHeader().stream(), Arrays.stream(csvIterator.next()), String::equalsIgnoreCase).allMatch(t -> t)) {
 			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
@@ -35,7 +35,7 @@ public abstract class IdMappingConfig {
 
 		csvIterator.forEachRemaining(
 			// first column is the external key, the rest is part of the print key
-			(s)-> mapping.getCsvIdToExternalIdMap().put(new CsvId(s[0]), new ExternalId(Arrays.copyOfRange(s,1,s.length)))
+			(s)-> mapping.getCsvIdToExternalIdMap().put(new CsvEntityId(s[0]), new ExternalEntityId(Arrays.copyOfRange(s,1,s.length)))
 		);
 
 		checkIntegrity(mapping.getCsvIdToExternalIdMap());
@@ -59,13 +59,13 @@ public abstract class IdMappingConfig {
 	@JsonIgnore
 	abstract public List<String> getHeader();
 
-	public ExternalId toExternal(CsvId csvId, Namespace namespace) {
-		PersistingIdMap mapping = namespace.getStorage().getIdMapping();
+	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace) {
+		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null){
-			return mapping.getCsvIdToExternalIdMap().get(csvId);
+			return mapping.getCsvIdToExternalIdMap().get(csvEntityId);
 		}
 		else {
-			return ExternalId.fromCsvId(csvId);
+			return ExternalEntityId.from(csvEntityId);
 		}
 
 	}
@@ -77,21 +77,22 @@ public abstract class IdMappingConfig {
 				return accessor.getApplicationMapping(Arrays.asList(csvHeader), namespaceStorage);
 			}
 		}
-		return new DefaultIdAccessor();
+		return new DefaultIdAccessorImpl();
 	}
 
 
 	/**
-	 * Checks if the given CsvContent produces unique results in perspective to all IdMappinAccessors.
-	 * @param data Map of CsvId to External Ids as read from the given CSV
+	 * Checks if the given CsvContent produces unique results in perspective to all IdMappingAccessors.
+	 * @param data Map of CsvEntityId to External Ids as read from the given CSV.
+	 * @throws IllegalArgumentException if the inserted Ids are not unique.
 	 */
-	private void checkIntegrity(Map<CsvId,ExternalId> data) {
+	private void checkIntegrity(Map<CsvEntityId, ExternalEntityId> data) {
 		// check that each idMappingAccessor leads to at most one tuple
 		for (IdMappingAccessor idMappingAccessor : getIdAccessors()) {
 			long distinctSize = data.values().stream().map(p -> idMappingAccessor.extract(p.getExternalId())).distinct().count();
 			// check if we still have the same size as before
 			if (distinctSize != data.size()) {
-				throw new IllegalArgumentException("The inserted print ids are not unique respective to the idMapping Accessor "
+				throw new IllegalArgumentException("The inserted IDs are not unique respective to the idMapping Accessor "
 					+ idMappingAccessor);
 			}
 		}

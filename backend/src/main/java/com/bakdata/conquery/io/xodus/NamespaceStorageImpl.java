@@ -1,8 +1,6 @@
 package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
-import java.util.List;
-import java.util.Map;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -11,7 +9,7 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.mapping.PersistingIdMap;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.util.functions.Collector;
 
 import lombok.Getter;
@@ -27,7 +25,7 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	
 	@Getter @Setter @NonNull
 	private MasterMetaStorage metaStorage;
-	protected SingletonStore<PersistingIdMap> idMapping;
+	protected SingletonStore<PersistentIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
@@ -41,13 +39,13 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	}
 
 	@Override
-	public PersistingIdMap getIdMapping() {
+	public PersistentIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
 
 	@Override
-	public void updateIdMapping(PersistingIdMap idMapping) throws JSONException {
+	public void updateIdMapping(PersistentIdMap idMapping) throws JSONException {
 		this.idMapping.update(idMapping);
 	}
 
