@@ -100,7 +100,7 @@ public class AdminUIResource {
 	@POST
 	@Path("/query")
 	public String query(IQuery query) throws JSONException {
-		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query);
+		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, null);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 

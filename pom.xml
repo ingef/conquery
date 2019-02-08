@@ -23,7 +23,6 @@
         <module>frontend</module>
         <module>backend</module>
 		<module>executable</module>
-		<module>coverage-reporter</module>
     </modules>
     
     <dependencyManagement>
@@ -87,7 +86,7 @@
             <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.7.0</version>
+				<version>3.8.0</version>
 				<configuration>
 					<source>10</source>
 					<target>10</target>
@@ -120,38 +119,4 @@
 			</plugin>
         </plugins>
     </build>
-
-    <profiles>
-		<profile>
-			<id>test-coverage</id>
-			<build>
-				<plugins>
-					<plugin>
-						<groupId>org.jacoco</groupId>
-						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>0.8.3</version>
-						<executions>
-							<execution>
-								<id>default-prepare-agent</id>
-								<goals>
-									<goal>prepare-agent</goal>
-								</goals>
-							</execution>
-							<execution>
-								<id>default-report</id>
-								<goals>
-									<goal>report</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<excludes>
-								<exclude>**/*MethodAccess*</exclude>
-							</excludes>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
-		</profile>
-	</profiles>
 </project>
