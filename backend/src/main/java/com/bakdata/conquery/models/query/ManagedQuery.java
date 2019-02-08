@@ -31,6 +31,10 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 @NoArgsConstructor
 @Getter
 @Setter
@@ -40,8 +44,12 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 
 	private DatasetId dataset;
 	private UUID queryId = UUID.randomUUID();
+	@NotEmpty
+	private String label = queryId.toString();
 	private IQuery query;
 	private LocalDateTime creationTime = LocalDateTime.now();
+	@NotNull
+	private String[] tags = new String[0];
 	/**
 	 * The number of contained entities the last time this query was executed.
 	 * @param lastResultCount the new count for JACKSON
