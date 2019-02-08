@@ -18,7 +18,7 @@
 		<dependency>
 			<groupId>com.codacy</groupId>
 			<artifactId>codacy-coverage-reporter</artifactId>
-			<version>4.0.2</version>
+			<version>5.0.310</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
