@@ -35,27 +35,6 @@ public class CSV implements Closeable {
 	private long totalSizeToRead;
 	private long read = 0;
 
-	public CSV(CSVConfig config, InputStream inputStream) throws IOException {
-		this.config = config;
-		CsvFormat format = new CsvFormat();
-		{
-			format.setQuoteEscape(config.getEscape());
-			format.setCharToEscapeQuoteEscaping(config.getEscape());
-			format.setComment(config.getComment());
-			format.setDelimiter(config.getDelimeter());
-			format.setLineSeparator(config.getLineSeparator());
-			format.setQuote(config.getQuote());
-		}
-		settings = new CsvParserSettings();
-		{
-			settings.setFormat(format);
-		}
-
-		totalSizeToRead = inputStream.available();
-		counter = new CountingInputStream(inputStream);
-		reader = new BufferedReader(new InputStreamReader(counter, config.getEncoding()));
-	}
-
 	public CSV(CSVConfig config, File file) throws IOException {
 		this(config, new FileInputStream(file), file.getName().endsWith(".gz"));
 		totalSizeToRead = file.length();

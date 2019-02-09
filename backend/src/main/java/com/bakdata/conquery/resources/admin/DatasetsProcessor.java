@@ -38,17 +38,12 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.google.common.util.concurrent.Uninterruptibles;
-import java.util.concurrent.TimeUnit;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter
-@Slf4j
-@RequiredArgsConstructor
-public class DatasetsProcessor {
+@Getter @Slf4j @RequiredArgsConstructor public class DatasetsProcessor {
 
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;
@@ -61,7 +56,8 @@ public class DatasetsProcessor {
 		Objects.requireNonNull(table);
 		if (table.getDataset() == null) {
 			table.setDataset(dataset);
-		} else if (!table.getDataset().equals(dataset)) {
+		}
+		else if (!table.getDataset().equals(dataset)) {
 			throw new IllegalArgumentException();
 		}
 
@@ -91,8 +87,12 @@ public class DatasetsProcessor {
 		}
 
 		c.setDataset(dataset.getId());
-		jobManager.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
-		jobManager.addSlowJob(new SimpleJob("sendToAll " + c.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
+		jobManager.addSlowJob(new SimpleJob(
+			"Adding concept " + c.getId(),
+			() -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
+		jobManager.addSlowJob(new SimpleJob(
+			"sendToAll " + c.getId(),
+			() -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
 		//see #144  check duplicate names
 	}
 
@@ -118,7 +118,10 @@ public class DatasetsProcessor {
 		dataset.getTables().add(allIdsTable);
 
 		//store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(), config.getStorage(), new File(storage.getDirectory().getParentFile(), "dataset_" + name));
+		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
+			storage.getValidator(),
+			config.getStorage(),
+			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 		datasetStorage.loadData();
 		datasetStorage.setMetaStorage(storage);
 		Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
@@ -133,8 +136,7 @@ public class DatasetsProcessor {
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
-		try (HCFile hcFile = new HCFile(selectedFile, false);
-			InputStream in = hcFile.readHeader()) {
+		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
 			PPHeader header = Jackson.BINARY_MAPPER.readValue(in, PPHeader.class);
 
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
@@ -153,7 +155,7 @@ public class DatasetsProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		CSV csvData = new CSV(new CSVConfig(), data);
+		CSV csvData = new CSV(new CSVConfig(), data, false);
 		IdMappingConfig mappingConfig = config.getIdMapping();
 		mappingConfig.updateCsvData(csvData, namespace);
 	}
