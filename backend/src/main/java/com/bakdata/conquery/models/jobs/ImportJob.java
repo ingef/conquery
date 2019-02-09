@@ -184,7 +184,7 @@ public class ImportJob extends Job {
 
 			this.progressReporter.report(1);
 
-//import the new ids into the all ids table
+			//import the new ids into the all ids table
 			if (primaryMapping.getNewIds() != null) {
 				BlockFactory factory = allIdsImp.getBlockFactory();
 				final Map<WorkerInformation, ImportBits> allIdsBits = new ConcurrentHashMap<>();

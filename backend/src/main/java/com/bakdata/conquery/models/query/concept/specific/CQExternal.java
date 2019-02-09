@@ -72,7 +72,6 @@ public class CQExternal implements CQElement {
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
 			if (row.length != format.size()) {
-				// TODO clean
 				throw new IllegalArgumentException("There are "+ format.size()+ " columns in the format but "+ row.length + " in at least one row");
 			}
 
@@ -97,7 +96,7 @@ public class CQExternal implements CQElement {
 		return new CQExternalResolved(includedEntities);
 	}
 
-	public static enum DateFormat {
+	public enum DateFormat {
 		EVENT_DATE {
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {

@@ -106,10 +106,7 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 					execution.countDown();
 				}
 				FailedEntityResult failed = er.asFailed();
-				log.error("Failed query {} at least for the entity {} with:\n{}",
-					queryId,
-					failed.getEntityId(),
-					failed.getExceptionStackTrace());
+				log.error("Failed query {} at least for the entity {} with:\n{}", queryId, failed.getEntityId(), failed.getExceptionStackTrace());
 			}
 		}
 		synchronized (execution) {
@@ -120,6 +117,8 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 			}
 		}
 	}
+
+
 
 	private void finish() {
 		finishTime = LocalDateTime.now();
@@ -133,22 +132,6 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 			log.error("Failed to store query after finishing: " + this, e);
 		}
 		log.info("Finished query {} within {}", queryId, Duration.between(startTime, finishTime));
-	}
-
-	public Stream<String> toCSV(ConqueryConfig cfg) {
-		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset));
-		IdMappingConfig mappingConfig = cfg.getIdMapping();
-		// TODO refactor this
-		return Stream.concat(Stream.of(Joiner.on(',').join(mappingConfig.getPrintIdFields()) + ",dates"),
-			results.stream()
-				.filter(ContainedEntityResult.class::isInstance)
-				.map(ContainedEntityResult.class::cast)
-				.filter(cer -> mappingConfig.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace) != null)
-				.map(cer -> Joiner.on(',')
-					.join(mappingConfig.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace).getExternalId())
-					+ ","
-					+ Joiner.on(',').join(cer.getValues()))
-				.map(Objects::toString));
 	}
 
 	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
