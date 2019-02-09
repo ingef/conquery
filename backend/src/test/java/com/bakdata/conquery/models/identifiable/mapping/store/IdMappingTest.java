@@ -41,8 +41,8 @@ public class IdMappingTest {
 
 		@Override public List<IdMappingAccessor> getIdAccessors() {
 			ArrayList<IdMappingAccessor> idAccessors = new ArrayList<>();
-			idAccessors.add(new IdMappingAccessor(this, Arrays.asList(0)));
-			idAccessors.add(new IdMappingAccessor(this, Arrays.asList(1, 2)));
+			idAccessors.add(new IdMappingAccessor(this, new int[]{0}));
+			idAccessors.add(new IdMappingAccessor(this, new int[]{1, 2}));
 			return idAccessors;
 		}
 

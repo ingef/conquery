@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
+import com.bakdata.conquery.models.identifiable.mapping.IdAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessorImpl;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.preproc.DateFormats;
@@ -56,7 +57,7 @@ import lombok.extern.slf4j.Slf4j;
 
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
-		IdAccessorImpl idAccessor = mapping.mappingFromCsvHeader(values[0], context.getNamespace().getStorage());
+		IdAccessor idAccessor = mapping.mappingFromCsvHeader(values[0], context.getNamespace().getStorage());
 
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {

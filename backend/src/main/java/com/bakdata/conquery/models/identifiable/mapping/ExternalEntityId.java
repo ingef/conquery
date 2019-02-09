@@ -7,8 +7,7 @@ import lombok.Data;
  *
  */
 @Data
-public class ExternalEntityId {
-
+public class ExternalEntityId implements EntityId{
 	/**
 	 * The external Entity Id.
 	 */

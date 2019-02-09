@@ -20,7 +20,7 @@ import lombok.RequiredArgsConstructor;
 	@Getter private final IdMappingAccessor accessor;
 
 	/**
-	 * The mapping from collumn indices in the given CSV to the original uploaded csv.
+	 * The mapping from column indices in the given CSV to the original uploaded csv.
 	 */
 	@Getter private final int[] applicationMapping;
 

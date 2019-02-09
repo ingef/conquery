@@ -51,13 +51,13 @@ public abstract class IdMappingConfig {
 	}
 
 	@JsonIgnore
-	abstract public List<IdMappingAccessor> getIdAccessors();
+	public abstract List<IdMappingAccessor> getIdAccessors();
 
 	@JsonIgnore
-	abstract public List<String> getPrintIdFields();
+	public abstract List<String> getPrintIdFields();
 
 	@JsonIgnore
-	abstract public List<String> getHeader();
+	public abstract List<String> getHeader();
 
 	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace) {
 		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
@@ -74,7 +74,7 @@ public abstract class IdMappingConfig {
 	public IdAccessor mappingFromCsvHeader(String[] csvHeader, NamespaceStorage namespaceStorage) {
 		for (IdMappingAccessor accessor : getIdAccessors()) {
 			if (accessor.canBeApplied(Arrays.asList(csvHeader))) {
-				return accessor.getApplicationMapping(Arrays.asList(csvHeader), namespaceStorage);
+				return accessor.getApplicationMapping(csvHeader, namespaceStorage);
 			}
 		}
 		return new DefaultIdAccessorImpl();
@@ -98,4 +98,3 @@ public abstract class IdMappingConfig {
 		}
 	}
 }
-

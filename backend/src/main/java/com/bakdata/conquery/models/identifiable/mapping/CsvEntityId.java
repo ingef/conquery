@@ -8,7 +8,7 @@ import lombok.Data;
  *
  */
 @Data
-public class CsvEntityId {
+public class CsvEntityId implements EntityId{
 	/**
 	 * The csvId of an entity.
 	 */

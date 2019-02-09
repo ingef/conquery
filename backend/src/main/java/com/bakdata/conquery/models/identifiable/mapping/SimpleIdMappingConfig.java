@@ -12,7 +12,7 @@ public class SimpleIdMappingConfig extends IdMappingConfig {
 
 	@Override public List<IdMappingAccessor> getIdAccessors() {
 		ArrayList<IdMappingAccessor> idAccessors = new ArrayList<>();
-		idAccessors.add(new IdMappingAccessor(this, List.of(0)));
+		idAccessors.add(new IdMappingAccessor(this, new int[]{0}));
 		return idAccessors;
 	}
 
