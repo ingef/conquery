@@ -58,7 +58,7 @@ public class IdAccessorImpl implements IdAccessor {
 		return new CsvEntityId(String.join("|", idPart));
 	}
 
-	@Override public CsvEntityId apply(String[] csvLine) {
+	@Override public CsvEntityId getCsvEntityId(String[] csvLine) {
 		String[] reorderedCsvLine = reorder(csvLine);
 		String[] partOfId = this.accessor.extract(reorderedCsvLine);
 		CsvEntityId csvEntityId = storage.getIdMapping()
@@ -77,7 +77,7 @@ public class IdAccessorImpl implements IdAccessor {
 	 * @return Outputs a csvLine like the one in the original uploaded id mapping CSV
 	 */
 	private String[] reorder(String[] csvLine) {
-		String[] reorderedCsvLine = new String[accessor.getMapping().getHeaderSize()];
+		String[] reorderedCsvLine = new String[accessor.getHeader().length];
 		for (int i = 0; i < csvLine.length; i++) {
 			int indexInHeader = applicationMapping[i];
 			if (indexInHeader != -1) {

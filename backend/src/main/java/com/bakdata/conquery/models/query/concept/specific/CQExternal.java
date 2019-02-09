@@ -82,7 +82,7 @@ import lombok.extern.slf4j.Slf4j;
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
 				includedEntities.put(
-					primary.getId(idAccessor.apply(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
+					primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
 					Objects.requireNonNull(dates));
 			}
 			catch (Exception e) {

@@ -5,11 +5,11 @@ package com.bakdata.conquery.models.identifiable.mapping;
  * This class is used as an IdAccessorImpl whenever we fail to get a proper configured one.
  * *
  */
-public class DefaultIdAccessorImpl implements IdAccessor {
+public enum DefaultIdAccessorImpl implements IdAccessor {
+	INSTANCE;
 
 	@Override
-	public CsvEntityId apply(String[] partOfId) {
-		return IdAccessorImpl.getFallbackCsvId(partOfId);
+	public CsvEntityId getCsvEntityId(String[] csvLine) {
+		return IdAccessorImpl.getFallbackCsvId(csvLine);
 	}
-
 }

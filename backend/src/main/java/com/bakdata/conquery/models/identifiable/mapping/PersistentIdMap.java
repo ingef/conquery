@@ -8,13 +8,14 @@ import lombok.Data;
  *  Mapping from Csv Entity Id to External Entity Id and back from the combinations of Accessor + IDs to the Entity Id.
  */
 @Data
-public class PersistingIdMap {
+public class PersistentIdMap {
 	/**
 	 * The map from csv entity ids to external entity ids.
 	 */
-	private Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap;
+	private final Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap;
+
 	/**
 	 * The map from external entity ids to csv entity ids.
 	 */
-	private Map<SufficientExternalEntityId, CsvEntityId> externalIdPartCsvIdMap;
+	private final Map<SufficientExternalEntityId, CsvEntityId> externalIdPartCsvIdMap;
 }

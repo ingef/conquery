@@ -2,9 +2,11 @@ package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -22,10 +24,10 @@ import lombok.RequiredArgsConstructor;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class IdMappingConfig {
 
-	public PersistingIdMap generateIdMapping(CSV csvData) throws IOException, IllegalArgumentException {
+	public PersistentIdMap generateIdMapping(CSV csvData) throws IOException, IllegalArgumentException {
 		Iterator<String[]> csvIterator = csvData.iterateContent(null);
 
-		PersistingIdMap mapping = new PersistingIdMap();
+		PersistentIdMap mapping = new PersistentIdMap(new HashMap<>(), new HashMap<>());
 
 		if (!Arrays.equals(this.getHeader(), csvIterator.next(), StringUtils::compareIgnoreCase)) {
 			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
@@ -52,13 +54,15 @@ public abstract class IdMappingConfig {
 	public abstract IdMappingAccessor[] getIdAccessors();
 
 	@JsonIgnore
-	public abstract String[] getPrintIdFields();
+	public String[] getPrintIdFields(){
+		return ArrayUtils.subarray(getHeader(),1,getHeaderSize());
+	}
 
 	@JsonIgnore
 	public abstract String[] getHeader();
 
 	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace) {
-		PersistingIdMap mapping = namespace.getStorage().getIdMapping();
+		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null){
 			return mapping.getCsvIdToExternalIdMap().get(csvEntityId);
 		}
@@ -75,7 +79,7 @@ public abstract class IdMappingConfig {
 				return accessor.getApplicationMapping(csvHeader, namespaceStorage);
 			}
 		}
-		return new DefaultIdAccessorImpl();
+		return DefaultIdAccessorImpl.INSTANCE;
 	}
 
 

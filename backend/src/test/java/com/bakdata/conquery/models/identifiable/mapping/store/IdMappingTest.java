@@ -10,6 +10,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import com.bakdata.conquery.models.identifiable.mapping.DefaultIdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 
@@ -34,8 +35,8 @@ public class IdMappingTest {
 				@Override
 		public IdMappingAccessor[] getIdAccessors() {
 			return new IdMappingAccessor[] {
-				new IdMappingAccessor(this, new int[] { 0 }),
-				new IdMappingAccessor(this, new int[] { 1, 2 })
+				new DefaultIdMappingAccessor(this, new int[] { 0 }),
+				new DefaultIdMappingAccessor(this, new int[] { 1, 2 })
 			};
 		}
 

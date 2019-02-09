@@ -7,8 +7,8 @@ package com.bakdata.conquery.models.identifiable.mapping;
 public interface IdAccessor {
 	/**
 	 * Maps a line from a Csv to a CsvEntityId.
-	 * @param csvLine A line from a given Csv.
+	 * @param csvLine A filtered line from a given Csv.
 	 * @return the corresponding CsvEntityId.
 	 */
-	CsvEntityId apply(String[] csvLine);
+	CsvEntityId getCsvEntityId(String[] csvLine);
 }

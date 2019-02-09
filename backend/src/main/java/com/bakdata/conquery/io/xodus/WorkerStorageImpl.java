@@ -41,7 +41,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void setBlockManager(BlockManager blockManager) {
 		this.blockManager = blockManager;
 	}
-	
+
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
