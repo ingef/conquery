@@ -78,8 +78,8 @@ public enum StoreInfo implements IStoreInfo {
 		);
 	}
 	
-	public <VALUE> SingletonStore<VALUE> singleton(ConqueryStorage storage) {
-		return new SingletonStore<>(cached(storage));
+	public <VALUE> SingletonStore<VALUE> singleton(ConqueryStorage storage, Injectable... injectables) {
+		return new SingletonStore<>(cached(storage), injectables);
 	}
 	
 	public <T extends Identifiable<?>> IdentifiableStore<T> big(NamespacedStorage storage) {

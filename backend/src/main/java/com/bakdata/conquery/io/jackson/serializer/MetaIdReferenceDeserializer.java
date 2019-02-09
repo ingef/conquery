@@ -25,7 +25,9 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @AllArgsConstructor @NoArgsConstructor
 public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
 
@@ -56,10 +58,11 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 					return result.get();
 				}
 				else {
-					throw new NoSuchElementException("Could not find entry "+id+" of type "+type);
+					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+id+" of type "+type.getName());
 				}
 			} catch(Exception e) {
-				throw new IllegalArgumentException("Could not find entry "+text+" of type "+type, e);
+				log.error("Error while resolving entry "+text+" of type "+type, e);
+				throw e;
 			}
 		}
 		else {

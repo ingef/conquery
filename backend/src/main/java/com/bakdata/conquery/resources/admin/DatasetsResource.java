@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -59,6 +60,7 @@ import com.bakdata.conquery.resources.admin.ui.UIContext;
 import com.bakdata.conquery.resources.admin.ui.UIView;
 import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.views.View;
 import lombok.Getter;
@@ -200,20 +202,12 @@ public class DatasetsResource {
 
 	@POST
 	@Path("/{" + DATASET_NAME + "}/concepts")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("concept_schema") InputStream schema) throws IOException, JSONException, ConfigurationException {
+	public void addConcept(@PathParam(DATASET_NAME) DatasetId datasetId, Concept<?> concept) throws IOException, JSONException, ConfigurationException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
-		try (schema) {
-			Concept<?> c = dataset
-				.injectInto(mapper.readerFor(Concept.class))
-				.readValue(schema);
-			processor.addConcept(dataset, c);
-			return Response
-				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
-				.build();
-		}
-
+		processor.addConcept(dataset, concept);
+		
+		Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
 	}
 	
 	@POST
