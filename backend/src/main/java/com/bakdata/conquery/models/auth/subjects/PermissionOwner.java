@@ -232,7 +232,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 		if (sameTarget.isPresent()) {
 			// found permission with the same target
-			if (sameTarget.get().equals(ownedPermission)) {
+			ConqueryPermission oldPermission = sameTarget.get();
+			if(oldPermission.equals(ownedPermission)) {
 				// is actually the same permission
 				log.info("User {} has already permission {}.", this, ownedPermission);
 				return ownedPermission;
