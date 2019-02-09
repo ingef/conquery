@@ -34,11 +34,6 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 
 
 	@Override
-	public Dictionary getPrimaryDictionary() {
-		return dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()));
-	}
-
-	@Override
 	public PersistingIdMap getIdMapping() {
 		return idMapping.get();
 	}
@@ -54,7 +49,9 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 		super.createStores(collector);
 		structure = StoreInfo.STRUCTURE.singleton(this, new SingletonNamespaceCollection(centralRegistry));
 		idMapping = StoreInfo.ID_MAPPING.singleton(this);
-		collector.collect(structure).collect(idMapping);
+		collector
+			.collect(structure)
+			.collect(idMapping);
 	}
 
 	@Override

@@ -41,11 +41,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void setBlockManager(BlockManager blockManager) {
 		this.blockManager = blockManager;
 	}
-
-	@Override public Dictionary getPrimaryDictionary() {
-		return getDictionary(ConqueryConstants.getPrimaryDictionary(dataset.get()));
-	}
-
+	
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
