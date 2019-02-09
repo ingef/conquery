@@ -41,24 +41,13 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
 			String text = parser.getText();
 			try {
-				ID id;
-				
-				//check if there was a dataset injected and if it is already a prefix
-				Dataset dataset = (Dataset) ctxt.findInjectableValue(Dataset.class.getName(), null, null);
-				if(dataset != null) {
-					id = idParser.parsePrefixed(dataset.getName(), text);
-				}
-				else {
-					id = idParser.parse(text);
-				}
-				
-				Optional<T> result = CentralRegistry.get(ctxt).getOptional(id);
+				Optional<T> result = CentralRegistry.get(ctxt).getOptional(idParser.parse(text));
 				
 				if(result.isPresent()) {
 					return result.get();
 				}
 				else {
-					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+id+" of type "+type.getName());
+					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+text+" of type "+type.getName());
 				}
 			} catch(Exception e) {
 				log.error("Error while resolving entry "+text+" of type "+type, e);

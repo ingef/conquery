@@ -48,7 +48,9 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 				//check if there was a dataset injected and if it is already a prefix
 				datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, Dataset.class)).map(Dataset::getName).orElse(null);
 				//maybe only the id was injected
-				datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, DatasetId.class)).map(DatasetId::getName).orElse(null);
+				if(datasetName == null) {
+					datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, DatasetId.class)).map(DatasetId::getName).orElse(null);
+				}
 				
 				if(datasetName != null) {
 					id = idParser.parsePrefixed(datasetName, text);
