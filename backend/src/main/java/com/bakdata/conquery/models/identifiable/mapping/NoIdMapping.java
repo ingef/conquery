@@ -9,11 +9,12 @@ import lombok.RequiredArgsConstructor;
 
 @CPSType(base = IdMappingConfig.class, id = "NO_ID_MAPPING")
 public class NoIdMapping extends IdMappingConfig {
-	private final static String[] HEADER = new String[] {"result"};
+	private static final String[] HEADER = new String[] {"result"};
+	private static final NoIdMappingAccessor[] ACCESSORS = new NoIdMappingAccessor[]{NoIdMappingAccessor.INSTANCE};
 
 	@Override
 	public IdMappingAccessor[] getIdAccessors() {
-		return new NoIdMappingAccessor[]{new NoIdMappingAccessor()};
+		return ACCESSORS;
 	}
 
 	@Override
@@ -26,7 +27,8 @@ public class NoIdMapping extends IdMappingConfig {
 		return HEADER;
 	}
 
-	private static class NoIdMappingAccessor implements IdMappingAccessor {
+	private enum NoIdMappingAccessor implements IdMappingAccessor {
+		INSTANCE;
 		@Override
 		public String[] getHeader() {
 			return HEADER;
@@ -39,7 +41,7 @@ public class NoIdMapping extends IdMappingConfig {
 
 		@Override
 		public IdAccessor getApplicationMapping(String[] csvHeader, NamespaceStorage storage) {
-			return new NoIdAccessor();
+			return NoIdAccessor.INSTANCE;
 		}
 
 		@Override
@@ -49,8 +51,8 @@ public class NoIdMapping extends IdMappingConfig {
 	}
 
 	@RequiredArgsConstructor
-	private static class NoIdAccessor implements IdAccessor {
-
+	private enum NoIdAccessor implements IdAccessor {
+		INSTANCE;
 		@Override
 		public CsvEntityId getCsvEntityId(String[] csvLine) {
 			return new CsvEntityId(csvLine[0]);

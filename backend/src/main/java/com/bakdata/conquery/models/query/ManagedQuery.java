@@ -1,5 +1,20 @@
 package com.bakdata.conquery.models.query;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -19,26 +34,12 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.Uninterruptibles;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
 
 @NoArgsConstructor
 @Getter
@@ -55,11 +56,13 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private LocalDateTime creationTime = LocalDateTime.now();
 	@NotNull
 	private String[] tags = new String[0];
-	@Nullable @MetaIdRef
+	@Nullable
+	@MetaIdRef
 	private User owner;
 	private boolean shared = false;
 	/**
 	 * The number of contained entities the last time this query was executed.
+	 *
 	 * @param lastResultCount the new count for JACKSON
 	 * @returns the number of contained entities
 	 */
@@ -103,12 +106,10 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 					execution.countDown();
 				}
 				FailedEntityResult failed = er.asFailed();
-				log.error(
-					"Failed query {} at least for the entity {} with:\n{}",
+				log.error("Failed query {} at least for the entity {} with:\n{}",
 					queryId,
 					failed.getEntityId(),
-					failed.getExceptionStackTrace()
-				);
+					failed.getExceptionStackTrace());
 			}
 		}
 		synchronized (execution) {
@@ -128,8 +129,8 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 		try {
 			namespace.getStorage().getMetaStorage().updateQuery(this);
 		}
-		catch(JSONException e) {
-			log.error("Failed to store query after finishing: "+this, e);
+		catch (JSONException e) {
+			log.error("Failed to store query after finishing: " + this, e);
 		}
 		log.info("Finished query {} within {}", queryId, Duration.between(startTime, finishTime));
 	}
@@ -137,28 +138,21 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	public Stream<String> toCSV(ConqueryConfig cfg) {
 		Dictionary dict = namespace.getStorage().getDictionary(ConqueryConstants.getPrimaryDictionary(dataset));
 		IdMappingConfig mappingConfig = cfg.getIdMapping();
-
-		return Stream.concat(
-			Stream.of(Joiner.on(',').join(mappingConfig.getPrintIdFields())+",dates"),
-			results
-				.stream()
+		// TODO refactor this
+		return Stream.concat(Stream.of(Joiner.on(',').join(mappingConfig.getPrintIdFields()) + ",dates"),
+			results.stream()
 				.filter(ContainedEntityResult.class::isInstance)
 				.map(ContainedEntityResult.class::cast)
 				.filter(cer -> mappingConfig.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace) != null)
 				.map(cer -> Joiner.on(',')
-					.join(mappingConfig
-						.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace)
-						.getExternalId()) + "," + Joiner.on(',')
-					.join(cer.getValues()))
-				.map(Objects::toString)
-		);
+					.join(mappingConfig.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace).getExternalId())
+					+ ","
+					+ Joiner.on(',').join(cer.getValues()))
+				.map(Objects::toString));
 	}
-	
+
 	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
-		return results
-				.stream()
-				.filter(ContainedEntityResult.class::isInstance)
-				.map(ContainedEntityResult.class::cast);
+		return results.stream().filter(ContainedEntityResult.class::isInstance).map(ContainedEntityResult.class::cast);
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {

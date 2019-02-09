@@ -44,7 +44,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Slf4j @RequiredArgsConstructor public class DatasetsProcessor {
+@Getter
+@Slf4j
+@RequiredArgsConstructor
+public class DatasetsProcessor {
 
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;
@@ -88,11 +91,9 @@ import lombok.extern.slf4j.Slf4j;
 		}
 
 		c.setDataset(dataset.getId());
-		jobManager.addSlowJob(new SimpleJob(
-			"Adding concept " + c.getId(),
+		jobManager.addSlowJob(new SimpleJob("Adding concept " + c.getId(),
 			() -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
-		jobManager.addSlowJob(new SimpleJob(
-			"sendToAll " + c.getId(),
+		jobManager.addSlowJob(new SimpleJob("sendToAll " + c.getId(),
 			() -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
 		//see #144  check duplicate names
 	}
@@ -119,8 +120,7 @@ import lombok.extern.slf4j.Slf4j;
 		dataset.getTables().add(allIdsTable);
 
 		//store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
-			storage.getValidator(),
+		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(),
 			config.getStorage(),
 			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 		datasetStorage.loadData();

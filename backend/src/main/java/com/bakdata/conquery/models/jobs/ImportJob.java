@@ -55,7 +55,7 @@ public class ImportJob extends Job {
 	private final Namespace namespace;
 	private final TableId table;
 	private final File importFile;
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public void execute() throws JSONException {
@@ -201,7 +201,7 @@ public class ImportJob extends Job {
 					}
 					worker.send(ib);
 				});
-					 Output buffer = new Output(2048);
+					Output buffer = new Output(2048);
 				) {
 					ProgressReporter child = this.progressReporter.subJob(5);
 					child.setMax(primaryMapping.getNewIds().getMax() - primaryMapping.getNewIds().getMin() + 1);
@@ -237,16 +237,16 @@ public class ImportJob extends Job {
 				bits.put(wi, new ImportBits(imp.getName(), imp.getId(), table));
 			}
 			try (Input in = new Input(file.readContent());
-				 MultiByteBuffer<WorkerInformation> buffer = new MultiByteBuffer<>(bits.keySet(), (worker, bytes) -> {
-					 ImportBits ib = bits.put(worker, new ImportBits(imp.getName(), imp.getId(), table));
-					 ib.setBytes(bytes);
-					 try {
-						 worker.getConnectedSlave().waitForFreeJobqueue();
-					 } catch (InterruptedException e) {
-						 log.error("Interrupted while waiting for worker " + worker + " to have free space in queue", e);
-					 }
-					 worker.send(ib);
-				 });
+				MultiByteBuffer<WorkerInformation> buffer = new MultiByteBuffer<>(bits.keySet(), (worker, bytes) -> {
+					ImportBits ib = bits.put(worker, new ImportBits(imp.getName(), imp.getId(), table));
+					ib.setBytes(bytes);
+					try {
+						worker.getConnectedSlave().waitForFreeJobqueue();
+					} catch (InterruptedException e) {
+						log.error("Interrupted while waiting for worker " + worker + " to have free space in queue", e);
+					}
+					worker.send(ib);
+				});
 			) {
 
 				ProgressReporter child = this.progressReporter.subJob(5);

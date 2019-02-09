@@ -35,17 +35,26 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @CPSType(id = "EXTERNAL", base = CQElement.class) @RequiredArgsConstructor(onConstructor_ = @JsonCreator) public class CQExternal
-	implements CQElement {
+@Slf4j
+@CPSType(id = "EXTERNAL", base = CQElement.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+public class CQExternal implements CQElement {
 
-	@Getter @NotEmpty @ValidCSVFormat private final List<FormatColumn> format;
-	@Getter @NotEmpty private final String[][] values;
+	@Getter
+	@NotEmpty
+	@ValidCSVFormat
+	private final List<FormatColumn> format;
+	@Getter
+	@NotEmpty
+	private final String[][] values;
 
-	@Override public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	@Override
+	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 	}
 
-	@Override public CQElement resolve(QueryResolveContext context) {
+	@Override
+	public CQElement resolve(QueryResolveContext context) {
 		Dictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
 		Optional<DateFormat> dateFormat = format.stream()
 			.map(FormatColumn::getDateFormat)
@@ -63,11 +72,8 @@ import lombok.extern.slf4j.Slf4j;
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
 			if (row.length != format.size()) {
-				throw new IllegalArgumentException("There are "
-					+ format.size()
-					+ " columns in the format but "
-					+ row.length
-					+ " in at least one row");
+				// TODO clean
+				throw new IllegalArgumentException("There are "+ format.size()+ " columns in the format but "+ row.length + " in at least one row");
 			}
 
 			//read the dates from the row
@@ -81,8 +87,7 @@ import lombok.extern.slf4j.Slf4j;
 					}
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				includedEntities.put(
-					primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
+				includedEntities.put(primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
 					Objects.requireNonNull(dates));
 			}
 			catch (Exception e) {
@@ -94,12 +99,15 @@ import lombok.extern.slf4j.Slf4j;
 
 	public static enum DateFormat {
 		EVENT_DATE {
-			@Override public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
+			@Override
+			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.instance()
 					.parseToLocalDate(row[dateIndices[0]]))));
 			}
-		}, START_END_DATE {
-			@Override public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
+		},
+		START_END_DATE {
+			@Override
+			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.instance().parseToLocalDate(row[dateIndices[0]]);
 				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
 					null :
@@ -121,12 +129,16 @@ import lombok.extern.slf4j.Slf4j;
 
 				return CDateSet.create(Collections.singleton(range));
 			}
-		}, DATE_RANGE {
-			@Override public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
+		},
+		DATE_RANGE {
+			@Override
+			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.create(Collections.singleton(DateRangeType.parseISORange(row[dateIndices[0]])));
 			}
-		}, DATE_SET {
-			@Override public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
+		},
+		DATE_SET {
+			@Override
+			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.parse(row[dateIndices[0]]);
 			}
 		};
@@ -134,10 +146,16 @@ import lombok.extern.slf4j.Slf4j;
 		public abstract CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException;
 	}
 
-	@RequiredArgsConstructor @Getter public static enum FormatColumn {
-		ID(true, null), EVENT_DATE(false, DateFormat.EVENT_DATE), START_DATE(false, DateFormat.START_END_DATE), END_DATE(
-			false,
-			DateFormat.START_END_DATE), DATE_RANGE(false, DateFormat.DATE_RANGE), DATE_SET(false, DateFormat.DATE_SET), IGNORE(true, null);
+	@RequiredArgsConstructor
+	@Getter
+	public static enum FormatColumn {
+		ID(true, null),
+		EVENT_DATE(false, DateFormat.EVENT_DATE),
+		START_DATE(false, DateFormat.START_END_DATE),
+		END_DATE(false, DateFormat.START_END_DATE),
+		DATE_RANGE(false, DateFormat.DATE_RANGE),
+		DATE_SET(false, DateFormat.DATE_SET),
+		IGNORE(true, null);
 
 		private final boolean duplicatesAllowed;
 		private final DateFormat dateFormat;
