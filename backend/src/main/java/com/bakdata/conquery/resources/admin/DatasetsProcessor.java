@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+import com.bakdata.conquery.models.identifiable.mapping.PersistingIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -157,7 +158,8 @@ import lombok.extern.slf4j.Slf4j;
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
 		CSV csvData = new CSV(new CSVConfig(), data, false);
 		IdMappingConfig mappingConfig = config.getIdMapping();
-		mappingConfig.updateCsvData(csvData, namespace);
+		PersistingIdMap mapping = mappingConfig.generateIdMapping(csvData);
+		namespace.getStorage().updateIdMapping(mapping);
 	}
 
 	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {

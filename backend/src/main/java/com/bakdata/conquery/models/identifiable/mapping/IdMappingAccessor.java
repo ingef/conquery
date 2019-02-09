@@ -3,28 +3,24 @@ package com.bakdata.conquery.models.identifiable.mapping;
 import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 
 import lombok.Getter;
+import lombok.ToString;
 
-/**
- *
- */
+@ToString
 public class IdMappingAccessor {
 
 	@Getter
 	private final int[] idsUsed;
-	@Getter
+	@Getter @ToString.Exclude
 	private final IdMappingConfig mapping;
 
 	public IdMappingAccessor(IdMappingConfig mapping, int[] idsUsed) {
 		this.idsUsed = idsUsed;
 		this.mapping = mapping;
-	}
-
-	@Override
-	public String toString() {
-		return "Using Fields: " + idsUsed;
 	}
 
 	/**
@@ -33,7 +29,12 @@ public class IdMappingAccessor {
 	 * @return whether the mapping can be applied to the header.
 	 */
 	public boolean canBeApplied(List<String> csvHeader) {
-		return mapping.getHeader().containsAll(csvHeader);
+		for (String fieldInCsvHeader: csvHeader) {
+			if(!ArrayUtils.contains(mapping.getHeader(),fieldInCsvHeader)){
+				return false;
+			}
+		}
+		return true;
 	}
 
 	/**
@@ -43,11 +44,11 @@ public class IdMappingAccessor {
 	 * @param storage The Namespace Storage to use.
 	 * @return The IdAccessor.
 	 */
-	public IdAccessorImpl getApplicationMapping(String[] csvHeader, NamespaceStorage storage) {
+	public IdAccessor getApplicationMapping(String[] csvHeader, NamespaceStorage storage) {
 		int[] applicationMapping = new int[csvHeader.length];
 		for (int indexInHeader = 0; indexInHeader < csvHeader.length; indexInHeader++) {
 			String csvHeaderField = csvHeader[indexInHeader];
-			int indexInCsvHeader = mapping.getHeader().indexOf(csvHeaderField);
+			int indexInCsvHeader = ArrayUtils.indexOf(mapping.getHeader(),csvHeaderField);
 			if (indexInCsvHeader != -1) {
 				applicationMapping[indexInHeader] = indexInCsvHeader;
 			}
@@ -56,7 +57,6 @@ public class IdMappingAccessor {
 	}
 
 	/**
-	 *
 	 * @param dataLine A Line from a CSV.
 	 * @return the dataLine without the unused fields.
 	 */
@@ -68,7 +68,7 @@ public class IdMappingAccessor {
 		return output;
 	}
 
-	public void updateMapping(PersistentIdMap mapping) {
+	public void collectSufficientEntityIds(PersistingIdMap mapping) {
 		for (Map.Entry<CsvEntityId, ExternalEntityId> entry : mapping.getCsvIdToExternalIdMap().entrySet()) {
 			mapping.getExternalIdPartCsvIdMap()
 				.put(new SufficientExternalEntityId(this, extract(entry.getValue().getExternalId())), entry.getKey());

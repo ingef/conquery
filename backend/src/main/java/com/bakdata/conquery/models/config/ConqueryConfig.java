@@ -40,7 +40,7 @@ public class ConqueryConfig extends Configuration {
 	@NotNull
 	private String[] additionalFormats = new String[0];
 	
-
+	@NotNull @Valid
 	private IdMappingConfig idMapping = new SimpleIdMappingConfig();
 
 	private AuthConfig authentication = new DevAuthConfig();

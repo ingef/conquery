@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.identifiable.mapping.store;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -13,9 +12,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 
 public class IdMappingTest {
 
@@ -29,29 +25,28 @@ public class IdMappingTest {
 		return Stream.of(Arguments.of(data));
 	}
 
-	@ParameterizedTest @MethodSource({ "testData" })
-	public void generalTest(List<Pair<String, List<String>>> data) {
+	@ParameterizedTest @MethodSource({ "testData" }) public void generalTest(List<Pair<String, List<String>>> data) {
 		TestIdMappingConfig mappingConfig = new TestIdMappingConfig();
+		// TODO
 	}
 
 	public class TestIdMappingConfig extends IdMappingConfig {
-		public TestIdMappingConfig(){
-			super();
+				@Override
+		public IdMappingAccessor[] getIdAccessors() {
+			return new IdMappingAccessor[] {
+				new IdMappingAccessor(this, new int[] { 0 }),
+				new IdMappingAccessor(this, new int[] { 1, 2 })
+			};
 		}
 
-		@Override public List<IdMappingAccessor> getIdAccessors() {
-			ArrayList<IdMappingAccessor> idAccessors = new ArrayList<>();
-			idAccessors.add(new IdMappingAccessor(this, new int[]{0}));
-			idAccessors.add(new IdMappingAccessor(this, new int[]{1, 2}));
-			return idAccessors;
+		@Override
+		public String[] getPrintIdFields() {
+			return new String[]{"first", "second", "third"};
 		}
 
-		@Override public List<String> getPrintIdFields() {
-			return Arrays.asList("first", "second", "third");
-		}
-
-		@Override public List<String> getHeader() {
-			return Arrays.asList("first", "second", "third");
+		@Override
+		public String[] getHeader() {
+			return new String[]{"first", "second", "third"};
 		}
 
 	}

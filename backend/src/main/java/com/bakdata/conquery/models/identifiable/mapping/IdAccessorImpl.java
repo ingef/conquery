@@ -12,17 +12,20 @@ import lombok.RequiredArgsConstructor;
 /**
  * The standard Implementation for an IdAccessor.
  */
-@RequiredArgsConstructor public class IdAccessorImpl implements IdAccessor {
+@RequiredArgsConstructor
+public class IdAccessorImpl implements IdAccessor {
 
 	/**
 	 * The corresponding accessor.
 	 */
-	@Getter private final IdMappingAccessor accessor;
+	@Getter
+	private final IdMappingAccessor accessor;
 
 	/**
 	 * The mapping from column indices in the given CSV to the original uploaded csv.
 	 */
-	@Getter private final int[] applicationMapping;
+	@Getter
+	private final int[] applicationMapping;
 
 	/**
 	 * The used namespace storage.

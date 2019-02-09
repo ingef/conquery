@@ -12,6 +12,9 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.PackageVersion;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+
 public class ConquerySerializersModule extends SimpleModule {
 
 	private static final long serialVersionUID = 1L;
@@ -21,6 +24,7 @@ public class ConquerySerializersModule extends SimpleModule {
 		super("Conquery Module", PackageVersion.VERSION);
 		addDeserializer(CurrencyUnit.class, new CurrencyUnitDeserializer());
 		addSerializer(CurrencyUnit.class, new CurrencyUnitSerializer());
+		addAbstractTypeMapping(Int2ObjectMap.class, Int2ObjectOpenHashMap.class);
 
 		//register IdKeySerializer for all id types
 		List<Class<?>> idTypes = CPSTypeIdResolver

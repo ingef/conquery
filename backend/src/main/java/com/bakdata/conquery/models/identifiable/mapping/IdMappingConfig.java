@@ -3,18 +3,16 @@ package com.bakdata.conquery.models.identifiable.mapping;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
+import org.apache.commons.lang3.StringUtils;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.collect.Streams;
 
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -24,43 +22,43 @@ import lombok.RequiredArgsConstructor;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class IdMappingConfig {
 
-	public void updateCsvData(CSV csvData, Namespace namespace) throws IOException, JSONException {
+	public PersistingIdMap generateIdMapping(CSV csvData) throws IOException, IllegalArgumentException {
 		Iterator<String[]> csvIterator = csvData.iterateContent(null);
 
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
+		PersistingIdMap mapping = new PersistingIdMap();
 
-		if (!Streams.zip(this.getHeader().stream(), Arrays.stream(csvIterator.next()), String::equalsIgnoreCase).allMatch(t -> t)) {
+		if (!Arrays.equals(this.getHeader(), csvIterator.next(), StringUtils::compareIgnoreCase)) {
 			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
 		}
 
+		// first column is the external key, the rest is part of the csv id
 		csvIterator.forEachRemaining(
-			// first column is the external key, the rest is part of the print key
 			(s)-> mapping.getCsvIdToExternalIdMap().put(new CsvEntityId(s[0]), new ExternalEntityId(Arrays.copyOfRange(s,1,s.length)))
 		);
 
 		checkIntegrity(mapping.getCsvIdToExternalIdMap());
 		for (IdMappingAccessor accessor : getIdAccessors()) {
-			accessor.updateMapping(namespace.getStorage().getIdMapping());
+			accessor.collectSufficientEntityIds(mapping);
 		}
-		namespace.getStorage().updateIdMapping(mapping);
+		return mapping;
 	}
 
 	@JsonIgnore
-	public Integer getHeaderSize() {
-		return getHeader().size();
+	public int getHeaderSize() {
+		return getHeader().length;
 	}
 
 	@JsonIgnore
-	public abstract List<IdMappingAccessor> getIdAccessors();
+	public abstract IdMappingAccessor[] getIdAccessors();
 
 	@JsonIgnore
-	public abstract List<String> getPrintIdFields();
+	public abstract String[] getPrintIdFields();
 
 	@JsonIgnore
-	public abstract List<String> getHeader();
+	public abstract String[] getHeader();
 
 	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace) {
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
+		PersistingIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null){
 			return mapping.getCsvIdToExternalIdMap().get(csvEntityId);
 		}
