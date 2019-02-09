@@ -24,7 +24,7 @@ public class QueryProcessor {
 	public SQStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());
 		
-		ManagedQuery mq = namespace.getQueryManager().createQuery(query);
+		ManagedQuery mq = namespace.getQueryManager().createQuery(query, user);
 		
 		// Set abilities for submitted query
 		user.addPermission(storage, new QueryPermission(null, AbilitySets.QUERY_CREATOR, mq.getId()));
