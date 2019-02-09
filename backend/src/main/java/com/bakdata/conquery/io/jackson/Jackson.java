@@ -2,10 +2,13 @@ package com.bakdata.conquery.io.jackson;
 
 import java.util.Locale;
 
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -53,5 +56,9 @@ public class Jackson {
 				.setSerializationInclusion(Include.NON_NULL)
 				//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
 				.setInjectableValues(new MutableInjectableValues());
+	}
+	
+	public static <T> T findInjectable(DeserializationContext ctxt, Class<T> clazz) throws JsonMappingException {
+		return (T) ctxt.findInjectableValue(clazz.getName(), null, null);
 	}
 }

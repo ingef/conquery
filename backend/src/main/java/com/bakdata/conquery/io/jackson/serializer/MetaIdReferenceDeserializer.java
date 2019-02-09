@@ -25,7 +25,9 @@ import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @AllArgsConstructor @NoArgsConstructor
 public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
 
@@ -39,27 +41,17 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
 			String text = parser.getText();
 			try {
-				ID id;
-				
-				//check if there was a dataset injected and if it is already a prefix
-				Dataset dataset = (Dataset) ctxt.findInjectableValue(Dataset.class.getName(), null, null);
-				if(dataset != null) {
-					id = idParser.parsePrefixed(dataset.getName(), text);
-				}
-				else {
-					id = idParser.parse(text);
-				}
-				
-				Optional<T> result = CentralRegistry.get(ctxt).getOptional(id);
+				Optional<T> result = CentralRegistry.get(ctxt).getOptional(idParser.parse(text));
 				
 				if(result.isPresent()) {
 					return result.get();
 				}
 				else {
-					throw new NoSuchElementException("Could not find entry "+id+" of type "+type);
+					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+text+" of type "+type.getName());
 				}
 			} catch(Exception e) {
-				throw new IllegalArgumentException("Could not find entry "+text+" of type "+type, e);
+				log.error("Error while resolving entry "+text+" of type "+type, e);
+				throw e;
 			}
 		}
 		else {

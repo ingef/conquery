@@ -49,10 +49,10 @@
 			</ul>
 		</div>
 		<div class="col-7">
-			<form action="/admin/datasets/${c.id}/concepts" method="post" enctype="multipart/form-data">
+			<form onsubmit="postFile(event, '/admin/datasets/${c.id}/concepts');">
 				<div class="form-group">
 					<label for="concept_schema">Add Concept</label>
-					<input type="file" name="concept_schema" title="Schema of the Concept" accept="*.concept.json" required>
+					<input type="file" class="restparam" name="concept_schema" title="Schema of the Concept" accept="*.concept.json" multiple required>
 				</div>
 				<input class="btn btn-primary" type="submit"/>
 			</form>

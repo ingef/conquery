@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.functions.Collector;
 
 import lombok.Getter;
@@ -31,7 +32,7 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		structure = StoreInfo.STRUCTURE.singleton(this);
+		structure = StoreInfo.STRUCTURE.singleton(this, new SingletonNamespaceCollection(centralRegistry));
 		collector.collect(structure);
 	}
 
