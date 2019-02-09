@@ -94,8 +94,6 @@ public class DatasetsProcessor {
 		jobManager.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
 		jobManager.addSlowJob(new SimpleJob("sendToAll " + c.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
 		//see #144  check duplicate names
-
-		Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
 	}
 
 	public void addDataset(String name) throws JSONException {

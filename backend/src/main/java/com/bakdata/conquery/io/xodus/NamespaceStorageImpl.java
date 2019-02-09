@@ -1,24 +1,24 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.io.File;
-
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
+import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.functions.Collector;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Validator;
+import java.io.File;
 import java.util.Objects;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
@@ -52,10 +52,9 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		structure = StoreInfo.STRUCTURE.singleton(this);
+		structure = StoreInfo.STRUCTURE.singleton(this, new SingletonNamespaceCollection(centralRegistry));
 		idMapping = StoreInfo.ID_MAPPING.singleton(this);
-		collector.collect(structure);
-		collector.collect(idMapping);
+		collector.collect(structure).collect(idMapping);
 	}
 
 	@Override

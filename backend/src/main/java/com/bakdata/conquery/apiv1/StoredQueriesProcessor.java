@@ -65,10 +65,14 @@ public class StoredQueriesProcessor {
 			boolean shared = patch.get("shared").asBoolean();
 			user.getRoles().forEach((Mandator mandator) -> {
 				try {
-					if (shared)
+					if (shared) {
 						addPermission(mandator, queryPermission, storage);
-					else
+					}
+					else {
 						removePermission(mandator, queryPermission, storage);
+					}
+					query.setShared(shared);
+					storage.updateQuery(query);
 				} catch (JSONException e) {
 					log.error("", e);
 				}

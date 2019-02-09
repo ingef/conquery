@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -33,6 +35,7 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
+import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -52,6 +55,9 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	private LocalDateTime creationTime = LocalDateTime.now();
 	@NotNull
 	private String[] tags = new String[0];
+	@Nullable @MetaIdRef
+	private User owner;
+	private boolean shared = false;
 	/**
 	 * The number of contained entities the last time this query was executed.
 	 * @param lastResultCount the new count for JACKSON
@@ -74,9 +80,10 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	@JsonIgnore
 	private Namespace namespace;
 
-	public ManagedQuery(IQuery query, Namespace namespace) {
+	public ManagedQuery(IQuery query, Namespace namespace, User owner) {
 		this.query = query;
 		this.namespace = namespace;
+		this.owner = owner;
 		executingThreads = namespace.getWorkers().size();
 		execution = new CountDownLatch(1);
 		dataset = namespace.getStorage().getDataset().getId();
