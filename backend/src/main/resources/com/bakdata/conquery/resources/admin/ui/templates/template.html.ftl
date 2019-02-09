@@ -82,7 +82,16 @@
 					fetch(url, {method: 'post', body: json, headers: {
 						"Content-Type": "application/json"
 					}})
-						.then(function(){location.reload();})
+						.then(function(response){
+							if (response.status.ok) {
+								setTimeout(location.reload, 2000);
+							}
+							else {
+								let message = 'Status ' + response.status + ': ' + JSON.stringify(response.json());
+	        					console.log(message);
+	        					alert(message);
+							}
+						})
 						.catch(function(error) {
 							console.log('There has been a problem with posting a file', error.message);
 						});
