@@ -232,20 +232,20 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 		if (sameTarget.isPresent()) {
 			// found permission with the same target
-			if (sameTarget.get().equals(ownedPermission)) {
+			ConqueryPermission oldPermission = sameTarget.get();
+			if(oldPermission.equals(ownedPermission)) {
 				// is actually the same permission
 				log.info("User {} has already permission {}.", this, ownedPermission);
 				return ownedPermission;
 			} else {
 				// new permission has different ability
-				ConqueryPermission oldPermission = sameTarget.get();
 				List<ConqueryPermission> reducedPermission = ConqueryPermission.reduceByOwnerAndTarget(Arrays.asList(oldPermission, ownedPermission));
-				storage.removePermission(oldPermission.getId());
+				removePermission(storage,oldPermission);
 				// has only one entry as permissions only differ in the ability
-				storage.addPermission(reducedPermission.get(0));
-				return reducedPermission.get(0);
+				ownedPermission = reducedPermission.get(0);
 			}
 		}
+		addPermissionLocal(ownedPermission);
 		storage.addPermission(ownedPermission);
 		return ownedPermission;
 	}
