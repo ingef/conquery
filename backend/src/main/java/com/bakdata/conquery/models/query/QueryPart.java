@@ -27,7 +27,7 @@ public class QueryPart implements Callable<EntityResult> {
 			QueryPlan queryPlan = this.plan.clone();
 			QPNode root = queryPlan.getRoot();
 			root.init(entity);
-			
+
 			if (requiredTables.isEmpty()) {
 				return EntityResult.notContained();
 			}

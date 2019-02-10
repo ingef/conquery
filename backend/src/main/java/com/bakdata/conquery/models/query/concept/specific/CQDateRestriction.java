@@ -62,7 +62,7 @@ public class CQDateRestriction implements CQElement {
 
 		return childAgg;
 	}
-	
+
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		child = child.resolve(context);

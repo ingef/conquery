@@ -17,7 +17,7 @@ public interface CQElement {
 	default CQElement resolve(QueryResolveContext context) {
 		return this;
 	}
-	
+
 	QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan);
 
 	default void collectRequiredQueries(Set<ManagedQueryId> requiredQueries) {}

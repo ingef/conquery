@@ -40,7 +40,7 @@ public class CQAnd implements CQElement {
 			c.collectRequiredQueries(requiredQueries);
 		}
 	}
-	
+
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		children.replaceAll(c->c.resolve(context));

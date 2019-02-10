@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
-
 import java.util.EnumSet;
 
 import com.bakdata.conquery.io.cps.CPSType;

@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
+import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -122,7 +123,9 @@ public class AdminUIResource {
 			throw new IllegalStateException("Query failed");
 		}
 
-		return managed.toCSV(config).collect(Collectors.joining("\n"));
+		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next())
+			.toCSV(managed)
+			.collect(Collectors.joining("\n"));
 	}
 
 	@GET
