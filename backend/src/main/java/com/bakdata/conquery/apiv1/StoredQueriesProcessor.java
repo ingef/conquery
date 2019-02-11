@@ -1,6 +1,10 @@
 package com.bakdata.conquery.apiv1;
 
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
+
 import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,13 +23,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Iterators;
 
-import jersey.repackaged.com.google.common.collect.Iterators;
 import lombok.extern.slf4j.Slf4j;
-
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
 
 @Slf4j
 public class StoredQueriesProcessor {
