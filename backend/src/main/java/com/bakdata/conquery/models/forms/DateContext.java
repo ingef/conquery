@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.forms;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
@@ -75,9 +76,8 @@ public class DateContext {
 
 		return dcList;
 	}
-	
-	
-//	public static List<DateContext> generateRelativeContexts(TimeAccessedResult result, IndexMode indexDate, DateUnit timeUnit, int timeCountBefore, int timeCountAfter, Dataset dataset, int shards, boolean generateQuarterWiseResults) {
-//		
-//	}
+
+	public static List<DateContext> generateRelativeContexts(LocalDate event, EventIndex eventIndex, int daysBefore, int daysAfter, DateContextMode resultMode) {
+		return null;
+	}
 }
