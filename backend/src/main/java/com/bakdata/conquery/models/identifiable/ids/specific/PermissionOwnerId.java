@@ -19,7 +19,7 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 	}
 	
 
-	enum Parser implements IId.Parser<PermissionOwnerId<?>> {
+	public enum Parser implements IId.Parser<PermissionOwnerId<?>> {
 		INSTANCE;
 		
 		@Override

@@ -39,10 +39,10 @@ public class QueryManager {
 	}
 
 	public void maintain() {
-		LocalDateTime threshhold = LocalDateTime.now().minus(10L, ChronoUnit.MINUTES);
+		LocalDateTime threshold = LocalDateTime.now().minus(10L, ChronoUnit.MINUTES);
 
 		for (ManagedQuery mq : queries.values()) {
-			if (mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshhold)) {
+			if (mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshold)) {
 				queries.remove(mq.getId());
 			}
 		}
@@ -61,6 +61,7 @@ public class QueryManager {
 		managed.setQueryId(queryId);
 		namespace.getStorage().getMetaStorage().addQuery(managed);
 		queries.add(managed);
+
 		
 		for(WorkerInformation worker : namespace.getWorkers()) {
 			worker.send(new ExecuteQuery(managed));

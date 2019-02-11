@@ -36,14 +36,14 @@ public class QueryExecutor implements Closeable {
 	public ShardResult execute(QueryPlanContext context, ManagedQuery query) {
 		QueryPlan plan = query.getQuery().createQueryPlan(context);
 		return execute(
-			context.getBlockManager(),
-			new QueryContext(context.getWorker().getStorage()),
-			query.getId(),
-			plan,
-			pool
+				context.getBlockManager(),
+				new QueryContext(context.getWorker().getStorage()),
+				query.getId(),
+				plan,
+				pool
 		);
 	}
-	
+
 	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedQueryId queryId, QueryPlan plan, ListeningExecutorService executor) {
 		Collection<Entity> entries = blockManager.getEntities().values();
 		if(entries.isEmpty()) {
@@ -51,18 +51,17 @@ public class QueryExecutor implements Closeable {
 		}
 		ShardResult result = new ShardResult();
 		result.setQueryId(queryId);
-		
-		
+
 		List<ListenableFuture<EntityResult>> futures = new ArrayList<>(entries.size());
-		
+
 		//collect required tables
 		Set<Table> requiredTables = plan
-			.getRoot()
-			.collectRequiredTables()
-			.stream()
-			.map(context.getStorage().getDataset().getTables()::getOrFail)
-			.collect(Collectors.toSet());
-		
+				.getRoot()
+				.collectRequiredTables()
+				.stream()
+				.map(context.getStorage().getDataset().getTables()::getOrFail)
+				.collect(Collectors.toSet());
+
 		for(Entity entity:entries) {
 			futures.add(executor.submit(new QueryPart(context, plan, requiredTables, entity)));
 		}
