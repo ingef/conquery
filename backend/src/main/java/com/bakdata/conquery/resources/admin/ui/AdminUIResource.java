@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 import javax.annotation.security.PermitAll;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -114,6 +115,15 @@ public class AdminUIResource {
 	public Response createPermission(
 		ConqueryPermission permission) throws JSONException {
 		processor.createPermission(permission);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("/permissions/")
+	@Consumes(ExtraMimeTypes.JSON_STRING)
+	public Response deletePermission(
+		ConqueryPermission permission) throws JSONException {
+		processor.deletePermission(permission);
 		return Response.ok().build();
 	}
 

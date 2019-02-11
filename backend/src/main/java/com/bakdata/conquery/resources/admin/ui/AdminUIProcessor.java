@@ -85,7 +85,31 @@ public class AdminUIProcessor {
 			datasets);
 	}
 	
+	/**
+	 * Handles creation of permissions.
+	 * @param permission The permission to create.
+	 * @throws JSONException is thrown upon procession JSONs.
+	 */
 	public void createPermission(ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.addPermission(getOwnerFromPermission(permission, storage), permission, storage);
+	}
+	
+	/**
+	 * Handles deletion of permissions.
+	 * @param permission The permission to delete.
+	 * @throws JSONException is thrown upon procession JSONs.
+	 */
+	public void deletePermission(ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
+	}
+	
+	/**
+	 * Retrieves the {@link PermissionOwner} from an permission that should be created or deleted.
+	 * @param permission The permission with an owner.
+	 * @param storage A storage from which the owner is retrieved.
+	 * @return The Owner.
+	 */
+	private static PermissionOwner<?> getOwnerFromPermission(ConqueryPermission permission, MasterMetaStorage storage) {
 		PermissionOwnerId<?> ownerId = permission.getOwnerId();
 		if(ownerId == null) {
 			throw new IllegalArgumentException("The ownerId is not allowed to be null.");
@@ -94,6 +118,6 @@ public class AdminUIProcessor {
 		if(owner == null) {
 			throw new IllegalArgumentException("The provided ownerId belongs to know subject.");
 		}
-		AuthorizationHelper.addPermission(owner, permission, storage);
+		return owner;
 	}
 }
