@@ -20,19 +20,43 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 public class AuthorizationHelper {
 	
 	// Dataset Instances
+	/**
+	 * Helper function for authorizing an ability on a dataset.
+	 * @param user The subject that needs authorization.
+	 * @param dataset The id of the object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
 	public static void authorize(User user, DatasetId dataset, Ability ability) {
 		authorize(user, dataset, EnumSet.of(ability));
 	}
 	
+	/**
+	 * Helper function for authorizing an ability on a dataset.
+	 * @param user The subject that needs authorization.
+	 * @param dataset The id of the object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
 	public static void authorize(User user, DatasetId dataset, EnumSet<Ability> abilities) {
 		user.checkPermission(new DatasetPermission(user.getId(), abilities, dataset));
 	}
 	
 	// Query Instances
+	/**
+	 * Helper function for authorizing an ability on a query.
+	 * @param user The subject that needs authorization.
+	 * @param query The id of the object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
 	public static void authorize(User user, ManagedQueryId query, Ability ability) {
 		authorize(user, query, EnumSet.of(ability));
 	}
 	
+	/**
+	 * Helper function for authorizing an ability on a query.
+	 * @param user The subject that needs authorization.
+	 * @param query The id of the object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
 	public static void authorize(User user, ManagedQueryId query, EnumSet<Ability> abilities) {
 		user.checkPermission(new QueryPermission(user.getId(), abilities, query));
 	}
