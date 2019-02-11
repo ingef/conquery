@@ -8,7 +8,8 @@ import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.stream.Collectors;
+import java.util.Iterator;
+import java.util.stream.Stream;
 
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.GET;
@@ -28,6 +29,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 
@@ -53,19 +55,26 @@ public class ResultCSVResource {
 		authorize(user, queryId, Ability.READ);
 
 		ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, queryId);
-		String csv = query.toCSV(config).collect(Collectors.joining("\n"));
+		Stream<String> csv =  new QueryToCSVRenderer(query.getNamespace()).toCSV(query);
 
 		log.info("Querying results for {}", queryId);
-		StreamingOutput out = (OutputStream os) -> {
-            try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
-                writer.write(csv);
-                writer.flush();
-            } catch (EofException e) {
-                log.info("User canceled download of {}", queryId);
-            } catch (Exception e) {
-                throw new WebApplicationException("Failed to load result " + queryId, e);
-            }
-        };
+		StreamingOutput out = new StreamingOutput() {
+			@Override
+			public void write(OutputStream os) throws WebApplicationException {
+				try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
+					Iterator<String> it =  csv.iterator();
+					while (it.hasNext()) {
+						writer.write(it.next());
+						writer.write(config.getCsv().getLineSeparator());
+					}
+					writer.flush();
+				} catch (EofException e) {
+					log.info("User canceled download of {}", queryId);
+				} catch (Exception e) {
+					throw new WebApplicationException("Failed to load result " + queryId, e);
+				}
+			}
+		};
 
 		return Response.ok(out).build();
 	}

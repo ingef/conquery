@@ -31,8 +31,6 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	private boolean hidden = false;
 	@JsonManagedReference @Valid @Getter @Setter
 	private List<CONNECTOR> connectors=Collections.emptyList();
-	@JsonIgnore @Setter @Getter
-	private StructureNode structureParent;
 	@NotNull @Getter @Setter
 	private DatasetId dataset;
 	

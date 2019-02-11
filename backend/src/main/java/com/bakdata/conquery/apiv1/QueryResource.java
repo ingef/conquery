@@ -23,7 +23,6 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.exceptions.QueryExecutionException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -46,14 +45,14 @@ public class QueryResource {
         this.dsUtil = new ResourceUtil(namespaces);
     }
 
-    @POST
-    public SQStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws QueryExecutionException, JSONException {
-        authorize(user, datasetId, Ability.READ);
-        // Check reused query
-        query.collectRequiredQueries().forEach((requiredQueryId) -> {
-            authorize(user, requiredQueryId, Ability.READ);
-        });
-
+	@POST
+	public SQStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
+		authorize(user, datasetId, Ability.READ);
+		// Check reused query
+		for(ManagedQueryId requiredQueryId : query.collectRequiredQueries()) {
+			authorize(user, requiredQueryId, Ability.READ);
+		}
+		
         return processor.postQuery(
                 dsUtil.getDataset(datasetId),
                 query,

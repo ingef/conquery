@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
+import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -34,7 +35,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
 
-		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query);
+		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query, null);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
@@ -42,7 +43,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			fail("Query failed");
 		}
 
-		List<String> actual = managed.toCSV(standaloneSupport.getConfig()).collect(Collectors.toList());
+		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace()).toCSV(managed).collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();
 

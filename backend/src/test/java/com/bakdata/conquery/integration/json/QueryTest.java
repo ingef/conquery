@@ -25,6 +25,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -41,6 +42,7 @@ import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
+import com.bakdata.conquery.util.io.ConfigCloner;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -94,25 +96,22 @@ public class QueryTest extends AbstractQueryEngineTest {
 		int id = 1;
 		for(ResourceFile queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
-			
-			String[][] data = CSV.streamContent(
-				support.getConfig().getCsv(), 
-				queryResults.stream(), 
-				log
-			)
+			ConqueryConfig config = ConfigCloner.clone(support.getConfig());
+			config.getCsv().setSkipHeader(false);
+			String[][] data = CSV.streamContent(config.getCsv(), queryResults.stream(), log)
 				.toArray(String[][]::new);
 
 			ConceptQuery q = new ConceptQuery();
 			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 			
-			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId);
+			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId, null);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getStatus() == QueryStatus.FAILED) {
 				fail("Query failed");
 			}
 		}
-		
+
 		//wait only if we actually did anything
 		if(!content.getPreviousQueryResults().isEmpty()) {
 			support.waitUntilWorkDone();

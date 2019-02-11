@@ -38,7 +38,6 @@ public class JsonIntegrationTest implements IntegrationTest.Simple {
 		Validator validator = Validators.newValidator();
 		ValidatorHelper.failOnError(log, validator.validate(test));
 
-
 		test.importRequiredData(conquery);
 
 		//ensure the metadata is collected
