@@ -96,6 +96,11 @@ public class AdminUIResource {
 		return Response.ok().build();
 	}
 	
+	/**
+	 * End point for retrieving information about a specific mandator.
+	 * @param mandatorId Unique id of the mandator.
+	 * @return A view holding the information about the mandator.
+	 */
 	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
 	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
 		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
