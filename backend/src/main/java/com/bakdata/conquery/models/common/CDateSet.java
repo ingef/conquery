@@ -317,6 +317,22 @@ public class CDateSet {
 			this.remove(new CDateRange(l.get(l.size()-1).getMaxValue() + 1, Integer.MAX_VALUE));
 		}
 	}
+	
+	public void retainAll(CDateRange retained) {
+		if(retained.isAll()) {
+			return;
+		}
+
+		//remove all before the range
+		if(!retained.isAtMost()) {
+			this.remove(new CDateRange(Integer.MIN_VALUE, retained.getMinValue() - 1));
+		}
+		
+		//remove all after the Range
+		if(!retained.isAtLeast()) {
+			this.remove(new CDateRange(retained.getMaxValue() + 1, Integer.MAX_VALUE));
+		}
+	}
 
 	/**
 	 * Counts the number of days represented by this CDateSet.
