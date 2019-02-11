@@ -67,6 +67,15 @@ public class QueryManager {
 		}
 		return managed;
 	}
+	
+	public ManagedQuery reexecuteQuery(ManagedQuery query) throws JSONException {
+		queries.add(query);
+		
+		for(WorkerInformation worker : namespace.getWorkers()) {
+			worker.send(new ExecuteQuery(query));
+		}
+		return query;
+	}
 
 	public void addQueryResult(ShardResult result) {
 		ManagedQuery managedQuery = queries.getOrFail(result.getQueryId());
