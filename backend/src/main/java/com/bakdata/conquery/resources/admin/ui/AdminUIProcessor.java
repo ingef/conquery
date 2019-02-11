@@ -83,9 +83,8 @@ public class AdminUIProcessor {
 			datasets);
 	}
 	
-	public void createDatasetPermission(PermissionOwnerId<?> ownerId, List<String> abilities, DatasetId datasetId) throws JSONException {
+	public void createDatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId datasetId) throws JSONException {
 		PermissionOwner<?> owner =  ownerId.getOwner(storage);
-		Set<Ability> abilitSet = abilities.stream().map(a -> Ability.valueOf(Ability.class, a)).collect(Collectors.toSet());
-		AuthorizationHelper.addPermission(owner, new DatasetPermission(ownerId, abilitSet, datasetId), storage);
+		AuthorizationHelper.addPermission(owner, new DatasetPermission(ownerId, abilities, datasetId), storage);
 	}
 }

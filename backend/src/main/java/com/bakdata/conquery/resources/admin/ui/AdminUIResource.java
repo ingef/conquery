@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -104,7 +106,7 @@ public class AdminUIResource {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postDatasetPermission(
 		@NotNull @FormDataParam("permissionowner_id") PermissionOwnerId<?> ownerId,
-		@NotEmpty @FormDataParam("abilities") List<String> abilities,
+		@NotEmpty @FormDataParam("abilities") Set<Ability> abilities,
 		@NotNull @FormDataParam("dataset_id") DatasetId datasetId) throws JSONException {
 		processor.createDatasetPermission(ownerId, abilities, datasetId);
 		return Response.ok().build();
