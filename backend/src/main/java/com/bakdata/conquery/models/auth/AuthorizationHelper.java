@@ -38,7 +38,7 @@ public class AuthorizationHelper {
 	}
 	
 	/**
-	 * Utility function to add a permission to a subject (e.g {@link User}.
+	 * Utility function to add a permission to a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
 	 * @param permission The permission to add.
 	 * @param storage A storage where the permission are added for persistence.
@@ -49,10 +49,10 @@ public class AuthorizationHelper {
 	}
 	
 	/**
-	 * Utility function to remove a permission from a subject (e.g {@link User}.
+	 * Utility function to remove a permission from a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
-	 * @param permission The permission to add.
-	 * @param storage A storage where the permission are added for persistence.
+	 * @param permission The permission to remove.
+	 * @param storage A storage where the permission is removed from.
 	 * @throws JSONException When the permission object could not be formed in to the appropriate JSON format.
 	 */
 	public static void removePermission(PermissionOwner<?> owner, ConqueryPermission permission, MasterMetaStorage storage) throws JSONException {
