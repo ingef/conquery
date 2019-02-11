@@ -2,15 +2,12 @@ package com.bakdata.conquery.models.query;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -51,20 +48,12 @@ public class QueryExecutor implements Closeable {
 		}
 		ShardResult result = new ShardResult();
 		result.setQueryId(queryId);
-
-		List<ListenableFuture<EntityResult>> futures = new ArrayList<>(entries.size());
-
-		//collect required tables
-		Set<Table> requiredTables = plan
-				.getRoot()
-				.collectRequiredTables()
-				.stream()
-				.map(context.getStorage().getDataset().getTables()::getOrFail)
-				.collect(Collectors.toSet());
-
-		for(Entity entity:entries) {
-			futures.add(executor.submit(new QueryPart(context, plan, requiredTables, entity)));
-		}
+		
+		List<ListenableFuture<EntityResult>> futures = plan
+			.execute(context, entries)
+			.map(executor::submit)
+			.collect(Collectors.toList());
+		
 		result.setFuture(Futures.allAsList(futures));
 		
 		result.getFuture().addListener(result::finish, MoreExecutors.directExecutor());
