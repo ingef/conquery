@@ -25,7 +25,7 @@ public class ConceptQuery implements IQuery {
 	@Override
 	public QueryPlan createQueryPlan(QueryPlanContext context) {
 		QueryPlan qp = QueryPlan.create();
-		qp.setRoot(root.createQueryPlan(context, qp));
+		qp.setChild(root.createQueryPlan(context, qp));
 		return qp;
 	}
 
