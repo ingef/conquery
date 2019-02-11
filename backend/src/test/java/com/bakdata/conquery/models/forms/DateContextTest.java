@@ -9,6 +9,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateRange;
 
 public class DateContextTest {
@@ -58,5 +59,28 @@ public class DateContextTest {
 		expectedRanges.add(new CDateRange(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 1, 1)));
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrderElementsOf(expectedRanges);
 		assertThat(contexts).extracting(DateContext::getFeatureGroups).containsOnly(EnumSet.of(FeatureGroup.OUTCOME));
+	}
+	
+	@Test
+	public void rangeRelCompleteTest() {
+		CDateRange event = new CDateRange(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 1, 1));
+		int daysBefore = 2;
+		int daysAfter = 1;
+		?? eventIndex = FIRST; // LAST, RANDOM
+		DateContextMode resultMode = DateContextMode.COMPLETE_ONLY;
+		
+		List<DateContext> contexts = DateContext.generateRelativeContexts(
+			event,
+			eventIndex,
+			daysBefore,
+			daysAfter,
+			resultMode);
+		
+		List<CDateRange> expectedRanges = new ArrayList<>();
+		expectedRanges.add(new CDateRange(LocalDate.of(2001, 5, 21), LocalDate.of(2003, 1, 2))); // complete -> FeatureGroup OUTCOME ?
+		expectedRanges.add(new CDateRange(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 22))); // before only -> FeatureGroup FEATURE
+		expectedRanges.add(new CDateRange(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 1, 1))); // event only eventIndex = FIRST -> FeatureGroup FEATURE
+		expectedRanges.add(new CDateRange(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 1, 2))); // after only -> FeatureGroup OUTCOME
+		assertThat(contexts).isEqualTo(expectedRanges);
 	}
 }
