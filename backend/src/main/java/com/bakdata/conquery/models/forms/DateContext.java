@@ -38,8 +38,6 @@ public class DateContext {
 	 * Returns the date ranges that fit into a mask specified as date range, which
 	 * are optional subdivided in to year-wise or quarter-wise date ranges.
 	 *
-	 * @param dates
-	 *            The event dates which are processed.
 	 * @param dateRangeMask
 	 *            The mask that is applied onto the dates.
 	 * @param resultMode
