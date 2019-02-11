@@ -369,16 +369,27 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		int endYear = this.getMax().getYear();
 		int endQuarter = QuarterUtils.getQuarter(this.getMax());
 
-		List<CDateRange> quarterList = new ArrayList<>();
-		int currentQuarter = startQuarter;
-		for (int year = startYear; !(year >= endYear && currentQuarter > endQuarter);) {
-			quarterList.add(QuarterUtils.fromQuarter(year, currentQuarter));
+		if(startYear == endYear && startQuarter == endQuarter) {
+			return Arrays.asList(this);
+		}
+		// Range covers multiple quarters
+		List<CDateRange> ranges = new ArrayList<>();
+		
+
+		// First quarter begins with this range
+		ranges.add(CDateRange.of(this.getMin(), QuarterUtils.getLastDayOfQuarter(startYear, startQuarter)));
+		// Last year end with this range
+		ranges.add(CDateRange.of(QuarterUtils.getFirstDayOfQuarter(endYear, endQuarter), this.getMax()));
+		
+		int currentQuarter = startQuarter+1;
+		for (int year = startYear; !(year >= endYear && currentQuarter > endQuarter-1);) {
+			ranges.add(QuarterUtils.fromQuarter(year, currentQuarter));
 			if (currentQuarter >= 4) {
 				year++;
 			}
 			currentQuarter = QuarterUtils.getNextQuarter(currentQuarter);
 		}
 
-		return quarterList;
+		return ranges;
 	}
 }

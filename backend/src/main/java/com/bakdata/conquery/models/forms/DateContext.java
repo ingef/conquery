@@ -4,14 +4,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 
-import com.bakdata.conquery.db.DBMaster;
-import com.bakdata.conquery.db.DateUnit;
-import com.bakdata.conquery.models.Dataset;
 import com.bakdata.conquery.models.common.CDateRange;
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.forms.EventPeriods.IndexMode;
-import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.time.TimeAccessedResult;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -57,39 +50,28 @@ public class DateContext {
 	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode resultMode) {
 		List<DateContext> dcList = new ArrayList<>();
 
-		if (resultMode == DateContextMode.COMPLETE) {
-			if (dateRangeMask.intersects(entryDateRange)) {
-				DateContext dc = new DateContext(dateRangeMask);
-				dc.setFeatureGroups(EnumSet.of(FeatureGroup.OUTCOME));
-				dcList.add(dc);
-			}
-		}
+		// Add whole time span
+		DateContext dc = new DateContext(dateRangeMask);
+		dc.setFeatureGroups(EnumSet.of(FeatureGroup.OUTCOME));
+		dcList.add(dc);
 
 		// Handle years
 		if (resultMode == DateContextMode.YEAR_WISE) {
 			List<CDateRange> maskYears = dateRangeMask.getCoveredYears();
-			for (CDateRange entryDateRange : dates.asRanges()) {
-				for (CDateRange yearInMask : maskYears) {
-					if (yearInMask.intersects(entryDateRange)) {
-						DateContext dc = new DateContext(yearInMask);
-						dc.setFeatureGroups(EnumSet.of(FeatureGroup.OUTCOME));
-						dcList.add(dc);
-					}
-				}
+			for (CDateRange yearInMask : maskYears) {
+				dc = new DateContext(yearInMask);
+				dc.setFeatureGroups(EnumSet.of(FeatureGroup.OUTCOME));
+				dcList.add(dc);
 			}
 		}
 
 		// Handle quarters
 		if (resultMode == DateContextMode.QUARTER_WISE) {
 			List<CDateRange> maskQuarters = dateRangeMask.getCoveredQuarters();
-			for (CDateRange entryDateRange : dates.asRanges()) {
-				for (CDateRange quarterInMask : maskQuarters) {
-					if (quarterInMask.intersects(entryDateRange)) {
-						DateContext dc = new DateContext(quarterInMask);
-						dc.setFeatureGroups(EnumSet.of(FeatureGroup.OUTCOME));
-						dcList.add(dc);
-					}
-				}
+			for (CDateRange quarterInMask : maskQuarters) {
+				dc = new DateContext(quarterInMask);
+				dc.setFeatureGroups(EnumSet.of(FeatureGroup.OUTCOME));
+				dcList.add(dc);
 			}
 		}
 
@@ -97,7 +79,7 @@ public class DateContext {
 	}
 	
 	
-	public static List<DateContext> generateRelativeContexts(DBMaster dbMaster, TimeAccessedResult result, IndexMode indexDate, DateUnit timeUnit, int timeCountBefore, int timeCountAfter, Dataset dataset, int shards, boolean generateQuarterWiseResults) {
-		
-	}
+//	public static List<DateContext> generateRelativeContexts(TimeAccessedResult result, IndexMode indexDate, DateUnit timeUnit, int timeCountBefore, int timeCountAfter, Dataset dataset, int shards, boolean generateQuarterWiseResults) {
+//		
+//	}
 }

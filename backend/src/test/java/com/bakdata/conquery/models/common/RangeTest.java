@@ -106,7 +106,7 @@ class RangeTest {
 		expected.add(new CDateRange(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)));
 		expected.add(new CDateRange(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 3, 15)));
 		
-		assertThat(dateRange.getCoveredYears()).containsAll(expected);
+		assertThat(dateRange.getCoveredYears()).containsExactlyInAnyOrderElementsOf(expected);
 	}
 	
 	@Test
@@ -114,14 +114,14 @@ class RangeTest {
 		CDateRange dateRange = new CDateRange(LocalDate.of(2000, 9, 2), LocalDate.of(2002, 3, 15));
 		
 		List<CDateRange> expected = new ArrayList<>();
-		expected.add(new CDateRange(LocalDate.of(2000, 7, 1), LocalDate.of(2000, 9, 30)));
+		expected.add(new CDateRange(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 9, 30)));
 		expected.add(new CDateRange(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)));
 		expected.add(new CDateRange(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)));
 		expected.add(new CDateRange(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 6, 30)));
 		expected.add(new CDateRange(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)));
 		expected.add(new CDateRange(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)));
+		expected.add(new CDateRange(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 15)));
 		
-		assertThat(dateRange.getCoveredQuarters()).containsExactlyElementsOf(expected);
+		assertThat(dateRange.getCoveredQuarters()).containsExactlyInAnyOrderElementsOf(expected);
 	}
 }
