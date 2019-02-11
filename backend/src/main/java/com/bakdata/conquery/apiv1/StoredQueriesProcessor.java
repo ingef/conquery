@@ -61,7 +61,7 @@ public class StoredQueriesProcessor {
 			storage.updateQuery(query);
 		} else if (patch.has("shared")) {
 			authorize(user, queryId, Ability.SHARE);
-			QueryPermission queryPermission = new QueryPermission(null, AbilitySets.QUERY_EXECUTOR, queryId);
+			QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, queryId);
 			boolean shared = patch.get("shared").asBoolean();
 			user.getRoles().forEach((Mandator mandator) -> {
 				try {

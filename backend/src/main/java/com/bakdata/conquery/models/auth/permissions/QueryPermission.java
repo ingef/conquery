@@ -13,7 +13,11 @@ import lombok.EqualsAndHashCode;
 @CPSType(id="QUERY_PERMISSION", base=ConqueryPermission.class)
 @EqualsAndHashCode(callSuper=true)
 public class QueryPermission extends IdentifiableInstancePermission<ManagedQueryId>{
-
+	
+	public QueryPermission(Set<Ability> abilities, ManagedQueryId instanceId) {
+		super(null, abilities, instanceId);
+	}
+	
 	public QueryPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, ManagedQueryId instanceId) {
 		super(ownerId, abilities, instanceId);
 	}
