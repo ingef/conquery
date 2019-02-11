@@ -77,7 +77,7 @@ public class DateContext {
 		return dcList;
 	}
 
-	public static List<DateContext> generateRelativeContexts(LocalDate event, EventIndex eventIndex, int daysBefore, int daysAfter, DateContextMode resultMode) {
+	public static List<DateContext> generateRelativeContexts(int event, EventIndex eventIndex, int featureTime, int outcomeTime, DateContextMode resultMode) {
 		return null;
 	}
 }

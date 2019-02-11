@@ -68,19 +68,40 @@ public class DateContextTest {
 
 	@Test
 	public void rangeRelCompleteTest() {
-		LocalDate event = LocalDate.of(2001, 5, 23);
-		int daysBefore = 2;
-		int daysAfter = 1;
-		EventIndex eventIndex = EventIndex.FIRST; // LAST, RANDOM
+		Resolution resolution = Resolution.YEARS;
 		DateContextMode resultMode = DateContextMode.YEAR_WISE;
+		int event = CDate.ofLocalDate(LocalDate.of(2001, 5, 23)); //because of the yearwise resolution that means that whole 2001 is our event range
+		int featureTime = 2; //we want two features years (while one is in this case the event year itself)
+		int outcomeTime = 1;
+		EventIndex eventIndex = EventIndex.FEATURE; //meaning the feature year(because of the yearwise resolution) itself should be counted to the feature time
+		//if eventIndex was NEITHER we would want two additional years before the event year as the feature range and one year afterwards
+		
 
-		List<DateContext> contexts = DateContext.generateRelativeContexts(event, eventIndex, daysBefore, daysAfter, resultMode);
+		List<DateContext> contexts = DateContext.generateRelativeContexts(event, eventIndex, featureTime, outcomeTime, resultMode);
 
-		List<CDateRange> expectedRanges = Arrays
-			.asList(
-				new CDateRange(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 24)), // complete -> FeatureGroup OUTCOME ?
-				new CDateRange(LocalDate.of(2001, 5, 21), LocalDate.of(2001, 5, 23)), // before only (FIRST -> incl. event) -> FeatureGroup FEATURE
-				new CDateRange(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 5, 24))); // after only -> FeatureGroup OUTCOME
+		List<CDateRange> expectedRanges = Arrays.asList(											  // V this is the index (Integer) which is always null in the absolute case
+			new CDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2001, 12, 31)), // complete feature null -> FeatureGroup FEATURE
+			new CDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2000, 12, 31)), // feature  			-1 -> FeatureGroup FEATURE
+			new CDateRange(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 12, 31)), // feature   			 0 -> FeatureGroup FEATURE
+			new CDateRange(LocalDate.of(2000, 1, 1), LocalDate.of(2002, 12, 31)), // complete outcome null -> FeatureGroup OUTCOME
+			new CDateRange(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31))  // outcome  			+1 -> FeatureGroup OUTCOM
+		);
 		assertThat(contexts).isEqualTo(expectedRanges);
+		
+		/*
+		 Du kannst relativ modellieran als:
+		 	1. bestimme den eventzeitraum mit eventTag + resolution 	=> eventRange
+		 	2. bestimme featureRange durch featureTime + resolution
+		 		a) endet entweder vor eventRange oder mit dem Ende von EventRange je nach eventIdex
+		 		b) startet featureTime Zeiteinheiten davor
+		 		c) benutze absolute Logik um resultMode aus diesem Bereich zu machen
+		 	2. bestimme outcomeRange durch outcomeTime + resolution
+		 		a) startet entweder nach eventRange oder mit dem Anfang von EventRange je nach eventIdex
+		 		b) endet outcomeTime Zeiteinheiten danach
+		 		c) benutze absolute Logik um resultMode aus diesem Bereich zu machen
+		 	3. setze Indizes
+		 		eventRange hat 0 falls vorhanden
+		 		alle anderen haben ihren offset in Zeiteinheiten
+		 */
 	}
 }
