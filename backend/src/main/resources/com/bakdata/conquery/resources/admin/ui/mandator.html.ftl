@@ -18,7 +18,7 @@
 				  <label for="abilities">Abilities:</label>
 					<#list c.abilities as ability>
 						<div class="form-check">
-							<input class="form-check-input" type="checkbox" name="abilities" value="${ability}" id="defaultCheck1">
+							<input class="form-check-input" type="checkbox" name="abilities" value="${ability}" id="abilitySet">
 							<label class="form-check-label" for="abilities">
 								${ability}
 							</label>
@@ -33,7 +33,7 @@
 						</#list>
 					</select>
 				</div>
-				<input class="btn btn-primary" type="submit"/>
+				<input class="btn btn-primary" type="submit" onclick="event.preventDefault(); fetch('/admin/permissions', {method: 'post', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({type: 'DATASET_PERMISSION', ownerId: document.getElementById('permissionowner_id').value, abilities: document.getElementById('abilitySet').value, instanceId:document.getElementById('dataset_id').value})})"/>
 			</div> 
 		</form>
 		<h3>Query Permissions</h3>

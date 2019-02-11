@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -83,8 +85,15 @@ public class AdminUIProcessor {
 			datasets);
 	}
 	
-	public void createDatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId datasetId) throws JSONException {
+	public void createPermission(ConqueryPermission permission) throws JSONException {
+		PermissionOwnerId<?> ownerId = permission.getOwnerId();
+		if(ownerId == null) {
+			throw new IllegalArgumentException("The ownerId is not allowed to be null.");
+		}
 		PermissionOwner<?> owner =  ownerId.getOwner(storage);
-		AuthorizationHelper.addPermission(owner, new DatasetPermission(ownerId, abilities, datasetId), storage);
+		if(owner == null) {
+			throw new IllegalArgumentException("The provided ownerId belongs to know subject.");
+		}
+		AuthorizationHelper.addPermission(owner, permission, storage);
 	}
 }

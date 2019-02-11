@@ -26,6 +26,8 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -107,13 +109,11 @@ public class AdminUIResource {
 	}
 	
 	@POST
-	@Path("/permissions/dataset")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postDatasetPermission(
-		@NotNull @FormDataParam("permissionowner_id") PermissionOwnerId<?> ownerId,
-		@NotEmpty @FormDataParam("abilities") Set<Ability> abilities,
-		@NotNull @FormDataParam("dataset_id") DatasetId datasetId) throws JSONException {
-		processor.createDatasetPermission(ownerId, abilities, datasetId);
+	@Path("/permissions/")
+	@Consumes(ExtraMimeTypes.JSON_STRING)
+	public Response createPermission(
+		ConqueryPermission permission) throws JSONException {
+		processor.createPermission(permission);
 		return Response.ok().build();
 	}
 
