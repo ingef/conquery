@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.messages.namespaces.specific;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.apache.commons.lang3.builder.ToStringExclude;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.MatchingStats;
@@ -19,15 +17,13 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 @CPSType(id="UPDATE_METADATA", base=NamespacedMessage.class)
-@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString
+@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @ToString
 public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
-	
 	private final WorkerId source;
-	@ToStringExclude
+	@ToString.Exclude
 	private final Map<ConceptElementId<?>, MatchingStats.Entry> values;
 	
 	@Override
