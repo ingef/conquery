@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
+import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -36,7 +37,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
 
-		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query, null);
+		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query, DevAuthConfig.USER);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
