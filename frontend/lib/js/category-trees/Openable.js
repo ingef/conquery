@@ -12,10 +12,13 @@ type StateType = {
 
 const Openable = (Component: any) => {
   class EnhancedComponent extends React.Component<PropsType, StateType> {
-    // Can't use class properties here anymore since @babel/plugin-proposal-class-properties
-    constructor(props) {
+    state: StateType;
+
+    constructor(props: PropsType) {
       super(props);
 
+      // Can't use class properties here anymore since upgrading to babel 7
+      // and using @babel/plugin-proposal-class-properties
       this.state = {
         open: props.openInitially || false
       };
