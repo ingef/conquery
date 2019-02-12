@@ -3,35 +3,9 @@
 // TODO: Refactor the code and get rid of them
 
 module.exports = {
-  "env": {
-    "development": {
-      "presets": [
-        ["@babel/preset-env", {"modules": false}],
-        "@babel/preset-react",
-        "@babel/preset-flow"
-      ],
-      "plugins": [
-        "react-hot-loader/babel",
-        "@babel/plugin-proposal-export-namespace-from",
-        [ "@babel/plugin-proposal-class-properties", {loose: true}],
-        "@babel/plugin-proposal-export-default-from"
-      ]
-    },
-    "test": {
-      "presets": ["@babel/preset-env", "@babel/preset-react", "@babel/preset-flow" ],
-      "plugins": [
-        "@babel/plugin-proposal-export-namespace-from",
-        [ "@babel/plugin-proposal-class-properties", {loose: true}],
-        "@babel/plugin-proposal-export-default-from"
-      ]
-    },
-    "production": {
-      "presets": ["@babel/preset-env", "@babel/preset-react", "@babel/preset-flow" ],
-      "plugins": [
-        "@babel/plugin-proposal-export-namespace-from",
-        [ "@babel/plugin-proposal-class-properties", {loose: true}],
-        "@babel/plugin-proposal-export-default-from"
-      ]
-    }
-  }
+  "presets": ["react-app"],
+  "plugins": [
+    "@babel/plugin-proposal-export-default-from",
+    "@babel/plugin-proposal-export-namespace-from",
+  ]
 }

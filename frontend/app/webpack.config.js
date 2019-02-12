@@ -16,7 +16,7 @@ module.exports = ['en', 'de'].map(lang => ({
   devtool: ifDevelopment('eval-source-map'),
   entry: {
     main: removeEmpty([
-      'babel-polyfill',
+      "@babel/polyfill",
       ifDevelopment('webpack-hot-middleware/client?reload=true'),
       path.join(__dirname, `src/js/main.${lang}.js`)
     ])
