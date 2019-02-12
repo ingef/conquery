@@ -75,7 +75,9 @@ public class UpdateMatchingStats extends Job {
 					
 					sub.report(1);
 				}
-				w.send(new UpdateElementMatchingStats(w.getInfo().getId(), messages));
+				if(!messages.isEmpty()) {
+					w.send(new UpdateElementMatchingStats(w.getInfo().getId(), messages));
+				}
 			}
 			sub.done();
 		}

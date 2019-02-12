@@ -57,7 +57,7 @@ public class QueryManager {
 			namespace.getStorage().getMetaStorage(),
 			namespace
 		));
-		ManagedQuery managed = new ManagedQuery(query, namespace, user);
+		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
 		managed.setQueryId(queryId);
 		namespace.getStorage().getMetaStorage().addQuery(managed);
 		queries.add(managed);
@@ -67,6 +67,16 @@ public class QueryManager {
 			worker.send(new ExecuteQuery(managed));
 		}
 		return managed;
+	}
+	
+	public ManagedQuery reexecuteQuery(ManagedQuery query) throws JSONException {
+		query.initExecutable(namespace);
+		queries.add(query);
+		
+		for(WorkerInformation worker : namespace.getWorkers()) {
+			worker.send(new ExecuteQuery(query));
+		}
+		return query;
 	}
 
 	public void addQueryResult(ShardResult result) {
