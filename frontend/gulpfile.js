@@ -1,25 +1,25 @@
-const gulp = require('gulp');
+const { series, src, dest } = require('gulp');
 const babel = require('gulp-babel');
 
-gulp.task('default', ['js', 'styles', 'images', 'localization']);
-
-gulp.task('js', () => {
-  return gulp.src('lib/js/**/*.js')
+function js() {
+  return src('lib/js/**/*.js')
     .pipe(babel())
-    .pipe(gulp.dest('dist/js'));
-});
+    .pipe(dest('dist/js'));
+};
 
-gulp.task('styles', () => {
-  return gulp.src('lib/styles/**/*.sass')
-    .pipe(gulp.dest('dist/styles'));
-});
+function styles() {
+  return src('lib/styles/**/*.sass')
+    .pipe(dest('dist/styles'));
+};
 
-gulp.task('images', () => {
-  return gulp.src('lib/images/**/*')
-    .pipe(gulp.dest('dist/images'));
-});
+function images() {
+  return src('lib/images/**/*')
+    .pipe(dest('dist/images'));
+};
 
-gulp.task('localization', () => {
-  return gulp.src('lib/localization/**/*.yml')
-    .pipe(gulp.dest('dist/localization'));
-});
+function localization() {
+  return src('lib/localization/**/*.yml')
+    .pipe(dest('dist/localization'));
+};
+
+exports.default = series(js, styles, images, localization);
