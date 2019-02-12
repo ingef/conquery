@@ -24,12 +24,12 @@ import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor(access=AccessLevel.PROTECTED)
 public class QueryPlan extends QPChainNode implements Cloneable {
-	private final List<Aggregator<?>> aggregators = new ArrayList<>();
+	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
+	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
 
 	public static QueryPlan create() {
 		QueryPlan plan = new QueryPlan();
-
-		plan.aggregators.add(new SpecialDateUnion());
+		plan.aggregators.add(plan.specialDateUnion);
 
 		return plan;
 	}
@@ -39,7 +39,7 @@ public class QueryPlan extends QPChainNode implements Cloneable {
 	 * @return this {@link QueryPlan}'s SpecialDateUnion
 	 */
 	public SpecialDateUnion getIncluded() {
-		return (SpecialDateUnion) aggregators.get(0);
+		return specialDateUnion;
 	}
 
 	@Override
@@ -65,6 +65,7 @@ public class QueryPlan extends QPChainNode implements Cloneable {
 	public QueryPlan clone(QueryPlan plan, QueryPlan clone) {
 		for(Aggregator<?> agg:aggregators)
 			clone.aggregators.add(agg.clone());
+		clone.specialDateUnion = (SpecialDateUnion) clone.aggregators.get(aggregators.indexOf(specialDateUnion));
 		clone.setChild(getChild().clone(this, clone));
 		return clone;
 	}

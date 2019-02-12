@@ -38,7 +38,7 @@ public class CQExternalResolved implements CQElement {
 					dataset,
 					ConqueryConstants.ALL_IDS_TABLE
 				),
-				(SpecialDateUnion) plan.getAggregators().get(0)
+				plan.getIncluded()
 			),
 			dataset,
 			values);

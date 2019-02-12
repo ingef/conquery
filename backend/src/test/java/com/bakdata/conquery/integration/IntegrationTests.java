@@ -10,6 +10,7 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Pattern;
@@ -113,6 +114,8 @@ public class IntegrationTests {
 				list.add(readTest(child.getValue(), child.getName()));
 			}
 		}
+		
+		list.sort(Comparator.comparing(DynamicNode::getDisplayName));
 		
 		return dynamicContainer(
 			currentDir.getName(),

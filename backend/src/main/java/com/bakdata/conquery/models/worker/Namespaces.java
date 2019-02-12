@@ -48,6 +48,11 @@ public class Namespaces implements NamespaceCollection {
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		return datasets.get(dataset).getStorage().getCentralRegistry();
 	}
+	
+	@Override
+	public CentralRegistry getMetaRegistry() {
+		return metaStorage.getCentralRegistry();
+	}
 
 	public synchronized void register(SlaveInformation slave, WorkerInformation info) {
 		WorkerInformation old = workers.getOptional(info.getId()).orElse(null);

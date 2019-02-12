@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -54,9 +55,11 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			.as("Results for %s are not as expected.", this)
 			.containsExactlyInAnyOrderElementsOf(expected);
 		//check that getLastResultCount returns the correct size
-		assertThat(managed.getLastResultCount())
-			.as("Result count for %s is not as expected.", this)
-			.isEqualTo(expected.size()-1);
+		if(managed.fetchContainedEntityResult().noneMatch(MultilineContainedEntityResult.class::isInstance)) {
+			assertThat(managed.getLastResultCount())
+				.as("Result count for %s is not as expected.", this)
+				.isEqualTo(expected.size()-1);
+		}
 
 		log.info(
 				"INTEGRATION TEST SUCCESSFUL {} {} on {} rows",
