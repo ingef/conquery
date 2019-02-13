@@ -1,7 +1,8 @@
-package com.bakdata.conquery.commands;
+package com.bakdata.conquery.io.jersey;
 
 import org.glassfish.jersey.server.ResourceConfig;
 
+import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
@@ -31,5 +32,7 @@ public class RESTServer {
 		jersey.register(CORSResponseFilter.class);
 		//disable all browser caching if not expressly wanted
 		jersey.register(CachingFilter.class);
+		
+		jersey.register(new PathParamInjector());
 	}
 }

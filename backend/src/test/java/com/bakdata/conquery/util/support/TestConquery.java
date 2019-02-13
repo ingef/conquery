@@ -159,6 +159,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		
 		//make buckets very small
 		config.getCluster().setEntityBucketSize(1);
+
 		return config;
 	}
 	

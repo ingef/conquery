@@ -25,7 +25,7 @@ public class ConquerySerializersModule extends SimpleModule {
 		addDeserializer(CurrencyUnit.class, new CurrencyUnitDeserializer());
 		addSerializer(CurrencyUnit.class, new CurrencyUnitSerializer());
 		addAbstractTypeMapping(Int2ObjectMap.class, Int2ObjectOpenHashMap.class);
-		
+
 		//register IdKeySerializer for all id types
 		List<Class<?>> idTypes = CPSTypeIdResolver
 			.SCAN_RESULT

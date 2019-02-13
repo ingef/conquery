@@ -1,4 +1,5 @@
 package com.bakdata.conquery.models.auth.permissions;
+
 import java.util.EnumSet;
 
 public class AbilitySets {

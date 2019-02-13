@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -31,6 +32,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
+import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -92,8 +94,10 @@ public class CQConcept implements CQElement {
 				new ConceptNode(
 					concepts,
 					t,
-					selectValidityDateColumn(t),
-					conceptChild(filters, aggregators)
+					new ValidityDateNode(
+						selectValidityDateColumn(t),
+						conceptChild(filters, aggregators)
+					)
 				)
 			);
 		}
@@ -137,5 +141,13 @@ public class CQConcept implements CQElement {
 			return t.getResolvedConnector().getValidityDates().get(0).getColumn();
 		else
 			return null;
+	}
+	
+	@Override
+	public void collectSelects(Deque<Select> select) {
+		select.addAll(select);
+		for(CQTable table:tables) {
+			select.addAll(table.getSelect());
+		}
 	}
 }

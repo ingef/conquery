@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.common;
 
+import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.types.specific.DateRangeType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -10,6 +12,9 @@ import lombok.experimental.Wither;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.List;
+import java.util.OptionalInt;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @NoArgsConstructor
@@ -19,14 +24,6 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	private int min = Integer.MIN_VALUE;
 	private int max = Integer.MAX_VALUE;
-
-	public CDateRange(Range<Integer> orig) {
-		this(orig.getMin(), orig.getMax());
-	}
-
-	public CDateRange(LocalDate min, LocalDate max) {
-		this(CDate.ofLocalDate(min), CDate.ofLocalDate(max));
-	}
 
 	public CDateRange(int min, int max) {
 		this.min = min;
@@ -61,7 +58,10 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange of(Range<LocalDate> value) {
-		return new CDateRange(CDate.ofLocalDate(value.getMin()), CDate.ofLocalDate(value.getMax()));
+		return new CDateRange(
+			CDate.ofLocalDate(value.getMin(), Integer.MIN_VALUE),
+			CDate.ofLocalDate(value.getMax(), Integer.MAX_VALUE)
+		);
 	}
 
 	/**
@@ -109,7 +109,10 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	 */
 	@JsonCreator
 	public static CDateRange of(LocalDate min, LocalDate max) {
-		return new CDateRange(CDate.ofLocalDate(min), CDate.ofLocalDate(max));
+		return new CDateRange(
+			CDate.ofLocalDate(min, Integer.MIN_VALUE),
+			CDate.ofLocalDate(max, Integer.MAX_VALUE)
+		);
 	}
 
 	/**
@@ -319,4 +322,8 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		return new Range<>(getMin(), getMax());
 	}
 
+	@JsonCreator
+	public static CDateRange parse(String value) throws ParsingException {
+		return DateRangeType.parseISORange(value);
+	}
 }

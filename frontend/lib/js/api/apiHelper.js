@@ -7,10 +7,11 @@
 // (to exclude others that are relevant to the frontend only)
 // Some keys are added (e.g. the query type attribute)
 
-import {
-  DAYS_BEFORE,
-  DAYS_OR_NO_EVENT_BEFORE,
-} from '../common/constants/timebasedQueryOperatorTypes';
+// TODO: Use, once feature is complete
+// import {
+//   DAYS_BEFORE,
+//   DAYS_OR_NO_EVENT_BEFORE,
+// } from '../common/constants/timebasedQueryOperatorTypes';
 
 import {
   isEmpty
@@ -114,28 +115,31 @@ const createQueryConcepts = (query) => {
   })
 }
 
-const getDayRange = (condition) => {
-  if (condition.operator === DAYS_BEFORE)
-    return [
-      { minDays: condition.minDays },
-      { maxDays: condition.maxDays },
-    ];
+// TODO: Use, once feature is complete
+// const getDayRange = (condition) => {
+//   if (condition.operator === DAYS_BEFORE)
+//     return [
+//       { minDays: condition.minDays },
+//       { maxDays: condition.maxDays },
+//     ];
 
-  if (condition.operator === DAYS_OR_NO_EVENT_BEFORE)
-    return [
-      { minDays: condition.minDaysOrNoEvent },
-      { maxDays: condition.maxDaysOrNoEvent },
-    ];
+//   if (condition.operator === DAYS_OR_NO_EVENT_BEFORE)
+//     return [
+//       { minDays: condition.minDaysOrNoEvent },
+//       { maxDays: condition.maxDaysOrNoEvent },
+//     ];
 
-  return [{}, {}];
-};
+//   return [{}, {}];
+// };
 
 const transformTimebasedQueryToApi = (query) => ({
     type: "CONCEPT_QUERY",
     root: {
         type: "AND",
         children: query.conditions.map(condition => {
-          const [ minDays, maxDays ] = getDayRange(condition);
+          // TODO: Use, once feature is complete
+          // const [ minDays, maxDays ] = getDayRange(condition);
+
           return {
             type: condition.operator,
             sampler: "EARLIEST",

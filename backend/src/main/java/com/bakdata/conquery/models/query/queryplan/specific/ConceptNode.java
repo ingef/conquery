@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -18,15 +17,13 @@ public class ConceptNode extends QPChainNode {
 
 	private final ConceptElement[] concepts;
 	private final CQTable table;
-	private final Column validityDateColumn;
 	private boolean active = false;
 	private EntityRow currentRow = null;
 	
-	public ConceptNode(ConceptElement[] concepts, CQTable table, Column validityDateColumn, QPNode child) {
+	public ConceptNode(ConceptElement[] concepts, CQTable table, QPNode child) {
 		super(child);
 		this.concepts = concepts;
 		this.table = table;
-		this.validityDateColumn = validityDateColumn;
 	}
 
 	@Override
@@ -38,9 +35,9 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public boolean nextEvent(Block block, int event) {
 		if (active) {
-
+			
+			//check concepts
 			int[] mostSpecificChildren;
-
 			if (currentRow.getCBlock().getMostSpecificChildren() != null
 				&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
 
@@ -68,7 +65,7 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		return new ConceptNode(concepts, table, validityDateColumn, getChild().clone(plan, clone));
+		return new ConceptNode(concepts, table, getChild().clone(plan, clone));
 	}
 
 	@Override
@@ -81,6 +78,6 @@ public class ConceptNode extends QPChainNode {
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		active = table.getResolvedConnector().getTable().equals(currentTable);
 		if(active)
-			super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
+			super.nextTable(ctx, currentTable);
 	}
 }
