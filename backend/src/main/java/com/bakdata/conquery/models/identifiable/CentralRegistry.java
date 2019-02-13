@@ -43,9 +43,15 @@ public class CentralRegistry implements Injectable {
 	}
 
 	public static CentralRegistry get(DeserializationContext ctxt) throws JsonMappingException {
-		CentralRegistry result = (CentralRegistry) ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+		CentralRegistry result = (CentralRegistry) ctxt.findInjectableValue(CentralRegistry.class.getName(), null, null);
 		if(result == null) {
-			throw new NoSuchElementException("Could not find injected central registry");
+			NamespaceCollection alternative = (NamespaceCollection)ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+			if(alternative == null) {
+				throw new NoSuchElementException("Could not find injected central registry");
+			}
+			else {
+				return alternative.getMetaRegistry();
+			}
 		}
 		else {
 			return result;

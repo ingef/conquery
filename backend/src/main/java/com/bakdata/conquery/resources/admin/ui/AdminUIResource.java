@@ -24,6 +24,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -115,7 +116,7 @@ public class AdminUIResource {
 	@POST
 	@Path("/query")
 	public String query(IQuery query) throws JSONException {
-		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, null);
+		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, DevAuthConfig.USER);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 

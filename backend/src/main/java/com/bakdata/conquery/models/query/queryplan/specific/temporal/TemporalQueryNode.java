@@ -61,8 +61,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {
-		reference.getChild().getRoot().collectRequiredTables(out);
-		preceding.getChild().getRoot().collectRequiredTables(out);
+		reference.getChild().collectRequiredTables(out);
+		preceding.getChild().collectRequiredTables(out);
 	}
 
 	/**
@@ -74,8 +74,8 @@ public class TemporalQueryNode extends QPNode {
 	public void init(Entity entity) {
 		super.init(entity);
 
-		reference.getChild().getRoot().init(entity);
-		preceding.getChild().getRoot().init(entity);
+		reference.getChild().init(entity);
+		preceding.getChild().init(entity);
 	}
 
 	/**
@@ -84,8 +84,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public void nextBlock(Block block) {
-		reference.getChild().getRoot().nextBlock(block);
-		preceding.getChild().getRoot().nextBlock(block);
+		reference.getChild().nextBlock(block);
+		preceding.getChild().nextBlock(block);
 	}
 
 	/**
@@ -95,8 +95,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		reference.getChild().getRoot().nextTable(ctx, currentTable);
-		preceding.getChild().getRoot().nextTable(ctx, currentTable);
+		reference.getChild().nextTable(ctx, currentTable);
+		preceding.getChild().nextTable(ctx, currentTable);
 	}
 
 	/**
@@ -107,8 +107,8 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public boolean nextEvent(Block block, int event) {
-		reference.getChild().getRoot().aggregate(block, event);
-		preceding.getChild().getRoot().aggregate(block, event);
+		reference.getChild().aggregate(block, event);
+		preceding.getChild().aggregate(block, event);
 
 		return true;
 	}
@@ -122,7 +122,7 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public final boolean isContained() {
-		if (!(reference.getChild().getRoot().isContained() && preceding.getChild().getRoot().isContained())) {
+		if (!(reference.getChild().isContained() && preceding.getChild().isContained())) {
 			return false;
 		}
 

@@ -26,9 +26,9 @@ public class IdMappingTest {
 		return Stream.of(Arguments.of(data));
 	}
 
-	@ParameterizedTest @MethodSource({ "testData" }) public void generalTest(List<Pair<String, List<String>>> data) {
+	@ParameterizedTest @MethodSource({ "testData" })
+	public void generalTest(List<Pair<String, List<String>>> data) {
 		TestIdMappingConfig mappingConfig = new TestIdMappingConfig();
-		// TODO
 	}
 
 	public class TestIdMappingConfig extends IdMappingConfig {

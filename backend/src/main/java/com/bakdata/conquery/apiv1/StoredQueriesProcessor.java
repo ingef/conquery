@@ -39,7 +39,7 @@ public class StoredQueriesProcessor {
 	public List<SQStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
 		Collection<ManagedQuery> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllQueries();
 
-		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(mq, URLBuilder.fromRequest(req))).collect(Collectors.toList());
+		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(namespaces.getMetaStorage(), mq, URLBuilder.fromRequest(req))).collect(Collectors.toList());
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedQuery query) {
@@ -83,7 +83,7 @@ public class StoredQueriesProcessor {
 	public SQStatus getQueryWithSource(Dataset dataset, ManagedQueryId queryId) {
 		ManagedQuery query = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getQuery(queryId);
 
-		return SQStatus.buildFromQuery(query);
+		return SQStatus.buildFromQuery(namespaces.getMetaStorage(), query);
 	}
 
 }
