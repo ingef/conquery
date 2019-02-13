@@ -1,7 +1,7 @@
 // @flow
 
 import T from 'i18n-react';
-import { difference } from 'lodash'
+import difference from 'lodash.difference';
 
 import {
   getConceptsByIdsWithTables, getConceptById
