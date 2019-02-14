@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.common;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.Year;
 import java.time.YearMonth;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
@@ -48,7 +49,7 @@ public final class QuarterUtils {
 	 * @return The quarter
 	 */
 	public static int getQuarter(LocalDate date) {
-		return date.getMonth().getValue()/4+1;
+		return date.get(IsoFields.QUARTER_OF_YEAR);
 	}
 	
 	/**
@@ -81,6 +82,22 @@ public final class QuarterUtils {
 	public static LocalDate getFirstDayOfQuarter(int year, int quarter) {
 		Month month = getFirstMonthOfQuarter(quarter);
 		return LocalDate.of(year, month, 1);
+	}
+	
+	public static LocalDate getFirstDayOfQuarter(int epochDay) {
+		return LocalDate.ofEpochDay(epochDay).with(FIRST_DAY_OF_QUARTER_ADJUSTER);
+	}
+	
+	public static LocalDate getFirstDayOfQuarter(LocalDate date) {
+		return date.with(FIRST_DAY_OF_QUARTER_ADJUSTER);
+	}
+	
+	public static LocalDate getLastDayOfQuarter(int epochDay) {
+		return LocalDate.ofEpochDay(epochDay).with(LAST_DAY_OF_QUARTER_ADJUSTER);
+	}
+	
+	public static LocalDate getLastDayOfQuarter(LocalDate date) {
+		return date.with(LAST_DAY_OF_QUARTER_ADJUSTER);
 	}
 
 	public static LocalDate getLastDayOfQuarter(int year, int quarter) {

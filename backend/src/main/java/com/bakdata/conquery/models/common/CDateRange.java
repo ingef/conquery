@@ -329,7 +329,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	/**
 	 * Returns the years that are part of this date range.
 	 *
-	 * @return The years as date ranges, from the first date in range to the last.
+	 * @return The years as date ranges, from the first date in range to the last in ascending order.
 	 */
 	public List<CDateRange> getCoveredYears() {
 		int startYear = this.getMin().getYear();
@@ -343,8 +343,6 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		
 		// First year begins with this range
 		ranges.add(CDateRange.of(this.getMin(), LocalDate.of(startYear, 12, 31)));
-		// Last year end with this range
-		ranges.add(CDateRange.of(LocalDate.of(endYear, 1, 1), this.getMax()));
 		
 		// Years in between
 		if(endYear-startYear > 1) {
@@ -354,6 +352,8 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 				.mapToObj(year -> CDateRange.of(LocalDate.ofYearDay(year, 1), LocalDate.of(year, 12, 31)))
 				.collect(Collectors.toList()));
 		}
+		// Last year end with this range
+		ranges.add(CDateRange.of(LocalDate.of(endYear, 1, 1), this.getMax()));
 		return ranges;
 	}
 
@@ -361,7 +361,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	 * Returns the quarters that are part of this date range.
 	 *
 	 * @return The quarters as date ranges, from the first date in range to the
-	 *         last.
+	 *         last in ascending order.
 	 */
 	public List<CDateRange> getCoveredQuarters() {
 		int startYear = this.getMin().getYear();
@@ -378,18 +378,31 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 		// First quarter begins with this range
 		ranges.add(CDateRange.of(this.getMin(), QuarterUtils.getLastDayOfQuarter(startYear, startQuarter)));
-		// Last year end with this range
-		ranges.add(CDateRange.of(QuarterUtils.getFirstDayOfQuarter(endYear, endQuarter), this.getMax()));
-		
-		int currentQuarter = startQuarter+1;
-		for (int year = startYear; !(year >= endYear && currentQuarter > endQuarter-1);) {
+		int year = startYear;
+		int currentQuarter = QuarterUtils.getNextQuarter(startQuarter);
+		if(currentQuarter == 1) {
+			// Quarter wrapped, increment year
+			year++;
+		}
+		for (; !(year >= endYear && currentQuarter > endQuarter-1);) {
 			ranges.add(QuarterUtils.fromQuarter(year, currentQuarter));
 			if (currentQuarter >= 4) {
 				year++;
 			}
 			currentQuarter = QuarterUtils.getNextQuarter(currentQuarter);
 		}
+		// Last year end with this range
+		ranges.add(CDateRange.of(QuarterUtils.getFirstDayOfQuarter(endYear, endQuarter), this.getMax()));
 
+		return ranges;
+	}
+	
+	public List<CDateRange> getCoveredDays() {
+
+		List<CDateRange> ranges = new ArrayList<>();
+		for(int i = this.min; i <= this.max; i++) {
+			ranges.add(CDateRange.exactly(i));
+		}
 		return ranges;
 	}
 }
