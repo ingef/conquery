@@ -1,11 +1,23 @@
-import React                 from 'react';
-import PropTypes             from 'prop-types';
+// @flow
+
+import * as React            from 'react';
 import classnames            from 'classnames';
 
 import { Tags }              from '../tags';
 import EditableTagsForm      from './EditableTagsForm';
 
-const EditableTags = (props) => {
+type PropsType = {
+  className: string,
+  tags?: string[],
+  editing: boolean,
+  loading: boolean,
+  tagComponent?: React.Node,
+  onSubmit: () => void,
+  onToggleEdit: () => void,
+  availableTags: string[]
+};
+
+const EditableTags = (props: PropsType) => {
   return props.editing
     ? <EditableTagsForm
         className={classnames(props.className, "editable-tags", "editable-tags__form")}
@@ -32,16 +44,5 @@ const EditableTags = (props) => {
         }
       </div>;
 };
-
-EditableTags.propTypes = {
-  className: PropTypes.string,
-  tags: PropTypes.arrayOf(PropTypes.string),
-  editing: PropTypes.bool.isRequired,
-  loading: PropTypes.bool.isRequired,
-  tagComponent: PropTypes.element,
-  onSubmit: PropTypes.func.isRequired,
-  onToggleEdit: PropTypes.func.isRequired,
-  availableTags: PropTypes.arrayOf(PropTypes.string),
-}
 
 export default EditableTags;
