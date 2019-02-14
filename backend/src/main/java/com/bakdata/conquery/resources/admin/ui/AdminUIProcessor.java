@@ -79,7 +79,7 @@ public class AdminUIProcessor {
 			datasetPermissions,
 			queryPermissions,
 			otherPermissions,
-			Ability.READ.AS_SET,
+			Ability.READ.asSet(),
 			datasets);
 	}
 	
