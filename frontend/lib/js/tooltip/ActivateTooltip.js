@@ -1,11 +1,16 @@
+// @flow
+
 import React                    from 'react';
-import PropTypes                from 'prop-types';
 import T                        from 'i18n-react';
 import { connect }              from 'react-redux';
 import { IconButton }           from '../button';
 import { toggleDisplayTooltip } from './actions';
 
-const ActivateTooltip = (props) => {
+type PropsType = {
+  toggleDisplayTooltip: () => void,
+};
+
+const ActivateTooltip = (props: PropsType) => {
   return (
     <div className="tooltip tooltip--activate">
       <IconButton
@@ -16,10 +21,6 @@ const ActivateTooltip = (props) => {
       />
     </div>
   );
-};
-
-ActivateTooltip.propTypes = {
-  toggleDisplayTooltip: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = (dispatch) => ({

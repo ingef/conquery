@@ -1,5 +1,6 @@
+// @flow
+
 import React                  from 'react';
-import PropTypes              from 'prop-types';
 import { connect }            from 'react-redux';
 import classnames             from 'classnames';
 import T                      from 'i18n-react';
@@ -39,7 +40,14 @@ function collect(connect, monitor) {
   };
 }
 
-const TimebasedQueryEditorDropzone = (props) => {
+type PropsType = {
+  isOver: boolean,
+  onDropNode: () => void,
+  connectDropTarget: () => void,
+  onRemoveTimebasedNode: () => void,
+};
+
+const TimebasedQueryEditorDropzone = (props: PropsType) => {
   return props.connectDropTarget(
     <div className="timebased-query-editor-dropzone">
       <div className={classnames(
@@ -58,10 +66,6 @@ const TimebasedQueryEditorDropzone = (props) => {
 };
 
 TimebasedQueryEditorDropzone.propTypes = {
-  connectDropTarget: PropTypes.func.isRequired,
-  isOver: PropTypes.bool.isRequired,
-  onDropNode: PropTypes.func.isRequired,
-  onRemoveTimebasedNode: PropTypes.func.isRequired,
 };
 
 const mapDispatchToProps = (dispatch) => ({
