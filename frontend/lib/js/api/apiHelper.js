@@ -49,16 +49,7 @@ export const transformElementGroupsToApi = elementGroups =>
   }));
 
 export const transformElementsToApi = conceptGroup =>
-  conceptGroup.map(concept => {
-    const tables = concept.tables ? transformTablesToApi(concept.tables) : [];
-
-    return {
-      ids: concept.ids,
-      type: "CONCEPT_LIST",
-      label: concept.label,
-      tables
-    };
-  });
+  conceptGroup.map(createConcept);
 
 const transformStandardQueryToApi = query =>
   createConceptQuery(createQueryConcepts(query));
