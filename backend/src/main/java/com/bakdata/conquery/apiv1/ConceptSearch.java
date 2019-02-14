@@ -54,16 +54,16 @@ public class ConceptSearch {
 			.flatMap(Collection::stream)
 			.collect(Collectors.toList());
 		
-		for (ConceptElement<?> ele : elements) {
-			String key = ele.getId().toString();
-
-			qs.addItem(key, ele.getLabel());
-			qs.addItem(key, ele.getDescription());
-			qs.addItem(key, ele.getAdditionalInfos().stream()
-				.map(Object::toString)
-				.collect(Collectors.joining(""))
-				.toString());
-		}
+        elements.forEach((ele) -> {
+            String key = ele.getId().toString();
+            
+            qs.addItem(key, ele.getLabel());
+            qs.addItem(key, ele.getDescription());
+            qs.addItem(key, ele.getAdditionalInfos().stream()
+                    .map(Object::toString)
+                    .collect(Collectors.joining(""))
+                    .toString());
+        });
 		
 		dataset.getConcepts().stream()
 			.filter(VirtualConcept.class::isInstance)
