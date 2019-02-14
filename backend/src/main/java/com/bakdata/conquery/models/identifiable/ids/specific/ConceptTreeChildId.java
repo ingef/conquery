@@ -15,7 +15,7 @@ import lombok.Getter;
 public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> implements NamespacedId {
 
 	private final ConceptElementId<?> parent;
-	private final String conceptChild;
+	private final String name;
 	
 	@Override
 	public DatasetId getDataset() {
@@ -30,7 +30,7 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> imple
 	@Override
 	public void collectComponents(List<Object> components) {
 		parent.collectComponents(components);
-		components.add(conceptChild);
+		components.add(name);
 	}
 	
 	public static enum Parser implements IId.Parser<ConceptTreeChildId> {

@@ -1,7 +1,6 @@
 // @flow
 
 import React                    from 'react';
-import PropTypes                from 'prop-types';
 import classnames               from 'classnames';
 import T                        from 'i18n-react';
 import { connect }              from 'react-redux';
@@ -44,7 +43,17 @@ const getGroupDate = (dateRange, minOrMax) =>
 const getTouched = (touched, minOrMax) =>
 touched && touched[minOrMax] ? touched[minOrMax] : false
 
-const QueryGroupModal = (props) => {
+type PropsType = {
+  group: Object,
+  andIdx: number,
+  onCloseModal: () => void,
+  onSetMinDate: () => void,
+  onSetMaxDate: () => void,
+  onResetAllDates: () => void,
+  onSetTouched: () => void,
+};
+
+const QueryGroupModal = (props: PropsType) => {
   if (!props.group) return null;
 
   const min = 'min';
@@ -189,16 +198,6 @@ const QueryGroupModal = (props) => {
       </div>
     </Modal>
   );
-};
-
-QueryGroupModal.propTypes = {
-  group: PropTypes.object,
-  andIdx: PropTypes.number,
-  onCloseModal: PropTypes.func.isRequired,
-  onSetMinDate: PropTypes.func.isRequired,
-  onSetMaxDate: PropTypes.func.isRequired,
-  onResetAllDates: PropTypes.func.isRequired,
-  onSetTouched: PropTypes.func,
 };
 
 function findGroup(query, andIdx) {

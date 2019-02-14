@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.results;
 
+import java.util.List;
+
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -9,7 +11,11 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 public interface EntityResult {
 
 	static ContainedEntityResult of(int entityId, String[] values) {
-		return new ContainedEntityResult(entityId, values);
+		return new SinglelineContainedEntityResult(entityId, values);
+	}
+	
+	static ContainedEntityResult multilineOf(int entityId, List<String[]> values) {
+		return new MultilineContainedEntityResult(entityId, values);
 	}
 	
 	static FailedEntityResult failed(int entityId, Throwable t) {

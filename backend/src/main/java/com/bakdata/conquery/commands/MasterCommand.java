@@ -98,6 +98,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
+		namespaces.setMetaStorage(this.storage);
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
@@ -105,7 +106,6 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		config.getAuthentication().initializeAuthConstellation(storage);
 
 		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(storage, config.getAuthentication());
-		environment.jersey().register(new AuthValueFactoryProvider.Binder(User.class));
 
 		log.info("Registering ResourcesProvider");
 		for (Class<?> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {

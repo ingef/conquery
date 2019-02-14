@@ -17,6 +17,8 @@ public class QueryToCSVRenderer {
 
 	private static final char DELIMETER = ConqueryConfig.getInstance().getCsv().getDelimeter();
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
+	private static final Joiner JOINER = Joiner.on(DELIMETER);
+	private static final String HEADER = JOINER.join(ID_MAPPING.getPrintIdFields());
 
 	private final Namespace namespace;
 
@@ -24,24 +26,28 @@ public class QueryToCSVRenderer {
 		if (query.getStatus() != QueryStatus.DONE) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query" + query.getId());
 		}
-		return Stream.concat(Stream.of(Joiner.on(DELIMETER).join(ID_MAPPING.getPrintIdFields()) + DELIMETER + "dates"), createCSVBody(query));
-
+		return Stream.concat(
+			Stream.of(HEADER + DELIMETER + JOINER.join(query.getResultHeader())), 
+			createCSVBody(query)
+		);
 	}
 
 	private Stream<String> createCSVBody(ManagedQuery query) {
 		return query.getResults()
 			.stream()
-			.filter(ContainedEntityResult.class::isInstance)
-			.map(ContainedEntityResult.class::cast)
-			.map(this::createCSVLine);
+			.flatMap(ContainedEntityResult::filterCast)
+			.flatMap(this::createCSVLine);
 	}
 
-	private String createCSVLine(ContainedEntityResult cer) {
-		StringBuilder result = new StringBuilder();
+	private Stream<String> createCSVLine(ContainedEntityResult cer) {
 		Dictionary dict = namespace.getStorage().getPrimaryDictionary();
-		Joiner.on(DELIMETER).appendTo(result, ID_MAPPING.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace).getExternalId());
-		result.append(DELIMETER);
-		Joiner.on(DELIMETER).appendTo(result, cer.getValues());
-		return result.toString();
+		String idPart = JOINER.join(
+			ID_MAPPING
+				.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace)
+				.getExternalId()
+		);
+		return cer
+			.streamValues()
+			.map(result -> idPart + DELIMETER + JOINER.join(result));
 	}
 }

@@ -4,12 +4,10 @@ import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -26,14 +24,11 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.query.IQuery;
@@ -45,6 +40,7 @@ import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
+import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.extern.slf4j.Slf4j;
 
@@ -131,8 +127,8 @@ public class AdminUIResource {
 	@Consumes(ExtraMimeTypes.JSON_STRING)
 	@POST
 	@Path("/query")
-	public String query(IQuery query) throws JSONException {
-		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, null);
+	public String query(@Auth User user, IQuery query) throws JSONException {
+		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, user);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
