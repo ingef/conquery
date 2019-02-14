@@ -45,7 +45,8 @@ export const transformTablesToApi = (tables: TableType[]) => {
 export const transformElementGroupsToApi = elementGroups =>
   elementGroups.map(elements => ({
     matchingType: elements.matchingType,
-    elements: transformElementsToApi(elements.concepts)
+    type: "OR",
+    children: transformElementsToApi(elements.concepts)
   }));
 
 export const transformElementsToApi = conceptGroup =>
