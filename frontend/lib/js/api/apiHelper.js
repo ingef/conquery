@@ -45,20 +45,12 @@ export const transformTablesToApi = (tables: TableType[]) => {
 export const transformElementGroupsToApi = elementGroups =>
   elementGroups.map(elements => ({
     matchingType: elements.matchingType,
-    elements: transformElementsToApi(elements.concepts)
+    type: "OR",
+    children: transformElementsToApi(elements.concepts)
   }));
 
 export const transformElementsToApi = conceptGroup =>
-  conceptGroup.map(concept => {
-    const tables = concept.tables ? transformTablesToApi(concept.tables) : [];
-
-    return {
-      ids: concept.ids,
-      type: "CONCEPT_LIST",
-      label: concept.label,
-      tables
-    };
-  });
+  conceptGroup.map(createConcept);
 
 const transformStandardQueryToApi = query =>
   createConceptQuery(createQueryConcepts(query));
