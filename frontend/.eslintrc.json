@@ -1,48 +1,6 @@
 {
-  "parser": "babel-eslint",
-  "extends": ["standard", "standard-react"],
-  "plugins": [
-    "import",
-    "flowtype",
-    "babel"
-  ],
-  "env": {
-    "jest": true,
-    "browser": true
-  },
-  "globals": {
-    "$Keys": true
-  },
+  "extends": "react-app",
   "rules": {
-    "curly": [2, "multi", "consistent"],
-    "space-before-function-paren": 0, // It's ok to write both function(a) and function (a)
-    "no-multiple-empty-lines": 0, // It's ok to have two blank lines (e.g. after import)
-    "no-multi-spaces": 0, // It's ok to align code vertically and have more spaces
-    "quotes": 0, // Quotes don't have to be strictly single or double
-    "semi": 0, // Semicolons are fine
-    "comma-dangle": 0, // May be there, helps better diffs and easier maintainability
-    "indent": 0,                 // We indent how we like. (sometimes a custom indentation is great)
-    "jsx-quotes": [2, "prefer-double"],
-    "max-len": [2, 100],
-    "no-console": 2,
-    "key-spacing": 0, // It's ok to have spacing and align object key value pairs
-    "react/jsx-no-bind": 0, // We allow .bind(this) in JSX - aware of performance issues
-    "react/jsx-indent-props": 0, // We indent how we like. (sometimes a custom indentation is great)
-    "react/jsx-indent": 0,       // We indent how we like. (sometimes a custom indentation is great)
-    "react/jsx-boolean-value": 0,
-    "react/no-unused-prop-types": 0, // Too many false positives ( https://github.com/yannickcr/eslint-plugin-react/issues/976 )
-    "standard/object-curly-even-spacing": 0,
-    "import/no-duplicates": 2,
-    "import/no-unresolved": [2, { "commonjs": true, "amd": true }],
-    "import/default": 2,
-    "import/no-absolute-path": 2,
-    "import/no-dynamic-require": 2,
-    "import/export": 2,
-    "import/no-mutable-exports": 2,
-    "import/first": 2,
-    "import/newline-after-import": 2,
-    "import/order": [2, {"newlines-between": "ignore"}],
-    "flowtype/boolean-style": [2, "boolean"],
-    "flowtype/no-weak-types": [2, { "Function": false, "Object": false, "any": false }]
+    "jsx-a11y/accessible-emoji": "off"
   }
 }
