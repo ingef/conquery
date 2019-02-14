@@ -56,8 +56,8 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <nodeVersion>v8.9.0</nodeVersion>
-                            <yarnVersion>v1.3.2</yarnVersion>
+                            <nodeVersion>v8.12.0</nodeVersion>
+                            <yarnVersion>v1.9.4</yarnVersion>
                         </configuration>
                     </execution>
                     <execution>
