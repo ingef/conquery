@@ -139,7 +139,6 @@ const transformTimebasedQueryToApi = (query) => ({
         children: query.conditions.map(condition => {
           // TODO: Use, once feature is complete
           // const [ minDays, maxDays ] = getDayRange(condition);
-
           return {
             type: condition.operator,
             sampler: "EARLIEST",

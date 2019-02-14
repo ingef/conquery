@@ -2,13 +2,12 @@
   "parser": "babel-eslint",
   "extends": ["standard", "standard-react"],
   "plugins": [
-    "mocha",
     "import",
     "flowtype",
     "babel"
   ],
   "env": {
-    "mocha": true,
+    "jest": true,
     "browser": true
   },
   "globals": {
@@ -32,7 +31,6 @@
     "react/jsx-indent": 0,       // We indent how we like. (sometimes a custom indentation is great)
     "react/jsx-boolean-value": 0,
     "react/no-unused-prop-types": 0, // Too many false positives ( https://github.com/yannickcr/eslint-plugin-react/issues/976 )
-    "mocha/no-exclusive-tests": 2,
     "standard/object-curly-even-spacing": 0,
     "import/no-duplicates": 2,
     "import/no-unresolved": [2, { "commonjs": true, "amd": true }],
