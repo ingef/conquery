@@ -1,9 +1,15 @@
+// @flow
+
 import React                             from 'react';
-import PropTypes                         from 'prop-types';
 import classnames                        from 'classnames';
 
+type PropsType = {
+  label: string,
+  isSelected: boolean,
+  onClick: () => void
+};
 
-const Tag = (props) => {
+const Tag = (props: PropsType) => {
   return (
     <p
       className={classnames(
@@ -18,11 +24,5 @@ const Tag = (props) => {
     </p>
   );
 }
-
-Tag.propTypes = {
-  label: PropTypes.string.isRequired,
-  isSelected: PropTypes.bool.isRequired,
-  onClick: PropTypes.func,
-};
 
 export default Tag;

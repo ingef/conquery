@@ -1,8 +1,18 @@
+// @flow
+
 import React                from 'react';
-import PropTypes            from 'prop-types';
 import classnames           from 'classnames';
 
-const VerticalToggleButton = (props) => {
+type PropsType = {
+  onToggle: string => void,
+  activeValue: string,
+  options: {
+    label: string,
+    value: string,
+  }[]
+};
+
+const VerticalToggleButton = (props: PropsType) => {
   return (
     <p className="vertical-toggle-button">
       {
@@ -26,15 +36,6 @@ const VerticalToggleButton = (props) => {
       }
     </p>
   );
-};
-
-VerticalToggleButton.propTypes = {
-  onToggle: PropTypes.func.isRequired,
-  activeValue: PropTypes.string.isRequired,
-  options: PropTypes.arrayOf(PropTypes.shape({
-    label: PropTypes.string,
-    value: PropTypes.string,
-  })).isRequired,
 };
 
 export default VerticalToggleButton;

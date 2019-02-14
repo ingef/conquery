@@ -1,21 +1,21 @@
+// @flow
+
 import React, { Component }            from 'react';
-import PropTypes                       from 'prop-types'
 import T                               from 'i18n-react';
 import ReactList                       from 'react-list';
 
 import { ErrorMessage }                from '../../error-message';
 import PreviousQuery                   from './PreviousQuery';
 
+type PropsType = {
+  datasetId: string,
+  queries: [],
+  loading: boolean,
+  error: string,
+  loadQueries: () => void,
+};
 
-class PreviousQueries extends Component {
-  static propTypes = {
-    datasetId: PropTypes.string,
-    queries: PropTypes.array.isRequired,
-    loading: PropTypes.bool,
-    error: PropTypes.string,
-    loadQueries: PropTypes.func.isRequired,
-  }
-
+class PreviousQueries extends Component<PropsType> {
   componentDidMount() {
     this.props.loadQueries();
   }
