@@ -85,7 +85,6 @@
     "expect": "^22.4.0",
     "express": "^4.16.2",
     "file-loader": "^3.0.1",
-    "flow-typed": "^2.3.0",
     "flux-standard-action": "^2.0.1",
     "font-awesome-webpack": "https://github.com/jarecsni/font-awesome-webpack#440af2a2efe7ba1779d039556f04538e57bad4bb",
     "gulp": "^4.0.0",
