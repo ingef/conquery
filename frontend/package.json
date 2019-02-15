@@ -97,7 +97,7 @@
     "ignore-styles": "^5.0.1",
     "jest": "^24.1.0",
     "js-yaml-loader": "^1.0.1",
-    "jsdom": "^11.6.2",
+    "jsdom": "^13.2.0",
     "jsdom-global": "^3.0.2",
     "mini-css-extract-plugin": "^0.5.0",
     "mock-local-storage": "^1.0.5",
