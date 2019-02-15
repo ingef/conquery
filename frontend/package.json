@@ -28,7 +28,7 @@
     "/dist"
   ],
   "dependencies": {
-    "classnames": "^2.2.5",
+    "classnames": "^2.2.6",
     "create-react-class": "^15.5.3",
     "empty": "^0.10.1",
     "es6-promise": "^4.2.4",
