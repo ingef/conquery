@@ -135,7 +135,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Dictionary getDictionary(DictionaryId id) {
 		return dictionaries.get(id);
 	}
-	
+
 	@Override
 	public Dictionary getPrimaryDictionary() {
 		return dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()));
@@ -207,6 +207,4 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Collection<Concept<?>> getAllConcepts() {
 		return concepts.getAll();
 	}
-	
-	
 }

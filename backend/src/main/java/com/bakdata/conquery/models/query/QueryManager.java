@@ -39,10 +39,10 @@ public class QueryManager {
 	}
 
 	public void maintain() {
-		LocalDateTime threshhold = LocalDateTime.now().minus(10L, ChronoUnit.MINUTES);
+		LocalDateTime threshold = LocalDateTime.now().minus(10L, ChronoUnit.MINUTES);
 
 		for (ManagedQuery mq : queries.values()) {
-			if (mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshhold)) {
+			if (mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshold)) {
 				queries.remove(mq.getId());
 			}
 		}
@@ -57,15 +57,26 @@ public class QueryManager {
 			namespace.getStorage().getMetaStorage(),
 			namespace
 		));
-		ManagedQuery managed = new ManagedQuery(query, namespace, user);
+		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
 		managed.setQueryId(queryId);
 		namespace.getStorage().getMetaStorage().addQuery(managed);
 		queries.add(managed);
+
 		
 		for(WorkerInformation worker : namespace.getWorkers()) {
 			worker.send(new ExecuteQuery(managed));
 		}
 		return managed;
+	}
+	
+	public ManagedQuery reexecuteQuery(ManagedQuery query) throws JSONException {
+		query.initExecutable(namespace);
+		queries.add(query);
+		
+		for(WorkerInformation worker : namespace.getWorkers()) {
+			worker.send(new ExecuteQuery(query));
+		}
+		return query;
 	}
 
 	public void addQueryResult(ShardResult result) {

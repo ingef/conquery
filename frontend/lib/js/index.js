@@ -1,7 +1,5 @@
 // @flow
 
-import 'babel-polyfill';
-
 import './fixEdge';
 
 import React                           from 'react';

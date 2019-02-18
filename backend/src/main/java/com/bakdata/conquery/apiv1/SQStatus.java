@@ -5,6 +5,7 @@ import java.time.ZonedDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
@@ -79,16 +80,17 @@ public class SQStatus {
 		this.resultUrl = resultUrl;
 	}
 	
-	public static SQStatus buildFromQuery(ManagedQuery query) {
-		return buildFromQuery(query, null);
+	public static SQStatus buildFromQuery(MasterMetaStorage storage, ManagedQuery query) {
+		return buildFromQuery(storage, query, null);
 	}
 	
-	public static SQStatus buildFromQuery(ManagedQuery query, URLBuilder urlb) {
+	public static SQStatus buildFromQuery(MasterMetaStorage storage, ManagedQuery query, URLBuilder urlb) {
 		Long numberOfResults = Long.valueOf(query.fetchContainedEntityResult().count());
 		return builder()
 			.label(query.getLabel())
 			.tags(query.getTags())
 			.id(query.getId())
+            .own(true)
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
 			.query(query)
 			.requiredTime((query.getStartTime() != null && query.getFinishTime() != null)
@@ -97,8 +99,8 @@ public class SQStatus {
 			.status(query.getStatus())
 			.numberOfResults(numberOfResults > 0 ? numberOfResults : query.getLastResultCount())
 			.shared(query.isShared())
-			.owner(Optional.ofNullable(query.getOwner()).map(User::getId).orElse(null))
-			.ownerName(Optional.ofNullable(query.getOwner()).map(User::getLabel).orElse(null))
+			.owner(Optional.ofNullable(query.getOwner()).orElse(null))
+			.ownerName(Optional.ofNullable(query.getOwner()).map(user -> storage.getUser(user).getLabel()).orElse(null))
 			.resultUrl(
 				urlb != null
 				? urlb

@@ -80,4 +80,10 @@
 			<#include "templates/fileChooser.html.ftl"/>
 		</div>
 	</div>
+	<div class="row">
+		<div class="col">
+			<h2>IdMapping</h2>
+			<a href="/admin/datasets/${c.id}/mapping">Here</a>
+		</div>
+	</div>
 </@layout.layout>

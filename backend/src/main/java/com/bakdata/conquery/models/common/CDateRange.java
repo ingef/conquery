@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.common;
 
+import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.types.specific.DateRangeType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -10,7 +12,9 @@ import lombok.experimental.Wither;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.TemporalUnit;
+import java.util.List;
 import java.util.OptionalInt;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @NoArgsConstructor
@@ -318,4 +322,8 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		return new Range<>(getMin(), getMax());
 	}
 
+	@JsonCreator
+	public static CDateRange parse(String value) throws ParsingException {
+		return DateRangeType.parseISORange(value);
+	}
 }

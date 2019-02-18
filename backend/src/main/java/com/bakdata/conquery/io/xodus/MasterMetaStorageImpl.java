@@ -20,6 +20,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
+
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Validator;
@@ -35,6 +37,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<ConqueryPermission> authPermissions;
 	private IdentifiableStore<Mandator> authMandator;
+	@Getter
 	private Namespaces namespaces;
 
 	public MasterMetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {

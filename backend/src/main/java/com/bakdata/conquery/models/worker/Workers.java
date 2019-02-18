@@ -30,4 +30,9 @@ public class Workers implements NamespaceCollection {
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
 	}
+
+	@Override
+	public CentralRegistry getMetaRegistry() {
+		throw new UnsupportedOperationException("Workers should never be asked about the meta registry");
+	}
 }

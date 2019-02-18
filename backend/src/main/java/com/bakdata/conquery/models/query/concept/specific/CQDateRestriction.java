@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -20,6 +21,7 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
+import com.bakdata.conquery.models.query.select.Select;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -62,10 +64,15 @@ public class CQDateRestriction implements CQElement {
 
 		return childAgg;
 	}
-	
+
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		child = child.resolve(context);
 		return this;
+	}
+	
+	@Override
+	public void collectSelects(Deque<Select> select) {
+		child.collectSelects(select);
 	}
 }

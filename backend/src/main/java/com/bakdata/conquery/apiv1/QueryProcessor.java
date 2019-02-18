@@ -28,15 +28,15 @@ public class QueryProcessor {
 		
 		// Set abilities for submitted query
 		user.addPermission(storage, new QueryPermission(null, AbilitySets.QUERY_CREATOR, mq.getId()));
-		mq.awaitDone(1, TimeUnit.HOURS);
+		mq.awaitDone(10, TimeUnit.SECONDS);
 		
-		return SQStatus.buildFromQuery(mq, urlb);
+		return SQStatus.buildFromQuery(storage, mq, urlb);
 	}
 
 	public SQStatus getStatus(Dataset dataset, ManagedQuery query, URLBuilder urlb) {
 		query.awaitDone(10, TimeUnit.SECONDS);
 		
-		return SQStatus.buildFromQuery(query, urlb);
+		return SQStatus.buildFromQuery(storage, query, urlb);
 	}
 
 	public SQStatus cancel(Dataset dataset, ManagedQuery query, URLBuilder urlb) {
