@@ -1,0 +1,60 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.bakdata.conquery</groupId>
+		<artifactId>parent</artifactId>
+		<version>2.0.0-rc1</version>
+	</parent>
+	<artifactId>coverage-reporter</artifactId>	
+	
+	<dependencies>
+		<dependency>
+			<groupId>${project.groupId}</groupId>
+			<artifactId>backend</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.codacy</groupId>
+			<artifactId>codacy-coverage-reporter</artifactId>
+			<version>4.0.2</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>test-coverage</id>
+			<build>
+				<plugins>
+					<plugin>
+	                    <groupId>org.codehaus.mojo</groupId>
+	                    <artifactId>exec-maven-plugin</artifactId>
+	                    <version>1.6.0</version>
+	                    <executions>
+	                        <execution>
+	                        	<id>report</id>
+	                        	<inherited>false</inherited>
+	                            <goals>
+	                                <goal>java</goal>
+	                            </goals>
+	                            <configuration>
+	                                <mainClass>com.codacy.CodacyCoverageReporter</mainClass>
+	                                <arguments>
+	                                    <argument>report</argument>
+	                                    <argument>-l</argument>
+	                                    <argument>Java</argument>
+	                                    <argument>-r</argument>
+	                                    <argument>backend/target/site/jacoco/jacoco.xml</argument>
+	                                </arguments>
+	                                <classpathScope>test</classpathScope>
+	                            </configuration>
+	                        </execution>
+	                    </executions>
+	                </plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+</project>
