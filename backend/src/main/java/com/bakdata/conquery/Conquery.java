@@ -74,16 +74,17 @@ public class Conquery extends Application<ConqueryConfig> {
 				String uriPath = "/";
 				String language = configuration.getLocale().getFrontend().getLanguage();
 				environment.servlets().addServlet(
-						"",
-						new AssetServlet(
-								"/frontend/app/",
-								uriPath,
-								String.format(
-										"index.%s.html",
-										StringUtils.defaultIfEmpty(language, Locale.ENGLISH.getLanguage())
-								),
-								StandardCharsets.UTF_8))
-							.addMapping(uriPath + '*');
+					"",
+					new AssetServlet(
+						"/frontend/app/",
+						uriPath,
+						String.format(
+							"index.%s.html",
+							StringUtils.defaultIfEmpty(language, Locale.ENGLISH.getLanguage())
+						),
+						StandardCharsets.UTF_8)
+				)
+				.addMapping(uriPath + '*');
 			}
 
 			@Override
