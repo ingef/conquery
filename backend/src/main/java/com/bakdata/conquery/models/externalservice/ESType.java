@@ -1,51 +1,78 @@
 package com.bakdata.conquery.models.externalservice;
 
-import java.text.DecimalFormatSymbols;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 
-import org.apache.commons.lang3.NotImplementedException;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.config.LocaleConfig;
+
+import lombok.NonNull;
 
 public enum ESType {
 	BOOLEAN,
-	INTEGER,
+	INTEGER {
+		@Override
+		public String print(Object f) {
+			if(f instanceof Long) {
+				return NUMBER_FORMAT.format((Long)f);
+			}
+			else {
+				throw new IllegalArgumentException("Unknown type "+f.getClass()+" of INTEGER "+f);
+			}
+		}
+	},
 	NUMERIC {
-		/*@Override
-		public Field<String> print(Field<?> f) {
-			return DSL.field(
-				"trim(trailing ',' from trim(trailing '0 ' from to_char(({0})::decimal, '999999999999999990\""+StatisticType.DEZIMAL_SEPARATOR+"\"V9999999999999999999')))",
-				String.class,
-				f
-			);
-		}*/
-		
+		@Override
+		public String print(Object f) {
+			if(f instanceof Double) {
+				return NUMBER_FORMAT.format((Double)f);
+			}
+			else if(f instanceof BigDecimal) {
+				return NUMBER_FORMAT.format((BigDecimal)f);
+			}
+			else {
+				throw new IllegalArgumentException("Unknown type "+f.getClass()+" of NUMERIC "+f);
+			}
+		}
 	},
-	CATEGORICAL {
-		/*@Override
-		public Field<String> print(Field<?> f) {
-			return f.coerce(String.class);
-		}*/
-	},
+	CATEGORICAL,
 	DATE,
-	STRING {
-		/*@Override
-		public Field<String> print(Field<?> f) {
-			return f.coerce(String.class);
-		}*/
-	},
+	STRING,
 	MONEY {
-		/*@Override
-		public Field<String> print(Field<?> f) {
-			return DSL.field(
-				"to_char({0},'FM999999999990\""+StatisticType.DEZIMAL_SEPARATOR+"\"99')",
-				String.class,
-				f
-			);
-		}*/
+		@Override
+		public String print(Object f) {
+			if(f instanceof Long) {
+				return CURRENCY_FORMAT.format(new BigDecimal((Long)f).divide(CURRENCY_DIGITS));
+			}
+			else {
+				throw new IllegalArgumentException("Unknown type "+f.getClass()+" of MONEY "+f);
+			}
+		}
 	};
 	
-	private final static char DEZIMAL_SEPARATOR = DecimalFormatSymbols.getInstance().getDecimalSeparator();
+	private final static NumberFormat NUMBER_FORMAT;
+	private final static NumberFormat CURRENCY_FORMAT;
+	private final static BigDecimal CURRENCY_DIGITS;
 	
-	public String print(Object o) {
-		//see #153  printing logic for output to statistic form
-		throw new NotImplementedException("");
+	
+	static {
+		LocaleConfig localeConfig = ConqueryConfig.getInstance().getLocale();
+		
+		NUMBER_FORMAT = NumberFormat.getNumberInstance(localeConfig.getNumberParsingLocale());
+		CURRENCY_FORMAT = NumberFormat.getCurrencyInstance(localeConfig.getNumberParsingLocale());
+		CURRENCY_DIGITS = new BigDecimal(localeConfig.getCurrency().getDefaultFractionDigits());
+	}
+	
+	public String printNullable(Object f) {
+		if(f == null) {
+			return "";
+		}
+		else {
+			return print(f);
+		}
+	}
+	
+	public String print(@NonNull Object f) {
+		return f.toString();
 	}
 }

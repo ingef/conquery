@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
+import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -23,14 +24,18 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
+import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -94,13 +99,24 @@ public class AdminUIResource {
 	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
 		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
 	}
+	
+	@POST
+	@Path("/permissions/dataset")
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response postDatasetPermission(
+		@NotNull @FormDataParam("permissionowner_id") PermissionOwnerId<?> ownerId,
+		@NotEmpty @FormDataParam("abilities") List<String> abilities,
+		@NotNull @FormDataParam("dataset_id") DatasetId datasetId) throws JSONException {
+		processor.createDatasetPermission(ownerId, abilities, datasetId);
+		return Response.ok().build();
+	}
 
 	@Produces(ExtraMimeTypes.CSV_STRING)
 	@Consumes(ExtraMimeTypes.JSON_STRING)
 	@POST
 	@Path("/query")
 	public String query(IQuery query) throws JSONException {
-		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query);
+		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, DevAuthConfig.USER);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
@@ -108,7 +124,9 @@ public class AdminUIResource {
 			throw new IllegalStateException("Query failed");
 		}
 
-		return managed.toCSV(config).collect(Collectors.joining("\n"));
+		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next())
+			.toCSV(managed)
+			.collect(Collectors.joining("\n"));
 	}
 
 	@GET

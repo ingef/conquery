@@ -15,7 +15,7 @@ import lombok.Getter;
 public class ConceptId extends ConceptElementId<Concept<?>> implements NamespacedId {
 
 	private final DatasetId dataset;
-	private final String concept;
+	private final String name;
 
 	@Override
 	public DatasetId getDataset() {
@@ -30,7 +30,7 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 	@Override
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
-		components.add(concept);
+		components.add(name);
 	}
 	
 	public static enum Parser implements IId.Parser<ConceptId> {

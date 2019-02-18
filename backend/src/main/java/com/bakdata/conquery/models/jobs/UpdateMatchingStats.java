@@ -20,7 +20,9 @@ import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @ToString @RequiredArgsConstructor
 public class UpdateMatchingStats extends Job {
 
@@ -45,30 +47,37 @@ public class UpdateMatchingStats extends Job {
 					Block block = w.getStorage().getBlock(cBlock.getBlock());
 					Table table = w.getStorage().getDataset().getTables().get(block.getId().getImp().getTable());
 					
-					for(int event=0;event<block.size();event++) {
-						if(concept instanceof TreeConcept) {
-							int[] localIds = cBlock.getMostSpecificChildren().get(event);
-							if(localIds != null) {
-								ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
-								
-								while(e != null) {
-									messages
-										.computeIfAbsent(e.getId(), (x)->new MatchingStats.Entry())
-										.addEvent(table, block, cBlock, event);
-									e = e.getParent();
+					try {
+						for(int event=0;event<block.size();event++) {
+							if(concept instanceof TreeConcept) {
+								int[] localIds = cBlock.getMostSpecificChildren().get(event);
+								if(localIds != null) {
+									ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
+									
+									while(e != null) {
+										messages
+											.computeIfAbsent(e.getId(), (x)->new MatchingStats.Entry())
+											.addEvent(table, block, cBlock, event);
+										e = e.getParent();
+									}
 								}
 							}
+							else {
+								messages
+									.computeIfAbsent(concept.getId(), (x)->new MatchingStats.Entry())
+									.addEvent(table, block, cBlock, event);
+							}
 						}
-						else {
-							messages
-								.computeIfAbsent(concept.getId(), (x)->new MatchingStats.Entry())
-								.addEvent(table, block, cBlock, event);
-						}
+					}
+					catch(Exception e) {
+						log.error("Failed to collect the matching stats for CBlock "+cBlock.getId(), e);
 					}
 					
 					sub.report(1);
 				}
-				w.send(new UpdateElementMatchingStats(w.getInfo().getId(), messages));
+				if(!messages.isEmpty()) {
+					w.send(new UpdateElementMatchingStats(w.getInfo().getId(), messages));
+				}
 			}
 			sub.done();
 		}

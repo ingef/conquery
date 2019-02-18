@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -31,6 +32,8 @@ public class Namespaces implements NamespaceCollection {
 	@Getter
 	@JsonIgnore
 	private transient ConcurrentMap<SocketAddress, SlaveInformation> slaves = new ConcurrentHashMap<>();
+	@Getter @Setter @JsonIgnore
+	private transient MasterMetaStorage metaStorage;
 
 	public void add(Namespace ns) {
 		datasets.put(ns.getStorage().getDataset().getId(), ns);
@@ -44,6 +47,11 @@ public class Namespaces implements NamespaceCollection {
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		return datasets.get(dataset).getStorage().getCentralRegistry();
+	}
+	
+	@Override
+	public CentralRegistry getMetaRegistry() {
+		return metaStorage.getCentralRegistry();
 	}
 
 	public synchronized void register(SlaveInformation slave, WorkerInformation info) {

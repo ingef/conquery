@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.util.Map;
+
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
@@ -16,7 +18,6 @@ import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -26,7 +27,7 @@ import lombok.RequiredArgsConstructor;
 public class CQExternalResolved implements CQElement {
 
 	@Getter @NotNull @NonNull
-	private final Int2ObjectMap<CDateSet> values;
+	private final Map<Integer, CDateSet> values;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
@@ -37,7 +38,7 @@ public class CQExternalResolved implements CQElement {
 					dataset,
 					ConqueryConstants.ALL_IDS_TABLE
 				),
-				(SpecialDateUnion) plan.getAggregators().get(0)
+				plan.getIncluded()
 			),
 			dataset,
 			values);

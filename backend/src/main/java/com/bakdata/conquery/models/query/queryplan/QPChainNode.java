@@ -65,4 +65,9 @@ public abstract class QPChainNode extends QPNode {
 	public String toString() {
 		return super.toString()+"[child = "+child+"]";
 	}
+	
+	@Override
+	public boolean isContained() {
+		return child.isContained();
+	}
 }
