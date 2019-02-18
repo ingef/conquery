@@ -16,21 +16,21 @@ jobs:
       install:
         -  cd frontend
         -  mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true
+      script: mvn test -B
 
     #build backend and run all non-integration tests
     - name: "Unit Tests"
       install:
         - cd backend
         - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+      script: mvn test -B -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
     #build and test only INTEGRATION_PROGRAMMATIC
     - name: "Programmatic Integration Tests"
       install:
         - cd backend
         - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_PROGRAMMATIC"
+      script: mvn test -B -Dgroups="INTEGRATION_PROGRAMMATIC"
 
     #build and test only INTEGRATION_JSONs
     - name: "Integration Tests: Authentication Tests"
@@ -39,7 +39,7 @@ jobs:
       install:
         - cd backend
         - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+      script: mvn test -B -Dgroups="INTEGRATION_JSON"
 
     - name: "Integration Tests: Filter Tests"
       env:
@@ -47,7 +47,7 @@ jobs:
       install:
         - cd backend
         - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+      script: mvn test -B -Dgroups="INTEGRATION_JSON"
 
     - name: "Integration Tests: Query Tests"
       env:
@@ -55,7 +55,7 @@ jobs:
       install:
         - cd backend
         - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+      script: mvn test -B -Dgroups="INTEGRATION_JSON"
 
     - name: "Integration Tests: Aggregator Tests"
       env:
@@ -63,18 +63,10 @@ jobs:
       install:
         - cd backend
         - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+      script: mvn test -B -Dgroups="INTEGRATION_JSON"
   
 
     #Deploy
-    - stage: "Deploy Tag to NPM"
-      if: tag IS present
-      install:
-        - cd frontend
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-        - chmod +x frontend/scripts/deploy-npm.sh
-      script: sh frontend/scripts/deploy-npm.sh
-
     - stage: "Deploy Develop to Heroku"
       if: branch = develop AND type = push
       install: 
