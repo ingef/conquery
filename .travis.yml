@@ -89,7 +89,9 @@ jobs:
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       script: bash frontend/scripts/deploy-heroku-docker.sh conquery
 
-
+#remove the installed maven jars before caching
+before_cache:
+  - rm -f -r $HOME/.m2/repository/com/bakdata/conquery/
 cache:
   yarn: true
   directories:
