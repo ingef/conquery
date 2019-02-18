@@ -386,6 +386,12 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 		return ranges;
 	}
 	
+	/**
+	 * Returns the days that are part of this date range as ranges.
+	 *
+	 * @return The days as date ranges, from the first date in range to the
+	 *         last in ascending order.
+	 */
 	public List<CDateRange> getCoveredDays() {
 
 		List<CDateRange> ranges = new ArrayList<>();
