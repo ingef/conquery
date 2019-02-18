@@ -20,25 +20,49 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 public class AuthorizationHelper {
 	
 	// Dataset Instances
+	/**
+	 * Helper function for authorizing an ability on a dataset.
+	 * @param user The subject that needs authorization.
+	 * @param dataset The id of the object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
 	public static void authorize(User user, DatasetId dataset, Ability ability) {
 		authorize(user, dataset, EnumSet.of(ability));
 	}
 	
+	/**
+	 * Helper function for authorizing an ability on a dataset.
+	 * @param user The subject that needs authorization.
+	 * @param dataset The id of the object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
 	public static void authorize(User user, DatasetId dataset, EnumSet<Ability> abilities) {
 		user.checkPermission(new DatasetPermission(user.getId(), abilities, dataset));
 	}
 	
 	// Query Instances
+	/**
+	 * Helper function for authorizing an ability on a query.
+	 * @param user The subject that needs authorization.
+	 * @param query The id of the object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
 	public static void authorize(User user, ManagedQueryId query, Ability ability) {
 		authorize(user, query, EnumSet.of(ability));
 	}
 	
+	/**
+	 * Helper function for authorizing an ability on a query.
+	 * @param user The subject that needs authorization.
+	 * @param query The id of the object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
 	public static void authorize(User user, ManagedQueryId query, EnumSet<Ability> abilities) {
 		user.checkPermission(new QueryPermission(user.getId(), abilities, query));
 	}
 	
 	/**
-	 * Utility function to add a permission to a subject (e.g {@link User}.
+	 * Utility function to add a permission to a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
 	 * @param permission The permission to add.
 	 * @param storage A storage where the permission are added for persistence.
@@ -49,10 +73,10 @@ public class AuthorizationHelper {
 	}
 	
 	/**
-	 * Utility function to remove a permission from a subject (e.g {@link User}.
+	 * Utility function to remove a permission from a subject (e.g {@link User}).
 	 * @param owner The subject to own the new permission.
-	 * @param permission The permission to add.
-	 * @param storage A storage where the permission are added for persistence.
+	 * @param permission The permission to remove.
+	 * @param storage A storage where the permission is removed from.
 	 * @throws JSONException When the permission object could not be formed in to the appropriate JSON format.
 	 */
 	public static void removePermission(PermissionOwner<?> owner, ConqueryPermission permission, MasterMetaStorage storage) throws JSONException {

@@ -14,6 +14,9 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
+/**
+ * This class provides the corresponding FreeMarker template with the data needed.
+ */
 @Getter
 @AllArgsConstructor
 public class FEMandatorContent {
