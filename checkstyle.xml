@@ -25,10 +25,8 @@
 			<property name="format" value='\S\s+$'/>
 			<property name="message" value="trailing whitespaces"/>
 		</module>
-		<module name="RegexpSinglelineJava">
-			<property name="format" value='\S\{'/>
-			<property name="ignoreComments" value="true"/>
-			<property name="message" value="No space before opening curly bracket found."/>
+		<module name="WhitespaceAround">
+			<property name="tokens" value="LCURLY"/>
 		</module>
 		<module name="RegexpSinglelineJava">
 			<property name="format" value='@.*\s(class|interface|enum|private|public|protected)'/>

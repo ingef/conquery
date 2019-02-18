@@ -55,11 +55,10 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setType(filterType);
 
-		// if (maximumSize != -1 && values.size() > maximumSize) {
-		// throw new ConceptConfigurationException(getConnector(),
-		// String.format("Too many possible values (%d of %d in filter %s).",
-		// values.size(), maximumSize, this.getId()));
-		// }
+//		if (maximumSize != -1 && values.size() > maximumSize) {
+//			throw new ConceptConfigurationException(getConnector(),
+//				String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
+//		}
 		if (values != null) {
 			realLabels = values.stream().limit(200).collect(Collectors.toMap(Function.identity(), e -> {
 				String r = labels.get(e);
