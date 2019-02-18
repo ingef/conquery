@@ -8,7 +8,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import lombok.EqualsAndHashCode;
+
 @CPSType(id="QUERY_PERMISSION", base=ConqueryPermission.class)
+@EqualsAndHashCode(callSuper=true)
 public class QueryPermission extends IdentifiableInstancePermission<ManagedQueryId>{
 
 	public QueryPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, ManagedQueryId instanceId) {

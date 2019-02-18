@@ -5,7 +5,7 @@
 			<ul>
 			<#list c as dataset>
 				<li>
-					<a href="/admin/datasets/${dataset.id}">${dataset.label}</a> 
+					<a href="/admin/datasets/${dataset.id}">${dataset.label}</a>
 					<a href="" onclick="event.preventDefault(); fetch('./datasets/${dataset.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 				</li>
 			</#list>

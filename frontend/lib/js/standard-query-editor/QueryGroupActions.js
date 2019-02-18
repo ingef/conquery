@@ -1,9 +1,18 @@
+// @flow
+
 import React                from 'react';
-import PropTypes            from 'prop-types';
 import T                    from 'i18n-react';
 import { CloseIconButton }  from '../button';
 
-const QueryGroupActions = (props) => {
+type PropsType = {
+  excludeActiveClass: string,
+  dateActiveClass: string,
+  onExcludeClick: () => void,
+  onDeleteGroup: () => void,
+  onDateClick: () => void,
+};
+
+const QueryGroupActions = (props: PropsType) => {
   return (
     <div className="query-group__actions">
       <div className="query-group__actions--left">
@@ -36,14 +45,6 @@ const QueryGroupActions = (props) => {
       </div>
     </div>
   );
-};
-
-QueryGroupActions.propTypes = {
-  excludeActiveClass: PropTypes.string,
-  dateActiveClass: PropTypes.string,
-  onExcludeClick: PropTypes.func.isRequired,
-  onDeleteGroup: PropTypes.func.isRequired,
-  onDateClick: PropTypes.func.isRequired,
 };
 
 export default QueryGroupActions;

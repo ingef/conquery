@@ -1,4 +1,5 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
+
 import static com.bakdata.conquery.models.identifiable.ids.IId.createParser;
 
 import java.util.Iterator;

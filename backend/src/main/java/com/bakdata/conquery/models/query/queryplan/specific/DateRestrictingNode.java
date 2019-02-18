@@ -25,10 +25,10 @@ public class DateRestrictingNode extends QPChainNode {
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
 		dateRestriction.retainAll(dateRange);
-		
+
 		super.nextTable(
-			ctx.withDateRestriction(dateRestriction),
-			currentTable
+				ctx.withDateRestriction(dateRestriction),
+				currentTable
 		);
 
 

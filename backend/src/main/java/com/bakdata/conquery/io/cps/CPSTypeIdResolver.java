@@ -5,11 +5,17 @@ import com.fasterxml.jackson.databind.DatabindContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.jsontype.TypeIdResolver;
 import com.fasterxml.jackson.databind.type.TypeFactory;
+import com.google.common.collect.Iterables;
+import com.google.common.graph.SuccessorsFunction;
+import com.google.common.graph.Traverser;
+
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -32,17 +38,27 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	@Override
 	public void init(JavaType baseType) {
 		this.baseType = baseType;
-		this.cpsMap = null;
-		//see #145  ideally this would create an aggregate map of all the children and not just super classes
-		Class<?> cl = baseType.getRawClass();
-		while(cpsMap == null && cl != null) {
-			cpsMap = globalMap.get(cl);
-			cl = cl.getSuperclass();
+		this.cpsMap = new CPSMap();
+		
+		//this creates an aggregate map of all the children
+		Iterable<Class<?>> types = Traverser.forGraph(
+			(SuccessorsFunction<Class<?>>) node -> {
+				Class<?> superclass = node.getSuperclass();
+				List<Class<?>> interfaces = Arrays.asList(node.getInterfaces());
+				return superclass == null 
+					? interfaces
+					: Iterables.concat(interfaces, Collections.singleton(superclass));
+			}
+		).breadthFirst(baseType.getRawClass());
+		
+		for(Class<?> type : types) {
+			CPSMap local = globalMap.get(type);
+			if(local != null) {
+				cpsMap.merge(local);
+			}
 		}
-		//if there was still none found we have to for empty
-		if(cpsMap == null) {
-			cpsMap = CPSMap.getEMPTY();
-		}
+
+		cpsMap.calculateInverse();
 	}
 
 	static {

@@ -1,8 +1,18 @@
+// @flow
+
 import React                from 'react';
-import PropTypes            from 'prop-types';
 import Tag                  from './Tag';
 
-export const Tags = (props) => {
+type PropsType = {
+  className: string,
+  tags: {
+    label: string,
+    isSelected: boolean,
+  }[],
+  onClickTag: (string) => void,
+};
+
+export const Tags = (props: PropsType) => {
   return !!props.tags && props.tags.length > 0 && (
     <div className={props.className}>
       {
@@ -19,13 +29,5 @@ export const Tags = (props) => {
   );
 };
 
-Tags.propTypes = {
-  className: PropTypes.string,
-  tags: PropTypes.arrayOf(PropTypes.shape({
-    label: PropTypes.string.isRequired,
-    isSelected: PropTypes.bool,
-  })),
-  onClickTag: PropTypes.func.isRequired,
-};
 
 export default Tags;

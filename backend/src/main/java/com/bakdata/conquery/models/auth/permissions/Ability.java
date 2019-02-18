@@ -15,7 +15,7 @@ public enum Ability {
 	
 	public final Set<Ability> AS_SET = toSet();
 	
-	private Set<Ability> toSet(){
+	private Set<Ability> toSet() {
 		return Collections.singleton(this);
 	}
 }

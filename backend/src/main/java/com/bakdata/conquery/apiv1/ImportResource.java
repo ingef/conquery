@@ -18,7 +18,6 @@ import javax.ws.rs.core.Context;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.QueryExecutionException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespaces;
 
@@ -35,7 +34,7 @@ public class ImportResource {
 
 	@Consumes(AdditionalMediaTypes.CSV)
 	@POST
-	public SQStatus postConstantQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull String input, @Context HttpServletRequest req) throws QueryExecutionException, IOException {
+	public SQStatus postConstantQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull String input, @Context HttpServletRequest req) throws IOException {
 		authorize(user, datasetId, Ability.READ);
 
 		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();

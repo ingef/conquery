@@ -1,8 +1,0 @@
---require babel-core/register
---require ignore-styles
---require test/.setup
---require jsdom-global/register
---require mock-local-storage
---reporter spec
---recursive
---ui bdd

@@ -8,7 +8,9 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -48,6 +50,8 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -59,6 +63,7 @@ import com.bakdata.conquery.resources.admin.ui.UIContext;
 import com.bakdata.conquery.resources.admin.ui.UIView;
 import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.views.View;
 import lombok.Getter;
@@ -99,6 +104,37 @@ public class DatasetsResource {
 			namespaces.get(dataset).getStorage().getDataset(),
 			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
 	}
+
+	
+	@GET
+	@Path("/{" + DATASET_NAME + "}/mapping")
+	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
+		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
+		if (mapping != null) {
+			return new UIView<>(
+				"idmapping.html.ftl",
+				ctx,
+				mapping
+			);
+		} else {
+			return new UIView<>(
+				"add_idmapping.html.ftl",
+				ctx,
+				datasetId
+			);
+		}
+	}
+
+	@POST
+	@Consumes(MediaType.WILDCARD)
+	@Path("/{" + DATASET_NAME + "}/mapping")
+	public Response addIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("data_csv") InputStream data) throws IOException, JSONException {
+		processor.setIdMapping(data, namespaces.get(datasetId));
+		return Response
+				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
+				.build();
+	}
+
 
 	@GET @Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
@@ -200,20 +236,12 @@ public class DatasetsResource {
 
 	@POST
 	@Path("/{" + DATASET_NAME + "}/concepts")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response addConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("concept_schema") InputStream schema) throws IOException, JSONException, ConfigurationException {
+	public void addConcept(@PathParam(DATASET_NAME) DatasetId datasetId, Concept<?> concept) throws IOException, JSONException, ConfigurationException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
-		try (schema) {
-			Concept<?> c = dataset
-				.injectInto(mapper.readerFor(Concept.class))
-				.readValue(schema);
-			processor.addConcept(dataset, c);
-			return Response
-				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
-				.build();
-		}
-
+		processor.addConcept(dataset, concept);
+		
+		Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
 	}
 	
 	@POST

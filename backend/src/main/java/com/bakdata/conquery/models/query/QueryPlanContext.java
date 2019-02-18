@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.worker.Worker;
 public interface QueryPlanContext {
 
 	Worker getWorker();
-	
+
 	BlockManager getBlockManager();
 
 	CentralRegistry getCentralRegistry();

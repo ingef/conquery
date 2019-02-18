@@ -1,12 +1,12 @@
 package com.bakdata.conquery.io.xodus;
 
-import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.functions.Collector;
 
 import lombok.Getter;
@@ -23,16 +23,33 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	
 	@Getter @Setter @NonNull
 	private MasterMetaStorage metaStorage;
+	protected SingletonStore<PersistentIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
 	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
 	}
+
+
+	@Override
+	public PersistentIdMap getIdMapping() {
+		return idMapping.get();
+	}
+
+
+	@Override
+	public void updateIdMapping(PersistentIdMap idMapping) throws JSONException {
+		this.idMapping.update(idMapping);
+	}
+
 	
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
-		structure = StoreInfo.STRUCTURE.singleton(this);
-		collector.collect(structure);
+		structure = StoreInfo.STRUCTURE.singleton(this, new SingletonNamespaceCollection(centralRegistry));
+		idMapping = StoreInfo.ID_MAPPING.singleton(this);
+		collector
+			.collect(structure)
+			.collect(idMapping);
 	}
 
 	@Override

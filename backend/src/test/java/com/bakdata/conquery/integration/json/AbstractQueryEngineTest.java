@@ -11,10 +11,13 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
+import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
+import com.bakdata.conquery.models.query.QueryToCSVRenderer;
+import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
@@ -34,7 +37,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
 
-		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query);
+		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query, DevAuthConfig.USER);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
@@ -42,7 +45,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			fail("Query failed");
 		}
 
-		List<String> actual = managed.toCSV(standaloneSupport.getConfig()).collect(Collectors.toList());
+		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace()).toCSV(managed).collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();
 
@@ -53,9 +56,11 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			.as("Results for %s are not as expected.", this)
 			.containsExactlyInAnyOrderElementsOf(expected);
 		//check that getLastResultCount returns the correct size
-		assertThat(managed.getLastResultCount())
-			.as("Result count for %s is not as expected.", this)
-			.isEqualTo(expected.size()-1);
+		if(managed.fetchContainedEntityResult().noneMatch(MultilineContainedEntityResult.class::isInstance)) {
+			assertThat(managed.getLastResultCount())
+				.as("Result count for %s is not as expected.", this)
+				.isEqualTo(expected.size()-1);
+		}
 
 		log.info(
 				"INTEGRATION TEST SUCCESSFUL {} {} on {} rows",
