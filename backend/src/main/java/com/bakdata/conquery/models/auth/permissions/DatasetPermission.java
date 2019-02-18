@@ -10,13 +10,9 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.EqualsAndHashCode;
 
-@CPSType(id = "DATASET_PERMISSION", base = ConqueryPermission.class)
-@EqualsAndHashCode(callSuper = true)
+@CPSType(id="DATASET_PERMISSION", base=ConqueryPermission.class)
+@EqualsAndHashCode(callSuper=true)
 public class DatasetPermission extends IdentifiableInstancePermission<DatasetId> {
-
-	public DatasetPermission(Set<Ability> abilities, DatasetId instanceId) {
-		super(null, abilities, instanceId);
-	}
 
 	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId instanceId) {
 		super(ownerId, abilities, instanceId);

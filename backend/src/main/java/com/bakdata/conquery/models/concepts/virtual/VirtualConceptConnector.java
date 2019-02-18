@@ -31,7 +31,7 @@ public class VirtualConceptConnector extends Connector {
 	public Collection<Filter<?>> collectAllFilters() {
 		return Stream.of(getDateSelectionFilter(), filter).filter(Objects::nonNull).collect(Collectors.toList());
 	}
-/*
+	/*
 	@Override
 	public EventProcessingResult processEvent(Event r) {
 		CDateRange dateRange = extractValidityDates(r);
