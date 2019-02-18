@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.common;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
+import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -364,35 +366,22 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	 *         last in ascending order.
 	 */
 	public List<CDateRange> getCoveredQuarters() {
-		int startYear = this.getMin().getYear();
-		int startQuarter = QuarterUtils.getQuarter(this.getMin());
-		int endYear = this.getMax().getYear();
-		int endQuarter = QuarterUtils.getQuarter(this.getMax());
-
-		if(startYear == endYear && startQuarter == endQuarter) {
-			return Arrays.asList(this);
-		}
-		// Range covers multiple quarters
 		List<CDateRange> ranges = new ArrayList<>();
 		
-
 		// First quarter begins with this range
-		ranges.add(CDateRange.of(this.getMin(), QuarterUtils.getLastDayOfQuarter(startYear, startQuarter)));
-		int year = startYear;
-		int currentQuarter = QuarterUtils.getNextQuarter(startQuarter);
-		if(currentQuarter == 1) {
-			// Quarter wrapped, increment year
-			year++;
+		CDateRange start = CDateRange.of(getMin(), QuarterUtils.getLastDayOfQuarter(getMin()));
+		CDateRange end = CDateRange.of(QuarterUtils.getFirstDayOfQuarter(getMax()), getMax());
+		ranges.add(start);
+		LocalDate nextQuarterDate = this.getMin().plus(1, IsoFields.QUARTER_YEARS);
+		while(nextQuarterDate.isBefore(end.getMin())) {
+			ranges.add(QuarterUtils.fromDate(nextQuarterDate));
+			nextQuarterDate = nextQuarterDate.plus(1, IsoFields.QUARTER_YEARS);
 		}
-		for (; !(year >= endYear && currentQuarter > endQuarter-1);) {
-			ranges.add(QuarterUtils.fromQuarter(year, currentQuarter));
-			if (currentQuarter >= 4) {
-				year++;
-			}
-			currentQuarter = QuarterUtils.getNextQuarter(currentQuarter);
+		// Don't add the end if its the same quarter as start
+		if(!start.equals(end)) {
+			// Last year end with this range
+			ranges.add(end);
 		}
-		// Last year end with this range
-		ranges.add(CDateRange.of(QuarterUtils.getFirstDayOfQuarter(endYear, endQuarter), this.getMax()));
 
 		return ranges;
 	}

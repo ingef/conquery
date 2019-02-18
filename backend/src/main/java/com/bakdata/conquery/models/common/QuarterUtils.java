@@ -52,18 +52,6 @@ public final class QuarterUtils {
 		return date.get(IsoFields.QUARTER_OF_YEAR);
 	}
 	
-	/**
-	 * Does the increment and value-wrapping of quarters.
-	 * @param quarter The current quarter
-	 * @return The incremented/wrapped quarter
-	 */
-	public static int getNextQuarter(int quarter) {
-		if(quarter<1 || 4<quarter) {
-			throw new IllegalArgumentException("The value specified is not a valid quarter, must be in [1..4], was: "+ quarter);
-		}
-		return (quarter)%4+1;
-	}
-
 	public static Month getFirstMonthOfQuarter(int quarter) {
 		switch (quarter) {
 			case 1:
@@ -108,6 +96,10 @@ public final class QuarterUtils {
 		LocalDate start = getFirstDayOfQuarter(year, quarter);
 		LocalDate end = getLastDayOfQuarter(year, quarter);
 		return CDateRange.of(start, end);
+	}
+	
+	public static CDateRange fromDate(LocalDate date) {
+		return fromQuarter(date.getYear(), date.get(IsoFields.QUARTER_OF_YEAR));
 	}
 
 	public static TemporalAdjuster nextQuarterAdjuster() {
