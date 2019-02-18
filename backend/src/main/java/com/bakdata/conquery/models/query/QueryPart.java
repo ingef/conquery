@@ -49,7 +49,4 @@ public class QueryPart implements Callable<EntityResult> {
 			return EntityResult.failed(entity.getId(), e);
 		}
 	}
-
-	
-
 }

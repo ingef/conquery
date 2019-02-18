@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.util.Deque;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -10,6 +12,7 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
+import com.bakdata.conquery.models.query.select.Select;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -26,10 +29,15 @@ public class CQNegation implements CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		return new NegatingNode(child.createQueryPlan(context, plan));
 	}
-	
+
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		child = child.resolve(context);
 		return this;
+	}
+	
+	@Override
+	public void collectSelects(Deque<Select> select) {
+		child.collectSelects(select);
 	}
 }

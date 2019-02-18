@@ -3,17 +3,22 @@ package com.bakdata.conquery.resources.admin.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 
@@ -65,11 +70,22 @@ public class AdminUIProcessor {
 				otherPermissions.add(permission);
 			}
 		}
+		
+		List<Dataset> datasets = storage.getNamespaces().getAllDatasets();
 
 		return new FEMandatorContent(
+			(Mandator)mandatorId.getOwner(storage),
 			getUsers(mandatorId),
 			datasetPermissions,
 			queryPermissions,
-			otherPermissions);
+			otherPermissions,
+			Ability.READ.AS_SET,
+			datasets);
+	}
+	
+	public void createDatasetPermission(PermissionOwnerId<?> ownerId, List<String> abilities, DatasetId datasetId) throws JSONException {
+		PermissionOwner<?> owner =  ownerId.getOwner(storage);
+		Set<Ability> abilitSet = abilities.stream().map(a -> Ability.valueOf(Ability.class, a)).collect(Collectors.toSet());
+		AuthorizationHelper.addPermission(owner, new DatasetPermission(ownerId, abilitSet, datasetId), storage);
 	}
 }

@@ -34,7 +34,7 @@ public class CSV implements Closeable {
 	private CountingInputStream counter;
 	private long totalSizeToRead;
 	private long read = 0;
-	
+
 	public CSV(CSVConfig config, File file) throws IOException {
 		this(config, new FileInputStream(file), file.getName().endsWith(".gz"));
 		totalSizeToRead = file.length();
@@ -63,7 +63,7 @@ public class CSV implements Closeable {
 			
 		reader = new BufferedReader(new InputStreamReader(in, config.getEncoding()));
 	}
-	
+
 	public static Stream<String[]> streamContent(CSVConfig config, File file, Logger log) throws IOException {
 		CSV csv = new CSV(config, file);
 		return StreamSupport.stream(
@@ -82,7 +82,7 @@ public class CSV implements Closeable {
 		.onClose(csv::closeUnchecked);
 	}
 
-	public Iterator<String[]> iterateContent(Logger log) {
+	public Iterator<String[]> iterateContent(Logger log) throws IOException {
 		Iterator<String[]> it = new CsvParser(settings)
 				.iterate(reader)
 				.iterator();
@@ -119,7 +119,7 @@ public class CSV implements Closeable {
 	public void close() throws IOException {
 		reader.close();
 	}
-	
+
 	private void closeUnchecked() {
 		try {
 			reader.close();

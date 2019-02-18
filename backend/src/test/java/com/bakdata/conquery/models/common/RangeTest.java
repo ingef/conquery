@@ -3,13 +3,21 @@ package com.bakdata.conquery.models.common;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.IOException;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.fasterxml.jackson.databind.ObjectReader;
 
 
 class RangeTest {
@@ -96,32 +104,67 @@ class RangeTest {
 	
 	@Test
 	public void coveredYears() {
-		CDateRange dateRange = new CDateRange(LocalDate.of(2000, 9, 2), LocalDate.of(2005, 3, 15));
+		CDateRange dateRange = CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2005, 3, 15));
 		
 		List<CDateRange> expected = new ArrayList<>();
-		expected.add(new CDateRange(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 3, 15)));
+		expected.add(CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 3, 15)));
 		
 		assertThat(dateRange.getCoveredYears()).containsExactlyInAnyOrderElementsOf(expected);
 	}
 	
 	@Test
 	public void coveredQuarters() {
-		CDateRange dateRange = new CDateRange(LocalDate.of(2000, 9, 2), LocalDate.of(2002, 3, 15));
+		CDateRange dateRange = CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2002, 3, 15));
 		
 		List<CDateRange> expected = new ArrayList<>();
-		expected.add(new CDateRange(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 9, 30)));
-		expected.add(new CDateRange(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)));
-		expected.add(new CDateRange(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 6, 30)));
-		expected.add(new CDateRange(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)));
-		expected.add(new CDateRange(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)));
-		expected.add(new CDateRange(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 15)));
+		expected.add(CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 9, 30)));
+		expected.add(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 6, 30)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 15)));
 		
 		assertThat(dateRange.getCoveredQuarters()).containsExactlyInAnyOrderElementsOf(expected);
+	}
+	
+	public static List<Arguments> deserialize() {
+		return Arrays.asList(
+			Arguments.of(
+				"{\"min\":\"2017-01-01\", \"max\":\"2017-01-01\"}", 
+				new Range<>(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 1)), 
+				CDateRange.of(LocalDate.of(2017, 1, 1), LocalDate.of(2017, 1, 1))
+			),
+			Arguments.of(
+				"{\"min\":\"2017-01-01\"}", 
+				new Range<>(LocalDate.of(2017, 1, 1), null), 
+				CDateRange.atLeast(LocalDate.of(2017, 1, 1))
+			)
+			,
+			Arguments.of(
+				"{\"max\":\"2017-01-01\"}", 
+				new Range<>(null, LocalDate.of(2017, 1, 1)), 
+				CDateRange.atMost(LocalDate.of(2017, 1, 1))
+			)
+		);
+	}
+	
+	@ParameterizedTest(name="{0}") @MethodSource
+	public void deserialize(String json, Range<LocalDate> expected, CDateRange expectedCDateRange) throws IOException {
+		ObjectReader reader = Jackson.MAPPER.readerFor(
+			Jackson.MAPPER.getTypeFactory().constructParametricType(Range.class, LocalDate.class)
+		);
+		Range<LocalDate> range = reader.readValue(json);
+		assertThat(range).isEqualTo(expected);
+		assertThat(range).isEqualToComparingFieldByFieldRecursively(expected);
+		
+		CDateRange cDateRange = CDateRange.of(range);
+		assertThat(cDateRange).isEqualTo(expectedCDateRange);
+		assertThat(cDateRange).isEqualToComparingFieldByFieldRecursively(expectedCDateRange);
 	}
 }

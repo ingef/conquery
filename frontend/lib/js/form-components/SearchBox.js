@@ -1,11 +1,24 @@
+// @flow
+
 import React                    from 'react';
 import { Dot }                  from 'react-animated-dots';
-import PropTypes                from 'prop-types';
 import T                        from 'i18n-react';
 import { Creatable as Select }  from 'react-select';
 import { isEmpty, duration }    from '../common/helpers';
 
-const SearchBox = (props) => {
+type PropsType = {
+  search: string[],
+  onSearch: string => void,
+  onChange: () => void,
+  onClearQuery: () => void,
+  options: string[],
+  isMulti: boolean,
+  searchResult: Object,
+  datasetId: string,
+  searchConfig: Object
+};
+
+const SearchBox = (props: PropsType) => {
   const { searchResult, searchConfig } = props;
 
   return props.isMulti
@@ -80,18 +93,6 @@ const SearchBox = (props) => {
           </div>
         }
       </div>
-};
-
-SearchBox.propTypes = {
-  search: PropTypes.arrayOf(PropTypes.string),
-  onSearch: PropTypes.func.isRequired,
-  onChange: PropTypes.func,
-  onClearQuery: PropTypes.func,
-  options: PropTypes.arrayOf(PropTypes.string),
-  isMulti: PropTypes.bool,
-  searchResult: PropTypes.object,
-  datasetId: PropTypes.string,
-  searchConfig: PropTypes.object
 };
 
 export default SearchBox;

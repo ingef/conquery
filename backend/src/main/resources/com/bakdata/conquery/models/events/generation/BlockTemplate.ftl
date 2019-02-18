@@ -174,7 +174,7 @@ public class Block_${suffix} extends Block {
 				throw new IllegalArgumentException("Column "+column+" is not a date type");
 		}
 	}
-	
+
 	@Override
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
 		if(!this.has(event, column)) {
@@ -183,18 +183,18 @@ public class Block_${suffix} extends Block {
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
 			<#if col.type.typeId == "DATE">
-			case ${col.position}:
+				case ${col.position}:
 				return dateRanges.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
 			<#elseif col.type.typeId == "DATE_RANGE">
-			case ${col.position}:
+				case ${col.position}:
 				return dateRanges.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
 			</#if>
 		</#list>
-			default:
-				throw new IllegalArgumentException("Column "+column+" is not a date type");
+		default:
+		throw new IllegalArgumentException("Column "+column+" is not a date type");
 		}
 	}
-	
+
 	@Override
 	public CDateRange getAsDateRange(int event, Column column) {
 		if(!this.has(event, column)) {

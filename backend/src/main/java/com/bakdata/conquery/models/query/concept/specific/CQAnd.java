@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 
@@ -16,6 +17,7 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
+import com.bakdata.conquery.models.query.select.Select;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -40,10 +42,17 @@ public class CQAnd implements CQElement {
 			c.collectRequiredQueries(requiredQueries);
 		}
 	}
-	
+
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		children.replaceAll(c->c.resolve(context));
 		return this;
+	}
+	
+	@Override
+	public void collectSelects(Deque<Select> select) {
+		for(CQElement c:children) {
+			c.collectSelects(select);
+		}
 	}
 }

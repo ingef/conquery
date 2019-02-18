@@ -23,7 +23,7 @@ import com.bakdata.conquery.models.exceptions.validators.ExistingFile.ExistingFi
 
 import lombok.extern.slf4j.Slf4j;
 
-@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE, TYPE_USE})
+@Target({FIELD, METHOD, PARAMETER, ANNOTATION_TYPE, TYPE_USE})
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = ExistingFileValidator.class)
 @Documented
@@ -32,19 +32,19 @@ public @interface ExistingFile {
 
 	String message() default "The file does not exist";
 
-	Class<?>[] groups() default { };
+	Class<?>[] groups() default {};
 
-	Class<? extends Payload>[] payload() default { };
+	Class<? extends Payload>[] payload() default {};
 
 	boolean directory() default false;
 
-	@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
+	@Target({FIELD, METHOD, PARAMETER, ANNOTATION_TYPE})
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@interface ExistingFileList {
 		ExistingFile[] value();
 	}
-	
+
 	@Slf4j
 	class ExistingFileValidator implements ConstraintValidator<ExistingFile, File> {
 
@@ -52,40 +52,37 @@ public @interface ExistingFile {
 
 		@Override
 		public void initialize(ExistingFile anno) {
-			this.directory=anno.directory();
+			this.directory = anno.directory();
 		}
 
 		@Override
 		public boolean isValid(File value, ConstraintValidatorContext context) {
 			context.disableDefaultConstraintViolation();
-			if(value==null) {
+			if (value == null) {
 				context
-					.buildConstraintViolationWithTemplate("The File/Directory is null")
-					.addConstraintViolation();
+						.buildConstraintViolationWithTemplate("The File/Directory is null")
+						.addConstraintViolation();
 				return false;
-			}
-			else {
+			} else {
 				try {
-					if(directory && !value.isDirectory()) {
+					if (directory && !value.isDirectory()) {
 						context
-							.buildConstraintViolationWithTemplate("The Directory "+value.getAbsoluteFile()+" does not exist or is not a directory")
-							.addConstraintViolation();
+								.buildConstraintViolationWithTemplate("The Directory " + value.getAbsoluteFile() + " does not exist or is not a directory")
+								.addConstraintViolation();
 						return false;
-					}
-					else if(!directory && !value.isFile()) {
+					} else if (!directory && !value.isFile()) {
 						context
-							.buildConstraintViolationWithTemplate("The File "+value.getAbsoluteFile()+" does not exist or is not a file")
-							.addConstraintViolation();
+								.buildConstraintViolationWithTemplate("The File " + value.getAbsoluteFile() + " does not exist or is not a file")
+								.addConstraintViolation();
 						return false;
-					}
-					else {
+					} else {
 						return true;
 					}
-				} catch(Exception e) {
-					log.error("Failed to construct the canonical path of "+value.getAbsolutePath(),e);
+				} catch (Exception e) {
+					log.error("Failed to construct the canonical path of " + value.getAbsolutePath(), e);
 					context
-						.buildConstraintViolationWithTemplate("Failed to construct the canonical path of "+value.getAbsolutePath())
-						.addConstraintViolation();
+							.buildConstraintViolationWithTemplate("Failed to construct the canonical path of " + value.getAbsolutePath())
+							.addConstraintViolation();
 					return false;
 				}
 			}
