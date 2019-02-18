@@ -7,8 +7,10 @@ import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
 import com.bakdata.conquery.models.auth.AuthorizationExceptionMapper;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 
+import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
@@ -19,6 +21,8 @@ import lombok.experimental.UtilityClass;
 public class RESTServer {
 
 	public static void configure(ConqueryConfig config, ResourceConfig jersey) {
+		// Bind User class to REST authentication
+		jersey.register(new AuthValueFactoryProvider.Binder(User.class));
 		//change exception mapper behavior because of JERSEY-2437
 		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
 		// Register custom mapper

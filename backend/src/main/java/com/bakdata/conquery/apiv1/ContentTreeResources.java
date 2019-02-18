@@ -54,8 +54,8 @@ import lombok.extern.slf4j.Slf4j;
 @PermitAll
 public class ContentTreeResources {
 
-	private ContentTreeProcessor processor;
-	private ResourceUtil dsUtil;
+	private final ContentTreeProcessor processor;
+	private final ResourceUtil dsUtil;
 
 	public ContentTreeResources(Namespaces namespaces) {
 		this.processor = new ContentTreeProcessor(namespaces);
