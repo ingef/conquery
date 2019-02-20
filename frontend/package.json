@@ -28,8 +28,12 @@
     "/dist"
   ],
   "dependencies": {
+    "@emotion/core": "^10.0.7",
+    "@emotion/styled": "^10.0.7",
+    "babel-plugin-emotion": "^10.0.7",
     "classnames": "^2.2.5",
     "create-react-class": "^15.5.3",
+    "emotion-theming": "^10.0.7",
     "empty": "^0.10.1",
     "es6-promise": "^4.2.4",
     "flow-bin": "^0.92.1",
