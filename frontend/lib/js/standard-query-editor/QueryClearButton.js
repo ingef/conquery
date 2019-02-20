@@ -1,12 +1,12 @@
 // @flow
 
-import React                       from 'react';
-import { connect }                 from 'react-redux';
-import T                           from 'i18n-react';
+import React from "react";
+import { connect } from "react-redux";
+import T from "i18n-react";
 
-import { IconButton }              from '../button';
+import IconButton from "../button/IconButton";
 
-import { clearQuery }              from './actions';
+import { clearQuery } from "./actions";
 
 type PropsType = {
   clearQuery: () => void,
@@ -14,25 +14,27 @@ type PropsType = {
 };
 
 const QueryClearButton = (props: PropsType) => {
-  return props.isVisible && (
-    <div className="query-clear-button">
-      <IconButton
-        onClick={props.clearQuery}
-        className="btn btn--small btn--transparent"
-        label={T.translate("common.clear")}
-        iconClassName="fa-trash-o"
-      />
-    </div>
+  return (
+    props.isVisible && (
+      <div className="query-clear-button">
+        <IconButton frame onClick={props.clearQuery} icon="trash-o">
+          {T.translate("common.clear")}
+        </IconButton>
+      </div>
+    )
   );
 };
 
-const mapStateToProps = (state) => ({
-  isVisible: state.panes.right.tabs.queryEditor.query.length !== 0,
+const mapStateToProps = state => ({
+  isVisible: state.panes.right.tabs.queryEditor.query.length !== 0
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  clearQuery: () => dispatch(clearQuery()),
+const mapDispatchToProps = dispatch => ({
+  clearQuery: () => dispatch(clearQuery())
 });
 
-const ConnectedQueryClearButton = connect(mapStateToProps, mapDispatchToProps)(QueryClearButton);
+const ConnectedQueryClearButton = connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(QueryClearButton);
 export { ConnectedQueryClearButton as QueryClearButton };
