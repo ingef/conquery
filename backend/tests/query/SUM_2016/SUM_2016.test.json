@@ -1,0 +1,88 @@
+{  
+   "type":"QUERY_TEST",
+   "label":"SUM_2016 Test",
+   "expectedCsv":"tests/query/SUM_2016/expected2016test.csv",
+   "query":{  
+      "type":"CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+            "type":"DATE_RESTRICTION",
+            "dateRange":{  
+               "min":"2016-01-01",
+               "max":"2016-12-31"
+            },
+            "child":{  
+                  
+                     "ids":[  
+                        "${dataset}.sum"
+                     ],
+                     "type":"CONCEPT",
+                     "label":"vs",
+                     "tables":[  
+                        {  
+                           "id":"${dataset}.sum.sum_connector",
+                           "filters":[  
+                              {  
+                                 "filter":"${dataset}.sum.sum_connector.value",
+                                 "type":"REAL_RANGE",
+                                 "value":{  
+                                    "min": 1,
+									"max": 10
+                                 }
+                              }
+                           ]
+                        }
+                     ]
+                  
+               }
+            }
+         ]
+      }
+   },
+   "concepts":[  
+      {  
+         "label":"sum",
+         "type":"VIRTUAL",
+         "connectors":[  
+            {  
+               "label":"sum_connector",
+               "table":"vers_stamm",
+               "validityDates":{  
+                  "label":"datum",
+                  "column":"vers_stamm.datum"
+               },
+               "filter":{  
+                  "label":"value",
+                  "description":"xy",
+                  "column":"vers_stamm.value",
+                  "type":"SUM"
+               }
+            }
+         ]
+      }
+   ],
+   "content":{  
+      "tables":[  
+         {  
+            "csv":"tests/query/SUM_2016/contenttest.csv",
+            "name":"vers_stamm",
+            "primaryColumn":{  
+               "name":"pid",
+               "type":"STRING"
+            },
+            "columns": [
+        {
+          "name": "value",
+          "type": "REAL"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+         }
+      ]
+   }
+}
