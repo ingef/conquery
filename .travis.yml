@@ -84,6 +84,7 @@ jobs:
     - stage: "Release"
       if: type = push AND tag IS present
       install: mvn -B -V -T 1C package -DskipTests -D$TRAVIS_TAG
+      script: skip
       deploy:
         provider: releases
         api_key: $GITHUB_OAUTH_TOKEN
