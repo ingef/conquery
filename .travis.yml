@@ -81,6 +81,44 @@ jobs:
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       script: bash frontend/scripts/deploy-heroku-docker.sh conquery
 
+    - stage: "Prerelease"
+      if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
+      before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
+      install: mvn -B -V -T 1C package -DskipTests -Dversion=$TAG_VERSION
+      script: skip
+      deploy:
+        provider: releases
+        api_key: $GITHUB_OAUTH_TOKEN
+        tag_name: $TRAVIS_TAG
+        target_commitish: $TRAVIS_COMMIT
+        file:
+          - backend/target/backend-$TAG_VERSION.jar
+          - executable/target/executable-$TAG_VERSION.jar
+        skip_cleanup: true
+        draft: false
+        prerelease: true
+        on:
+          all_branches: true
+
+    - stage: "Release"
+      if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
+      before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
+      install: mvn -B -V -T 1C package -DskipTests -Dversion=$TRAVIS_TAG
+      script: skip
+      deploy:
+        provider: releases
+        api_key: $GITHUB_OAUTH_TOKEN
+        tag_name: $TRAVIS_TAG
+        target_commitish: $TRAVIS_COMMIT
+        file:
+          - backend/target/backend-$TRAVIS_TAG.jar
+          - executable/target/executable-$TRAVIS_TAG.jar
+        skip_cleanup: true
+        draft: false
+        prerelease: false
+        on:
+          all_branches: true
+
 #remove the installed maven jars before caching
 before_cache:
   - rm -f -r $HOME/.m2/repository/com/bakdata/conquery/
