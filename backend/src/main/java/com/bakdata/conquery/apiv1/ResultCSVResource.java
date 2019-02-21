@@ -9,6 +9,7 @@ import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 import javax.annotation.security.PermitAll;
@@ -19,6 +20,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.StreamingOutput;
+import javax.ws.rs.core.Response.Status;
 
 import org.eclipse.jetty.io.EofException;
 
@@ -54,28 +56,33 @@ public class ResultCSVResource {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
-		ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, queryId);
-		Stream<String> csv =  new QueryToCSVRenderer(query.getNamespace()).toCSV(query);
-
-		log.info("Querying results for {}", queryId);
-		StreamingOutput out = new StreamingOutput() {
-			@Override
-			public void write(OutputStream os) throws WebApplicationException {
-				try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
-					Iterator<String> it =  csv.iterator();
-					while (it.hasNext()) {
-						writer.write(it.next());
-						writer.write(config.getCsv().getLineSeparator());
+		try {
+			ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, queryId);
+			Stream<String> csv =  new QueryToCSVRenderer(query.getNamespace()).toCSV(query);
+	
+			log.info("Querying results for {}", queryId);
+			StreamingOutput out = new StreamingOutput() {
+				@Override
+				public void write(OutputStream os) throws WebApplicationException {
+					try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
+						Iterator<String> it =  csv.iterator();
+						while (it.hasNext()) {
+							writer.write(it.next());
+							writer.write(config.getCsv().getLineSeparator());
+						}
+						writer.flush();
+					} catch (EofException e) {
+						log.info("User canceled download of {}", queryId);
+					} catch (Exception e) {
+						throw new WebApplicationException("Failed to load result " + queryId, e);
 					}
-					writer.flush();
-				} catch (EofException e) {
-					log.info("User canceled download of {}", queryId);
-				} catch (Exception e) {
-					throw new WebApplicationException("Failed to load result " + queryId, e);
 				}
-			}
-		};
-
-		return Response.ok(out).build();
+			};
+	
+			return Response.ok(out).build();
+		}
+		catch(NoSuchElementException e) {
+			throw new WebApplicationException(e, Status.NOT_FOUND);
+		}
 	}
 }
