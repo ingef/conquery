@@ -83,7 +83,7 @@ jobs:
 
     - stage: "Prerelease"
       if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
-      before_install: export TAG_VERSION=sed 's/^v//' '$TRAVIS_TAG'
+      before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
       install: mvn -B -V -T 1C package -DskipTests -Dversion=$TAG_VERSION
       script: skip
       deploy:
@@ -102,7 +102,7 @@ jobs:
 
     - stage: "Release"
       if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
-      before_install: export TAG_VERSION=sed 's/^v//' '$TRAVIS_TAG'
+      before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
       install: mvn -B -V -T 1C package -DskipTests -Dversion=$TRAVIS_TAG
       script: skip
       deploy:
