@@ -83,7 +83,7 @@ jobs:
 
     - stage: "Release"
       if: type = push AND tag IS present
-      install: mvn -B -V -T 1C package -DskipTests -D$TRAVIS_TAG
+      install: mvn -B -V -T 1C package -DskipTests -Dversion=$TRAVIS_TAG
       script: skip
       deploy:
         provider: releases
@@ -93,6 +93,8 @@ jobs:
           - executable/target/executable-$TRAVIS_TAG.jar
         skip_cleanup: true
         draft: true
+        on:
+          all_branches: true
 
 #remove the installed maven jars before caching
 before_cache:
