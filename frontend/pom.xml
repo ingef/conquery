@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.bakdata.conquery</groupId>
         <artifactId>parent</artifactId>
-        <version>2.0.0-rc.2</version>
+        <version>${version}</version>
     </parent>
 
 
@@ -83,6 +83,17 @@
 
                         <configuration>
                             <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn set version</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                        <configuration>
+                            <arguments>version --no-git-tag-version --new-version ${version}</arguments>
                         </configuration>
                     </execution>
                     <execution>
