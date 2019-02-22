@@ -4,14 +4,15 @@
         "http://www.tuckey.org/res/dtds/urlrewrite4.0.dtd">
 
 <urlrewrite>
-	<!-- redirect from root to app -->
-	<rule>
-		<from>^/?$</from>
-		<to type="redirect">/app</to>
-	</rule>
     <!-- Forwarding everything starting with app/ except app/static to index.html -->
     <rule>
         <from>^/(?=app)(?!(app/static/)).*$</from>
         <to type="forward">/app</to>
     </rule>
+    
+    <!-- redirect from root to app -->
+	<rule>
+		<from>^/?$</from>
+		<to type="redirect">/app</to>
+	</rule>
 </urlrewrite>
