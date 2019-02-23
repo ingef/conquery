@@ -570,14 +570,19 @@ const toggleTimestamps = (state, action) => {
 const loadFilterSuggestionsStart = (state, action) =>
   setNodeFilterProperties(state, action, { isLoading: true });
 
-const loadFilterSuggestionsSuccess = (state, action) =>
-  setNodeFilterProperties(state, action, {
+const loadFilterSuggestionsSuccess = (state, action) => {
+  // When [] comes back from the API, don't touch the current options
+  if (!action.payload.suggestions || action.payload.suggestions.length === 0)
+    return setNodeFilterProperties(state, action, { isLoading: false });
+
+  return setNodeFilterProperties(state, action, {
     isLoading: false,
     options: action.payload.suggestions
   });
+};
 
 const loadFilterSuggestionsError = (state, action) =>
-  setNodeFilterProperties(state, action, { isLoading: false, options: [] });
+  setNodeFilterProperties(state, action, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
   result: UploadConceptListModalResultType
