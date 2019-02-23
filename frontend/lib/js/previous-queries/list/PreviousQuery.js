@@ -2,6 +2,7 @@
 
 import React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 
 import T from "i18n-react";
 import { DragSource } from "react-dnd";
@@ -73,8 +74,12 @@ const Root = styled("div")`
       : `1px solid ${theme.col.grayLight}`};
 
   &:hover {
-    border-left-color: ${({ theme, own, system }) =>
-      own || system ? "inherit" : theme.col.blueGray};
+    ${({ theme, own, system }) =>
+      !own &&
+      !system &&
+      css`
+        border-left-color: ${theme.col.blueGray};
+      `};
     border-top-color: ${({ theme }) => theme.col.blueGray};
     border-right-color: ${({ theme }) => theme.col.blueGray};
     border-bottom-color: ${({ theme }) => theme.col.blueGray};
@@ -106,8 +111,9 @@ const StyledEditableText = styled(EditableText)`
   font-weight: 400;
   word-break: break-word;
 `;
-const MiddleRow = styled("span")`
+const MiddleRow = styled("div")`
   display: flex;
+  width: 100%;
   justify-content: space-between;
 `;
 const StyledErrorMessage = styled(ErrorMessage)`
@@ -190,21 +196,30 @@ const PreviousQuery = (props: PropsType) => {
               </StyledIconButton>
             ))}
           {mayEditQuery && !query.editingTags && (
-            <HoverButton icon="plus" large bare onClick={onToggleEditPreviousQueryTags}>
+            <HoverButton
+              icon="plus"
+              large
+              bare
+              onClick={onToggleEditPreviousQueryTags}
+            >
               {T.translate("previousQuery.addTag")}
             </HoverButton>
           )}
+          <TopRight>
+            {executedAt}
+            {query.loading ? (
+              <IconButton large bare icon="spinner" />
+            ) : (
+              query.own && (
+                <IconButton
+                  icon="close"
+                  tiny
+                  onClick={props.onDeletePreviousQuery}
+                />
+              )
+            )}
+          </TopRight>
         </div>
-        <TopRight>
-          {executedAt}
-          {query.loading ? (
-            <IconButton large bare icon="spinner" />
-          ) : (
-            query.own && (
-              <IconButton icon="close" onClick={props.onDeletePreviousQuery} />
-            )
-          )}
-        </TopRight>
       </TopInfos>
       <MiddleRow>
         {mayEditQuery ? (

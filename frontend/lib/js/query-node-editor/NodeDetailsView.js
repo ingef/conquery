@@ -24,14 +24,14 @@ const LargeColumn = styled("div")`
   overflow: auto;
 `;
 
-const EditableHeadline = styled("div")`
+const EditableHeadline = styled("h4")`
   margin: 0px 4px;
   padding: 0px 10px;
-  border-bottom: 1px solid $col-gray-light;
+  border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
   line-height: 37px;
-  font-size: $font-md;
+  font-size: ${({ theme }) => theme.font.md};
   font-weight: 700;
-  color: $col-black;
+  color: ${({ theme }) => theme.col.black};
 `;
 
 const ColumnContent = styled("div")`

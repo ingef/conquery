@@ -21,6 +21,10 @@ const StyledIconButton = styled(IconButton)`
   margin-right: 5px;
 `;
 
+const Text = styled("p")`
+  margin: 0;
+`;
+
 class EditableText extends React.Component<PropsType> {
   render() {
     return this.props.editing ? (
@@ -33,7 +37,7 @@ class EditableText extends React.Component<PropsType> {
         onCancel={this.props.onToggleEdit}
       />
     ) : (
-      <p className={this.props.className}>
+      <Text className={this.props.className}>
         <StyledIconButton
           large
           bare
@@ -41,7 +45,7 @@ class EditableText extends React.Component<PropsType> {
           onClick={this.props.onToggleEdit}
         />
         <SelectableLabel label={this.props.text} />
-      </p>
+      </Text>
     );
   }
 }

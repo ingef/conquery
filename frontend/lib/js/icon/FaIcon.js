@@ -1,7 +1,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 
-export const Icon = styled("div")`
+export const Icon = styled("i")`
   padding-right: ${({ left }) => (left ? "10px" : "0")};
   padding-left: ${({ right }) => (right ? "10px" : "0")};
   text-align: ${({ center }) => (center ? "center" : "left")};
