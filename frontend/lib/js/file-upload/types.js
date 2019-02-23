@@ -1,11 +1,11 @@
 // @flow
 
 export type DraggedFileType = {
-    files: File[],
-    isPreviousQuery?: void,
-}
+  files: File[],
+  isPreviousQuery?: void
+};
 
 export type GenericFileType = {
-    parameters: Object,
-    callback?: Function
-}
+  parameters: Object,
+  callback?: Function
+};

@@ -2,15 +2,15 @@
 
 import React from "react";
 
-import { includes } from "../common/helpers";
-
 import {
   InputSelect,
   InputMultiSelect,
   InputRange,
   AsyncInputMultiSelect,
-  InputWithLabel,
-  SUPPORTED_FILTERS,
+  InputWithLabel
+} from "../form-components";
+
+import {
   SELECT,
   MULTI_SELECT,
   INTEGER_RANGE,
@@ -18,12 +18,15 @@ import {
   MONEY_RANGE,
   STRING,
   BIG_MULTI_SELECT
-} from "../form-components";
+} from "../form-components/filterTypes";
 
-import { type FilterType, CurrencyType } from "../standard-query-editor/types";
+import type {
+  FilterWithValueType,
+  CurrencyType
+} from "../standard-query-editor/types";
 
 type PropsType = {
-  filters: ?(FilterType[]),
+  filters: ?(FilterWithValueType[]),
   className?: string,
   excludeTable: boolean,
   onSwitchFilterMode: Function,
@@ -41,7 +44,6 @@ const ParameterTableFilters = (props: PropsType) => {
   return (
     <div>
       {props.filters
-        .filter(f => includes(Object.keys(SUPPORTED_FILTERS), f.type))
         .map((filter, filterIdx) => {
           switch (filter.type) {
             case SELECT:
