@@ -23,7 +23,7 @@ public class ChunkingOutputStream extends OutputStream {
 	}
 
 	@Override
-	public void write(byte buf[], int off, int len) throws IOException {
+	public void write(byte[] buf, int off, int len) throws IOException {
 		if ((off < 0) || (off > buf.length) || (len < 0) || ((off + len) > buf.length) || ((off + len) < 0)) {
 			throw new IndexOutOfBoundsException();
 		}

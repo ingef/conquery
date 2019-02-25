@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.Map;
 
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.specific.IStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -44,7 +45,8 @@ public class ConceptTreeCache {
 
 		misses++;
 
-		final ConceptTreeChild child = treeConcept.findMostSpecificChild(type.createScriptValue(id), rowMap);
+		String scriptValue = type.createScriptValue(id);
+		final ConceptTreeChild child = treeConcept.findMostSpecificChild(scriptValue, rowMap);
 
 		if(!rowMap.isCalculated()) {
 			cached.setBit(id, true);

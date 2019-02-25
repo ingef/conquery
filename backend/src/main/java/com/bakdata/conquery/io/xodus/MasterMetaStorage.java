@@ -117,5 +117,9 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 */
 	void updateMandator(Mandator mandator) throws JSONException;
 	
+	/**
+	 * Return the namespaces used in the instance of conquery.
+	 * @return The namespaces.
+	 */
 	Namespaces getNamespaces();
 }

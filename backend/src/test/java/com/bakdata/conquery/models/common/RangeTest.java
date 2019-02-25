@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.io.IOException;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.IntPredicate;
@@ -13,12 +14,10 @@ import java.util.function.Predicate;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.primitives.Ints;
 
 
 class RangeTest {
@@ -101,6 +100,37 @@ class RangeTest {
 
 		assertThat(Range.of(5, 7).span(Range.exactly(6)))
 				.isEqualTo(Range.of(5, 7));
+	}
+	
+	@Test
+	public void coveredYears() {
+		CDateRange dateRange = CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2005, 3, 15));
+		
+		List<CDateRange> expected = new ArrayList<>();
+		expected.add(CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 3, 15)));
+		
+		assertThat(dateRange.getCoveredYears()).containsExactlyInAnyOrderElementsOf(expected);
+	}
+	
+	@Test
+	public void coveredQuarters() {
+		CDateRange dateRange = CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2002, 3, 15));
+		
+		List<CDateRange> expected = new ArrayList<>();
+		expected.add(CDateRange.of(LocalDate.of(2000, 9, 2), LocalDate.of(2000, 9, 30)));
+		expected.add(CDateRange.of(LocalDate.of(2000, 10, 1), LocalDate.of(2000, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 1, 1), LocalDate.of(2001, 3, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 4, 1), LocalDate.of(2001, 6, 30)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)));
+		expected.add(CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)));
+		expected.add(CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 15)));
+		
+		assertThat(dateRange.getCoveredQuarters()).containsExactlyInAnyOrderElementsOf(expected);
 	}
 	
 	public static List<Arguments> deserialize() {
