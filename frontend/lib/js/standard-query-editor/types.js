@@ -3,13 +3,13 @@
 import type {
   TreeNodeIdType,
   QueryIdType,
-  DateRangeType,
   RangeFilterType,
   RangeFilterValueType,
   MultiSelectFilterType,
   MultiSelectFilterValueType,
   SelectFilterType,
-  SelectFilterValueType
+  SelectFilterValueType,
+  DateRangeType
 } from '../common/types/backend';
 
 export type CurrencyType = {

@@ -1,5 +1,6 @@
+// @flow
+
 import React                    from 'react';
-import PropTypes                from 'prop-types';
 import { connect }              from 'react-redux';
 import T                        from 'i18n-react';
 
@@ -19,7 +20,22 @@ import {
 
 import TimebasedCondition       from './TimebasedCondition';
 
-const TimebasedQueryEditor = (props) => {
+type PropsType = {
+  query: Object,
+  onDropTimebasedNode: () => void,
+  onRemoveTimebasedNode: () => void,
+  onAddTimebasedCondition: () => void,
+  onRemoveTimebasedCondition: () => void,
+  onSetTimebasedConditionOperator: () => void,
+  onSetTimebasedNodeTimestamp: () => void,
+  onSetTimebasedIndexResult: () => void,
+  onSetTimebasedConditionMinDays: () => void,
+  onSetTimebasedConditionMaxDays: () => void,
+  onSetTimebasedConditionMinDaysOrNoEvent: () => void,
+  onSetTimebasedConditionMaxDaysOrNoEvent: () => void,
+};
+
+const TimebasedQueryEditor = (props: PropsType) => {
   return (
     <div className="timebased-query-editor">
       {
@@ -66,21 +82,6 @@ const TimebasedQueryEditor = (props) => {
       </button>
     </div>
   );
-};
-
-TimebasedQueryEditor.propTypes = {
-  query: PropTypes.object.isRequired,
-  onDropTimebasedNode: PropTypes.func.isRequired,
-  onRemoveTimebasedNode: PropTypes.func.isRequired,
-  onAddTimebasedCondition: PropTypes.func.isRequired,
-  onRemoveTimebasedCondition: PropTypes.func.isRequired,
-  onSetTimebasedConditionOperator: PropTypes.func.isRequired,
-  onSetTimebasedNodeTimestamp: PropTypes.func.isRequired,
-  onSetTimebasedIndexResult: PropTypes.func.isRequired,
-  onSetTimebasedConditionMinDays: PropTypes.func.isRequired,
-  onSetTimebasedConditionMaxDays: PropTypes.func.isRequired,
-  onSetTimebasedConditionMinDaysOrNoEvent: PropTypes.func.isRequired,
-  onSetTimebasedConditionMaxDaysOrNoEvent: PropTypes.func.isRequired,
 };
 
 

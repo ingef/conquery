@@ -18,7 +18,7 @@ public class JobManager implements Managed {
 	}
 
 	public void addSlowJob(Job job) {
-		log.info("Added job {}", job.getLabel());
+		log.debug("Added job {}", job.getLabel());
 		slowExecutor.add(job);
 	}
 	

@@ -13,4 +13,9 @@ public class SingletonNamespaceCollection implements NamespaceCollection {
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		return registry;
 	}
+
+	@Override
+	public CentralRegistry getMetaRegistry() {
+		return registry;
+	}
 }

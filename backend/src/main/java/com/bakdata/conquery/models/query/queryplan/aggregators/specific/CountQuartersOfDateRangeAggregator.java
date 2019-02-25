@@ -1,17 +1,17 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import java.time.YearMonth;
-import java.time.temporal.IsoFields;
-import java.time.temporal.TemporalAdjuster;
-
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
+
+import java.time.YearMonth;
+import java.time.temporal.ChronoField;
+import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalAdjuster;
 
 /**
  * Entity is included when the number of distinct quarters for all events is
@@ -45,11 +45,11 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 			return;
 		}
 
-		YearMonth minQuarter = (YearMonth) monthInQuarter.adjustInto(dateRange.getMin());
-		YearMonth maxQuarter = (YearMonth) monthInQuarter.adjustInto(dateRange.getMax());
+		YearMonth minQuarter = YearMonth.from(monthInQuarter.adjustInto(dateRange.getMin()));
+		YearMonth maxQuarter = YearMonth.from(monthInQuarter.adjustInto(dateRange.getMax()));
 
 		if (minQuarter.equals(maxQuarter)) {
-			quarters.add(minQuarter.getYear() * 4 + minQuarter.get(IsoFields.QUARTER_OF_YEAR));
+			quarters.add(minQuarter.get(ChronoField.YEAR) * 4 + minQuarter.get(IsoFields.QUARTER_OF_YEAR));
 		}
 		else {
 			YearMonth quarter = minQuarter;
@@ -57,7 +57,7 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 			while (!quarter.isAfter(maxQuarter)) {
 				quarters.add(quarter.getYear() * 4 + quarter.get(IsoFields.QUARTER_OF_YEAR));
 
-				quarter = (YearMonth) nextQuarter.adjustInto(quarter);
+				quarter = YearMonth.from(nextQuarter.adjustInto(quarter));
 			}
 		}
 	}

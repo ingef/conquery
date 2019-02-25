@@ -1,11 +1,11 @@
+// @flow
+
 import React                from 'react';
-import PropTypes            from 'prop-types';
 import T                    from 'i18n-react';
 import { DragSource }       from 'react-dnd';
 import { connect }          from 'react-redux';
 import moment               from 'moment';
 import classnames           from 'classnames';
-
 
 import { ErrorMessage }     from '../../error-message';
 import { dndTypes }         from '../../common/constants';
@@ -58,7 +58,28 @@ function collect(connect, monitor) {
   };
 }
 
-const PreviousQuery = (props) => {
+type PropsType = {
+  query: {
+    id: number | string,
+    label: string,
+    loading: boolean,
+    numberOfResults: number,
+    createdAt: string,
+    tags: string[],
+    own: boolean,
+    shared: boolean,
+  },
+  onRenamePreviousQuery: () => void,
+  onToggleEditPreviousQueryLabel: () => void,
+  onToggleEditPreviousQueryTags: () => void,
+  onToggleSharePreviousQuery: () => void,
+  onRetagPreviousQuery: () => void,
+  onDeletePreviousQuery: () => void,
+  connectDragSource: () => void,
+  availableTags: string[],
+};
+
+const PreviousQuery = (props: PropsType) => {
   const {
     query,
     onRenamePreviousQuery,
@@ -176,27 +197,6 @@ const PreviousQuery = (props) => {
     </div>
   );
   return isNotEditing ? props.connectDragSource(content) : content;
-};
-
-PreviousQuery.propTypes = {
-  query: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    label: PropTypes.string,
-    loading: PropTypes.bool,
-    numberOfResults: PropTypes.number.isRequired,
-    createdAt: PropTypes.string.isRequired,
-    tags: PropTypes.arrayOf(PropTypes.string),
-    own: PropTypes.bool,
-    shared: PropTypes.bool,
-  }).isRequired,
-  onRenamePreviousQuery: PropTypes.func.isRequired,
-  onToggleEditPreviousQueryLabel: PropTypes.func.isRequired,
-  onToggleEditPreviousQueryTags: PropTypes.func.isRequired,
-  onToggleSharePreviousQuery: PropTypes.func.isRequired,
-  onRetagPreviousQuery: PropTypes.func.isRequired,
-  onDeletePreviousQuery: PropTypes.func.isRequired,
-  connectDragSource: PropTypes.func.isRequired,
-  availableTags: PropTypes.arrayOf(PropTypes.string),
 };
 
 const mapStateToProps = (state) => ({

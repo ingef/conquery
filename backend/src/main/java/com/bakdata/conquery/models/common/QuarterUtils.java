@@ -2,32 +2,28 @@ package com.bakdata.conquery.models.common;
 
 import java.time.LocalDate;
 import java.time.Month;
+import java.time.Year;
 import java.time.YearMonth;
 import java.time.temporal.ChronoField;
+import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
-import java.time.temporal.Temporal;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 
-import lombok.experimental.UtilityClass;
+import com.google.common.collect.Range;
 
+import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class QuarterUtils {
 
-	private static final TemporalAdjuster FIRST_MONTH_IN_QUARTER_ADJUSTER = new TemporalAdjuster() {
-		@Override
-		public Temporal adjustInto(Temporal temporal) {
+	private static final TemporalAdjuster FIRST_MONTH_IN_QUARTER_ADJUSTER =
+			temporal -> temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(temporal.get(IsoFields.QUARTER_OF_YEAR)).getValue());
 
-			int quarter = temporal.get(IsoFields.QUARTER_OF_YEAR);
-
-			return YearMonth.from(temporal.with(ChronoField.MONTH_OF_YEAR, getFirstMonthOfQuarter(quarter).getValue()));
-		}
-	};
 	private static final TemporalAdjuster FIRST_DAY_OF_QUARTER_ADJUSTER =
 			temporal -> TemporalAdjusters.firstDayOfMonth().adjustInto(firstMonthInQuarterAdjuster().adjustInto(temporal));
 
 	private static final TemporalAdjuster LAST_DAY_OF_QUARTER_ADJUSTER =
-			temporal -> ((LocalDate) TemporalAdjusters.firstDayOfMonth().adjustInto(nextQuarterAdjuster().adjustInto(temporal))).minusDays(1);
+			temporal -> (TemporalAdjusters.firstDayOfMonth().adjustInto(nextQuarterAdjuster().adjustInto(temporal))).minus(1, ChronoUnit.DAYS);
 
 
 	public static boolean isFirstMonthOfQuarter(LocalDate date) {
@@ -46,7 +42,16 @@ public final class QuarterUtils {
 	public static boolean isEndOfQuarter(LocalDate date) {
 		return isBeginOfQuarter(date.plusDays(1));
 	}
-
+	
+	/**
+	 * Returns the numerical value of the quarter the date in in.
+	 * @param date
+	 * @return The quarter
+	 */
+	public static int getQuarter(LocalDate date) {
+		return date.get(IsoFields.QUARTER_OF_YEAR);
+	}
+	
 	public static Month getFirstMonthOfQuarter(int quarter) {
 		switch (quarter) {
 			case 1:
@@ -66,6 +71,22 @@ public final class QuarterUtils {
 		Month month = getFirstMonthOfQuarter(quarter);
 		return LocalDate.of(year, month, 1);
 	}
+	
+	public static LocalDate getFirstDayOfQuarter(int epochDay) {
+		return LocalDate.ofEpochDay(epochDay).with(FIRST_DAY_OF_QUARTER_ADJUSTER);
+	}
+	
+	public static LocalDate getFirstDayOfQuarter(LocalDate date) {
+		return date.with(FIRST_DAY_OF_QUARTER_ADJUSTER);
+	}
+	
+	public static LocalDate getLastDayOfQuarter(int epochDay) {
+		return LocalDate.ofEpochDay(epochDay).with(LAST_DAY_OF_QUARTER_ADJUSTER);
+	}
+	
+	public static LocalDate getLastDayOfQuarter(LocalDate date) {
+		return date.with(LAST_DAY_OF_QUARTER_ADJUSTER);
+	}
 
 	public static LocalDate getLastDayOfQuarter(int year, int quarter) {
 		return (LocalDate) lastDayOfQuarterAdjuster().adjustInto(getFirstDayOfQuarter(year, quarter));
@@ -75,6 +96,10 @@ public final class QuarterUtils {
 		LocalDate start = getFirstDayOfQuarter(year, quarter);
 		LocalDate end = getLastDayOfQuarter(year, quarter);
 		return CDateRange.of(start, end);
+	}
+	
+	public static CDateRange fromDate(LocalDate date) {
+		return fromQuarter(date.getYear(), date.get(IsoFields.QUARTER_OF_YEAR));
 	}
 
 	public static TemporalAdjuster nextQuarterAdjuster() {

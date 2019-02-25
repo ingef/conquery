@@ -1,5 +1,6 @@
+// @flow
+
 import React                       from 'react';
-import PropTypes                   from 'prop-types';
 import { connect }                 from 'react-redux';
 import T                           from 'i18n-react';
 
@@ -7,7 +8,12 @@ import { IconButton }              from '../button';
 
 import { clearQuery }              from './actions';
 
-const QueryClearButton = (props) => {
+type PropsType = {
+  clearQuery: () => void,
+  isVisible: boolean
+};
+
+const QueryClearButton = (props: PropsType) => {
   return props.isVisible && (
     <div className="query-clear-button">
       <IconButton
@@ -18,11 +24,6 @@ const QueryClearButton = (props) => {
       />
     </div>
   );
-};
-
-QueryClearButton.propTypes = {
-  clearQuery: PropTypes.func.isRequired,
-  isVisible: PropTypes.bool.isRequired
 };
 
 const mapStateToProps = (state) => ({

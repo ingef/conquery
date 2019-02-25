@@ -7,7 +7,7 @@ public interface Aggregator<T> extends Cloneable, EventIterating {
 
 	T getAggregationResult();
 
-	public void aggregateEvent(Block block, int event);
+	void aggregateEvent(Block block, int event);
 	
-	public Aggregator<T> clone();
+	Aggregator<T> clone();
 }

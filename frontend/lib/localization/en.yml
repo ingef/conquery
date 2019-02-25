@@ -11,6 +11,7 @@ rightPane:
 categoryTreeList:
   loading: "Loading Concept: {tree}"
   error: "Could not load Concept: {tree}."
+  noTrees: "Could not load Concepts."
 
 queryRunner:
   start: "Start Query"

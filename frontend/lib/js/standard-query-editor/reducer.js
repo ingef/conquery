@@ -1,7 +1,7 @@
 // @flow
 
 import T from 'i18n-react';
-import { difference } from 'lodash'
+import difference from 'lodash.difference';
 
 import {
   getConceptsByIdsWithTables, getConceptById
@@ -314,6 +314,10 @@ const setNodeFilterProperties = (state, action, obj) => {
   const properties = stripObject(obj);
 
   if ('options' in properties) {
+    // From performance reasons and for system protection
+    if (filter.options.length > 200)
+      filter.options = filter.options.splice(0, 200);
+
     // The properties object contains an 'options' key, but its value might
     // be undefined (because of stripObject above)
     const newOptions = (properties.options || filter.options || []);
@@ -459,7 +463,7 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
   const { rootConcepts, groups } = action.payload;
 
   return groups.map((group) => {
-    return {
+          return {
       ...group,
       elements: group.elements.map((element) => {
         if (element.type === 'QUERY') {
@@ -486,8 +490,8 @@ const expandPreviousQuery = (state, action: { payload: { groups: QueryGroupType[
             tables,
             tree: lookupResult.root
           };
-        }
-      })
+      }
+    })
     }
   });
 };
@@ -685,7 +689,7 @@ const setResolvedFilterValues = (state: StateType, action: Object) => {
       value: resolutionResult.filter.value,
       tableIdx: parameters.tableIdx,
       filterIdx: parameters.filterIdx,
-      options: resolutionResult.filter.value
+      // options: resolutionResult.filter.value
     }
   });
 }

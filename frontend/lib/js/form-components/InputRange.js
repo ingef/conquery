@@ -69,7 +69,7 @@ const InputRange = (props: PropsType) => {
 
   const onChangeValue = (type, newValue, newFormattedValue) => {
     const { value } = props.input;
-    const nextValue = newValue || null;
+    const nextValue = newValue >= 0 ? newValue : null;
     const nextFormattedValue = newFormattedValue || null;
 
     if (type === 'exact')

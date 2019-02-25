@@ -1,12 +1,21 @@
+// @flow
+
 import React                     from 'react';
-import PropTypes                 from 'prop-types';
 import { connect }               from 'react-redux';
 
 import { loadPreviousQueries }   from './actions';
 import { selectPreviousQueries } from './selector';
 import PreviousQueries           from './PreviousQueries';
 
-const PreviousQueriesContainer = (props) => {
+type PropsType = {
+  datasetId: string,
+  queries: [],
+  loading: boolean,
+  error: string,
+  loadQueries: () => void,
+}
+
+const PreviousQueriesContainer = (props: PropsType) => {
   return (
     <PreviousQueries
       datasetId={props.datasetId}
@@ -16,14 +25,6 @@ const PreviousQueriesContainer = (props) => {
       loadQueries={props.loadQueries}
     />
   );
-};
-
-PreviousQueriesContainer.propTypes = {
-  datasetId: PropTypes.string.isRequired,
-  queries: PropTypes.array.isRequired,
-  loading: PropTypes.bool,
-  error: PropTypes.string,
-  loadQueries: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({

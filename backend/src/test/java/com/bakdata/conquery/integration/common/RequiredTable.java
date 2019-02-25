@@ -1,6 +1,7 @@
 package com.bakdata.conquery.integration.common;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.Arrays;
 
 import javax.validation.Valid;
@@ -23,8 +24,7 @@ public class RequiredTable {
 	@NotEmpty
 	private String name;
 	@NotNull
-	@ExistingFile
-	private File csv;
+	private ResourceFile csv;
 	@NotNull
 	@Valid
 	private RequiredColumn primaryColumn;

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -16,7 +17,6 @@ import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 
 public class ExternalNode extends QPChainNode {
@@ -24,10 +24,10 @@ public class ExternalNode extends QPChainNode {
 	@Getter
 	private final DatasetId dataset;
 	@Getter @NotEmpty
-	private final Int2ObjectMap<CDateSet> includedEntities;
+	private final Map<Integer, CDateSet> includedEntities;
 	private CDateSet contained;
 	
-	public ExternalNode(QPNode child, DatasetId dataset, Int2ObjectMap<CDateSet> includedEntities) {
+	public ExternalNode(QPNode child, DatasetId dataset, Map<Integer, CDateSet> includedEntities) {
 		super(child);
 		this.dataset = dataset;
 		this.includedEntities = includedEntities;

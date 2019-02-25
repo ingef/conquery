@@ -13,15 +13,21 @@ import lombok.Data;
 @Data @AllArgsConstructor
 public class FEValue {
 	
-	private String value;
-	private String label;
+	private final String label;
+	private final String value;
+	private Map<String, String> templateValues;
+	private String optionValue;
 
+	public FEValue(String label, String value) {
+		this.label = label;
+		this.value = value;
+	}
 
 	public static List<FEValue> fromLabels(Map<String, String> labels) {
 		return labels
 			.entrySet()
 			.stream()
-			.map(e->new FEValue(e.getKey(), e.getValue()))
+			.map(e->new FEValue(e.getValue(), e.getKey()))
 			.collect(Collectors.toList());
 	}
 }
