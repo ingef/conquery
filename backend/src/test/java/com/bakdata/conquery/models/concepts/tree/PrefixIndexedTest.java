@@ -1,18 +1,5 @@
 package com.bakdata.conquery.models.concepts.tree;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.util.Collections;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Column;
@@ -22,15 +9,27 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.github.powerlibraries.io.In;
-
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Map;
+import java.util.stream.Stream;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class PrefixIndexedTest {
@@ -40,6 +39,7 @@ public class PrefixIndexedTest {
 	private static Dictionary dict;
 	private static TreeConcept indexedConcept;
 	private static TreeConcept oldConcept;
+	private static ImportId importId;
 
 	public static Stream<Arguments> getTestKeys() {
 		CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(Collections::emptyMap);
@@ -88,6 +88,8 @@ public class PrefixIndexedTest {
 		registry.register(table);
 		registry.register(column);
 
+		importId = new ImportId(table.getId(), "import");
+
 		// load tree twice to to avoid references
 
 		indexedConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
@@ -95,10 +97,11 @@ public class PrefixIndexedTest {
 		indexedConcept.setDataset(dataset.getId());
 		indexedConcept.initElements(Validators.newValidator());
 
+
 		TreeChildPrefixIndex.putIndexInto(indexedConcept);
 		StringType type = new StringType();
 		type.setDictionary(dict);
-		indexedConcept.initializeIdCache(type);
+		indexedConcept.initializeIdCache(type, importId);
 
 		oldConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
 
@@ -147,8 +150,8 @@ public class PrefixIndexedTest {
 		log.trace("Searching for {}", key);
 
 		ConceptTreeChild reference = indexedConcept.findMostSpecificChild(key, rowMap);
-		ConceptTreeChild cached = indexedConcept.getCache().findMostSpecificChild(dict.getId(key), rowMap);
-		ConceptTreeChild cached2 = indexedConcept.getCache().findMostSpecificChild(dict.getId(key), rowMap);
+		ConceptTreeChild cached = indexedConcept.getCache(importId).findMostSpecificChild(dict.getId(key), rowMap);
+		ConceptTreeChild cached2 = indexedConcept.getCache(importId).findMostSpecificChild(dict.getId(key), rowMap);
 
 		assertThat(reference.getId())
 				.describedAs("%s hierarchical name", key)

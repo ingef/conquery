@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.specific.IStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,6 +22,7 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -51,8 +53,12 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@JsonIgnore @Getter @Setter
 	private TreeChildPrefixIndex childIndex;
 
-	@JsonIgnore @Getter
-	private ConceptTreeCache cache;
+	@JsonIgnore
+	private Map<ImportId, ConceptTreeCache> caches = new HashMap<>();
+
+	public ConceptTreeCache getCache(ImportId importId){
+		return caches.get(importId);
+	}
 
 	@Override
 	public ConceptTreeNode getParent() {
@@ -171,10 +177,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			.map(ConceptTreeChild.class::cast);
 	}*/
 
-	public void initializeIdCache(IStringType type) {
-		if(this.cache == null) {
-			this.cache = new ConceptTreeCache(this, type);
-		}
+	public void initializeIdCache(IStringType type, ImportId importId) {
+		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type));
 	}
 
 	@Override
