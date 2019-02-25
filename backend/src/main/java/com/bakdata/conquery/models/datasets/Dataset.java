@@ -29,8 +29,6 @@ public class Dataset extends Labeled<DatasetId> implements Injectable {
 	@JsonIgnore @Valid
 	private List<Concept<?>> concepts = new ArrayList<>();
 	
-	@JsonManagedReference(StructureNode.MANAGED_DATASET_STRUCTURE) @Valid
-	private List<StructureNode> structureNodes = new ArrayList<>();
 	
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues mutableInjectableValues) {
@@ -44,11 +42,5 @@ public class Dataset extends Labeled<DatasetId> implements Injectable {
 
 	public synchronized void addConcept(Concept<?> concept) {
 		concepts.add(concept);
-	}
-
-	public Stream<StructureNode> streamAllStructureNodes() {
-		return structureNodes
-			.stream()
-			.flatMap(StructureNode::streamAllChildren);
 	}
 }

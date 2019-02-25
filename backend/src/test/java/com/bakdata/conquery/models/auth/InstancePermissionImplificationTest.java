@@ -24,11 +24,11 @@ public class InstancePermissionImplificationTest {
 		// Test equal Permissions
 		Permission pStored = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET1));
 		Permission pRequested = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}
@@ -38,11 +38,11 @@ public class InstancePermissionImplificationTest {
 		// Test different user principals
 		Permission pStored = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET1));
 		Permission pRequested = new DatasetPermission(
 				new UserId(USERPROP2),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}
@@ -52,11 +52,11 @@ public class InstancePermissionImplificationTest {
 		// Test different access types
 		Permission pStored = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET1));
 		Permission pRequested = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.DELETE),
+				Ability.DELETE.AS_SET,
 				new DatasetId(DATASET1));
 		assert !pStored.implies(pRequested);
 	}
@@ -66,11 +66,11 @@ public class InstancePermissionImplificationTest {
 		// Test different Instances
 		Permission pStored = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET1));
 		Permission pRequested = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET2));
 		assert !pStored.implies(pRequested);
 	}
@@ -80,7 +80,7 @@ public class InstancePermissionImplificationTest {
 		// Test different Instances
 		Permission pStored = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET1));
 		Permission pRequested = new DatasetPermission(
 				new UserId(USERPROP1),
@@ -99,7 +99,7 @@ public class InstancePermissionImplificationTest {
 				new DatasetId(DATASET1));
 		Permission pRequested = new DatasetPermission(
 				new UserId(USERPROP1),
-				EnumSet.of(Ability.READ),
+				Ability.READ.AS_SET,
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
 	}

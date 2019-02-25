@@ -1,5 +1,6 @@
+// @flow
+
 import React            from 'react';
-import PropTypes        from 'prop-types';
 import T                from 'i18n-react';
 import classnames       from 'classnames';
 import clickOutside     from 'react-onclickoutside';
@@ -7,8 +8,17 @@ import clickOutside     from 'react-onclickoutside';
 // A multi-select where new items can be created
 import { Creatable as Select}  from 'react-select';
 
-class EditableTagsForm extends React.Component {
-  constructor(props) {
+type PropsType = {
+  className?: string,
+  tags?: string[],
+  loading: boolean,
+  onSubmit: () => void,
+  onCancel: () => void,
+  availableTags?: string[],
+};
+
+class EditableTagsForm extends React.Component<PropsType> {
+  constructor(props: PropsType) {
     super(props);
     this.state = {
       values: (props.tags && props.tags.map(t => ({ label: t, value: t}))) || []
@@ -59,15 +69,6 @@ class EditableTagsForm extends React.Component {
       </form>
     );
   }
-};
-
-EditableTagsForm.propTypes = {
-  className: PropTypes.string,
-  tags: PropTypes.arrayOf(PropTypes.string),
-  loading: PropTypes.bool.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  availableTags: PropTypes.arrayOf(PropTypes.string),
 };
 
 export default clickOutside(EditableTagsForm);

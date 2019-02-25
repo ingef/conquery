@@ -7,8 +7,8 @@ import { DragSource }           from 'react-dnd';
 
 import { VerticalToggleButton } from '../form-components';
 import {
-  FIRST,
-  LAST,
+  EARLIEST,
+  LATEST,
   RANDOM
 }                               from '../common/constants/timebasedQueryTimestampTypes';
 import { TIMEBASED_NODE }       from '../common/constants/dndTypes';
@@ -32,9 +32,9 @@ const TimebasedNode = (props: PropsType) => {
       onToggle={props.onSetTimebasedNodeTimestamp}
       activeValue={props.node.timestamp}
       options={[
-        { label: T.translate('timebasedQueryEditor.timestampFirst'), value: FIRST },
+        { label: T.translate('timebasedQueryEditor.timestampFirst'), value: EARLIEST },
         { label: T.translate('timebasedQueryEditor.timestampRandom'), value: RANDOM },
-        { label: T.translate('timebasedQueryEditor.timestampLast'), value: LAST },
+        { label: T.translate('timebasedQueryEditor.timestampLast'), value: LATEST },
       ]}
     />
   );

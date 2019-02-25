@@ -1,7 +1,7 @@
 package com.bakdata.conquery.io.xodus.stores;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
-
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
@@ -11,8 +11,11 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	private ThrowingConsumer<VALUE> onAdd;
 	private ThrowingConsumer<VALUE> onRemove;
 	
-	public SingletonStore(Store<Boolean, VALUE> store) {
+	public SingletonStore(Store<Boolean, VALUE> store, Injectable... injectables) {
 		super(store);
+		for(Injectable injectable : injectables) {
+			store.inject(injectable);
+		}
 	}
 
 	@Override

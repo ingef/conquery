@@ -4,6 +4,8 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.validation.constraints.NotNull;
+
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.Permission;
@@ -13,16 +15,23 @@ import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.Setter;
+
+@AllArgsConstructor
 public class Mandator extends PermissionOwner<MandatorId> {
+
+	@Getter @Setter @NonNull @NotNull
+	private String name;
+	@Getter @Setter @NonNull @NotNull
+	private String label;
 	
-	@JsonCreator
-	public Mandator(SinglePrincipalCollection principals) {
-		super(principals);
-	}
 
 	@Override
 	public MandatorId createId() {
-		return (MandatorId) getPrincipals().getPrimaryPrincipal();
+		return new MandatorId(name);
 	}
 
 	@Override

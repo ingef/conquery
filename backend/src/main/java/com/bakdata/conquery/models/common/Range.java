@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.common;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -164,7 +163,8 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min == null ? Integer.MIN_VALUE : min, max == null ? Integer.MAX_VALUE : max);
 		}
 
-		@Override public boolean contains(Integer value) {
+		@Override
+		public boolean contains(Integer value) {
 			return contains(value.intValue());
 		}
 
@@ -182,7 +182,8 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min == null ? Long.MIN_VALUE : min, max == null ? Long.MAX_VALUE : max);
 		}
 
-		@Override public boolean contains(Long value) {
+		@Override
+		public boolean contains(Long value) {
 			return contains(value.longValue());
 		}
 
@@ -200,7 +201,8 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min == null ? Float.MIN_VALUE : min, max == null ? Float.MAX_VALUE : max);
 		}
 
-		@Override public boolean contains(Float value) {
+		@Override
+		public boolean contains(Float value) {
 			return contains(value.floatValue());
 		}
 
@@ -218,7 +220,8 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min == null ? Double.MIN_VALUE : min, max == null ? Double.MAX_VALUE : max);
 		}
 
-		@Override public boolean contains(Double value) {
+		@Override
+		public boolean contains(Double value) {
 			return contains(value.doubleValue());
 		}
 

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.types.specific;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.function.Consumer;
@@ -48,8 +49,13 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	}
 
 
-	@Override
+	@Override @Deprecated
 	public String createScriptValue(Integer value) {
+		return createScriptValue(value.intValue());
+	}
+	
+	@Override
+	public String createScriptValue(int value) {
 		return dictionary.getElement(value);
 	}
 
@@ -117,5 +123,10 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	@Override
 	public int size() {
 		return dictionary.size();
+	}
+	
+	@Override
+	public Iterator<String> iterator() {
+		return dictionary.iterator();
 	}
 }

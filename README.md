@@ -1,12 +1,14 @@
 # Conquery
 *fast & efficient Analysis*
 
-![conquery Screenshot](images/screenshot.png)
+[![Last Release](https://img.shields.io/github/release-date/bakdata/conquery.svg?logo=github)](https://github.com/bakdata/conquery/releases/latest)
+[![Build Status](https://img.shields.io/travis/bakdata/conquery/develop.svg?logo=travis)](https://travis-ci.org/bakdata/conquery)
+[![CodeFactor](https://www.codefactor.io/repository/github/bakdata/conquery/badge/develop)](https://www.codefactor.io/repository/github/bakdata/conquery)
+[![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev&svg=1)](https://conquery-dev.herokuapp.com/)
+![Code Size](https://img.shields.io/github/languages/code-size/bakdata/conquery.svg)
+[![License](https://img.shields.io/github/license/bakdata/conquery.svg)](https://github.com/bakdata/conquery/blob/develop/LICENSE)
 
-Branch | Travis CI  | Quality | Coverage | Heroku
------- | ---------- | ------- | -------- | ------
-master  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=master)](https://travis-ci.org/bakdata/conquery) | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ec39f307f9e149b185378061cd9b7a5d?branch=master)](https://www.codacy.com/app/bakdata/conquery) | [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/ec39f307f9e149b185378061cd9b7a5d?branch=master)](https://www.codacy.com/app/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery&svg=1)](https://conquery.herokuapp.com/) | 
-develop  | [![Build Status](https://travis-ci.org/bakdata/conquery.svg?branch=develop)](https://travis-ci.org/bakdata/conquery) | [![Codacy Badge](https://api.codacy.com/project/badge/Grade/ec39f307f9e149b185378061cd9b7a5d?branch=develop)](https://www.codacy.com/app/bakdata/conquery) | [![Codacy Badge](https://api.codacy.com/project/badge/Coverage/ec39f307f9e149b185378061cd9b7a5d?branch=develop)](https://www.codacy.com/app/bakdata/conquery) | [![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev&svg=1)](https://conquery-dev.herokuapp.com/) |
+![conquery Screenshot](images/screenshot.png)
 
 Conquery provides a powerful web-based platform to compose and execute queries against large event-like data sets.
 

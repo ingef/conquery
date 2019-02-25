@@ -31,10 +31,10 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 		if(block.getAsDateRange(event, getColumn()).isOpen()) {
 			return;
 		}
-		
+
 		CDateSet range = CDateSet.create();
 		range.add(block.getAsDateRange(event, getColumn()));
-		
+
 		range.retainAll(dateRestriction);
 
 		set.addAll(range);

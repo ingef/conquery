@@ -10,6 +10,7 @@ import lombok.ToString;
 public class ReactingJob<MESSAGE extends NetworkMessage<CTX>, CTX extends NetworkMessageContext<?>> extends Job {
 
 	private MESSAGE message;
+	@ToString.Exclude
 	private CTX context;
 	
 	@Override

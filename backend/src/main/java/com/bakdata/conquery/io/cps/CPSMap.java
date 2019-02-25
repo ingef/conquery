@@ -40,6 +40,10 @@ public class CPSMap implements Iterable<Entry<Class<?>, String>>{
 		}
 		typeLabel2Class = rev.entries().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 	}
+	
+	public void merge(CPSMap other) {
+		class2TypeLabels.putAll(other.class2TypeLabels);
+	}
 
 	@Override
 	public Iterator<Entry<Class<?>, String>> iterator() {
@@ -81,5 +85,4 @@ public class CPSMap implements Iterable<Entry<Class<?>, String>>{
 		EMPTY = new CPSMap();
 		EMPTY.calculateInverse();
 	}
-	
 }
