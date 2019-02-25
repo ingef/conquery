@@ -92,7 +92,7 @@ jobs:
       if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
       before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
       install:
-        - mvn versions:set -DnewVersion="$TRAVIS_TAG" versions:commit
+        - mvn versions:set -DnewVersion="$TAG_VERSION" versions:commit
         - mvn -B -V -T 1C package -DskipTests
       script: skip
       deploy:
@@ -113,7 +113,7 @@ jobs:
       if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
       before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
       install:
-        - mvn versions:set -DnewVersion="$TRAVIS_TAG" versions:commit
+        - mvn versions:set -DnewVersion="$TAG_VERSION" versions:commit
         - mvn -B -V -T 1C package -DskipTests
       script: skip
       deploy:
