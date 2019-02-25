@@ -1,6 +1,6 @@
 {
 	"type": "QUERY_TEST",
-	"label": "MULTIPLE_TABLES_QUERY Test",
+	"label": "KH only",
 	"expectedCsv": "tests/query/MULTIPLE_TABLES_ICD_QUERY/expected-kh.csv",
 	"query": {
 		"type": "CONCEPT_QUERY",
