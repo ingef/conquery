@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import org.apache.shiro.authz.Permission;
 
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -22,7 +23,7 @@ import lombok.Setter;
 
 public class User extends PermissionOwner<UserId> implements Principal{
 	@Getter @Setter
-	private Set<Mandator> roles = new HashSet<>();
+	private Set< @MetaIdRef Mandator> roles = new HashSet<>();
 	@Getter @Setter @NonNull @NotNull
 	private String email;
 	@Getter @Setter @NonNull @NotNull
