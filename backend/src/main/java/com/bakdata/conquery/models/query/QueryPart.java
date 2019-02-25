@@ -25,41 +25,28 @@ public class QueryPart implements Callable<EntityResult> {
 	public EntityResult call() throws Exception {
 		try {
 			QueryPlan queryPlan = this.plan.clone();
-			QPNode root = queryPlan.getRoot();
-			root.init(entity);
+			queryPlan.init(entity);
 			
 			if (requiredTables.isEmpty()) {
 				return EntityResult.notContained();
 			}
 
 			for(Table currentTable : requiredTables) {
-				root.nextTable(ctx, currentTable);
+				queryPlan.nextTable(ctx, currentTable);
 				for(Block block : entity.getBlocks().get(currentTable)) {
-					root.nextBlock(block);
+					queryPlan.nextBlock(block);
 					for(int event = block.size()-1; event >= 0 ; event--) {
-						if(!root.aggregate(block, event)) {
+						if(!queryPlan.aggregate(block, event)) {
 							return EntityResult.notContained();
 						}
 					}
 				}
 			}
 	
-			if(root.isContained()) {
-				return result(entity, queryPlan);
-			}
-			else {
-				return EntityResult.notContained();
-			}
-		} catch(Exception e) {
+			return queryPlan.createResult();
+		}
+		catch(Exception e) {
 			return EntityResult.failed(entity.getId(), e);
 		}
 	}
-
-	private EntityResult result(Entity entity2, QueryPlan queryPlan) {
-		String[] values = new String[queryPlan.getAggregators().size()];
-		for(int i=0;i<values.length;i++)
-			values[i] = Objects.toString(queryPlan.getAggregators().get(i).getAggregationResult());
-		return EntityResult.of(entity.getId(), values);
-	}
-
 }

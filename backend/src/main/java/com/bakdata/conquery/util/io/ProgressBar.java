@@ -9,9 +9,9 @@ public class ProgressBar {
 	
 	private static final int CHARACTERS = 50;
 	private static final char[] BAR_CHARACTERS = {
-		'\u2591',
-		'\u258C',
-		'\u2588'
+		'░',
+		'▌',
+		'█'
 	};
 	
 	private final AtomicLong currentValue = new AtomicLong(0);

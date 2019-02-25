@@ -1,9 +1,16 @@
+// @flow
+
 import React                from 'react';
-import PropTypes            from 'prop-types';
 import { connect }          from 'react-redux';
 import classnames           from 'classnames';
 
-const SelectableLabel = (props) => {
+type PropsType = {
+  className: string,
+  label: string,
+  isSelected: boolean,
+};
+
+const SelectableLabel = (props: PropsType) => {
   return (
     <span className={classnames(
       props.className,
@@ -14,12 +21,6 @@ const SelectableLabel = (props) => {
       {props.label}
     </span>
   );
-};
-
-SelectableLabel.propTypes = {
-  className: PropTypes.string,
-  label: PropTypes.string.isRequired,
-  isSelected: PropTypes.bool.isRequired,
 };
 
 const labelContainsAnySearch = (label, searches) => {

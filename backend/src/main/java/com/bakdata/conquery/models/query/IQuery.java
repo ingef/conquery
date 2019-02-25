@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
@@ -21,4 +23,6 @@ public interface IQuery {
 		this.collectRequiredQueries(set);
 		return set;
 	}
+
+	List<String> collectResultHeader();
 }

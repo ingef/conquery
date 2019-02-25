@@ -1,18 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import java.io.File;
-import java.net.InetSocketAddress;
-import java.util.concurrent.TimeUnit;
-
-import javax.validation.Validator;
-
-import org.apache.mina.core.RuntimeIoException;
-import org.apache.mina.core.future.ConnectFuture;
-import org.apache.mina.core.service.IoHandler;
-import org.apache.mina.core.session.IdleStatus;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.transport.socket.nio.NioSocketConnector;
-
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -22,6 +9,7 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
+import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import com.bakdata.conquery.models.messages.Message;
 import com.bakdata.conquery.models.messages.SlowMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
@@ -34,13 +22,24 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
+import org.apache.mina.core.RuntimeIoException;
+import org.apache.mina.core.future.ConnectFuture;
+import org.apache.mina.core.service.IoHandler;
+import org.apache.mina.core.session.IdleStatus;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.transport.socket.nio.NioSocketConnector;
+
+import javax.validation.Validator;
+import java.io.File;
+import java.net.InetSocketAddress;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @Slf4j @Getter
 public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed {
@@ -53,6 +52,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	private Workers workers = new Workers();
 	@Setter
 	private String label = "slave";
+	private ScheduledExecutorService scheduler;
 
 	public SlaveCommand() {
 		super("slave", "Connects this instance as a slave to a running master.");
@@ -66,18 +66,22 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		environment.lifecycle().manage(jobManager);
 		environment.lifecycle().manage(this);
 		
-		environment
-				.lifecycle()
-				.scheduledExecutorService("Query Management Maintenance")
-				.build()
-				.scheduleAtFixedRate(
-					() -> {
-						if(context.isConnected()) {
-							context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
-						}
-					},
-					30, 5, TimeUnit.SECONDS
-				);
+		scheduler = environment
+			.lifecycle()
+			.scheduledExecutorService("Scheduled Messages")
+			.build();
+		
+		scheduler.scheduleAtFixedRate(
+			() -> {
+				if(context.isConnected()) {
+					context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
+				}
+			},
+			30, 5, TimeUnit.SECONDS
+		);
+		
+		scheduler.scheduleAtFixedRate(() -> jobManager.addSlowJob(new UpdateMatchingStats(workers)), 30, 300, TimeUnit.SECONDS);
+
 		this.config = config;
 		validator = environment.getValidator();
 		

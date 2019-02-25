@@ -33,7 +33,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 		this.info = info;
 		this.jobManager = jobManager;
 		this.storage = storage;
-		BlockManager blockManager = new BlockManager(jobManager, storage);
+		BlockManager blockManager = new BlockManager(jobManager, storage, this);
 		storage.setBlockManager(blockManager);
 		this.queryExecutor = queryExecutor;
 	}
@@ -52,5 +52,10 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public void close() throws IOException {
 		queryExecutor.close();
 		storage.close();
+	}
+	
+	@Override
+	public String toString() {
+		return "Worker[" + info.getId() + ", " + session.getLocalAddress() + "]";
 	}
 }

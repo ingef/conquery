@@ -79,7 +79,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 		}
 		
 		@Override
-		public void write(byte b[], int off, int len) throws IOException {
+		public void write(byte[] b, int off, int len) throws IOException {
 			if(closed) {
 				throw new IllegalStateException();
 			}

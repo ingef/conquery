@@ -44,9 +44,9 @@ export default function createQueryRunnerReducer(type: string): Function {
 
   const getQueryResult = (data) => {
     if (data.status === 'CANCELED')
-      return { loading: false, error: T.translate('queryRunner.queryFailed') };
-    else if (data.status === 'FAILED')
       return { loading: false, error: T.translate('queryRunner.queryCanceled') };
+    else if (data.status === 'FAILED')
+      return { loading: false, error: T.translate('queryRunner.queryFailed') };
 
     // E.G. STATUS DONE
     return {
@@ -109,7 +109,7 @@ export default function createQueryRunnerReducer(type: string): Function {
           queryRunning: false,
           queryResult: {
             loading: false,
-            error: action.payload.message
+            error: action.payload.message || T.translate('queryRunner.queryFailed')
           }
         };
       default:

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.concepts;
 
-import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
@@ -13,7 +13,7 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor
 public class ValidityDate extends Labeled<ValidityDateId> {
 
-	@IdReference
+	@NsIdRef
 	private Column column;
 	@JsonBackReference
 	private Connector connector;

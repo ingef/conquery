@@ -1,4 +1,5 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
+
 import static com.bakdata.conquery.models.identifiable.ids.IId.createParser;
 
 import java.util.Iterator;
@@ -19,9 +20,9 @@ public class MandatorId extends PermissionOwnerId<Mandator> {
 	@Getter
 	private final String mandator;
 	
-	public MandatorId(String company) {
+	public MandatorId(String mandator) {
 		super();
-		this.mandator = company;
+		this.mandator = mandator;
 	}
 
 	public void collectComponents(List<Object> components) {

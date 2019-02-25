@@ -5,6 +5,9 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.auth.AuthConfig;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
+import com.bakdata.conquery.models.preproc.DateFormats;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
@@ -20,8 +23,6 @@ public class ConqueryConfig extends Configuration {
 	
 	@Valid @NotNull
 	private ClusterConfig cluster = new ClusterConfig();
-	@Valid @NotNull //see #173  remove
-	private ShardConfig shardConfig = new ShardConfig();
 	@Valid @NotNull
 	private PreprocessingConfig preprocessor = new PreprocessingConfig();
 	@Valid @NotNull
@@ -36,7 +37,12 @@ public class ConqueryConfig extends Configuration {
 	private QueryConfig queries = new QueryConfig();
 	@Valid @NotNull
 	private APIConfig api = new APIConfig();
+	@NotNull
+	private String[] additionalFormats = new String[0];
 	
+	@NotNull @Valid
+	private IdMappingConfig idMapping = new NoIdMapping();
+
 	private AuthConfig authentication = new DevAuthConfig();
 	/**
 	 * null means here that we try to deduce from an attached agent
@@ -53,5 +59,9 @@ public class ConqueryConfig extends Configuration {
 	public void setServerFactory(ServerFactory factory) {
 		super.setServerFactory(factory);
 		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
+	}
+
+	public void initializeDatePatterns() {
+		DateFormats.initialize(additionalFormats);
 	}
 }

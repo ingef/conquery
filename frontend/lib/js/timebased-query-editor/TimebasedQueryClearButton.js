@@ -1,12 +1,18 @@
+// @flow
+
 import React                        from 'react';
-import PropTypes                    from 'prop-types';
 import { connect }                  from 'react-redux';
 import T                            from 'i18n-react';
 import { IconButton }               from '../button';
 import { clearTimebasedQuery }      from './actions';
 import { anyConditionFilled }       from './helpers';
 
-const TimebasedQueryClearButton = (props) => {
+type PropsType = {
+  clearQuery: () => void,
+  isEnabled: boolean,
+};
+
+const TimebasedQueryClearButton = (props: PropsType) => {
   return (
     <div className="query-clear-button">
       <IconButton
@@ -18,11 +24,6 @@ const TimebasedQueryClearButton = (props) => {
       />
     </div>
   );
-};
-
-TimebasedQueryClearButton.propTypes = {
-  clearQuery: PropTypes.func.isRequired,
-  isEnabled: PropTypes.bool.isRequired,
 };
 
 const mapStateToProps = (state) => ({

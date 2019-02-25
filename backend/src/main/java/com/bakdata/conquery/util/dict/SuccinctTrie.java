@@ -1,6 +1,5 @@
 package com.bakdata.conquery.util.dict;
 
-
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -177,7 +176,7 @@ public class SuccinctTrie implements Iterable<String> {
 	}
 
 	/*
-	 * select(n) - returns the position of the nth 0 in the bit store.
+	 * select0(n) - returns the position of the nth 0 in the bit store.
 	 */
 
 	private int select0(int positionForZero) {
@@ -255,7 +254,7 @@ public class SuccinctTrie implements Iterable<String> {
 		checkCompressed("use compress before performing containsReverse on the trie");
 		
 		if(intValue >= reverseLookup.length) {
-			throw new IllegalArgumentException("intValue to height, no such key in the trie");
+			throw new IllegalArgumentException("intValue "+intValue+" to high, no such key in the trie");
 		}
 		int nodeIndex = reverseLookup[intValue];
 		while (parentIndex[nodeIndex] != -1) {

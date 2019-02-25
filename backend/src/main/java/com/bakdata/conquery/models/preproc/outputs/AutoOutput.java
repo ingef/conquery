@@ -6,6 +6,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.bakdata.conquery.models.preproc.PPColumn;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import lombok.Data;
@@ -16,6 +17,7 @@ public interface AutoOutput {
 
 	List<OutRow> createOutput(int primaryId, String[] row, PPColumn[] columns, int inputSource, long lineId) throws ParsingException;
 
+	@JsonIgnore
 	int getWidth();
 
 	ColumnDescription getColumnDescription(int i);

@@ -19,7 +19,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
+import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -41,6 +44,16 @@ public class ImportBits extends WorkerMessage.Slow {
 	private ImportId imp;
 	@Nonnull @NotNull
 	private TableId table;
+	
+	@JsonIgnore
+	private transient IntSet addedEntities = new IntOpenHashSet();
+	
+	public void addBits(Bit bit) {
+		if(!addedEntities.add(bit.getId())) {
+			throw new IllegalStateException("There already was a bit for entity "+bit.getId());
+		}
+		bits.add(bit);
+	}
 
 	@Override
 	public void react(Worker context) throws Exception {

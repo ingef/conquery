@@ -1,12 +1,12 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+		 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<parent>
 		<groupId>com.bakdata.conquery</groupId>
 		<artifactId>parent</artifactId>
-		<version>2.0.0</version>
+		<version>${version}</version>
 	</parent>
 	<artifactId>backend</artifactId>
 
@@ -30,14 +30,49 @@
 				</excludes>
 			</resource>
 		</resources>
-		<!-- <plugins> <plugin> <groupId>pl.project13.maven</groupId> <artifactId>git-commit-id-plugin</artifactId> 
-			<version>2.2.3</version> <executions> <execution> <id>get-the-git-infos</id> 
-			<goals> <goal>revision</goal> </goals> <phase>generate-resources</phase> 
-			</execution> <execution> <id>validate-the-git-infos</id> <goals> <goal>validateRevision</goal> 
-			</goals> </execution> </executions> <configuration> <dotGitDirectory>${project.basedir}/.git</dotGitDirectory> 
-			<injectAllReactorProjects>true</injectAllReactorProjects> <dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat> 
-			<gitDescribe> <skip>false</skip> <always>false</always> </gitDescribe> </configuration> 
-			</plugin> </plugins> -->
+		<plugins>
+			<plugin>
+				<groupId>pl.project13.maven</groupId>
+				<artifactId>git-commit-id-plugin</artifactId>
+				<version>2.2.6</version>
+				<executions>
+					<execution>
+						<id>get-the-git-infos</id>
+						<goals>
+							<goal>revision</goal>
+						</goals>
+						<phase>generate-resources</phase>
+					</execution>
+					<execution>
+						<id>validate-the-git-infos</id>
+						<goals>
+							<goal>validateRevision</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<dotGitDirectory>${project.basedir}/../.git</dotGitDirectory>
+					<injectAllReactorProjects>true</injectAllReactorProjects>
+					<dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat>
+					<gitDescribe>
+						<skip>false</skip>
+						<always>false</always>
+					</gitDescribe>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>3.1.1</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
 	</build>
 
 	<dependencies>
@@ -102,18 +137,18 @@
 		<dependency>
 			<groupId>com.univocity</groupId>
 			<artifactId>univocity-parsers</artifactId>
-			<version>2.7.6</version>
+			<version>2.8.1</version>
 		</dependency>
 		<dependency>
 			<groupId>org.codehaus.groovy</groupId>
-			<artifactId>groovy-all</artifactId>
-			<version>2.4.15</version>
+			<artifactId>groovy</artifactId>
+			<version>2.5.6</version>
 			<classifier>indy</classifier>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.2</version>
+			<version>4.3</version>
 		</dependency>
 		<dependency>
 			<groupId>it.unimi.dsi</groupId>
@@ -123,7 +158,7 @@
 		<dependency>
 			<groupId>io.github.classgraph</groupId>
 			<artifactId>classgraph</artifactId>
-			<version>4.4.12</version>
+			<version>4.8.7</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
@@ -132,11 +167,6 @@
 		<dependency>
 			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-http2</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.antlr</groupId>
-			<artifactId>stringtemplate</artifactId>
-			<version>3.2.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.guava</groupId>
@@ -155,12 +185,12 @@
 		<dependency>
 			<groupId>org.apache.mina</groupId>
 			<artifactId>mina-core</artifactId>
-			<version>2.0.19</version>
+			<version>2.0.20</version>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.shiro</groupId>
 			<artifactId>shiro-core</artifactId>
-			<version>1.3.2</version>
+			<version>1.4.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard</groupId>
@@ -179,7 +209,7 @@
 		<dependency>
 			<groupId>org.jetbrains.xodus</groupId>
 			<artifactId>xodus-environment</artifactId>
-			<version>1.2.3</version>
+			<version>1.3.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.tomgibara.bits</groupId>
@@ -189,41 +219,43 @@
 		<dependency>
 			<groupId>de.javakaffee</groupId>
 			<artifactId>kryo-serializers</artifactId>
-			<version>0.42</version>
+			<version>0.45</version>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-smile</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>net.bytebuddy</groupId>
-			<artifactId>byte-buddy</artifactId>
-			<version>1.9.5</version>
+			<groupId>org.apache.commons</groupId>
+			<artifactId>commons-math3</artifactId>
+			<version>3.6.1</version>
 		</dependency>
 		<dependency>
-		    <groupId>javax.xml.bind</groupId>
-		    <artifactId>jaxb-api</artifactId>
-		    <version>${jaxb.version}</version>
+			<groupId>com.zigurs.karlis.utils.search</groupId>
+			<artifactId>QuickSearch</artifactId>
+			<version>1.8</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-core</artifactId>
-		    <version>${jaxb.version}</version>
+			<groupId>org.tuckey</groupId>
+			<artifactId>urlrewritefilter</artifactId>
+			<version>4.0.4</version>
+		</dependency>
+		<!-- required until Dropwizard 2.0.0 -->
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<version>2.3.0</version>
 		</dependency>
 		<dependency>
-		    <groupId>com.sun.xml.bind</groupId>
-		    <artifactId>jaxb-impl</artifactId>
-		    <version>${jaxb.version}</version>
+			<groupId>org.glassfish.jaxb</groupId>
+			<artifactId>jaxb-runtime</artifactId>
+			<version>2.3.2</version>
 		</dependency>
 		<dependency>
-		    <groupId>javax.activation</groupId>
-		    <artifactId>activation</artifactId>
-		    <version>1.1.1</version>
+			<groupId>javax.activation</groupId>
+			<artifactId>activation</artifactId>
+			<version>1.1.1</version>
 		</dependency>
-        <dependency>
-            <groupId>org.apache.commons</groupId>
-            <artifactId>commons-math3</artifactId>
-            <version>3.6.1</version>
-        </dependency>
-    </dependencies>
+		<!-- end required until Dropwizard 2.0.0 -->
+	</dependencies>
 </project>

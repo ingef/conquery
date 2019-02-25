@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.common;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -16,6 +17,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ForwardingCollection;
@@ -129,7 +131,21 @@ public class CDateSet {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * Tests if the supplied {@link LocalDate} is contained by this Set.
+	 * @param value the Date to check
+	 * @return true iff any Set contains the value
+	 */
+	public boolean contains(LocalDate value) {
+		return contains(CDate.ofLocalDate(value));
+	}
+
+	/**
+	 * Tests if the supplied {@link CDate} is contained by this Set.
+	 * @param value the Date to check
+	 * @return true iff any Set contains the value
+	 */
 	public boolean contains(int value) {
 		return rangeContaining(value) != null;
 	}
@@ -302,8 +318,32 @@ public class CDateSet {
 			this.remove(new CDateRange(l.get(l.size()-1).getMaxValue() + 1, Integer.MAX_VALUE));
 		}
 	}
+	
+	public void retainAll(CDateRange retained) {
+		if(retained.isAll()) {
+			return;
+		}
 
+		//remove all before the range
+		if(!retained.isAtMost()) {
+			this.remove(new CDateRange(Integer.MIN_VALUE, retained.getMinValue() - 1));
+		}
+		
+		//remove all after the Range
+		if(!retained.isAtLeast()) {
+			this.remove(new CDateRange(retained.getMaxValue() + 1, Integer.MAX_VALUE));
+		}
+	}
+
+	/**
+	 * Counts the number of days represented by this CDateSet.
+	 * @return the number of days or null if there are infinite days in the set
+	 */
 	public Long countDays() {
+		//if we have no entries we return zero days
+		if(rangesByLowerBound.firstEntry() == null) {
+			return 0L;
+		}
 		if(rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry().getValue().isOpen()) {
 			return null;
 		}

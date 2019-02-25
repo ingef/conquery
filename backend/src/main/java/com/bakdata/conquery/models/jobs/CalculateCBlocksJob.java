@@ -1,11 +1,8 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
@@ -18,13 +15,17 @@ import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.specific.IStringType;
 import com.bakdata.conquery.util.CalculatedValue;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor @Slf4j
 public class CalculateCBlocksJob extends Job {
@@ -80,12 +81,18 @@ public class CalculateCBlocksJob extends Job {
 
 		final TreeConcept treeConcept = connector.getConcept();
 
+		final ImportId importId = info.getImp().getId();
+
 		TreeChildPrefixIndex.putIndexInto(treeConcept);
-		treeConcept.initializeIdCache(stringType);
+
+		treeConcept.initializeIdCache(stringType, importId);
 
 		cBlock.setMostSpecificChildren(new ArrayList<>(info.getBlock().size()));
 		Block block = info.getBlock();
-		for(int event = 0 ; event<block.size(); event++) {
+
+		final ConceptTreeCache cache = treeConcept.getCache(importId);
+
+		for(int event = 0; event < block.size(); event++) {
 			try {
 				if(block.has(event, connector.getColumn())) {
 					int valueIndex = block.getString(event, connector.getColumn());
@@ -94,12 +101,13 @@ public class CalculateCBlocksJob extends Job {
 							() -> block.calculateMap(finalEvent, info.getImp())
 					);
 
-					ConceptTreeChild child = treeConcept.getCache().findMostSpecificChild(valueIndex, rowMap);
+					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
 
 					if (child != null) {
 						cBlock.getMostSpecificChildren().add(child.getPrefix());
 					}
-					else {//see #174  improve handling by copying the relevant things from the old project
+					else {
+						//see #174  improve handling by copying the relevant things from the old project
 						cBlock.getMostSpecificChildren().add(null);
 					}
 				}
@@ -114,10 +122,10 @@ public class CalculateCBlocksJob extends Job {
 		//see #175  metrics candidate
 		log.trace(
 				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-				treeConcept.getCache().getHits(),
-				treeConcept.getCache().getMisses(),
-				(double) treeConcept.getCache().getHits() / treeConcept.getCache().getMisses(),
-				(double) treeConcept.getCache().getHits() / (treeConcept.getCache().getHits() + treeConcept.getCache().getMisses())
+				cache.getHits(),
+				cache.getMisses(),
+				(double) cache.getHits() / cache.getMisses(),
+				(double) cache.getHits() / (cache.getHits() + cache.getMisses())
 		);
 	}
 

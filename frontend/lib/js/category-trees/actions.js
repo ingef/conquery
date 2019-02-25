@@ -51,6 +51,8 @@ export const loadTrees = (datasetId: DatasetIdType) => {
         r => {
           dispatch(loadTreesSuccess(r));
 
+          if (!r.concepts) return;
+
           // Assign default select filter values
           for (const concept of Object.values(r.concepts))
             for (const table of concept.tables || [])

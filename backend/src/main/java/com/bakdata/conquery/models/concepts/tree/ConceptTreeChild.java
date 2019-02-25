@@ -66,7 +66,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 	@Override @JsonIgnore
 	public TreeConcept getConcept() {
-		ConceptTreeNode n = this;
+		ConceptTreeNode<?> n = this;
 		while(n!=null) {
 			if(n instanceof TreeConcept) {
 				return (TreeConcept)n;

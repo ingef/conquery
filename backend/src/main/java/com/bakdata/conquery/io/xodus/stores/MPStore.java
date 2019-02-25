@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus.stores;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import javax.validation.Validator;
@@ -54,7 +55,7 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 		if(!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element "+value+" is not of the required type "+valueType);
 		}
-		ValidatorHelper.failOnError(log, validator.validate(value), "encoding "+value.getClass().getSimpleName());
+		ValidatorHelper.failOnError(log, validator.validate(value), "encoding "+value.getClass().getSimpleName()+" "+Objects.toString(value));
 		
 		store.add(writeKey(key), writeValue(value));
 	}
@@ -80,7 +81,7 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 		if(!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element "+value+" is not of the required type "+valueType);
 		}
-		ValidatorHelper.failOnError(log, validator.validate(value), "encoding "+value.getClass().getSimpleName());
+		ValidatorHelper.failOnError(log, validator.validate(value), "encoding "+value.getClass().getSimpleName()+" "+Objects.toString(value));
 		
 		store.update(writeKey(key), writeValue(value));
 	}
