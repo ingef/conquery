@@ -21,9 +21,6 @@ public abstract class Select extends Labeled<SelectId> {
 	@JsonBackReference
 	private Connector connector;
 
-	@Getter @Setter
-	private String label;
-
 	public AggregatorNode<?> createAggregator(int position) {
 		return new AggregatorNode<>(position, createAggregator());
 	}

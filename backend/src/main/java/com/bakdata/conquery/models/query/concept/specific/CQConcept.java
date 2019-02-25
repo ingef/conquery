@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -173,7 +174,7 @@ public class CQConcept implements CQElement {
 	public void collectSelects(Deque<Select> select) {
 		select.addAll(select);
 		for(CQTable table:tables) {
-			select.addAll(table.getSelect());
+			select.addAll(Arrays.asList(table.getResolvedSelects()));
 		}
 	}
 }
