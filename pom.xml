@@ -3,14 +3,12 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.bakdata.conquery</groupId>
 	<artifactId>parent</artifactId>
-	<version>${version}</version>
+	<version>0.0.0-SNAPSHOT</version>
 
 	<packaging>pom</packaging>
 	<name>Conquery Parent</name>
 		
 	<properties>
-		<!-- Sane default when no version property is passed in from the commandline -->
-		<version>0.0.0-SNAPSHOT</version>
 		<lombok.version>1.18.6</lombok.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>10</maven.compiler.source>
@@ -87,37 +85,6 @@
 							junit.jupiter.execution.parallel.mode.default = concurrent
 						</configurationParameters>
 					</properties>
-				</configuration>
-			</plugin>
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.1.0</version>
-				<executions>
-					<execution>
-						<id>copy-resources</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>./</directory>
-									<filtering>true</filtering>
-									<include>pom.xml</include>
-								</resource>
-							</resources>
-							<outputDirectory>target/</outputDirectory>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-install-plugin</artifactId>
-				<version>3.0.0-M1</version>
-				<configuration>
-					<pomFile>target/pom.xml</pomFile>
 				</configuration>
 			</plugin>
 		</plugins>
