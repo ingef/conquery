@@ -114,8 +114,8 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
-  dropFiles: (item, type) => dispatch(dropFiles(item, type)),
-  dropFilesAndIdx: (item, andIdx) => dispatch(dropFilesAndIdx(item, andIdx)),
+  // dropFiles: (item, type) => dispatch(dropFiles(item, type)),
+  // dropFilesAndIdx: (item, andIdx) => dispatch(dropFilesAndIdx(item, andIdx)),
   dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
   deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
   deleteGroup: (andIdx, orIdx) => dispatch(deleteGroup(andIdx, orIdx)),
