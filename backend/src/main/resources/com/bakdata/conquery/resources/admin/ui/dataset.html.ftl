@@ -1,7 +1,8 @@
 <#import "templates/template.html.ftl" as layout>
 <@layout.layout>
+	<h3>Dataset ${c.label}</h3>
 	<div class="row">
-		<div class="col">Name</div>
+		<div class="col">Name / Id</div>
 		<div class="col">${c.id}</div>
 		<div class="col-7"></div>
 	<div class="w-100"></div>
@@ -48,10 +49,10 @@
 			</ul>
 		</div>
 		<div class="col-7">
-			<form action="/admin/datasets/${c.id}/concepts" method="post" enctype="multipart/form-data">
+			<form onsubmit="postFile(event, '/admin/datasets/${c.id}/concepts');">
 				<div class="form-group">
-				<label for="concept_schema">Add Concept</label>
-				<input type="file" name="concept_schema" title="Schema of the Concept" accept="*.concept.json" required>
+					<label for="concept_schema">Add Concept</label>
+					<input type="file" class="restparam" name="concept_schema" title="Schema of the Concept" accept="*.concept.json" multiple required>
 				</div>
 				<input class="btn btn-primary" type="submit"/>
 			</form>
@@ -60,11 +61,29 @@
 	
 	<div class="row">
 		<div class="col">
-			<h2>Import Files</h2>
+			<h3>Structure Nodes</h3>
+			<form onsubmit="postFile(event, '/admin/datasets/${c.id}/structure');">
+				<div class="form-group">
+					<label for="structure_schema">Set Structure Nodes</label>
+					<input type="file" class="restparam" name="structure_schema" title="Schema of the Structure Nodes" accept="structure.json" required>
+				</div>
+				<input class="btn btn-primary" type="submit"/>
+			</form>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<h3>Import Files</h3>
 			<#macro linkCreator>
 				<a href="#" onclick="event.preventDefault(); fetch('/admin/datasets/${c.id}/imports?file='+encodeURIComponent('<#nested/>'.trim()), {method: 'post'}).then(function(){location.reload();});">
 			</#macro>
 			<#include "templates/fileChooser.html.ftl"/>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col">
+			<h2>IdMapping</h2>
+			<a href="/admin/datasets/${c.id}/mapping">Here</a>
 		</div>
 	</div>
 </@layout.layout>

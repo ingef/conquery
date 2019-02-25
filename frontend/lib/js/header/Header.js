@@ -1,9 +1,15 @@
+// @flow
+
 import React           from 'react';
-import PropTypes       from 'prop-types';
 import T               from 'i18n-react';
 import { connect }     from 'react-redux';
 
-class Header extends React.Component {
+type PropsType = {
+  version: string,
+  isDevelopment: boolean,
+};
+
+class Header extends React.Component<PropsType> {
   render() {
     return (
       <header className="header">
@@ -23,11 +29,6 @@ class Header extends React.Component {
     );
   }
 }
-
-Header.propTypes = {
-  version: PropTypes.string,
-  isDevelopment: PropTypes.bool
-};
 
 const mapStateToProps = (state, ownProps) => {
   return {

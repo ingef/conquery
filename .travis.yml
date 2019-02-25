@@ -15,22 +15,22 @@ jobs:
       name: "Frontend Tests"
       install:
         -  cd frontend
-        -  mvn install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true
+        -  mvn  -B -V install -DskipTests
+      script: mvn -B test
 
     #build backend and run all non-integration tests
     - name: "Unit Tests"
       install:
         - cd backend
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+        - mvn -B -V -T 1C install -DskipTests
+      script: mvn -B test -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
     #build and test only INTEGRATION_PROGRAMMATIC
     - name: "Programmatic Integration Tests"
       install:
         - cd backend
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_PROGRAMMATIC"
+        - mvn -B -V -T 1C install -DskipTests
+      script: mvn -B test -Dgroups="INTEGRATION_PROGRAMMATIC"
 
     #build and test only INTEGRATION_JSONs
     - name: "Integration Tests: Authentication Tests"
@@ -38,58 +38,90 @@ jobs:
         - CONQUERY_TEST_DIRECTORY=tests/auth
       install:
         - cd backend
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+        - mvn -B -V -T 1C install -DskipTests
+      script: mvn -B test -Dgroups="INTEGRATION_JSON"
 
     - name: "Integration Tests: Filter Tests"
       env:
         - CONQUERY_TEST_DIRECTORY=tests/filter
       install:
         - cd backend
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+        - mvn -B -V -T 1C install -DskipTests
+      script: mvn -B test -Dgroups="INTEGRATION_JSON"
 
     - name: "Integration Tests: Query Tests"
       env:
         - CONQUERY_TEST_DIRECTORY=tests/query
       install:
         - cd backend
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+        - mvn -B -V -T 1C install -DskipTests
+      script: mvn -B test -Dgroups="INTEGRATION_JSON"
 
     - name: "Integration Tests: Aggregator Tests"
       env:
         - CONQUERY_TEST_DIRECTORY=tests/aggregator
       install:
         - cd backend
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-      script: mvn test -B -DskipDockerTests=true -Dgroups="INTEGRATION_JSON"
+        - mvn -B -V -T 1C install -DskipTests
+      script: mvn -B test -Dgroups="INTEGRATION_JSON"
   
 
     #Deploy
-    - stage: "Deploy Tag to NPM"
-      if: tag IS present
-      install:
-        - cd frontend
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
-        - chmod +x frontend/scripts/deploy-npm.sh
-      script: sh frontend/scripts/deploy-npm.sh
-
     - stage: "Deploy Develop to Heroku"
       if: branch = develop AND type = push
       install: 
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+        - mvn -B -V -T 1C install -DskipTests
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
 
     - stage: "Deploy Master to Heroku"
       if: branch = master AND type = push
       install: 
-        - mvn -T 1C install -DskipTests=true -Dmaven.javadoc.skip=true -B -V
+        - mvn -B -V -T 1C install -DskipTests
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       script: bash frontend/scripts/deploy-heroku-docker.sh conquery
 
+    - stage: "Prerelease"
+      if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
+      before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
+      install: mvn -B -V -T 1C package -DskipTests -Dversion=$TAG_VERSION
+      script: skip
+      deploy:
+        provider: releases
+        api_key: $GITHUB_OAUTH_TOKEN
+        tag_name: $TRAVIS_TAG
+        target_commitish: $TRAVIS_COMMIT
+        file:
+          - backend/target/backend-$TAG_VERSION.jar
+          - executable/target/executable-$TAG_VERSION.jar
+        skip_cleanup: true
+        draft: false
+        prerelease: true
+        on:
+          all_branches: true
 
+    - stage: "Release"
+      if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
+      before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
+      install: mvn -B -V -T 1C package -DskipTests -Dversion=$TRAVIS_TAG
+      script: skip
+      deploy:
+        provider: releases
+        api_key: $GITHUB_OAUTH_TOKEN
+        tag_name: $TRAVIS_TAG
+        target_commitish: $TRAVIS_COMMIT
+        file:
+          - backend/target/backend-$TRAVIS_TAG.jar
+          - executable/target/executable-$TRAVIS_TAG.jar
+        skip_cleanup: true
+        draft: false
+        prerelease: false
+        on:
+          all_branches: true
+
+#remove the installed maven jars before caching
+before_cache:
+  - rm -f -r $HOME/.m2/repository/com/bakdata/conquery/
 cache:
   yarn: true
   directories:

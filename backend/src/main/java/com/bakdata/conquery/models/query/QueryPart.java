@@ -1,16 +1,17 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.Callable;
+
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import lombok.RequiredArgsConstructor;
 
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.Callable;
+import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class QueryPart implements Callable<EntityResult> {
@@ -24,44 +25,39 @@ public class QueryPart implements Callable<EntityResult> {
 	public EntityResult call() throws Exception {
 		try {
 			QueryPlan queryPlan = this.plan.clone();
-			QPNode root = queryPlan.getRoot();
-			root.init(entity);
+			queryPlan.init(entity);
 			
 			if (requiredTables.isEmpty()) {
 				return EntityResult.notContained();
 			}
 
 			for(Table currentTable : requiredTables) {
-				root.nextTable(ctx, currentTable);
+				queryPlan.nextTable(ctx, currentTable);
 				for(Block block : entity.getBlocks().get(currentTable)) {
-					root.nextBlock(block);
+					queryPlan.nextBlock(block);
 					for(int event = block.size()-1; event >= 0 ; event--) {
-						if(!root.aggregate(block, event)) {
+						if(!queryPlan.aggregate(block, event)) {
 							return EntityResult.notContained();
 						}
 					}
 				}
 			}
 	
-			if(root.isContained()) {
-				return result(queryPlan);
-			}
-			else {
-				return EntityResult.notContained();
-			}
+			return queryPlan.createResult();
 		}
 		catch(Exception e) {
 			return EntityResult.failed(entity.getId(), e);
 		}
 	}
 
-	private EntityResult result(QueryPlan queryPlan) {
-		String[] values = new String[queryPlan.getAggregators().size()];
-		for (int i = 0; i < values.length; i++) {
-			Object aggregationResult = queryPlan.getAggregators().get(i).getAggregationResult();
-			values[i] = aggregationResult == null ? "" : Objects.toString(aggregationResult);
-		}
-		return EntityResult.of(entity.getId(), values);
-	}
+	//TODO Move/Apply changes to queryPlan create Result if appropriate.
+// private EntityResult result(QueryPlan queryPlan) {
+//		String[] values = new String[queryPlan.getAggregators().size()];
+//		for (int i = 0; i < values.length; i++) {
+//			Object aggregationResult = queryPlan.getAggregators().get(i).getAggregationResult();
+//			values[i] = aggregationResult == null ? "" : Objects.toString(aggregationResult);
+//		}
+//		return EntityResult.of(entity.getId(), values);
+//	}
 
 }

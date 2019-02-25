@@ -13,7 +13,7 @@ public interface IRange<VALUE extends Comparable, CLASS extends IRange<VALUE, CL
 	boolean contains(CLASS other);
 
 	CLASS span(@NonNull CLASS other);
-	
+
 	default com.google.common.collect.Range<VALUE> toGuavaRange() {
 		if(isAtLeast()) {
 			return com.google.common.collect.Range.atLeast(getMin());

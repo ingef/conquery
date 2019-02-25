@@ -1,5 +1,6 @@
+// @flow
+
 import React                from 'react';
-import PropTypes            from 'prop-types';
 import T                    from 'i18n-react';
 import { connect }          from 'react-redux';
 
@@ -11,8 +12,13 @@ import {
   deletePreviousQueryModalClose,
 }                           from './actions';
 
+type PropsType = {
+  queryId: string | number,
+  onCloseModal: () => void,
+  onDeletePreviousQuery: () => void,
+};
 
-const DeletePreviousQueryModal = (props) => {
+const DeletePreviousQueryModal = (props: PropsType) => {
   return !!props.queryId && (
     <Modal closeModal={props.onCloseModal}>
       <div className="delete-previous-query-modal">
@@ -34,12 +40,6 @@ const DeletePreviousQueryModal = (props) => {
       </div>
     </Modal>
   );
-};
-
-DeletePreviousQueryModal.propTypes = {
-  queryId: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
-  onCloseModal: PropTypes.func.isRequired,
-  onDeletePreviousQuery: PropTypes.func.isRequired,
 };
 
 const mapStateToProps = (state) => ({

@@ -52,7 +52,10 @@ public class DateFormats {
 		if (lastFormat != null) {
 			try {
 				return LocalDate.parse(value, lastFormat);
-			} catch (DateTimeParseException e) {}
+			}
+			catch (DateTimeParseException e) {
+				//intentionally left blank
+			}
 		}
 		for (DateTimeFormatter format : formats) {
 			if (lastFormat != format) {
@@ -60,7 +63,10 @@ public class DateFormats {
 					LocalDate res = LocalDate.parse(value, format);
 					lastFormat = format;
 					return res;
-				} catch (DateTimeParseException e) {}
+				}
+				catch (DateTimeParseException e) {
+					//intentionally left blank
+				}
 			}
 		}
 		return ERROR_DATE;

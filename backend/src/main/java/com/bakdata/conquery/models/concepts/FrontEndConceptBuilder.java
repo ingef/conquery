@@ -1,10 +1,20 @@
 package com.bakdata.conquery.models.concepts;
 
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import com.bakdata.conquery.models.api.description.FESelect;
+import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
+import com.bakdata.conquery.models.query.select.Select;
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
-import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
@@ -19,14 +29,8 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
-import com.bakdata.conquery.models.query.select.Select;
-import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
@@ -42,20 +46,27 @@ public class FrontEndConceptBuilder {
 		//add all real roots
 		for (Concept<?> c : storage.getAllConcepts()) {
 			if(!c.isHidden()) {
-				roots.put(c.getId(), createCTRoot(c));
+				roots.put(c.getId(), createCTRoot(c, storage.getStructure()));
 			}
 		}
 		//add the structure tree
-//		dataset
-//			.streamAllStructureNodes()
-//			.forEach(sn -> roots.put(sn.getId(), createStructureNode(sn)));
+		for(StructureNode sn : storage.getStructure()) {
+			roots.put(sn.getId(), createStructureNode(sn));
+		}
 		root.setConcepts(roots);
 		return root;
 	}
 
-	private static FENode createCTRoot(Concept<?> c) {
+	private static FENode createCTRoot(Concept<?> c, StructureNode[] structureNodes) {
 
 		MatchingStats matchingStats = c.getMatchingStats();
+
+		StructureNodeId structureParent = Arrays
+			.stream(structureNodes)
+			.filter(sn->sn.getContainedRoots().contains(c.getId()))
+			.findAny()
+			.map(StructureNode::getId)
+			.orElse(null);
 
 		FENode n = FENode.builder()
 				.active(c instanceof VirtualConcept)
@@ -75,7 +86,7 @@ public class FrontEndConceptBuilder {
 								.anyMatch(AbstractSelectFilter.class::isInstance)
 					)
 				)
-				.parent(c.getStructureParent()==null?null:c.getStructureParent().getId())
+				.parent(structureParent)
 				.tables(c
 						.getConnectors()
 						.stream()
@@ -112,10 +123,9 @@ public class FrontEndConceptBuilder {
 				ArrayUtils.addAll(
 					cn.getChildren().stream()
 						.map(IdentifiableImpl::getId)
-						.toArray(ConceptTreeChildId[]::new),
+						.toArray(IId[]::new),
 					cn.getContainedRoots().stream()
-						.map(Concept::getId)
-						.toArray(ConceptTreeChildId[]::new)
+						.toArray(IId[]::new)
 				)
 			)
 			.build();
@@ -145,23 +155,16 @@ public class FrontEndConceptBuilder {
 	}
 
 	public static FETable createTable(Connector con) {
-		return
-				FETable.builder()
-					   .id(con.getTable().getId())
-					   .label(con.getLabel())
-					   .filters(
-							   con.getAllFilters()
-								  .stream()
-								  .map(FrontEndConceptBuilder::createFilter)
-								  .collect(Collectors.toList())
-					   )
-					   .selects(
-							   con.getAllSelects()
-								  .stream()
-								  .map(FrontEndConceptBuilder::createSelect)
-								  .collect(Collectors.toList())
-					   )
-					   .build();
+		return FETable.builder()
+			.id(con.getTable().getId())
+			.connectorId(con.getId())
+			.label(con.getTable().getLabel())
+			.filters(con
+				.getAllFilters()
+				.stream()
+				.map(FrontEndConceptBuilder::createFilter)
+				.collect(Collectors.toList())
+			).build();
 	}
 
 	public static FEFilter createFilter(Filter<?> filter) {

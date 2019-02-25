@@ -1,5 +1,15 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
@@ -22,6 +32,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
+import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
@@ -97,8 +108,10 @@ public class CQConcept implements CQElement {
 				new ConceptNode(
 					concepts,
 					t,
-					selectValidityDateColumn(t),
-					conceptChild(filters, aggregators)
+					new ValidityDateNode(
+						selectValidityDateColumn(t),
+						conceptChild(filters, aggregators)
+					)
 				)
 			);
 		}
@@ -138,7 +151,7 @@ public class CQConcept implements CQElement {
 		}
 		return nodes;
 	}
-
+	
 	private Column selectValidityDateColumn(CQTable t) {
 		//check if we have a manually selected validity date then use that
 		for(FilterValue<?> fv : t.getFilters()) {
@@ -148,11 +161,19 @@ public class CQConcept implements CQElement {
 					.getValidityDateColumn(((CQSelectFilter)fv).getValue());
 			}
 		}
-
+		
 		//else use this first defined validity date column
 		if(!t.getResolvedConnector().getValidityDates().isEmpty())
 			return t.getResolvedConnector().getValidityDates().get(0).getColumn();
 		else
 			return null;
+	}
+
+	@Override
+	public void collectSelects(Deque<Select> select) {
+		select.addAll(select);
+		for(CQTable table:tables) {
+			select.addAll(table.getSelect());
+		}
 	}
 }

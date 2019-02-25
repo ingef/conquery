@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.collect.ForwardingCollection;
@@ -315,6 +316,22 @@ public class CDateSet {
 		//remove all after the last Range
 		if(!l.get(l.size()-1).isAtLeast()) {
 			this.remove(new CDateRange(l.get(l.size()-1).getMaxValue() + 1, Integer.MAX_VALUE));
+		}
+	}
+	
+	public void retainAll(CDateRange retained) {
+		if(retained.isAll()) {
+			return;
+		}
+
+		//remove all before the range
+		if(!retained.isAtMost()) {
+			this.remove(new CDateRange(Integer.MIN_VALUE, retained.getMinValue() - 1));
+		}
+		
+		//remove all after the Range
+		if(!retained.isAtLeast()) {
+			this.remove(new CDateRange(retained.getMaxValue() + 1, Integer.MAX_VALUE));
 		}
 	}
 

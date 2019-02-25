@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -23,6 +24,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
@@ -31,11 +34,13 @@ import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
+import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
+import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.extern.slf4j.Slf4j;
 
@@ -90,17 +95,40 @@ public class AdminUIResource {
 		return Response.ok().build();
 	}
 	
+	/**
+	 * End point for retrieving information about a specific mandator.
+	 * @param mandatorId Unique id of the mandator.
+	 * @return A view holding the information about the mandator.
+	 */
 	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
 	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
 		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
+	}
+	
+	@POST
+	@Path("/permissions/")
+	@Consumes(ExtraMimeTypes.JSON_STRING)
+	public Response createPermission(
+		ConqueryPermission permission) throws JSONException {
+		processor.createPermission(permission);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("/permissions/")
+	@Consumes(ExtraMimeTypes.JSON_STRING)
+	public Response deletePermission(
+		ConqueryPermission permission) throws JSONException {
+		processor.deletePermission(permission);
+		return Response.ok().build();
 	}
 
 	@Produces(ExtraMimeTypes.CSV_STRING)
 	@Consumes(ExtraMimeTypes.JSON_STRING)
 	@POST
 	@Path("/query")
-	public String query(IQuery query) throws JSONException {
-		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query);
+	public String query(@Auth User user, IQuery query) throws JSONException {
+		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, user);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
@@ -108,7 +136,9 @@ public class AdminUIResource {
 			throw new IllegalStateException("Query failed");
 		}
 
-		return managed.toCSV(config).collect(Collectors.joining("\n"));
+		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next())
+			.toCSV(managed)
+			.collect(Collectors.joining("\n"));
 	}
 
 	@GET
@@ -125,8 +155,7 @@ public class AdminUIResource {
 					.collect(Collectors.toMap(
 						si -> si.getRemoteAddress().toString(),
 						SlaveInformation::getJobManagerStatus
-					)
-					)
+					))
 			)
 			.build();
 		return new UIView<>("jobs.html.ftl", context, status);

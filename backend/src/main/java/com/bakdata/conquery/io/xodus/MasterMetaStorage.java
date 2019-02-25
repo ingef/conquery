@@ -11,6 +11,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Namespaces;
 
 public interface MasterMetaStorage extends ConqueryStorage {
 
@@ -114,4 +116,10 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
 	void updateMandator(Mandator mandator) throws JSONException;
+	
+	/**
+	 * Return the namespaces used in the instance of conquery.
+	 * @return The namespaces.
+	 */
+	Namespaces getNamespaces();
 }

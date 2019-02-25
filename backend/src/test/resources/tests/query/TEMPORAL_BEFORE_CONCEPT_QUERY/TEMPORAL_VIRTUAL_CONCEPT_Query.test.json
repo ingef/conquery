@@ -6,44 +6,49 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "type": "BEFORE",
-      "sampler": "LATEST",
-      "index": {
-        "ids": [
-          "${dataset}.geschlecht_select"
-        ],
-        "type": "CONCEPT",
-        "label": "index",
-        "tables": [
-          {
-            "id": "${dataset}.geschlecht_select.geschlecht_connector",
-            "filters": [
-              {
-                "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
-                "type": "SELECT",
-                "value": "f"
-              }
-            ]
-          }
-        ]
+      "index":  {
+        "sampler": "LATEST",
+        "child": {
+          "ids": [
+            "${dataset}.geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "index",
+          "tables": [
+            {
+              "id": "${dataset}.geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "SELECT",
+                  "value": "f"
+                }
+              ]
+            }
+          ]
+        }
       },
       "preceding": {
-        "ids": [
-          "${dataset}.geschlecht_select"
-        ],
-        "type": "CONCEPT",
-        "label": "preceding",
-        "tables": [
-          {
-            "id": "${dataset}.geschlecht_select.geschlecht_connector",
-            "filters": [
-              {
-                "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
-                "type": "SELECT",
-                "value": "m"
-              }
-            ]
-          }
-        ]
+        "sampler": "LATEST",
+        "child": {
+          "ids": [
+            "${dataset}.geschlecht_select"
+          ],
+          "type": "CONCEPT",
+          "label": "preceding",
+          "tables": [
+            {
+              "id": "${dataset}.geschlecht_select.geschlecht_connector",
+              "filters": [
+                {
+                  "filter": "${dataset}.geschlecht_select.geschlecht_connector.geschlecht",
+                  "type": "SELECT",
+                  "value": "m"
+                }
+              ]
+            }
+          ]
+        }
       }
     }
   },

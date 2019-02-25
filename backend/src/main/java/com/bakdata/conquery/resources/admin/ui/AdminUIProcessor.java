@@ -3,17 +3,24 @@ package com.bakdata.conquery.resources.admin.ui;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 
@@ -65,11 +72,52 @@ public class AdminUIProcessor {
 				otherPermissions.add(permission);
 			}
 		}
+		
+		List<Dataset> datasets = storage.getNamespaces().getAllDatasets();
 
 		return new FEMandatorContent(
+			(Mandator)mandatorId.getOwner(storage),
 			getUsers(mandatorId),
 			datasetPermissions,
 			queryPermissions,
-			otherPermissions);
+			otherPermissions,
+			Ability.READ.AS_SET,
+			datasets);
+	}
+	
+	/**
+	 * Handles creation of permissions.
+	 * @param permission The permission to create.
+	 * @throws JSONException is thrown upon procession JSONs.
+	 */
+	public void createPermission(ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.addPermission(getOwnerFromPermission(permission, storage), permission, storage);
+	}
+	
+	/**
+	 * Handles deletion of permissions.
+	 * @param permission The permission to delete.
+	 * @throws JSONException is thrown upon procession JSONs.
+	 */
+	public void deletePermission(ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
+	}
+	
+	/**
+	 * Retrieves the {@link PermissionOwner} from an permission that should be created or deleted.
+	 * @param permission The permission with an owner.
+	 * @param storage A storage from which the owner is retrieved.
+	 * @return The Owner.
+	 */
+	private static PermissionOwner<?> getOwnerFromPermission(ConqueryPermission permission, MasterMetaStorage storage) {
+		PermissionOwnerId<?> ownerId = permission.getOwnerId();
+		if(ownerId == null) {
+			throw new IllegalArgumentException("The ownerId is not allowed to be null.");
+		}
+		PermissionOwner<?> owner =  ownerId.getOwner(storage);
+		if(owner == null) {
+			throw new IllegalArgumentException("The provided ownerId belongs to know subject.");
+		}
+		return owner;
 	}
 }

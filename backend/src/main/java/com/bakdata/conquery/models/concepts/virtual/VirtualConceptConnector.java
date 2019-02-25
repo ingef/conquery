@@ -32,7 +32,7 @@ public class VirtualConceptConnector extends Connector {
 
 	@Valid @JsonManagedReference
 	private Select[] select;
-	
+
 	@Override
 	public Collection<Filter<?>> collectAllFilters() {
 		return Stream.of(getDateSelectionFilter(), filter).filter(Objects::nonNull).collect(Collectors.toList());

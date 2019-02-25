@@ -3,14 +3,14 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    
+
     <parent>
         <groupId>com.bakdata.conquery</groupId>
         <artifactId>parent</artifactId>
-        <version>2.0.0</version>
+        <version>${version}</version>
     </parent>
 
-    
+
     <artifactId>frontend</artifactId>
 
     <name>Conquery Frontend</name>
@@ -56,8 +56,8 @@
                         </goals>
                         <phase>generate-resources</phase>
                         <configuration>
-                            <nodeVersion>v8.9.0</nodeVersion>
-                            <yarnVersion>v1.3.2</yarnVersion>
+                            <nodeVersion>v8.12.0</nodeVersion>
+                            <yarnVersion>v1.9.4</yarnVersion>
                         </configuration>
                     </execution>
                     <execution>
@@ -68,14 +68,36 @@
                         <phase>generate-resources</phase>
 
                         <configuration>
-                            <!-- If you need reproducible dependencies, which is usually the case 
-                                with the continuous integration systems, you should pass frozen-lockfile 
+                            <!-- If you need reproducible dependencies, which is usually the case
+                                with the continuous integration systems, you should pass frozen-lockfile
                                 flag. -->
                             <arguments>--frozen-lockfile</arguments>
                         </configuration>
                     </execution>
                     <execution>
                         <id>yarn build</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                        <configuration>
+                            <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn set version</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                        <configuration>
+                            <arguments>version --no-git-tag-version --new-version ${version}</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn build app</id>
                         <goals>
                             <goal>yarn</goal>
                         </goals>
@@ -100,31 +122,4 @@
             </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <profile>
-            <id>reportCoverage</id>
-            <build>
-                <plugins>
-                    <plugin>
-                        <groupId>com.github.eirslett</groupId>
-                        <artifactId>frontend-maven-plugin</artifactId>
-                        <version>1.6</version>
-                        <executions>
-                            <execution>
-                                <id>codacy-coverage</id>
-                                <goals>
-                                    <goal>yarn</goal>
-                                </goals>
-                                <phase>test</phase>
-                                <configuration>
-                                    <arguments>codacy-coverage</arguments>
-                                </configuration>
-                            </execution>
-                        </executions>
-                    </plugin>
-                </plugins>
-            </build>
-        </profile>
-    </profiles>
 </project>

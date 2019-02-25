@@ -22,11 +22,11 @@ import jersey.repackaged.com.google.common.collect.Lists;
 public interface IId<TYPE> {
 
 	char JOIN_CHAR = '.';
-	public static final Joiner JOINER = Joiner.on(JOIN_CHAR);
-	public static final Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
-	static final Map<List<String>, IId<?>> INTERNED_IDS = new ConcurrentHashMap<>();
+	Joiner JOINER = Joiner.on(JOIN_CHAR);
+	Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
+	Map<List<String>, IId<?>> INTERNED_IDS = new ConcurrentHashMap<>();
 	
-	public static interface Parser<ID extends IId<?>> {
+	interface Parser<ID extends IId<?>> {
 		
 		static String[] split(String id) {
 			String[] parts = StringUtils.split(id, IId.JOIN_CHAR);
@@ -86,7 +86,7 @@ public interface IId<TYPE> {
 		}
 	}
 	
-	public static <T extends IId<?>> Class<T> findIdClass(Class<?> cl) {
+	static <T extends IId<?>> Class<T> findIdClass(Class<?> cl) {
 		Class<?> result = CLASS_TO_ID_MAP.get(cl);
 		if(result == null) {
 			String methodName = "getId";
@@ -113,7 +113,7 @@ public interface IId<TYPE> {
 		return (Class<T>)result;
 	}
 	
-	public static <T extends IId<?>> Parser<T> createParser(Class<T> idClass) {
+	static <T extends IId<?>> Parser<T> createParser(Class<T> idClass) {
 		return (Parser<T>)idClass.getDeclaredClasses()[0].getEnumConstants()[0];
 	}
 }

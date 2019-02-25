@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
@@ -47,23 +48,25 @@ public class ConceptSearch {
 			.withParallelProcessing()
 			.build();
 
-		List<ConceptElement> elements = dataset.getConcepts().stream()
+		List<ConceptElement<?>> elements = dataset.getConcepts().stream()
 			.filter(TreeConcept.class::isInstance)
 			.map(TreeConcept.class::cast)
 			.map(c -> c.getAllChildren().values())
 			.flatMap(Collection::stream)
 			.collect(Collectors.toList());
 		
-		for (ConceptElement<?> ele : elements) {
+		elements.forEach((ele) -> {
 			String key = ele.getId().toString();
 
 			qs.addItem(key, ele.getLabel());
 			qs.addItem(key, ele.getDescription());
-			qs.addItem(key, ele.getAdditionalInfos().stream()
-				.map(Object::toString)
-				.collect(Collectors.joining(""))
-				.toString());
-		}
+			qs.addItem(key, ele
+				.getAdditionalInfos()
+				.stream()
+				.map(Objects::toString)
+				.collect(Collectors.joining())
+			);
+		});
 		
 		dataset.getConcepts().stream()
 			.filter(VirtualConcept.class::isInstance)

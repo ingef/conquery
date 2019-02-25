@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.IStringType;
@@ -61,11 +60,10 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 //				String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
 //		}
 		if (values != null) {
-			realLabels = values.stream()
-				.collect(Collectors.toMap(Function.identity(), e -> {
-					String r = labels.get(e);
-					return r == null ? e : r;
-				}));
+			realLabels = values.stream().limit(200).collect(Collectors.toMap(Function.identity(), e -> {
+				String r = labels.get(e);
+				return r == null ? e : r;
+			}));
 
 			f.setOptions(FEValue.fromLabels(realLabels));
 		}
@@ -83,8 +81,9 @@ public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> exten
 
 	@Override
 	public void addImport(Import imp) {
-		if (values == null)
-			values = new HashSet<String>();
+		if (values == null) {
+			values = new HashSet<>();
+		}
 		values.addAll(Sets.newHashSet(((IStringType) getColumn().getTypeFor(imp)).iterator()));
 	}
 }

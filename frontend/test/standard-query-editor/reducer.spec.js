@@ -1,7 +1,5 @@
 // @flow
 
-import { expect } from 'chai';
-
 import {
   setFilterValue,
   loadFilterSuggestionsSuccess
@@ -36,7 +34,7 @@ describe('standard query editor', () => {
       const action = setFilterValue(0, 0, []);
       const updatedState = reducer(state, action);
 
-      expect(updatedState[0].elements[0].tables[0].filters[0].value).to.equal(undefined);
+      expect(updatedState[0].elements[0].tables[0].filters[0].value).toBeUndefined();
     });
   });
 
@@ -52,7 +50,7 @@ describe('standard query editor', () => {
       const action = loadFilterSuggestionsSuccess(options, 0, 0);
       const updatedState = reducer(state, action);
 
-      expect(updatedState[0].elements[0].tables[0].filters[0].options).to.deep.equal(options);
+      expect(updatedState[0].elements[0].tables[0].filters[0].options).toEqual(options);
     });
 
     it('leaves filter\'s options list unmodified when receiving empty suggestions list', () => {
@@ -68,7 +66,7 @@ describe('standard query editor', () => {
       const action = loadFilterSuggestionsSuccess(newOptions, 0, 0);
       const updatedState = reducer(state, action);
 
-      expect(updatedState[0].elements[0].tables[0].filters[0].options).to.deep.equal(options);
+      expect(updatedState[0].elements[0].tables[0].filters[0].options).toEqual(options);
     });
   });
 });
