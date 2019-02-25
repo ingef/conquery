@@ -61,6 +61,7 @@ queryNodeEditor:
   selectAFilter: "Kein Filter ausgewählt."
   dropConcept: "Füge ein weiteres Konzept hinzu"
   includeSubnodes: "Untergeordnete Konzepte einbeziehen"
+  tooManyValues: "{count} Werte ausgewählt"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
@@ -117,11 +118,11 @@ reactSelect:
   clearValue: "Wert entfernen"
 
 inputRange:
-  range: 'Bereich'
-  exact: 'Gleich'
-  exactLabel: 'exakt'
-  minLabel: 'min'
-  maxLabel: 'max'
+  range: "Bereich"
+  exact: "Gleich"
+  exactLabel: "exakt"
+  minLabel: "min"
+  maxLabel: "max"
 
 previousQueries:
   loading: "Lade Anfragen"

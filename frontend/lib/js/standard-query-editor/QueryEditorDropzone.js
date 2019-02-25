@@ -6,10 +6,11 @@ import T from "i18n-react";
 import { DropTarget, type ConnectDropTarget } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 
-import type { DraggedFileType } from "../file-upload/types";
 import { dndTypes } from "../common/constants";
 import type { QueryIdType } from "../common/types/backend";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
+
+type DraggedFileType = Object;
 
 type PropsType = {
   isInitial: ?boolean,

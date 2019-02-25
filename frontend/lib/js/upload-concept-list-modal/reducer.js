@@ -1,9 +1,7 @@
 // @flow
 
-import {
-  type ConceptListResolutionResultType
-}                                       from '../common/types/backend';
-import { stripFileName }                from '../common/helpers';
+import type { ConceptListResolutionResultType } from "../common/types/backend";
+import { stripFilename } from "../common/helpers/fileHelper";
 
 import {
   UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
@@ -13,35 +11,34 @@ import {
   RESOLVE_CONCEPTS_ERROR,
   UPLOAD_CONCEPT_LIST_MODAL_OPEN,
   UPLOAD_CONCEPT_LIST_MODAL_CLOSE,
+  RESOLVE_FILTER_VALUES_START,
   RESOLVE_FILTER_VALUES_SUCCESS,
   RESOLVE_FILTER_VALUES_ERROR
-}                                       from './actionTypes'
-
+} from "./actionTypes";
 
 export type StateType = {
   isModalOpen: boolean,
-  parameters: Object,
   label: string,
   conceptCodesFromFile: string[],
   selectedConceptRootNode: string,
   loading: boolean,
   resolved: ConceptListResolutionResultType,
-  error: Error
+  error: ?Error
 };
 
 const initialState: StateType = {
   isModalOpen: false,
-  parameters: {},
-  label: '',
+  label: "",
   conceptCodesFromFile: [],
-  selectedConceptRootNode: '',
+  selectedConceptRootNode: "",
   loading: false,
   resolved: {},
-  error: null,
-}
+  error: null
+};
 
 const resolveFilterValuesSuccess = (state: StateType, action: Object) => {
-  const { data, parameters } = action.payload;
+  const { data, filename } = action.payload;
+
   const hasUnresolvedCodes = data.unknownCodes && data.unknownCodes.length > 0;
 
   return {
@@ -49,20 +46,20 @@ const resolveFilterValuesSuccess = (state: StateType, action: Object) => {
     isModalOpen: hasUnresolvedCodes,
     showDetails: false,
     loading: false,
-    label: stripFileName(parameters.fileName),
-    resolved: data,
-    parameters: parameters
+    label: stripFilename(filename),
+    resolved: data
   };
-}
+};
 
 const uploadConcepts = (state: StateType = initialState, action: Object) => {
   switch (action.type) {
     case UPLOAD_CONCEPT_LIST_MODAL_OPEN:
       const { parameters } = action;
+
       return {
         ...state,
         isModalOpen: true,
-        label: stripFileName(parameters.fileName),
+        label: stripFilename(parameters.fileName),
         conceptCodesFromFile: parameters.values,
         selectedConceptRootNode: null,
         resolved: null,
@@ -99,6 +96,12 @@ const uploadConcepts = (state: StateType = initialState, action: Object) => {
         error: null,
         resolved: action.payload.data
       };
+    case RESOLVE_FILTER_VALUES_START:
+      return {
+        ...state,
+        loading: true,
+        error: null
+      };
     case RESOLVE_FILTER_VALUES_SUCCESS:
       return resolveFilterValuesSuccess(state, action);
     case RESOLVE_FILTER_VALUES_ERROR:
@@ -107,12 +110,12 @@ const uploadConcepts = (state: StateType = initialState, action: Object) => {
         loading: false,
         resolved: null,
         error: action.payload
-      }
+      };
     case UPLOAD_CONCEPT_LIST_MODAL_CLOSE:
       return initialState;
     default:
       return state;
   }
-}
+};
 
 export default uploadConcepts;

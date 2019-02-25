@@ -28,12 +28,10 @@ import {
   RENAME_PREVIOUS_QUERY_SUCCESS
 } from "../previous-queries/list/actionTypes";
 
-import {
-  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
-  type UploadConceptListModalResultType
-} from "../upload-concept-list-modal/actionTypes";
+import { UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../upload-concept-list-modal/actionTypes";
+import type { UploadConceptListModalResultType } from "../upload-concept-list-modal/types";
 
-import { INTEGER_RANGE } from "../form-components";
+import { INTEGER_RANGE } from "../form-components/filterTypes";
 
 import type { StateType } from "../query-runner/reducer";
 
@@ -572,7 +570,7 @@ const loadFilterSuggestionsStart = (state, action) =>
 
 const loadFilterSuggestionsSuccess = (state, action) => {
   // When [] comes back from the API, don't touch the current options
-  if (!action.payload.suggestions || action.payload.suggestions.length === 0)
+  if (!action.payload.data || action.payload.data.length === 0)
     return setNodeFilterProperties(state, action, { isLoading: false });
 
   return setNodeFilterProperties(state, action, {
@@ -668,18 +666,22 @@ const deselectNode = (state, action) => {
 
 const updateNodeLabel = (state, action) => {
   const node = selectEditedNode(state);
+
   if (!node) return state;
 
   const { andIdx, orIdx } = node;
+
   return setElementProperties(state, andIdx, orIdx, { label: action.label });
 };
 
 const addConceptToNode = (state, action) => {
   const nodePosition = selectEditedNode(state);
+
   if (!nodePosition) return state;
 
   const { andIdx, orIdx } = nodePosition;
   const node = state[andIdx].elements[orIdx];
+
   return setElementProperties(state, andIdx, orIdx, {
     ids: [...action.concept.ids, ...node.ids]
   });
@@ -687,28 +689,36 @@ const addConceptToNode = (state, action) => {
 
 const removeConceptFromNode = (state, action) => {
   const nodePosition = selectEditedNode(state);
+
   if (!nodePosition) return state;
 
   const { andIdx, orIdx } = nodePosition;
   const node = state[andIdx].elements[orIdx];
+
   return setElementProperties(state, andIdx, orIdx, {
     ids: node.ids.filter(id => id !== action.conceptId)
   });
 };
 
 const setResolvedFilterValues = (state: StateType, action: Object) => {
-  const { resolutionResult, parameters } = action.data;
+  const {
+    tableIdx,
+    filterIdx,
+    data: {
+      resolvedFilter: { value }
+    }
+  } = action.payload;
 
   return setNodeFilterProperties(
     state,
     {
       payload: {
-        tableIdx: parameters.tableIdx,
-        filterIdx: parameters.filterIdx
+        tableIdx,
+        filterIdx
       }
     },
     {
-      value: resolutionResult.filter.value
+      value
     }
   );
 };

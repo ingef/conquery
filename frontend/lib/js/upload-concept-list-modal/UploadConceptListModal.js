@@ -25,7 +25,6 @@ type PropsType = {
   loading: boolean,
   isModalOpen: boolean,
   showDetails?: boolean,
-  parameters: Object,
   label: String,
   availableConceptRootNodes: Array,
   selectedConceptRootNode: Object,
@@ -51,16 +50,8 @@ const UploadConceptListModal = (props: PropsType) => {
     hasResolvedItems,
     hasUnresolvedCodes,
     numberOfResolvedItems,
-    error,
-    parameters
+    error
   } = props;
-
-  if (!isModalOpen && resolved && resolved.resolvedFilter)
-    props.onAccept(
-      props.label,
-      { filter: resolved.resolvedFilter },
-      parameters
-    );
 
   if (!isModalOpen) return null;
 
@@ -91,8 +82,7 @@ const UploadConceptListModal = (props: PropsType) => {
                     props.selectConceptRootNode(
                       props.selectedDatasetId,
                       value,
-                      props.conceptCodesFromFile,
-                      parameters
+                      props.conceptCodesFromFile
                     )
                 }}
                 options={availableConceptRootNodes.map(x => ({
@@ -173,15 +163,11 @@ const UploadConceptListModal = (props: PropsType) => {
             className="btn btn--primary"
             disabled={!hasResolvedItems}
             onClick={() =>
-              props.onAccept(
-                props.label,
-                {
-                  conceptList: props.resolved.resolvedConcepts,
-                  filter: props.resolved.resolvedFilter,
-                  selectedRoot: props.selectedConceptRootNode
-                },
-                props.parameters
-              )
+              props.onAccept(props.label, {
+                conceptList: props.resolved.resolvedConcepts,
+                filter: props.resolved.resolvedFilter,
+                selectedRoot: props.selectedConceptRootNode
+              })
             }
           >
             {T.translate("uploadConceptListModal.insertNode")}
@@ -254,7 +240,6 @@ const selectShowDetails = state => {
 const mapStateToProps = (state: StateType) => ({
   isModalOpen: state.uploadConceptListModal.isModalOpen,
   showDetails: selectShowDetails(state),
-  parameters: state.uploadConceptListModal.parameters,
   label: state.uploadConceptListModal.label,
   conceptCodesFromFile: state.uploadConceptListModal.conceptCodesFromFile,
   availableConceptRootNodes: selectAvailableConceptRootNodes(state),
@@ -270,19 +255,13 @@ const mapStateToProps = (state: StateType) => ({
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onCloseModal: () => dispatch(uploadConceptListModalClose()),
-  onAccept: (label, rootConcepts, concepts, parameters) =>
+  onAccept: (label, rootConcepts, concepts) =>
     dispatch(
-      acceptAndCloseUploadConceptListModal(
-        label,
-        rootConcepts,
-        concepts,
-        parameters
-      )
+      acceptAndCloseUploadConceptListModal(label, rootConcepts, concepts)
     ),
-  selectConceptRootNode: (datasetId, treeId, conceptCodes, parameters) =>
+  selectConceptRootNode: (datasetId, treeId, conceptCodes) =>
     dispatch(
       selectConceptRootNodeAndResolveCodes({
-        ...parameters,
         datasetId,
         treeId,
         conceptCodes
@@ -295,13 +274,8 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  onAccept: (fileName, concepts, parameters) =>
-    dispatchProps.onAccept(
-      fileName,
-      stateProps.rootConcepts,
-      concepts,
-      parameters
-    )
+  onAccept: (fileName, concepts) =>
+    dispatchProps.onAccept(fileName, stateProps.rootConcepts, concepts)
 });
 
 export default connect(

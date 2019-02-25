@@ -17,12 +17,12 @@ type PropsType = FieldPropsType & {
   disabled?: boolean,
   selectProps?: Object,
   tooltip?: string,
-  onDropFiles?: Function,
+  onDropFile?: Function,
   allowDropFile?: boolean
 };
 
 const InputSelect = (props: PropsType) => {
-  const allowDropFile = props.allowDropFile && !!props.onDropFiles;
+  const allowDropFile = props.allowDropFile && !!props.onDropFile;
   const { input, options } = props;
   const selected = options && options.filter(v => v.value === input.value);
   const defaultValue =
@@ -48,7 +48,7 @@ const InputSelect = (props: PropsType) => {
         style={{ position: "relative", display: "block", maxWidth: "300px" }}
         activeClassName={allowDropFile ? "dropzone--over" : ""}
         className={allowDropFile ? "dropzone" : ""}
-        onDrop={props.onDropFiles}
+        onDrop={files => props.onDropFile(files[0])}
         disabled={!allowDropFile}
       >
         <Select

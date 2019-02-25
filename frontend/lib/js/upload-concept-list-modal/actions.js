@@ -5,8 +5,7 @@ import type { Dispatch } from "redux";
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
 import { isEmpty } from "../common/helpers";
-import { type TreeNodeIdType } from "../common/types/backend";
-import { type GenericFileType } from "../file-upload/types";
+import type { TreeNodeIdType } from "../common/types/backend";
 
 import {
   UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
@@ -17,6 +16,7 @@ import {
   UPLOAD_CONCEPT_LIST_MODAL_OPEN,
   UPLOAD_CONCEPT_LIST_MODAL_CLOSE,
   UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
+  RESOLVE_FILTER_VALUES_START,
   RESOLVE_FILTER_VALUES_SUCCESS,
   RESOLVE_FILTER_VALUES_ERROR
 } from "./actionTypes";
@@ -27,6 +27,9 @@ export const resolveConceptsSuccess = (res: any, payload?: Object) =>
 export const resolveConceptsError = (err: any) =>
   defaultError(RESOLVE_CONCEPTS_ERROR, err);
 
+export const resolveFilterValuesStart = () => ({
+  type: RESOLVE_FILTER_VALUES_START
+});
 export const resolveFilterValuesSuccess = (res: any, payload?: Object) =>
   defaultSuccess(RESOLVE_FILTER_VALUES_SUCCESS, res, payload);
 export const resolveFilterValuesError = (err: any) =>
@@ -41,8 +44,11 @@ export const selectConceptRootNodeAndResolveCodes = (parameters: Object) => {
   const { treeId, datasetId, conceptCodes } = parameters;
 
   return (dispatch: Dispatch<*>) => {
-    if (isEmpty(treeId)) return dispatch(selectConceptRootNode(""));
-    else dispatch(selectConceptRootNode(treeId));
+    if (isEmpty(treeId)) {
+      return dispatch(selectConceptRootNode(""));
+    } else {
+      dispatch(selectConceptRootNode(treeId));
+    }
 
     dispatch(resolveConceptsStart());
 
@@ -55,25 +61,32 @@ export const selectConceptRootNodeAndResolveCodes = (parameters: Object) => {
   };
 };
 
-export const conceptFilterValuesResolve = (fileType: GenericFileType) => {
-  const { datasetId, treeId, tableId, filterId, values } = fileType.parameters;
+export const resolveConceptFilterValues = (
+  datasetId,
+  treeId,
+  tableId,
+  filterId,
+  values,
+  filename
+) => (dispatch: Dispatch<*>) => {
+  dispatch(resolveFilterValuesStart());
 
-  return (dispatch: Dispatch<*>) => {
-    dispatch(resolveConceptsStart());
+  return api
+    .postConceptFilterValuesResolve(
+      datasetId,
+      treeId,
+      tableId,
+      filterId,
+      values
+    )
+    .then(
+      r => {
+        dispatch(resolveFilterValuesSuccess(r, { filename }));
 
-    return api
-      .postConceptFilterValuesResolve(
-        datasetId,
-        treeId,
-        tableId,
-        filterId,
-        values
-      )
-      .then(
-        r => dispatch(resolveFilterValuesSuccess(r, { ...fileType })),
-        e => dispatch(resolveFilterValuesError(e))
-      );
-  };
+        return r;
+      },
+      e => dispatch(resolveFilterValuesError(e))
+    );
 };
 
 export const uploadConceptListModalUpdateLabel = (label: string) => ({
@@ -83,10 +96,11 @@ export const uploadConceptListModalUpdateLabel = (label: string) => ({
 
 export const uploadConceptListModalOpen = (fileType: GenericFileType) => {
   const parameters = fileType.parameters;
+
   if (parameters.treeId)
     return fileType.callback && fileType.callback(parameters);
 
-  return { type: UPLOAD_CONCEPT_LIST_MODAL_OPEN, parameters };
+  return { type: UPLOAD_CONCEPT_LIST_MODAL_OPEN, payload: parameters };
 };
 
 export const uploadConceptListModalClose = () => ({
@@ -96,32 +110,22 @@ export const uploadConceptListModalClose = () => ({
 export const uploadConceptListModalAccept = (
   label,
   rootConcepts,
-  resolutionResult,
-  parameters
+  resolutionResult
 ) => {
-  if (parameters.callback)
-    return parameters.callback(label, rootConcepts, resolutionResult);
-
   return {
-    type: parameters.actionType || UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
-    data: { label, rootConcepts, resolutionResult, parameters }
+    type: UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
+    payload: { label, rootConcepts, resolutionResult }
   };
 };
 
 export const acceptAndCloseUploadConceptListModal = (
   label,
   rootConcepts,
-  resolutionResult,
-  parameters
+  resolutionResult
 ) => {
   return dispatch => {
     dispatch([
-      uploadConceptListModalAccept(
-        label,
-        rootConcepts,
-        resolutionResult,
-        parameters
-      ),
+      uploadConceptListModalAccept(label, rootConcepts, resolutionResult),
       uploadConceptListModalClose()
     ]);
   };

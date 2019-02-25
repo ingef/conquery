@@ -59,6 +59,7 @@ queryNodeEditor:
   selectAFilter: "Select a filter to see its description here."
   dropConcept: "Drop another concept here"
   includeSubnodes: "Include subordinate concepts"
+  tooManyValues: "{count} values selected"
 
 queryGroupModal:
   explanation: "Set time frame"

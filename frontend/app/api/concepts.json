@@ -54,7 +54,8 @@
             {
               "id": "production_country",
               "label": "Production Country",
-              "type": "BIG_MULTI_SELECT"
+              "type": "BIG_MULTI_SELECT",
+              "allowDropFile": true
             },
             {
               "id": "budget",
@@ -145,10 +146,7 @@
     "awards": {
       "label": "Awards",
       "active": true,
-      "children": [
-        "academy_award",
-        "golden_globe_award"
-      ],
+      "children": ["academy_award", "golden_globe_award"],
       "detailsAvailable": true,
       "tables": [
         {
@@ -187,9 +185,7 @@
         "australia"
       ],
       "detailsAvailable": true,
-      "tables": [
-        {}
-      ]
+      "tables": [{}]
     }
   }
 }
