@@ -102,4 +102,13 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	public String getName() {
 		return email;
 	}
+	
+	@Override
+	public Set<ConqueryPermission> getPermissions(){
+		Set<ConqueryPermission> permissions = super.getPermissions();
+		for (Mandator mandator : roles) {
+			permissions.addAll(mandator.getPermissions());
+		}
+		return permissions;
+	}
 }
