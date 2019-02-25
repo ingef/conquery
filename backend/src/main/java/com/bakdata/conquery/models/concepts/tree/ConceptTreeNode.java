@@ -13,16 +13,16 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 
 	@JsonManagedReference
 	List<ConceptTreeChild> getChildren();
-	public int getLocalId();
-	public int getDepth();
-	public int[] getPrefix();
+	int getLocalId();
+	int getDepth();
+	int[] getPrefix();
 	@JsonBackReference
-	public ConceptTreeNode getParent();
-	public void setLocalId(int size);
-	public void setDepth(int i);
+	ConceptTreeNode getParent();
+	void setLocalId(int size);
+	void setDepth(int i);
 
-	public TreeChildPrefixIndex getChildIndex();
-	public void setChildIndex(TreeChildPrefixIndex childIndex);
+	TreeChildPrefixIndex getChildIndex();
+	void setChildIndex(TreeChildPrefixIndex childIndex);
 	
-	public MatchingStats getMatchingStats();
+	MatchingStats getMatchingStats();
 }

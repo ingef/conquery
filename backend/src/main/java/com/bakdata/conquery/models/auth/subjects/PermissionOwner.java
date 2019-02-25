@@ -31,16 +31,18 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * The base class of security subjects in this project. Used to represent persons and groups with permissions.
+ * The base class of security subjects in this project. Used to represent
+ * persons and groups with permissions.
  *
- * @param <T> The id type by which an instance is identified
+ * @param <T>
+ *            The id type by which an instance is identified
  */
 @Slf4j
-@JsonIgnoreProperties({"session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals"})
+@JsonIgnoreProperties( { "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Subject {
 
 	@Getter
-	private transient final Set<ConqueryPermission> permissions = new HashSet<>();
+	private final transient Set<ConqueryPermission> permissions = new HashSet<>();
 
 	@Override
 	public Object getPrincipal() {
@@ -77,7 +79,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		throw new UnsupportedOperationException();
 	}
 
-
 	@Override
 	public void checkPermission(Permission permission) throws AuthorizationException {
 		if (!(permission instanceof ConqueryPermission)) {
@@ -91,7 +92,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
 		for (Permission permission : permissions) {
 			if (!(permission instanceof ConqueryPermission)) {
-				throw new AuthorizationException("Supplied permission " + permission + " is not of Type " + ConqueryPermission.class.getName());
+				throw new AuthorizationException(
+					"Supplied permission " + permission + " is not of Type " + ConqueryPermission.class.getName());
 			}
 			ConqueryPermission owned = ((ConqueryPermission) permission).withOwner(this.getId());
 			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), owned);
@@ -188,7 +190,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		throw new UnsupportedOperationException();
 	}
 
-
 	@Override
 	public boolean isAuthenticated() {
 		throw new UnsupportedOperationException();
@@ -200,9 +201,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 
 	/**
-	 * For keeping local permissions in sync with stored permissions.Is used by the storage.
+	 * For keeping local permissions in sync with stored permissions.Is used by the
+	 * storage.
 	 *
 	 * @param permission
+	 *            The permission to add.
 	 */
 	public synchronized void addPermissionLocal(ConqueryPermission permission) {
 		ConqueryPermission ownedPermission = permission;
@@ -213,14 +216,18 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 
 	/**
-	 * Adds a permission to the storage and to the locally stored permissions by calling
-	 * indirectly {@link #addPermissionLocal(ConqueryPermission)}.
+	 * Adds a permission to the storage and to the locally stored permissions by
+	 * calling indirectly {@link #addPermissionLocal(ConqueryPermission)}.
 	 *
 	 * @param storage
+	 *            A storage where the permission are added for persistence.
 	 * @param permission
-	 * @return Returns the added Permission (Id might changed when the owner changed or
-	 * permissions are aggregated
-	 * @throws com.bakdata.conquery.models.exceptions.JSONException
+	 *            The permission to add.
+	 * @return Returns the added Permission (Id might change when the owner changed
+	 *         or permissions are aggregated)
+	 * @throws JSONException
+	 *             When the permission object could not be formed in to the
+	 *             appropriate JSON format.
 	 */
 	public synchronized ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
 		ConqueryPermission ownedPermission = permission;
@@ -233,14 +240,16 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		if (sameTarget.isPresent()) {
 			// found permission with the same target
 			ConqueryPermission oldPermission = sameTarget.get();
-			if(oldPermission.equals(ownedPermission)) {
+			if (oldPermission.equals(ownedPermission)) {
 				// is actually the same permission
 				log.info("User {} has already permission {}.", this, ownedPermission);
 				return ownedPermission;
-			} else {
+			}
+			else {
 				// new permission has different ability
-				List<ConqueryPermission> reducedPermission = ConqueryPermission.reduceByOwnerAndTarget(Arrays.asList(oldPermission, ownedPermission));
-				removePermission(storage,oldPermission);
+				List<ConqueryPermission> reducedPermission = ConqueryPermission
+					.reduceByOwnerAndTarget(Arrays.asList(oldPermission, ownedPermission));
+				removePermission(storage, oldPermission);
 				// has only one entry as permissions only differ in the ability
 				ownedPermission = reducedPermission.get(0);
 			}
@@ -251,10 +260,13 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 
 	/**
-	 * Removes a permission from the storage and from the locally stored permissions by calling
+	 * Removes a permission from the storage and from the locally stored permissions
+	 * by calling.
 	 *
-	 * @param storage    The storage in which the permission persists.
-	 * @param permission The permission to be deleted.
+	 * @param storage
+	 *            The storage in which the permission persists.
+	 * @param permission
+	 *            The permission to be deleted.
 	 */
 	public synchronized void removePermission(MasterMetaStorage storage, ConqueryPermission permission) {
 		permissions.remove(permission);
@@ -274,9 +286,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 
 	/**
-	 * Owns the permission and checks if it is permitted by only regarding owner specific permissions.Inherit permission from roles are not checked.
+	 * Owns the permission and checks if it is permitted by only regarding owner
+	 * specific permissions. Inherit permission from roles are not checked.
 	 *
 	 * @param permission
+	 *            The permission to check.
 	 */
 	public boolean isPermittedSelfOnly(ConqueryPermission permission) {
 		return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);

@@ -7,7 +7,7 @@
     <parent>
         <groupId>com.bakdata.conquery</groupId>
         <artifactId>parent</artifactId>
-        <version>2.0.0-rc.2</version>
+        <version>${version}</version>
     </parent>
 
 
@@ -47,7 +47,7 @@
             <plugin>
                 <groupId>com.github.eirslett</groupId>
                 <artifactId>frontend-maven-plugin</artifactId>
-                <version>1.6</version>
+                <version>1.7.5</version>
                 <executions>
                     <execution>
                         <id>install node and yarn</id>
@@ -83,6 +83,17 @@
 
                         <configuration>
                             <arguments>build</arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>yarn set version</id>
+                        <goals>
+                            <goal>yarn</goal>
+                        </goals>
+                        <phase>generate-resources</phase>
+
+                        <configuration>
+                            <arguments>version --no-git-tag-version --new-version ${version}</arguments>
                         </configuration>
                     </execution>
                     <execution>

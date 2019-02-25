@@ -23,8 +23,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Iterators;
 
-import jersey.repackaged.com.google.common.collect.Iterators;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -61,7 +61,7 @@ public class StoredQueriesProcessor {
 			storage.updateQuery(query);
 		} else if (patch.has("shared")) {
 			authorize(user, queryId, Ability.SHARE);
-			QueryPermission queryPermission = new QueryPermission(null, AbilitySets.QUERY_EXECUTOR, queryId);
+			QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, queryId);
 			boolean shared = patch.get("shared").asBoolean();
 			user.getRoles().forEach((Mandator mandator) -> {
 				try {

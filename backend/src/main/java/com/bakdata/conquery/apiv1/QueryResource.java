@@ -37,53 +37,40 @@ import io.dropwizard.auth.Auth;
 @PermitAll
 public class QueryResource {
 
-    private final QueryProcessor processor;
-    private final ResourceUtil dsUtil;
+	private final QueryProcessor processor;
+	private final ResourceUtil dsUtil;
 
-    public QueryResource(Namespaces namespaces, MasterMetaStorage storage) {
-        this.processor = new QueryProcessor(namespaces, storage);
-        this.dsUtil = new ResourceUtil(namespaces);
-    }
+	public QueryResource(Namespaces namespaces, MasterMetaStorage storage) {
+		this.processor = new QueryProcessor(namespaces, storage);
+		this.dsUtil = new ResourceUtil(namespaces);
+	}
 
 	@POST
 	public SQStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 		// Check reused query
-		for(ManagedQueryId requiredQueryId : query.collectRequiredQueries()) {
+		for (ManagedQueryId requiredQueryId : query.collectRequiredQueries()) {
 			authorize(user, requiredQueryId, Ability.READ);
 		}
-		
-        return processor.postQuery(
-                dsUtil.getDataset(datasetId),
-                query,
-                URLBuilder.fromRequest(req),
-                user
-        );
-    }
 
-    @DELETE
-    @Path("{" + QUERY + "}")
-    public SQStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws SQLException {
-        authorize(user, datasetId, Ability.READ);
-        authorize(user, queryId, Ability.READ);
+		return processor.postQuery(dsUtil.getDataset(datasetId), query, URLBuilder.fromRequest(req), user);
+	}
 
-        return processor.cancel(
-                dsUtil.getDataset(datasetId),
-                dsUtil.getManagedQuery(datasetId, queryId),
-                URLBuilder.fromRequest(req)
-        );
-    }
+	@DELETE
+	@Path("{" + QUERY + "}")
+	public SQStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws SQLException {
+		authorize(user, datasetId, Ability.READ);
+		authorize(user, queryId, Ability.READ);
 
-    @GET
-    @Path("{" + QUERY + "}")
-    public SQStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws InterruptedException {
-        authorize(user, datasetId, Ability.READ);
-        authorize(user, queryId, Ability.READ);
+		return processor.cancel(dsUtil.getDataset(datasetId), dsUtil.getManagedQuery(datasetId, queryId), URLBuilder.fromRequest(req));
+	}
 
-        return processor.getStatus(
-                dsUtil.getDataset(datasetId),
-                dsUtil.getManagedQuery(datasetId, queryId),
-                URLBuilder.fromRequest(req)
-        );
-    }
+	@GET
+	@Path("{" + QUERY + "}")
+	public SQStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws InterruptedException {
+		authorize(user, datasetId, Ability.READ);
+		authorize(user, queryId, Ability.READ);
+
+		return processor.getStatus(dsUtil.getDataset(datasetId), dsUtil.getManagedQuery(datasetId, queryId), URLBuilder.fromRequest(req));
+	}
 }
