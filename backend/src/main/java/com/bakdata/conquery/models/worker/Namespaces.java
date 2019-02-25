@@ -15,6 +15,9 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.IdMap;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -79,5 +82,9 @@ public class Namespaces implements NamespaceCollection {
 
 	public Collection<Namespace> getNamespaces() {
 		return datasets.values();
+	}
+	
+	public <TYPE extends Identifiable<?>, ID extends IId<TYPE>&NamespacedId> TYPE resolve(ID id) {
+		return get(id.getDataset()).getStorage().getCentralRegistry().resolve(id);
 	}
 }

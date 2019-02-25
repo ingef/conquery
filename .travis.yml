@@ -13,10 +13,12 @@ jobs:
       
     #test frontend
       name: "Frontend Tests"
-      install:
-        -  cd frontend
-        -  mvn  -B -V install -DskipTests
-      script: mvn -B test
+      install: skip
+      script:
+        - mvn -B -V install -N
+        - mvn -B -V install -pl frontend
+        - mvn -B -V install -pl backend -DskipTests
+        - mvn -B -V package -pl executable 
 
     #build backend and run all non-integration tests
     - name: "Unit Tests"
@@ -103,7 +105,9 @@ jobs:
     - stage: "Release"
       if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
       before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
-      install: mvn -B -V -T 1C package -DskipTests -Dversion=$TRAVIS_TAG
+      install:
+        - mvn versions:set -DnewVersion="$TRAVIS_TAG" versions:commit
+        - mvn -B -V -T 1C package -DskipTests
       script: skip
       deploy:
         provider: releases

@@ -20,10 +20,15 @@ public abstract class AId<TYPE> implements IId<TYPE> {
 	
 	@Override @JsonValue
 	public String toString() {
-		List<Object> components = new ArrayList<>();
-		this.collectComponents(components);
+		List<Object> components = getComponents();
 		components.replaceAll(o->ConqueryEscape.escape(Objects.toString(o)));
 		return IId.JOINER.join(components);
+	}
+
+	public List<Object> getComponents() {
+		List<Object> components = new ArrayList<>();
+		this.collectComponents(components);
+		return components;
 	}
 
 	public abstract void collectComponents(List<Object> components);
