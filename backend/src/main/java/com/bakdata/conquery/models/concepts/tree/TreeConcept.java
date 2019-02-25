@@ -22,11 +22,11 @@ import javax.validation.ConstraintViolation;
 import javax.validation.Validator;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -54,7 +54,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private TreeChildPrefixIndex childIndex;
 
 	@JsonIgnore
-	private Map<ImportId, ConceptTreeCache> caches = new HashMap<>();
+	private Map<ImportId, ConceptTreeCache> caches = new ConcurrentHashMap<>();
 
 	public ConceptTreeCache getCache(ImportId importId){
 		return caches.get(importId);

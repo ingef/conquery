@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.jobs;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Connector;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
@@ -88,7 +89,10 @@ public class CalculateCBlocksJob extends Job {
 
 		cBlock.setMostSpecificChildren(new ArrayList<>(info.getBlock().size()));
 		Block block = info.getBlock();
-		for(int event = 0 ; event<block.size(); event++) {
+
+		final ConceptTreeCache cache = treeConcept.getCache(importId);
+
+		for(int event = 0; event < block.size(); event++) {
 			try {
 				if(block.has(event, connector.getColumn())) {
 					int valueIndex = block.getString(event, connector.getColumn());
@@ -97,7 +101,7 @@ public class CalculateCBlocksJob extends Job {
 							() -> block.calculateMap(finalEvent, info.getImp())
 					);
 
-					ConceptTreeChild child = treeConcept.getCache(importId).findMostSpecificChild(valueIndex, rowMap);
+					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
 
 					if (child != null) {
 						cBlock.getMostSpecificChildren().add(child.getPrefix());
@@ -118,10 +122,10 @@ public class CalculateCBlocksJob extends Job {
 		//see #175  metrics candidate
 		log.trace(
 				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-				treeConcept.getCache(importId).getHits(),
-				treeConcept.getCache(importId).getMisses(),
-				(double) treeConcept.getCache(importId).getHits() / treeConcept.getCache(importId).getMisses(),
-				(double) treeConcept.getCache(importId).getHits() / (treeConcept.getCache(importId).getHits() + treeConcept.getCache(importId).getMisses())
+				cache.getHits(),
+				cache.getMisses(),
+				(double) cache.getHits() / cache.getMisses(),
+				(double) cache.getHits() / (cache.getHits() + cache.getMisses())
 		);
 	}
 
