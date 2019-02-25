@@ -13,13 +13,12 @@ jobs:
       
     #test frontend
       name: "Frontend Tests"
-      install:
-        - mvn -B -V install -DskipTests
+      install: skip
       script:
-        - cd frontend
-        - mvn -B test
-        - cd ../executable
-        - mvn -B test
+        - mvn -B -B install -N
+        - mvn -B -V install -pl frontend
+        - mvn -B -V install -pl backend -DskipTests
+        - mvn -B -V package -pl executable 
 
     #build backend and run all non-integration tests
     - name: "Unit Tests"

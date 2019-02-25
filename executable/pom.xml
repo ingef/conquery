@@ -54,12 +54,12 @@
         <dependency>
             <groupId>com.bakdata.conquery</groupId>
             <artifactId>backend</artifactId>
-            <version>${project.version}</version>
+            <version>${version}</version>
         </dependency>
         <dependency>
             <groupId>com.bakdata.conquery</groupId>
             <artifactId>frontend</artifactId>
-            <version>${project.version}</version>
+            <version>${version}</version>
         </dependency>
         <dependency>
         	<groupId>org.assertj</groupId>
