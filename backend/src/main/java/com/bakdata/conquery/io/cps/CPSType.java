@@ -7,9 +7,9 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
+@Target(ElementType.TYPE)
 @Repeatable(CPSTypes.class)
 public @interface CPSType {
-	public String id();
-	public Class<?> base();
+	String id();
+	Class<?> base();
 }

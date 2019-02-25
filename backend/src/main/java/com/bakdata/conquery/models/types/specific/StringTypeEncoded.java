@@ -67,7 +67,7 @@ public class StringTypeEncoded extends StringType implements IStringType {
 		@Getter
 		private final BaseEncoding encoding;
 
-		private Encoding(BaseEncoding encoding) {
+		Encoding(BaseEncoding encoding) {
 			this.encoding = encoding;
 		}
 
