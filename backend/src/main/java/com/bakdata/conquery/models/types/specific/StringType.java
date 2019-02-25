@@ -49,8 +49,13 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	}
 
 
-	@Override
+	@Override @Deprecated
 	public String createScriptValue(Integer value) {
+		return createScriptValue(value.intValue());
+	}
+	
+	@Override
+	public String createScriptValue(int value) {
 		return dictionary.getElement(value);
 	}
 
