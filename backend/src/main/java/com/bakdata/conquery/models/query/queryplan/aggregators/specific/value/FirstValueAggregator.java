@@ -28,7 +28,11 @@ public class FirstValueAggregator extends SingleColumnAggregator<Object> {
 
 	@Override
 	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+		//TODO check if has validity date
+
+		//TODO pass out type::createPrintValue from getAggregationResult
+
+		if (!block.has(event, getColumn()) || ! block.has(event, validityDateColumn)) {
 			return;
 		}
 
@@ -36,7 +40,7 @@ public class FirstValueAggregator extends SingleColumnAggregator<Object> {
 
 		if (next < date) {
 			date = next;
-			value = block.getAsObject(event, getColumn());
+			value = getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn()));
 		}
 	}
 

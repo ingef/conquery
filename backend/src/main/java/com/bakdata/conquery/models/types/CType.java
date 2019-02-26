@@ -74,6 +74,8 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?,?>> implements
 		return value;
 	}
 
+	public Object createPrintValue(JAVA_TYPE value) { return createScriptValue(value); }
+
 	public void writeHeader(OutputStream out) throws IOException {}
 	public void readHeader(JsonParser input) throws IOException {}
 	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {}

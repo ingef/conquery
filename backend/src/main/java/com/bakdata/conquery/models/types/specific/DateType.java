@@ -22,4 +22,9 @@ public class DateType extends CType<Integer, DateType> {
 	@Override public Object createScriptValue(Integer value) {
 		return CDate.toLocalDate(value).toString();
 	}
+
+	@Override
+	public Object createPrintValue(Integer value) {
+		return CDate.toLocalDate(value);
+	}
 }

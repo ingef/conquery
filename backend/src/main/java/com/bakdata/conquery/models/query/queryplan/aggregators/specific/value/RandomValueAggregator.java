@@ -1,10 +1,10 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
+import java.util.Random;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-
-import java.util.Random;
 
 public class RandomValueAggregator extends SingleColumnAggregator<Object> {
 
@@ -37,7 +37,7 @@ public class RandomValueAggregator extends SingleColumnAggregator<Object> {
 		nValues++;
 
 		if (random.nextInt(nValues) == 0) {
-			value = block.getAsObject(event, getColumn());
+			value = getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn()));
 		}
 	}
 

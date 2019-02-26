@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
-
-import java.util.HashSet;
-import java.util.Set;
 
 /**
  * Entity is included when the number of values for a specified column are
@@ -22,7 +22,7 @@ public class AllValuesAggregator extends SingleColumnAggregator<Set<Object>> {
 	@Override
 	public void aggregateEvent(Block block, int event) {
 		if (block.has(event, getColumn())) {
-			entries.add(block.getAsObject(event, getColumn()));
+			entries.add(getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn())));
 		}
 	}
 
