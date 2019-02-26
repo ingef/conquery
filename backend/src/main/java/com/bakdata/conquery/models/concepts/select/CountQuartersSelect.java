@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.query.select.Select;
  * Implementation is specific for DateRanges
  */
 @CPSType(id = "COUNT_QUARTERS", base = Select.class)
-public class CountQuartersSelect extends ColumnSelect {
+public class CountQuartersSelect extends SingleColumnSelect {
 
 	@Override
 	protected Aggregator<?> createAggregator() {

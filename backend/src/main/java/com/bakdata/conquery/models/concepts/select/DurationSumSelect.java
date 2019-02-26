@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Duration
 import com.bakdata.conquery.models.query.select.Select;
 
 @CPSType(id = "DURATION_SUM", base = Select.class)
-public class DurationSumSelect extends ColumnSelect {
+public class DurationSumSelect extends SingleColumnSelect {
 
 	@Override
 	protected Aggregator<?> createAggregator() {

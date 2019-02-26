@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.La
 import com.bakdata.conquery.models.query.select.Select;
 
 @CPSType(id = "LAST", base = Select.class)
-public class LastValueSelect extends ColumnSelect {
+public class LastValueSelect extends SingleColumnSelect {
 
 	@Override
 	protected Aggregator<?> createAggregator() {

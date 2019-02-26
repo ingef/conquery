@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.Ra
 import com.bakdata.conquery.models.query.select.Select;
 
 @CPSType(id = "RANDOM", base = Select.class)
-public class RandomValueSelect extends ColumnSelect {
+public class RandomValueSelect extends SingleColumnSelect {
 
 	@Override
 	protected Aggregator<?> createAggregator() {

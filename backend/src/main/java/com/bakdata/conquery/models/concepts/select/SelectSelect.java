@@ -10,7 +10,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id = "SELECT", base = Select.class)
-public class SelectSelect extends ColumnSelect {
+public class SelectSelect extends SingleColumnSelect {
 
 	@Getter
 	@Setter

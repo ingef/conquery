@@ -6,11 +6,12 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWra
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountDistinctAggregator;
 import com.bakdata.conquery.models.query.select.Select;
+
 import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id = "COUNT", base = Select.class)
-public class CountSelect extends ColumnSelect {
+public class CountSelect extends SingleColumnSelect {
 
 	@Getter
 	@Setter

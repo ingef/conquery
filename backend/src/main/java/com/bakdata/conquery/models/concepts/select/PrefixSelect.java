@@ -9,7 +9,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id = "PREFIX", base = Select.class)
-public class PrefixSelect extends ColumnSelect {
+public class PrefixSelect extends SingleColumnSelect {
 
 	@Getter
 	@Setter
