@@ -8,13 +8,18 @@ const Root = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
+  padding: 2px 8px;
+`;
+
+const Text = styled("p")`
+  margin: 0;
 `;
 
 export default ({ value, onClear }) => (
   <Root>
-    <p>
+    <Text>
       {T.translate("queryNodeEditor.tooManyValues", { count: value.length })}
-    </p>
+    </Text>
     <CloseIconButton
       title={T.translate("common.clearValue")}
       aria-label={T.translate("common.clearValue")}
