@@ -2,7 +2,7 @@ import React from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 
-import CloseIconButton from "../button/CloseIconButton";
+import IconButton from "../button/Iconbutton";
 
 const Root = styled("div")`
   display: flex;
@@ -20,7 +20,8 @@ export default ({ value, onClear }) => (
     <Text>
       {T.translate("queryNodeEditor.tooManyValues", { count: value.length })}
     </Text>
-    <CloseIconButton
+    <IconButton
+      icon="close"
       title={T.translate("common.clearValue")}
       aria-label={T.translate("common.clearValue")}
       onClick={onClear}
