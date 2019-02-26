@@ -13,28 +13,24 @@ import type { StateType } from "../app/reducers";
 import { uploadFilterListModalClose } from "./actions";
 
 type PropsType = {
-  label: string,
   unresolvedItemsCount: number,
   resolvedItemsCount: number,
   loading: boolean,
   isModalOpen: boolean,
   resolved: Object,
   error: Object,
-  onCloseModal: Function,
-  onAccept: Function
+  onCloseModal: Function
 };
 
 const UploadConceptListModal = (props: PropsType) => {
   if (!props.isModalOpen) return null;
 
   const {
-    label,
     loading,
     resolved,
     unresolvedItemsCount,
     resolvedItemsCount,
     error,
-    onAccept,
     onCloseModal
   } = props;
 
@@ -132,7 +128,6 @@ const selectUnresolvedItemsCount = state => {
 
 const mapStateToProps = (state: StateType) => ({
   isModalOpen: state.uploadFilterListModal.isModalOpen,
-  label: state.uploadFilterListModal.label,
   loading: state.uploadFilterListModal.loading,
   resolved: state.uploadFilterListModal.resolved,
   resolvedItemsCount: selectResolvedItemsCount(state),

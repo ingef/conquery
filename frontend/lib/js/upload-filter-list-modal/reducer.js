@@ -1,7 +1,6 @@
 // @flow
 
 import type { FilterValuesResolutionResultType } from "../common/types/backend";
-import { stripFilename } from "../common/helpers/fileHelper";
 
 import {
   MODAL_CLOSE,
@@ -12,7 +11,6 @@ import {
 
 export type StateType = {
   isModalOpen: boolean,
-  label: string,
   loading: boolean,
   resolved: FilterValuesResolutionResultType,
   error: ?Error
@@ -20,7 +18,6 @@ export type StateType = {
 
 const initialState: StateType = {
   isModalOpen: false,
-  label: "",
   loading: false,
   resolved: {},
   error: null
@@ -38,7 +35,7 @@ const uploadFilterListModal = (
         error: null
       };
     case RESOLVE_FILTER_VALUES_SUCCESS:
-      const { data, filename } = action.payload;
+      const { data } = action.payload;
 
       const hasUnresolvedCodes =
         data.unknownCodes && data.unknownCodes.length > 0;
@@ -47,7 +44,6 @@ const uploadFilterListModal = (
         ...state,
         isModalOpen: hasUnresolvedCodes,
         loading: false,
-        label: stripFilename(filename),
         resolved: data
       };
     case RESOLVE_FILTER_VALUES_ERROR:

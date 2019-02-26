@@ -25,8 +25,7 @@ export const resolveFilterValues = (
   treeId,
   tableId,
   filterId,
-  values,
-  filename
+  values
 ) => (dispatch: Dispatch<*>) => {
   dispatch(resolveFilterValuesStart());
 
@@ -34,7 +33,7 @@ export const resolveFilterValues = (
     .postFilterValuesResolve(datasetId, treeId, tableId, filterId, values)
     .then(
       r => {
-        dispatch(resolveFilterValuesSuccess(r, { filename }));
+        dispatch(resolveFilterValuesSuccess(r));
 
         return r;
       },

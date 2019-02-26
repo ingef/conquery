@@ -29,7 +29,6 @@ import {
 } from "../previous-queries/list/actionTypes";
 
 import { UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../upload-concept-list-modal/actionTypes";
-import type { UploadConceptListModalResultType } from "../upload-concept-list-modal/types";
 
 import { INTEGER_RANGE } from "../form-components/filterTypes";
 

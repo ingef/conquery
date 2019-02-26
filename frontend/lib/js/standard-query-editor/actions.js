@@ -197,7 +197,7 @@ export const dropFilterValuesFile = (
   //   }
   // };
   const result = await dispatch(
-    resolveFilterValues(datasetId, treeId, tableId, filterId, rows, file.name)
+    resolveFilterValues(datasetId, treeId, tableId, filterId, rows)
   );
 
   return dispatch(setResolvedFilterValues(result, tableIdx, filterIdx));
