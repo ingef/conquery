@@ -1,25 +1,31 @@
 // @flow
 
-import React                from 'react';
-import classnames           from 'classnames';
+import React from "react";
+import classnames from "classnames";
 
 type PropsType = {
-  label: string,
+  label?: string,
   onClick?: Function,
   className?: string,
   iconClassName?: string,
-  disabled?: boolean,
+  disabled?: boolean
 };
 
 // A button that is prefixed by an icon
-const IconButton = ({ onClick, label, className, iconClassName, disabled }: PropsType) => (
+const IconButton = ({
+  onClick,
+  label,
+  className,
+  iconClassName,
+  disabled
+}: PropsType) => (
   <button
     type="button"
-    className={classnames('btn', className)}
+    className={classnames("btn", className)}
     onClick={onClick}
     disabled={disabled}
   >
-    <i className={classnames('fa', iconClassName)} />  {label}
+    <i className={classnames("fa", iconClassName)} /> {label}
   </button>
 );
 

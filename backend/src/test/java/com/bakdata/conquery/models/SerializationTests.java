@@ -46,7 +46,7 @@ public class SerializationTests {
 	
 	@Test
 	public void datasetPermission() throws IOException, JSONException{
-		DatasetPermission permission = new DatasetPermission(new UserId("user"), Ability.READ.AS_SET, new DatasetId("dataset"));
+		DatasetPermission permission = new DatasetPermission(new UserId("user"), Ability.READ.asSet(), new DatasetId("dataset"));
 		
 		SerializationTestUtil.testSerialization(permission, DatasetPermission.class);
 		
@@ -54,7 +54,7 @@ public class SerializationTests {
 	
 	@Test
 	public void queryPermission() throws IOException, JSONException{
-		QueryPermission permission = new QueryPermission(new UserId("user"), Ability.READ.AS_SET, new ManagedQueryId(new DatasetId("dataset"), UUID.randomUUID()));
+		QueryPermission permission = new QueryPermission(new UserId("user"), Ability.READ.asSet(), new ManagedQueryId(new DatasetId("dataset"), UUID.randomUUID()));
 
 		SerializationTestUtil.testSerialization(permission, QueryPermission.class);
 		
