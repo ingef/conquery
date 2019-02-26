@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.exceptions.validators;
 
-import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Arrays;
@@ -16,7 +15,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 
@@ -64,27 +62,6 @@ public class ValidNameTests {
 			}
 		}
 	}
-	
-	@ParameterizedTest @MethodSource("data")
-	public void makeSafe(String name) {
-		
-		Name wrapper = new Name();
-		wrapper.setName(name);
-		
-		if(!VALIDATOR.validate(wrapper).isEmpty()) {
-			String safeName = Named.makeSafe(name);
-			wrapper.setName(safeName);
-			if(!VALIDATOR.validate(wrapper).isEmpty()) {
-				fail("The safe version '"+safeName+"' was invalid");
-			}
-		}
-	}
-	
-	@ParameterizedTest @MethodSource("data")
-	public void safeSafe(String name) {
-		assertThat(Named.makeSafe(name)).isEqualTo(Named.makeSafe(Named.makeSafe(name)));
-	}
-	
 	
 	static class Name extends NamedImpl<NameId> {
 		@Override

@@ -33,7 +33,7 @@ public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> e
 	public final void setLabel(String label) {
 		this.label=label;
 		if(this.getName()==null) {
-			this.setName(Named.makeSafe(label));
+			this.setName(label);
 		}
 	}
 	
