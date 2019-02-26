@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.concepts.virtual;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -28,10 +29,10 @@ public class VirtualConceptConnector extends Connector {
 	private Filter<?> filter;
 	
 	@Override
-	public Collection<Filter<?>> collectAllFilters() {
+	public List<Filter<?>> collectAllFilters() {
 		return Stream.of(getDateSelectionFilter(), filter).filter(Objects::nonNull).collect(Collectors.toList());
 	}
-/*
+	/*
 	@Override
 	public EventProcessingResult processEvent(Event r) {
 		CDateRange dateRange = extractValidityDates(r);

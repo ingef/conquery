@@ -1,16 +1,13 @@
 // @flow
 
-import { type Dispatch }               from 'redux-thunk';
+import { type Dispatch } from "redux-thunk";
 
-import api                             from '../api';
-import { type DateRangeType }          from '../common/types/backend';
-import { dropFiles }                   from '../file-upload/actions';
-import { conceptFilterValuesResolve }  from '../upload-concept-list-modal/actions';
+import api from "../api";
+import { type DateRangeType } from "../common/types/backend";
+import { dropFiles as fileUploadDropFiles } from "../file-upload/actions";
+import { conceptFilterValuesResolve } from "../upload-concept-list-modal/actions";
 
-import type {
-  DraggedNodeType,
-  DraggedQueryType
-}                                      from './types';
+import type { DraggedNodeType, DraggedQueryType } from "./types";
 import {
   DROP_AND_NODE,
   DROP_OR_NODE,
@@ -35,7 +32,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
   TOGGLE_INCLUDE_SUBNODES
-}                                      from './actionTypes';
+} from "./actionTypes";
 
 export const dropAndNode = (
   item: DraggedNodeType | DraggedQueryType,
@@ -45,7 +42,10 @@ export const dropAndNode = (
   payload: { item, dateRange }
 });
 
-export const dropOrNode = (item: DraggedNodeType | DraggedQueryType, andIdx: number) => ({
+export const dropOrNode = (
+  item: DraggedNodeType | DraggedQueryType,
+  andIdx: number
+) => ({
   type: DROP_OR_NODE,
   payload: { item, andIdx }
 });
@@ -65,7 +65,7 @@ export const toggleExcludeGroup = (andIdx: number) => ({
   payload: { andIdx }
 });
 
-export const loadQuery = (query) => ({
+export const loadQuery = query => ({
   type: LOAD_QUERY,
   payload: { query }
 });
@@ -84,9 +84,15 @@ export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
 
 export const deselectNode = () => ({ type: DESELECT_NODE });
 
-export const updateNodeLabel = (label) => ({ type: UPDATE_NODE_LABEL, label });
-export const addConceptToNode = (concept) => ({ type: ADD_CONCEPT_TO_NODE, concept });
-export const removeConceptFromNode = (conceptId) => ({ type: REMOVE_CONCEPT_FROM_NODE, conceptId });
+export const updateNodeLabel = label => ({ type: UPDATE_NODE_LABEL, label });
+export const addConceptToNode = concept => ({
+  type: ADD_CONCEPT_TO_NODE,
+  concept
+});
+export const removeConceptFromNode = conceptId => ({
+  type: REMOVE_CONCEPT_FROM_NODE,
+  conceptId
+});
 
 export const toggleTable = (tableIdx, isExcluded) => ({
   type: TOGGLE_TABLE,
@@ -108,22 +114,31 @@ export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
   payload: { tableIdx, filterIdx, mode }
 });
 
-export const toggleTimestamps = (isExcluded) => ({
+export const toggleTimestamps = isExcluded => ({
   type: TOGGLE_TIMESTAMPS,
   payload: { isExcluded }
 });
 
-export const toggleIncludeSubnodes = (includeSubnodes) => ({
+export const toggleIncludeSubnodes = includeSubnodes => ({
   type: TOGGLE_INCLUDE_SUBNODES,
   payload: { includeSubnodes }
 });
 
-export const loadFilterSuggestionsStart = (tableIdx, conceptId, filterIdx, prefix) => ({
+export const loadFilterSuggestionsStart = (
+  tableIdx,
+  conceptId,
+  filterIdx,
+  prefix
+) => ({
   type: LOAD_FILTER_SUGGESTIONS_START,
   payload: { tableIdx, conceptId, filterIdx, prefix }
 });
 
-export const loadFilterSuggestionsSuccess = (suggestions, tableIdx, filterIdx) => ({
+export const loadFilterSuggestionsSuccess = (
+  suggestions,
+  tableIdx,
+  filterIdx
+) => ({
   type: LOAD_FILTER_SUGGESTIONS_SUCCESS,
   payload: {
     suggestions,
@@ -139,24 +154,42 @@ export const loadFilterSuggestionsError = (error, tableIdx, filterIdx) => ({
     ...error,
     tableIdx,
     filterIdx
-  },
+  }
 });
 
-export const loadFilterSuggestions =
-  (datasetId, tableIdx, tableId, conceptId, filterIdx, filterId, prefix) => {
-    return (dispatch: Dispatch) => {
-      dispatch(loadFilterSuggestionsStart(tableIdx, conceptId, filterIdx, prefix));
+export const loadFilterSuggestions = (
+  datasetId,
+  tableIdx,
+  tableId,
+  conceptId,
+  filterIdx,
+  filterId,
+  prefix
+) => {
+  return (dispatch: Dispatch) => {
+    dispatch(
+      loadFilterSuggestionsStart(tableIdx, conceptId, filterIdx, prefix)
+    );
 
-      return api.postPrefixForSuggestions(datasetId, conceptId, tableId, filterId, prefix)
-        .then(
-          r => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
-          e => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
-        );
-    };
-  }
+    return api
+      .postPrefixForSuggestions(datasetId, conceptId, tableId, filterId, prefix)
+      .then(
+        r => dispatch(loadFilterSuggestionsSuccess(r, tableIdx, filterIdx)),
+        e => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
+      );
+  };
+};
 
-export const onDropFiles = (datasetId, treeId, tableIdx, tableId, filterIdx, filterId, files) =>
-  dropFiles(files, {
+export const dropFiles = (
+  datasetId,
+  treeId,
+  tableIdx,
+  tableId,
+  filterIdx,
+  filterId,
+  files
+) =>
+  fileUploadDropFiles(files, {
     parameters: {
       actionType: SET_RESOLVED_FILTER_VALUES,
       datasetId,

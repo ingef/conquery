@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
-import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -24,12 +24,11 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.query.IQuery;
@@ -41,6 +40,7 @@ import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
+import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.extern.slf4j.Slf4j;
 
@@ -95,19 +95,31 @@ public class AdminUIResource {
 		return Response.ok().build();
 	}
 	
+	/**
+	 * End point for retrieving information about a specific mandator.
+	 * @param mandatorId Unique id of the mandator.
+	 * @return A view holding the information about the mandator.
+	 */
 	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
 	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
 		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
 	}
 	
 	@POST
-	@Path("/permissions/dataset")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postDatasetPermission(
-		@NotNull @FormDataParam("permissionowner_id") PermissionOwnerId<?> ownerId,
-		@NotEmpty @FormDataParam("abilities") List<String> abilities,
-		@NotNull @FormDataParam("dataset_id") DatasetId datasetId) throws JSONException {
-		processor.createDatasetPermission(ownerId, abilities, datasetId);
+	@Path("/permissions/")
+	@Consumes(ExtraMimeTypes.JSON_STRING)
+	public Response createPermission(
+		ConqueryPermission permission) throws JSONException {
+		processor.createPermission(permission);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("/permissions/")
+	@Consumes(ExtraMimeTypes.JSON_STRING)
+	public Response deletePermission(
+		ConqueryPermission permission) throws JSONException {
+		processor.deletePermission(permission);
 		return Response.ok().build();
 	}
 
@@ -115,8 +127,8 @@ public class AdminUIResource {
 	@Consumes(ExtraMimeTypes.JSON_STRING)
 	@POST
 	@Path("/query")
-	public String query(IQuery query) throws JSONException {
-		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, DevAuthConfig.USER);
+	public String query(@Auth User user, IQuery query) throws JSONException {
+		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, user);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 

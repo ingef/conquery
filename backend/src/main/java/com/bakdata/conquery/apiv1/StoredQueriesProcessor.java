@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -21,10 +22,12 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryStatus;
+import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Iterators;
 
-import jersey.repackaged.com.google.common.collect.Iterators;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -39,7 +42,13 @@ public class StoredQueriesProcessor {
 	public List<SQStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
 		Collection<ManagedQuery> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllQueries();
 
-		return allQueries.stream().map(mq -> SQStatus.buildFromQuery(namespaces.getMetaStorage(), mq, URLBuilder.fromRequest(req))).collect(Collectors.toList());
+		return allQueries
+			.stream()
+			.filter(q -> q.getStatus() == QueryStatus.DONE)
+			//to exclude subtypes from somewhere else
+			.filter(q -> q.getQuery().getClass().equals(ConceptQuery.class))
+			.map(mq -> SQStatus.buildFromQuery(namespaces.getMetaStorage(), mq, URLBuilder.fromRequest(req)))
+			.collect(Collectors.toList());
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedQuery query) {
@@ -61,7 +70,7 @@ public class StoredQueriesProcessor {
 			storage.updateQuery(query);
 		} else if (patch.has("shared")) {
 			authorize(user, queryId, Ability.SHARE);
-			QueryPermission queryPermission = new QueryPermission(null, AbilitySets.QUERY_EXECUTOR, queryId);
+			QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, queryId);
 			boolean shared = patch.get("shared").asBoolean();
 			user.getRoles().forEach((Mandator mandator) -> {
 				try {

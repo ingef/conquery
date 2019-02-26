@@ -44,7 +44,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 
 	@Override
 	public boolean[] isPermitted(List<Permission> permissions) {
-		boolean ret[] = new boolean[permissions.size()];
+		boolean[] ret = new boolean[permissions.size()];
 		for(int i = 0; i < permissions.size(); ++i) {
 			ret[i] = isPermitted(permissions.get(i));
 		}

@@ -31,61 +31,59 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
 
-    protected Set<String> values;
-    protected Map<String, String> labels = Collections.emptyMap();
-    protected boolean matchLabels = false;
-    @JsonIgnore
-    protected Map<String, String> realLabels;
-    @JsonIgnore
-    protected Map<String, String> labelsToRealLabels;
-    @JsonIgnore
-    protected transient QuickSearch sourceSearch;
+	protected Set<String> values;
+	protected Map<String, String> labels = Collections.emptyMap();
+	protected boolean matchLabels = false;
+	@JsonIgnore
+	protected Map<String, String> realLabels;
+	@JsonIgnore
+	protected Map<String, String> labelsToRealLabels;
+	@JsonIgnore
+	protected transient QuickSearch sourceSearch;
 
-    @JsonIgnore
-    private final int maximumSize;
-    @JsonIgnore
-    private final FEFilterType filterType;
+	@JsonIgnore
+	private final int maximumSize;
+	@JsonIgnore
+	private final FEFilterType filterType;
 
-    @Override
-    public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
-        return EnumSet.of(MajorTypeId.STRING);
-    }
+	@Override
+	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
+		return EnumSet.of(MajorTypeId.STRING);
+	}
 
-    @Override
-    public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
-        f.setType(filterType);
+	@Override
+	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+		f.setType(filterType);
 
 //		if (maximumSize != -1 && values.size() > maximumSize) {
 //			throw new ConceptConfigurationException(getConnector(),
 //				String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
 //		}
-        if (values != null) {
-            realLabels = values.stream()
-                    .limit(200)
-                    .collect(Collectors.toMap(Function.identity(), e -> {
-                        String r = labels.get(e);
-                        return r == null ? e : r;
-                    }));
+		if (values != null) {
+			realLabels = values.stream().limit(200).collect(Collectors.toMap(Function.identity(), e -> {
+				String r = labels.get(e);
+				return r == null ? e : r;
+			}));
 
-            f.setOptions(FEValue.fromLabels(realLabels));
-        }
-    }
+			f.setOptions(FEValue.fromLabels(realLabels));
+		}
+	}
 
-    public String resolveValueToRealValue(String value) {
-        if (realLabels.containsKey(value)) {
-            return value;
-        }
-        if (labelsToRealLabels.containsKey(value)) {
-            return labelsToRealLabels.get(value);
-        }
-        return null;
-    }
+	public String resolveValueToRealValue(String value) {
+		if (realLabels.containsKey(value)) {
+			return value;
+		}
+		if (labelsToRealLabels.containsKey(value)) {
+			return labelsToRealLabels.get(value);
+		}
+		return null;
+	}
 
-    @Override
-    public void addImport(Import imp) {
-        if (values == null) {
-            values = new HashSet<>();
-        }
-        values.addAll(Sets.newHashSet(((IStringType) getColumn().getTypeFor(imp)).iterator()));
-    }
+	@Override
+	public void addImport(Import imp) {
+		if (values == null) {
+			values = new HashSet<>();
+		}
+		values.addAll(Sets.newHashSet(((IStringType) getColumn().getTypeFor(imp)).iterator()));
+	}
 }
