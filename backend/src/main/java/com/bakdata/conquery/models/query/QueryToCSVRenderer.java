@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Comparator;
 import java.util.stream.Stream;
+
+import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -27,7 +30,7 @@ public class QueryToCSVRenderer {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query" + query.getId());
 		}
 		return Stream.concat(
-			Stream.of(HEADER + DELIMETER + JOINER.join(query.getResultHeader())), 
+			Stream.of(HEADER + DELIMETER + JOINER.join(query.getResultHeader())),
 			createCSVBody(query)
 		);
 	}
@@ -36,18 +39,24 @@ public class QueryToCSVRenderer {
 		return query.getResults()
 			.stream()
 			.flatMap(ContainedEntityResult::filterCast)
+			.map(result -> Pair.of(createId(result), result))
+			.sorted(Comparator.comparing(Pair::getKey))
 			.flatMap(this::createCSVLine);
 	}
 
-	private Stream<String> createCSVLine(ContainedEntityResult cer) {
+	private String createId(ContainedEntityResult cer) {
 		Dictionary dict = namespace.getStorage().getPrimaryDictionary();
-		String idPart = JOINER.join(
+		return JOINER.join(
 			ID_MAPPING
 				.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace)
 				.getExternalId()
 		);
-		return cer
+	}
+	
+	private Stream<String> createCSVLine(Pair<String, ContainedEntityResult> idResult) {
+		return idResult
+			.getValue()
 			.streamValues()
-			.map(result -> idPart + DELIMETER + JOINER.join(result));
+			.map(result -> idResult.getKey() + DELIMETER + JOINER.join(result));
 	}
 }
