@@ -41,7 +41,6 @@
 						<goals>
 							<goal>revision</goal>
 						</goals>
-						<phase>generate-resources</phase>
 					</execution>
 					<execution>
 						<id>validate-the-git-infos</id>
