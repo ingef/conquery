@@ -30,10 +30,6 @@ public class FirstValueAggregator extends SingleColumnAggregator<Object> {
 
 	@Override
 	public void aggregateEvent(Block block, int event) {
-		//TODO check if has validity date
-
-		//TODO pass out type::createPrintValue from getAggregationResult
-
 		if (!block.has(event, getColumn()) || ! block.has(event, validityDateColumn)) {
 			return;
 		}
