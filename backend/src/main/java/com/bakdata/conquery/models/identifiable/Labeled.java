@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.identifiable;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.google.common.base.CharMatcher;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -14,6 +15,8 @@ import lombok.ToString;
 
 @Getter @Setter @NoArgsConstructor @EqualsAndHashCode(callSuper=true) @AllArgsConstructor
 public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> extends NamedImpl<ID> {
+	
+	private static final CharMatcher DEFAULT_NAME_UNWANTED = CharMatcher.is(IId.JOIN_CHAR).or(CharMatcher.whitespace());
 	
 	@NotEmpty @ToString.Include
 	private String label;
@@ -33,10 +36,14 @@ public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> e
 	public final void setLabel(String label) {
 		this.label=label;
 		if(this.getName()==null) {
-			this.setName(label);
+			this.setName(makeDefaultName(label));
 		}
 	}
 	
+	private String makeDefaultName(String label) {
+		return DEFAULT_NAME_UNWANTED.replaceFrom(label.toLowerCase(), "_");
+	}
+
 	@Override
 	public final void setName(String name) {
 		super.setName(name);
