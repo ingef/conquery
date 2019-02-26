@@ -19,6 +19,7 @@ import {
   dropOrNode,
   deleteNode,
   deleteGroup,
+  dropConceptListFile,
   toggleExcludeGroup,
   expandPreviousQuery,
   selectNodeForEditing
@@ -35,8 +36,6 @@ type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
   dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
-  dropFiles: (DraggedFileType, ?GenericFileType) => void,
-  dropFilesAndIdx: (DraggedFileType, ?number) => void,
   dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
   deleteNode: Function,
   deleteGroup: Function,
@@ -56,7 +55,7 @@ const Query = (props: PropsType) => {
         <QueryEditorDropzone
           isInitial
           onDropNode={item => props.dropAndNode(item)}
-          onDropFiles={props.dropFiles}
+          onDropFile={props.dropConceptListFile}
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
       )}
@@ -70,7 +69,7 @@ const Query = (props: PropsType) => {
                 group={group}
                 andIdx={andIdx}
                 onDropNode={item => props.dropOrNode(item, andIdx)}
-                onDropFiles={item => props.dropFilesAndIdx(item, andIdx)}
+                onDropFile={file => props.dropConceptListFile(file, andIdx)}
                 onDeleteNode={orIdx => props.deleteNode(andIdx, orIdx)}
                 onDeleteGroup={orIdx => props.deleteGroup(andIdx, orIdx)}
                 onFilterClick={orIdx =>
@@ -90,9 +89,7 @@ const Query = (props: PropsType) => {
                 <QueryEditorDropzone
                   isAnd
                   onDropNode={item => props.dropAndNode(item, props.dateRange)}
-                  onDropFiles={item =>
-                    props.dropFilesDateRangeType(item, props.dateRange)
-                  }
+                  onDropFile={file => props.dropConceptListFile(file)}
                   onLoadPreviousQuery={props.loadPreviousQuery}
                 />
               </div>
@@ -114,8 +111,8 @@ function mapStateToProps(state) {
 
 const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
-  // dropFiles: (item, type) => dispatch(dropFiles(item, type)),
-  // dropFilesAndIdx: (item, andIdx) => dispatch(dropFilesAndIdx(item, andIdx)),
+  dropConceptListFile: (file, andIdx) =>
+    dispatch(dropConceptListFile(file, andIdx)),
   dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
   deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
   deleteGroup: (andIdx, orIdx) => dispatch(deleteGroup(andIdx, orIdx)),

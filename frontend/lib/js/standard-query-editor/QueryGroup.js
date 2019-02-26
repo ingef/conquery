@@ -1,49 +1,49 @@
 // @flow
 
-import React                   from 'react';
-import T                       from 'i18n-react';
+import React from "react";
+import T from "i18n-react";
 
-import { type DraggedNodeType } from '../model/node';
+import { type DraggedNodeType } from "../model/node";
 
-import { QueryEditorDropzone } from './QueryEditorDropzone';
-import QueryNode               from './QueryNode';
-import QueryGroupActions       from './QueryGroupActions';
-import type { QueryGroupType } from './types';
+import { QueryEditorDropzone } from "./QueryEditorDropzone";
+import QueryNode from "./QueryNode";
+import QueryGroupActions from "./QueryGroupActions";
+import type { QueryGroupType } from "./types";
 
 type PropsType = {
   group: QueryGroupType,
   andIdx: number,
-  onDropNode: (DraggedNodeType) => void,
-  onDropFiles: Function,
+  onDropNode: DraggedNodeType => void,
+  onDropFile: Function,
   onDeleteNode: Function,
   onFilterClick: Function,
   onExcludeClick: Function,
   onExpandClick: Function,
   onDateClick: Function,
   onDeleteGroup: Function,
-  onLoadPreviousQuery: Function,
+  onLoadPreviousQuery: Function
 };
 
 const QueryGroup = (props: PropsType) => {
   const dateActiveClass = props.group.dateRange
-    ? 'query-group__action--active'
-    : '';
+    ? "query-group__action--active"
+    : "";
   const excludeActiveClass = props.group.exclude
-    ? 'query-group__action--active'
-    : '';
+    ? "query-group__action--active"
+    : "";
   const groupExcludeActiveClass = props.group.exclude
-    ? 'query-group__group--active'
-    : '';
+    ? "query-group__group--active"
+    : "";
 
   return (
     <div className="query-group">
       <QueryEditorDropzone
         key={props.group.elements.length + 1}
         onDropNode={props.onDropNode}
-        onDropFiles={props.onDropFiles}
+        onDropFile={props.onDropFile}
         onLoadPreviousQuery={props.onLoadPreviousQuery}
       />
-      <p className="query-or-connector">{T.translate('common.or')}</p>
+      <p className="query-or-connector">{T.translate("common.or")}</p>
       <div className={`query-group__group ${groupExcludeActiveClass}`}>
         <QueryGroupActions
           excludeActiveClass={excludeActiveClass}
@@ -52,24 +52,22 @@ const QueryGroup = (props: PropsType) => {
           onDeleteGroup={props.onDeleteGroup}
           onDateClick={props.onDateClick}
         />
-        {
-          props.group.elements.map((node, orIdx) => (
-            [
-              <QueryNode
-                key={orIdx}
-                node={node}
-                andIdx={props.andIdx}
-                orIdx={orIdx}
-                onDeleteNode={() => props.onDeleteNode(orIdx)}
-                onFilterClick={() => props.onFilterClick(orIdx)}
-                onExpandClick={props.onExpandClick}
-              />,
-              orIdx !== props.group.elements.length - 1
-                ? <p className="query-or-connector">{T.translate('common.or')}</p>
-                : '' // Render last OR outside of this frame
-            ]
-          ))
-        }
+        {props.group.elements.map((node, orIdx) => [
+          <QueryNode
+            key={orIdx}
+            node={node}
+            andIdx={props.andIdx}
+            orIdx={orIdx}
+            onDeleteNode={() => props.onDeleteNode(orIdx)}
+            onFilterClick={() => props.onFilterClick(orIdx)}
+            onExpandClick={props.onExpandClick}
+          />,
+          orIdx !== props.group.elements.length - 1 ? (
+            <p className="query-or-connector">{T.translate("common.or")}</p>
+          ) : (
+            ""
+          ) // Render last OR outside of this frame
+        ])}
       </div>
     </div>
   );

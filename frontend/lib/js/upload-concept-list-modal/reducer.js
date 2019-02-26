@@ -10,10 +10,7 @@ import {
   RESOLVE_CONCEPTS_SUCCESS,
   RESOLVE_CONCEPTS_ERROR,
   UPLOAD_CONCEPT_LIST_MODAL_OPEN,
-  UPLOAD_CONCEPT_LIST_MODAL_CLOSE,
-  RESOLVE_FILTER_VALUES_START,
-  RESOLVE_FILTER_VALUES_SUCCESS,
-  RESOLVE_FILTER_VALUES_ERROR
+  UPLOAD_CONCEPT_LIST_MODAL_CLOSE
 } from "./actionTypes";
 
 export type StateType = {
@@ -36,34 +33,18 @@ const initialState: StateType = {
   error: null
 };
 
-const resolveFilterValuesSuccess = (state: StateType, action: Object) => {
-  const { data, filename } = action.payload;
-
-  const hasUnresolvedCodes = data.unknownCodes && data.unknownCodes.length > 0;
-
-  return {
-    ...state,
-    isModalOpen: hasUnresolvedCodes,
-    showDetails: false,
-    loading: false,
-    label: stripFilename(filename),
-    resolved: data
-  };
-};
-
 const uploadConcepts = (state: StateType = initialState, action: Object) => {
   switch (action.type) {
     case UPLOAD_CONCEPT_LIST_MODAL_OPEN:
-      const { parameters } = action;
+      const { filename, rows } = action.payload;
 
       return {
         ...state,
         isModalOpen: true,
-        label: stripFilename(parameters.fileName),
-        conceptCodesFromFile: parameters.values,
+        label: stripFilename(filename),
+        conceptCodesFromFile: rows,
         selectedConceptRootNode: null,
-        resolved: null,
-        parameters
+        resolved: null
       };
     case UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL:
       return {
@@ -95,21 +76,6 @@ const uploadConcepts = (state: StateType = initialState, action: Object) => {
         loading: false,
         error: null,
         resolved: action.payload.data
-      };
-    case RESOLVE_FILTER_VALUES_START:
-      return {
-        ...state,
-        loading: true,
-        error: null
-      };
-    case RESOLVE_FILTER_VALUES_SUCCESS:
-      return resolveFilterValuesSuccess(state, action);
-    case RESOLVE_FILTER_VALUES_ERROR:
-      return {
-        ...state,
-        loading: false,
-        resolved: null,
-        error: action.payload
       };
     case UPLOAD_CONCEPT_LIST_MODAL_CLOSE:
       return initialState;

@@ -16,7 +16,7 @@ type PropsType = {
   isInitial: ?boolean,
   isAnd: ?boolean,
   onDropNode: (DraggedNodeType | DraggedQueryType) => void,
-  onDropFiles: DraggedFileType => void,
+  onDropFile: DraggedFileType => void,
   onLoadPreviousQuery: QueryIdType => void,
 
   connectDropTarget: ConnectDropTarget,
@@ -31,7 +31,7 @@ const dropzoneTarget = {
       | DraggedFileType = monitor.getItem();
 
     if (item.files) {
-      props.onDropFiles(item);
+      props.onDropFile(item.files[0]);
     } else {
       props.onDropNode(item);
 
