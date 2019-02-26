@@ -1,7 +1,18 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Deque;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
@@ -26,17 +37,9 @@ import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggr
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
@@ -49,7 +52,8 @@ public class CQConcept implements CQElement {
 	private List<CQTable> tables;
 	@Valid @NotNull
 
-	private List<@NsIdRef Select> select = Collections.emptyList();
+	@NsIdRefCollection
+	private List<Select> select = Collections.emptyList();
 
 	private boolean excludeFromTimeAggregation = false;
 

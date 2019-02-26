@@ -1,18 +1,19 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
+import java.util.Iterator;
+import java.util.List;
+
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.query.select.Select;
+
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.Iterator;
-import java.util.List;
-
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class SelectId extends AId<Select> {
+public class SelectId extends AId<Select> implements NamespacedId {
 
 	private final ConnectorId connector;
 	private final String select;
@@ -22,7 +23,12 @@ public class SelectId extends AId<Select> {
 		connector.collectComponents(components);
 		components.add(select);
 	}
-	
+
+	@Override
+	public DatasetId getDataset() {
+		return connector.getDataset();
+	}
+
 	public static enum Parser implements IId.Parser<SelectId> {
 		INSTANCE;
 		
