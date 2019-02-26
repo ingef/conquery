@@ -1,11 +1,14 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
 import T from "i18n-react";
 
 import { type QueryNodeType } from "../standard-query-editor/types";
+
+import TransparentButton from "../button/TransparentButton";
 
 import { MenuColumn } from "./MenuColumn";
 import { NodeDetailsView } from "./NodeDetailsView";
@@ -13,6 +16,33 @@ import { TableFilterView } from "./TableFilterView";
 import { DescriptionColumn } from "./DescriptionColumn";
 
 import { createQueryNodeEditorActions } from "./actions";
+
+const Root = styled("div")`
+  padding: 0 10px;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  display: flex;
+  background: rgb(249, 249, 249);
+  z-index: 1;
+`;
+
+const Wrapper = styled("div")`
+  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+`;
+
+const CloseButton = styled(TransparentButton)`
+  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+`;
 
 type QueryNodeEditorState = {
   detailsViewActive: boolean,
@@ -59,26 +89,25 @@ const QueryNodeEditor = (props: PropsType) => {
       : null;
 
   return (
-    <div className="query-node-editor">
-      <div className="query-node-editor__wrapper">
+    <Root>
+      <Wrapper>
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
         {!editorState.detailsViewActive && selectedTable != null && (
           <TableFilterView {...props} />
         )}
         {!editorState.detailsViewActive && <DescriptionColumn {...props} />}
-        <button
-          type="button"
-          className="query-node-editor__close-button btn btn--transparent btn--small"
+        <CloseButton
+          small
           onClick={() => {
             editorState.onReset();
             props.onCloseModal();
           }}
         >
           {T.translate("common.done")}
-        </button>
-      </div>
-    </div>
+        </CloseButton>
+      </Wrapper>
+    </Root>
   );
 };
 

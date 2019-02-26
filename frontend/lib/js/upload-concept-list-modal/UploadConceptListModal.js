@@ -7,8 +7,11 @@ import T from "i18n-react";
 import classnames from "classnames";
 
 import Modal from "../modal/Modal";
-import { InputSelect, InputWithLabel } from "../form-components";
+import InputSelect from "../form-components/InputSelect";
+import InputWithLabel from "../form-components/InputWithLabel";
 import ScrollableList from "../scrollable-list/ScrollableList";
+import PrimaryButton from "../button/PrimaryButton";
+
 import type { StateType } from "../app/reducers";
 import type { DatasetIdType } from "../dataset/reducer";
 
@@ -161,9 +164,7 @@ const UploadConceptListModal = (props: PropsType) => {
           </div>
         )}
         <div className="upload-concept-list-modal__accept">
-          <button
-            type="button"
-            className="btn btn--primary"
+          <PrimaryButton
             disabled={!hasResolvedItems}
             onClick={() =>
               onAccept(
@@ -174,7 +175,7 @@ const UploadConceptListModal = (props: PropsType) => {
             }
           >
             {T.translate("uploadConceptListModal.insertNode")}
-          </button>
+          </PrimaryButton>
         </div>
       </div>
     </Modal>

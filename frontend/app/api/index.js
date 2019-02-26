@@ -13,6 +13,10 @@ function shuffleArray(array) {
   return array;
 }
 
+const LONG_DELAY = 500;
+const SHORT_DELAY = 300;
+const NO_DELAY = 10;
+
 // Simulate API
 module.exports = function(app, port) {
   /*
@@ -23,7 +27,7 @@ module.exports = function(app, port) {
       res.setHeader("Content-Type", "application/json");
       res.status(201);
       res.send(JSON.stringify({ id: 1 }));
-    }, 300);
+    }, NO_DELAY);
   });
 
   app.delete("/api/datasets/:datasetId/queries/:id", function response(
@@ -33,7 +37,7 @@ module.exports = function(app, port) {
     setTimeout(() => {
       res.setHeader("Content-Type", "application/json");
       res.send(JSON.stringify({ id: 1 }));
-    }, 300);
+    }, SHORT_DELAY);
   });
 
   app.get("/api/datasets/:datasetId/queries/:id", function response(req, res) {
@@ -53,7 +57,7 @@ module.exports = function(app, port) {
             resultUrl: `/api/results/results.csv`
           })
         );
-    }, 500);
+    }, LONG_DELAY);
   });
 
   /*
@@ -120,7 +124,7 @@ module.exports = function(app, port) {
         });
 
       res.send(JSON.stringify(ids));
-    }, 500);
+    }, LONG_DELAY);
   });
 
   app.get("/api/datasets/:datasetId/stored-queries/:id", function response(
@@ -129,7 +133,7 @@ module.exports = function(app, port) {
   ) {
     setTimeout(() => {
       res.sendFile(path.join(__dirname, "./stored-queries/25.json"));
-    }, 500);
+    }, LONG_DELAY);
   });
 
   app.patch("/api/datasets/:datasetId/stored-queries/:id", function response(
@@ -138,7 +142,7 @@ module.exports = function(app, port) {
   ) {
     setTimeout(() => {
       res.send(JSON.stringify({}));
-    }, 500);
+    }, LONG_DELAY);
   });
 
   app.delete("/api/datasets/:datasetId/stored-queries/:id", function response(
@@ -148,7 +152,7 @@ module.exports = function(app, port) {
     setTimeout(() => {
       res.setHeader("Content-Type", "application/json");
       res.send(JSON.stringify({ id: 1 }));
-    }, 300);
+    }, SHORT_DELAY);
   });
 
   /*
@@ -162,7 +166,7 @@ module.exports = function(app, port) {
       res.setHeader("Content-Type", "application/json");
       res.status(201);
       res.send(JSON.stringify({ id: 1 }));
-    }, 300);
+    }, SHORT_DELAY);
   });
 
   app.delete("/api/datasets/:datasetId/form-queries/:id", function response(
@@ -172,7 +176,7 @@ module.exports = function(app, port) {
     setTimeout(() => {
       res.setHeader("Content-Type", "application/json");
       res.send(JSON.stringify({ id: 1 }));
-    }, 300);
+    }, SHORT_DELAY);
   });
 
   app.get("/api/datasets/:datasetId/form-queries/:id", function response(
@@ -195,7 +199,7 @@ module.exports = function(app, port) {
             resultUrl: `/api/results/results.csv`
           })
         );
-    }, 500);
+    }, LONG_DELAY);
   });
 
   app.post("/api/datasets/:datasetId/import", function response(req, res) {
@@ -208,7 +212,7 @@ module.exports = function(app, port) {
           unsuccessful: 586
         })
       );
-    }, 500);
+    }, LONG_DELAY);
   });
 
   app.post(
@@ -244,7 +248,7 @@ module.exports = function(app, port) {
           .filter(v => v.label.toLowerCase().startsWith(text));
 
         res.send(JSON.stringify(suggestions));
-      }, 500);
+      }, LONG_DELAY);
     }
   );
 
@@ -260,7 +264,7 @@ module.exports = function(app, port) {
           unknownConcepts: concepts.slice(0, 1),
           resolvedConcepts: concepts.slice(1)
         });
-      }, 500);
+      }, LONG_DELAY);
     }
   );
 
@@ -301,7 +305,7 @@ module.exports = function(app, port) {
             value: resolvedValues.map(val => ({ label: val, value: val }))
           }
         });
-      }, 500);
+      }, LONG_DELAY);
     }
   );
 
@@ -325,7 +329,7 @@ module.exports = function(app, port) {
 
       // see type SearchResult
       res.send({ result: result, limit: 20, size: result.length });
-    }, 10);
+    }, NO_DELAY);
   });
 
   app.get("/api/config/frontend", (req, res) => {

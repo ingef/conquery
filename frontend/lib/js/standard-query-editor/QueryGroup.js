@@ -25,12 +25,6 @@ type PropsType = {
 };
 
 const QueryGroup = (props: PropsType) => {
-  const dateActiveClass = props.group.dateRange
-    ? "query-group__action--active"
-    : "";
-  const excludeActiveClass = props.group.exclude
-    ? "query-group__action--active"
-    : "";
   const groupExcludeActiveClass = props.group.exclude
     ? "query-group__group--active"
     : "";
@@ -46,28 +40,29 @@ const QueryGroup = (props: PropsType) => {
       <p className="query-or-connector">{T.translate("common.or")}</p>
       <div className={`query-group__group ${groupExcludeActiveClass}`}>
         <QueryGroupActions
-          excludeActiveClass={excludeActiveClass}
-          dateActiveClass={dateActiveClass}
+          excludeActive={props.group.exclude}
+          dateActive={!!props.group.dateRange}
           onExcludeClick={props.onExcludeClick}
           onDeleteGroup={props.onDeleteGroup}
           onDateClick={props.onDateClick}
         />
-        {props.group.elements.map((node, orIdx) => [
-          <QueryNode
-            key={orIdx}
-            node={node}
-            andIdx={props.andIdx}
-            orIdx={orIdx}
-            onDeleteNode={() => props.onDeleteNode(orIdx)}
-            onFilterClick={() => props.onFilterClick(orIdx)}
-            onExpandClick={props.onExpandClick}
-          />,
-          orIdx !== props.group.elements.length - 1 ? (
-            <p className="query-or-connector">{T.translate("common.or")}</p>
-          ) : (
-            ""
-          ) // Render last OR outside of this frame
-        ])}
+        {props.group.elements.map((node, orIdx) => (
+          <div key={`or-${orIdx}`}>
+            <QueryNode
+              node={node}
+              andIdx={props.andIdx}
+              orIdx={orIdx}
+              onDeleteNode={() => props.onDeleteNode(orIdx)}
+              onFilterClick={() => props.onFilterClick(orIdx)}
+              onExpandClick={props.onExpandClick}
+            />
+            {orIdx !== props.group.elements.length - 1 && (
+              <p key={"last-or"} className="query-or-connector">
+                {T.translate("common.or")}
+              </p>
+            )}
+          </div>
+        ))}
       </div>
     </div>
   );

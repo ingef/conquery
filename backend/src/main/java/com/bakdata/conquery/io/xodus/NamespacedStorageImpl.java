@@ -79,7 +79,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				
 				for (Connector c : concept.getConnectors()) {
 					centralRegistry.register(c);
-					c.getAllFilters().forEach(centralRegistry::register);
+					c.collectAllFilters().forEach(centralRegistry::register);
 				}
 				//add imports of table
 				for(Import imp: getAllImports()) {
@@ -93,7 +93,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			.onRemove(concept -> {
 				//see #146  remove from Dataset.concepts
 				for(Connector c:concept.getConnectors()) {
-					c.getAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
+					c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
 					centralRegistry.remove(c.getId());
 				}
 			});

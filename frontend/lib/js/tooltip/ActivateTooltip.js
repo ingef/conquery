@@ -1,30 +1,44 @@
 // @flow
 
-import React                    from 'react';
-import T                        from 'i18n-react';
-import { connect }              from 'react-redux';
-import { IconButton }           from '../button';
-import { toggleDisplayTooltip } from './actions';
+import React from "react";
+import styled from "@emotion/styled";
+import T from "i18n-react";
+import { connect } from "react-redux";
+import IconButton from "../button/IconButton";
+import { toggleDisplayTooltip } from "./actions";
 
 type PropsType = {
-  toggleDisplayTooltip: () => void,
+  toggleDisplayTooltip: () => void
 };
+
+const StyledIconButton = styled(IconButton)`
+  position: absolute;
+  top: 0;
+  right: 20px;
+  border-top: 0;
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+`;
 
 const ActivateTooltip = (props: PropsType) => {
   return (
     <div className="tooltip tooltip--activate">
-      <IconButton
-        iconClassName="fa-angle-up"
-        className="btn btn--transparent btn--tiny tooltip__btn tooltip__btn--show"
+      <StyledIconButton
+        frame
+        icon="angle-up"
         onClick={props.toggleDisplayTooltip}
-        label={T.translate('tooltip.show')}
-      />
+      >
+        {T.translate("tooltip.show")}
+      </StyledIconButton>
     </div>
   );
 };
 
-const mapDispatchToProps = (dispatch) => ({
-  toggleDisplayTooltip: () => dispatch(toggleDisplayTooltip()),
+const mapDispatchToProps = dispatch => ({
+  toggleDisplayTooltip: () => dispatch(toggleDisplayTooltip())
 });
 
-export default connect(() => ({}), mapDispatchToProps)(ActivateTooltip);
+export default connect(
+  () => ({}),
+  mapDispatchToProps
+)(ActivateTooltip);
