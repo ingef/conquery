@@ -24,7 +24,7 @@ module.exports = ["en", "de"].map(lang => ({
   output: {
     path: path.join(__dirname, "dist"),
     filename: `[name].${lang}.js`,
-    publicPath: "/app/static/"
+    publicPath: ifProduction("/app/static/", "/")
   },
   optimization: {
     minimizer: removeEmpty([
@@ -51,7 +51,7 @@ module.exports = ["en", "de"].map(lang => ({
       template: path.join(__dirname, "src/index.tpl.html"),
       inject: "body",
       filename: `index.${lang}.html`,
-      publicPath: "/app/static"
+      publicPath: ifProduction("/app/static/", "/")
     }),
     new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /de|en/)
   ]),
