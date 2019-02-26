@@ -146,14 +146,14 @@ const UploadConceptListModal = (props: PropsType) => {
               <div>
                 <p>
                   {T.translate("uploadConceptListModal.unknownCodes", {
-                    context: resolved.unknownCodes.length
+                    context: resolved.unknownConcepts.length
                   })}
                 </p>
                 <div className="upload-concept-list-modal__section">
                   <ScrollableList
                     maxVisibleItems={3}
                     fullWidth
-                    items={resolved.unknownCodes}
+                    items={resolved.unknownConcepts}
                   />
                 </div>
               </div>
@@ -184,8 +184,8 @@ const UploadConceptListModal = (props: PropsType) => {
 const selectUnresolvedItemsCount = state => {
   const { resolved } = state.uploadConceptListModal;
 
-  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
-    ? resolved.unknownCodes.length
+  return resolved && resolved.unknownConcepts && resolved.unknownConcepts.length
+    ? resolved.unknownConcepts.length
     : 0;
 };
 
@@ -229,23 +229,10 @@ const mapStateToProps = (state: StateType) => ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onCloseModal: () => dispatch(uploadConceptListModalClose()),
   onUpdateLabel: label => dispatch(uploadConceptListModalUpdateLabel(label)),
-  onAccept: (label, rootConcepts, resolvedConcepts, selectedConceptRootNode) =>
-    dispatch(
-      acceptAndCloseUploadConceptListModal(
-        label,
-        rootConcepts,
-        resolvedConcepts,
-        selectedConceptRootNode
-      )
-    ),
-  onSelectConceptRootNode: (datasetId, treeId, conceptCodes) =>
-    dispatch(
-      selectConceptRootNodeAndResolveCodes({
-        datasetId,
-        treeId,
-        conceptCodes
-      })
-    )
+  onAccept: (...params) =>
+    dispatch(acceptAndCloseUploadConceptListModal(...params)),
+  onSelectConceptRootNode: (...params) =>
+    dispatch(selectConceptRootNodeAndResolveCodes(...params))
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({

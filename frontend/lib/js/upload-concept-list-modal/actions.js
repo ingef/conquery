@@ -29,25 +29,25 @@ export const selectConceptRootNode = (conceptId: TreeNodeIdType) => ({
   conceptId
 });
 
-export const selectConceptRootNodeAndResolveCodes = (parameters: Object) => {
-  const { treeId, datasetId, conceptCodes } = parameters;
+export const selectConceptRootNodeAndResolveCodes = (
+  datasetId,
+  treeId,
+  conceptCodes
+) => (dispatch: Dispatch<*>) => {
+  if (isEmpty(treeId)) {
+    return dispatch(selectConceptRootNode(""));
+  } else {
+    dispatch(selectConceptRootNode(treeId));
+  }
 
-  return (dispatch: Dispatch<*>) => {
-    if (isEmpty(treeId)) {
-      return dispatch(selectConceptRootNode(""));
-    } else {
-      dispatch(selectConceptRootNode(treeId));
-    }
+  dispatch(resolveConceptsStart());
 
-    dispatch(resolveConceptsStart());
-
-    return api
-      .postConceptsListToResolve(datasetId, treeId, conceptCodes)
-      .then(
-        r => dispatch(resolveConceptsSuccess(r)),
-        e => dispatch(resolveConceptsError(e))
-      );
-  };
+  return api
+    .postConceptsListToResolve(datasetId, treeId, conceptCodes)
+    .then(
+      r => dispatch(resolveConceptsSuccess(r)),
+      e => dispatch(resolveConceptsError(e))
+    );
 };
 
 export const uploadConceptListModalUpdateLabel = (label: string) => ({

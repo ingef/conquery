@@ -44,7 +44,7 @@ const UploadConceptListModal = (props: PropsType) => {
   return (
     <Modal closeModal={onCloseModal} doneButton>
       <div className="upload-concept-list-modal">
-        <h3>{T.translate("uploadConceptListModal.headline")}</h3>
+        <h3>{T.translate("uploadFilterListModal.headline")}</h3>
         {error && (
           <div className="upload-concept-list-modal__status upload-concept-list-modal__section">
             <p className="upload-concept-list-modal__error">
@@ -106,20 +106,6 @@ const UploadConceptListModal = (props: PropsType) => {
             )}
           </div>
         )}
-        <div className="upload-concept-list-modal__accept">
-          <button
-            type="button"
-            className="btn btn--primary"
-            disabled={!hasResolvedItems}
-            onClick={() =>
-              onAccept(label, {
-                filter: resolved.resolvedFilter
-              })
-            }
-          >
-            {T.translate("uploadConceptListModal.insertNode")}
-          </button>
-        </div>
       </div>
     </Modal>
   );
@@ -155,9 +141,7 @@ const mapStateToProps = (state: StateType) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onCloseModal: () => dispatch(uploadFilterListModalClose()),
-  onAccept: (label, rootConcepts, concepts) =>
-    dispatch(uploadFilterListModalClose())
+  onCloseModal: () => dispatch(uploadFilterListModalClose())
 });
 
 export default connect(
