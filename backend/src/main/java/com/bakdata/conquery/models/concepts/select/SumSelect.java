@@ -23,6 +23,7 @@ import lombok.Getter;
 @CPSType(id = "SUM", base = Select.class)
 public class SumSelect extends Select {
 
+	@Getter
 	private boolean distinct = false;
 
 	@Getter
@@ -36,10 +37,12 @@ public class SumSelect extends Select {
 
 	@Override
 	protected Aggregator<?> createAggregator() {
-		if (distinct)
+		if (distinct) {
 			return new DistinctValuesWrapperAggregatorNode<>(getAggregator(), getColumn());
-		else
+		}
+		else {
 			return getAggregator();
+		}
 	}
 
 	private ColumnAggregator<?> getAggregator() {

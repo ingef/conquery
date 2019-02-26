@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.query.select.Select;
 @CPSType(id = "LAST", base = Select.class)
 public class LastValueSelect extends ColumnSelect {
 
-
 	@Override
 	protected Aggregator<?> createAggregator() {
 		return new LastValueAggregator(getColumn());

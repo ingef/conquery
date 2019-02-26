@@ -20,9 +20,9 @@ public class RandomValueAggregator extends SingleColumnAggregator<Object> {
 
 	/**
 	 * length of sequence = m, but not known at event of sampling
-	 * <p>
+	 *
 	 * P(switching n-th value) = 1/n
-	 * <p>
+	 *
 	 * P(n-th value = output) 	= P(switching n-th value) * P(not switching values > n)
 	 * = 1/n * n/m = 1/m
 	 *

@@ -85,10 +85,12 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 	public FilterNode createAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
-		if (distinct)
+		if (distinct) {
 			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
-
-		return new RangeFilterNode(this, filterValue, aggregator);
+		}
+		else {
+			return new RangeFilterNode(this, filterValue, aggregator);
+		}
 	}
 
 	private ColumnAggregator<?> getAggregator() {

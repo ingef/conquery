@@ -1,5 +1,9 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -9,10 +13,6 @@ import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
 
 
 public class FiltersNode extends QPChainNode implements EventIterating {
@@ -48,8 +48,9 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 			check &= f.checkEvent(block, event);
 		}
 
-		if (!check)
+		if (!check) {
 			return true;
+		}
 
 		for(FilterNode<?,?> f : filters) {
 			f.acceptEvent(block, event);
