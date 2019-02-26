@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
@@ -32,7 +33,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
@@ -49,16 +49,15 @@ public class CQConcept implements CQElement {
 	private List<CQTable> tables;
 	@Valid @NotNull
 
-	private List<SelectId> select = Collections.emptyList();
+	private List<@NsIdRef Select> select = Collections.emptyList();
 
 	private boolean excludeFromTimeAggregation = false;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		ConceptElement[] concepts = resolveConcepts(ids, context.getCentralRegistry());
-		List<Select> selects = resolveSelects(select, context.getCentralRegistry());
 
-		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
+		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, select);
 
 		Concept<?> c = concepts[0].getConcept();
 
@@ -66,14 +65,8 @@ public class CQConcept implements CQElement {
 		for(CQTable t : tables) {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
 
-			Select[] resolvedSelects =
-					t
-						.getSelect()
-						.stream()
-						.map(name -> context.getCentralRegistry().resolve(name.getConnector()).getSelect(name))
-						.toArray(Select[]::new);
+			List<Select> resolvedSelects = t.getSelect();
 
-			t.setResolvedSelects(resolvedSelects);
 
 			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
 			//add filter to children
@@ -88,7 +81,7 @@ public class CQConcept implements CQElement {
 			//add aggregators
 
 			aggregators.addAll(conceptAggregators);
-			aggregators.addAll(createConceptAggregators(plan, resolveSelects(t.getSelect(), context.getCentralRegistry())));
+			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
 
 			if(!excludeFromTimeAggregation) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
@@ -167,9 +160,8 @@ public class CQConcept implements CQElement {
 
 	@Override
 	public void collectSelects(Deque<Select> select) {
-		select.addAll(select);
-		for(CQTable table:tables) {
-			select.addAll(Arrays.asList(table.getResolvedSelects()));
+		for (CQTable table : tables) {
+			select.addAll(table.getSelect());
 		}
 	}
 }

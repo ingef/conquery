@@ -1,21 +1,19 @@
 package com.bakdata.conquery.models.query.concept.filter;
 
-import java.util.Collections;
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.List;
 
 @Getter @Setter
 public class CQTable {
@@ -25,14 +23,11 @@ public class CQTable {
 	private List<FilterValue> filters = Collections.emptyList();
 
 	@Valid @NotNull
-	private List<SelectId> select = Collections.emptyList();
+	private List<@NsIdRef Select> select = Collections.emptyList();
 
 	@JsonBackReference
 	private CQConcept concept;
 
 	@JsonIgnore
 	private Connector resolvedConnector;
-
-	@JsonIgnore
-	private Select[] resolvedSelects;
 }
