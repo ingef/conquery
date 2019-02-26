@@ -25,6 +25,14 @@
 			<property name="format" value='\S\s+$'/>
 			<property name="message" value="trailing whitespaces"/>
 		</module>
+		<module name="WhitespaceAround">
+			<property name="tokens" value="LCURLY"/>
+		</module>
+		<module name="RegexpSinglelineJava">
+			<property name="format" value='@.*\s(class|interface|enum|private|public|protected)'/>
+			<property name="ignoreComments" value="true"/>
+			<property name="message" value="No Annotations at the class definition level."/>
+		</module>
 		
 		<module name="RegexpSinglelineJava">
 			<property name="format" value='//\s*(todo|fixme|bug)'/>
@@ -123,23 +131,26 @@
 		
 		<!-- Javadoc requirements -->
 		<module name="AtclauseOrder"/>
+		<!--
 		<module name="JavadocMethod">
 			<property name="allowUndeclaredRTE" value="true"/>
-			<property name="allowedAnnotations" value="Getter,Setter,Slf4j,Builder,UtilityClass"/>
+			<property name="allowedAnnotations" value="Override"/>
+			<property name="validateThrows" value="true"/>
 		</module>
 		<module name="JavadocStyle"/>
 		<module name="JavadocTagContinuationIndentation"/>
 		<module name="JavadocType">
-			<!--  only starting with Checkstyle 8.15 -->
-			<!-- <property name="allowedAnnotations" value="Getter,Setter,Slf4j,Builder,UtilityClass"/> -->
+			<property name="allowedAnnotations" value="Getter,Setter,Slf4j,Builder,UtilityClass"/>
 		</module>
+		<module name="JavadocVariable"/>
+		 -->
 		<module name="RegexpSinglelineJava">
 			<property name="format" value='@author'/>
 			<property name="message" value="author tags are forbidden"/>
 			<property name="ignoreComments" value="false"/>
 			<property name="severity" value="error"/>
 		</module>
-		<module name="JavadocVariable"/>
+		
 		<module name="NonEmptyAtclauseDescription"/>
 		<module name="SingleLineJavadoc">
 			<property name="ignoredTags" value="@inheritDoc, @see"/>

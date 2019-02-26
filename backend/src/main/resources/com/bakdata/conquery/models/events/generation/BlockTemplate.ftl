@@ -157,6 +157,9 @@ public class Block_${suffix} extends Block {
 
 	@Override
 	public boolean eventIsContainedIn(int event, Column column, CDateRange dateRange) {
+		if(!this.has(event, column)) {
+			return false;
+		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
 			<#if col.type.typeId == "DATE">
@@ -171,26 +174,32 @@ public class Block_${suffix} extends Block {
 				throw new IllegalArgumentException("Column "+column+" is not a date type");
 		}
 	}
-	
+
 	@Override
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
+		if(!this.has(event, column)) {
+			return false;
+		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
 			<#if col.type.typeId == "DATE">
-			case ${col.position}:
+				case ${col.position}:
 				return dateRanges.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
 			<#elseif col.type.typeId == "DATE_RANGE">
-			case ${col.position}:
+				case ${col.position}:
 				return dateRanges.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
 			</#if>
 		</#list>
-			default:
-				throw new IllegalArgumentException("Column "+column+" is not a date type");
+		default:
+		throw new IllegalArgumentException("Column "+column+" is not a date type");
 		}
 	}
-	
+
 	@Override
 	public CDateRange getAsDateRange(int event, Column column) {
+		if(!this.has(event, column)) {
+			return null;
+		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
 			<#if col.type.typeId == "DATE">
@@ -215,11 +224,11 @@ public class Block_${suffix} extends Block {
 			//ImmutableMap does not allow for null values: builder.put("${safeJavaString(col.name)}", null)
 			<#else>
 			if(has(event, ${col_index})) {
-			    builder.put("${safeJavaString(col.name)}", imp.getColumns()[${col_index}].getType().createScriptValue(events[event].get${safeName(col.name)?cap_first}()));
+				builder.put("${safeJavaString(col.name)}", imp.getColumns()[${col_index}].getType().createScriptValue(events[event].get${safeName(col.name)?cap_first}()));
 			}
 
 			</#if>
 		</#list>
-        return builder.build();
+		return builder.build();
 	}
 }

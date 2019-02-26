@@ -4,7 +4,10 @@ import java.io.File;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -21,9 +24,17 @@ public interface NamespaceStorage extends NamespacedStorage {
 			return null;
 		}
 
-		return new NamespaceStorageImpl(validator, config, directory);
+		NamespaceStorage storage = new NamespaceStorageImpl(validator, config, directory);
+		storage.loadData();
+		return storage;
 	}
 	
 	MasterMetaStorage getMetaStorage();
 	void setMetaStorage(@NonNull MasterMetaStorage storage);
+	
+	StructureNode[] getStructure();
+	void updateStructure(StructureNode[] structure) throws JSONException;
+	
+	PersistentIdMap getIdMapping();
+	void updateIdMapping(PersistentIdMap idMap) throws JSONException;
 }

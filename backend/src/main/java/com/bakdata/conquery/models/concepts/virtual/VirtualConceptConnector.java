@@ -8,7 +8,7 @@ import java.util.stream.Stream;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Table;
@@ -22,7 +22,7 @@ public class VirtualConceptConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
 
-	@NotNull @IdReference
+	@NotNull @NsIdRef
 	private Table table;
 	@Valid @JsonManagedReference
 	private Filter<?> filter;
@@ -31,7 +31,7 @@ public class VirtualConceptConnector extends Connector {
 	public Collection<Filter<?>> collectAllFilters() {
 		return Stream.of(getDateSelectionFilter(), filter).filter(Objects::nonNull).collect(Collectors.toList());
 	}
-/*
+	/*
 	@Override
 	public EventProcessingResult processEvent(Event r) {
 		CDateRange dateRange = extractValidityDates(r);

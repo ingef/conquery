@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin;
 
+import com.bakdata.conquery.io.jersey.AuthCookie;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -25,6 +26,7 @@ import lombok.AllArgsConstructor;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
 @Path("/")
+@AuthCookie
 public class JobsResource {
 	
 	private final JobManager jobManager;

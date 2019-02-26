@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.concepts.select;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
@@ -24,12 +24,12 @@ public class SumSelect extends Select {
 	private boolean distinct = false;
 
 	@Getter
-	@IdReference
+	@NsIdRef
 	@NotNull
 	private Column column;
 
 	@Getter
-	@IdReference
+	@NsIdRef
 	private Column subtractColumn;
 
 	@Override

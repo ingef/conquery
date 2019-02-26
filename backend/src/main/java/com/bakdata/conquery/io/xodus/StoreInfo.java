@@ -1,5 +1,8 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.util.Map;
+
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.BigStore;
 import com.bakdata.conquery.io.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
@@ -10,6 +13,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -36,6 +40,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor @Getter
 public enum StoreInfo implements IStoreInfo {
 	DATASET			("DATASET", 		Dataset.class,				Boolean.class),
+	ID_MAPPING		("ID_MAPPING", 		Map.class,		Boolean.class),
 	NAMESPACES		("NAMESPACES", 		Namespaces.class,			Boolean.class),
 	SLAVE			("NETWORK_SLAVE", 	SlaveInformation.class,		Boolean.class),
 	DICTIONARIES	("DICTIONARIES", 	Dictionary.class,			DictionaryId.class),
@@ -45,14 +50,23 @@ public enum StoreInfo implements IStoreInfo {
 	C_BLOCKS		("C_BLOCKS", 		CBlock.class,				CBlockId.class),
 	WORKER			("WORKER",			WorkerInformation.class,	Boolean.class),
 	QUERIES			("QUERIES", 		ManagedQuery.class,			ManagedQueryId.class),
-	AUTH_PERMISSIONS("AUTH_PERMISSIONS", ConqueryPermission.class,	PermissionId.class),
+	AUTH_PERMISSIONS("AUTH_PERMISSIONS",ConqueryPermission.class,	PermissionId.class),
 	AUTH_MANDATOR	("AUTH_MANDATOR", 	Mandator.class,				MandatorId.class),
-	AUTH_USER		("AUTH_USER", 	User.class,				UserId.class);
+	AUTH_USER		("AUTH_USER", 		User.class,					UserId.class),
+	STRUCTURE		("STRUCTURE", 		StructureNode[].class,		Boolean.class),
 	;
 	
 	private final String xodusName;
 	private final Class<?> valueType;
 	private final Class<?> keyType;
+	
+	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(ConqueryStorage storage, Injectable... injectables) {
+		return new IdentifiableStore<>(
+			storage.getCentralRegistry(),
+			cached(storage),
+			injectables
+		);
+	}
 	
 	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(ConqueryStorage storage) {
 		return new IdentifiableStore<>(
@@ -67,8 +81,8 @@ public enum StoreInfo implements IStoreInfo {
 		);
 	}
 	
-	public <VALUE> SingletonStore<VALUE> singleton(ConqueryStorage storage) {
-		return new SingletonStore<>(cached(storage));
+	public <VALUE> SingletonStore<VALUE> singleton(ConqueryStorage storage, Injectable... injectables) {
+		return new SingletonStore<>(cached(storage), injectables);
 	}
 	
 	public <T extends Identifiable<?>> IdentifiableStore<T> big(NamespacedStorage storage) {

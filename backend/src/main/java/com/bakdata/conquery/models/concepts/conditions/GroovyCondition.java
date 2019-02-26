@@ -81,7 +81,7 @@ public class GroovyCondition implements CTCondition {
 	}
 	
 	
-	public static abstract class ConditionScript extends Script {
+	public abstract static class ConditionScript extends Script {
 		
 		@Getter
 		protected Map<String, Object> row;

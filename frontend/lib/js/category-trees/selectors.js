@@ -1,6 +1,6 @@
 // @flow
 
-import { difference }           from 'lodash'
+import difference               from 'lodash.difference';
 
 import { type TreeNodeIdType }  from '../common/types/backend';
 import { type SearchType }      from './reducer';

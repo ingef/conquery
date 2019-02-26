@@ -10,12 +10,13 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
 public interface NamespaceCollection extends Injectable {
 
-	public static NamespaceCollection get(DeserializationContext ctxt) throws JsonMappingException {
+	static NamespaceCollection get(DeserializationContext ctxt) throws JsonMappingException {
 		NamespaceCollection namespaces = (NamespaceCollection) ctxt
 				.findInjectableValue(NamespaceCollection.class.getName(), null, null);
 		if(namespaces == null) {
@@ -31,7 +32,9 @@ public interface NamespaceCollection extends Injectable {
 		return values.add(NamespaceCollection.class, this);
 	}
 	
-	public CentralRegistry findRegistry(DatasetId dataset);
+	CentralRegistry findRegistry(DatasetId dataset);
+	@JsonIgnore
+	CentralRegistry getMetaRegistry();
 
 	default <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> T resolve(ID id) {
 		return findRegistry(id.getDataset()).resolve(id);

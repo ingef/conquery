@@ -1,11 +1,14 @@
 package com.bakdata.conquery.models.datasets;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPHeader;
@@ -45,5 +48,13 @@ public class Table extends Labeled<TableId> {
 	@Override
 	public TableId createId() {
 		return new TableId(Preconditions.checkNotNull(dataset.getId()), getName());
+	}
+
+	public List<Import> findImports(WorkerStorage storage) {
+		return storage
+			.getAllImports()
+			.stream()
+			.filter(imp -> imp.getTable().equals(this.getId()))
+			.collect(Collectors.toList());
 	}
 }

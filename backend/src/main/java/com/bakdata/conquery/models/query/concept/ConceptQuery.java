@@ -1,16 +1,20 @@
 package com.bakdata.conquery.models.query.concept;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.select.Select;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -20,12 +24,12 @@ import lombok.Setter;
 public class ConceptQuery implements IQuery {
 	
 	@Valid @NotNull
-	private CQElement root;
+	protected CQElement root;
 	
 	@Override
 	public QueryPlan createQueryPlan(QueryPlanContext context) {
 		QueryPlan qp = QueryPlan.create();
-		qp.setRoot(root.createQueryPlan(context, qp));
+		qp.setChild(root.createQueryPlan(context, qp));
 		return qp;
 	}
 
@@ -35,8 +39,23 @@ public class ConceptQuery implements IQuery {
 	}
 
 	@Override
-	public IQuery resolve(QueryResolveContext context) {
+	public ConceptQuery resolve(QueryResolveContext context) {
 		this.root = root.resolve(context);
 		return this;
+	}
+	
+	public List<Select> collectSelects() {
+		return root.collectSelects();
+	}
+	
+	@Override
+	public List<String> collectResultHeader() {
+		List<Select> selects = this.collectSelects();
+		List<String> header = new ArrayList<>(selects.size() + 1);
+		header.add(ConqueryConstants.DATES);
+		for(Select select : selects) {
+			header.add(select.getLabel());
+		}
+		return header;
 	}
 }

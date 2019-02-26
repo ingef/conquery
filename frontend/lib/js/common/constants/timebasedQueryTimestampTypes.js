@@ -1,11 +1,11 @@
 // @flow
 
-export const FIRST = 'FIRST';
-export const LAST = 'LAST';
+export const EARLIEST = 'EARLIEST';
+export const LATEST = 'LATEST';
 export const RANDOM = 'RANDOM';
 
 export const TIMEBASED_TIMESTAMP_TYPES = {
-  FIRST: FIRST,
-  LAST: LAST,
+  EARLIEST: EARLIEST,
+  LATEST: LATEST,
   RANDOM: RANDOM,
 };

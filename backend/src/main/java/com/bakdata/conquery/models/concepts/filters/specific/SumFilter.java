@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.jackson.serializer.IdReference;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.IRange;
@@ -42,12 +42,12 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 	@NotNull
 	@Getter
 	@Setter
-	@IdReference
+	@NsIdRef
 	private Column column;
 	@Valid
 	@Getter
 	@Setter
-	@IdReference
+	@NsIdRef
 	private Column subtractColumn;
 
 	@Override
