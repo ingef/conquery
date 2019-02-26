@@ -1,24 +1,24 @@
 // @flow
 
-import React                        from 'react';
-import { connect }                  from 'react-redux';
+import React from "react";
+import { connect } from "react-redux";
 // Also, set up the drag and drop context
-import { DragDropContext }          from 'react-dnd';
-import HTML5Backend                 from 'react-dnd-html5-backend';
-import SplitPane                    from 'react-split-pane';
-import { withRouter }               from 'react-router';
+import { DragDropContext } from "react-dnd";
+import HTML5Backend from "react-dnd-html5-backend";
+import SplitPane from "react-split-pane";
+import { withRouter } from "react-router";
 
-import { Tooltip, ActivateTooltip } from '../tooltip';
+import { Tooltip, ActivateTooltip } from "../tooltip";
 
-import LeftPane                     from './LeftPane';
-import RightPane                    from './RightPane';
+import LeftPane from "./LeftPane";
+import RightPane from "./RightPane";
 
 type PropsType = {
   leftPaneActiveTab: string,
   rightPaneActiveTab: string,
   rightPaneAvailableTabs: Object,
   displayTooltip: boolean,
-  rightPaneTabs: Object,
+  rightPaneTabs: Object
 };
 
 const Content = (props: PropsType) => {
@@ -31,7 +31,7 @@ const Content = (props: PropsType) => {
         minSize={props.displayTooltip ? 80 : 30}
         maxSize={-400}
         defaultSize={props.displayTooltip ? "10%" : 30}
-        className={!props.displayTooltip ? 'SplitPane--tooltip-fixed' : ''}
+        className={!props.displayTooltip ? "SplitPane--tooltip-fixed" : ""}
       >
         <SplitPane
           split="vertical"
@@ -40,13 +40,12 @@ const Content = (props: PropsType) => {
           defaultSize="50%"
         >
           <LeftPane activeTab={props.leftPaneActiveTab} />
-          <RightPane activeTab={props.rightPaneActiveTab} tabs={props.rightPaneTabs} />
+          <RightPane
+            activeTab={props.rightPaneActiveTab}
+            tabs={props.rightPaneTabs}
+          />
         </SplitPane>
-        {
-          props.displayTooltip
-          ? <Tooltip />
-          : <ActivateTooltip />
-        }
+        {props.displayTooltip ? <Tooltip /> : <ActivateTooltip />}
       </SplitPane>
     </div>
   );
@@ -56,7 +55,7 @@ const mapStateToProps = (state, ownProps) => ({
   leftPaneActiveTab: state.panes.left.activeTab,
   rightPaneActiveTab: state.panes.right.activeTab,
   rightPaneTabs: state.panes.right.tabs,
-  displayTooltip: state.tooltip.displayTooltip,
+  displayTooltip: state.tooltip.displayTooltip
 });
 
 const ConnectedContent = connect(mapStateToProps)(Content);

@@ -1,19 +1,11 @@
 // @flow
 
-import React                from 'react';
-import {
-  Route,
-  Switch,
-  Router,
-}                           from 'react-router';
+import React from "react";
+import { Route, Switch, Router } from "react-router";
 
-import {
-  Unauthorized,
-  WithAuthToken
-}                           from '../authorization'
+import { Unauthorized, WithAuthToken } from "../authorization";
 
-import App                  from './App';
-
+import App from "./App";
 
 type PropsType = {
   history: Object
