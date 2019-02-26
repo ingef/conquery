@@ -156,7 +156,7 @@ public class FrontEndConceptBuilder {
 			.connectorId(con.getId())
 			.label(con.getLabel())
 			.filters(con
-				.getAllFilters()
+				.collectAllFilters()
 				.stream()
 				.map(FrontEndConceptBuilder::createFilter)
 				.collect(Collectors.toList())
