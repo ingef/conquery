@@ -574,7 +574,7 @@ const loadFilterSuggestionsSuccess = (state, action) => {
 
   return setNodeFilterProperties(state, action, {
     isLoading: false,
-    options: action.payload.suggestions
+    options: action.payload.data
   });
 };
 
