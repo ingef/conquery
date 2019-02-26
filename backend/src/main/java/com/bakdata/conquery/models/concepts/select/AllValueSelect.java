@@ -10,6 +10,6 @@ public class AllValueSelect extends SingleColumnSelect {
 
 	@Override
 	protected Aggregator<?> createAggregator() {
-		return new AllValuesAggregator(getColumn());
+		return new AllValuesAggregator<>(getColumn());
 	}
 }

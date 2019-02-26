@@ -42,14 +42,10 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	
 	@Override
 	public final boolean nextEvent(Block block, int event) {
-		boolean check = true;
-
 		for(FilterNode<?,?> f : filters) {
-			check &= f.checkEvent(block, event);
-		}
-
-		if (!check) {
-			return true;
+			if (!f.checkEvent(block, event)) {
+				return true;
+			}
 		}
 
 		for(FilterNode<?,?> f : filters) {

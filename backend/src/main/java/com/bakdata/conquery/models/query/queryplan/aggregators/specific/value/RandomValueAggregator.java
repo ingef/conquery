@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
-public class RandomValueAggregator extends SingleColumnAggregator<Object> {
+public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;
 	private int nValues = 0;
@@ -45,8 +45,8 @@ public class RandomValueAggregator extends SingleColumnAggregator<Object> {
 	}
 
 	@Override
-	public Object getAggregationResult() {
-		return getColumn().getTypeFor(block).createPrintValue(value);
+	public VALUE getAggregationResult() {
+		return (VALUE) getColumn().getTypeFor(block).createPrintValue(value);
 	}
 
 	@Override

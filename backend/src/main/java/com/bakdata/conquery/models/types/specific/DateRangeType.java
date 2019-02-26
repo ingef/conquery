@@ -40,6 +40,10 @@ public class DateRangeType extends CType<CDateRange, DateRangeType> {
 
 	@Override
 	public Object createPrintValue(CDateRange value) {
+		if (value == null) {
+			return "";
+		}
+
 		return value;
 	}
 }

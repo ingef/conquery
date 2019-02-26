@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
  * Entity is included when the number of values for a specified column are
  * within a given range.
  */
-public class FirstValueAggregator extends SingleColumnAggregator<Object> {
+public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;
 	private Block block;
@@ -34,7 +34,7 @@ public class FirstValueAggregator extends SingleColumnAggregator<Object> {
 			return;
 		}
 
-		int next = block.getDate(event, validityDateColumn);
+		int next = block.getAsDateRange(event, validityDateColumn).getMinValue();
 
 		if (next < date) {
 			date = next;
@@ -44,8 +44,8 @@ public class FirstValueAggregator extends SingleColumnAggregator<Object> {
 	}
 
 	@Override
-	public Object getAggregationResult() {
-		return getColumn().getTypeFor(block).createPrintValue(value);
+	public VALUE getAggregationResult() {
+		return (VALUE) getColumn().getTypeFor(block).createPrintValue(value);
 	}
 
 	@Override

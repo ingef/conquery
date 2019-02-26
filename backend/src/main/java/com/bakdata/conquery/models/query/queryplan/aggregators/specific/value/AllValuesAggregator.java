@@ -11,9 +11,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
  * Entity is included when the number of values for a specified column are
  * within a given range.
  */
-public class AllValuesAggregator extends SingleColumnAggregator<Set<Object>> {
+public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE>> {
 
-	private final Set<Object> entries = new HashSet<>();
+	private final Set<VALUE> entries = new HashSet<>();
 
 	public AllValuesAggregator(Column column) {
 		super(column);
@@ -22,12 +22,12 @@ public class AllValuesAggregator extends SingleColumnAggregator<Set<Object>> {
 	@Override
 	public void aggregateEvent(Block block, int event) {
 		if (block.has(event, getColumn())) {
-			entries.add(getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn())));
+			entries.add((VALUE) getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn())));
 		}
 	}
 
 	@Override
-	public Set<Object> getAggregationResult() {
+	public Set<VALUE> getAggregationResult() {
 		return entries;
 	}
 

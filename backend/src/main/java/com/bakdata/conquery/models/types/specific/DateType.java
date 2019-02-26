@@ -25,6 +25,10 @@ public class DateType extends CType<Integer, DateType> {
 
 	@Override
 	public Object createPrintValue(Integer value) {
+		if (value == null) {
+			return "";
+		}
+
 		return CDate.toLocalDate(value);
 	}
 }
