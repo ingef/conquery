@@ -88,7 +88,7 @@ public class Conquery extends Application<ConqueryConfig> {
 						"/frontend/app/",
 						uriPath,
 						String.format(
-								"index.%s.html",
+								"static/index.%s.html",
 								StringUtils.defaultIfEmpty(language, Locale.ENGLISH.getLanguage())
 						),
 						StandardCharsets.UTF_8
