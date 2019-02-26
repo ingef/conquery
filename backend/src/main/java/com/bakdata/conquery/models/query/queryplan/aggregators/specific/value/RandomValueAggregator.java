@@ -46,6 +46,10 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 
 	@Override
 	public VALUE getAggregationResult() {
+		if (block == null) {
+			return null;
+		}
+
 		return (VALUE) getColumn().getTypeFor(block).createPrintValue(value);
 	}
 

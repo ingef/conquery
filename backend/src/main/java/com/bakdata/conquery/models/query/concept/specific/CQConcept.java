@@ -144,7 +144,6 @@ public class CQConcept implements CQElement {
 	
 	@Override
 	public void collectSelects(Deque<Select> select) {
-		select.addAll(select);
 		for(CQTable table:tables) {
 			select.addAll(table.getSelect());
 		}
