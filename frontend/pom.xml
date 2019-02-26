@@ -25,7 +25,7 @@
         <resources>
             <resource>
                 <directory>app/dist/</directory>
-                <targetPath>frontend/app</targetPath>
+                <targetPath>frontend/app/static/</targetPath>
                 <includes>
                     <include>**/*</include>
                 </includes>

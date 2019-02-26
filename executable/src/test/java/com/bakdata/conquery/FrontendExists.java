@@ -11,7 +11,7 @@ import com.github.powerlibraries.io.In;
 
 public class FrontendExists {
 
-	private static final String INDEX = "/frontend/app/index.en.html";
+	private static final String INDEX = "/frontend/app/static/index.en.html";
 	
 	@Test
 	public void testIfFrontendExists() throws IOException {
