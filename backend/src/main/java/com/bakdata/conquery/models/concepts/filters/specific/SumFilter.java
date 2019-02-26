@@ -56,11 +56,12 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 		Column column = getColumn();
 		switch (column.getType()) {
 			case MONEY: //see #171  introduce money filter into frontend
-			case INTEGER: {
+			case INTEGER:
 				f.setType(FEFilterType.INTEGER_RANGE);
 				return;
-			}
 			case DECIMAL:
+				f.setType(FEFilterType.DECIMAL_RANGE);
+				return;
 			case REAL: {
 				f.setType(FEFilterType.REAL_RANGE);
 				return;
