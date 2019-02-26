@@ -1,16 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Deque;
-import java.util.List;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
@@ -43,7 +32,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -76,10 +67,11 @@ public class CQConcept implements CQElement {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
 
 			Select[] resolvedSelects =
-					t.getSelect()
-					 .stream()
-					 .map(name -> context.getCentralRegistry().resolve(name.getConnector()).getSelect(name))
-					 .toArray(Select[]::new);
+					t
+						.getSelect()
+						.stream()
+						.map(name -> context.getCentralRegistry().resolve(name.getConnector()).getSelect(name))
+						.toArray(Select[]::new);
 
 			t.setResolvedSelects(resolvedSelects);
 
@@ -121,16 +113,19 @@ public class CQConcept implements CQElement {
 	}
 
 	private List<Select> resolveSelects(List<SelectId> select, CentralRegistry centralRegistry) {
-		return select.stream()
-					 .map(name -> centralRegistry.resolve(name.getConnector()).<Select>getSelect(name))
-					 .collect(Collectors.toList());
+		return
+				select
+					.stream()
+					.map(name -> centralRegistry.resolve(name.getConnector()).<Select>getSelect(name))
+					.collect(Collectors.toList());
 	}
 
 	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
 		return
-				ids.stream()
-				   .map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-				   .toArray(ConceptElement[]::new);
+				ids
+					.stream()
+					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+					.toArray(ConceptElement[]::new);
 	}
 
 	private QPNode conceptChild(List<FilterNode<?, ?>> filters, List<QPNode> aggregators) {

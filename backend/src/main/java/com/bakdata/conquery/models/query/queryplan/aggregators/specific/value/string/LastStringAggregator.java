@@ -5,14 +5,15 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.types.CType;
 
 /**
  * Entity is included when the number of values for a specified column are
  * within a given range.
  */
-public class LastStringAggregator extends SingleColumnAggregator<Object> {
+public class LastStringAggregator extends SingleColumnAggregator<String> {
 
-	private Object value;
+	private String value;
 	private int date;
 
 	private Column validityDateColumn;
@@ -26,6 +27,8 @@ public class LastStringAggregator extends SingleColumnAggregator<Object> {
 		validityDateColumn = ctx.getValidityDateColumn();
 	}
 
+
+
 	@Override
 	public void aggregateEvent(Block block, int event) {
 		if (!block.has(event, getColumn())) {
@@ -36,12 +39,12 @@ public class LastStringAggregator extends SingleColumnAggregator<Object> {
 
 		if (next > date) {
 			date = next;
-			value = block.getAsObject(event, getColumn());
+			value = (String) ((CType<Integer, ?>) getColumn().getTypeFor(block)).createScriptValue(block.getString(event, getColumn()));
 		}
 	}
 
 	@Override
-	public Object getAggregationResult() {
+	public String getAggregationResult() {
 		return value;
 	}
 
