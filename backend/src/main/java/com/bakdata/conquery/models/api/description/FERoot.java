@@ -11,6 +11,5 @@ import lombok.Data;
  */
 @Data
 public class FERoot {
-	private long version;
 	private Map<IId<?>, FENode> concepts;
 }
