@@ -17,40 +17,6 @@
     &--active
       border: 1px solid $col-red
 
-  &__actions
-    margin: 0 0 4px
-    text-align: left
-    height: 18px // To provide enough space when only --right is available
-    &--right
-      position: absolute
-      right: 7px
-      top: 5px
-    &--left
-      .query-group__action
-        margin-right: 5px
-
-  &__action
-    &--active
-      &.query-group__exclude-btn
-        color: $col-red
-        font-weight: 700
-        &:hover
-          color: $col-red
-          opacity: 0.7
-      &.query-group__date-btn
-        color: $col-blue-gray-dark
-        font-weight: 700
-        &:hover
-          color: $col-blue-gray-dark
-          opacity: 0.7
-
-  &__exclude-icon
-    padding: 0 2px 0px 5px
-
-  &__date-icon
-    padding: 0 2px 0px 5px
-
-
 .query-group-connector, .query-or-connector
   font-size: $font-sm
   color: $col-gray
