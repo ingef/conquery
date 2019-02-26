@@ -2,7 +2,7 @@ import React from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 
-import IconButton from "../button/Iconbutton";
+import IconButton from "../button/IconButton";
 
 const Root = styled("div")`
   display: flex;
