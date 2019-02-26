@@ -14,6 +14,7 @@ public class LastValueAggregator extends SingleColumnAggregator<Object> {
 
 	private Object value;
 	private int date;
+	private Block block;
 
 	private Column validityDateColumn;
 
@@ -36,13 +37,14 @@ public class LastValueAggregator extends SingleColumnAggregator<Object> {
 
 		if (next > date) {
 			date = next;
-			value = getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn()));
+			value = block.getAsObject(event, getColumn());
+			this.block = block;
 		}
 	}
 
 	@Override
 	public Object getAggregationResult() {
-		return value;
+		return getColumn().getTypeFor(block).createPrintValue(value);
 	}
 
 	@Override

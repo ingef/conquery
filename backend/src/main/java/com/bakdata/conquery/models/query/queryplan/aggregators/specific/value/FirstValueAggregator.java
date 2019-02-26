@@ -13,6 +13,8 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 public class FirstValueAggregator extends SingleColumnAggregator<Object> {
 
 	private Object value;
+	private Block block;
+
 	private int date = Integer.MAX_VALUE;
 
 	private Column validityDateColumn;
@@ -40,13 +42,14 @@ public class FirstValueAggregator extends SingleColumnAggregator<Object> {
 
 		if (next < date) {
 			date = next;
-			value = getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn()));
+			value = block.getAsObject(event, getColumn());
+			this.block = block;
 		}
 	}
 
 	@Override
 	public Object getAggregationResult() {
-		return value;
+		return getColumn().getTypeFor(block).createPrintValue(value);
 	}
 
 	@Override

@@ -10,6 +10,8 @@ public class RandomValueAggregator extends SingleColumnAggregator<Object> {
 
 	private Object value;
 	private int nValues = 0;
+	private Block block;
+
 	private final Random random = new Random();
 
 	public RandomValueAggregator(Column column) {
@@ -37,13 +39,14 @@ public class RandomValueAggregator extends SingleColumnAggregator<Object> {
 		nValues++;
 
 		if (random.nextInt(nValues) == 0) {
-			value = getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn()));
+			value = block.getAsObject(event, getColumn());
+			this.block = block;
 		}
 	}
 
 	@Override
 	public Object getAggregationResult() {
-		return value;
+		return getColumn().getTypeFor(block).createPrintValue(value);
 	}
 
 	@Override
