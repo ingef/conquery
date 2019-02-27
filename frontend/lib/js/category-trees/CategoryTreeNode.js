@@ -1,6 +1,6 @@
 // @flow
 
-import React                          from 'react';
+import React from "react";
 
 import {
   type TreeNodeIdType,
@@ -8,13 +8,13 @@ import {
   type DateRangeType,
   type NodeType,
   type SearchType
-}                                     from '../common/types/backend';
-import { type DraggedNodeType }       from '../standard-query-editor/types';
+} from "../common/types/backend";
+import { type DraggedNodeType } from "../standard-query-editor/types";
 
-import { getConceptById }             from './globalTreeStoreHelper';
-import Openable                       from './Openable';
-import CategoryTreeNodeTextContainer  from './CategoryTreeNodeTextContainer';
-import { isInSearchResult }           from './selectors';
+import { getConceptById } from "./globalTreeStoreHelper";
+import Openable from "./Openable";
+import CategoryTreeNodeTextContainer from "./CategoryTreeNodeTextContainer";
+import { isInSearchResult } from "./selectors";
 
 // Concept data that is necessary to display tree nodes. Includes additional infos
 // for the tooltip as well as the id of the corresponding tree
@@ -27,8 +27,8 @@ type TreeNodeData = {
   additionalInfos: Array<InfoType>,
   children: Array<TreeNodeIdType>,
 
-  tree: TreeNodeIdType,
-}
+  tree: TreeNodeIdType
+};
 
 type PropsType = {
   id: TreeNodeIdType,
@@ -36,7 +36,7 @@ type PropsType = {
   depth: number,
   open: boolean,
   search?: SearchType,
-  onToggleOpen: () => void,
+  onToggleOpen: () => void
 };
 
 const selectTreeNodeData = (concept: NodeType, tree: TreeNodeIdType) => ({
@@ -48,7 +48,7 @@ const selectTreeNodeData = (concept: NodeType, tree: TreeNodeIdType) => ({
   additionalInfos: concept.additionalInfos,
   children: concept.children,
 
-  tree,
+  tree
 });
 
 class CategoryTreeNode extends React.Component<PropsType> {
@@ -60,45 +60,44 @@ class CategoryTreeNode extends React.Component<PropsType> {
 
   render() {
     const { id, data, depth, open, search } = this.props;
-    const searching = search && search.searching
+    const searching = search && search.searching;
 
     const render = searching
-    ? isInSearchResult(id, data.children, search)
-    : true;
+      ? isInSearchResult(id, data.children, search)
+      : true;
 
-    return render && (
-      <div className="category-tree-node">
-        <CategoryTreeNodeTextContainer
-          node={{
-            id,
-            label: data.label,
-            description: data.description,
-            matchingEntries: data.matchingEntries,
-            dateRange: data.dateRange,
-            additionalInfos: data.additionalInfos,
-            hasChildren: !!data.children && data.children.length > 0,
-
-          }}
-          createQueryElement={() : DraggedNodeType => {
-            const tables = getConceptById(data.tree).tables;
-            return {
-              ids: [id],
+    return (
+      render && (
+        <div className="category-tree-node">
+          <CategoryTreeNodeTextContainer
+            node={{
+              id,
               label: data.label,
-              tables: tables,
-              tree: data.tree
-            };
-          }}
-          open={open}
-          depth={depth}
-          active={data.active}
-          onTextClick={this._onToggleOpen.bind(this)}
-          search={search}
-        />
-        {
-          !!data.children && (open || searching) &&
-          <div className="category-tree-node__children">
-            {
-              data.children.map((childId, i) => {
+              description: data.description,
+              matchingEntries: data.matchingEntries,
+              dateRange: data.dateRange,
+              additionalInfos: data.additionalInfos,
+              hasChildren: !!data.children && data.children.length > 0
+            }}
+            createQueryElement={(): DraggedNodeType => {
+              const tables = getConceptById(data.tree).tables;
+
+              return {
+                ids: [id],
+                label: data.label,
+                tables,
+                tree: data.tree
+              };
+            }}
+            open={open}
+            depth={depth}
+            active={data.active}
+            onTextClick={this._onToggleOpen.bind(this)}
+            search={search}
+          />
+          {!!data.children && (open || searching) && (
+            <div className="category-tree-node__children">
+              {data.children.map((childId, i) => {
                 const child = getConceptById(childId);
 
                 return child ? (
@@ -110,14 +109,14 @@ class CategoryTreeNode extends React.Component<PropsType> {
                     search={this.props.search}
                   />
                 ) : null;
-              })
-            }
-          </div>
-        }
-      </div>
+              })}
+            </div>
+          )}
+        </div>
+      )
     );
   }
-};
+}
 
 const OpenableCategoryTreeNode = Openable(CategoryTreeNode);
 

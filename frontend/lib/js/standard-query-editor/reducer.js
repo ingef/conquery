@@ -645,7 +645,9 @@ const updateNodeLabel = (state, action) => {
 
   const { andIdx, orIdx } = node;
 
-  return setElementProperties(state, andIdx, orIdx, { label: action.label });
+  return setElementProperties(state, andIdx, orIdx, {
+    label: action.payload.label
+  });
 };
 
 const addConceptToNode = (state, action) => {

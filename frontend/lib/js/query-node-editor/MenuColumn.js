@@ -16,8 +16,9 @@ const FixedColumn = styled("div")`
   height: 100%;
   display: flex;
   flex-direction: column;
-  flex-basis: 225px;
-  min-width: 150px;
+  max-width: 220px;
+  flex-shrink: 0;
+  flex-grow: 1;
 
   &:first-of-type {
     border-right: 1px solid ${({ theme }) => theme.col.grayLight};
@@ -57,7 +58,13 @@ const StyledFaIcon = styled(FaIcon)`
 `;
 
 export const MenuColumn = (props: PropsType) => {
-  const { node, editorState } = props;
+  const {
+    node,
+    editorState,
+    showTables,
+    onToggleTable,
+    onResetAllFilters
+  } = props;
 
   const onlyOneTableIncluded = !node.isPreviousQuery
     ? node.tables.filter(table => !table.exclude).length === 1
@@ -80,8 +87,8 @@ export const MenuColumn = (props: PropsType) => {
       >
         {T.translate("queryNodeEditor.properties")}
       </StyledButton>
-      {!node.isPreviousQuery && node.aggregators && <div>Aggregators</div>}
-      {!node.isPreviousQuery && props.showTables && (
+      {!node.isPreviousQuery && node.selects && <div>Aggregators</div>}
+      {!node.isPreviousQuery && showTables && (
         <div>
           <CategoryHeader>
             {T.translate("queryNodeEditor.conceptNodeTables")}
@@ -105,7 +112,7 @@ export const MenuColumn = (props: PropsType) => {
                   event.stopPropagation();
 
                   if (allowToggleTables[tableIdx])
-                    props.onToggleTable(tableIdx, !table.exclude);
+                    onToggleTable(tableIdx, !table.exclude);
                 }}
               />
               {table.label}
@@ -116,7 +123,7 @@ export const MenuColumn = (props: PropsType) => {
           ))}
           <ResetAllFiltersButton
             node={node}
-            onResetAllFilters={props.onResetAllFilters}
+            onResetAllFilters={onResetAllFilters}
           />
         </div>
       )}
