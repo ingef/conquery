@@ -20,6 +20,7 @@ import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
 import com.bakdata.conquery.models.messages.namespaces.specific.ImportBits;
@@ -152,7 +153,7 @@ public class ImportJob extends Job {
 			//update the allIdsTable
 			log.info("\tupdating id information");
 			Import allIdsImp = new Import();
-			allIdsImp.setName(header.getName());
+			allIdsImp.setName(new ImportId(table, header.getName()).toString());
 			allIdsImp.setTable(new TableId(namespace.getStorage().getDataset().getId(), ConqueryConstants.ALL_IDS_TABLE));
 			allIdsImp.setNumberOfBlocks(header.getGroups());
 			allIdsImp.setNumberOfEntries(header.getGroups());

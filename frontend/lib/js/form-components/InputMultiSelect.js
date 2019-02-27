@@ -15,6 +15,8 @@ import { type SelectOptionsType } from "../common/types/backend";
 import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
+import TooManyValues from "./TooManyValues";
+
 type PropsType = FieldPropsType & {
   label: string,
   options: SelectOptionsType,
@@ -23,13 +25,13 @@ type PropsType = FieldPropsType & {
   onInputChange?: Function,
   isLoading?: boolean,
   className?: string,
-  onDropFiles?: Function,
+  onDropFile?: Function,
   isOver: boolean,
   allowDropFile?: boolean
 };
 
 const InputMultiSelect = (props: PropsType) => {
-  const allowDropFile = props.allowDropFile && !!props.onDropFiles;
+  const allowDropFile = props.allowDropFile && !!props.onDropFile;
 
   const MultiValueLabel = params => {
     const label = params.data.optionLabel || params.data.label || params.data;
@@ -73,52 +75,61 @@ const InputMultiSelect = (props: PropsType) => {
         {props.label}
         {props.tooltip && <InfoTooltip text={props.tooltip} />}
       </p>
-      <Dropzone
-        disableClick
-        style={{ position: "relative", display: "block", maxWidth: "300px" }}
-        activeClassName={allowDropFile ? "dropzone--over" : ""}
-        className={allowDropFile ? "dropzone" : ""}
-        onDrop={props.onDropFiles}
-        disabled={!allowDropFile}
-      >
-        <Select
-          name="form-field"
-          options={options}
-          components={{ MultiValueLabel }}
+      {props.input.value && props.input.value.length > 50 ? (
+        <TooManyValues
           value={props.input.value}
-          onChange={value => props.input.onChange(value)}
-          isDisabled={props.disabled}
-          isMulti
-          placeholder={
-            allowDropFile
-              ? T.translate("reactSelect.dndPlaceholder")
-              : T.translate("reactSelect.placeholder")
-          }
-          noOptionsMessage={() => T.translate("reactSelect.noResults")}
-          onInputChange={
-            props.onInputChange ||
-            function(value) {
-              return value;
-            }
-          }
-          isLoading={!!props.isLoading}
-          classNamePrefix={"react-select"}
-          closeMenuOnSelect={false}
-          formatOptionLabel={({
-            label,
-            optionValue,
-            templateValues,
-            highlight
-          }) =>
-            optionValue && templateValues ? (
-              <Markdown source={Mustache.render(optionValue, templateValues)} />
-            ) : (
-              label
-            )
-          }
-          filterOption={false}
+          onClear={() => props.input.onChange(null)}
         />
-      </Dropzone>
+      ) : (
+        <Dropzone
+          disableClick
+          style={{ position: "relative", display: "block", maxWidth: "300px" }}
+          activeClassName={allowDropFile ? "dropzone--over" : ""}
+          className={allowDropFile ? "dropzone" : ""}
+          onDrop={files => props.onDropFile(files[0])}
+          disabled={!allowDropFile}
+        >
+          <Select
+            name="form-field"
+            options={options}
+            components={{ MultiValueLabel }}
+            value={props.input.value}
+            onChange={value => props.input.onChange(value)}
+            isDisabled={props.disabled}
+            isMulti
+            placeholder={
+              allowDropFile
+                ? T.translate("reactSelect.dndPlaceholder")
+                : T.translate("reactSelect.placeholder")
+            }
+            noOptionsMessage={() => T.translate("reactSelect.noResults")}
+            onInputChange={
+              props.onInputChange ||
+              function(value) {
+                return value;
+              }
+            }
+            isLoading={!!props.isLoading}
+            classNamePrefix={"react-select"}
+            closeMenuOnSelect={false}
+            formatOptionLabel={({
+              label,
+              optionValue,
+              templateValues,
+              highlight
+            }) =>
+              optionValue && templateValues ? (
+                <Markdown
+                  source={Mustache.render(optionValue, templateValues)}
+                />
+              ) : (
+                label
+              )
+            }
+            filterOption={false}
+          />
+        </Dropzone>
+      )}
     </label>
   );
 };

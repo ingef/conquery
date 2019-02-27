@@ -1,10 +1,10 @@
 // @flow
 
-import React                      from 'react';
-import { type FieldPropsType }    from 'redux-form';
+import React from "react";
+import { type FieldPropsType } from "redux-form";
 
-import { type SelectOptionsType } from '../common/types/backend';
-import InputMultiSelect           from './InputMultiSelect';
+import { type SelectOptionsType } from "../common/types/backend";
+import InputMultiSelect from "./InputMultiSelect";
 
 type PropsType = FieldPropsType & {
   label: string,
@@ -14,8 +14,8 @@ type PropsType = FieldPropsType & {
   startLoadingThreshold: number,
   tooltip?: string,
   onLoad: Function,
-  onDropFiles: Function,
-  allowDropFile?: ?boolean,
+  onDropFile: Function,
+  allowDropFile?: ?boolean
 };
 
 const AsyncInputMultiSelect = ({
@@ -27,7 +27,7 @@ const AsyncInputMultiSelect = ({
   onLoad,
   isLoading,
   input,
-  onDropFiles,
+  onDropFile,
   allowDropFile
 }: PropsType) => (
   <InputMultiSelect
@@ -37,15 +37,12 @@ const AsyncInputMultiSelect = ({
     tooltip={tooltip}
     isLoading={isLoading}
     input={input}
-    onInputChange={
-      (value) => {
-        if (value.length >= startLoadingThreshold)
-          onLoad(value);
+    onInputChange={value => {
+      if (value.length >= startLoadingThreshold) onLoad(value);
 
-        return value
-      }
-    }
-    onDropFiles={onDropFiles}
+      return value;
+    }}
+    onDropFile={onDropFile}
     allowDropFile={allowDropFile}
   />
 );

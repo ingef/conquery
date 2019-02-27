@@ -16,7 +16,7 @@ import {
   resetAllFilters,
   toggleTimestamps,
   loadFilterSuggestions,
-  dropFiles,
+  dropFilterValuesFile,
   toggleIncludeSubnodes
 } from "./actions";
 
@@ -57,27 +57,10 @@ const mapDispatchToProps = dispatch => ({
   onResetAllFilters: (andIdx, orIdx) =>
     dispatch(resetAllFilters(andIdx, orIdx)),
   onToggleTimestamps: isExcluded => dispatch(toggleTimestamps(isExcluded)),
-  onLoadFilterSuggestions: (
-    datasetId,
-    tableIdx,
-    tableId,
-    conceptId,
-    filterIdx,
-    filterId,
-    prefix
-  ) =>
-    dispatch(
-      loadFilterSuggestions(
-        datasetId,
-        tableIdx,
-        tableId,
-        conceptId,
-        filterIdx,
-        filterId,
-        prefix
-      )
-    ),
-  onDropFiles: (...params) => dispatch(dropFiles(...params)),
+  onLoadFilterSuggestions: (...params) =>
+    dispatch(loadFilterSuggestions(...params)),
+  onDropFilterValuesFile: (...params) =>
+    dispatch(dropFilterValuesFile(...params)),
   onToggleIncludeSubnodes: isIncludeSubNodes =>
     dispatch(toggleIncludeSubnodes(isIncludeSubNodes))
 });

@@ -1,28 +1,32 @@
 // @flow
 
-import React                from 'react';
+import * as React from "react";
 
-import { getStoredAuthToken } from '../authorization';
+import { getStoredAuthToken } from "../authorization";
+
+import IconButton from "./IconButton";
 
 type PropsType = {
   url: string,
-  label?: string,
   className?: string,
+  children?: React.Node
 };
 
-const DownloadButton = (props: PropsType) => {
+const DownloadButton = ({
+  url,
+  className,
+  children,
+  ...restProps
+}: PropsType) => {
   const authToken = getStoredAuthToken();
 
-  const href = `${props.url}?access_token=${encodeURIComponent(authToken || '')}`;
+  const href = `${url}?access_token=${encodeURIComponent(authToken || "")}`;
 
   return (
-    <a
-      href={href}
-      className={props.className}
-    >
-      <i
-        className="fa fa-download"
-      /> {props.label}
+    <a href={href} className={className}>
+      <IconButton icon="download" {...restProps}>
+        {children}
+      </IconButton>
     </a>
   );
 };
