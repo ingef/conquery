@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.concepts.virtual;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -12,6 +14,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Getter;
@@ -26,12 +29,20 @@ public class VirtualConceptConnector extends Connector {
 	private Table table;
 	@Valid @JsonManagedReference
 	private Filter<?> filter;
-	
+
+	@Valid @JsonManagedReference
+	private List<Select> select;
+
 	@Override
 	public Collection<Filter<?>> collectAllFilters() {
 		return Stream.of(getDateSelectionFilter(), filter).filter(Objects::nonNull).collect(Collectors.toList());
 	}
-	/*
+
+	@Override
+	protected Collection<Select> collectAllSelects() {
+		return select == null ? new LinkedList<>() : select;
+	}
+/*
 	@Override
 	public EventProcessingResult processEvent(Event r) {
 		CDateRange dateRange = extractValidityDates(r);

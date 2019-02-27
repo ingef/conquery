@@ -1,17 +1,10 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
+import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
@@ -27,8 +20,15 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
-
+import com.bakdata.conquery.models.query.select.Select;
 import lombok.AllArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
@@ -56,14 +56,16 @@ public class FrontEndConceptBuilder {
 	}
 
 	private static FENode createCTRoot(Concept<?> c, StructureNode[] structureNodes) {
+
 		MatchingStats matchingStats = c.getMatchingStats();
+
 		StructureNodeId structureParent = Arrays
 			.stream(structureNodes)
 			.filter(sn->sn.getContainedRoots().contains(c.getId()))
 			.findAny()
 			.map(StructureNode::getId)
 			.orElse(null);
-		
+
 		FENode n = FENode.builder()
 				.active(c instanceof VirtualConcept)
 				.description(c.getDescription())
@@ -176,10 +178,19 @@ public class FrontEndConceptBuilder {
 			.build();
 		try {
 			filter.configureFrontend(f);
-		} catch (ConceptConfigurationException e) {
+		}
+		catch (ConceptConfigurationException e) {
 			throw new IllegalStateException(e);
 		}
 		return f;
+	}
+
+	public static FESelect createSelect(Select select) {
+		return FESelect
+					.builder()
+					.id(select.getId())
+					.label(select.getLabel())
+					.build();
 	}
 
 	public static Map<ConceptId, Map<ConceptElementId<?>, FENode>> createTreeMap(List<Concept<?>> concepts) {

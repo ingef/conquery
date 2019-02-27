@@ -6,6 +6,7 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
@@ -22,8 +23,10 @@ public class CQTable {
 	private ConnectorId id;
 	@Valid @NotNull
 	private List<FilterValue> filters = Collections.emptyList();
-	@Valid @NotNull
+
+	@Valid @NotNull @NsIdRefCollection
 	private List<Select> select = Collections.emptyList();
+
 	@JsonBackReference
 	private CQConcept concept;
 

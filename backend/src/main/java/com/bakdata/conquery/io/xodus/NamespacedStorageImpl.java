@@ -1,12 +1,18 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -18,13 +24,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.functions.Collector;
-import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
@@ -80,6 +81,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				for (Connector c : concept.getConnectors()) {
 					centralRegistry.register(c);
 					c.getAllFilters().forEach(centralRegistry::register);
+					c.getAllSelects().forEach(centralRegistry::register);
 				}
 				//add imports of table
 				for(Import imp: getAllImports()) {
@@ -93,7 +95,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			.onRemove(concept -> {
 				//see #146  remove from Dataset.concepts
 				for(Connector c:concept.getConnectors()) {
-					c.getAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
+					c.getAllFilters()
+						.stream()
+						.forEach(centralRegistry::remove);
+					c.getAllSelects().forEach(centralRegistry::remove);
 					centralRegistry.remove(c.getId());
 				}
 			});

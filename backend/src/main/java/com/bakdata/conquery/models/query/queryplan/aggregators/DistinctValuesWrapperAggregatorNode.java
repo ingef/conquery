@@ -11,7 +11,8 @@ import com.bakdata.conquery.models.events.Block;
 import lombok.Getter;
 
 /**
- * Event is included only, when the value has not been seen before.
+ * Aggregator node forwarding only events with distinct values to {@code aggregator}.
+ * @param <VALUE>
  */
 public class DistinctValuesWrapperAggregatorNode<VALUE> extends ColumnAggregator<VALUE> {
 

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -11,12 +12,14 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -48,20 +51,17 @@ public class CQConcept implements CQElement {
 	@Valid @NotEmpty @JsonManagedReference
 	private List<CQTable> tables;
 	@Valid @NotNull
+
+	@NsIdRefCollection
 	private List<Select> select = Collections.emptyList();
+
 	private boolean excludeFromTimeAggregation = false;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
-		ConceptElement[] concepts = ids
-			.stream()
-			.map(id ->
-				context.getCentralRegistry().resolve(id.findConcept()).getElementById(id)
-			)
-			.toArray(ConceptElement[]::new);
+		ConceptElement[] concepts = resolveConcepts(ids, context.getCentralRegistry());
 
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, select);
-
 
 		Concept<?> c = concepts[0].getConcept();
 
@@ -69,10 +69,13 @@ public class CQConcept implements CQElement {
 		for(CQTable t : tables) {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
 
+			List<Select> resolvedSelects = t.getSelect();
+
+
 			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
 			//add filter to children
-			for(FilterValue<?> f : t.getFilters()) {
-				FilterNode<?,?> agg = ((Filter)f.getFilter()).createAggregator(f);
+			for(FilterValue f : t.getFilters()) {
+				FilterNode agg = f.getFilter().createAggregator(f);
 				if(agg != null) {
 					filters.add(agg);
 				}
@@ -80,8 +83,10 @@ public class CQConcept implements CQElement {
 
 			List<QPNode> aggregators = new ArrayList<>();
 			//add aggregators
+
 			aggregators.addAll(conceptAggregators);
-			aggregators.addAll(createConceptAggregators(plan, t.getSelect()));
+			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
+
 			if(!excludeFromTimeAggregation) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
 					t.getResolvedConnector().getTable().getId(),
@@ -104,6 +109,22 @@ public class CQConcept implements CQElement {
 		return OrNode.of(tableNodes);
 	}
 
+	private List<Select> resolveSelects(List<SelectId> select, CentralRegistry centralRegistry) {
+		return
+				select
+					.stream()
+					.map(name -> centralRegistry.resolve(name.getConnector()).<Select>getSelect(name))
+					.collect(Collectors.toList());
+	}
+
+	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
+		return
+				ids
+					.stream()
+					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+					.toArray(ConceptElement[]::new);
+	}
+
 	private QPNode conceptChild(List<FilterNode<?, ?>> filters, List<QPNode> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
@@ -113,11 +134,10 @@ public class CQConcept implements CQElement {
 	}
 
 	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
-		if(select.isEmpty())
-			return Collections.emptyList();
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
-		for(Select s:select) {
+
+		for (Select s : select) {
 			AggregatorNode<?> agg = s.createAggregator(plan.getAggregators().size());
 			plan.getAggregators().add(agg.getAggregator());
 			nodes.add(agg);

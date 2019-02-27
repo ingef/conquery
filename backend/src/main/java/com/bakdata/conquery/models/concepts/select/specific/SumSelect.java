@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.concepts.select;
+package com.bakdata.conquery.models.concepts.select.specific;
 
 import javax.validation.constraints.NotNull;
 
@@ -38,13 +38,12 @@ public class SumSelect extends Select {
 	@Override
 	protected Aggregator<?> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregatorNode<>(getAggregator(), getColumn());
+			return new DistinctValuesWrapperAggregatorNode(getAggregator(), getColumn());
 		}
 		else {
 			return getAggregator();
 		}
 	}
-
 	private ColumnAggregator<?> getAggregator() {
 		if (subtractColumn == null) {
 			switch (getColumn().getType()) {
