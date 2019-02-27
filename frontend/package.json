@@ -17,7 +17,7 @@
     "build-app": "rimraf app/dist && cross-env NODE_ENV=production webpack -p --config ./app/webpack.config.js --progress --colors",
     "heroku-postbuild": "yarn run build-app",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
-    "test": "cross-env NODE_ENV=test jest test"
+    "test": "cross-env NODE_ENV=test jest test 2>&1"
   },
   "files": [
     "/dist"

@@ -17,8 +17,6 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
 
     <build>
@@ -68,10 +66,7 @@
                         <phase>generate-resources</phase>
 
                         <configuration>
-                            <!-- If you need reproducible dependencies, which is usually the case
-                                with the continuous integration systems, you should pass frozen-lockfile
-                                flag. -->
-                            <arguments>--frozen-lockfile</arguments>
+                            <arguments>install --frozen-lockfile --non-interactive --ignore-engines</arguments>
                         </configuration>
                     </execution>
                     <execution>
