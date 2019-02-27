@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.concepts.select.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.concepts.select.ColumnSelect;
+import com.bakdata.conquery.models.concepts.select.SingleColumnSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;

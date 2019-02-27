@@ -9,8 +9,6 @@ import java.util.stream.Collectors;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.query.select.Select;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
@@ -27,6 +25,8 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -165,14 +165,6 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	@JsonIgnore
 	protected abstract Collection<Select> collectAllSelects();
-
-	@JsonIgnore
-	public IdMap<FilterId, Filter<?>> getAllFilters() {
-		if(allFilters==null) {
-			allFilters = new IdMap<>(collectAllFilters());
-		}
-		return allFilters;
-	}
 
 	@JsonIgnore
 	public IdMap<SelectId, Select> getAllSelects() {

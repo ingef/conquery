@@ -5,6 +5,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
 import com.bakdata.conquery.models.query.select.Select;
 
+@CPSType(id = "DISTINCT", base = Select.class)
 @CPSType(id = "ALL", base = Select.class)
 public class AllValueSelect extends SingleColumnSelect {
 
