@@ -14,16 +14,13 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
-import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -75,20 +72,6 @@ public class DatasetsProcessor {
 	}
 
 	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
-
-		// if there are multiple selectable dates we need to add the select date filter
-		for (Connector con : c.getConnectors()) {
-			if (con.getValidityDates().size() > 1) {
-				ValidityDateSelectionFilter f = new ValidityDateSelectionFilter();
-				f.setConnector(con);
-				f.setName(ConqueryConstants.VALIDITY_DATE_SELECTION_FILTER_NAME);
-				f.setLabel(I18n.LABELS.getDateSelection());
-				con.setDateSelectionFilter(f);
-				// remove the sometimes already calculated all filters map so it is recalculated
-				con.setAllFiltersMap(null);
-			}
-		}
-
 		c.setDataset(dataset.getId());
 		jobManager
 			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));

@@ -16,6 +16,7 @@ public class FETable {
 	private TableId id;
 	private ConnectorId connectorId;
 	private String label;
+	private List<FEValue> validityDateSelection;
 	private List<FEFilter> filters;
 	private List<FESelect> selects;
 }
