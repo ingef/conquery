@@ -59,16 +59,16 @@ public class CQConcept implements CQElement {
 				context.getCentralRegistry().resolve(id.findConcept()).getElementById(id)
 			)
 			.toArray(ConceptElement[]::new);
-		
+
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, select);
-		
-		
+
+
 		Concept<?> c = concepts[0].getConcept();
-		
+
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable t : tables) {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
-			
+
 			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
 			//add filter to children
 			for(FilterValue<?> f : t.getFilters()) {
@@ -77,7 +77,7 @@ public class CQConcept implements CQElement {
 					filters.add(agg);
 				}
 			}
-			
+
 			List<QPNode> aggregators = new ArrayList<>();
 			//add aggregators
 			aggregators.addAll(conceptAggregators);
@@ -88,7 +88,7 @@ public class CQConcept implements CQElement {
 					plan.getIncluded()
 				));
 			}
-			
+
 			tableNodes.add(
 				new ConceptNode(
 					concepts,
@@ -100,7 +100,7 @@ public class CQConcept implements CQElement {
 				)
 			);
 		}
-		
+
 		return OrNode.of(tableNodes);
 	}
 
@@ -115,7 +115,7 @@ public class CQConcept implements CQElement {
 	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
 		if(select.isEmpty())
 			return Collections.emptyList();
-		
+
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 		for(Select s:select) {
 			AggregatorNode<?> agg = s.createAggregator(plan.getAggregators().size());
@@ -124,7 +124,7 @@ public class CQConcept implements CQElement {
 		}
 		return nodes;
 	}
-	
+
 	private Column selectValidityDateColumn(CQTable t) {
 		//check if we have a manually selected validity date then use that
 		for(FilterValue<?> fv : t.getFilters()) {
@@ -134,17 +134,18 @@ public class CQConcept implements CQElement {
 					.getValidityDateColumn(((CQSelectFilter)fv).getValue());
 			}
 		}
-		
+
 		//else use this first defined validity date column
 		if(!t.getResolvedConnector().getValidityDates().isEmpty())
 			return t.getResolvedConnector().getValidityDates().get(0).getColumn();
 		else
 			return null;
 	}
-	
+
 	@Override
 	public void collectSelects(Deque<Select> select) {
-		for(CQTable table:tables) {
+		select.addAll(this.select);
+		for (CQTable table : tables) {
 			select.addAll(table.getSelect());
 		}
 	}
