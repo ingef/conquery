@@ -6,10 +6,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
-/**
- * Entity is included when the number of values for a specified column are
- * within a given range.
- */
+
 public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;

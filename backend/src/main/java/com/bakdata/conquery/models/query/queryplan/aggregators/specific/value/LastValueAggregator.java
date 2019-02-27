@@ -6,10 +6,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
-/**
- * Entity is included when the number of values for a specified column are
- * within a given range.
- */
+
 public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;
@@ -33,7 +30,7 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 			return;
 		}
 
-		int next = block.getAsDateRange(event, validityDateColumn).getMinValue();
+		int next = block.getAsDateRange(event, validityDateColumn).getMaxValue();
 
 		if (next > date) {
 			date = next;

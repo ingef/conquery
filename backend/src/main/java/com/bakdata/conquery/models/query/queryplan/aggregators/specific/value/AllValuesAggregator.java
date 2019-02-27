@@ -7,10 +7,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
-/**
- * Entity is included when the number of values for a specified column are
- * within a given range.
- */
+
 public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE>> {
 
 	private final Set<VALUE> entries = new HashSet<>();
