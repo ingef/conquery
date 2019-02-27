@@ -17,7 +17,8 @@ import {
   toggleTimestamps,
   loadFilterSuggestions,
   dropFilterValuesFile,
-  toggleIncludeSubnodes
+  toggleIncludeSubnodes,
+  setSelectedSelects
 } from "./actions";
 
 const findNodeBeingEdited = query =>
@@ -50,6 +51,8 @@ const mapDispatchToProps = dispatch => ({
   onRemoveConcept: conceptId => dispatch(removeConceptFromNode(conceptId)),
   onToggleTable: (tableIdx, isExcluded) =>
     dispatch(toggleTable(tableIdx, isExcluded)),
+  onSetSelectedSelects: (tableIdx, value) =>
+    dispatch(setSelectedSelects(tableIdx, value)),
   onSetFilterValue: (tableIdx, filterIdx, value, formattedValue) =>
     dispatch(setFilterValue(tableIdx, filterIdx, value, formattedValue)),
   onSwitchFilterMode: (tableIdx, filterIdx, mode) =>

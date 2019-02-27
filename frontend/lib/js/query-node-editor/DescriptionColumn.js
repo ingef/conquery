@@ -7,20 +7,20 @@ import T from "i18n-react";
 import { isEmpty } from "../common/helpers";
 import type { PropsType } from "./QueryNodeEditor";
 
-import ColumnWithContent from "./ColumnWithContent";
+import ContentCell from "./ContentCell";
 
-const StyledColumn = styled(ColumnWithContent)`
+const StyledContentCell = styled(ContentCell)`
   border-left: 1px solid ${({ theme }) => theme.col.grayLight};
   max-width: 200px;
 `;
 
-export const DescriptionColumn = (props: PropsType) => {
+const DescriptionColumn = (props: PropsType) => {
   const { node, editorState } = props;
 
   const selectedTable = node.tables[editorState.selectedInputTableIdx];
 
   return (
-    <StyledColumn headline={T.translate("queryNodeEditor.description")}>
+    <StyledContentCell headline={T.translate("queryNodeEditor.description")}>
       <div className="query-node-editor__description">
         {selectedTable != null &&
           editorState.selectedInput != null &&
@@ -42,6 +42,8 @@ export const DescriptionColumn = (props: PropsType) => {
           <span>{T.translate("queryNodeEditor.selectAFilter")}</span>
         )}
       </div>
-    </StyledColumn>
+    </StyledContentCell>
   );
 };
+
+export default DescriptionColumn;

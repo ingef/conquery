@@ -14,7 +14,7 @@ import type { PropsType } from "./QueryNodeEditor";
 
 import ConceptEntry from "./ConceptEntry";
 import ConceptDropzone from "./ConceptDropzone";
-import ColumnWithContent from "./ColumnWithContent";
+import ContentCell from "./ContentCell";
 
 const Row = styled("div")`
   margin-bottom: 10px;
@@ -25,11 +25,11 @@ const RowHeading = styled("h5")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-export const NodeDetailsView = (props: PropsType) => {
+const NodeDetailsView = (props: PropsType) => {
   const { node, editorState } = props;
 
   return (
-    <ColumnWithContent
+    <ContentCell
       headline={
         <>
           {!node.isPreviousQuery && (
@@ -80,6 +80,8 @@ export const NodeDetailsView = (props: PropsType) => {
           </div>
         </Row>
       )}
-    </ColumnWithContent>
+    </ContentCell>
   );
 };
+
+export default NodeDetailsView;

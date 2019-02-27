@@ -10,10 +10,10 @@ import { type QueryNodeType } from "../standard-query-editor/types";
 
 import TransparentButton from "../button/TransparentButton";
 
-import { MenuColumn } from "./MenuColumn";
-import { NodeDetailsView } from "./NodeDetailsView";
-import { TableFilterView } from "./TableFilterView";
-import { DescriptionColumn } from "./DescriptionColumn";
+import MenuColumn from "./MenuColumn";
+import NodeDetailsView from "./NodeDetailsView";
+import TableView from "./TableView";
+import DescriptionColumn from "./DescriptionColumn";
 
 import { createQueryNodeEditorActions } from "./actions";
 
@@ -35,7 +35,7 @@ const Wrapper = styled("div")`
   flex-direction: row;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
 `;
 
 const CloseButton = styled(TransparentButton)`
@@ -54,8 +54,7 @@ type QueryNodeEditorState = {
   onSelectInputTableView: Function,
   onShowDescription: Function,
   onToggleEditLabel: Function,
-  onReset: Function,
-  onDropFilterValuesFile: Function
+  onReset: Function
 };
 
 export type PropsType = {
@@ -67,6 +66,7 @@ export type PropsType = {
   onCloseModal: Function,
   onUpdateLabel: Function,
   onDropConcept: Function,
+  onDropFilterValuesFile: Function,
   onRemoveConcept: Function,
   onToggleTable: Function,
   onSetFilterValue: Function,
@@ -74,6 +74,7 @@ export type PropsType = {
   onToggleTimestamps: Function,
   onSwitchFilterMode: Function,
   onLoadFilterSuggestions: Function,
+  onSetSelectedSelects: Function,
   datasetId: number,
   suggestions: ?Object,
   onToggleIncludeSubnodes: Function
@@ -95,7 +96,7 @@ const QueryNodeEditor = (props: PropsType) => {
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
         {!editorState.detailsViewActive && selectedTable != null && (
-          <TableFilterView {...props} />
+          <TableView {...props} />
         )}
         {!editorState.detailsViewActive && <DescriptionColumn {...props} />}
         <CloseButton

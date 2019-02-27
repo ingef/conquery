@@ -50,6 +50,7 @@ import {
   REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
+  SET_SELECTED_SELECTS,
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
@@ -330,6 +331,24 @@ const setNodeFilterValue = (state, action) => {
     value,
     formattedValue
   });
+};
+
+const setNodeSelectedSelects = (state, action) => {
+  const { tableIdx, value } = action.payload;
+  const { andIdx, orIdx } = selectEditedNode(state);
+  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const { selects } = table;
+
+  // value contains the selects that have now been selected
+  const newTable = {
+    ...table,
+    selects: selects.map(select => ({
+      ...select,
+      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+    }))
+  };
+
+  return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
 const switchNodeFilterMode = (state, action) => {
@@ -809,6 +828,8 @@ const query = (
       return toggleNodeTable(state, action);
     case SET_FILTER_VALUE:
       return setNodeFilterValue(state, action);
+    case SET_SELECTED_SELECTS:
+      return setNodeSelectedSelects(state, action);
     case RESET_ALL_FILTERS:
       return resetNodeAllFilters(state, action);
     case SWITCH_FILTER_MODE:

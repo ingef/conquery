@@ -80,12 +80,13 @@ class CategoryTreeNode extends React.Component<PropsType> {
               hasChildren: !!data.children && data.children.length > 0
             }}
             createQueryElement={(): DraggedNodeType => {
-              const tables = getConceptById(data.tree).tables;
+              const { tables, selects } = getConceptById(data.tree);
 
               return {
                 ids: [id],
                 label: data.label,
                 tables,
+                selects,
                 tree: data.tree
               };
             }}
