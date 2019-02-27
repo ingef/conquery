@@ -13,8 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+
 @AllArgsConstructor
-public abstract class SingleColumnAggregator<T> implements Aggregator<T> {
+public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 
 	@Valid
 	@NotNull
@@ -22,6 +23,11 @@ public abstract class SingleColumnAggregator<T> implements Aggregator<T> {
 	@Setter
 	@NsIdRef
 	protected Column column;
+
+	@Override
+	public Column[] getRequiredColumns() {
+		return new Column[] { getColumn() };
+	}
 
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {

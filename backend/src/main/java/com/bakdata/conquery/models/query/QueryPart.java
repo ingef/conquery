@@ -7,11 +7,13 @@ import java.util.concurrent.Callable;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.EntityResult;
 
 import lombok.RequiredArgsConstructor;
+
+import java.util.Set;
+import java.util.concurrent.Callable;
 
 @RequiredArgsConstructor
 public class QueryPart implements Callable<EntityResult> {

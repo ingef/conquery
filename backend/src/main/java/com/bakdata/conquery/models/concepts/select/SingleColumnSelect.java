@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.query.select.Select;
 
 import lombok.Getter;
 
-public abstract class ColumnSelect extends Select {
+public abstract class SingleColumnSelect extends Select {
 
 	@Getter
 	@NsIdRef

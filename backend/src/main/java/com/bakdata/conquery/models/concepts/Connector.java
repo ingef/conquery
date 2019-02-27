@@ -24,6 +24,8 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
+import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -50,8 +52,12 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	@JsonBackReference
 	private Concept<?> concept;
+
 	@JsonIgnore @Getter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
+
+	@JsonIgnore @Getter(AccessLevel.NONE)
+	private transient IdMap<SelectId, Select> allSelects;
 
 	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
 	public void setSelectableDates(List<Column> cols) {
@@ -156,11 +162,27 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@JsonIgnore
 	public abstract List<Filter<?>> collectAllFilters();
 
+	@JsonIgnore
+	protected abstract List<Select> collectAllSelects();
+
+	@JsonIgnore
+	public IdMap<SelectId, Select> getAllSelects() {
+		if(allSelects==null) {
+			allSelects = new IdMap<>(collectAllSelects());
+		}
+		return allSelects;
+	}
+
+
 	public <T extends Filter> T getFilter(FilterId id) {
 		if(allFiltersMap==null) {
 			allFiltersMap = new IdMap<>(collectAllFilters());
 		}
 		return (T)allFiltersMap.getOrFail(id);
+	}
+
+	public <T extends Select> T getSelect(SelectId id) {
+		return (T)getAllSelects().getOrFail(id);
 	}
 
 	public Column getValidityDateColumn(String name) {
