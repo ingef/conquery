@@ -40,9 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Preprocessor {
-	
+
 	private static final long MAX_ERROR_PRINTING = 50;
-	
+
 	private AtomicLong errorCounter = new AtomicLong(0L);
 
 	public List<ImportDescriptor> findInitialDescriptors(PreprocessingDirectories dirs, Validator validator) throws IOException, JSONException {
@@ -64,7 +64,7 @@ public class Preprocessor {
 	}
 
 	public void preprocess(ImportDescriptor descriptor, ConqueryConfig config) throws IOException, JSONException, ParsingException {
-		
+
 		if (checkExistingHash(descriptor)) {
 			return;
 		}
@@ -105,7 +105,7 @@ public class Preprocessor {
 							}
 						}
 
-						if(input.checkAutoOutput()) {
+						if (input.checkAutoOutput()) {
 							List<AutoOutput.OutRow> outRows = input.getAutoOutput().finish();
 							for (AutoOutput.OutRow outRow : outRows) {
 								result.addRow(outRow.getPrimaryId(), outRow.getTypes(), outRow.getData());
@@ -116,7 +116,7 @@ public class Preprocessor {
 				//find the optimal subtypes
 				log.info("finding optimal column types");
 				log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getOriginalType(), result.getPrimaryColumn().getType());
-				
+
 				for(PPColumn c:result.getColumns()) {
 					c.findBestType();
 					log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getOriginalType(), c.getType());
@@ -137,31 +137,36 @@ public class Preprocessor {
 
 	}
 
-	private void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource) throws ParsingException {
-		if (input.checkAutoOutput()) {
-			List<AutoOutput.OutRow> outRows = input.getAutoOutput().createOutput(primaryId, row, columns, inputSource, lineId);
-			for (AutoOutput.OutRow outRow : outRows) {
-				result.addRow(primaryId, columns, outRow.getData());
+	private void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource)
+		{
+		try {
+
+			if (input.checkAutoOutput()) {
+				List<AutoOutput.OutRow> outRows = input.getAutoOutput().createOutput(primaryId, row, columns, inputSource, lineId);
+				for (AutoOutput.OutRow outRow : outRows) {
+					result.addRow(primaryId, columns, outRow.getData());
+				}
 			}
-		} else {
-			if (input.filter(row)) {
-				try {
+			else {
+				if (input.filter(row)) {
 					for (Object[] outRow : generateOutput(input, columns, row, inputSource, lineId)) {
 						result.addRow(primaryId, columns, outRow);
 					}
-				} catch (ParsingException e) {
-					long errors = errorCounter.getAndIncrement();
-					if (errors < MAX_ERROR_PRINTING) {
-						log.warn("Failed to parse line:" + lineId + " content:" + Arrays.toString(row), e);
-					}
-					else if (errors == MAX_ERROR_PRINTING) {
-						log.warn("More erroneous lines occurred. Only the first "+MAX_ERROR_PRINTING+" were printed.");
-					}
-
-				} catch(Exception e) {
-					throw new IllegalStateException("failed while processing line:"+lineId+" content:"+Arrays.toString(row), e);
 				}
 			}
+		}
+		catch (ParsingException e) {
+			long errors = errorCounter.getAndIncrement();
+			if (errors < MAX_ERROR_PRINTING) {
+				log.warn("Failed to parse line:" + lineId + " content:" + Arrays.toString(row), e);
+			}
+			else if (errors == MAX_ERROR_PRINTING) {
+				log.warn("More erroneous lines occurred. Only the first " + MAX_ERROR_PRINTING + " were printed.");
+			}
+
+		}
+		catch (Exception e) {
+			throw new IllegalStateException("failed while processing line:" + lineId + " content:" + Arrays.toString(row), e);
 		}
 	}
 
@@ -213,7 +218,7 @@ public class Preprocessor {
 			Output out = input.getOutput()[c];
 			CType<?,?> type = columns[c].getType();
 			Class<?> jType = Primitives.wrap(type.getPrimitiveType());
-			
+
 			List<Object> result;
 			result = out.createOutput(type, row, source, lineId);
 			if(result==null) {
@@ -231,8 +236,8 @@ public class Preprocessor {
 							.collect(Collectors.toList())
 				);
 			}
-			
-			
+
+
 			//if the result is a single NULL and we don't want to include such rows
 			if(result.size()==1 && result.get(0)==null && out.isRequired()) {
 				return Collections.emptyList();
