@@ -4,8 +4,10 @@ import { type Dispatch } from "redux-thunk";
 
 import api from "../api";
 import { type DateRangeType } from "../common/types/backend";
-import { dropFiles as fileUploadDropFiles } from "../file-upload/actions";
-import { conceptFilterValuesResolve } from "../upload-concept-list-modal/actions";
+import { getFileRows } from "../common/helpers/fileHelper";
+import { resolveFilterValues } from "../upload-filter-list-modal/actions";
+import { uploadConceptListModalOpen } from "../upload-concept-list-modal/actions";
+import { defaultSuccess, defaultError } from "../common/actions";
 
 import type { DraggedNodeType, DraggedQueryType } from "./types";
 import {
@@ -84,14 +86,17 @@ export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
 
 export const deselectNode = () => ({ type: DESELECT_NODE });
 
-export const updateNodeLabel = label => ({ type: UPDATE_NODE_LABEL, label });
+export const updateNodeLabel = label => ({
+  type: UPDATE_NODE_LABEL,
+  payload: { label }
+});
 export const addConceptToNode = concept => ({
   type: ADD_CONCEPT_TO_NODE,
-  concept
+  payload: { concept }
 });
 export const removeConceptFromNode = conceptId => ({
   type: REMOVE_CONCEPT_FROM_NODE,
-  conceptId
+  payload: { conceptId }
 });
 
 export const toggleTable = (tableIdx, isExcluded) => ({
@@ -124,38 +129,23 @@ export const toggleIncludeSubnodes = includeSubnodes => ({
   payload: { includeSubnodes }
 });
 
-export const loadFilterSuggestionsStart = (
-  tableIdx,
-  conceptId,
-  filterIdx,
-  prefix
-) => ({
+export const loadFilterSuggestionsStart = (tableIdx, filterIdx) => ({
   type: LOAD_FILTER_SUGGESTIONS_START,
-  payload: { tableIdx, conceptId, filterIdx, prefix }
+  payload: { tableIdx, filterIdx }
 });
 
 export const loadFilterSuggestionsSuccess = (
   suggestions,
   tableIdx,
   filterIdx
-) => ({
-  type: LOAD_FILTER_SUGGESTIONS_SUCCESS,
-  payload: {
-    suggestions,
+) =>
+  defaultSuccess(LOAD_FILTER_SUGGESTIONS_SUCCESS, suggestions, {
     tableIdx,
     filterIdx
-  }
-});
+  });
 
-export const loadFilterSuggestionsError = (error, tableIdx, filterIdx) => ({
-  type: LOAD_FILTER_SUGGESTIONS_ERROR,
-  payload: {
-    message: error.message,
-    ...error,
-    tableIdx,
-    filterIdx
-  }
-});
+export const loadFilterSuggestionsError = (error, tableIdx, filterIdx) =>
+  defaultError(LOAD_FILTER_SUGGESTIONS_ERROR, error, { tableIdx, filterIdx });
 
 export const loadFilterSuggestions = (
   datasetId,
@@ -167,9 +157,7 @@ export const loadFilterSuggestions = (
   prefix
 ) => {
   return (dispatch: Dispatch) => {
-    dispatch(
-      loadFilterSuggestionsStart(tableIdx, conceptId, filterIdx, prefix)
-    );
+    dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
 
     return api
       .postPrefixForSuggestions(datasetId, conceptId, tableId, filterId, prefix)
@@ -180,24 +168,43 @@ export const loadFilterSuggestions = (
   };
 };
 
-export const dropFiles = (
+const setResolvedFilterValues = (res, tableIdx, filterIdx) =>
+  defaultSuccess(SET_RESOLVED_FILTER_VALUES, res, { tableIdx, filterIdx });
+
+async function getUniqueFileRows(file) {
+  const rows = await getFileRows(file);
+
+  // Take care of duplicate rows
+  return [...new Set(rows)];
+}
+
+export const dropFilterValuesFile = (
   datasetId,
   treeId,
   tableIdx,
   tableId,
   filterIdx,
   filterId,
-  files
-) =>
-  fileUploadDropFiles(files, {
-    parameters: {
-      actionType: SET_RESOLVED_FILTER_VALUES,
-      datasetId,
-      treeId,
-      tableIdx,
-      tableId,
-      filterIdx,
-      filterId
-    },
-    callback: conceptFilterValuesResolve
-  });
+  file
+) => async dispatch => {
+  const rows = await getUniqueFileRows(file);
+
+  // Result looks something like that:
+  // result = {
+  //   unknownCodes: ...
+  //   resolvedFilter: {
+  //     value: rowSet.map(row => ({ label: row, value: row }))
+  //   }
+  // };
+  const result = await dispatch(
+    resolveFilterValues(datasetId, treeId, tableId, filterId, rows)
+  );
+
+  return dispatch(setResolvedFilterValues(result, tableIdx, filterIdx));
+};
+
+export const dropConceptListFile = file => async dispatch => {
+  const rows = await getUniqueFileRows(file);
+
+  return dispatch(uploadConceptListModalOpen(rows, file.name));
+};

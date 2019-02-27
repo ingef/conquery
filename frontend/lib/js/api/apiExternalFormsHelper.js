@@ -13,5 +13,5 @@ export const transformFormQueryToApi = (
   return {
     type: formName,
     ...formQueryTransformation(form, formName)
-  }
+  };
 };

@@ -1,32 +1,50 @@
 // @flow
 
-import React from "react";
-import classnames from "classnames";
+import * as React from "react";
+import styled from "@emotion/styled";
+import BasicButton from "./BasicButton";
+import FaIcon, { Icon } from "../icon/FaIcon";
 
 type PropsType = {
-  label?: string,
-  onClick?: Function,
-  className?: string,
-  iconClassName?: string,
-  disabled?: boolean
+  children?: React.Node,
+  iconProps?: Object,
+  active?: boolean,
+  large?: boolean,
+  icon: string
 };
+
+const StyledTransparentButton = styled(BasicButton)`
+  background-color: transparent;
+  color: ${({ theme, active }) =>
+    active ? theme.col.blueGrayDark : theme.col.blueGray};
+
+  border-radius: 2px;
+  border: ${({ theme, frame }) =>
+    frame ? "1px solid " + theme.col.gray : "none"};
+
+  &:hover {
+    color: ${({ theme, active }) =>
+      active ? theme.col.blueGray : theme.col.blueGrayDark};
+
+    ${Icon} {
+      color: ${({ theme, active }) =>
+        active ? theme.col.blueGray : theme.col.blueGrayDark};
+    }
+  }
+`;
 
 // A button that is prefixed by an icon
 const IconButton = ({
-  onClick,
-  label,
-  className,
-  iconClassName,
-  disabled
+  icon,
+  active,
+  large,
+  children,
+  iconProps,
+  ...restProps
 }: PropsType) => (
-  <button
-    type="button"
-    className={classnames("btn", className)}
-    onClick={onClick}
-    disabled={disabled}
-  >
-    <i className={classnames("fa", iconClassName)} /> {label}
-  </button>
+  <StyledTransparentButton small={!large} active={active} {...restProps}>
+    <FaIcon main active={active} icon={icon} {...iconProps} /> {children}
+  </StyledTransparentButton>
 );
 
 export default IconButton;

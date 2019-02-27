@@ -1,10 +1,9 @@
 // @flow
 
-import React                from 'react';
-import T                    from 'i18n-react';
-import classnames           from 'classnames';
-import { CloseIconButton }  from '../button';
-
+import React from "react";
+import styled from "@emotion/styled";
+import T from "i18n-react";
+import IconButton from "../button/IconButton";
 
 type PropsType = {
   hasActiveFilters?: boolean,
@@ -14,57 +13,51 @@ type PropsType = {
   error?: string,
   onDeleteNode: Function,
   onFilterClick: Function,
-  onExpandClick: Function,
+  onExpandClick: Function
 };
+
+const StyledIconButton = styled(IconButton)`
+  padding: 0;
+  margin-right: 5px;
+`;
 
 const QueryNodeActions = (props: PropsType) => {
   const base = "query-node-actions";
 
   return (
     <div className={`${base}`}>
-      {
-        !props.error &&
+      {!props.error && (
         <div className={`${base}--left`}>
-          {
-            !props.previousQueryLoading &&
-            <span
+          {!props.previousQueryLoading && (
+            <StyledIconButton
+              noFrame
+              large
+              icon="sliders"
               onClick={props.onFilterClick}
-              className={classnames(
-                'btn--icon',
-                `${base}__action`,
-                {
-                  [`${base}__action--active`]: props.hasActiveFilters
-                }
-              )}
+              active={props.hasActiveFilters}
             >
-              <i
-                className="fa fa-sliders"
-              /> {T.translate('queryEditor.filter')}
-            </span>
-          }
-          {
-            !!props.previousQueryLoading &&
-            <span className={`${base}__loading`}>
-              <i className="fa fa-spinner" /> {T.translate('queryEditor.loadingPreviousQuery')}
-            </span>
-
-          }
-          {
-            props.isExpandable && !props.previousQueryLoading &&
-            <span
+              {T.translate("queryEditor.filter")}
+            </StyledIconButton>
+          )}
+          {!!props.previousQueryLoading && (
+            <StyledIconButton noFrame large icon="spinner">
+              {" " + T.translate("queryEditor.loadingPreviousQuery")}
+            </StyledIconButton>
+          )}
+          {props.isExpandable && !props.previousQueryLoading && (
+            <StyledIconButton
+              noFrame
+              large
+              icon="expand"
               onClick={props.onExpandClick}
-              className={`btn--icon ${base}__action`}
             >
-              <i className="fa fa-expand" /> {T.translate('queryEditor.expand')}
-            </span>
-          }
+              {T.translate("queryEditor.expand")}
+            </StyledIconButton>
+          )}
         </div>
-      }
+      )}
       <div className={`${base}--right`}>
-        <CloseIconButton
-          className={`${base}__action`}
-          onClick={props.onDeleteNode}
-        />
+        <IconButton noFrame tiny icon="close" onClick={props.onDeleteNode} />
       </div>
     </div>
   );

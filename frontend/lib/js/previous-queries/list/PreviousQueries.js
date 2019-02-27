@@ -1,19 +1,39 @@
 // @flow
 
-import React, { Component }            from 'react';
-import T                               from 'i18n-react';
-import ReactList                       from 'react-list';
+import React, { Component } from "react";
+import styled from "@emotion/styled";
+import T from "i18n-react";
+import ReactList from "react-list";
 
-import { ErrorMessage }                from '../../error-message';
-import PreviousQuery                   from './PreviousQuery';
+import { ErrorMessage } from "../../error-message";
+import PreviousQuery from "./PreviousQuery";
 
 type PropsType = {
   datasetId: string,
   queries: [],
   loading: boolean,
   error: string,
-  loadQueries: () => void,
+  loadQueries: () => void
 };
+
+const Root = styled("div")`
+  flex: 1;
+  overflow-y: auto;
+  font-size: ${({ theme }) => theme.font.sm};
+  padding: 0 10px 0 20px;
+`;
+const Container = styled("div")`
+  margin: 4px 0;
+`;
+const StyledErrorMessage = styled(ErrorMessage)`
+  margin: 2px 10px;
+`;
+const Loading = styled("p")`
+  margin: 2px 10px;
+`;
+const Spinner = styled("span")`
+  margin-right: 5px;
+`;
 
 class PreviousQueries extends Component<PropsType> {
   componentDidMount() {
@@ -22,39 +42,35 @@ class PreviousQueries extends Component<PropsType> {
 
   _renderQuery = (index, key) => {
     return (
-      <div key={key} className="previous-query-container">
-        <PreviousQuery query={this.props.queries[index]} datasetId={this.props.datasetId} />
-      </div>
+      <Container key={key}>
+        <PreviousQuery
+          query={this.props.queries[index]}
+          datasetId={this.props.datasetId}
+        />
+      </Container>
     );
-  }
+  };
 
   render() {
     const { loading, error } = this.props;
 
     return (
-      <div className="previous-queries">
-        {
-          error &&
-          <ErrorMessage
-            className="previous-queries__error"
-            message={T.translate('previousQueries.error')}
-          />
-        }
-        {
-          loading &&
-          <p className="previous-queries__loading">
-            <span className="previous-queries__spinner">
+      <Root>
+        {error && (
+          <StyledErrorMessage message={T.translate("previousQueries.error")} />
+        )}
+        {loading && (
+          <Loading>
+            <Spinner>
               <i className="fa fa-spinner" />
-            </span>
-            <span>
-              { T.translate('previousQueries.loading') }
-            </span>
-          </p>
-        }
-        {
-          this.props.queries.length === 0 && !loading && !error &&
-          T.translate('previousQueries.noQueriesFound')
-        }
+            </Spinner>
+            <span>{T.translate("previousQueries.loading")}</span>
+          </Loading>
+        )}
+        {this.props.queries.length === 0 &&
+          !loading &&
+          !error &&
+          T.translate("previousQueries.noQueriesFound")}
         {
           <ReactList
             itemRenderer={this._renderQuery}
@@ -62,9 +78,9 @@ class PreviousQueries extends Component<PropsType> {
             type="variable"
           />
         }
-      </div>
+      </Root>
     );
   }
-};
+}
 
 export default PreviousQueries;
