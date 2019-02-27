@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface Select<SELECT_ID extends SelectId<? extends Select<? extends SELECT_ID>>> extends Named<SELECT_ID> {
+public interface Select<ID extends SelectId<? extends Select<? extends ID>>> extends Named<ID> {
 
 	String getDescription();
 
@@ -17,5 +17,5 @@ public interface Select<SELECT_ID extends SelectId<? extends Select<? extends SE
 	String getLabel();
 	
 	@Override
-	SELECT_ID getId();
+	ID getId();
 }
