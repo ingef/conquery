@@ -90,8 +90,11 @@ public class TreeChildPrefixIndex {
 				CTCondition condition = child.getCondition();
 
 				for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
-					index.valueToChildIndex.put(prefix.getBytes(), gatheredChildren.size());
+					if(index.valueToChildIndex.put(prefix.getBytes(), gatheredChildren.size()) != -1)
+						log.error("Duplicate Prefix '{}' in '{}' of '{}'", prefix, condition, root);
+
 					gatheredChildren.add(child);
+
 				}
 			}
 
