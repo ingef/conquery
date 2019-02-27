@@ -34,7 +34,7 @@ type PropsType = {
   onLoadFilterSuggestions: Function,
   onShowDescription: Function,
   suggestions: ?Object,
-  onDropFiles: Function,
+  onDropFilterValuesFile: Function,
   currencyConfig: CurrencyType
 };
 
@@ -71,8 +71,8 @@ const ParameterTableFilters = (props: PropsType) => {
                   label={filter.label}
                   options={filter.options}
                   disabled={props.excludeTable}
-                  onDropFiles={files =>
-                    props.onDropFiles(filterIdx, filter.id, files)
+                  onDropFile={file =>
+                    props.onDropFilterValuesFile(filterIdx, filter.id, file)
                   }
                   allowDropFile={!!filter.allowDropFile}
                 />
@@ -102,8 +102,8 @@ const ParameterTableFilters = (props: PropsType) => {
                   onLoad={prefix =>
                     props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)
                   }
-                  onDropFiles={files =>
-                    props.onDropFiles(filterIdx, filter.id, files)
+                  onDropFile={file =>
+                    props.onDropFilterValuesFile(filterIdx, filter.id, file)
                   }
                   allowDropFile={!!filter.allowDropFile}
                   disabled={!!props.excludeTable}

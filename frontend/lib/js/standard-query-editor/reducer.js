@@ -28,12 +28,9 @@ import {
   RENAME_PREVIOUS_QUERY_SUCCESS
 } from "../previous-queries/list/actionTypes";
 
-import {
-  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
-  type UploadConceptListModalResultType
-} from "../upload-concept-list-modal/actionTypes";
+import { UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../upload-concept-list-modal/actionTypes";
 
-import { INTEGER_RANGE } from "../form-components";
+import { INTEGER_RANGE } from "../form-components/filterTypes";
 
 import type { StateType } from "../query-runner/reducer";
 
@@ -572,12 +569,12 @@ const loadFilterSuggestionsStart = (state, action) =>
 
 const loadFilterSuggestionsSuccess = (state, action) => {
   // When [] comes back from the API, don't touch the current options
-  if (!action.payload.suggestions || action.payload.suggestions.length === 0)
+  if (!action.payload.data || action.payload.data.length === 0)
     return setNodeFilterProperties(state, action, { isLoading: false });
 
   return setNodeFilterProperties(state, action, {
     isLoading: false,
-    options: action.payload.suggestions
+    options: action.payload.data
   });
 };
 
@@ -585,77 +582,52 @@ const loadFilterSuggestionsError = (state, action) =>
   setNodeFilterProperties(state, action, { isLoading: false });
 
 const createQueryNodeFromConceptListUploadResult = (
-  result: UploadConceptListModalResultType
+  label,
+  rootConcepts,
+  resolvedConcepts,
+  selectedConceptRootNode
 ): DraggedNodeType => {
-  const { label, rootConcepts, resolutionResult } = result;
+  const lookupResult = getConceptsByIdsWithTables(
+    resolvedConcepts,
+    rootConcepts
+  );
 
-  if (resolutionResult.conceptList) {
-    const lookupResult = getConceptsByIdsWithTables(
-      resolutionResult.conceptList,
-      rootConcepts
-    );
-
-    if (lookupResult)
-      return {
+  return lookupResult
+    ? {
         label,
-        ids: resolutionResult.conceptList,
+        ids: resolvedConcepts,
         tables: lookupResult.tables,
         tree: lookupResult.root
-      };
-  } else if (resolutionResult.filter) {
-    const [conceptRoot] = getConceptsByIdsWithTables(
-      [resolutionResult.selectedRoot],
-      rootConcepts
-    ).concepts;
-    const resolvedTable = {
-      id: resolutionResult.filter.tableId,
-      filters: [
-        {
-          id: resolutionResult.filter.filterId,
-          value: resolutionResult.filter.value,
-          options: resolutionResult.filter.value
-        }
-      ]
-    };
-    const tables = conceptRoot.tables.map(table => ({
-      ...table,
-      filters: mergeFiltersFromSavedConcept(resolvedTable, table)
-    }));
-
-    return {
-      label,
-      ids: [conceptRoot.id],
-      tables,
-      tree: conceptRoot.id
-    };
-  }
-
-  return {
-    label: label,
-    ids: [],
-    tables: [],
-    tree: "",
-    concepts: [],
-
-    error: T.translate("queryEditor.couldNotInsertConceptList")
-  };
+      }
+    : null;
 };
 
-const insertUploadedConceptList = (
-  state,
-  action: { data: UploadConceptListModalResultType }
-) => {
-  const { parameters } = action.data;
-  const queryElement = createQueryNodeFromConceptListUploadResult(action.data);
+const insertUploadedConceptList = (state, action) => {
+  const {
+    label,
+    rootConcepts,
+    resolvedConcepts,
+    selectedConceptRootNode
+  } = action.payload;
 
-  if (parameters.andIdx != null)
-    return dropOrNode(state, {
-      payload: { item: queryElement, andIdx: parameters.andIdx }
-    });
+  const queryElement = createQueryNodeFromConceptListUploadResult(
+    label,
+    rootConcepts,
+    resolvedConcepts,
+    selectedConceptRootNode
+  );
 
-  return dropAndNode(state, {
-    payload: { item: queryElement, dateRange: parameters.dateRange }
-  });
+  // TODO: Re-enable soon
+  // if (parameters.andIdx != null)
+  //   return dropOrNode(state, {
+  //     payload: { item: queryElement, andIdx: parameters.andIdx }
+  //   });
+
+  return queryElement
+    ? dropAndNode(state, {
+        payload: { item: queryElement }
+      })
+    : state;
 };
 
 const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {
@@ -668,18 +640,22 @@ const deselectNode = (state, action) => {
 
 const updateNodeLabel = (state, action) => {
   const node = selectEditedNode(state);
+
   if (!node) return state;
 
   const { andIdx, orIdx } = node;
+
   return setElementProperties(state, andIdx, orIdx, { label: action.label });
 };
 
 const addConceptToNode = (state, action) => {
   const nodePosition = selectEditedNode(state);
+
   if (!nodePosition) return state;
 
   const { andIdx, orIdx } = nodePosition;
   const node = state[andIdx].elements[orIdx];
+
   return setElementProperties(state, andIdx, orIdx, {
     ids: [...action.concept.ids, ...node.ids]
   });
@@ -687,28 +663,36 @@ const addConceptToNode = (state, action) => {
 
 const removeConceptFromNode = (state, action) => {
   const nodePosition = selectEditedNode(state);
+
   if (!nodePosition) return state;
 
   const { andIdx, orIdx } = nodePosition;
   const node = state[andIdx].elements[orIdx];
+
   return setElementProperties(state, andIdx, orIdx, {
     ids: node.ids.filter(id => id !== action.conceptId)
   });
 };
 
 const setResolvedFilterValues = (state: StateType, action: Object) => {
-  const { resolutionResult, parameters } = action.data;
+  const {
+    tableIdx,
+    filterIdx,
+    data: {
+      resolvedFilter: { value }
+    }
+  } = action.payload;
 
   return setNodeFilterProperties(
     state,
     {
       payload: {
-        tableIdx: parameters.tableIdx,
-        filterIdx: parameters.filterIdx
+        tableIdx,
+        filterIdx
       }
     },
     {
-      value: resolutionResult.filter.value
+      value
     }
   );
 };

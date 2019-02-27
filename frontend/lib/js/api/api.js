@@ -1,67 +1,71 @@
 // @flow
 
-import fetch                   from 'isomorphic-fetch';
+import fetch from "isomorphic-fetch";
 
-import { getStoredAuthToken }  from '../authorization';
-import { apiUrl }              from '../environment';
+import { getStoredAuthToken } from "../authorization";
+import { apiUrl } from "../environment";
 
-import { type DatasetIdType }  from '../dataset/reducer';
+import { type DatasetIdType } from "../dataset/reducer";
 import type {
   RootType,
   TreeNodeIdType,
   ConceptListResolutionResultType
-}                              from '../common/types/backend';
+} from "../common/types/backend";
 
-import {
-  transformQueryToApi,
-} from './apiHelper';
+import { transformQueryToApi } from "./apiHelper";
 
-import {
-  transformFormQueryToApi,
-} from './apiExternalFormsHelper';
+import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 
 type RequestType = {
   body?: Object | string,
   headers?: Object
 };
 
-function fetchJsonUnauthorized(url: string, request?: RequestType, rawBody?: boolean = false) {
+function fetchJsonUnauthorized(
+  url: string,
+  request?: RequestType,
+  rawBody?: boolean = false
+) {
   const finalRequest = request
     ? {
         ...request,
         body: rawBody ? request.body : JSON.stringify(request.body),
         headers: {
-          "Accept": "application/json",
+          Accept: "application/json",
           "Content-Type": "application/json",
-          ...request.headers,
-        },
+          ...request.headers
+        }
       }
     : {
         method: "GET",
         headers: {
-          "Accept": "application/json",
-        },
+          Accept: "application/json"
+        }
       };
 
   return fetch(url, finalRequest).then(
     response => {
       if (response.status >= 200 && response.status < 300)
-        return response.json().catch(e => e); // Also handle empty responses
-      else
-        // Reject other status
-        return response.json().then(Promise.reject.bind(Promise));
+        return response.json().catch(e => e);
+      // Also handle empty responses
+      // Reject other status
+      else return response.json().then(Promise.reject.bind(Promise));
     },
     error => Promise.reject(error) // Network or connection failure
   );
 }
 
-function fetchJson(url: string, request?: RequestType, rawBody?: boolean = false) {
-  const authToken = getStoredAuthToken() || '';
+function fetchJson(
+  url: string,
+  request?: RequestType,
+  rawBody?: boolean = false
+) {
+  const authToken = getStoredAuthToken() || "";
   const finalRequest = {
     ...(request || {}),
     headers: {
-      "Authorization": `Bearer ${authToken}`,
-      ...((request && request.headers) || {}),
+      Authorization: `Bearer ${authToken}`,
+      ...((request && request.headers) || {})
     }
   };
 
@@ -69,26 +73,27 @@ function fetchJson(url: string, request?: RequestType, rawBody?: boolean = false
 }
 
 export function getFrontendConfig() {
-  return fetchJson(apiUrl() + '/config/frontend')
+  return fetchJson(apiUrl() + "/config/frontend");
 }
 
 export function getDatasets() {
   return fetchJson(apiUrl() + `/datasets`);
 }
 
-export const getConcepts = (datasetId: DatasetIdType) : Promise<RootType> => {
+export const getConcepts = (datasetId: DatasetIdType): Promise<RootType> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts`);
-}
-
-export type ConceptElementType = {
-  children: Array<TreeNodeIdType>,
 };
 
-export const getConcept =
-  (datasetId: DatasetIdType, conceptId: TreeNodeIdType)
-    : Promise<Map<TreeNodeIdType, ConceptElementType>> => {
+export type ConceptElementType = {
+  children: Array<TreeNodeIdType>
+};
+
+export const getConcept = (
+  datasetId: DatasetIdType,
+  conceptId: TreeNodeIdType
+): Promise<Map<TreeNodeIdType, ConceptElementType>> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}`);
-}
+};
 
 // Same signature as postFormQueries
 export function postQueries(
@@ -100,15 +105,19 @@ export function postQueries(
   // Transform into backend-compatible format
   const body = transformQueryToApi(query, queryType);
 
-  return fetchJson(apiUrl() + `/datasets/${datasetId}/queries`, {
-    method: "POST",
-    body,
-  }, queryType === 'external');
+  return fetchJson(
+    apiUrl() + `/datasets/${datasetId}/queries`,
+    {
+      method: "POST",
+      body
+    },
+    queryType === "external"
+  );
 }
 
 export function deleteQuery(datasetId: DatasetIdType, queryId: number) {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/queries/${queryId}`, {
-    method: 'DELETE',
+    method: "DELETE"
   });
 }
 
@@ -129,14 +138,17 @@ export function postFormQueries(
 
   return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries`, {
     method: "POST",
-    body,
+    body
   });
 }
 
 export function deleteFormQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`, {
-    method: 'DELETE',
-  });
+  return fetchJson(
+    apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`,
+    {
+      method: "DELETE"
+    }
+  );
 }
 
 export function getFormQuery(datasetId: DatasetIdType, queryId: number) {
@@ -148,20 +160,32 @@ export function getStoredQueries(datasetId: DatasetIdType) {
 }
 
 export function getStoredQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`);
+  return fetchJson(
+    apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`
+  );
 }
 
 export function deleteStoredQuery(datasetId: DatasetIdType, queryId: number) {
-  return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`, {
-    method: 'DELETE',
-  });
+  return fetchJson(
+    apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`,
+    {
+      method: "DELETE"
+    }
+  );
 }
 
-export function patchStoredQuery(datasetId: DatasetIdType, queryId: number, attributes: Object) {
-  return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`, {
-    method: 'PATCH',
-    body: attributes,
-  });
+export function patchStoredQuery(
+  datasetId: DatasetIdType,
+  queryId: number,
+  attributes: Object
+) {
+  return fetchJson(
+    apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`,
+    {
+      method: "PATCH",
+      body: attributes
+    }
+  );
 }
 
 export function postPrefixForSuggestions(
@@ -169,54 +193,61 @@ export function postPrefixForSuggestions(
   conceptId: string,
   tableId: string,
   filterId: string,
-  text: string,
+  text: string
 ) {
   return fetchJson(
     apiUrl() +
-    `/datasets/${datasetId}/concepts/${conceptId}` +
-    `/tables/${tableId}/filters/${filterId}/autocomplete`,
+      `/datasets/${datasetId}/concepts/${conceptId}` +
+      `/tables/${tableId}/filters/${filterId}/autocomplete`,
     {
-      method: 'POST',
-      body: { text },
+      method: "POST",
+      body: { text }
     }
   );
-};
+}
 
 export function postConceptsListToResolve(
   datasetId: DatasetIdType,
   conceptId: string,
-  concepts: string[],
+  concepts: string[]
 ): ConceptListResolutionResultType {
-  return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
-    method: 'POST',
-    body: { concepts },
-  });
-};
+  return fetchJson(
+    apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
+    {
+      method: "POST",
+      body: { concepts }
+    }
+  );
+}
 
-export function postConceptFilterValuesResolve(
+export function postFilterValuesResolve(
   datasetId: DatasetIdType,
   conceptId: string,
   tableId: string,
   filterId: string,
-  values: string[],
+  values: string[]
 ) {
   return fetchJson(
     apiUrl() +
-    `/datasets/${datasetId}/concepts/${conceptId}` +
-    `/tables/${tableId}/filters/${filterId}/resolve`,
+      `/datasets/${datasetId}/concepts/${conceptId}` +
+      `/tables/${tableId}/filters/${filterId}/resolve`,
     {
-    method: 'POST',
-      body: { values },
+      method: "POST",
+      body: { values }
     }
   );
-};
+}
 
-export const searchConcepts = (datasetId: DatasetIdType, query: string, limit?: number) => {
+export const searchConcepts = (
+  datasetId: DatasetIdType,
+  query: string,
+  limit?: number
+) => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/search`, {
-    method: 'POST',
+    method: "POST",
     body: {
       query: query,
       limit: limit || 50
     }
   });
-}
+};

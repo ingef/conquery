@@ -100,6 +100,10 @@ export type RootType = {
 
 export type ConceptListResolutionResultType = {
   resolvedConcepts?: string[],
+  unknownConcepts?: string[]
+};
+
+export type FilterValuesResolutionResultType = {
   unknownCodes?: string[],
   resolvedFilter?: {
     filterId: string,

@@ -66,7 +66,8 @@
             {
               "id": "production_country",
               "label": "Production Country",
-              "type": "BIG_MULTI_SELECT"
+              "type": "BIG_MULTI_SELECT",
+              "allowDropFile": true
             },
             {
               "id": "budget",

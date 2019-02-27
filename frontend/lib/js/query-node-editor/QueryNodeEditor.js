@@ -54,7 +54,7 @@ type QueryNodeEditorState = {
   onShowDescription: Function,
   onToggleEditLabel: Function,
   onReset: Function,
-  onDropFiles: Function
+  onDropFilterValuesFile: Function
 };
 
 export type PropsType = {

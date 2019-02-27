@@ -1,12 +1,12 @@
 // @flow
 
-import React                from 'react';
-import ReactTooltip         from 'react-tooltip';
-import classnames           from 'classnames'
+import React from "react";
+import ReactTooltip from "react-tooltip";
+import classnames from "classnames";
 
 type PropsType = {
   text: string,
-  className: string,
+  className?: string,
   symbol: boolean,
   place?: string
 };
@@ -16,7 +16,7 @@ const InfoTooltip = (props: PropsType) => {
     <span className={classnames("info-tooltip", props.className)}>
       <i
         data-tip={props.text}
-        className={classnames({'fa fa-question-circle-o': props.symbol})}
+        className={classnames({ "fa fa-question-circle-o": props.symbol })}
       />
       <ReactTooltip
         place={props.place}
@@ -30,7 +30,7 @@ const InfoTooltip = (props: PropsType) => {
 
 InfoTooltip.defaultProps = {
   symbol: true,
-  place: 'right'
-}
+  place: "right"
+};
 
 export default InfoTooltip;

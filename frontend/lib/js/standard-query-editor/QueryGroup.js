@@ -14,7 +14,7 @@ type PropsType = {
   group: QueryGroupType,
   andIdx: number,
   onDropNode: DraggedNodeType => void,
-  onDropFiles: Function,
+  onDropFile: Function,
   onDeleteNode: Function,
   onFilterClick: Function,
   onExcludeClick: Function,
@@ -34,7 +34,7 @@ const QueryGroup = (props: PropsType) => {
       <QueryEditorDropzone
         key={props.group.elements.length + 1}
         onDropNode={props.onDropNode}
-        onDropFiles={props.onDropFiles}
+        onDropFile={props.onDropFile}
         onLoadPreviousQuery={props.onLoadPreviousQuery}
       />
       <p className="query-or-connector">{T.translate("common.or")}</p>

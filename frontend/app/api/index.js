@@ -221,6 +221,7 @@ module.exports = function(app, port) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
 
+        const text = req.body.text.toLowerCase();
         const countriesRequested = req.params.filterId === "production_country";
 
         const storedValues = countriesRequested
@@ -244,9 +245,7 @@ module.exports = function(app, port) {
             value: id,
             templateValues: { company: "Columbia Pictures Corporation" }
           }))
-          .filter(v =>
-            v.label.toLowerCase().startsWith(req.body.text.toLowerCase())
-          );
+          .filter(v => v.label.toLowerCase().startsWith(text));
 
         res.send(JSON.stringify(suggestions));
       }, LONG_DELAY);
@@ -259,9 +258,11 @@ module.exports = function(app, port) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
 
+        const { concepts } = req.body;
+
         res.send({
-          unknownConcepts: req.body.concepts.slice(0, 1),
-          resolvedConcepts: req.body.concepts.slice(1)
+          unknownConcepts: concepts.slice(0, 1),
+          resolvedConcepts: concepts.slice(1)
         });
       }, LONG_DELAY);
     }
@@ -288,20 +289,20 @@ module.exports = function(app, port) {
       setTimeout(() => {
         res.setHeader("Content-Type", "application/json");
 
+        const { values } = req.body;
+
         if (req.params.filterId !== "production_country") return null;
 
         const countries = require("./autocomplete/countries");
-        const unknownCodes = req.body.values.filter(
-          val => !countries.includes(val)
-        );
-        const values = req.body.values.filter(val => countries.includes(val));
+        const unknownCodes = values.filter(val => !countries.includes(val));
+        const resolvedValues = values.filter(val => countries.includes(val));
 
         res.send({
           unknownCodes: unknownCodes,
           resolvedFilter: {
             tableId: req.params.tableId,
             filterId: req.params.filterId,
-            value: values.map(val => ({ label: val, value: val }))
+            value: resolvedValues.map(val => ({ label: val, value: val }))
           }
         });
       }, LONG_DELAY);
@@ -315,14 +316,16 @@ module.exports = function(app, port) {
     setTimeout(() => {
       res.setHeader("Content-Type", "application/json");
 
+      const { query } = req.body;
+
       const result = [];
       const awards = require("./concepts/awards");
       const movieAppearance = require("./concepts/movie_appearances");
       const placeOfBirth = require("./concepts/place_of_birth");
 
-      result.push(...findConcepts(awards, req.body.query));
-      result.push(...findConcepts(movieAppearance, req.body.query));
-      result.push(...findConcepts(placeOfBirth, req.body.query));
+      result.push(...findConcepts(awards, query));
+      result.push(...findConcepts(movieAppearance, query));
+      result.push(...findConcepts(placeOfBirth, query));
 
       // see type SearchResult
       res.send({ result: result, limit: 20, size: result.length });
@@ -333,6 +336,7 @@ module.exports = function(app, port) {
     res.setHeader("Content-Type", "application/json");
 
     const config = require("./config.json");
+
     config.version = version;
 
     res.send(config);
@@ -354,14 +358,17 @@ const fetchParents = (concepts, matches) => {
 };
 
 const visit = (id, concepts, matches) => {
-  for (var co in concepts) {
+  for (let co in concepts) {
     const children = concepts[co].children;
     const parent = concepts[co].parent;
+
     if (children !== undefined) {
       const idx = children.indexOf(id);
+
       if (idx >= 0) {
         matches.push({ id: parent });
         children.slice(idx); // remove element for next iterate
+
         return visit(parent, concepts, matches);
       }
     }
