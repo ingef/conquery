@@ -14,6 +14,8 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
+import com.bakdata.conquery.models.concepts.select.ConnectorSelect;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
@@ -23,9 +25,9 @@ import com.bakdata.conquery.models.exceptions.validators.DetailedValid.Validatio
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
-import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -57,7 +59,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
 	@JsonIgnore @Getter(AccessLevel.NONE)
-	private transient IdMap<SelectId, Select> allSelects;
+	private transient IdMap<ConnectorSelectId, ConnectorSelect> allSelects;
 
 	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
 	public void setSelectableDates(List<Column> cols) {
@@ -163,10 +165,10 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	public abstract List<Filter<?>> collectAllFilters();
 
 	@JsonIgnore
-	protected abstract List<Select> collectAllSelects();
+	protected abstract List<ConnectorSelect> collectAllSelects();
 
 	@JsonIgnore
-	public IdMap<SelectId, Select> getAllSelects() {
+	public IdMap<ConnectorSelectId, ConnectorSelect> getAllSelects() {
 		if(allSelects==null) {
 			allSelects = new IdMap<>(collectAllSelects());
 		}
@@ -179,10 +181,6 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			allFiltersMap = new IdMap<>(collectAllFilters());
 		}
 		return (T)allFiltersMap.getOrFail(id);
-	}
-
-	public <T extends Select> T getSelect(SelectId id) {
-		return (T)getAllSelects().getOrFail(id);
 	}
 
 	public Column getValidityDateColumn(String name) {

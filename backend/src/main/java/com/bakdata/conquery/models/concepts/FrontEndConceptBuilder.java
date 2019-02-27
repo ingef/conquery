@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -28,7 +29,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
-import com.bakdata.conquery.models.query.select.Select;
 
 import lombok.AllArgsConstructor;
 
@@ -186,7 +186,7 @@ public class FrontEndConceptBuilder {
 		return f;
 	}
 
-	public static FESelect createSelect(Select select) {
+	public static FESelect createSelect(Select<?> select) {
 		return FESelect
 					.builder()
 					.id(select.getId())

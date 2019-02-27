@@ -1,10 +1,10 @@
-package com.bakdata.conquery.models.concepts.select.specific;
+package com.bakdata.conquery.models.concepts.select.connector.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.concepts.select.SingleColumnSelect;
+import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
-import com.bakdata.conquery.models.query.select.Select;
 
 /**
  * Entity is included when the the number of quarters with events is within a specified range.
