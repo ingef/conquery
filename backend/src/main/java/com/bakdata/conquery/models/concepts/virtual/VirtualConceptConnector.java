@@ -12,8 +12,9 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
+import com.bakdata.conquery.models.concepts.select.ConnectorSelect;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Getter;
@@ -30,7 +31,7 @@ public class VirtualConceptConnector extends Connector {
 	private Filter<?> filter;
 
 	@Valid @JsonManagedReference @NotNull
-	private List<Select> select = Collections.emptyList();
+	private List<ConnectorSelect> select = Collections.emptyList();
 
 	@Override
 	public List<Filter<?>> collectAllFilters() {
@@ -38,7 +39,7 @@ public class VirtualConceptConnector extends Connector {
 	}
 
 	@Override
-	protected List<Select> collectAllSelects() {
+	protected List<ConnectorSelect> collectAllSelects() {
 		return select;
 	}
 /*

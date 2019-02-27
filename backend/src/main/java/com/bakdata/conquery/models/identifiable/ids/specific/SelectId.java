@@ -1,41 +1,39 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.Iterator;
 import java.util.List;
 
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.query.select.Select;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class SelectId extends AId<Select> implements NamespacedId {
+public abstract class SelectId<SELECT extends Select<?>> extends AId<SELECT> implements NamespacedId {
 
-	private final ConnectorId connector;
 	private final String select;
 
 	@Override
 	public void collectComponents(List<Object> components) {
-		connector.collectComponents(components);
 		components.add(select);
 	}
 
-	@Override
-	public DatasetId getDataset() {
-		return connector.getDataset();
-	}
-
-	public static enum Parser implements IId.Parser<SelectId> {
+	public static enum Parser implements IId.Parser<SelectId<?>> {
 		INSTANCE;
 		
 		@Override
-		public SelectId parse(Iterator<String> parts) {
+		public SelectId<?> parse(PeekingIterator<String> parts) {
 			ConnectorId parent = ConnectorId.Parser.INSTANCE.parse(parts);
-			return new SelectId(parent, parts.next());
+			if(!parts.hasNext()) {
+				return new ConceptSelectId(parent.getConcept(), parent.getConnector());
+			}
+			else {
+				return new ConnectorSelectId(parent, parts.next());
+			}
 		}
 	}
 }

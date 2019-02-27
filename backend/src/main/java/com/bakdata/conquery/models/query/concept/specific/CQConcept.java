@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -35,7 +36,6 @@ import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
-import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Getter;
@@ -53,7 +53,7 @@ public class CQConcept implements CQElement {
 	@Valid @NotNull
 
 	@NsIdRefCollection
-	private List<Select> select = Collections.emptyList();
+	private List<Select<?>> select = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
 
@@ -69,7 +69,7 @@ public class CQConcept implements CQElement {
 		for(CQTable t : tables) {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
 
-			List<Select> resolvedSelects = t.getSelect();
+			List<Select<?>> resolvedSelects = t.getSelect();
 
 
 			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
@@ -109,14 +109,6 @@ public class CQConcept implements CQElement {
 		return OrNode.of(tableNodes);
 	}
 
-	private List<Select> resolveSelects(List<SelectId> select, CentralRegistry centralRegistry) {
-		return
-				select
-					.stream()
-					.map(name -> centralRegistry.resolve(name.getConnector()).<Select>getSelect(name))
-					.collect(Collectors.toList());
-	}
-
 	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
 		return
 				ids
@@ -133,11 +125,11 @@ public class CQConcept implements CQElement {
 		return result;
 	}
 
-	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
+	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select<?>> select) {
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
-		for (Select s : select) {
+		for (Select<?> s : select) {
 			AggregatorNode<?> agg = s.createAggregator(plan.getAggregators().size());
 			plan.getAggregators().add(agg.getAggregator());
 			nodes.add(agg);
@@ -163,7 +155,7 @@ public class CQConcept implements CQElement {
 	}
 
 	@Override
-	public void collectSelects(Deque<Select> select) {
+	public void collectSelects(Deque<Select<?>> select) {
 		select.addAll(this.select);
 		for (CQTable table : tables) {
 			select.addAll(table.getSelect());

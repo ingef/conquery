@@ -1,19 +1,15 @@
-package com.bakdata.conquery.models.query.select;
+package com.bakdata.conquery.models.concepts.select;
 
-import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import lombok.Getter;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
-@CPSBase
-public abstract class Select extends Labeled<SelectId> {
+public abstract class ConnectorSelect extends Labeled<ConnectorSelectId> implements Select<ConnectorSelectId> {
 
 	@JsonBackReference
 	private Connector connector;
@@ -21,6 +17,7 @@ public abstract class Select extends Labeled<SelectId> {
 	@Getter
 	private String description;
 
+	@Override
 	public AggregatorNode<?> createAggregator(int position) {
 		return new AggregatorNode<>(position, createAggregator());
 	}
@@ -28,7 +25,7 @@ public abstract class Select extends Labeled<SelectId> {
 	protected abstract Aggregator<?> createAggregator();
 
 	@Override
-	public SelectId createId() {
-		return new SelectId(connector.getId(), getName());
+	public ConnectorSelectId createId() {
+		return new ConnectorSelectId(connector.getId(), getName());
 	}
 }

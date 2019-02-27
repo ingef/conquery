@@ -12,9 +12,10 @@ import org.apache.commons.collections4.CollectionUtils;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
+import com.bakdata.conquery.models.concepts.select.ConnectorSelect;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -33,7 +34,7 @@ public class ConceptTreeConnector extends Connector {
 	private List<Filter<?>> filters = new ArrayList<>();
 
 	@Valid @JsonManagedReference @NotNull
-	private List<Select> selects = new ArrayList<>();
+	private List<ConnectorSelect> selects = new ArrayList<>();
 
 
 	@Override @JsonIgnore
@@ -50,7 +51,7 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 	@Override
-	protected List<Select> collectAllSelects() {
+	protected List<ConnectorSelect> collectAllSelects() {
 		return Collections.unmodifiableList(selects);
 	}
 

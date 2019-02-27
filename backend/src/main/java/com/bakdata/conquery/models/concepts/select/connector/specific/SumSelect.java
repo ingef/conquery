@@ -1,9 +1,11 @@
-package com.bakdata.conquery.models.concepts.select.specific;
+package com.bakdata.conquery.models.concepts.select.connector.specific;
 
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.models.concepts.select.ConnectorSelect;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
@@ -16,12 +18,11 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
-import com.bakdata.conquery.models.query.select.Select;
 
 import lombok.Getter;
 
 @CPSType(id = "SUM", base = Select.class)
-public class SumSelect extends Select {
+public class SumSelect extends ConnectorSelect {
 
 	@Getter
 	private boolean distinct = false;
