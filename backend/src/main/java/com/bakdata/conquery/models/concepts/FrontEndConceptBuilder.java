@@ -129,7 +129,7 @@ public class FrontEndConceptBuilder {
 			.build();
 	}
 
-	private static FENode createCTNode(ConceptElement ce) {
+	private static FENode createCTNode(ConceptElement<?> ce) {
 		MatchingStats matchingStats = ce.getMatchingStats();
 		FENode n = FENode.builder()
 				.active(null)
@@ -156,9 +156,9 @@ public class FrontEndConceptBuilder {
 		return FETable.builder()
 			.id(con.getTable().getId())
 			.connectorId(con.getId())
-			.label(con.getTable().getLabel())
+			.label(con.getLabel())
 			.filters(con
-				.getAllFilters()
+				.collectAllFilters()
 				.stream()
 				.map(FrontEndConceptBuilder::createFilter)
 				.collect(Collectors.toList())
@@ -174,7 +174,6 @@ public class FrontEndConceptBuilder {
 			.allowDropFile(filter.getAllowDropFile())
 			.pattern(filter.getPattern())
 			.template(filter.getTemplate())
-			// .options() See filter.configureFrontend()
 			.build();
 		try {
 			filter.configureFrontend(f);
@@ -206,7 +205,7 @@ public class FrontEndConceptBuilder {
 
 	private static void fillTreeMap(ConceptElement<?> ce, Map<ConceptElementId<?>, FENode> map) {
 		map.put(ce.getId(), createCTNode(ce));
-		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode) ce).getChildren() != null) {
+		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode<?>) ce).getChildren() != null) {
 			for (ConceptTreeChild c : ((ConceptTreeNode<?>) ce).getChildren()) {
 				fillTreeMap(c, map);
 			}

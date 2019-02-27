@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.concepts.virtual;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
@@ -34,13 +36,13 @@ public class VirtualConceptConnector extends Connector {
 	private List<Select> select;
 
 	@Override
-	public Collection<Filter<?>> collectAllFilters() {
+	public List<Filter<?>> collectAllFilters() {
 		return Stream.of(getDateSelectionFilter(), filter).filter(Objects::nonNull).collect(Collectors.toList());
 	}
 
 	@Override
 	protected Collection<Select> collectAllSelects() {
-		return select == null ? new LinkedList<>() : select;
+		return select == null ? Collections.emptyList() : select;
 	}
 /*
 	@Override

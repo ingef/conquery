@@ -62,12 +62,6 @@ public @interface ValidName {
 						.addConstraintViolation();
 					return false;
 				}
-				if(!Named.VALID_CHARACTERS.matchesAllOf(value)) {
-					context
-						.buildConstraintViolationWithTemplate("The name '"+value+"' is not a valid name because it contains the characters '"+Named.VALID_CHARACTERS.removeFrom(value)+"'")
-						.addConstraintViolation();
-					return false;
-				}
 			}
 			return true;
 		}

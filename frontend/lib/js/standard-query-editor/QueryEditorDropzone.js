@@ -6,16 +6,17 @@ import T from "i18n-react";
 import { DropTarget, type ConnectDropTarget } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
 
-import type { DraggedFileType } from "../file-upload/types";
 import { dndTypes } from "../common/constants";
 import type { QueryIdType } from "../common/types/backend";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
+
+type DraggedFileType = Object;
 
 type PropsType = {
   isInitial: ?boolean,
   isAnd: ?boolean,
   onDropNode: (DraggedNodeType | DraggedQueryType) => void,
-  onDropFiles: DraggedFileType => void,
+  onDropFile: DraggedFileType => void,
   onLoadPreviousQuery: QueryIdType => void,
 
   connectDropTarget: ConnectDropTarget,
@@ -30,7 +31,7 @@ const dropzoneTarget = {
       | DraggedFileType = monitor.getItem();
 
     if (item.files) {
-      props.onDropFiles(item);
+      props.onDropFile(item.files[0]);
     } else {
       props.onDropNode(item);
 

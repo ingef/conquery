@@ -55,7 +55,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	private Concept<?> concept;
 
 	@JsonIgnore @Getter(AccessLevel.NONE)
-	private transient IdMap<FilterId, Filter<?>> allFilters;
+	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
 	@JsonIgnore @Getter(AccessLevel.NONE)
 	private IdMap<SelectId, Select> allSelects;
@@ -109,7 +109,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	public boolean validateFilters(ConstraintValidatorContext context) {
 		boolean passed = true;
 
-		for(Filter<?> f:getAllFilters()) {
+		for(Filter<?> f:collectAllFilters()) {
 			for(Column c:f.getRequiredColumns()) {
 				if(c.getTable()!=getTable()) {
 					context
@@ -120,7 +120,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			}
 		}
 
-		for(Entry<String> e:getAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
+		for(Entry<String> e:collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
 			if(e.getCount()>1) {
 				passed = false;
 				context
@@ -157,11 +157,11 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	public Filter<?> getFilterByName(String name) {
-		return getAllFilters().stream().filter(f->name.equals(f.getName())).findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
+		return collectAllFilters().stream().filter(f->name.equals(f.getName())).findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
 	}
 
 	@JsonIgnore
-	protected abstract Collection<Filter<?>> collectAllFilters();
+	public abstract List<Filter<?>> collectAllFilters();
 
 	@JsonIgnore
 	protected abstract Collection<Select> collectAllSelects();
@@ -184,7 +184,10 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 
 	public <T extends Filter> T getFilter(FilterId id) {
-		return (T)getAllFilters().getOrFail(id);
+		if(allFiltersMap==null) {
+			allFiltersMap = new IdMap<>(collectAllFilters());
+		}
+		return (T)allFiltersMap.getOrFail(id);
 	}
 
 	public <T extends Select> T getSelect(SelectId id) {
@@ -200,7 +203,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	public synchronized void addImport(Import imp) {
-		for(Filter<?> f : getAllFilters().values()) {
+		for(Filter<?> f : collectAllFilters()) {
 			f.addImport(imp);
 		}
 	}
