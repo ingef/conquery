@@ -1,5 +1,13 @@
 package com.bakdata.conquery.models.concepts;
 
+import java.util.Arrays;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FENode;
@@ -21,14 +29,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 import com.bakdata.conquery.models.query.select.Select;
-import lombok.AllArgsConstructor;
-import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.Arrays;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import lombok.AllArgsConstructor;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
@@ -189,6 +191,7 @@ public class FrontEndConceptBuilder {
 					.builder()
 					.id(select.getId())
 					.label(select.getLabel())
+					.description(select.getDescription())
 					.build();
 	}
 

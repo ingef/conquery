@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.concepts.virtual;
 
-import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -32,8 +29,8 @@ public class VirtualConceptConnector extends Connector {
 	@Valid @JsonManagedReference
 	private Filter<?> filter;
 
-	@Valid @JsonManagedReference
-	private List<Select> select;
+	@Valid @JsonManagedReference @NotNull
+	private List<Select> select = Collections.emptyList();
 
 	@Override
 	public List<Filter<?>> collectAllFilters() {
@@ -41,8 +38,8 @@ public class VirtualConceptConnector extends Connector {
 	}
 
 	@Override
-	protected Collection<Select> collectAllSelects() {
-		return select == null ? Collections.emptyList() : select;
+	protected List<Select> collectAllSelects() {
+		return select;
 	}
 /*
 	@Override

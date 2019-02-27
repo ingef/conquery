@@ -1,13 +1,12 @@
 package com.bakdata.conquery.models.concepts.tree;
 
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.query.select.Select;
 import org.apache.commons.collections4.CollectionUtils;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
@@ -15,6 +14,7 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.query.select.Select;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -28,10 +28,11 @@ public class ConceptTreeConnector extends Connector {
 	
 	@NotNull @NsIdRef
 	private Column column;
+
 	@Valid @JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();
 
-	@Valid @JsonManagedReference
+	@Valid @JsonManagedReference @NotNull
 	private List<Select> selects = new ArrayList<>();
 
 
@@ -49,8 +50,8 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 	@Override
-	protected Collection<Select> collectAllSelects() {
-		return new ArrayList<>(selects);
+	protected List<Select> collectAllSelects() {
+		return Collections.unmodifiableList(selects);
 	}
 
 	/*

@@ -9,12 +9,17 @@ import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
+import lombok.Getter;
+
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public abstract class Select extends Labeled<SelectId> {
 
 	@JsonBackReference
 	private Connector connector;
+
+	@Getter
+	private String description;
 
 	public AggregatorNode<?> createAggregator(int position) {
 		return new AggregatorNode<>(position, createAggregator());

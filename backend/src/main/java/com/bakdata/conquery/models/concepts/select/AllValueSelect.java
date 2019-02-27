@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.Al
 import com.bakdata.conquery.models.query.select.Select;
 
 @CPSType(id = "DISTINCT", base = Select.class)
-@CPSType(id = "ALL", base = Select.class)
 public class AllValueSelect extends SingleColumnSelect {
 
 	@Override

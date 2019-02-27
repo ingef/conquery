@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.concepts;
 
 import java.io.Serializable;
-import java.util.Collection;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -58,7 +57,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
 	@JsonIgnore @Getter(AccessLevel.NONE)
-	private IdMap<SelectId, Select> allSelects;
+	private transient IdMap<SelectId, Select> allSelects;
 
 	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
 	public void setSelectableDates(List<Column> cols) {
@@ -164,7 +163,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	public abstract List<Filter<?>> collectAllFilters();
 
 	@JsonIgnore
-	protected abstract Collection<Select> collectAllSelects();
+	protected abstract List<Select> collectAllSelects();
 
 	@JsonIgnore
 	public IdMap<SelectId, Select> getAllSelects() {

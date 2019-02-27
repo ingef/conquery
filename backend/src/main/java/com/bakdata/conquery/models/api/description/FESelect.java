@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.api.description;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
+
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,4 +12,5 @@ import lombok.Data;
 public class FESelect {
 	private SelectId id;
 	private String label;
+	private String description;
 }
