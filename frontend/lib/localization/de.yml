@@ -61,6 +61,7 @@ queryNodeEditor:
   selectAFilter: "Kein Filter ausgewählt."
   dropConcept: "Füge ein weiteres Konzept hinzu"
   includeSubnodes: "Untergeordnete Konzepte einbeziehen"
+  tooManyValues: "{count} Werte ausgewählt"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
@@ -117,11 +118,11 @@ reactSelect:
   clearValue: "Wert entfernen"
 
 inputRange:
-  range: 'Bereich'
-  exact: 'Gleich'
-  exactLabel: 'exakt'
-  minLabel: 'min'
-  maxLabel: 'max'
+  range: "Bereich"
+  exact: "Gleich"
+  exactLabel: "exakt"
+  minLabel: "min"
+  maxLabel: "max"
 
 previousQueries:
   loading: "Lade Anfragen"
@@ -203,7 +204,7 @@ uploadQueryResultsModal:
     text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
 
 uploadConceptListModal:
-  headline: "Liste hochladen"
+  headline: "Konzeptliste hochladen"
   label: "Name der Liste"
   selectConceptRootNode: "Konzeptbaum-Wurzel auswählen"
   insertNode: "Einfügen"
@@ -215,6 +216,9 @@ uploadConceptListModal:
     1: "Folgender Wert konnte nicht aufgelöst werden:"
     _: "Folgende {context} Werte konnten nicht aufgelöst werden:"
   error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
+
+uploadFilterListModal:
+  headline: "Filter-Werte hochladen"
 
 conceptListDetailsModal:
   conceptTreeRoot: "Konzeptbaum"

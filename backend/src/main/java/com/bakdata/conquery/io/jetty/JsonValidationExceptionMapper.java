@@ -7,10 +7,10 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import com.google.common.base.Joiner;
 import com.google.common.collect.Iterables;
 
 import io.dropwizard.jersey.errors.ErrorMessage;
-import jersey.repackaged.com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j @Provider

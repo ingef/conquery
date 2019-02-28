@@ -24,6 +24,7 @@ public class RESTServer {
 		// Bind User class to REST authentication
 		jersey.register(new AuthValueFactoryProvider.Binder(User.class));
 		//change exception mapper behavior because of JERSEY-2437
+		//https://github.com/eclipse-ee4j/jersey/issues/2709
 		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
 		// Register custom mapper
 		jersey.register(new AuthorizationExceptionMapper());
@@ -33,7 +34,9 @@ public class RESTServer {
 		jersey.register(new JsonProcessingExceptionMapper(true));
 		jersey.register(new EarlyEofExceptionMapper());
 		//allow cross origin
-		jersey.register(CORSResponseFilter.class);
+		if(config.getApi().isAllowCORSRequests()) {
+			jersey.register(CORSResponseFilter.class);
+		}
 		//disable all browser caching if not expressly wanted
 		jersey.register(CachingFilter.class);
 		

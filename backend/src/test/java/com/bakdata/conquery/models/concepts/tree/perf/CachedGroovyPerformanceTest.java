@@ -1,20 +1,18 @@
 package com.bakdata.conquery.models.concepts.tree.perf;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import org.apache.commons.lang3.RandomUtils;
-
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.util.CalculatedValue;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
+
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<Integer> {
@@ -62,9 +60,9 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 
 		StringType type = new StringType();
 		type.setDictionary(dict);
-		newConcept.initializeIdCache(type);
+		newConcept.initializeIdCache(type, importId);
 
-		cache = newConcept.getCache();
+		cache = newConcept.getCache(importId);
 	}
 
 	@Override
