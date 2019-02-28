@@ -1,49 +1,82 @@
 // @flow
 
-import React                from 'react';
-import T                    from 'i18n-react';
-import { CloseIconButton }  from '../button';
+import React from "react";
+import styled from "@emotion/styled";
+import { css } from "@emotion/core";
+import T from "i18n-react";
+import IconButton from "../button/IconButton";
+import { Icon } from "../icon/FaIcon";
+
+const Actions = styled("div")`
+  margin: 0 0 4px;
+  text-align: left;
+  height: 18px; // To provide enough space when only --right is available
+`;
+
+const Right = styled("div")`
+  position: absolute;
+  right: 7px;
+  top: 5px;
+`;
+
+const StyledIconButton = styled(IconButton)`
+  margin-right: 5px;
+  padding: 0 3px;
+`;
+
+const activeStyle = ({ theme, active }) =>
+  css`
+    color: ${active ? theme.col.red : theme.col.blueGray};
+    ${Icon} {
+      color: ${active ? theme.col.red : theme.col.blueGray};
+    }
+  `;
+
+const RedIconButton = styled(IconButton)`
+  margin-right: 5px;
+  padding: 0 3px;
+
+  ${activeStyle};
+
+  &:hover {
+    ${activeStyle}
+    opacity: 0.7;
+  }
+`;
 
 type PropsType = {
-  excludeActiveClass: string,
-  dateActiveClass: string,
+  excludeActive: string,
+  dateActive: string,
   onExcludeClick: () => void,
   onDeleteGroup: () => void,
-  onDateClick: () => void,
+  onDateClick: () => void
 };
 
 const QueryGroupActions = (props: PropsType) => {
   return (
-    <div className="query-group__actions">
-      <div className="query-group__actions--left">
-        <span
-          className={
-            `query-group__action ${props.excludeActiveClass} btn--icon query-group__exclude-btn`
-          }
+    <Actions>
+      <div>
+        <RedIconButton
+          active={props.excludeActive}
+          large
+          icon="ban"
           onClick={props.onExcludeClick}
         >
-          <i
-            className="query-group__exclude-icon fa fa-ban"
-          /> {T.translate('queryEditor.exclude')}
-        </span>
-        <span
-          className={
-            `query-group__action ${props.dateActiveClass} btn--icon query-group__date-btn`
-          }
+          {T.translate("queryEditor.exclude")}
+        </RedIconButton>
+        <StyledIconButton
+          active={props.dateActive}
+          large
+          icon="calendar-o"
           onClick={props.onDateClick}
         >
-          <i
-            className="query-group__date-icon fa fa-calendar-o"
-          /> {T.translate('queryEditor.date')}
-        </span>
+          {T.translate("queryEditor.date")}
+        </StyledIconButton>
       </div>
-      <div className="query-group__actions--right">
-        <CloseIconButton
-          className="query-group__action"
-          onClick={props.onDeleteGroup}
-        />
-      </div>
-    </div>
+      <Right>
+        <IconButton noFrame tiny icon="close" onClick={props.onDeleteGroup} />
+      </Right>
+    </Actions>
   );
 };
 

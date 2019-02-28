@@ -27,5 +27,6 @@ public class ApiV1 implements ResourcesProvider {
 		environment.register(new StoredQueriesResource(namespaces));
 		environment.register(IdParamConverter.Provider.INSTANCE);
 		environment.register(CORSResponseFilter.class);
+		environment.register(new ConfigResource(master.getConfig()));
 	}
 }

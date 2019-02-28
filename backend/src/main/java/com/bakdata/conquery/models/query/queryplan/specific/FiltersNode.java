@@ -47,9 +47,11 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 				return true;
 			}
 		}
+
 		for(FilterNode<?,?> f : filters) {
 			f.acceptEvent(block, event);
 		}
+
 		return getChild().nextEvent(block, event);
 	}
 

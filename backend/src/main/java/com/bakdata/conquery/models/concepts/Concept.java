@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.concepts;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.concepts.select.ConceptSelect;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -15,6 +16,8 @@ import lombok.ToString;
 import javax.validation.Valid;
 import javax.validation.Validator;
 import javax.validation.constraints.NotNull;
+
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
@@ -33,6 +36,8 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	private List<CONNECTOR> connectors=Collections.emptyList();
 	@NotNull @Getter @Setter
 	private DatasetId dataset;
+	@NotNull @Getter @JsonManagedReference
+	private List<ConceptSelect> select = new ArrayList<>();
 	
 	public CONNECTOR getConnectorByName(String connector) {
 		return connectors

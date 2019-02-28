@@ -1,34 +1,46 @@
 // @flow
 
-import React                from 'react';
-import { connect }          from 'react-redux';
-import classnames           from 'classnames';
+import React from "react";
+import { connect } from "react-redux";
+import { css } from "@emotion/core";
+import styled from "@emotion/styled";
 
 type PropsType = {
-  className: string,
+  className?: string,
   label: string,
-  isSelected: boolean,
+  isSelected: boolean
 };
+
+const Label = styled("span")`
+  ${({ isSelected }) =>
+    isSelected &&
+    css`
+      background-color: ${({ theme }) => theme.col.grayVeryLight};
+      border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
+      border-radius: ${({ theme }) => theme.borderRadius};
+      padding: 0 3px;
+    `};
+`;
 
 const SelectableLabel = (props: PropsType) => {
   return (
-    <span className={classnames(
-      props.className,
-       "selectable-label", {
-         "selectable-label--selected": props.isSelected
-       }
-    )}>
+    <Label className={props.className} isSelected={props.isSelected}>
       {props.label}
-    </span>
+    </Label>
   );
 };
 
 const labelContainsAnySearch = (label, searches) => {
-  return searches.some(search => label.toLowerCase().indexOf(search.toLowerCase()) !== -1);
-}
+  return searches.some(
+    search => label.toLowerCase().indexOf(search.toLowerCase()) !== -1
+  );
+};
 
 const mapStateToProps = (state, ownProps) => ({
-  isSelected: labelContainsAnySearch(ownProps.label, state.previousQueriesSearch),
+  isSelected: labelContainsAnySearch(
+    ownProps.label,
+    state.previousQueriesSearch
+  )
 });
 
 export default connect(mapStateToProps)(SelectableLabel);

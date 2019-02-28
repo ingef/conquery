@@ -78,7 +78,7 @@ public class QueryPlan extends QPChainNode implements Cloneable {
 	protected EntityResult result() {
 		String[] values = new String[aggregators.size()];
 		for(int i=0;i<values.length;i++)
-			values[i] = Objects.toString(aggregators.get(i).getAggregationResult());
+			values[i] = Objects.toString(aggregators.get(i).getAggregationResult(), "");
 		return EntityResult.of(entity.getId(), values);
 	}
 

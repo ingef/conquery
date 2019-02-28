@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -23,7 +23,7 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 		INSTANCE;
 		
 		@Override
-		public PermissionOwnerId<?> parse(Iterator<String> parts) {
+		public PermissionOwnerId<?> parse(PeekingIterator<String> parts) {
 			String type = parts.next();
 			String ownerId = parts.next();
 			switch(type) {

@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,7 +33,7 @@ public class ValidityDateId extends AId<ValidityDate> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public ValidityDateId parse(Iterator<String> parts) {
+		public ValidityDateId parse(PeekingIterator<String> parts) {
 			ConnectorId connector = ConnectorId.Parser.INSTANCE.parse(parts);
 			return new ValidityDateId(connector, parts.next());
 		}
