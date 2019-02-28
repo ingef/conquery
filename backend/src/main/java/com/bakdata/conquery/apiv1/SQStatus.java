@@ -90,6 +90,7 @@ public class SQStatus {
 			.label(query.getLabel())
 			.tags(query.getTags())
 			.id(query.getId())
+			.own(true)
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
 			.query(query)
 			.requiredTime((query.getStartTime() != null && query.getFinishTime() != null)

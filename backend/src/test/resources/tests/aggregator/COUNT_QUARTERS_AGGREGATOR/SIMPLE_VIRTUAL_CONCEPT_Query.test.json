@@ -12,15 +12,13 @@
       "label": "Geschlecht SELECT",
       "tables": [
         {
-          "id": "${dataset}.geschlecht_select.geschlecht_connector"
-        }
-      ],
-      "select": [
-        {
-          "type": "COUNT_QUARTERS",
-          "column": "vers_stamm.behandlungsdatum"
+          "id": "${dataset}.geschlecht_select.geschlecht_connector",
+          "select": [
+            "${dataset}.geschlecht_select.geschlecht_connector.count_quarters"
+          ]
         }
       ]
+
     }
   },
   "concepts": [
@@ -34,6 +32,11 @@
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"
+          },
+          "select" :         {
+            "name" : "count_quarters",
+            "type": "COUNT_QUARTERS",
+            "column": "vers_stamm.behandlungsdatum"
           }
         }
       ]

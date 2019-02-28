@@ -72,12 +72,12 @@ public class DatasetsProcessor {
 		dataset.getTables().add(table);
 		namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
 		namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
-		//see #143  check duplicate names
+		// see #143 check duplicate names
 	}
 
 	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
 
-		//if there are multiple selectable dates we need to add the select date filter
+		// if there are multiple selectable dates we need to add the select date filter
 		for (Connector con : c.getConnectors()) {
 			if (con.getValidityDates().size() > 1) {
 				ValidityDateSelectionFilter f = new ValidityDateSelectionFilter();
@@ -85,25 +85,25 @@ public class DatasetsProcessor {
 				f.setName(ConqueryConstants.VALIDITY_DATE_SELECTION_FILTER_NAME);
 				f.setLabel(I18n.LABELS.getDateSelection());
 				con.setDateSelectionFilter(f);
-				//remove the sometimes already calculated all filters map so it is recalculated
-				con.setAllFilters(null);
+				// remove the sometimes already calculated all filters map so it is recalculated
+				con.setAllFiltersMap(null);
 			}
 		}
 
 		c.setDataset(dataset.getId());
-		jobManager.addSlowJob(new SimpleJob("Adding concept " + c.getId(),
-			() -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
-		jobManager.addSlowJob(new SimpleJob("sendToAll " + c.getId(),
-			() -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
-		//see #144  check duplicate names
+		jobManager
+			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
+		jobManager
+			.addSlowJob(new SimpleJob("sendToAll " + c.getId(), () -> namespaces.get(dataset.getId()).sendToAll(new UpdateConcept(c))));
+		// see #144 check duplicate names
 	}
 
 	public void addDataset(String name) throws JSONException {
-		//create dataset
+		// create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
 
-		//add allIds table
+		// add allIds table
 		Table allIdsTable = new Table();
 		{
 			allIdsTable.setName(ConqueryConstants.ALL_IDS_TABLE);
@@ -119,8 +119,9 @@ public class DatasetsProcessor {
 		}
 		dataset.getTables().add(allIdsTable);
 
-		//store dataset in own storage
-		NamespaceStorage datasetStorage = new NamespaceStorageImpl(storage.getValidator(),
+		// store dataset in own storage
+		NamespaceStorage datasetStorage = new NamespaceStorageImpl(
+			storage.getValidator(),
 			config.getStorage(),
 			new File(storage.getDirectory().getParentFile(), "dataset_" + name));
 		datasetStorage.loadData();
@@ -130,10 +131,10 @@ public class DatasetsProcessor {
 		ns.getStorage().updateDataset(dataset);
 		namespaces.add(ns);
 
-		//for now we just add one worker to every slave
-		for (SlaveInformation slave : namespaces.getSlaves().values()) {
+		// for now we just add one worker to every slave
+		namespaces.getSlaves().values().forEach((slave) -> {
 			this.addWorker(slave, dataset);
-		}
+		});
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {

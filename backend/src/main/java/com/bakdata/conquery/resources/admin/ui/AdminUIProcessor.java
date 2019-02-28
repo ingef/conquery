@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.core.Response;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -79,13 +81,43 @@ public class AdminUIProcessor {
 			datasetPermissions,
 			queryPermissions,
 			otherPermissions,
-			Ability.READ.AS_SET,
+			Ability.READ.asSet(),
 			datasets);
 	}
 	
-	public void createDatasetPermission(PermissionOwnerId<?> ownerId, List<String> abilities, DatasetId datasetId) throws JSONException {
+	/**
+	 * Handles creation of permissions.
+	 * @param permission The permission to create.
+	 * @throws JSONException is thrown upon procession JSONs.
+	 */
+	public void createPermission(ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.addPermission(getOwnerFromPermission(permission, storage), permission, storage);
+	}
+	
+	/**
+	 * Handles deletion of permissions.
+	 * @param permission The permission to delete.
+	 * @throws JSONException is thrown upon procession JSONs.
+	 */
+	public void deletePermission(ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
+	}
+	
+	/**
+	 * Retrieves the {@link PermissionOwner} from an permission that should be created or deleted.
+	 * @param permission The permission with an owner.
+	 * @param storage A storage from which the owner is retrieved.
+	 * @return The Owner.
+	 */
+	private static PermissionOwner<?> getOwnerFromPermission(ConqueryPermission permission, MasterMetaStorage storage) {
+		PermissionOwnerId<?> ownerId = permission.getOwnerId();
+		if(ownerId == null) {
+			throw new IllegalArgumentException("The ownerId is not allowed to be null.");
+		}
 		PermissionOwner<?> owner =  ownerId.getOwner(storage);
-		Set<Ability> abilitSet = abilities.stream().map(a -> Ability.valueOf(Ability.class, a)).collect(Collectors.toSet());
-		AuthorizationHelper.addPermission(owner, new DatasetPermission(ownerId, abilitSet, datasetId), storage);
+		if(owner == null) {
+			throw new IllegalArgumentException("The provided ownerId belongs to know subject.");
+		}
+		return owner;
 	}
 }

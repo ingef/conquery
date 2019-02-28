@@ -1,8 +1,7 @@
-import React                from 'react';
-import classnames           from 'classnames';
+import React from "react";
+import styled from "@emotion/styled";
 
-import CloseIconButton      from '../button/CloseIconButton';
-import IconButton           from '../button/IconButton';
+import IconButton from "../button/IconButton";
 
 type PropsType = {
   className?: string,
@@ -10,34 +9,36 @@ type PropsType = {
   items: Array<Element>,
   onAddClick: Function,
   onRemoveClick: Function,
-  canExpand: boolean,
+  canExpand: boolean
 };
 
+const AddBtn = styled(IconButton)`
+  margin: 10px;
+`;
+
+const RemoveBtn = styled(IconButton)`
+  position: absolute;
+  top: 0;
+  right: 0;
+`;
+
+const GroupItem = styled("div")`
+  padding: 0 20px 0 0;
+  position: relative;
+  display: inline-block;
+  vertical-align: middle;
+`;
+
 const DynamicInputGroup = (props: PropsType) => (
-  <div className={classnames("dynamic-input-group", props.className)}>
-    {
-      props.label &&
-      <span className="input-label dynamic-input-group__label">
-        { props.label }
-      </span>
-    }
-    {
-      props.items.map((item, idx) => (
-        <div key={idx} className="dynamic-input-group__item">
-          { item }
-          <CloseIconButton
-            className="dynamic-input-group__item__remove-btn"
-            onClick={() => props.onRemoveClick(idx)}
-          />
-        </div>
-      ))
-    }
-    <IconButton
-      className="btn--icon btn--transparent btn--small dynamic-input-group__add-btn"
-      iconClassName="fa-plus"
-      type="button"
-      onClick={props.onAddClick}
-    />
+  <div className={props.className}>
+    {props.label && <span>{props.label}</span>}
+    {props.items.map((item, idx) => (
+      <GroupItem key={idx}>
+        {item}
+        <RemoveBtn icon="close" onClick={() => props.onRemoveClick(idx)} />
+      </GroupItem>
+    ))}
+    <AddBtn icon="plus" onClick={props.onAddClick} />
   </div>
 );
 

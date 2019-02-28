@@ -34,7 +34,7 @@ public class MandatorUITest implements IntegrationTest.Simple {
 	private MandatorId mandatorId = mandator.getId();
 	private User user = new User("testUser@test.de", "testUserName");
 	private UserId userId = user.getId();
-	private ConqueryPermission permission = new DatasetPermission(null, Ability.READ.AS_SET, new DatasetId("testDatasetId"));
+	private ConqueryPermission permission = new DatasetPermission(null, Ability.READ.asSet(), new DatasetId("testDatasetId"));
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {

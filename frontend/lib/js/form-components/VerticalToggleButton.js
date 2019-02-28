@@ -1,40 +1,70 @@
-import React                from 'react';
-import PropTypes            from 'prop-types';
-import classnames           from 'classnames';
+// @flow
 
-const VerticalToggleButton = (props) => {
-  return (
-    <p className="vertical-toggle-button">
-      {
-        props.options.map(({ value, label }, i) => (
-          <span
-            key={i}
-            className={classnames(
-              'vertical-toggle-button__option',
-              {
-                'vertical-toggle-button__option--active': props.activeValue === value,
-              }
-            )}
-            onClick={() => {
-              if (value !== props.activeValue)
-                props.onToggle(value);
-            }}
-          >
-            {label}
-          </span>
-        ))
-      }
-    </p>
-  );
+import React from "react";
+import styled from "@emotion/styled";
+
+type PropsType = {
+  className?: string,
+  onToggle: string => void,
+  activeValue: string,
+  options: {
+    label: string,
+    value: string
+  }[]
 };
 
-VerticalToggleButton.propTypes = {
-  onToggle: PropTypes.func.isRequired,
-  activeValue: PropTypes.string.isRequired,
-  options: PropTypes.arrayOf(PropTypes.shape({
-    label: PropTypes.string,
-    value: PropTypes.string,
-  })).isRequired,
+const Btn = styled("p")`
+  margin: 0 auto;
+`;
+
+export const Option = styled("span")`
+  font-size: ${({ theme }) => theme.font.xs};
+  display: block;
+  padding: 2px 8px;
+  cursor: pointer;
+  transition: ${({ theme }) =>
+    `color ${theme.transitionTime}, background-color ${theme.transitionTime}`};
+  color: ${({ theme, active }) => (active ? theme.col.black : theme.col.gray)};
+  border-left: 1px solid ${({ theme }) => theme.col.blueGray};
+  border-right: 1px solid ${({ theme }) => theme.col.blueGray};
+  background-color: ${({ theme, active }) =>
+    active ? theme.col.blueGrayVeryLight : "white"};
+
+  &:first-of-type {
+    margin-left: 0; /* first childs left border does not overlap */
+    border-top: 1px solid ${({ theme }) => theme.col.blueGray};
+    border-top-left-radius: 2px;
+    border-top-right-radius: 2px;
+  }
+
+  &:last-of-type {
+    border-bottom: 1px solid ${({ theme }) => theme.col.blueGray};
+    border-bottom-left-radius: 2px;
+    border-bottom-right-radius: 2px;
+  }
+
+  &:hover {
+    background-color: ${({ theme, active }) =>
+      active ? theme.col.blueGrayVeryLight : theme.col.grayVeryLight};
+  }
+`;
+
+const VerticalToggleButton = (props: PropsType) => {
+  return (
+    <Btn className={props.className}>
+      {props.options.map(({ value, label }, i) => (
+        <Option
+          key={i}
+          active={props.activeValue === value}
+          onClick={() => {
+            if (value !== props.activeValue) props.onToggle(value);
+          }}
+        >
+          {label}
+        </Option>
+      ))}
+    </Btn>
+  );
 };
 
 export default VerticalToggleButton;

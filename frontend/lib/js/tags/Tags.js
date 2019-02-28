@@ -1,31 +1,34 @@
-import React                from 'react';
-import PropTypes            from 'prop-types';
-import Tag                  from './Tag';
+// @flow
 
-export const Tags = (props) => {
-  return !!props.tags && props.tags.length > 0 && (
-    <div className={props.className}>
-      {
-        props.tags.map((tag, i) => (
-          <Tag
-            key={i}
-            label={tag.label}
-            isSelected={tag.isSelected}
-            onClick={() => props.onClickTag(tag.label)}
-          />
-        ))
-      }
-    </div>
-  );
+import React from "react";
+import Tag from "./Tag";
+
+type PropsType = {
+  className: string,
+  tags: {
+    label: string,
+    isSelected: boolean
+  }[],
+  onClickTag: string => void
 };
 
-Tags.propTypes = {
-  className: PropTypes.string,
-  tags: PropTypes.arrayOf(PropTypes.shape({
-    label: PropTypes.string.isRequired,
-    isSelected: PropTypes.bool,
-  })),
-  onClickTag: PropTypes.func.isRequired,
+export const Tags = (props: PropsType) => {
+  return (
+    !!props.tags &&
+    props.tags.length > 0 && (
+      <div className={props.className}>
+        {props.tags.map((tag, i) => (
+          <Tag
+            key={i}
+            isSelected={tag.isSelected}
+            onClick={() => props.onClickTag(tag.label)}
+          >
+            {tag.label}
+          </Tag>
+        ))}
+      </div>
+    )
+  );
 };
 
 export default Tags;

@@ -1,19 +1,21 @@
 // @flow
 
-import React                      from 'react';
-import T                          from 'i18n-react';
-import { components }             from 'react-select';
-import Select                     from 'react-select/lib/Creatable';
-import { type FieldPropsType }    from 'redux-form';
-import Dropzone                   from 'react-dropzone'
-import Markdown                   from 'react-markdown';
-import Mustache                   from 'mustache';
-import classnames                 from 'classnames';
-import ReactTooltip               from 'react-tooltip';
+import React from "react";
+import T from "i18n-react";
+import { components } from "react-select";
+import Select from "react-select/lib/Creatable";
+import { type FieldPropsType } from "redux-form";
+import Dropzone from "react-dropzone";
+import Markdown from "react-markdown";
+import Mustache from "mustache";
+import classnames from "classnames";
+import ReactTooltip from "react-tooltip";
 
-import { type SelectOptionsType } from '../common/types/backend';
-import { isEmpty }                from '../common/helpers';
-import InfoTooltip                from '../tooltip/InfoTooltip';
+import { type SelectOptionsType } from "../common/types/backend";
+import { isEmpty } from "../common/helpers";
+import InfoTooltip from "../tooltip/InfoTooltip";
+
+import TooManyValues from "./TooManyValues";
 
 type PropsType = FieldPropsType & {
   label: string,
@@ -23,86 +25,113 @@ type PropsType = FieldPropsType & {
   onInputChange?: Function,
   isLoading?: boolean,
   className?: string,
-  onDropFiles?: Function,
+  onDropFile?: Function,
   isOver: boolean,
-  allowDropFile?: ?boolean,
+  allowDropFile?: boolean
 };
 
 const InputMultiSelect = (props: PropsType) => {
-  const allowDropFile = props.allowDropFile && !!props.onDropFiles
+  const allowDropFile = props.allowDropFile && !!props.onDropFile;
 
-  const MultiValueLabel = (params) => {
-    const label = params.data.optionLabel || params.data.label || params.data
+  const MultiValueLabel = params => {
+    const label = params.data.optionLabel || params.data.label || params.data;
     const valueLabel = params.data.templateValues
       ? Mustache.render(label, params.data.templateValues)
-      : label
+      : label;
+
     return (
       <components.MultiValueLabel {...params}>
         <span data-tip={valueLabel}>{valueLabel}</span>
         <ReactTooltip type="info" place="top" effect="solid" />
       </components.MultiValueLabel>
-    )
+    );
   };
 
-  const options = props.options && props.options.slice(0, 50).map(option => ({
-    ...option,
-    label: option.optionValue && option.templateValues
-      ? Mustache.render(option.optionValue, option.templateValues)
-      : option.label,
-    value: '' + option.value, // convert number to string
-    optionLabel: option.label
-  }))
+  const options =
+    props.options &&
+    props.options.slice(0, 50).map(option => ({
+      ...option,
+      label:
+        option.optionValue && option.templateValues
+          ? Mustache.render(option.optionValue, option.templateValues)
+          : option.label,
+      value: "" + option.value, // convert number to string
+      optionLabel: option.label
+    }));
 
   return (
-    <label className={classnames(
-      'input', {
-        'input--value-changed':
-          !isEmpty(props.input.value) && props.input.value !== props.input.defaultValue
-      }
-    )}>
-      <p className={classnames(
-        'input-label', {
-          'input-label--disabled': !!props.disabled
-        }
-      )}>
-        { props.label }
-        { props.tooltip && <InfoTooltip text={props.tooltip} /> }
-      </p>
-      <Dropzone
-        disableClick
-        style={{position: "relative", display: "block", maxWidth: "300px"}}
-        activeClassName={allowDropFile ? 'dropzone--over' : ''}
-        className={allowDropFile ? 'dropzone' : ''}
-        onDrop={props.onDropFiles}
-        disabled={!allowDropFile}
+    <label
+      className={classnames("input", {
+        "input--value-changed":
+          !isEmpty(props.input.value) &&
+          props.input.value !== props.input.defaultValue
+      })}
+    >
+      <p
+        className={classnames("input-label", {
+          "input-label--disabled": !!props.disabled
+        })}
       >
-        <Select
-          name="form-field"
-          options={options}
-          components={{ MultiValueLabel }}
+        {props.label}
+        {props.tooltip && <InfoTooltip text={props.tooltip} />}
+      </p>
+      {props.input.value && props.input.value.length > 50 ? (
+        <TooManyValues
           value={props.input.value}
-          onChange={(value) => props.input.onChange(value)}
-          isDisabled={props.disabled}
-          isMulti
-          placeholder={allowDropFile
-            ? T.translate('reactSelect.dndPlaceholder')
-            : T.translate('reactSelect.placeholder')
-          }
-          noOptionsMessage={() => T.translate('reactSelect.noResults')}
-          onInputChange={props.onInputChange || function(value) { return value; }}
-          isLoading={!!props.isLoading}
-          classNamePrefix={'react-select'}
-          closeMenuOnSelect={false}
-          formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
-            optionValue && templateValues
-              ? <Markdown source={Mustache.render(optionValue, templateValues)} />
-              : label
-          }
-          filterOption={false}
+          onClear={() => props.input.onChange(null)}
         />
-      </Dropzone>
+      ) : (
+        <Dropzone
+          disableClick
+          style={{ position: "relative", display: "block", maxWidth: "300px" }}
+          activeClassName={allowDropFile ? "dropzone--over" : ""}
+          className={allowDropFile ? "dropzone" : ""}
+          onDrop={files => props.onDropFile(files[0])}
+          disabled={!allowDropFile}
+        >
+          <Select
+            name="form-field"
+            options={options}
+            components={{ MultiValueLabel }}
+            value={props.input.value}
+            onChange={value => props.input.onChange(value)}
+            isDisabled={props.disabled}
+            isMulti
+            placeholder={
+              allowDropFile
+                ? T.translate("reactSelect.dndPlaceholder")
+                : T.translate("reactSelect.placeholder")
+            }
+            noOptionsMessage={() => T.translate("reactSelect.noResults")}
+            onInputChange={
+              props.onInputChange ||
+              function(value) {
+                return value;
+              }
+            }
+            isLoading={!!props.isLoading}
+            classNamePrefix={"react-select"}
+            closeMenuOnSelect={false}
+            formatOptionLabel={({
+              label,
+              optionValue,
+              templateValues,
+              highlight
+            }) =>
+              optionValue && templateValues ? (
+                <Markdown
+                  source={Mustache.render(optionValue, templateValues)}
+                />
+              ) : (
+                label
+              )
+            }
+            filterOption={false}
+          />
+        </Dropzone>
+      )}
     </label>
-  )
+  );
 };
 
 export default InputMultiSelect;

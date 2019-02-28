@@ -1,43 +1,36 @@
-import React                from 'react';
-import PropTypes            from 'prop-types';
-import T                    from 'i18n-react';
-import { DragSource }       from 'react-dnd';
-import { connect }          from 'react-redux';
-import moment               from 'moment';
-import classnames           from 'classnames';
+// @flow
 
+import React from "react";
+import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 
-import { ErrorMessage }     from '../../error-message';
-import { dndTypes }         from '../../common/constants';
-import { SelectableLabel }  from '../../selectable-label';
+import T from "i18n-react";
+import { DragSource } from "react-dnd";
+import { connect } from "react-redux";
+import moment from "moment";
 
-import {
-  CloseIconButton,
-  DownloadButton,
-}  from '../../button';
+import { ErrorMessage } from "../../error-message";
+import { dndTypes } from "../../common/constants";
+import { SelectableLabel } from "../../selectable-label";
 
-import {
-  EditableText,
-  EditableTags
-}                           from '../../form-components';
+import DownloadButton from "../../button/DownloadButton";
+import IconButton from "../../button/IconButton";
 
-import {
-  deletePreviousQueryModalOpen,
-}                           from '../delete-modal/actions'
+import { EditableText, EditableTags } from "../../form-components";
 
-import {
-  type DraggedQueryType
-}                           from '../../standard-query-editor/types';
+import { deletePreviousQueryModalOpen } from "../delete-modal/actions";
+
+import { type DraggedQueryType } from "../../standard-query-editor/types";
 
 import {
   toggleSharePreviousQuery,
   renamePreviousQuery,
   retagPreviousQuery,
   toggleEditPreviousQueryLabel,
-  toggleEditPreviousQueryTags,
-}                           from './actions';
+  toggleEditPreviousQueryTags
+} from "./actions";
 
-import PreviousQueryTags    from './PreviousQueryTags';
+import PreviousQueryTags from "./PreviousQueryTags";
 
 const nodeSource = {
   beginDrag(props): DraggedQueryType {
@@ -45,7 +38,7 @@ const nodeSource = {
     return {
       id: props.query.id,
       label: props.query.label,
-      isPreviousQuery: true,
+      isPreviousQuery: true
     };
   }
 };
@@ -58,152 +51,214 @@ function collect(connect, monitor) {
   };
 }
 
-const PreviousQuery = (props) => {
+const StyledIconButton = styled(IconButton)`
+  margin-left: 10px;
+`;
+const HoverButton = styled(StyledIconButton)`
+  display: none;
+`;
+
+const Root = styled("div")`
+  margin: 0;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  border: 1px solid ${({ theme }) => theme.col.grayLight};
+  background-color: ${({ theme }) => theme.col.bg};
+
+  border-left: ${({ theme, own, system }) =>
+    own
+      ? `4px solid ${theme.col.orange}`
+      : system
+      ? `4px solid ${theme.col.blueGrayDark}`
+      : `1px solid ${theme.col.grayLight}`};
+
+  &:hover {
+    ${({ theme, own, system }) =>
+      !own &&
+      !system &&
+      css`
+        border-left-color: ${theme.col.blueGray};
+      `};
+    border-top-color: ${({ theme }) => theme.col.blueGray};
+    border-right-color: ${({ theme }) => theme.col.blueGray};
+    border-bottom-color: ${({ theme }) => theme.col.blueGray};
+
+    ${HoverButton} {
+      display: inline-block;
+    }
+  }
+`;
+
+const TopInfos = styled("div")`
+  color: ${({ theme }) => theme.col.gray};
+  margin: 0;
+`;
+const TopRight = styled("div")`
+  float: right;
+`;
+const SharedIndicator = styled("span")`
+  margin-left: 10px;
+  color: ${({ theme }) => theme.col.blueGray};
+`;
+const StyledSelectableLabel = styled(SelectableLabel)`
+  margin: 0;
+  font-weight: 400;
+  word-break: break-word;
+`;
+const StyledEditableText = styled(EditableText)`
+  margin: 0;
+  font-weight: 400;
+  word-break: break-word;
+`;
+const MiddleRow = styled("div")`
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+`;
+const StyledErrorMessage = styled(ErrorMessage)`
+  margin: 0;
+`;
+const StyledEditableTags = styled(EditableTags)`
+  margin-top: 5px;
+`;
+
+type PropsType = {
+  query: {
+    id: number | string,
+    label: string,
+    loading: boolean,
+    numberOfResults: number,
+    createdAt: string,
+    tags: string[],
+    own: boolean,
+    shared: boolean
+  },
+  onRenamePreviousQuery: () => void,
+  onToggleEditPreviousQueryLabel: () => void,
+  onToggleEditPreviousQueryTags: () => void,
+  onToggleSharePreviousQuery: () => void,
+  onRetagPreviousQuery: () => void,
+  onDeletePreviousQuery: () => void,
+  connectDragSource: () => void,
+  availableTags: string[]
+};
+
+const PreviousQuery = (props: PropsType) => {
   const {
     query,
     onRenamePreviousQuery,
     onToggleEditPreviousQueryTags,
     onToggleEditPreviousQueryLabel,
     onRetagPreviousQuery,
-    onToggleSharePreviousQuery,
+    onToggleSharePreviousQuery
   } = props;
 
-  const peopleFound = `${query.numberOfResults} ${T.translate('previousQueries.results')}`;
+  const peopleFound = `${query.numberOfResults} ${T.translate(
+    "previousQueries.results"
+  )}`;
   const executedAt = moment(query.createdAt).fromNow();
   const label = query.label || query.id.toString();
   const mayEditQuery = query.own || query.shared;
   const isNotEditing = !(query.editingLabel || query.editingTags);
 
-  const content = (
-    <div className={classnames('previous-query', {
-      'previous-query--own': !!query.own,
-      'previous-query--shared': !!query.shared,
-      'previous-query--system': !!query.system || (!query.own && !query.shared),
-    })}>
-      <p className="previous-query__top-infos">
-        <span className="previous-query__top-left">
-          {
-            query.resultUrl
-              ? <DownloadButton
-                  className="btn--icon"
-                  url={query.resultUrl}
-                  label={peopleFound}
-                />
-              : peopleFound
-          }
-          {
-            query.own && (
-            query.shared
-            ? <span
+  return (
+    <Root
+      ref={instance => {
+        if (isNotEditing) props.connectDragSource(instance);
+      }}
+      own={!!query.own}
+      shared={!!query.shared}
+      system={!!query.system || (!query.own && !query.shared)}
+    >
+      <TopInfos>
+        <div>
+          {query.resultUrl ? (
+            <DownloadButton bare large url={query.resultUrl}>
+              {peopleFound}
+            </DownloadButton>
+          ) : (
+            peopleFound
+          )}
+          {query.own &&
+            (query.shared ? (
+              <SharedIndicator
                 onClick={() => onToggleSharePreviousQuery(!query.shared)}
-                className="previous-query__shared-indicator">
-                { T.translate('previousQuery.shared') }
-              </span>
-            : <span
-                onClick={() => onToggleSharePreviousQuery(!query.shared)}
-                className="previous-query__btn btn--icon"
               >
-                <i className="fa fa-upload" /> { T.translate('previousQuery.share') }
-              </span>
-          )
-          }
-          {
-            mayEditQuery && !query.editingTags &&
-            <span
+                {T.translate("previousQuery.shared")}
+              </SharedIndicator>
+            ) : (
+              <StyledIconButton
+                icon="upload"
+                onClick={() => onToggleSharePreviousQuery(!query.shared)}
+              >
+                {T.translate("previousQuery.share")}
+              </StyledIconButton>
+            ))}
+          {mayEditQuery && !query.editingTags && (
+            <HoverButton
+              icon="plus"
+              large
+              bare
               onClick={onToggleEditPreviousQueryTags}
-              className="previous-query__btn previous-query__hover-btn btn--icon"
             >
-              <i className="fa fa-plus" /> { T.translate('previousQuery.addTag') }
-            </span>
-          }
-        </span>
-        <span className="previous-query__top-right">
-          { executedAt }
-          {
-            query.loading
-              ? <span className="btn--icon--padded fa fa-spinner" />
-              : query.own && <CloseIconButton onClick={props.onDeletePreviousQuery} />
-          }
-        </span>
-      </p>
-      <div className="previous-query__middle-row">
-        {
-          mayEditQuery
-          ? <EditableText
-              className="previous-query__label"
-              loading={!!query.loading}
-              text={label}
-              selectTextOnMount={true}
-              editing={!!query.editingLabel}
-              onSubmit={onRenamePreviousQuery}
-              onToggleEdit={onToggleEditPreviousQueryLabel}
-            />
-          : <SelectableLabel className="previous-query__label" label={label} />
-        }
-        <span className="previous-query__top-infos">
-          { query.ownerName }
-        </span>
-      </div>
-      {
-        mayEditQuery
-        ? <EditableTags
-            className="previous-query__tags"
-            tags={query.tags}
-            editing={!!query.editingTags}
+              {T.translate("previousQuery.addTag")}
+            </HoverButton>
+          )}
+          <TopRight>
+            {executedAt}
+            {query.loading ? (
+              <IconButton large bare icon="spinner" />
+            ) : (
+              query.own && (
+                <IconButton
+                  icon="close"
+                  tiny
+                  onClick={props.onDeletePreviousQuery}
+                />
+              )
+            )}
+          </TopRight>
+        </div>
+      </TopInfos>
+      <MiddleRow>
+        {mayEditQuery ? (
+          <StyledEditableText
             loading={!!query.loading}
-            onSubmit={onRetagPreviousQuery}
-            onToggleEdit={onToggleEditPreviousQueryTags}
-            tagComponent={
-              <PreviousQueryTags
-                className="editable-tags__tags"
-                tags={query.tags}
-              />
-            }
-            availableTags={props.availableTags}
+            text={label}
+            selectTextOnMount={true}
+            editing={!!query.editingLabel}
+            onSubmit={onRenamePreviousQuery}
+            onToggleEdit={onToggleEditPreviousQueryLabel}
           />
-        : <PreviousQueryTags
-            className="previous-query__tags editable-tags__tags"
-            tags={query.tags}
-          />
-      }
-      {
-        !!query.error &&
-        <ErrorMessage
-          className="previous-query__error"
-          message={query.error}
+        ) : (
+          <StyledSelectableLabel label={label} />
+        )}
+        <TopInfos>{query.ownerName}</TopInfos>
+      </MiddleRow>
+      {mayEditQuery ? (
+        <StyledEditableTags
+          tags={query.tags}
+          editing={!!query.editingTags}
+          loading={!!query.loading}
+          onSubmit={onRetagPreviousQuery}
+          onToggleEdit={onToggleEditPreviousQueryTags}
+          tagComponent={<PreviousQueryTags tags={query.tags} />}
+          availableTags={props.availableTags}
         />
-      }
-    </div>
+      ) : (
+        <PreviousQueryTags tags={query.tags} />
+      )}
+      {!!query.error && <StyledErrorMessage message={query.error} />}
+    </Root>
   );
-  return isNotEditing ? props.connectDragSource(content) : content;
 };
 
-PreviousQuery.propTypes = {
-  query: PropTypes.shape({
-    id: PropTypes.oneOfType([PropTypes.number, PropTypes.string]).isRequired,
-    label: PropTypes.string,
-    loading: PropTypes.bool,
-    numberOfResults: PropTypes.number.isRequired,
-    createdAt: PropTypes.string.isRequired,
-    tags: PropTypes.arrayOf(PropTypes.string),
-    own: PropTypes.bool,
-    shared: PropTypes.bool,
-  }).isRequired,
-  onRenamePreviousQuery: PropTypes.func.isRequired,
-  onToggleEditPreviousQueryLabel: PropTypes.func.isRequired,
-  onToggleEditPreviousQueryTags: PropTypes.func.isRequired,
-  onToggleSharePreviousQuery: PropTypes.func.isRequired,
-  onRetagPreviousQuery: PropTypes.func.isRequired,
-  onDeletePreviousQuery: PropTypes.func.isRequired,
-  connectDragSource: PropTypes.func.isRequired,
-  availableTags: PropTypes.arrayOf(PropTypes.string),
-};
-
-const mapStateToProps = (state) => ({
-    availableTags: state.previousQueries.tags,
+const mapStateToProps = state => ({
+  availableTags: state.previousQueries.tags
 });
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = dispatch => ({
   onToggleSharePreviousQuery: (datasetId, queryId, shared) =>
     dispatch(toggleSharePreviousQuery(datasetId, queryId, shared)),
 
@@ -213,36 +268,50 @@ const mapDispatchToProps = (dispatch) => ({
   onRetagPreviousQuery: (datasetId, queryId, tags) =>
     dispatch(retagPreviousQuery(datasetId, queryId, tags)),
 
-  onDeletePreviousQuery: (queryId) =>
+  onDeletePreviousQuery: queryId =>
     dispatch(deletePreviousQueryModalOpen(queryId)),
 
-  onToggleEditPreviousQueryLabel: (queryId) =>
+  onToggleEditPreviousQueryLabel: queryId =>
     dispatch(toggleEditPreviousQueryLabel(queryId)),
 
-  onToggleEditPreviousQueryTags: (queryId) =>
-    dispatch(toggleEditPreviousQueryTags(queryId)),
+  onToggleEditPreviousQueryTags: queryId =>
+    dispatch(toggleEditPreviousQueryTags(queryId))
 });
 
 const mapProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  onToggleSharePreviousQuery: (shared) =>
-    dispatchProps.onToggleSharePreviousQuery(ownProps.datasetId, ownProps.query.id, shared),
-  onRenamePreviousQuery: (label) =>
-    dispatchProps.onRenamePreviousQuery(ownProps.datasetId, ownProps.query.id, label),
-  onRetagPreviousQuery: (tags) =>
-    dispatchProps.onRetagPreviousQuery(ownProps.datasetId, ownProps.query.id, tags),
+  onToggleSharePreviousQuery: shared =>
+    dispatchProps.onToggleSharePreviousQuery(
+      ownProps.datasetId,
+      ownProps.query.id,
+      shared
+    ),
+  onRenamePreviousQuery: label =>
+    dispatchProps.onRenamePreviousQuery(
+      ownProps.datasetId,
+      ownProps.query.id,
+      label
+    ),
+  onRetagPreviousQuery: tags =>
+    dispatchProps.onRetagPreviousQuery(
+      ownProps.datasetId,
+      ownProps.query.id,
+      tags
+    ),
   onDeletePreviousQuery: () =>
     dispatchProps.onDeletePreviousQuery(ownProps.query.id),
   onToggleEditPreviousQueryLabel: () =>
     dispatchProps.onToggleEditPreviousQueryLabel(ownProps.query.id),
   onToggleEditPreviousQueryTags: () =>
-    dispatchProps.onToggleEditPreviousQueryTags(ownProps.query.id),
+    dispatchProps.onToggleEditPreviousQueryTags(ownProps.query.id)
 });
 
-export default DragSource(
-  dndTypes.PREVIOUS_QUERY,
-  nodeSource,
-  collect
-)(connect(mapStateToProps, mapDispatchToProps, mapProps)(PreviousQuery));
+export default DragSource(dndTypes.PREVIOUS_QUERY, nodeSource, collect)(
+  connect(
+    mapStateToProps,
+    mapDispatchToProps,
+    mapProps
+  )(PreviousQuery)
+);

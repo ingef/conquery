@@ -13,12 +13,13 @@ import lombok.EqualsAndHashCode;
 @CPSType(id="DATASET_PERMISSION", base=ConqueryPermission.class)
 @EqualsAndHashCode(callSuper=true)
 public class DatasetPermission extends IdentifiableInstancePermission<DatasetId> {
+
 	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId instanceId) {
 		super(ownerId, abilities, instanceId);
 	}
 
 	@JsonCreator
-	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities,  DatasetId instanceId, UUID jsonId) {
+	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId instanceId, UUID jsonId) {
 		super(ownerId, abilities, instanceId, jsonId);
 	}
 
@@ -26,5 +27,4 @@ public class DatasetPermission extends IdentifiableInstancePermission<DatasetId>
 	public DatasetPermission withOwner(PermissionOwnerId<?> newOwner) {
 		return new DatasetPermission(newOwner, this.getAbilities().clone(), this.getInstanceId());
 	}
-
 }

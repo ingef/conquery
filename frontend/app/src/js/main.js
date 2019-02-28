@@ -1,24 +1,26 @@
 // @flow
 
-import conquery                    from '../../../lib/js';
-import { StandardQueryEditorTab }  from '../../../lib/js/standard-query-editor';
-import { TimebasedQueryEditorTab } from '../../../lib/js/timebased-query-editor';
+import conquery from "../../../lib/js";
+import { StandardQueryEditorTab } from "../../../lib/js/standard-query-editor";
+import { TimebasedQueryEditorTab } from "../../../lib/js/timebased-query-editor";
 
-require('../styles/styles.sass');
-require('../images/favicon.png');
+import theme from "../styles/theme";
 
-const isProduction = process.env.NODE_ENV === 'production';
+require("../styles/styles.sass");
+require("../images/favicon.png");
+
+const isProduction = process.env.NODE_ENV === "production";
 const environment = {
   isProduction: isProduction,
   basename: isProduction
-    ? '/' // Possibly: Run under a subpath in production
-    : '/',
-    apiUrl: '/api'
+    ? "/" // Possibly: Run under a subpath in production
+    : "/",
+  apiUrl: "/api"
 };
 
 const tabs = {
   [StandardQueryEditorTab.description.key]: StandardQueryEditorTab,
-  [TimebasedQueryEditorTab.description.key]: TimebasedQueryEditorTab,
+  [TimebasedQueryEditorTab.description.key]: TimebasedQueryEditorTab
 };
 
-conquery(environment, tabs);
+conquery(environment, tabs, theme);

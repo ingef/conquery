@@ -13,9 +13,9 @@ public enum Ability {
 	LABEL,
 	SHARE;
 	
-	public final Set<Ability> AS_SET = toSet();
+	private final Set<Ability> asSet = Collections.singleton(this);
 	
-	private Set<Ability> toSet() {
-		return Collections.singleton(this);
+	public Set<Ability> asSet() {
+		return asSet;
 	}
 }

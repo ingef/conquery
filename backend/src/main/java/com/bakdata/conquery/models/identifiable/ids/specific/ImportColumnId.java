@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,7 +33,7 @@ public class ImportColumnId extends AId<ImportColumn> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public ImportColumnId parse(Iterator<String> parts) {
+		public ImportColumnId parse(PeekingIterator<String> parts) {
 			ImportId parent = ImportId.Parser.INSTANCE.parse(parts);
 			return new ImportColumnId(parent, parts.next());
 		}

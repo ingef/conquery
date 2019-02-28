@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,7 +33,7 @@ public class CBlockId extends AId<CBlock> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public CBlockId parse(Iterator<String> parts) {
+		public CBlockId parse(PeekingIterator<String> parts) {
 			BlockId block = BlockId.Parser.INSTANCE.parse(parts);
 			ConnectorId connector = ConnectorId.Parser.INSTANCE.parse(parts);
 			return new CBlockId(block, connector);

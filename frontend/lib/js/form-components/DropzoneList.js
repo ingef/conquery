@@ -1,11 +1,20 @@
 // @flow
 
-import React           from 'react';
-import classnames      from 'classnames';
+import React from "react";
+import styled from "@emotion/styled";
 
-import CloseIconButton from '../button/CloseIconButton';
-import Dropzone        from './Dropzone';
+import IconButton from "../button/IconButton";
+import Dropzone from "./Dropzone";
 
+const ListItem = styled("div")`
+  position: relative;
+`;
+
+const StyledIconButton = styled(IconButton)`
+  position: absolute;
+  top: 0;
+  right: 0;
+`;
 
 type PropsType = {
   className?: string,
@@ -24,38 +33,32 @@ const DropzoneList = (props: PropsType) => {
   const FreeDropzone = Dropzone(null, props.acceptedDropTypes, props.onDrop);
 
   return (
-    <div className={classnames("dropzone-list", props.className)}>
-      {
-        props.label &&
-        <span className="input-label dropzone-list__label">
-          { props.label }
-        </span>
-      }
-      {
-        props.items && props.items.length > 0 &&
-        <div className="dropzone-list__items">
-          {
-            props.items.map((item, i) => (
-              <div key={i} className={classnames("dropzone-list__item", props.itemClassName)}>
-                <CloseIconButton
-                  className="dropzone-list__remove-item-btn"
-                  onClick={() => props.onDelete(i)}
-                />
-                {item}
-              </div>
-            ))
-          }
+    <div className={props.className}>
+      {props.label && (
+        <span className="input-label dropzone-list__label">{props.label}</span>
+      )}
+      {props.items && props.items.length > 0 && (
+        <div>
+          {props.items.map((item, i) => (
+            <ListItem key={i} className={props.itemClassName}>
+              <StyledIconButton
+                icon="close"
+                onClick={() => props.onDelete(i)}
+              />
+              {item}
+            </ListItem>
+          ))}
         </div>
-      }
-      {
-        // allow at least one column
-        ((props.items && props.items.length === 0) || !props.disallowMultipleColumns) &&
+      )}
+      {// allow at least one column
+      ((props.items && props.items.length === 0) ||
+        !props.disallowMultipleColumns) && (
         <FreeDropzone
           className={props.dropzoneClassName}
           containsItem={false}
           dropzoneText={props.dropzoneText}
         />
-      }
+      )}
     </div>
   );
 };

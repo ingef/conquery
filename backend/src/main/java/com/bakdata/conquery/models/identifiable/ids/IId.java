@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
+import com.google.common.collect.PeekingIterator;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -15,18 +16,18 @@ import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-
-import jersey.repackaged.com.google.common.collect.Lists;
+import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 
 @JsonDeserialize(using=IdDeserializer.class)
 public interface IId<TYPE> {
 
 	char JOIN_CHAR = '.';
-	public static final Joiner JOINER = Joiner.on(JOIN_CHAR);
-	public static final Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
-	static final Map<List<String>, IId<?>> INTERNED_IDS = new ConcurrentHashMap<>();
+	Joiner JOINER = Joiner.on(JOIN_CHAR);
+	Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
+	Map<List<String>, IId<?>> INTERNED_IDS = new ConcurrentHashMap<>();
 	
-	public static interface Parser<ID extends IId<?>> {
+	interface Parser<ID extends IId<?>> {
 		
 		static String[] split(String id) {
 			String[] parts = StringUtils.split(id, IId.JOIN_CHAR);
@@ -48,7 +49,7 @@ public interface IId<TYPE> {
 		
 		default ID createId(List<String> parts) {
 			parts = ImmutableList.copyOf(Lists.transform(parts,String::intern));
-			Iterator<String> it = parts.iterator();
+			PeekingIterator<String> it = Iterators.peekingIterator(parts.iterator());
 			return checkNoRemaining(parse(it), it, parts);
 		}
 		
@@ -66,7 +67,7 @@ public interface IId<TYPE> {
 			return parse(parts);
 		}
 		
-		ID parse(Iterator<String> parts);
+		ID parse(PeekingIterator<String> parts);
 		
 		default ID checkNoRemaining(ID id, Iterator<String> remaining, List<String> allParts) {
 			if(remaining.hasNext()) {
@@ -86,7 +87,7 @@ public interface IId<TYPE> {
 		}
 	}
 	
-	public static <T extends IId<?>> Class<T> findIdClass(Class<?> cl) {
+	static <T extends IId<?>> Class<T> findIdClass(Class<?> cl) {
 		Class<?> result = CLASS_TO_ID_MAP.get(cl);
 		if(result == null) {
 			String methodName = "getId";
@@ -113,7 +114,7 @@ public interface IId<TYPE> {
 		return (Class<T>)result;
 	}
 	
-	public static <T extends IId<?>> Parser<T> createParser(Class<T> idClass) {
+	static <T extends IId<?>> Parser<T> createParser(Class<T> idClass) {
 		return (Parser<T>)idClass.getDeclaredClasses()[0].getEnumConstants()[0];
 	}
 }

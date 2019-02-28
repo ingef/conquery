@@ -24,11 +24,6 @@ import com.bakdata.conquery.util.functions.Collector;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Collection;
-import java.util.Set;
-
 @Slf4j
 public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {
 	
@@ -37,6 +32,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<ConqueryPermission> authPermissions;
 	private IdentifiableStore<Mandator> authMandator;
+	
 	@Getter
 	private Namespaces namespaces;
 
@@ -111,15 +107,15 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		*/
 	//}
 	
-	public void addPermission(ConqueryPermission permission) throws JSONException{
+	public void addPermission(ConqueryPermission permission) throws JSONException {
 		authPermissions.add(permission);
 	}
 	
-	public Collection<ConqueryPermission> getAllPermissions(){
+	public Collection<ConqueryPermission> getAllPermissions() {
 		return authPermissions.getAll();
 	}
 	
-	public void removePermission(PermissionId permissionId){
+	public void removePermission(PermissionId permissionId) {
 		authPermissions.remove(permissionId);
 	}
 	
@@ -131,7 +127,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		return authUser.get(userId);
 	}
 	
-	public Collection<User> getAllUsers(){
+	public Collection<User> getAllUsers() {
 		return authUser.getAll();
 	}
 	

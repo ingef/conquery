@@ -1,17 +1,34 @@
-import React            from 'react';
-import PropTypes        from 'prop-types';
-import T                from 'i18n-react';
-import classnames       from 'classnames';
-import clickOutside     from 'react-onclickoutside';
+// @flow
+
+import React from "react";
+import styled from "@emotion/styled";
+import T from "i18n-react";
+import clickOutside from "react-onclickoutside";
 
 // A multi-select where new items can be created
-import { Creatable as Select}  from 'react-select';
+import { Creatable as Select } from "react-select";
 
-class EditableTagsForm extends React.Component {
-  constructor(props) {
+import PrimaryButton from "../button/PrimaryButton";
+
+type PropsType = {
+  className?: string,
+  tags?: string[],
+  loading: boolean,
+  onSubmit: () => void,
+  onCancel: () => void,
+  availableTags?: string[]
+};
+
+const StyledPrimaryButton = styled(PrimaryButton)`
+  margin-top: 5px;
+`;
+
+class EditableTagsForm extends React.Component<PropsType> {
+  constructor(props: PropsType) {
     super(props);
     this.state = {
-      values: (props.tags && props.tags.map(t => ({ label: t, value: t}))) || []
+      values:
+        (props.tags && props.tags.map(t => ({ label: t, value: t }))) || []
     };
   }
 
@@ -32,42 +49,26 @@ class EditableTagsForm extends React.Component {
   render() {
     return (
       <form
-        className={classnames(
-          'editable-tags-form',
-          this.props.className,
-        )}
+        className={this.props.className}
         onSubmit={this._onSubmit.bind(this)}
       >
         <Select
           name="input"
           value={this.state.values}
-          options={this.props.availableTags.map(t => ({ label: t, value: t}))}
+          options={this.props.availableTags.map(t => ({ label: t, value: t }))}
           onChange={this.handleChange}
           isMulti
           isClearable
           autoFocus={true}
-          placeholder={T.translate('reactSelect.tagPlaceholder')}
-          noOptionsMessage={() => T.translate('reactSelect.noResults')}
+          placeholder={T.translate("reactSelect.tagPlaceholder")}
+          noOptionsMessage={() => T.translate("reactSelect.noResults")}
         />
-        <button
-          type="submit"
-          className="editable-tags-form__btn btn btn--small btn--primary"
-          disabled={this.props.loading}
-        >
-          { T.translate('common.save') }
-        </button>
+        <StyledPrimaryButton type="submit" small disabled={this.props.loading}>
+          {T.translate("common.save")}
+        </StyledPrimaryButton>
       </form>
     );
   }
-};
-
-EditableTagsForm.propTypes = {
-  className: PropTypes.string,
-  tags: PropTypes.arrayOf(PropTypes.string),
-  loading: PropTypes.bool.isRequired,
-  onSubmit: PropTypes.func.isRequired,
-  onCancel: PropTypes.func.isRequired,
-  availableTags: PropTypes.arrayOf(PropTypes.string),
-};
+}
 
 export default clickOutside(EditableTagsForm);
