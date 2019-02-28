@@ -83,8 +83,4 @@ public class Namespaces implements NamespaceCollection {
 	public Collection<Namespace> getNamespaces() {
 		return datasets.values();
 	}
-	
-	public <TYPE extends Identifiable<?>, ID extends IId<TYPE>&NamespacedId> TYPE resolve(ID id) {
-		return get(id.getDataset()).getStorage().getCentralRegistry().resolve(id);
-	}
 }
