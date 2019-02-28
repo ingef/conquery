@@ -9,6 +9,7 @@ import T from "i18n-react";
 import { type QueryNodeType } from "../standard-query-editor/types";
 
 import TransparentButton from "../button/TransparentButton";
+import EscAble from "../common/components/EscAble";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
@@ -17,7 +18,7 @@ import DescriptionColumn from "./DescriptionColumn";
 
 import { createQueryNodeEditorActions } from "./actions";
 
-const Root = styled("div")`
+const StyledEscAble = styled(EscAble)`
   padding: 0 10px;
   left: 0;
   top: 0;
@@ -91,7 +92,7 @@ const QueryNodeEditor = (props: PropsType) => {
       : null;
 
   return (
-    <Root>
+    <StyledEscAble onEscPressed={props.onCloseModal}>
       <Wrapper>
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
@@ -109,7 +110,7 @@ const QueryNodeEditor = (props: PropsType) => {
           {T.translate("common.done")}
         </CloseButton>
       </Wrapper>
-    </Root>
+    </StyledEscAble>
   );
 };
 
