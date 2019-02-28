@@ -58,10 +58,10 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		
 		collector
 			.collect(meta)
+			.collect(authMandator)
 			//load users before queries
 			.collect(authUser)
 			.collect(queries)
-			.collect(authMandator)
 			.collect(authPermissions);
 	}
 

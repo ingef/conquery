@@ -66,6 +66,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			Mandator mandatorStored = storage.getMandator(mandator.getId());
 			Mandator userRefMand = userStored.getRoles().iterator().next();
 			assertThat(mandatorStored).isSameAs(userRefMand);
+			
 		}
 		
 		
