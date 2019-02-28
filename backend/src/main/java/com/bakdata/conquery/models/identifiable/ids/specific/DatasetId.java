@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -8,6 +7,7 @@ import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,7 +33,7 @@ public class DatasetId extends AId<Dataset> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public DatasetId parse(Iterator<String> parts) {
+		public DatasetId parse(PeekingIterator<String> parts) {
 			return new DatasetId(parts.next());
 		}
 	}

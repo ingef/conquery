@@ -17,4 +17,5 @@ public class FETable {
 	private ConnectorId connectorId;
 	private String label;
 	private List<FEFilter> filters;
+	private List<FESelect> selects;
 }

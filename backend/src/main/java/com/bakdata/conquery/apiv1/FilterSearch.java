@@ -24,12 +24,12 @@ public class FilterSearch {
 	private static Map<String, QuickSearch> search = new HashMap<>();
 
 	public static void init(Collection<Dataset> datasets) {
-		datasets.stream()
-			.forEach(ds -> ConceptsUtils.getAllConnectors(ds.getConcepts()).stream()
-			.forEach(co -> co.getAllFilters().stream()
+		datasets
+			.stream()
+			.flatMap(ds -> ConceptsUtils.getAllConnectors(ds.getConcepts()).stream())
+			.flatMap(co -> co.collectAllFilters().stream())
 			.filter(f -> f instanceof AbstractSelectFilter && f.getTemplate() != null)
-			.forEach(f -> createSourceSearch((AbstractSelectFilter) f))
-			));
+			.forEach(f -> createSourceSearch((AbstractSelectFilter) f));
 	}
 
 	private static void createSourceSearch(AbstractSelectFilter filter) {

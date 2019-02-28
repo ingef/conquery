@@ -1,9 +1,9 @@
 // @flow
 
-import React                 from 'react';
+import React from "react";
 
-import ParameterTableFilters from './ParameterTableFilters';
-import type { PropsType }    from './QueryNodeEditor';
+import ParameterTableFilters from "./ParameterTableFilters";
+import type { PropsType } from "./QueryNodeEditor";
 
 export const TableFilterView = (props: PropsType) => {
   const { node, editorState } = props;
@@ -17,17 +17,21 @@ export const TableFilterView = (props: PropsType) => {
         <ParameterTableFilters
           key={editorState.selectedInputTableIdx}
           filters={selectedTable.filters}
-          onSetFilterValue={(filterIdx, value, formattedValue) => props.onSetFilterValue(
-            editorState.selectedInputTableIdx,
-            filterIdx,
-            value,
-            formattedValue
-          )}
-          onSwitchFilterMode={(filterIdx, mode) => props.onSwitchFilterMode(
-            editorState.selectedInputTableIdx,
-            filterIdx,
-            mode
-          )}
+          onSetFilterValue={(filterIdx, value, formattedValue) =>
+            props.onSetFilterValue(
+              editorState.selectedInputTableIdx,
+              filterIdx,
+              value,
+              formattedValue
+            )
+          }
+          onSwitchFilterMode={(filterIdx, mode) =>
+            props.onSwitchFilterMode(
+              editorState.selectedInputTableIdx,
+              filterIdx,
+              mode
+            )
+          }
           onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
             props.onLoadFilterSuggestions(
               props.datasetId,
@@ -37,22 +41,27 @@ export const TableFilterView = (props: PropsType) => {
               filterIdx,
               filterId,
               prefix
-            )}
-          suggestions={props.suggestions && props.suggestions[editorState.selectedInputTableIdx]}
+            )
+          }
+          suggestions={
+            props.suggestions &&
+            props.suggestions[editorState.selectedInputTableIdx]
+          }
           onShowDescription={editorState.onShowDescription}
-          onDropFiles={(filterIdx, filterId, files) =>
-            props.onDropFiles(
+          onDropFilterValuesFile={(filterIdx, filterId, file) =>
+            props.onDropFilterValuesFile(
               props.datasetId,
               node.tree,
               editorState.selectedInputTableIdx,
               selectedTable.id,
               filterIdx,
               filterId,
-              files
-            )}
+              file
+            )
+          }
           currencyConfig={props.currencyConfig}
         />
       </div>
     </div>
   );
-}
+};

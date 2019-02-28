@@ -1,11 +1,11 @@
 // @flow
 
-import React                from 'react';
-import T                    from 'i18n-react';
-import classnames           from 'classnames';
-import clickOutside         from 'react-onclickoutside';
+import React from "react";
+import styled from "@emotion/styled";
+import T from "i18n-react";
+import clickOutside from "react-onclickoutside";
 
-
+import PrimaryButton from "../button/PrimaryButton";
 
 type PropsType = {
   className?: string,
@@ -13,8 +13,14 @@ type PropsType = {
   loading: boolean,
   selectTextOnMount: boolean,
   onSubmit: Function,
-  onCancel: Function,
+  onCancel: Function
 };
+
+const Input = styled("input")`
+  height: 30px;
+  font-size: ${({ theme }) => theme.font.sm};
+  margin-right: 3px;
+`;
 
 class EditableTextForm extends React.Component {
   props: PropsType;
@@ -22,8 +28,7 @@ class EditableTextForm extends React.Component {
   componentDidMount() {
     this.refs.input.focus();
     this.refs.input.value = this.props.text;
-    if (this.props.selectTextOnMount)
-      this.refs.input.select();
+    if (this.props.selectTextOnMount) this.refs.input.select();
   }
 
   handleClickOutside() {
@@ -41,29 +46,16 @@ class EditableTextForm extends React.Component {
   render() {
     return (
       <form
-        className={classnames(
-          'editable-text-form',
-          this.props.className,
-        )}
+        className={this.props.className}
         onSubmit={this._onSubmit.bind(this)}
       >
-        <input
-          className="editable-text-form__input"
-          type="text"
-          ref="input"
-          placeholder={this.props.text}
-        />
-        <button
-          type="submit"
-          className="btn btn--small btn--primary"
-          disabled={this.props.loading}
-        >
-          { T.translate('common.save') }
-        </button>
+        <Input type="text" ref="input" placeholder={this.props.text} />
+        <PrimaryButton type="submit" disabled={this.props.loading}>
+          {T.translate("common.save")}
+        </PrimaryButton>
       </form>
     );
   }
-};
-
+}
 
 export default clickOutside(EditableTextForm);
