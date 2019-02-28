@@ -137,8 +137,7 @@ public class Preprocessor {
 
 	}
 
-	private void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource)
-		{
+	private void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource) {
 		try {
 
 			if (input.checkAutoOutput()) {
