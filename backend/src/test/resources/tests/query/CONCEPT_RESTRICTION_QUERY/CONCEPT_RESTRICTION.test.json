@@ -1,7 +1,7 @@
 {
 	"type": "QUERY_TEST",
 	"label": "CONCEPT_RESTRICTION Test",
-	"expectedCsv": "tests/query/ICD_QUERY/expected-kh.csv",
+	"expectedCsv": "tests/query/CONCEPT_RESTRICTION_QUERY/expected-kh.csv",
 	"query": {
 		"type": "CONCEPT_QUERY",
 		"root": {
@@ -179,7 +179,7 @@
 	"content": {
 		"tables": [
 			{
-				"csv": "tests/query/ICD_QUERY/kh-content.csv",
+				"csv": "tests/query/CONCEPT_RESTRICTION_QUERY/kh-content.csv",
 				"name": "kh_diagnose",
 				"primaryColumn": {
 					"name": "pid",
