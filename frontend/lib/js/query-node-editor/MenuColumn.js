@@ -44,10 +44,10 @@ const StyledButton = styled(TransparentHeaderButton)`
   line-height: 21px;
 
   background-color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayLight : "initial"};
+    active ? theme.col.blueGrayVeryLight : "initial"};
   &:hover {
     background-color: ${({ theme, active }) =>
-      active ? theme.col.blueGrayLight : "initial"};
+      active ? theme.col.blueGrayVeryLight : "initial"};
   }
 `;
 
