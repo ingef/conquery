@@ -78,15 +78,9 @@ public class TreeChildPrefixIndex {
 					if (condition instanceof PrefixCondition) {
 						for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
 							// We are interested in the most specific child, therefore the deepest.
-							gatheredPrefixChildren.compute(prefix, (key, oldChild) -> {
-								if(oldChild == null)
-									return child;
-
-								if(oldChild.getDepth() > child.getDepth())
-									return oldChild;
-
-								return child;
-							});
+							gatheredPrefixChildren.merge(prefix, child,
+								(newChild, oldChild) -> oldChild.getDepth() > newChild.getDepth() ? oldChild : newChild
+							);
 						}
 					}
 				}
