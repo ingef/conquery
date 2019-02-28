@@ -12,9 +12,11 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
+import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -56,14 +58,16 @@ public class FrontEndConceptBuilder {
 	}
 
 	private static FENode createCTRoot(Concept<?> c, StructureNode[] structureNodes) {
+
 		MatchingStats matchingStats = c.getMatchingStats();
+
 		StructureNodeId structureParent = Arrays
 			.stream(structureNodes)
 			.filter(sn->sn.getContainedRoots().contains(c.getId()))
 			.findAny()
 			.map(StructureNode::getId)
 			.orElse(null);
-		
+
 		FENode n = FENode.builder()
 				.active(c instanceof VirtualConcept)
 				.description(c.getDescription())
@@ -127,7 +131,7 @@ public class FrontEndConceptBuilder {
 			.build();
 	}
 
-	private static FENode createCTNode(ConceptElement ce) {
+	private static FENode createCTNode(ConceptElement<?> ce) {
 		MatchingStats matchingStats = ce.getMatchingStats();
 		FENode n = FENode.builder()
 				.active(null)
@@ -154,9 +158,9 @@ public class FrontEndConceptBuilder {
 		return FETable.builder()
 			.id(con.getTable().getId())
 			.connectorId(con.getId())
-			.label(con.getTable().getLabel())
+			.label(con.getLabel())
 			.filters(con
-				.getAllFilters()
+				.collectAllFilters()
 				.stream()
 				.map(FrontEndConceptBuilder::createFilter)
 				.collect(Collectors.toList())
@@ -172,14 +176,23 @@ public class FrontEndConceptBuilder {
 			.allowDropFile(filter.getAllowDropFile())
 			.pattern(filter.getPattern())
 			.template(filter.getTemplate())
-			// .options() See filter.configureFrontend()
 			.build();
 		try {
 			filter.configureFrontend(f);
-		} catch (ConceptConfigurationException e) {
+		}
+		catch (ConceptConfigurationException e) {
 			throw new IllegalStateException(e);
 		}
 		return f;
+	}
+
+	public static FESelect createSelect(Select<?> select) {
+		return FESelect
+					.builder()
+					.id(select.getId())
+					.label(select.getLabel())
+					.description(select.getDescription())
+					.build();
 	}
 
 	public static Map<ConceptId, Map<ConceptElementId<?>, FENode>> createTreeMap(List<Concept<?>> concepts) {
@@ -195,7 +208,7 @@ public class FrontEndConceptBuilder {
 
 	private static void fillTreeMap(ConceptElement<?> ce, Map<ConceptElementId<?>, FENode> map) {
 		map.put(ce.getId(), createCTNode(ce));
-		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode) ce).getChildren() != null) {
+		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode<?>) ce).getChildren() != null) {
 			for (ConceptTreeChild c : ((ConceptTreeNode<?>) ce).getChildren()) {
 				fillTreeMap(c, map);
 			}

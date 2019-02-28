@@ -1,18 +1,48 @@
 // @flow
 
-import React                            from 'react';
-import type { Dispatch }                from 'redux-thunk';
-import { connect }                      from 'react-redux';
-import T                                from 'i18n-react';
+import React from "react";
+import styled from "@emotion/styled";
+import type { Dispatch } from "redux-thunk";
+import { connect } from "react-redux";
+import T from "i18n-react";
 
-import { type QueryNodeType }           from '../standard-query-editor/types';
+import { type QueryNodeType } from "../standard-query-editor/types";
 
-import { MenuColumn }                   from './MenuColumn';
-import { NodeDetailsView }              from './NodeDetailsView';
-import { TableFilterView }              from './TableFilterView';
-import { DescriptionColumn }            from './DescriptionColumn';
+import TransparentButton from "../button/TransparentButton";
 
-import { createQueryNodeEditorActions } from './actions';
+import { MenuColumn } from "./MenuColumn";
+import { NodeDetailsView } from "./NodeDetailsView";
+import { TableFilterView } from "./TableFilterView";
+import { DescriptionColumn } from "./DescriptionColumn";
+
+import { createQueryNodeEditorActions } from "./actions";
+
+const Root = styled("div")`
+  padding: 0 10px;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  position: absolute;
+  display: flex;
+  background: rgb(249, 249, 249);
+  z-index: 1;
+`;
+
+const Wrapper = styled("div")`
+  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+  display: flex;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+`;
+
+const CloseButton = styled(TransparentButton)`
+  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
+`;
 
 type QueryNodeEditorState = {
   detailsViewActive: boolean,
@@ -24,8 +54,8 @@ type QueryNodeEditorState = {
   onShowDescription: Function,
   onToggleEditLabel: Function,
   onReset: Function,
-  onDropFiles: Function,
-}
+  onDropFilterValuesFile: Function
+};
 
 export type PropsType = {
   name: string,
@@ -45,7 +75,7 @@ export type PropsType = {
   onLoadFilterSuggestions: Function,
   datasetId: number,
   suggestions: ?Object,
-  onToggleIncludeSubnodes: Function,
+  onToggleIncludeSubnodes: Function
 };
 
 const QueryNodeEditor = (props: PropsType) => {
@@ -53,35 +83,31 @@ const QueryNodeEditor = (props: PropsType) => {
 
   if (!node) return null;
 
-  const selectedTable = !node.isPreviousQuery && editorState.selectedInputTableIdx != null
-    ? node.tables[editorState.selectedInputTableIdx]
-    : null;
+  const selectedTable =
+    !node.isPreviousQuery && editorState.selectedInputTableIdx != null
+      ? node.tables[editorState.selectedInputTableIdx]
+      : null;
 
   return (
-      <div className="query-node-editor">
-        <div className="query-node-editor__wrapper">
-          <MenuColumn {...props} />
-          {
-            editorState.detailsViewActive &&
-            <NodeDetailsView {...props} />
-          }
-          {
-            !editorState.detailsViewActive && selectedTable != null &&
-            <TableFilterView {...props} />
-          }
-          {
-            !editorState.detailsViewActive &&
-            <DescriptionColumn {...props} />
-          }
-          <button
-            type="button"
-            className="query-node-editor__close-button btn btn--transparent btn--small"
-            onClick={() => { editorState.onReset(); props.onCloseModal() }}
-          >
-            { T.translate('common.done') }
-          </button>
-        </div>
-      </div>
+    <Root>
+      <Wrapper>
+        <MenuColumn {...props} />
+        {editorState.detailsViewActive && <NodeDetailsView {...props} />}
+        {!editorState.detailsViewActive && selectedTable != null && (
+          <TableFilterView {...props} />
+        )}
+        {!editorState.detailsViewActive && <DescriptionColumn {...props} />}
+        <CloseButton
+          small
+          onClick={() => {
+            editorState.onReset();
+            props.onCloseModal();
+          }}
+        >
+          {T.translate("common.done")}
+        </CloseButton>
+      </Wrapper>
+    </Root>
   );
 };
 
@@ -91,7 +117,9 @@ export const createConnectedQueryNodeEditor = (
   mergeProps: Function
 ) => {
   const mapDispatchToPropsInternal = (dispatch: Dispatch, ownProps) => {
-    const externalDispatchProps = mapDispatchToProps ? mapDispatchToProps(dispatch, ownProps) : {};
+    const externalDispatchProps = mapDispatchToProps
+      ? mapDispatchToProps(dispatch, ownProps)
+      : {};
 
     const {
       setDetailsViewActive,
@@ -107,12 +135,13 @@ export const createConnectedQueryNodeEditor = (
         ...(externalDispatchProps.editorState || {}),
         onSelectDetailsView: () => dispatch(setDetailsViewActive()),
         onToggleEditLabel: () => dispatch(toggleEditLabel()),
-        onSelectInputTableView: (tableIdx) => dispatch(setInputTableViewActive(tableIdx)),
-        onShowDescription: (filterIdx) => dispatch(setFocusedInput(filterIdx)),
+        onSelectInputTableView: tableIdx =>
+          dispatch(setInputTableViewActive(tableIdx)),
+        onShowDescription: filterIdx => dispatch(setFocusedInput(filterIdx)),
         onReset: () => dispatch(reset())
       }
     };
-  }
+  };
 
   const mergePropsInternal = (stateProps, dispatchProps, ownProps) => {
     const externalMergedProps = mergeProps
@@ -128,5 +157,9 @@ export const createConnectedQueryNodeEditor = (
     };
   };
 
-  return connect(mapStateToProps, mapDispatchToPropsInternal, mergePropsInternal)(QueryNodeEditor);
+  return connect(
+    mapStateToProps,
+    mapDispatchToPropsInternal,
+    mergePropsInternal
+  )(QueryNodeEditor);
 };

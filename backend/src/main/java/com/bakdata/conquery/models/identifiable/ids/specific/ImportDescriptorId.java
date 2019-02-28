@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -25,7 +25,7 @@ public class ImportDescriptorId extends AId<ImportDescriptor> {
 		INSTANCE;
 		
 		@Override
-		public ImportDescriptorId parse(Iterator<String> parts) {
+		public ImportDescriptorId parse(PeekingIterator<String> parts) {
 			return new ImportDescriptorId(parts.next());
 		}
 	}

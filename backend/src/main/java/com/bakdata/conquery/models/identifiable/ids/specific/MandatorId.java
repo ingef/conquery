@@ -2,13 +2,13 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import static com.bakdata.conquery.models.identifiable.ids.IId.createParser;
 
-import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -35,7 +35,7 @@ public class MandatorId extends PermissionOwnerId<Mandator> {
 		INSTANCE;
 		
 		@Override
-		public MandatorId parse(Iterator<String> parts) {
+		public MandatorId parse(PeekingIterator<String> parts) {
 			com.bakdata.conquery.models.identifiable.ids.IId.Parser<?> parser = createParser(PermissionOwnerId.class);
 			return (MandatorId) parser.parse(parts);
 		}

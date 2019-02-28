@@ -20,10 +20,10 @@ import com.bakdata.conquery.models.types.specific.DateRangeType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import com.google.common.base.Joiner;
 import com.google.common.collect.ForwardingCollection;
 import com.google.common.math.IntMath;
 
-import jersey.repackaged.com.google.common.base.Joiner;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode

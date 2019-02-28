@@ -16,7 +16,19 @@
   },
   "best_actor_award": {
     "parent": "academy_award",
-    "label": "Best Actor"
+    "label": "Best Actor",
+    "aggregators": [
+      {
+        "id": "12345678",
+        "label": "Filme gespielt Gesamt",
+        "description": "Beispieldescription"
+      },
+      {
+        "id": "123456789",
+        "label": "Summe Gage",
+        "description": "Die Summe berechnet sich aus X und Y und Z und example."
+      }
+    ]
   },
   "best_actress_award": {
     "parent": "academy_award",

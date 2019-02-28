@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -26,7 +26,7 @@ public class PermissionId extends AId<ConqueryPermission> {
 		INSTANCE;
 		
 		@Override
-		public PermissionId parse(Iterator<String> parts) {
+		public PermissionId parse(PeekingIterator<String> parts) {
 			return new PermissionId(UUID.fromString(parts.next()));
 		}
 	}

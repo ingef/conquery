@@ -39,6 +39,8 @@ public class ConqueryConfig extends Configuration {
 	private APIConfig api = new APIConfig();
 	@NotNull
 	private String[] additionalFormats = new String[0];
+	@Valid @NotNull
+	private FrontendConfig frontend = new FrontendConfig();
 	
 	@NotNull @Valid
 	private IdMappingConfig idMapping = new NoIdMapping();
