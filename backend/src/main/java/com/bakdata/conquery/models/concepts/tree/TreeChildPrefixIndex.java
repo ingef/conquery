@@ -1,10 +1,8 @@
 package com.bakdata.conquery.models.concepts.tree;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.conditions.OrCondition;
@@ -14,6 +12,8 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.dict.BytesTTMap;
 import com.bakdata.conquery.util.dict.ValueNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Multimap;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -87,23 +87,28 @@ public class TreeChildPrefixIndex {
 
 			// Insert children into index and build resolving list
 			List<ConceptTreeChild> gatheredChildren = new ArrayList<>();
-			Set<String> prefixes = new HashSet<>();
+			Multimap<String, ConceptTreeChild> prefixes = new HashMultimap<>();
 
 			for (ConceptTreeChild child : gatheredPrefixChildren) {
 				CTCondition condition = child.getCondition();
 
 				for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
 
-					if(!prefixes.add(prefix))
+					if(!prefixes.put(prefix, child))
 						continue;
 
 					if(index.valueToChildIndex.put(prefix.getBytes(), gatheredChildren.size()) != -1)
 						log.error("Duplicate Prefix '{}' in '{}' of '{}'", prefix, condition, root);
 
 					gatheredChildren.add(child);
-
 				}
 			}
+
+			for (String key : prefixes.keys()) {
+				if(prefixes.get(key).size() > 1)
+					log.warn("Multiple ConceptChildren for '{}': {}", key, prefixes.get(key));
+			}
+
 
 			index.valueToChildIndex.balance();
 
