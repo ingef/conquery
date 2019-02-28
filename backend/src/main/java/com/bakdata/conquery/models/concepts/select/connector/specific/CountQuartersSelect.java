@@ -1,10 +1,11 @@
-package com.bakdata.conquery.models.concepts.select;
+package com.bakdata.conquery.models.concepts.select.connector.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
-import com.bakdata.conquery.models.query.select.Select;
 
 
 /**
@@ -12,7 +13,7 @@ import com.bakdata.conquery.models.query.select.Select;
  * Implementation is specific for DateRanges
  */
 @CPSType(id = "COUNT_QUARTERS", base = Select.class)
-public class CountQuartersSelect extends ColumnSelect {
+public class CountQuartersSelect extends SingleColumnSelect {
 
 	@Override
 	protected Aggregator<?> createAggregator() {

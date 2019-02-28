@@ -43,6 +43,8 @@ public class NumberFilter extends SingleColumnFilter<FilterValue<? extends IRang
 				return;
 			}
 			case DECIMAL:
+				f.setType(FEFilterType.DECIMAL_RANGE);
+				return;
 			case REAL: {
 				f.setType(FEFilterType.REAL_RANGE);
 				return;

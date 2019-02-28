@@ -16,11 +16,7 @@
         }
       ],
       "select": [
-        {
-          "type": "PREFIX",
-          "column": "vers_stamm.geschlecht",
-          "selection": "f"
-        }
+        "${dataset}.geschlecht_select.geschlecht_connector.select"
       ]
     }
   },
@@ -35,6 +31,12 @@
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"
+          },
+          "select" :         {
+            "type": "PREFIX",
+            "name" : "select",
+            "column": "vers_stamm.geschlecht",
+            "selection": "f"
           }
         }
       ]
