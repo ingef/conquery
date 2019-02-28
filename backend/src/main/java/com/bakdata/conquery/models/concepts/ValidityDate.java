@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.concepts;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.Labeled;
@@ -13,7 +15,7 @@ import lombok.Setter;
 @Getter @Setter @NoArgsConstructor
 public class ValidityDate extends Labeled<ValidityDateId> {
 
-	@NsIdRef
+	@NsIdRef @NotNull
 	private Column column;
 	@JsonBackReference
 	private Connector connector;
