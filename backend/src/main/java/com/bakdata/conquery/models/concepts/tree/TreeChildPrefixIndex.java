@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.concepts.tree;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -12,8 +13,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.dict.BytesTTMap;
 import com.bakdata.conquery.util.dict.ValueNode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Multimap;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -67,7 +66,7 @@ public class TreeChildPrefixIndex {
 			treeChildrenOrig.addAll(root.getChildren());
 
 			// collect all prefix children that are itself children of prefix nodes
-			List<ConceptTreeChild> gatheredPrefixChildren = new ArrayList<>();
+			Map<String, ConceptTreeChild> gatheredPrefixChildren = new HashMap<>();
 
 			for (int i = 0; i < treeChildrenOrig.size(); i++) {
 				ConceptTreeChild child = treeChildrenOrig.get(i);
@@ -77,7 +76,18 @@ public class TreeChildPrefixIndex {
 					treeChildrenOrig.addAll(child.getChildren());
 
 					if (condition instanceof PrefixCondition) {
-						gatheredPrefixChildren.add(child);
+						for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
+							// We are interested in the most specific child, therefore the deepest.
+							gatheredPrefixChildren.compute(prefix, (key, oldChild) -> {
+								if(oldChild == null)
+									return child;
+
+								if(oldChild.getDepth() > child.getDepth())
+									return oldChild;
+
+								return child;
+							});
+						}
 					}
 				}
 				else {
@@ -87,32 +97,15 @@ public class TreeChildPrefixIndex {
 
 			// Insert children into index and build resolving list
 			List<ConceptTreeChild> gatheredChildren = new ArrayList<>();
-			Multimap<String, ConceptTreeChild> prefixes = HashMultimap.create();
 
-			for (ConceptTreeChild child : gatheredPrefixChildren) {
-				CTCondition condition = child.getCondition();
+			for (Map.Entry<String, ConceptTreeChild> entry : gatheredPrefixChildren.entrySet()) {
+				String k = entry.getKey();
+				ConceptTreeChild value = entry.getValue();
+				if (index.valueToChildIndex.put(k.getBytes(), gatheredChildren.size()) != -1)
+					log.error("Duplicate Prefix '{}' in '{}' of '{}'", k, value, root);
 
-				for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
-
-					final boolean containsKey = prefixes.containsKey(prefix);
-
-					prefixes.put(prefix, child);
-
-					if(containsKey)
-						continue;
-
-					if(index.valueToChildIndex.put(prefix.getBytes(), gatheredChildren.size()) != -1)
-						log.error("Duplicate Prefix '{}' in '{}' of '{}'", prefix, condition, root);
-
-					gatheredChildren.add(child);
-				}
+				gatheredChildren.add(value);
 			}
-
-			for (String key : prefixes.keys()) {
-				if(prefixes.get(key).size() > 1)
-					log.warn("Multiple ConceptChildren for '{}': {}", key, prefixes.get(key));
-			}
-
 
 			index.valueToChildIndex.balance();
 
