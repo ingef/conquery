@@ -105,7 +105,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	
 	@Override
 	public Set<ConqueryPermission> getPermissions(){
-		Set<ConqueryPermission> permissions = super.getPermissions();
+		Set<ConqueryPermission> permissions = new HashSet<>(super.getPermissions());
 		for (Mandator mandator : roles) {
 			permissions.addAll(mandator.getPermissions());
 		}
