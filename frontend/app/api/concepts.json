@@ -18,7 +18,7 @@
         {
           "id": "feature_films",
           "label": "Feature Films",
-          "aggregators": [
+          "selects": [
             {
               "id": "12345678",
               "label": "Anzahl unterschiedliche Studios",

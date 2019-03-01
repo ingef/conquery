@@ -1,24 +1,57 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 
-import ParameterTableFilters from "./ParameterTableFilters";
+import TableFilters from "./TableFilters";
+import TableSelects from "./TableSelects";
+import ContentCell from "./ContentCell";
 import type { PropsType } from "./QueryNodeEditor";
 
-export const TableFilterView = (props: PropsType) => {
-  const { node, editorState } = props;
+const Column = styled("div")`
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+`;
+
+const MaximizedCell = styled(ContentCell)`
+  flex-grow: 1;
+`;
+
+const TableView = (props: PropsType) => {
+  const {
+    node,
+    editorState,
+    datasetId,
+
+    onSetSelectedSelects,
+
+    onDropFilterValuesFile,
+    onSetFilterValue,
+    onSwitchFilterMode,
+    onLoadFilterSuggestions
+  } = props;
 
   const selectedTable = node.tables[editorState.selectedInputTableIdx];
 
   return (
-    <div className="query-node-editor__large_column query-node-editor__column">
-      <h4>Filter</h4>
-      <div className="query-node-editor__column_content">
-        <ParameterTableFilters
+    <Column>
+      {selectedTable.selects && (
+        <ContentCell headline={"Aggregator"}>
+          <TableSelects
+            selects={selectedTable.selects}
+            onSetSelectedSelects={value =>
+              onSetSelectedSelects(editorState.selectedInputTableIdx, value)
+            }
+          />
+        </ContentCell>
+      )}
+      <MaximizedCell headline={"Filter"}>
+        <TableFilters
           key={editorState.selectedInputTableIdx}
           filters={selectedTable.filters}
           onSetFilterValue={(filterIdx, value, formattedValue) =>
-            props.onSetFilterValue(
+            onSetFilterValue(
               editorState.selectedInputTableIdx,
               filterIdx,
               value,
@@ -26,15 +59,15 @@ export const TableFilterView = (props: PropsType) => {
             )
           }
           onSwitchFilterMode={(filterIdx, mode) =>
-            props.onSwitchFilterMode(
+            onSwitchFilterMode(
               editorState.selectedInputTableIdx,
               filterIdx,
               mode
             )
           }
           onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
-            props.onLoadFilterSuggestions(
-              props.datasetId,
+            onLoadFilterSuggestions(
+              datasetId,
               editorState.selectedInputTableIdx,
               selectedTable.id,
               node.tree,
@@ -49,7 +82,7 @@ export const TableFilterView = (props: PropsType) => {
           }
           onShowDescription={editorState.onShowDescription}
           onDropFilterValuesFile={(filterIdx, filterId, file) =>
-            props.onDropFilterValuesFile(
+            onDropFilterValuesFile(
               props.datasetId,
               node.tree,
               editorState.selectedInputTableIdx,
@@ -61,7 +94,9 @@ export const TableFilterView = (props: PropsType) => {
           }
           currencyConfig={props.currencyConfig}
         />
-      </div>
-    </div>
+      </MaximizedCell>
+    </Column>
   );
 };
+
+export default TableView;

@@ -26,6 +26,7 @@ import {
   REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
+  SET_SELECTED_SELECTS,
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
@@ -109,6 +110,11 @@ export const setFilterValue = (tableIdx, filterIdx, value, formattedValue) => ({
   payload: { tableIdx, filterIdx, value, formattedValue }
 });
 
+export const setSelectedSelects = (tableIdx, value) => ({
+  type: SET_SELECTED_SELECTS,
+  payload: { tableIdx, value }
+});
+
 export const resetAllFilters = (andIdx: number, orIdx: number) => ({
   type: RESET_ALL_FILTERS,
   payload: { andIdx, orIdx }
@@ -190,10 +196,10 @@ export const dropFilterValuesFile = (
   const rows = await getUniqueFileRows(file);
 
   // Result looks something like that:
-  // result = {
-  //   unknownCodes: ...
+  // const result = {
+  //   // unknownCodes: ...
   //   resolvedFilter: {
-  //     value: rowSet.map(row => ({ label: row, value: row }))
+  //     value: rows.map(row => ({ label: row, value: row }))
   //   }
   // };
   const result = await dispatch(
