@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
  */
 public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRangeFilter, DateDistanceFilter> {
 
-	private boolean hit;
+	private boolean hit = false;
 	private CDateSet dateRestriction;
 
 	public DateDistanceFilterNode(DateDistanceFilter dateDistanceFilter, FilterValue.CQIntegerRangeFilter filterValue) {
@@ -38,15 +38,9 @@ public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRang
 			return false;
 		}
 
-
 		int date = block.getDate(event, filter.getColumn());
 
-		if (date <= dateRestriction.getMinValue()) {
-			return filterValue.getValue().contains(dateRestriction.getMinValue() - date);
-		}
-		else {
-			return filterValue.getValue().contains(dateRestriction.getMaxValue() - date);
-		}
+		return filterValue.getValue().contains(dateRestriction.getMinValue() - date);
 	}
 
 	@Override
