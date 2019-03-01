@@ -26,7 +26,8 @@ import {
   REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
-  SET_SELECTED_SELECTS,
+  SET_SELECTS,
+  SET_TABLE_SELECTS,
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
@@ -110,9 +111,13 @@ export const setFilterValue = (tableIdx, filterIdx, value, formattedValue) => ({
   payload: { tableIdx, filterIdx, value, formattedValue }
 });
 
-export const setSelectedSelects = (tableIdx, value) => ({
-  type: SET_SELECTED_SELECTS,
+export const setTableSelects = (tableIdx, value) => ({
+  type: SET_TABLE_SELECTS,
   payload: { tableIdx, value }
+});
+export const setSelects = value => ({
+  type: SET_SELECTS,
+  payload: { value }
 });
 
 export const resetAllFilters = (andIdx: number, orIdx: number) => ({

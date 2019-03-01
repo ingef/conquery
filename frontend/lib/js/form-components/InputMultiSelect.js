@@ -18,7 +18,7 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 import TooManyValues from "./TooManyValues";
 
 type PropsType = FieldPropsType & {
-  label: string,
+  label?: string,
   options: SelectOptionsType,
   disabled?: ?boolean,
   tooltip?: string,

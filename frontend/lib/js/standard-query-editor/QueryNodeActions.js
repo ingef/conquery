@@ -12,7 +12,7 @@ type PropsType = {
   previousQueryLoading?: boolean,
   error?: string,
   onDeleteNode: Function,
-  onFilterClick: Function,
+  onEditClick: Function,
   onExpandClick: Function
 };
 
@@ -33,10 +33,10 @@ const QueryNodeActions = (props: PropsType) => {
               noFrame
               large
               icon="sliders"
-              onClick={props.onFilterClick}
+              onClick={props.onEditClick}
               active={props.hasActiveFilters}
             >
-              {T.translate("queryEditor.filter")}
+              {T.translate("queryEditor.edit")}
             </StyledIconButton>
           )}
           {!!props.previousQueryLoading && (

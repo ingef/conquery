@@ -72,9 +72,7 @@ const Query = (props: PropsType) => {
                 onDropFile={file => props.dropConceptListFile(file, andIdx)}
                 onDeleteNode={orIdx => props.deleteNode(andIdx, orIdx)}
                 onDeleteGroup={orIdx => props.deleteGroup(andIdx, orIdx)}
-                onFilterClick={orIdx =>
-                  props.selectNodeForEditing(andIdx, orIdx)
-                }
+                onEditClick={orIdx => props.selectNodeForEditing(andIdx, orIdx)}
                 onExpandClick={props.expandPreviousQuery}
                 onExcludeClick={() => props.toggleExcludeGroup(andIdx)}
                 onDateClick={() => props.queryGroupModalSetNode(andIdx)}
