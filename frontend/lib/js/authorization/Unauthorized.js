@@ -1,15 +1,17 @@
 // @flow
 
-import React from 'react';
-import T from 'i18n-react';
+import React from "react";
+import T from "i18n-react";
 
 const Unauthorized = () => (
-  <div style={{
-    textAlign: 'center',
-    margin: '50px',
-    fontSize: '30px',
-  }}>
-    { T.translate('authorization.unauthorized') }
+  <div
+    style={{
+      textAlign: "center",
+      margin: "50px",
+      fontSize: "30px"
+    }}
+  >
+    {T.translate("authorization.unauthorized")}
   </div>
 );
 

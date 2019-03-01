@@ -1,8 +1,8 @@
 // @flow
 
-import React                     from 'react';
-import classnames                from 'classnames';
-import ReactList                 from 'react-list';
+import React from "react";
+import classnames from "classnames";
+import ReactList from "react-list";
 
 type PropsType = {
   items: Array,
@@ -15,10 +15,10 @@ const ScrollableList = (props: PropsType) => {
   const renderItem = (index, key) => {
     return (
       <div key={key} className="scrollable-list-item">
-        { props.items[index] }
+        {props.items[index]}
       </div>
     );
-  }
+  };
 
   const itemHeight = 34; // pixels, as defined in scrollableList.sass
 
@@ -31,20 +31,19 @@ const ScrollableList = (props: PropsType) => {
 
   return (
     <div
-      className={classnames('scrollable-list',
-        {
-          'scrollable-list--full-width': !!props.fullWidth,
-          'scrollable-list--min-width': !!props.minWidth,
-        }
-      )}
+      className={classnames("scrollable-list", {
+        "scrollable-list--full-width": !!props.fullWidth,
+        "scrollable-list--min-width": !!props.minWidth
+      })}
       style={style}
     >
       <ReactList
         itemRenderer={renderItem}
         length={props.items ? props.items.length : 0}
-        type="uniform" />
+        type="uniform"
+      />
     </div>
-  )
-}
+  );
+};
 
 export default ScrollableList;

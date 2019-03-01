@@ -1,17 +1,14 @@
 // @flow
 
-import React                          from 'react';
+import React from "react";
 
-import type {
-  NodeType,
-  TreeNodeIdType
-}                                     from '../common/types/backend';
+import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 
-import { getConceptById }             from './globalTreeStoreHelper';
-import Openable                       from './Openable';
-import CategoryTree                   from './CategoryTree';
-import CategoryTreeNodeTextContainer  from './CategoryTreeNodeTextContainer';
-import { type SearchType }            from './reducer';
+import { getConceptById } from "./globalTreeStoreHelper";
+import Openable from "./Openable";
+import CategoryTree from "./CategoryTree";
+import CategoryTreeNodeTextContainer from "./CategoryTreeNodeTextContainer";
+import { type SearchType } from "./reducer";
 
 type PropsType = {
   depth: number,
@@ -21,7 +18,7 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
-  search?: SearchType,
+  search?: SearchType
 };
 
 const sumMatchingEntries = (children, initSum) => {
@@ -29,17 +26,16 @@ const sumMatchingEntries = (children, initSum) => {
     const rootConcept = getConceptById(treeId);
     const rootMatchingEntries = rootConcept ? rootConcept.matchingEntries : 0;
 
-    return rootMatchingEntries
-      ? sum + rootMatchingEntries
-      : sum;
+    return rootMatchingEntries ? sum + rootMatchingEntries : sum;
   }, initSum);
 };
 
 const CategoryTreeFolder = (props: PropsType) => {
   const { tree, search } = props;
-  const matchingEntries = !tree.children || !tree.matchingEntries
-    ? null
-    : sumMatchingEntries(tree.children, tree.matchingEntries);
+  const matchingEntries =
+    !tree.children || !tree.matchingEntries
+      ? null
+      : sumMatchingEntries(tree.children, tree.matchingEntries);
 
   return (
     <div className="category-tree-folder category-tree-node">
@@ -51,7 +47,7 @@ const CategoryTreeFolder = (props: PropsType) => {
           matchingEntries: matchingEntries,
           dateRange: props.tree.dateRange,
           additionalInfos: props.tree.additionalInfos,
-          hasChildren: !!props.tree.children && props.tree.children.length > 0,
+          hasChildren: !!props.tree.children && props.tree.children.length > 0
         }}
         createQueryElement={() => {
           // We don't have to implement this since CategoryTreeFolders should never be
@@ -62,8 +58,9 @@ const CategoryTreeFolder = (props: PropsType) => {
         active={props.active}
         onTextClick={props.onToggleOpen}
       />
-      {
-        props.open && props.tree.children && props.tree.children.map((childId, i) => {
+      {props.open &&
+        props.tree.children &&
+        props.tree.children.map((childId, i) => {
           const tree = props.trees[childId];
 
           if (tree.detailsAvailable) {
@@ -83,32 +80,34 @@ const CategoryTreeFolder = (props: PropsType) => {
               />
             );
           } else {
-            return tree.children && props.tree.children && props.tree.children.length > 0
-              ? <OpenableCategoryTreeFolder
-                  key={i}
-                  trees={props.trees}
-                  tree={tree}
-                  treeId={childId}
-                  openInitially={false}
-                  depth={props.depth + 1}
-                  active={tree.active}
-                />
-              : <CategoryTreeFolder
-                  key={i}
-                  trees={props.trees}
-                  tree={tree}
-                  treeId={childId}
-                  openInitially={false}
-                  depth={props.depth + 1}
-                  active={tree.active}
-                />;
+            return tree.children &&
+              props.tree.children &&
+              props.tree.children.length > 0 ? (
+              <OpenableCategoryTreeFolder
+                key={i}
+                trees={props.trees}
+                tree={tree}
+                treeId={childId}
+                openInitially={false}
+                depth={props.depth + 1}
+                active={tree.active}
+              />
+            ) : (
+              <CategoryTreeFolder
+                key={i}
+                trees={props.trees}
+                tree={tree}
+                treeId={childId}
+                openInitially={false}
+                depth={props.depth + 1}
+                active={tree.active}
+              />
+            );
           }
-        })
-      }
+        })}
     </div>
   );
 };
-
 
 const OpenableCategoryTreeFolder = Openable(CategoryTreeFolder);
 

@@ -4,7 +4,7 @@ import {
   TOGGLE_DISPLAY_TOOLTIP,
   DISPLAY_ADDITIONAL_INFOS,
   TOGGLE_ADDITIONAL_INFOS
-}                                           from './actionTypes';
+} from "./actionTypes";
 
 export const displayAdditionalInfos = (node: Object) => ({
   type: DISPLAY_ADDITIONAL_INFOS,
@@ -14,7 +14,7 @@ export const displayAdditionalInfos = (node: Object) => ({
       description: node.description,
       matchingEntries: node.matchingEntries,
       dateRange: node.dateRange,
-      infos: node.additionalInfos,
+      infos: node.additionalInfos
     }
   }
 });

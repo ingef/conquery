@@ -1,19 +1,18 @@
 // @flow
 
-import React               from 'react';
+import React from "react";
 
-import QueryResults        from './QueryResults';
-import QueryRunningSpinner from './QueryRunningSpinner';
-import QueryRunnerInfo     from './QueryRunnerInfo';
-import QueryRunnerButton   from './QueryRunnerButton';
-
+import QueryResults from "./QueryResults";
+import QueryRunningSpinner from "./QueryRunningSpinner";
+import QueryRunnerInfo from "./QueryRunnerInfo";
+import QueryRunnerButton from "./QueryRunnerButton";
 
 type PropsType = {
   queryRunner: Object,
   isQueryRunning: boolean,
   isButtonEnabled: boolean,
   startQuery: Function,
-  stopQuery: Function,
+  stopQuery: Function
 };
 
 const QueryRunner = (props: PropsType) => {
@@ -22,13 +21,13 @@ const QueryRunner = (props: PropsType) => {
     startQuery,
     stopQuery,
     isQueryRunning,
-    isButtonEnabled,
+    isButtonEnabled
   } = props;
 
   const btnAction = isQueryRunning ? stopQuery : startQuery;
 
-  const isStartStopLoading = queryRunner.startQuery.loading ||
-                             queryRunner.stopQuery.loading;
+  const isStartStopLoading =
+    queryRunner.startQuery.loading || queryRunner.stopQuery.loading;
 
   return (
     <div className="query-runner">
@@ -42,12 +41,8 @@ const QueryRunner = (props: PropsType) => {
       </div>
       <div className="query-runner__right">
         <div className="query-runner__loading-group">
-          <QueryRunningSpinner
-            isQueryRunning={isQueryRunning}
-          />
-          <QueryRunnerInfo
-            queryRunner={queryRunner}
-          />
+          <QueryRunningSpinner isQueryRunning={isQueryRunning} />
+          <QueryRunnerInfo queryRunner={queryRunner} />
         </div>
         <QueryResults
           resultCount={queryRunner.queryResult.resultCount}
@@ -57,6 +52,5 @@ const QueryRunner = (props: PropsType) => {
     </div>
   );
 };
-
 
 export default QueryRunner;

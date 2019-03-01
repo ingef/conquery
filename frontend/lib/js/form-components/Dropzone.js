@@ -1,6 +1,6 @@
-import React          from 'react';
-import { DropTarget } from 'react-dnd';
-import classnames     from 'classnames';
+import React from "react";
+import { DropTarget } from "react-dnd";
+import classnames from "classnames";
 
 // Decorates a Component with a Dropzone
 // Then, the component is replaced with a Dropzone until "containsItem" is true
@@ -17,11 +17,11 @@ const Dropzone = (Component, acceptedDropTypes, onDrop) => {
     connectDropTarget: Function,
     isOver: boolean,
     dropzoneText: string,
-    containsItem: boolean,
+    containsItem: boolean
   };
 
   class Zone extends React.Component {
-    props: PropsType
+    props: PropsType;
 
     render() {
       const {
@@ -29,31 +29,28 @@ const Dropzone = (Component, acceptedDropTypes, onDrop) => {
         isOver,
         connectDropTarget,
         dropzoneText,
-        containsItem,
+        containsItem
       } = this.props;
 
       if (containsItem) return Component;
 
       return connectDropTarget(
-        <div className={classnames(
-          'dropzone', {
-            'dropzone--over': isOver,
-          },
-          className
-        )}>
-          <p className="dropzone__text">
-            { dropzoneText }
-          </p>
+        <div
+          className={classnames(
+            "dropzone",
+            {
+              "dropzone--over": isOver
+            },
+            className
+          )}
+        >
+          <p className="dropzone__text">{dropzoneText}</p>
         </div>
       );
     }
   }
 
-  return DropTarget(
-    acceptedDropTypes,
-    dropzoneTarget,
-    collect
-  )(Zone);
+  return DropTarget(acceptedDropTypes, dropzoneTarget, collect)(Zone);
 };
 
 export default Dropzone;

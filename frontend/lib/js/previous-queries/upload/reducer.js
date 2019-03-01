@@ -5,8 +5,8 @@ import {
   CLOSE_UPLOAD_MODAL,
   UPLOAD_FILE_START,
   UPLOAD_FILE_SUCCESS,
-  UPLOAD_FILE_ERROR,
-} from './actionTypes';
+  UPLOAD_FILE_ERROR
+} from "./actionTypes";
 
 export type UploadReportType = {
   successful: number,
@@ -17,20 +17,29 @@ type StateType = {
   isModalOpen: boolean,
   isLoading: boolean,
   success: ?UploadReportType,
-  error: ?(UploadReportType & { message: string }),
+  error: ?(UploadReportType & { message: string })
 };
 
 const initialState = {
   isModalOpen: false,
   isLoading: false,
   success: null,
-  error: null,
+  error: null
 };
 
-const queryResultUpload = (state: StateType = initialState, action: Object): StateType => {
+const queryResultUpload = (
+  state: StateType = initialState,
+  action: Object
+): StateType => {
   switch (action.type) {
     case OPEN_UPLOAD_MODAL:
-      return { ...state, isModalOpen: true, loading: false, success: null, error: null };
+      return {
+        ...state,
+        isModalOpen: true,
+        loading: false,
+        success: null,
+        error: null
+      };
     case CLOSE_UPLOAD_MODAL:
       return initialState;
     case UPLOAD_FILE_START:

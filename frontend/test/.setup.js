@@ -1,3 +1,3 @@
-import setupEnvironment from './setup/setupEnvironment';
+import setupEnvironment from "./setup/setupEnvironment";
 
 setupEnvironment();

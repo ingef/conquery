@@ -1,13 +1,13 @@
 // @flow
 
-import T                         from 'i18n-react';
-import { toUpperCaseUnderscore } from '../common/helpers';
-import * as actionTypes          from './actionTypes';
+import T from "i18n-react";
+import { toUpperCaseUnderscore } from "../common/helpers";
+import * as actionTypes from "./actionTypes";
 
 type APICallType = {
   loading?: boolean,
   success?: boolean,
-  error?: string,
+  error?: string
 };
 
 export type StateType = {
@@ -15,7 +15,7 @@ export type StateType = {
   queryRunning: boolean,
   startQuery: APICallType,
   stopQuery: APICallType,
-  queryResult:APICallType,
+  queryResult: APICallType
 };
 
 export default function createQueryRunnerReducer(type: string): Function {
@@ -24,7 +24,7 @@ export default function createQueryRunnerReducer(type: string): Function {
     queryRunning: false,
     startQuery: Object,
     stopQuery: Object,
-    queryResult: Object,
+    queryResult: Object
   };
 
   const capitalType = toUpperCaseUnderscore(type);
@@ -39,14 +39,18 @@ export default function createQueryRunnerReducer(type: string): Function {
   const STOP_QUERY_ERROR = actionTypes[`STOP_${capitalType}_QUERY_ERROR`];
   const QUERY_RESULT_START = actionTypes[`QUERY_${capitalType}_RESULT_START`];
   const QUERY_RESULT_STOP = actionTypes[`QUERY_${capitalType}_RESULT_STOP`];
-  const QUERY_RESULT_SUCCESS = actionTypes[`QUERY_${capitalType}_RESULT_SUCCESS`];
+  const QUERY_RESULT_SUCCESS =
+    actionTypes[`QUERY_${capitalType}_RESULT_SUCCESS`];
   const QUERY_RESULT_ERROR = actionTypes[`QUERY_${capitalType}_RESULT_ERROR`];
 
-  const getQueryResult = (data) => {
-    if (data.status === 'CANCELED')
-      return { loading: false, error: T.translate('queryRunner.queryCanceled') };
-    else if (data.status === 'FAILED')
-      return { loading: false, error: T.translate('queryRunner.queryFailed') };
+  const getQueryResult = data => {
+    if (data.status === "CANCELED")
+      return {
+        loading: false,
+        error: T.translate("queryRunner.queryCanceled")
+      };
+    else if (data.status === "FAILED")
+      return { loading: false, error: T.translate("queryRunner.queryFailed") };
 
     // E.G. STATUS DONE
     return {
@@ -60,7 +64,12 @@ export default function createQueryRunnerReducer(type: string): Function {
     switch (action.type) {
       // To start a query
       case START_QUERY_START:
-        return { ...state, stopQuery: {}, startQuery: { loading: true }, queryResult: {} };
+        return {
+          ...state,
+          stopQuery: {},
+          startQuery: { loading: true },
+          queryResult: {}
+        };
       case START_QUERY_SUCCESS:
         return {
           ...state,
@@ -70,7 +79,11 @@ export default function createQueryRunnerReducer(type: string): Function {
           startQuery: { success: true }
         };
       case START_QUERY_ERROR:
-        return { ...state, stopQuery: {}, startQuery: { error: action.payload.message } };
+        return {
+          ...state,
+          stopQuery: {},
+          startQuery: { error: action.payload.message }
+        };
 
       // To cancel a query
       case STOP_QUERY_START:
@@ -81,10 +94,14 @@ export default function createQueryRunnerReducer(type: string): Function {
           runningQuery: null,
           queryRunning: false,
           startQuery: {},
-          stopQuery: { success: true },
+          stopQuery: { success: true }
         };
       case STOP_QUERY_ERROR:
-        return { ...state, startQuery: {}, stopQuery: { error: action.payload.message } };
+        return {
+          ...state,
+          startQuery: {},
+          stopQuery: { error: action.payload.message }
+        };
 
       // To check for query results
       case QUERY_RESULT_START:
@@ -109,11 +126,12 @@ export default function createQueryRunnerReducer(type: string): Function {
           queryRunning: false,
           queryResult: {
             loading: false,
-            error: action.payload.message || T.translate('queryRunner.queryFailed')
+            error:
+              action.payload.message || T.translate("queryRunner.queryFailed")
           }
         };
       default:
         return state;
     }
   };
-};
+}
