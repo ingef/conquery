@@ -7,7 +7,10 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 
-
+/**
+ * Gathers all distinct values for a specific column and returns them as a {@code Set<VALUE>}
+ * @param <VALUE>
+ */
 public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE>> {
 
 	private final Set<VALUE> entries = new HashSet<>();
