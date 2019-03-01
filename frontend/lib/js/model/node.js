@@ -12,7 +12,7 @@ export const nodeHasActiveFilters = (node: ConceptQueryNodeType) =>
   nodeHasExludedTable(node);
 
 export const nodeHasSelectedSelects = (node: ConceptQueryNodeType) => {
-  if (!node.tables) return false;
+  if (!node.selects) return false;
 
   return node.selects.some(select => select.selected);
 };
