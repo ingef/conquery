@@ -18,28 +18,31 @@ const initialState: StateType = {
   config: {}
 };
 
-const startup  = (state: StateType = initialState, action: Object): StateType => {
+const startup = (
+  state: StateType = initialState,
+  action: Object
+): StateType => {
   switch (action.type) {
     case LOAD_CONFIG_START:
       return {
         ...state,
         loading: true
-      }
+      };
     case LOAD_CONFIG_ERROR:
       return {
         ...state,
         loading: false,
         error: action.payload.message
-      }
+      };
     case LOAD_CONFIG_SUCCESS:
       return {
         ...state,
         loading: false,
         config: action.payload.data
-      }
+      };
     default:
       return state;
   }
-}
+};
 
 export default startup;

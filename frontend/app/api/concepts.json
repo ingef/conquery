@@ -14,6 +14,18 @@
         "independent_movies"
       ],
       "detailsAvailable": true,
+      "selects": [
+        {
+          "id": "12345678",
+          "label": "Filme gespielt Gesamt",
+          "description": "Beispieldescription"
+        },
+        {
+          "id": "123456789",
+          "label": "Summe Gage",
+          "description": "Die Summe berechnet sich aus X und Y und Z und example."
+        }
+      ],
       "tables": [
         {
           "id": "feature_films",

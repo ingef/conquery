@@ -3,8 +3,6 @@
 import React from "react";
 import T from "i18n-react";
 
-import { type DraggedNodeType } from "../model/node";
-
 import { QueryEditorDropzone } from "./QueryEditorDropzone";
 import QueryNode from "./QueryNode";
 import QueryGroupActions from "./QueryGroupActions";
@@ -13,10 +11,10 @@ import type { QueryGroupType } from "./types";
 type PropsType = {
   group: QueryGroupType,
   andIdx: number,
-  onDropNode: DraggedNodeType => void,
+  onDropNode: Object => void,
   onDropFile: Function,
   onDeleteNode: Function,
-  onFilterClick: Function,
+  onEditClick: Function,
   onExcludeClick: Function,
   onExpandClick: Function,
   onDateClick: Function,
@@ -53,7 +51,7 @@ const QueryGroup = (props: PropsType) => {
               andIdx={props.andIdx}
               orIdx={orIdx}
               onDeleteNode={() => props.onDeleteNode(orIdx)}
-              onFilterClick={() => props.onFilterClick(orIdx)}
+              onEditClick={() => props.onEditClick(orIdx)}
               onExpandClick={props.onExpandClick}
             />
             {orIdx !== props.group.elements.length - 1 && (

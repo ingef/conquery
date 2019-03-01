@@ -15,9 +15,12 @@
 
 import { isEmpty } from "../common/helpers";
 
-import { type TableType } from "../standard-query-editor/types";
+import type {
+  TableWithFilterValueType,
+  SelectedSelectorType
+} from "../standard-query-editor/types";
 
-export const transformTablesToApi = (tables: TableType[]) => {
+export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
   if (!tables) return [];
 
   return tables
@@ -45,6 +48,14 @@ export const transformTablesToApi = (tables: TableType[]) => {
           : []
       };
     });
+};
+
+export const transformSelectsToApi = (selects?: ?(SelectedSelectorType[])) => {
+  if (!selects) return [];
+
+  return selects
+    ? selects.filter(({ selected }) => !!selected).map(({ id }) => id)
+    : [];
 };
 
 export const transformElementGroupsToApi = elementGroups =>
@@ -94,7 +105,8 @@ const createConcept = concept => ({
   ids: concept.ids,
   label: concept.label,
   excludeFromTimeAggregation: concept.excludeTimestamps,
-  tables: transformTablesToApi(concept.tables)
+  tables: transformTablesToApi(concept.tables),
+  selects: transformSelectsToApi(concept.selects)
 });
 
 const createQueryConcepts = query => {

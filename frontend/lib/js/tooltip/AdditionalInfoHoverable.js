@@ -1,16 +1,13 @@
 // @flow
 
-import { connect }          from 'react-redux';
-import { type Dispatch }    from 'redux-thunk';
+import { connect } from "react-redux";
+import { type Dispatch } from "redux-thunk";
 
-import type {
-  DateRangeType,
-  InfoType
-}                           from '../common/types/backend';
+import type { DateRangeType, InfoType } from "../common/types/backend";
 
-import { isEmpty }          from '../common/helpers';
-import * as actions         from './actions';
-import HoverableBase        from './HoverableBase';
+import { isEmpty } from "../common/helpers";
+import * as actions from "./actions";
+import HoverableBase from "./HoverableBase";
 
 export type AdditionalInfoHoverableNodeType = {
   label: string,
@@ -18,7 +15,7 @@ export type AdditionalInfoHoverableNodeType = {
   matchingEntries: number,
   dateRange: DateRangeType,
   additionalInfos: Array<InfoType>
-}
+};
 
 // Whitelist the data we pass (especially: don't pass all children)
 const additionalInfos = (node: AdditionalInfoHoverableNodeType) => ({
@@ -26,7 +23,7 @@ const additionalInfos = (node: AdditionalInfoHoverableNodeType) => ({
   description: node.description,
   matchingEntries: node.matchingEntries,
   dateRange: node.dateRange,
-  additionalInfos: node.additionalInfos,
+  additionalInfos: node.additionalInfos
 });
 
 // Decorates a component with a hoverable node.
@@ -45,7 +42,7 @@ const AdditionalInfoHoverable = (Component: any) => {
 
       if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
 
-      dispatch(actions.displayAdditionalInfos(additionalInfos(node)))
+      dispatch(actions.displayAdditionalInfos(additionalInfos(node)));
     },
     onToggleAdditionalInfos: () => {
       const node = ownProps.node;
@@ -55,11 +52,14 @@ const AdditionalInfoHoverable = (Component: any) => {
       dispatch([
         actions.toggleAdditionalInfos(additionalInfos(node)),
         actions.displayAdditionalInfos(additionalInfos(node))
-      ])
-    },
+      ]);
+    }
   });
 
-  return connect(mapStateToProps, mapDispatchToProps)(HoverableBase(Component));
+  return connect(
+    mapStateToProps,
+    mapDispatchToProps
+  )(HoverableBase(Component));
 };
 
 export default AdditionalInfoHoverable;

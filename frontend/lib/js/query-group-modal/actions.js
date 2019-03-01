@@ -4,15 +4,17 @@ import {
   QUERY_GROUP_MODAL_SET_MIN_DATE,
   QUERY_GROUP_MODAL_SET_MAX_DATE,
   QUERY_GROUP_MODAL_RESET_ALL_DATES,
-  QUERY_GROUP_MODAL_SET_TOUCHED,
-} from './actionTypes';
+  QUERY_GROUP_MODAL_SET_TOUCHED
+} from "./actionTypes";
 
-export const queryGroupModalSetNode = (andIdx) => ({
+export const queryGroupModalSetNode = andIdx => ({
   type: QUERY_GROUP_MODAL_SET_NODE,
   payload: { andIdx }
 });
 
-export const queryGroupModalClearNode = () => ({ type: QUERY_GROUP_MODAL_CLEAR_NODE });
+export const queryGroupModalClearNode = () => ({
+  type: QUERY_GROUP_MODAL_CLEAR_NODE
+});
 
 export const queryGroupModalSetMinDate = (andIdx, date) => ({
   type: QUERY_GROUP_MODAL_SET_MIN_DATE,
@@ -24,7 +26,7 @@ export const queryGroupModalSetMaxDate = (andIdx, date) => ({
   payload: { andIdx, date }
 });
 
-export const queryGroupModalResetAllDates = (andIdx) => ({
+export const queryGroupModalResetAllDates = andIdx => ({
   type: QUERY_GROUP_MODAL_RESET_ALL_DATES,
   payload: { andIdx }
 });
