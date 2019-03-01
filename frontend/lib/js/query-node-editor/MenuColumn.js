@@ -88,7 +88,6 @@ const MenuColumn = (props: PropsType) => {
       >
         {T.translate("queryNodeEditor.properties")}
       </StyledButton>
-      {!node.isPreviousQuery && node.selects && <div>Aggregators</div>}
       {!node.isPreviousQuery && showTables && (
         <div>
           <CategoryHeader>

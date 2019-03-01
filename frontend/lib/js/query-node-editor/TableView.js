@@ -2,6 +2,7 @@
 
 import React from "react";
 import styled from "@emotion/styled";
+import T from "i18n-react";
 
 import TableFilters from "./TableFilters";
 import TableSelects from "./TableSelects";
@@ -24,7 +25,7 @@ const TableView = (props: PropsType) => {
     editorState,
     datasetId,
 
-    onSetSelectedSelects,
+    onSelectTableSelects,
 
     onDropFilterValuesFile,
     onSetFilterValue,
@@ -37,16 +38,16 @@ const TableView = (props: PropsType) => {
   return (
     <Column>
       {selectedTable.selects && (
-        <ContentCell headline={"Aggregator"}>
+        <ContentCell headline={T.translate("queryNodeEditor.selects")}>
           <TableSelects
             selects={selectedTable.selects}
-            onSetSelectedSelects={value =>
-              onSetSelectedSelects(editorState.selectedInputTableIdx, value)
+            onSelectTableSelects={value =>
+              onSelectTableSelects(editorState.selectedInputTableIdx, value)
             }
           />
         </ContentCell>
       )}
-      <MaximizedCell headline={"Filter"}>
+      <MaximizedCell headline={T.translate("queryNodeEditor.filters")}>
         <TableFilters
           key={editorState.selectedInputTableIdx}
           filters={selectedTable.filters}

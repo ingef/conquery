@@ -15,7 +15,7 @@ import type { QueryNodeType, DraggedNodeType, DraggedQueryType } from "./types";
 type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
-  onFilterClick: Function,
+  onEditClick: Function,
   onExpandClick: Function,
   connectDragSource: Function,
   andIdx: number,
@@ -30,7 +30,7 @@ const QueryNode = (props: PropsType) => {
     <div className="query-node">
       <QueryNodeActions
         hasActiveFilters={nodeHasActiveFilters(node)}
-        onFilterClick={props.onFilterClick}
+        onEditClick={props.onEditClick}
         onDeleteNode={props.onDeleteNode}
         isExpandable={node.isPreviousQuery}
         onExpandClick={() => {

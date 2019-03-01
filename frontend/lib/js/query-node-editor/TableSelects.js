@@ -9,13 +9,13 @@ import InputMultiSelect from "../form-components/InputMultiSelect";
 
 type PropsType = {
   selects: SelectedSelectorType[],
-  onSetSelectedSelects: () => void,
+  onSelectTableSelects: () => void,
   excludeTable: boolean
 };
 
 const TableSelects = ({
   selects,
-  onSetSelectedSelects,
+  onSelectTableSelects,
   excludeTable
 }: PropsType) => {
   if (!selects) return null;
@@ -24,12 +24,11 @@ const TableSelects = ({
     <div>
       <InputMultiSelect
         input={{
-          onChange: onSetSelectedSelects,
+          onChange: onSelectTableSelects,
           value: selects
             .filter(({ selected }) => !!selected)
             .map(({ id, label }) => ({ value: id, label: label }))
         }}
-        label={"Aggregators"}
         options={selects.map(select => ({
           value: select.id,
           label: select.label

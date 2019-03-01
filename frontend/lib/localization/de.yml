@@ -30,7 +30,7 @@ queryRunner:
 queryEditor:
   couldNotExpandNode: "Knoten nicht gefunden"
   couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
-  filter: "Bearbeiten"
+  edit: "Bearbeiten"
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
@@ -62,6 +62,8 @@ queryNodeEditor:
   dropConcept: "Füge ein weiteres Konzept hinzu"
   includeSubnodes: "Untergeordnete Konzepte einbeziehen"
   tooManyValues: "{count} Werte ausgewählt"
+  filters: "Filter"
+  selects: "Zusatzwerte"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
