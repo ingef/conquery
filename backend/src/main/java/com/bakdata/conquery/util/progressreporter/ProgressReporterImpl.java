@@ -71,7 +71,7 @@ public class ProgressReporterImpl implements ProgressReporter{
 	public String getEstimate() {
 		double totalProgress = getProgress();
 		long nanosElapsed = stopwatch.elapsed().getNano();
-		return ProgressReporterUtil.buildProgressReportString(done, totalProgress, nanosElapsed, waited.toNanos());
+		return ProgressReporterUtil.buildProgressReportString(done, totalProgress, nanosElapsed, getWaitedNanos());
 	}
 
 	@Override
@@ -115,9 +115,12 @@ public class ProgressReporterImpl implements ProgressReporter{
 
 	@Override
 	public long getWaitedSeconds() {
-		return waited==null?0:waited.getSeconds();
+		return waited==null?stopwatch.elapsed(TimeUnit.SECONDS):waited.toSeconds();
 	}
-
+	
+	public long getWaitedNanos() {
+		return waited==null?stopwatch.elapsed(TimeUnit.NANOSECONDS):waited.toNanos();
+	}
 	
 	@Override
 	// given in Seconds
