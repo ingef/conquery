@@ -9,8 +9,9 @@ import type {
   MultiSelectFilterValueType,
   SelectFilterType,
   SelectFilterValueType,
+  SelectorType,
   DateRangeType
-} from '../common/types/backend';
+} from "../common/types/backend";
 
 export type CurrencyType = {
   factor: number,
@@ -18,10 +19,10 @@ export type CurrencyType = {
   thousandSeparator: string,
   decimalSeparator: string,
   decimalScale: number
-}
+};
 
 // A concept that is part of a query node in the editor
-export type ConceptType =  {
+export type ConceptType = {
   id: string,
   label: string,
   description?: string,
@@ -30,38 +31,43 @@ export type ConceptType =  {
 
 export type SelectOptionType = {
   label: string,
-  value: number | string,
+  value: number | string
 };
 
 export type SelectOptionsType = SelectOptionType[];
 
 export type InfoType = {
   key: string,
-  value: string,
-}
+  value: string
+};
 
 export type RangeFilterWithValueType = RangeFilterType & {
-  value?: RangeFilterValueType,
-}
+  value?: RangeFilterValueType
+};
 
 export type MultiSelectFilterWithValueType = MultiSelectFilterType & {
-  value?: MultiSelectFilterValueType,
-}
+  value?: MultiSelectFilterValueType
+};
 
 export type SelectFilterWithValueType = SelectFilterType & {
-  value?: SelectFilterValueType,
-}
+  value?: SelectFilterValueType
+};
 
 export type FilterWithValueType =
-  SelectFilterWithValueType
+  | SelectFilterWithValueType
   | MultiSelectFilterWithValueType
   | RangeFilterWithValueType;
 
+export type SelectedSelectorType = SelectorType & {
+  selected?: boolean
+};
+
 export type TableWithFilterValueType = {
-  id: number,
+  id: string,
   label: string,
   exclude?: boolean,
-  filters: ?FilterWithValueType[],
+  filters: ?(FilterWithValueType[]),
+  selects?: SelectedSelectorType[]
 };
 
 export type DraggedQueryType = {
@@ -72,7 +78,8 @@ export type DraggedQueryType = {
   excludeTimestamps?: boolean,
 
   moved?: boolean,
-  andIdx?: number, orIdx?: number,  // These two only exist if moved === true
+  andIdx?: number,
+  orIdx?: number, // These two only exist if moved === true
 
   loading?: boolean,
   error?: string,
@@ -84,24 +91,25 @@ export type DraggedQueryType = {
 // A Query Node that is being dragged from the tree or within the standard editor.
 // Corresponds to CATEGORY_TREE_NODE and QUERY_NODE drag-and-drop types.
 export type DraggedNodeType = {
-  ids: Array<TreeNodeIdType>,
-  tables: Array<TableWithFilterValueType>,
+  ids: TreeNodeIdType[],
+  tables: TableWithFilterValueType[],
   tree: TreeNodeIdType,
   label: string,
   excludeTimestamps?: boolean,
 
   moved?: boolean,
-  andIdx?: number, orIdx?: number,  // These two only exist if moved === true
+  andIdx?: number,
+  orIdx?: number, // These two only exist if moved === true
 
   loading?: boolean,
   error?: string,
 
   files?: void,
-  isPreviousQuery?: void,
+  isPreviousQuery?: void
 };
 
 export type ConceptQueryNodeType = {
-  ids: Array<TreeNodeIdType>,
+  ids: TreeNodeIdType[],
   tables: TableWithFilterValueType[],
   tree: TreeNodeIdType,
 
@@ -111,8 +119,8 @@ export type ConceptQueryNodeType = {
   error?: string,
 
   isEditing?: boolean,
-  isPreviousQuery?: void | false,
-}
+  isPreviousQuery?: void | false
+};
 
 export type PreviousQueryQueryNodeType = {
   label: string,
@@ -123,8 +131,8 @@ export type PreviousQueryQueryNodeType = {
   id: QueryIdType,
   // eslint-disable-next-line no-use-before-define
   query?: PreviousQueryType,
-  isPreviousQuery: true,
-}
+  isPreviousQuery: true
+};
 
 export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;
 

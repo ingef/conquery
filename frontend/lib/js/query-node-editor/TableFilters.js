@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 
 import {
   InputSelect,
@@ -38,7 +39,11 @@ type PropsType = {
   currencyConfig: CurrencyType
 };
 
-const ParameterTableFilters = (props: PropsType) => {
+const Row = styled("div")`
+  margin-bottom: 10px;
+`;
+
+const TableFilters = (props: PropsType) => {
   if (!props.filters) return null;
 
   return (
@@ -194,16 +199,15 @@ const ParameterTableFilters = (props: PropsType) => {
         })
         .filter(input => !!input)
         .map((input, filterIdx) => (
-          <div
+          <Row
             key={filterIdx}
-            className="query-node-editor__row"
             onFocusCapture={() => props.onShowDescription(filterIdx)}
           >
             {input}
-          </div>
+          </Row>
         ))}
     </div>
   );
 };
 
-export default ParameterTableFilters;
+export default TableFilters;
