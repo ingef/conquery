@@ -162,7 +162,7 @@ public class BytesTTMap extends NodeParent<ABytesNode> {
 			entries.add(rep);
 		}
 		else {
-			throw new IllegalStateException();
+			throw new IllegalStateException("Value " + value + "  beyond size" + entries.size());
 		}
 			
 	}

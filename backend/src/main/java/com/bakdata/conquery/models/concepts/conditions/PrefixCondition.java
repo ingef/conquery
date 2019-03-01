@@ -9,11 +9,13 @@ import com.bakdata.conquery.util.CalculatedValue;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 
 /**
  * This condition requires each value to start with one of the given values.
  */
 @CPSType(id="PREFIX_LIST", base=CTCondition.class)
+@ToString
 public class PrefixCondition implements CTCondition {
 
 	private static final long serialVersionUID = 1L;

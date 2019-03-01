@@ -1,12 +1,12 @@
 // @flow
 
-import React                from 'react';
-import T                    from 'i18n-react';
-import NumberFormat         from 'react-number-format';
-import { Decimal }          from 'decimal.js';
+import React from "react";
+import T from "i18n-react";
+import NumberFormat from "react-number-format";
+import { Decimal } from "decimal.js";
 
-import { isEmpty }          from '../common/helpers';
-import { MONEY_RANGE }      from './filterTypes';
+import { isEmpty } from "../common/helpers";
+import { MONEY_RANGE } from "./filterTypes";
 
 type PropsType = {
   inputType: string,
@@ -15,11 +15,11 @@ type PropsType = {
   value: ?(number | string),
   formattedValue?: string,
   inputProps?: Object,
-  onChange: Function,
+  onChange: Function
 };
 
 type NumberFormatValueType = {
-  floatValue:number,
+  floatValue: number,
   formattedValue: string,
   value: string
 };
@@ -27,59 +27,60 @@ type NumberFormatValueType = {
 const ClearableInput = (props: PropsType) => {
   const { currency, pattern } = props.inputProps || {};
 
-  const handleKeyPress = (event) => {
+  const handleKeyPress = event => {
     if (!pattern) return;
 
     var regex = new RegExp(pattern);
-    var key = String.fromCharCode(!event.charCode ? event.which : event.charCode);
+    var key = String.fromCharCode(
+      !event.charCode ? event.which : event.charCode
+    );
     if (!regex.test(key)) {
-       event.preventDefault();
-       return false;
+      event.preventDefault();
+      return false;
     }
-  }
+  };
 
   return (
     <span className="clearable-input">
-      {
-        props.valueType === MONEY_RANGE
-        ? <NumberFormat
-            prefix={currency.prefix || ''}
-            thousandSeparator={currency.thousandSeparator || ''}
-            decimalSeparator={currency.decimalSeparator || ''}
-            decimalScale={currency.decimalScale || ''}
-            className="clearable-input__input"
-            placeholder={props.placeholder}
-            type={props.inputType}
-            onValueChange={(values: NumberFormatValueType) => {
-              const { formattedValue, floatValue } = values;
-              const parsed = new Decimal(floatValue).mul(currency.factor || 0);
+      {props.valueType === MONEY_RANGE ? (
+        <NumberFormat
+          prefix={currency.prefix || ""}
+          thousandSeparator={currency.thousandSeparator || ""}
+          decimalSeparator={currency.decimalSeparator || ""}
+          decimalScale={currency.decimalScale || ""}
+          className="clearable-input__input"
+          placeholder={props.placeholder}
+          type={props.inputType}
+          onValueChange={(values: NumberFormatValueType) => {
+            const { formattedValue, floatValue } = values;
+            const parsed = new Decimal(floatValue).mul(currency.factor || 0);
 
-              props.onChange(parsed, formattedValue);
-            }}
-            value={props.formattedValue}
-            {...props.inputProps}
-          />
-        : <input
-            className="clearable-input__input"
-            placeholder={props.placeholder}
-            type={props.inputType}
-            onChange={(e) => props.onChange(e.target.value)}
-            onKeyPress={(e) => handleKeyPress(e)}
-            value={props.value}
-            {...props.inputProps}
-          />
-      }
-      {
-        !isEmpty(props.value) &&
+            props.onChange(parsed, formattedValue);
+          }}
+          value={props.formattedValue}
+          {...props.inputProps}
+        />
+      ) : (
+        <input
+          className="clearable-input__input"
+          placeholder={props.placeholder}
+          type={props.inputType}
+          onChange={e => props.onChange(e.target.value)}
+          onKeyPress={e => handleKeyPress(e)}
+          value={props.value}
+          {...props.inputProps}
+        />
+      )}
+      {!isEmpty(props.value) && (
         <span
           className="clearable-input__clear-zone"
-          title={T.translate('common.clearValue')}
-          aria-label={T.translate('common.clearValue')}
+          title={T.translate("common.clearValue")}
+          aria-label={T.translate("common.clearValue")}
           onClick={() => props.onChange(null)}
         >
           ×
         </span>
-      }
+      )}
     </span>
   );
 };

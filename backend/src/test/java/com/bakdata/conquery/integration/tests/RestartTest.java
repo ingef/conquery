@@ -1,5 +1,7 @@
 package com.bakdata.conquery.integration.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import javax.validation.Validator;
 
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
@@ -57,6 +59,16 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		
 		try(StandaloneSupport conquery = testConquery.openDataset(dataset)) {
 			test.executeTest(conquery);
+			
+
+			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+			User userStored = storage.getUser(user.getId());
+			Mandator mandatorStored = storage.getMandator(mandator.getId());
+			Mandator userRefMand = userStored.getRoles().iterator().next();
+			assertThat(mandatorStored).isSameAs(userRefMand);
+			
 		}
+		
+		
 	}
 }

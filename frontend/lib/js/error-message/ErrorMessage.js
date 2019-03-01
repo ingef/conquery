@@ -1,19 +1,20 @@
 // @flow
 
-import React                from 'react';
-import classnames           from 'classnames';
+import React from "react";
+import styled from "@emotion/styled";
 
 type PropsType = {
   className?: string,
-  message: string,
+  message: string
 };
 
+const Root = styled("p")`
+  color: $col-red;
+  font-weight: 400;
+`;
+
 const ErrorMessage = ({ className, message }: PropsType) => {
-  return (
-    <p className={classnames('error-message', className)}>
-      {message}
-    </p>
-  );
+  return <Root className={className}>{message}</Root>;
 };
 
 export default ErrorMessage;

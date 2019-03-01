@@ -1,10 +1,13 @@
 // @flow
 
-import React                from 'react';
-import T                    from 'i18n-react';
+import React from "react";
+import styled from "@emotion/styled";
+import T from "i18n-react";
 
-import { CloseIconButton }  from '../button';
+import IconButton from "../button/IconButton";
+import TransparentButton from "../button/TransparentButton";
 
+import EscAble from "../common/components/EscAble";
 
 type PropsType = {
   children?: Element[],
@@ -13,62 +16,49 @@ type PropsType = {
   tabIndex: number
 };
 
+const StyledIconButton = styled(IconButton)`
+  position: absolute;
+  top: 12px;
+  right: 15px;
+`;
+const StyledTransparentButton = styled(TransparentButton)`
+  position: absolute;
+  top: 12px;
+  right: 15px;
+`;
+
 class Modal extends React.Component {
   props: PropsType;
 
-  constructor(props: PropsType) {
-    super(props);
-
-    (this:any).boundKeyUpHandler = this._onKeyUp.bind(this);
-  }
-
-  componentDidMount() {
-    window.addEventListener('keyup', (this:any).boundKeyUpHandler);
-  }
-
-  componentWillUnmount() {
-    window.removeEventListener('keyup', (this:any).boundKeyUpHandler);
-  }
-
-  _onKeyUp(e: Object) {
-    switch (e.keyCode) {
-    case 27: // Esc key
+  closeMaybe = (e: Object) => {
+    if (e.nativeEvent.target.className.indexOf("modal__center") !== -1)
       this.props.closeModal();
-      break;
-    default:
-      break;
-    }
-  }
-
-  _closeMaybe(e: Object) {
-    if (e.nativeEvent.target.className.indexOf('modal__center') !== -1)
-      this.props.closeModal();
-  }
+  };
 
   render() {
-    const closeButton = this.props.doneButton
-      ? <button
-          type="button"
-          className="modal__close-button btn btn--transparent btn--small"
-          onClick={this.props.closeModal}
-          tabIndex={this.props.tabIndex || 0}
-        >
-          { T.translate('common.done') }
-        </button>
-      : <CloseIconButton
-          className="modal__close-button"
-          onClick={this.props.closeModal}
-        />;
-
     return (
-      <div className="modal" onClick={this._closeMaybe.bind(this)}>
+      <EscAble
+        className="modal"
+        onClick={this.closeMaybe}
+        onEscPressed={this.props.closeModal}
+      >
         <div className="modal__center">
           <div className="modal__content">
-            { closeButton }
-            { this.props.children }
+            {this.props.doneButton ? (
+              <StyledTransparentButton
+                small
+                onClick={this.props.closeModal}
+                tabIndex={this.props.tabIndex || 0}
+              >
+                {T.translate("common.done")}
+              </StyledTransparentButton>
+            ) : (
+              <StyledIconButton icon="close" onClick={this.props.closeModal} />
+            )}
+            {this.props.children}
           </div>
         </div>
-      </div>
+      </EscAble>
     );
   }
 }

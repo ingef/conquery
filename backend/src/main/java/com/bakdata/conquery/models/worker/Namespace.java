@@ -60,7 +60,7 @@ public class Namespace {
 		}
 	}
 	
-	public void updateWorkerMap() {
+	public synchronized void updateWorkerMap() {
 		int maximumEntityId = workers
 			.stream()
 			.mapToInt(WorkerInformation::findLargestEntityId)
@@ -87,7 +87,7 @@ public class Namespace {
 	}
 	
 	@Nonnull
-	public WorkerInformation getResponsibleWorker(int entityId) {
+	public synchronized WorkerInformation getResponsibleWorker(int entityId) {
 		int bucket = Entity.getBucket(entityId, entityBucketSize);
 		if(bucket < bucket2WorkerMap.size()) {
 			return bucket2WorkerMap.get(bucket);
@@ -97,7 +97,7 @@ public class Namespace {
 		}
 	}
 	
-	public void addResponsibility(int bucket) {
+	public synchronized void addResponsibility(int bucket) {
 		WorkerInformation smallest = workers
 				.stream()
 				.min(Comparator.comparing(si->si.getIncludedBuckets().size()))

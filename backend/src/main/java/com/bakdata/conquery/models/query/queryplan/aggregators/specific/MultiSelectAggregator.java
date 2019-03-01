@@ -8,10 +8,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.types.specific.IStringType;
 
-/**
- * Entity is included when the number of values for a specified column are
- * within a given range.
- */
+
 public class MultiSelectAggregator extends SingleColumnAggregator<MultiSet<String>> {
 
 	private final String[] selection;

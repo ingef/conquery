@@ -37,4 +37,13 @@ public class DateRangeType extends CType<CDateRange, DateRangeType> {
 				formats.parseToLocalDate(parts[1])
 		);
 	}
+
+	@Override
+	public Object createPrintValue(CDateRange value) {
+		if (value == null) {
+			return "";
+		}
+
+		return value;
+	}
 }
