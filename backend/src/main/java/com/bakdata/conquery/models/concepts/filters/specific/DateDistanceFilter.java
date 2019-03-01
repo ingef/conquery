@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
+import java.time.temporal.ChronoUnit;
 import java.util.EnumSet;
+
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
@@ -24,7 +27,8 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id="DATE_DISTANCE", base=Filter.class)
 public class DateDistanceFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
 
-	
+	@NotNull
+	private ChronoUnit timeUnit = ChronoUnit.YEARS;
 	
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -45,6 +49,6 @@ public class DateDistanceFilter extends SingleColumnFilter<CQIntegerRangeFilter>
 	
 	@Override
 	public FilterNode createAggregator(CQIntegerRangeFilter filterValue) {
-		return new DateDistanceFilterNode(this, filterValue);
+		return new DateDistanceFilterNode(this, filterValue, timeUnit);
 	}
 }
