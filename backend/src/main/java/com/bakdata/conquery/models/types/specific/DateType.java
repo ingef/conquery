@@ -19,8 +19,9 @@ public class DateType extends CType<Integer, DateType> {
 		return CDate.ofLocalDate(DateFormats.instance().parseToLocalDate(value));
 	}
 
-	@Override public Object createScriptValue(Integer value) {
-		return CDate.toLocalDate(value).toString();
+	@Override
+	public Object createScriptValue(Integer value) {
+		return CDate.toLocalDate(value);
 	}
 
 	@Override
