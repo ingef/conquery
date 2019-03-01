@@ -1,3 +1,3 @@
 // @flow
 
-export * from './genericActions';
+export * from "./genericActions";

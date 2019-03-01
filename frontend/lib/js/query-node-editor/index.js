@@ -1,8 +1,8 @@
 // @flow
 
-export { createQueryNodeEditorReducer }   from './reducer';
+export { createQueryNodeEditorReducer } from "./reducer";
 
-export { createActionTypes }              from './actionTypes';
-export { createQueryNodeEditorActions }   from './actions';
+export { createActionTypes } from "./actionTypes";
+export { createQueryNodeEditorActions } from "./actions";
 
-export { createConnectedQueryNodeEditor } from './QueryNodeEditor';
+export { createConnectedQueryNodeEditor } from "./QueryNodeEditor";

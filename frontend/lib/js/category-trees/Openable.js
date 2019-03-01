@@ -1,14 +1,14 @@
 // @flow
 
-import React from 'react';
+import React from "react";
 
 type PropsType = {
-  openInitially?: boolean,
+  openInitially?: boolean
 };
 
 type StateType = {
-  open: boolean,
-}
+  open: boolean
+};
 
 const Openable = (Component: any) => {
   class EnhancedComponent extends React.Component<PropsType, StateType> {

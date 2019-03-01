@@ -1,19 +1,19 @@
 // @flow
 
-import React                     from 'react';
-import { connect }               from 'react-redux';
+import React from "react";
+import { connect } from "react-redux";
 
-import { loadPreviousQueries }   from './actions';
-import { selectPreviousQueries } from './selector';
-import PreviousQueries           from './PreviousQueries';
+import { loadPreviousQueries } from "./actions";
+import { selectPreviousQueries } from "./selector";
+import PreviousQueries from "./PreviousQueries";
 
 type PropsType = {
   datasetId: string,
   queries: [],
   loading: boolean,
   error: string,
-  loadQueries: () => void,
-}
+  loadQueries: () => void
+};
 
 const PreviousQueriesContainer = (props: PropsType) => {
   return (
@@ -27,18 +27,18 @@ const PreviousQueriesContainer = (props: PropsType) => {
   );
 };
 
-const mapStateToProps = (state) => ({
+const mapStateToProps = state => ({
   queries: selectPreviousQueries(
     state.previousQueries.queries,
     state.previousQueriesSearch,
-    state.previousQueriesFilter,
+    state.previousQueriesFilter
   ),
   loading: state.previousQueries.loading,
-  error: state.previousQueries.error,
+  error: state.previousQueries.error
 });
 
-const mapDispatchToProps = (dispatch) => ({
-  loadQueries: (datasetId) => dispatch(loadPreviousQueries(datasetId)),
+const mapDispatchToProps = dispatch => ({
+  loadQueries: datasetId => dispatch(loadPreviousQueries(datasetId))
 });
 
 const mergeProps = (stateProps, dispatchProps, ownProps) => ({
@@ -48,4 +48,8 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   loadQueries: () => dispatchProps.loadQueries(ownProps.datasetId)
 });
 
-export default connect(mapStateToProps, mapDispatchToProps, mergeProps)(PreviousQueriesContainer);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+  mergeProps
+)(PreviousQueriesContainer);

@@ -1,6 +1,6 @@
 // @flow
 
-import type { NodeType, TreeNodeIdType }  from '../common/types/backend';
+import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 
 import {
   LOAD_TREES_START,
@@ -14,11 +14,11 @@ import {
   SEARCH_TREES_END,
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
-  CHANGE_SEARCH_QUERY,
-}                                         from './actionTypes';
-import { setTree }                        from './globalTreeStoreHelper';
+  CHANGE_SEARCH_QUERY
+} from "./actionTypes";
+import { setTree } from "./globalTreeStoreHelper";
 
-export type TreesType = { [treeId: string]: NodeType }
+export type TreesType = { [treeId: string]: NodeType };
 
 export type SearchType = {
   searching: boolean,
@@ -29,13 +29,13 @@ export type SearchType = {
   limit: number,
   resultCount: number,
   duration: number
-}
+};
 
 export type StateType = {
   loading: boolean,
   version: any,
   trees: TreesType,
-  search?: SearchType,
+  search?: SearchType
 };
 
 const initialState: StateType = {
@@ -46,7 +46,7 @@ const initialState: StateType = {
     searching: false,
     loading: false,
     updateComponent: true,
-    query: '',
+    query: "",
     words: [],
     result: [],
     limit: 0,
@@ -70,14 +70,14 @@ const setSearchTreesEnd = (state: StateType, action: Object): StateType => {
       loading: false,
       updateComponent: true,
       query: query,
-      words: query ? query.split(' ') : [],
+      words: query ? query.split(" ") : [],
       result: result,
       limit: matches <= limit ? matches : limit,
       resultCount: searching ? size : 0,
-      duration: (Date.now() - state.search.duration)
+      duration: Date.now() - state.search.duration
     }
-  }
-}
+  };
+};
 
 const setSearchTreesStart = (state: StateType, action: Object): StateType => {
   const { query } = action.payload;
@@ -89,17 +89,20 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
       loading: query && query.length > 0,
       updateComponent: true,
       query: query,
-      words: query ? query.split(' ') : [],
+      words: query ? query.split(" ") : [],
       result: [],
       resultCount: 0,
       limit: 0,
       duration: Date.now()
     }
-  }
-}
+  };
+};
 
-
-const updateTree = (state: StateType, action: Object, attributes: Object): StateType => {
+const updateTree = (
+  state: StateType,
+  action: Object,
+  attributes: Object
+): StateType => {
   return {
     ...state,
     trees: {
@@ -131,7 +134,10 @@ const setTreeSuccess = (state: StateType, action: Object): StateType => {
 };
 
 const setTreeError = (state: StateType, action: Object): StateType => {
-  return updateTree(state, action, { loading: false, error: action.payload.message });
+  return updateTree(state, action, {
+    loading: false,
+    error: action.payload.message
+  });
 };
 
 const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
@@ -141,7 +147,7 @@ const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
     version: action.payload.data.version,
     trees: action.payload.data.concepts
   };
-}
+};
 
 const categoryTrees = (
   state: StateType = initialState,
@@ -170,14 +176,15 @@ const categoryTrees = (
     case SEARCH_TREES_END:
       return setSearchTreesEnd(state, action);
     case SEARCH_TREES_ERROR:
-      return { ...state,
+      return {
+        ...state,
         search: { loading: false },
         error: action.payload.message
       };
     case CLEAR_SEARCH_QUERY:
       return {
         ...state,
-        search: { searching: false, query: '', updateComponent: true }
+        search: { searching: false, query: "", updateComponent: true }
       };
     case CHANGE_SEARCH_QUERY:
       return {
