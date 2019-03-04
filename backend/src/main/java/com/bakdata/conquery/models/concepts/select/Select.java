@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.concepts.select;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
@@ -18,4 +19,6 @@ public interface Select<ID extends SelectId<? extends Select<? extends ID>>> ext
 	
 	@Override
 	ID getId();
+	
+	ResultType getResultType();
 }

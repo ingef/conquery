@@ -8,8 +8,13 @@ import com.bakdata.conquery.models.config.LocaleConfig;
 
 import lombok.NonNull;
 
-public enum ESType {
-	BOOLEAN,
+public enum ResultType {
+	BOOLEAN {
+		@Override
+		public String print(Object f) {
+			return Boolean.TRUE.equals(f) ? "t" : "f";			
+		}
+	},
 	INTEGER {
 		@Override
 		public String print(Object f) {
