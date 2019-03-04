@@ -10,39 +10,47 @@ import lombok.NonNull;
 
 public enum ResultType {
 	BOOLEAN {
+
 		@Override
 		public String print(Object f) {
 			return Boolean.TRUE.equals(f) ? "t" : "f";
 		}
 	},
 	INTEGER {
+
 		@Override
 		public String print(Object f) {
 			if (f instanceof Long) {
 				return NUMBER_FORMAT.format((Long) f);
-			} else {
+			}
+			else {
 				throw new IllegalArgumentException("Unknown type " + f.getClass() + " of INTEGER " + f);
 			}
 		}
 	},
 	NUMERIC {
+
 		@Override
 		public String print(Object f) {
 			if (f instanceof Double) {
 				return NUMBER_FORMAT.format((Double) f);
-			} else if (f instanceof BigDecimal) {
+			}
+			else if (f instanceof BigDecimal) {
 				return NUMBER_FORMAT.format((BigDecimal) f);
-			} else {
+			}
+			else {
 				throw new IllegalArgumentException("Unknown type " + f.getClass() + " of NUMERIC " + f);
 			}
 		}
 	},
 	CATEGORICAL, DATE, STRING, MONEY {
+
 		@Override
 		public String print(Object f) {
 			if (f instanceof Long) {
 				return CURRENCY_FORMAT.format(new BigDecimal((Long) f).divide(CURRENCY_DIGITS));
-			} else {
+			}
+			else {
 				throw new IllegalArgumentException("Unknown type " + f.getClass() + " of MONEY " + f);
 			}
 		}
@@ -63,7 +71,8 @@ public enum ResultType {
 	public String printNullable(Object f) {
 		if (f == null) {
 			return "";
-		} else {
+		}
+		else {
 			return print(f);
 		}
 	}
