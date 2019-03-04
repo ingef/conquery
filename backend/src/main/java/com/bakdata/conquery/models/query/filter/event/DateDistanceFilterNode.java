@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.common.CDateSet;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
@@ -14,22 +17,23 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
  */
 public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRangeFilter, DateDistanceFilter> {
 
-	private boolean hit;
-	private CDateSet dateRestriction;
+	private boolean hit = false;
+	private LocalDate reference;
+	private ChronoUnit unit;
 
-	public DateDistanceFilterNode(DateDistanceFilter dateDistanceFilter, FilterValue.CQIntegerRangeFilter filterValue) {
+	public DateDistanceFilterNode(DateDistanceFilter dateDistanceFilter, FilterValue.CQIntegerRangeFilter filterValue, ChronoUnit unit) {
 		super(dateDistanceFilter, filterValue);
+		this.unit = unit;
 	}
-
 
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		dateRestriction = ctx.getDateRestriction();
+		reference = CDate.toLocalDate(ctx.getDateRestriction().getMinValue());
 	}
 
 	@Override
 	public DateDistanceFilterNode clone(QueryPlan plan, QueryPlan clone) {
-		return new DateDistanceFilterNode(filter, filterValue);
+		return new DateDistanceFilterNode(filter, filterValue, unit);
 	}
 
 	@Override
@@ -38,15 +42,11 @@ public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRang
 			return false;
 		}
 
+		LocalDate date = CDate.toLocalDate(block.getDate(event, filter.getColumn()));
 
-		int date = block.getDate(event, filter.getColumn());
+		final long between = unit.between(date, reference);
 
-		if (date <= dateRestriction.getMinValue()) {
-			return filterValue.getValue().contains(dateRestriction.getMinValue() - date);
-		}
-		else {
-			return filterValue.getValue().contains(dateRestriction.getMaxValue() - date);
-		}
+		return filterValue.getValue().contains(between);
 	}
 
 	@Override
