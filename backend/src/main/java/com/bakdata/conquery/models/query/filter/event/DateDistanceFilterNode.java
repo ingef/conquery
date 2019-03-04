@@ -12,12 +12,9 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Entity is included as long as Dates are within a certain range.
  */
-@Slf4j
 public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRangeFilter, DateDistanceFilter> {
 
 	private boolean hit = false;
@@ -48,8 +45,6 @@ public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRang
 		LocalDate date = CDate.toLocalDate(block.getDate(event, filter.getColumn()));
 
 		final long between = unit.between(date, reference);
-
-		log.info("{} between {} - {} = {}", unit, reference, date, between);
 
 		return filterValue.getValue().contains(between);
 	}
