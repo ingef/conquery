@@ -5,6 +5,8 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.Named;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -20,5 +22,6 @@ public interface Select<ID extends SelectId<? extends Select<? extends ID>>> ext
 	@Override
 	ID getId();
 	
+	@JsonIgnore
 	ResultType getResultType();
 }
