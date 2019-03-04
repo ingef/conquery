@@ -3,10 +3,9 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import FaIcon from "../icon/FaIcon";
 
 import { EditableText } from "../form-components";
-import TransparentHeaderButton from "../button/TransparentHeaderButton";
+import IconButton from "../button/IconButton";
 
 import { getConceptById } from "../category-trees/globalTreeStoreHelper";
 
@@ -15,6 +14,8 @@ import type { PropsType } from "./QueryNodeEditor";
 import ConceptEntry from "./ConceptEntry";
 import ConceptDropzone from "./ConceptDropzone";
 import ContentCell from "./ContentCell";
+
+import InputMultiSelect from "../form-components/InputMultiSelect";
 
 const Row = styled("div")`
   margin-bottom: 10px;
@@ -25,8 +26,22 @@ const RowHeading = styled("h5")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
+const StyledIconButton = styled(IconButton)`
+  font-size: ${({ theme }) => theme.font.sm};
+  line-height: ${({ theme }) => theme.font.sm};
+`;
+
 const NodeDetailsView = (props: PropsType) => {
-  const { node, editorState } = props;
+  const {
+    node,
+    editorState,
+    onSelectSelects,
+    onUpdateLabel,
+    isExcludeTimestampsPossible,
+    onToggleTimestamps,
+    onDropConcept,
+    onRemoveConcept
+  } = props;
 
   return (
     <ContentCell
@@ -39,7 +54,7 @@ const NodeDetailsView = (props: PropsType) => {
               selectTextOnMount={true}
               editing={editorState.editingLabel}
               onSubmit={value => {
-                props.onUpdateLabel(value);
+                onUpdateLabel(value);
                 editorState.onToggleEditLabel();
               }}
               onToggleEdit={editorState.onToggleEditLabel}
@@ -49,23 +64,39 @@ const NodeDetailsView = (props: PropsType) => {
         </>
       }
     >
-      {props.isExcludeTimestampsPossible && (
+      {isExcludeTimestampsPossible && (
         <Row>
-          <TransparentHeaderButton
-            onClick={() => props.onToggleTimestamps(!node.excludeTimestamps)}
+          <StyledIconButton
+            frame
+            icon={node.excludeTimestamps ? "check-square-o" : "square-o"}
+            onClick={() => onToggleTimestamps(!node.excludeTimestamps)}
           >
-            <FaIcon
-              icon={node.excludeTimestamps ? "check-square-o" : "square-o"}
-            />{" "}
             {T.translate("queryNodeEditor.excludeTimestamps")}
-          </TransparentHeaderButton>
+          </StyledIconButton>
+        </Row>
+      )}
+      {node.selects && (
+        <Row>
+          <RowHeading>{T.translate("queryNodeEditor.selects")}</RowHeading>
+          <InputMultiSelect
+            input={{
+              onChange: onSelectSelects,
+              value: node.selects
+                .filter(({ selected }) => !!selected)
+                .map(({ id, label }) => ({ value: id, label: label }))
+            }}
+            options={node.selects.map(select => ({
+              value: select.id,
+              label: select.label
+            }))}
+          />
         </Row>
       )}
       {!node.isPreviousQuery && (
         <Row>
           <RowHeading>{[getConceptById(node.tree).label]}</RowHeading>
           <div>
-            <ConceptDropzone node={node} onDropConcept={props.onDropConcept} />
+            <ConceptDropzone node={node} onDropConcept={onDropConcept} />
           </div>
           <div>
             {node.ids.map(conceptId => (
@@ -73,7 +104,7 @@ const NodeDetailsView = (props: PropsType) => {
                 key={conceptId}
                 node={getConceptById(conceptId)}
                 canRemoveConcepts={node.ids.length > 1}
-                onRemoveConcept={props.onRemoveConcept}
+                onRemoveConcept={onRemoveConcept}
                 conceptId={conceptId}
               />
             ))}

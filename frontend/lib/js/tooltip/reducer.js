@@ -4,11 +4,11 @@ import {
   TOGGLE_DISPLAY_TOOLTIP,
   DISPLAY_ADDITIONAL_INFOS,
   TOGGLE_ADDITIONAL_INFOS
-} from './actionTypes';
+} from "./actionTypes";
 
 type InfoType = {
   key: string,
-  value: string,
+  value: string
 };
 
 export type AdditionalInfosType = {
@@ -16,13 +16,13 @@ export type AdditionalInfosType = {
   description: ?string,
   matchingEntries: ?number,
   dateRange: ?Object,
-  infos: ?InfoType[]
+  infos: ?(InfoType[])
 };
 
 export type StateType = {
   displayTooltip: boolean,
   toggleAdditionInfos: boolean,
-  additionalInfos: AdditionalInfosType,
+  additionalInfos: AdditionalInfosType
 };
 
 const initialState = {
@@ -33,15 +33,15 @@ const initialState = {
     description: null,
     matchingEntries: null,
     dateRange: null,
-    infos: null,
-  },
+    infos: null
+  }
 };
 
 const setAdditionalInfos = (state, action) => {
   if (state.toggleAdditionInfos)
     return {
       ...state
-    }
+    };
 
   return {
     ...state,
@@ -50,12 +50,15 @@ const setAdditionalInfos = (state, action) => {
       description: null,
       matchingEntries: null,
       dateRange: null,
-      infos: null,
+      infos: null
     }
   };
 };
 
-const tooltip = (state: StateType = initialState, action: Object): StateType => {
+const tooltip = (
+  state: StateType = initialState,
+  action: Object
+): StateType => {
   switch (action.type) {
     case DISPLAY_ADDITIONAL_INFOS:
       return setAdditionalInfos(state, action);

@@ -93,6 +93,7 @@ export type DraggedQueryType = {
 export type DraggedNodeType = {
   ids: TreeNodeIdType[],
   tables: TableWithFilterValueType[],
+  selects: SelectedSelectorType[],
   tree: TreeNodeIdType,
   label: string,
   excludeTimestamps?: boolean,
@@ -111,6 +112,7 @@ export type DraggedNodeType = {
 export type ConceptQueryNodeType = {
   ids: TreeNodeIdType[],
   tables: TableWithFilterValueType[],
+  selects: SelectedSelectorType[],
   tree: TreeNodeIdType,
 
   label: string,

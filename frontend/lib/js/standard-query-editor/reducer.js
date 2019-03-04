@@ -50,7 +50,8 @@ import {
   REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
-  SET_SELECTED_SELECTS,
+  SET_TABLE_SELECTS,
+  SET_SELECTS,
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
@@ -94,6 +95,7 @@ const filterItem = (
     return {
       ids: item.ids,
       tables: item.tables,
+      selects: item.selects,
       tree: item.tree,
 
       label: item.label,
@@ -333,7 +335,7 @@ const setNodeFilterValue = (state, action) => {
   });
 };
 
-const setNodeSelectedSelects = (state, action) => {
+const setNodeTableSelects = (state, action) => {
   const { tableIdx, value } = action.payload;
   const { andIdx, orIdx } = selectEditedNode(state);
   const table = state[andIdx].elements[orIdx].tables[tableIdx];
@@ -349,6 +351,19 @@ const setNodeSelectedSelects = (state, action) => {
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
+};
+
+const setNodeSelects = (state, action) => {
+  const { value } = action.payload;
+  const { andIdx, orIdx } = selectEditedNode(state);
+  const { selects } = state[andIdx].elements[orIdx];
+
+  return setElementProperties(state, andIdx, orIdx, {
+    selects: selects.map(select => ({
+      ...select,
+      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+    }))
+  });
 };
 
 const switchNodeFilterMode = (state, action) => {
@@ -369,12 +384,19 @@ const resetNodeAllFilters = (state, action) => {
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
-    excludeTimestamps: false
+    excludeTimestamps: false,
+    selects: node.selects
+      ? node.selects.map(select => ({
+          ...select,
+          selected: false
+        }))
+      : null
   });
 
   if (!node.tables) return newState;
 
   const tables = resetAllFiltersInTables(node.tables);
+
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
@@ -828,8 +850,10 @@ const query = (
       return toggleNodeTable(state, action);
     case SET_FILTER_VALUE:
       return setNodeFilterValue(state, action);
-    case SET_SELECTED_SELECTS:
-      return setNodeSelectedSelects(state, action);
+    case SET_TABLE_SELECTS:
+      return setNodeTableSelects(state, action);
+    case SET_SELECTS:
+      return setNodeSelects(state, action);
     case RESET_ALL_FILTERS:
       return resetNodeAllFilters(state, action);
     case SWITCH_FILTER_MODE:

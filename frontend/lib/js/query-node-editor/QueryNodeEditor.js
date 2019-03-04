@@ -75,7 +75,8 @@ export type PropsType = {
   onToggleTimestamps: Function,
   onSwitchFilterMode: Function,
   onLoadFilterSuggestions: Function,
-  onSetSelectedSelects: Function,
+  onSelectSelects: Function,
+  onSelectTableSelects: Function,
   datasetId: number,
   suggestions: ?Object,
   onToggleIncludeSubnodes: Function

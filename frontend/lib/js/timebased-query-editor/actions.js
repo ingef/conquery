@@ -11,7 +11,7 @@ import {
   CLEAR_TIMEBASED_QUERY,
   SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT,
   SET_TIMEBASED_CONDITION_MAX_DAYS_OR_NO_EVENT
-} from './actionTypes';
+} from "./actionTypes";
 
 export const dropTimebasedNode = (conditionIdx, resultIdx, node, moved) => ({
   type: DROP_TIMEBASED_NODE,
@@ -23,7 +23,11 @@ export const removeTimebasedNode = (conditionIdx, resultIdx, moved) => ({
   payload: { conditionIdx, resultIdx, moved }
 });
 
-export const setTimebasedNodeTimestamp = (conditionIdx, resultIdx, timestamp) => ({
+export const setTimebasedNodeTimestamp = (
+  conditionIdx,
+  resultIdx,
+  timestamp
+) => ({
   type: SET_TIMEBASED_NODE_TIMESTAMP,
   payload: { conditionIdx, resultIdx, timestamp }
 });
@@ -45,22 +49,22 @@ export const setTimebasedConditionMinDays = (conditionIdx, days) => ({
 
 export const setTimebasedConditionMinDaysOrNoEvent = (conditionIdx, days) => ({
   type: SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT,
-  payload: {conditionIdx, days}
+  payload: { conditionIdx, days }
 });
 
 export const setTimebasedConditionMaxDaysOrNoEvent = (conditionIdx, days) => ({
   type: SET_TIMEBASED_CONDITION_MAX_DAYS_OR_NO_EVENT,
-  payload: {conditionIdx, days}
+  payload: { conditionIdx, days }
 });
 
-export const setTimebasedIndexResult = (indexResult) => ({
+export const setTimebasedIndexResult = indexResult => ({
   type: SET_TIMEBASED_INDEX_RESULT,
   payload: { indexResult }
 });
 
 export const addTimebasedCondition = () => ({ type: ADD_TIMEBASED_CONDITION });
 
-export const removeTimebasedCondition = (conditionIdx) => ({
+export const removeTimebasedCondition = conditionIdx => ({
   type: REMOVE_TIMEBASED_CONDITION,
   payload: { conditionIdx }
 });

@@ -9,7 +9,7 @@ import Markdown from "react-markdown";
 import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
-import { SearchType } from "../category-trees/reducer";
+import type { SearchType } from "../category-trees/reducer";
 
 import ActivateTooltip from "./ActivateTooltip";
 import { toggleDisplayTooltip } from "./actions";
@@ -44,6 +44,7 @@ const Tooltip = (props: PropsType) => {
     matchingEntries,
     dateRange
   } = additionalInfos;
+
   const searchHighlight = text => (
     <Highlighter
       searchWords={props.search.words || []}

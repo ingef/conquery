@@ -1,16 +1,13 @@
 // @flow
 
-import React                from 'react';
-import T                    from 'i18n-react';
+import React from "react";
+import T from "i18n-react";
 
-import { ErrorMessage }     from '../error-message';
-import type {
-  NodeType,
-  TreeNodeIdType
-}                           from '../common/types/backend';
+import { ErrorMessage } from "../error-message";
+import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 
-import CategoryTreeNode     from './CategoryTreeNode';
-import { type SearchType }  from './reducer';
+import CategoryTreeNode from "./CategoryTreeNode";
+import { type SearchType } from "./reducer";
 
 type PropsType = {
   id: TreeNodeIdType,
@@ -20,7 +17,7 @@ type PropsType = {
   depth: number,
   loading: boolean,
   error: ?string,
-  search?: SearchType,
+  search?: SearchType
 };
 
 const CategoryTree = (props: PropsType) => {
@@ -31,7 +28,7 @@ const CategoryTree = (props: PropsType) => {
           <i className="fa fa-spinner" />
         </span>
         <span>
-          { T.translate('categoryTreeList.loading', { tree: props.label }) }
+          {T.translate("categoryTreeList.loading", { tree: props.label })}
         </span>
       </p>
     );
@@ -39,7 +36,7 @@ const CategoryTree = (props: PropsType) => {
     return (
       <ErrorMessage
         className="category-tree-list__error-tree"
-        message={T.translate('categoryTreeList.error', { tree: props.label })}
+        message={T.translate("categoryTreeList.error", { tree: props.label })}
       />
     );
   else if (props.tree)
@@ -47,7 +44,7 @@ const CategoryTree = (props: PropsType) => {
       <div className="category-tree">
         <CategoryTreeNode
           id={props.id}
-          data={{...props.tree, tree: props.treeId }}
+          data={{ ...props.tree, tree: props.treeId }}
           depth={props.depth}
           search={props.search}
         />
