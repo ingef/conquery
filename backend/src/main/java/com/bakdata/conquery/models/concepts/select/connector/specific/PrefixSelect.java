@@ -15,11 +15,11 @@ public class PrefixSelect extends SingleColumnSelect {
 
 	@Getter
 	@Setter
-	private String selection;
+	private String prefix;
 
 	@Override
 	protected Aggregator<?> createAggregator() {
-		return new PrefixTextAggregator(getColumn(), selection);
+		return new PrefixTextAggregator(getColumn(), prefix);
 	}
 	
 

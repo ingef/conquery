@@ -37,7 +37,7 @@ public class CQNegation implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<Select<?>> select) {
+	public void collectSelects(Deque<Select> select) {
 		child.collectSelects(select);
 	}
 }

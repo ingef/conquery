@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.AllValuesAggregator;
 
 @CPSType(id = "DISTINCT", base = Select.class)
-public class AllValueSelect extends SingleColumnSelect {
+public class DistinctSelect extends SingleColumnSelect {
 
 	@Override
 	protected Aggregator<?> createAggregator() {

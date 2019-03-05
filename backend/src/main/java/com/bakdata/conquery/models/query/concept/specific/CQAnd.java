@@ -50,7 +50,7 @@ public class CQAnd implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<Select<?>> select) {
+	public void collectSelects(Deque<Select> select) {
 		for(CQElement c:children) {
 			c.collectSelects(select);
 		}
