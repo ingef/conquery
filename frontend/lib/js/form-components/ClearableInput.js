@@ -1,14 +1,44 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import T from "i18n-react";
 import NumberFormat from "react-number-format";
 import { Decimal } from "decimal.js";
 
+import IconButton from "../button/IconButton";
+
 import { isEmpty } from "../common/helpers";
 import { MONEY_RANGE } from "./filterTypes";
 
+const Root = styled("div")`
+  position: relative;
+`;
+
+const Input = styled("input")`
+  min-width: 170px;
+  padding-right: 30px;
+  font-size: ${({ theme }) => theme.font.sm};
+  padding: 8px 10px;
+  border-radius: 3px;
+`;
+
+const ClearZone = styled(IconButton)`
+  position: absolute;
+  top: 0;
+  right: 5px;
+  cursor: pointer;
+  height: 36px;
+  display: flex;
+  align-items: center;
+
+  &:hover {
+    color: ${({ theme }) => theme.col.red};
+  }
+`;
+
 type PropsType = {
+  className?: string,
   inputType: string,
   valueType?: string,
   placeholder?: string,
@@ -41,7 +71,7 @@ const ClearableInput = (props: PropsType) => {
   };
 
   return (
-    <span className="clearable-input">
+    <Root className={props.className}>
       {props.valueType === MONEY_RANGE ? (
         <NumberFormat
           prefix={currency.prefix || ""}
@@ -61,8 +91,7 @@ const ClearableInput = (props: PropsType) => {
           {...props.inputProps}
         />
       ) : (
-        <input
-          className="clearable-input__input"
+        <Input
           placeholder={props.placeholder}
           type={props.inputType}
           onChange={e => props.onChange(e.target.value)}
@@ -72,16 +101,14 @@ const ClearableInput = (props: PropsType) => {
         />
       )}
       {!isEmpty(props.value) && (
-        <span
-          className="clearable-input__clear-zone"
+        <ClearZone
+          icon="times"
           title={T.translate("common.clearValue")}
           aria-label={T.translate("common.clearValue")}
           onClick={() => props.onChange(null)}
-        >
-          ×
-        </span>
+        />
       )}
-    </span>
+    </Root>
   );
 };
 

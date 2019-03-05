@@ -7,39 +7,36 @@ import { isEmpty, duration } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 import IconButton from "../button/IconButton";
 import AnimatedDots from "../common/components/AnimatedDots";
+import ClearableInput from "../form-components/ClearableInput";
 
 const Root = styled("div")`
-  margin-bottom: 5px;
-  padding: 0 10px 0 20px;
+  margin: 0 10px 5px 20px;
+  position: relative;
 `;
 
-const Row = styled("div")`
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-`;
-
-const Input = styled("input")`
+const StyledClearableInput = styled(ClearableInput)`
   width: 100%;
-  &::placeholder {
-    color: ${({ theme }) => theme.col.grayMediumLight};
-    opacity: 1;
+  input {
+    width: 100%;
+    &::placeholder {
+      color: ${({ theme }) => theme.col.grayMediumLight};
+      opacity: 1;
+    }
   }
 `;
 
-const ClearZone = styled("span")`
+const Right = styled("div")`
   position: absolute;
-  top: 52px;
-  right: 22px;
-  cursor: pointer;
-  color: ${({ theme }) => theme.col.gray};
+  top: 0px;
+  right: 30px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  height: 36px;
 `;
+
 const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  top: 55px;
-  right: 45px;
-  cursor: pointer;
-  color: #999;
+  color: ${({ theme }) => theme.col.gray};
 `;
 
 type PropsType = {
@@ -81,21 +78,38 @@ const SearchBox = (props: PropsType) => {
           noOptionsMessage={() => T.translate("reactSelect.noResults")}
         />
       ) : (
-        <Row>
-          <Input
+        <div>
+          <StyledClearableInput
             placeholder={T.translate("search.placeholder")}
             value={searchResult.query || ""}
-            onChange={e => {
-              return isEmpty(e.target.value)
+            onChange={value => {
+              return isEmpty(value)
                 ? onClearQuery()
-                : onChange(e.target.value) || onSearch(e.target.value);
+                : onChange(value) || onSearch(value);
             }}
-            onKeyPress={e => {
-              return e.key === "Enter"
-                ? onSearch(props.datasetId, e.target.value, searchConfig.limit)
-                : null;
+            inputProps={{
+              onKeyPress: e => {
+                return e.key === "Enter"
+                  ? onSearch(
+                      props.datasetId,
+                      e.target.value,
+                      searchConfig.limit
+                    )
+                  : null;
+              }
             }}
           />
+          {!isEmpty(searchResult.query) && (
+            <Right>
+              <StyledIconButton
+                icon="search"
+                aria-hidden="true"
+                onClick={() =>
+                  onSearch(datasetId, searchResult.query, searchConfig.limit)
+                }
+              />
+            </Right>
+          )}
           {searchResult.loading ? (
             <AnimatedDots />
           ) : (
@@ -114,25 +128,7 @@ const SearchBox = (props: PropsType) => {
               </span>
             )
           )}
-          {!isEmpty(searchResult.query) && (
-            <div>
-              <StyledIconButton
-                icon="search"
-                aria-hidden="true"
-                onClick={() =>
-                  onSearch(datasetId, searchResult.query, searchConfig.limit)
-                }
-              />
-              <ClearZone
-                title={T.translate("common.clearValue")}
-                aria-label={T.translate("common.clearValue")}
-                onClick={() => onClearQuery() || onSearch("")}
-              >
-                ×
-              </ClearZone>
-            </div>
-          )}
-        </Row>
+        </div>
       )}
     </Root>
   );
