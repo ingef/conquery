@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
-import com.bakdata.conquery.models.concepts.select.concept.ConceptSelect;
+import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -16,7 +16,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
 @CPSType(id = "EXISTS", base = Select.class)
-public class ExistsSelect extends ConceptSelect {
+public class ExistsSelect extends UniversalSelect {
 
 	@JsonIgnore @Getter(lazy=true)
 	private final Set<TableId> requiredTables = collectRequiredTables();

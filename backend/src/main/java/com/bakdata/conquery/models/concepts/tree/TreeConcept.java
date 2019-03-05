@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.concepts.tree;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.SelectHolder;
-import com.bakdata.conquery.models.concepts.select.concept.ConceptSelect;
+import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -39,7 +39,7 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 @Slf4j
 @CPSType(id="TREE", base=Concept.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<ConceptSelect> {
+public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect> {
 	
 	@Getter @Setter
 	private int globalToLocalOffset;
@@ -56,7 +56,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@JsonIgnore @Getter @Setter
 	private int depth=-1;
 	@NotNull @Getter @Setter @JsonManagedReference
-	private List<ConceptSelect> selects = new ArrayList<>();
+	private List<UniversalSelect> selects = new ArrayList<>();
 	@JsonIgnore @Getter @Setter
 	private TreeChildPrefixIndex childIndex;
 	@JsonIgnore
