@@ -32,13 +32,13 @@
             "label": "datum",
             "column": "vers_stamm.datum"
           },
-          "selects":
+          "selects": [
             {
               "name" : "count_genders",
               "type": "COUNT",
               "column": "vers_stamm.geschlecht"
             }
-
+          ]
         }
       ]
     }

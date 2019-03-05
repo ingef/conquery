@@ -11,8 +11,8 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SelectAg
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(id = "SELECT", base = Select.class)
-public class SelectSelect extends SingleColumnSelect {
+@CPSType(id = "COUNT_OCCURENCES", base = Select.class)
+public class CountOccurencesSelect extends SingleColumnSelect {
 
 	@Getter
 	@Setter
@@ -29,6 +29,6 @@ public class SelectSelect extends SingleColumnSelect {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.CATEGORICAL;
+		return ResultType.INTEGER;
 	}
 }

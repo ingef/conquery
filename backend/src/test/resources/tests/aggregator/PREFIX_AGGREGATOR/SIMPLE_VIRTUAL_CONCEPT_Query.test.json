@@ -36,7 +36,7 @@
             "type": "PREFIX",
             "name" : "select",
             "column": "vers_stamm.geschlecht",
-            "selection": "f"
+            "prefix": "f"
           }
         }
       ]

@@ -3,13 +3,13 @@ package com.bakdata.conquery.models.concepts.select.connector;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.concepts.select.ConnectorSelect;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
 
 import lombok.Getter;
 
-public abstract class SingleColumnSelect extends ConnectorSelect {
+public abstract class SingleColumnSelect extends Select {
 
 	@Getter
 	@NsIdRef

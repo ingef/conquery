@@ -186,7 +186,7 @@ public class FrontEndConceptBuilder {
 		return f;
 	}
 
-	public static FESelect createSelect(Select<?> select) {
+	public static FESelect createSelect(Select select) {
 		return FESelect
 					.builder()
 					.id(select.getId())

@@ -20,7 +20,6 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -53,7 +52,7 @@ public class CQConcept implements CQElement {
 	@Valid @NotNull
 
 	@NsIdRefCollection
-	private List<Select<?>> selects = new ArrayList<>();
+	private List<Select> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
 
@@ -69,7 +68,7 @@ public class CQConcept implements CQElement {
 		for(CQTable t : tables) {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
 
-			List<Select<?>> resolvedSelects = t.getSelects();
+			List<Select> resolvedSelects = t.getSelects();
 
 
 			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
@@ -125,11 +124,11 @@ public class CQConcept implements CQElement {
 		return result;
 	}
 
-	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select<?>> select) {
+	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
-		for (Select<?> s : select) {
+		for (Select s : select) {
 			AggregatorNode<?> agg = s.createAggregator(plan.getAggregators().size());
 			plan.getAggregators().add(agg.getAggregator());
 			nodes.add(agg);
@@ -155,7 +154,7 @@ public class CQConcept implements CQElement {
 	}
 
 	@Override
-	public void collectSelects(Deque<Select<?>> select) {
+	public void collectSelects(Deque<Select> select) {
 		select.addAll(this.selects);
 		for (CQTable table : tables) {
 			select.addAll(table.getSelects());

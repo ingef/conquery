@@ -13,7 +13,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public abstract class SelectId<SELECT extends Select<?>> extends AId<SELECT> implements NamespacedId {
+public abstract class SelectId extends AId<Select> implements NamespacedId {
 
 	private final String select;
 
@@ -22,11 +22,11 @@ public abstract class SelectId<SELECT extends Select<?>> extends AId<SELECT> imp
 		components.add(select);
 	}
 
-	public static enum Parser implements IId.Parser<SelectId<?>> {
+	public static enum Parser implements IId.Parser<SelectId> {
 		INSTANCE;
 		
 		@Override
-		public SelectId<?> parse(PeekingIterator<String> parts) {
+		public SelectId parse(PeekingIterator<String> parts) {
 			ConnectorId parent = ConnectorId.Parser.INSTANCE.parse(parts);
 			if(!parts.hasNext()) {
 				return new ConceptSelectId(parent.getConcept(), parent.getConnector());

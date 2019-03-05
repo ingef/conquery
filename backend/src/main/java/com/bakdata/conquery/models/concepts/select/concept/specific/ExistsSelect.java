@@ -5,8 +5,8 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.select.ConceptSelect;
 import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.concepts.select.concept.ConceptSelect;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -27,7 +27,7 @@ public class ExistsSelect extends ConceptSelect {
 	}
 
 	private Set<TableId> collectRequiredTables() {
-		return this.getConcept().getConnectors().stream().map(Connector::getTable).map(Table::getId).collect(Collectors.toSet());
+		return this.getHolder().findConcept().getConnectors().stream().map(Connector::getTable).map(Table::getId).collect(Collectors.toSet());
 	}
 
 	@Override

@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.concepts.select.ConceptSelect;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.google.common.collect.PeekingIterator;
@@ -11,7 +10,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @EqualsAndHashCode(callSuper=false)
-public class ConceptSelectId extends SelectId<ConceptSelect> implements NamespacedId {
+public class ConceptSelectId extends SelectId implements NamespacedId {
 
 	private final ConceptId concept;
 	

@@ -33,7 +33,7 @@
             "column": "vers_stamm.datum"
           },
           "selects": {
-            "type": "SELECT",
+            "type": "COUNT_OCCURENCES",
             "name" : "select",
             "column": "vers_stamm.geschlecht",
             "selection": "f"
