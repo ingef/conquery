@@ -6,7 +6,6 @@ import type { Dispatch } from "redux";
 import T from "i18n-react";
 import { replace } from "react-router-redux";
 
-import { toQuery } from "../routes";
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import {
   loadPreviousQuery,
@@ -123,7 +122,7 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
 
     dispatch(loadAllPreviousQueriesInGroups(groups, datasetId));
 
-    dispatch(replace(toQuery(datasetId, queryId)));
+    // dispatch(replace(toQuery(datasetId, queryId)));
   },
   loadPreviousQuery: (datasetId, queryId) =>
     dispatch(loadPreviousQuery(datasetId, queryId))

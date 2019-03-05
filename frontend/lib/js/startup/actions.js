@@ -16,22 +16,22 @@ import {
 
 export const startupOnDataset = datasetId => loadDatasets(datasetId);
 
-export const startupOnQuery = (datasetId, queryId) => {
-  return dispatch =>
-    dispatch(loadDatasets(datasetId)).then(concepts => {
-      if (!concepts) return;
+// export const startupOnQuery = (datasetId, queryId) => {
+//   return dispatch =>
+//     dispatch(loadDatasets(datasetId)).then(concepts => {
+//       if (!concepts) return;
 
-      return api.getStoredQuery(datasetId, queryId).then(
-        storedQuery => {
-          dispatch(expandPreviousQuery(concepts, storedQuery.query.groups));
-          dispatch(
-            loadAllPreviousQueriesInGroups(storedQuery.query.groups, datasetId)
-          );
-        },
-        e => dispatch(selectDatasetInput(datasetId))
-      );
-    });
-};
+//       return api.getStoredQuery(datasetId, queryId).then(
+//         storedQuery => {
+//           dispatch(expandPreviousQuery(concepts, storedQuery.query.groups));
+//           dispatch(
+//             loadAllPreviousQueriesInGroups(storedQuery.query.groups, datasetId)
+//           );
+//         },
+//         e => dispatch(selectDatasetInput(datasetId))
+//       );
+//     });
+// };
 
 export const loadConfigStart = () => ({ type: LOAD_CONFIG_START });
 export const loadConfigError = (err: any) =>

@@ -1,3 +1,6 @@
+import logo from "../../../lib/images/conquery-logo.png";
+import spinner from "../../../lib/images/spinner.png";
+
 export default {
   col: {
     bg: "#f9f9f9",
@@ -16,10 +19,10 @@ export default {
     orange: "#E9711C"
   },
   img: {
-    logo: "../images/conquery_logo.svg",
-    logoWidth: "167px",
-    logoBackgroundSize: "167px 50px",
-    spinner: "../images/spinner.png"
+    logo: logo,
+    logoWidth: "175px",
+    logoBackgroundSize: "175px 45px",
+    spinner: spinner
   },
   font: {
     huge: "30px",

@@ -2,9 +2,10 @@
 
 import React from "react";
 import T from "i18n-react";
-import Select from "react-select/lib/Creatable";
 import classnames from "classnames";
 import { type FieldPropsType } from "redux-form";
+
+import ReactSelect from "./ReactSelect";
 
 import { isEmpty } from "../common/helpers";
 import { type SelectOptionsType } from "../common/types/backend";
@@ -39,7 +40,7 @@ const InputSelect = (props: PropsType) => {
         {props.label}
         {props.tooltip && <InfoTooltip text={props.tooltip} />}
       </p>
-      <Select
+      <ReactSelect
         name="form-field"
         value={selected}
         defaultValue={defaultValue}

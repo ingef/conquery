@@ -66,7 +66,16 @@ module.exports = function(app, port) {
   app.get("/api/datasets", function response(req, res) {
     res.setHeader("Content-Type", "application/json");
 
-    res.send(JSON.stringify([{ id: "imdb", label: "IMDb" }]));
+    res.send(
+      JSON.stringify([
+        { id: "imdb", label: "IMDb" },
+        { id: "empty-set", label: "Empty Dataset" },
+        {
+          id: "another-empty-set",
+          label: "Another empty dataset with a long name"
+        }
+      ])
+    );
   });
 
   /*

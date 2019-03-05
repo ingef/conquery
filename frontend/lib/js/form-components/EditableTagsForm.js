@@ -5,10 +5,8 @@ import styled from "@emotion/styled";
 import T from "i18n-react";
 import clickOutside from "react-onclickoutside";
 
-// A multi-select where new items can be created
-import { Creatable as Select } from "react-select";
-
 import PrimaryButton from "../button/PrimaryButton";
+import ReactSelect from "../form-components/ReactSelect";
 
 type PropsType = {
   className?: string,
@@ -52,7 +50,8 @@ class EditableTagsForm extends React.Component<PropsType> {
         className={this.props.className}
         onSubmit={this._onSubmit.bind(this)}
       >
-        <Select
+        <ReactSelect
+          creatable
           name="input"
           value={this.state.values}
           options={this.props.availableTags.map(t => ({ label: t, value: t }))}

@@ -3,7 +3,6 @@
 import React from "react";
 import T from "i18n-react";
 import { components } from "react-select";
-import Select from "react-select/lib/Creatable";
 import { type FieldPropsType } from "redux-form";
 import Dropzone from "react-dropzone";
 import Markdown from "react-markdown";
@@ -16,6 +15,7 @@ import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import TooManyValues from "./TooManyValues";
+import ReactSelect from "./ReactSelect";
 
 type PropsType = FieldPropsType & {
   label?: string,
@@ -89,12 +89,13 @@ const InputMultiSelect = (props: PropsType) => {
           onDrop={files => props.onDropFile(files[0])}
           disabled={!allowDropFile}
         >
-          <Select
+          <ReactSelect
+            creatable
             name="form-field"
             options={options}
             components={{ MultiValueLabel }}
             value={props.input.value}
-            onChange={value => props.input.onChange(value)}
+            onChange={props.input.onChange}
             isDisabled={props.disabled}
             isMulti
             placeholder={

@@ -2,20 +2,14 @@
 
 import type { Dispatch, getState } from "redux-thunk";
 import { reset } from "redux-form";
-import { replace } from "react-router-redux";
-
-import { toDataset } from "../routes";
 
 import api from "../api";
 
-import { defaultError, defaultSuccess } from "../common/actions";
-
 import { isEmpty } from "../common/helpers";
 
+import { defaultError, defaultSuccess } from "../common/actions";
 import { loadTrees } from "../category-trees/actions";
-
 import { loadPreviousQueries } from "../previous-queries/list/actions";
-
 import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 
 import { type StandardQueryType } from "../standard-query-editor/types";
@@ -24,6 +18,7 @@ import {
   LOAD_DATASETS_START,
   LOAD_DATASETS_SUCCESS,
   LOAD_DATASETS_ERROR,
+  SELECT_DATASET,
   SAVE_QUERY
 } from "./actionTypes";
 
@@ -65,10 +60,11 @@ export const loadDatasets = (datasetIdFromUrl: ?DatasetIdType) => {
   };
 };
 
-export const selectDatasetInput = (datasetId: ?DatasetIdType) => {
-  if (datasetId && datasetId.length) return replace(toDataset(datasetId));
-
-  return replace("/");
+export const selectDatasetInput = (id: ?DatasetIdType) => {
+  return {
+    type: SELECT_DATASET,
+    payload: { id }
+  };
 };
 
 export const saveQuery = (
