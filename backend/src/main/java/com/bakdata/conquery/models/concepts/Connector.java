@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.concepts;
 
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -48,7 +49,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	private static final long serialVersionUID = 1L;
 
 	@NotNull
-	private List<ValidityDate> validityDates;
+	private List<ValidityDate> validityDates = new ArrayList<>();
 	@JsonManagedReference
 	private ValidityDateSelectionFilter dateSelectionFilter;
 
