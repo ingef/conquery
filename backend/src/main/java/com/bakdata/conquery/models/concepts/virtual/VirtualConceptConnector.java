@@ -31,7 +31,7 @@ public class VirtualConceptConnector extends Connector {
 	private Filter<?> filter;
 
 	@Valid @JsonManagedReference @NotNull
-	private List<ConnectorSelect> select = Collections.emptyList();
+	private List<ConnectorSelect> selects = Collections.emptyList();
 
 	@Override
 	public List<Filter<?>> collectAllFilters() {
@@ -40,7 +40,7 @@ public class VirtualConceptConnector extends Connector {
 
 	@Override
 	protected List<ConnectorSelect> collectAllSelects() {
-		return select;
+		return selects;
 	}
 /*
 	@Override
