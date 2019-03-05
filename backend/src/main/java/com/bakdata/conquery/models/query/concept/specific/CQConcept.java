@@ -53,7 +53,7 @@ public class CQConcept implements CQElement {
 	@Valid @NotNull
 
 	@NsIdRefCollection
-	private List<Select<?>> select = new ArrayList<>();
+	private List<Select<?>> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
 
@@ -61,7 +61,7 @@ public class CQConcept implements CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		ConceptElement[] concepts = resolveConcepts(ids, context.getCentralRegistry());
 
-		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, select);
+		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
 
 		Concept<?> c = concepts[0].getConcept();
 
@@ -69,7 +69,7 @@ public class CQConcept implements CQElement {
 		for(CQTable t : tables) {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
 
-			List<Select<?>> resolvedSelects = t.getSelect();
+			List<Select<?>> resolvedSelects = t.getSelects();
 
 
 			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
@@ -156,9 +156,9 @@ public class CQConcept implements CQElement {
 
 	@Override
 	public void collectSelects(Deque<Select<?>> select) {
-		select.addAll(this.select);
+		select.addAll(this.selects);
 		for (CQTable table : tables) {
-			select.addAll(table.getSelect());
+			select.addAll(table.getSelects());
 		}
 	}
 }

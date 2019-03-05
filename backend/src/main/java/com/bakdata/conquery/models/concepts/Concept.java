@@ -37,7 +37,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	@NotNull @Getter @Setter
 	private DatasetId dataset;
 	@NotNull @Getter @JsonManagedReference
-	private List<ConceptSelect> select = new ArrayList<>();
+	private List<ConceptSelect> selects = new ArrayList<>();
 	
 	public CONNECTOR getConnectorByName(String connector) {
 		return connectors

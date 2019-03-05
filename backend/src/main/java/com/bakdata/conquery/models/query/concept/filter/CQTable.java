@@ -25,7 +25,7 @@ public class CQTable {
 	private List<FilterValue> filters = Collections.emptyList();
 
 	@Valid @NotNull @NsIdRefCollection
-	private List<Select<?>> select = Collections.emptyList();
+	private List<Select<?>> selects = Collections.emptyList();
 
 	@JsonBackReference
 	private CQConcept concept;
