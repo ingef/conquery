@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.ConceptSelect;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -27,5 +28,10 @@ public class ExistsSelect extends ConceptSelect {
 
 	private Set<TableId> collectRequiredTables() {
 		return this.getConcept().getConnectors().stream().map(Connector::getTable).map(Table::getId).collect(Collectors.toSet());
+	}
+
+	@Override
+	public ResultType getResultType() {
+		return ResultType.BOOLEAN;
 	}
 }
