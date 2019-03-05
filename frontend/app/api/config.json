@@ -9,6 +9,6 @@
     "decimalScale": 2
   },
   "search": {
-    "limit": 50
+    "limit": 500
   }
 }
