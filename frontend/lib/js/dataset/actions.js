@@ -39,19 +39,7 @@ export const loadDatasets = (datasetIdFromUrl: ?DatasetIdType) => {
       datasets => {
         dispatch(loadDatasetsSuccess(datasets));
 
-        let selectedDatasetId = datasetIdFromUrl;
-
-        if (datasetIdFromUrl !== null)
-          if (!datasets.find(dataset => dataset.id === datasetIdFromUrl))
-            // Check if the user-provided id is valid
-            selectedDatasetId = null;
-
-        // Default to the first dataset from the list
-        if (selectedDatasetId === null && !!datasets[0])
-          selectedDatasetId = datasets[0].id;
-
-        if (datasetIdFromUrl !== selectedDatasetId)
-          dispatch(selectDatasetInput(selectedDatasetId));
+        const selectedDatasetId = datasets[0].id;
 
         if (selectedDatasetId) return dispatch(loadTrees(selectedDatasetId));
       },

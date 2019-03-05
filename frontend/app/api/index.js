@@ -325,7 +325,9 @@ module.exports = function(app, port) {
     setTimeout(() => {
       res.setHeader("Content-Type", "application/json");
 
+      // Ignoring the limit, mocking one
       const { query } = req.body;
+      const limit = 20;
 
       const result = [];
       const awards = require("./concepts/awards");
@@ -336,8 +338,14 @@ module.exports = function(app, port) {
       result.push(...findConcepts(movieAppearance, query));
       result.push(...findConcepts(placeOfBirth, query));
 
+      const returnedResult = result.slice(0, limit);
+
       // see type SearchResult
-      res.send({ result: result, limit: 20, size: result.length });
+      res.send({
+        limit,
+        result: returnedResult,
+        size: result.length
+      });
     }, NO_DELAY);
   });
 

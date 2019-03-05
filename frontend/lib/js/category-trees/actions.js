@@ -18,7 +18,7 @@ import {
   LOAD_TREE_ERROR,
   CLEAR_TREES,
   SEARCH_TREES_START,
-  SEARCH_TREES_END,
+  SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CHANGE_SEARCH_QUERY,
   CLEAR_SEARCH_QUERY
@@ -89,8 +89,11 @@ export const searchTreesStart = (query: string) => ({
   type: SEARCH_TREES_START,
   payload: { query }
 });
-export const searchTreesEnd = (query: string, searchResult: SearchResult) => ({
-  type: SEARCH_TREES_END,
+export const searchTreesSuccess = (
+  query: string,
+  searchResult: SearchResult
+) => ({
+  type: SEARCH_TREES_SUCCESS,
   payload: { query, searchResult }
 });
 export const searchTreesError = (query: string, err: any) =>
@@ -109,7 +112,7 @@ export const searchTrees = (
     return api
       .searchConcepts(datasetId, query, limit)
       .then(
-        r => dispatch(searchTreesEnd(query, r)),
+        r => dispatch(searchTreesSuccess(query, r)),
         e => dispatch(searchTreesError(query, e))
       );
   };

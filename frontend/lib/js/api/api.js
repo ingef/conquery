@@ -246,8 +246,8 @@ export const searchConcepts = (
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/search`, {
     method: "POST",
     body: {
-      query: query,
-      limit: limit || 50
+      query,
+      limit
     }
   });
 };

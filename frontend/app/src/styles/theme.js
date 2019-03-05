@@ -4,7 +4,7 @@ import spinner from "../../../lib/images/spinner.png";
 export default {
   col: {
     bg: "#f9f9f9",
-    black: "#444",
+    black: "#222",
     gray: "#999",
     grayMediumLight: "#aaa",
     grayLight: "#dadada",

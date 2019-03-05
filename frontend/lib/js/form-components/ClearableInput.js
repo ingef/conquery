@@ -103,6 +103,7 @@ const ClearableInput = (props: PropsType) => {
       {!isEmpty(props.value) && (
         <ClearZone
           icon="times"
+          tabIndex="-1"
           title={T.translate("common.clearValue")}
           aria-label={T.translate("common.clearValue")}
           onClick={() => props.onChange(null)}

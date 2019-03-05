@@ -22,13 +22,8 @@ type PropsType = {
 class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
-  shouldComponentUpdate(nextProps, nextState) {
-    return nextProps.search.updateComponent;
-  }
-
   render() {
     const { search } = this.props;
-    const searching = search && search.searching;
 
     return (
       !search.loading && (
@@ -54,7 +49,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                 const tree = this.props.trees[treeId];
                 const rootConcept = getConceptById(treeId);
 
-                const render = searching
+                const render = search.searching
                   ? isInSearchResult(treeId, tree.children, search)
                   : true;
 

@@ -238,5 +238,5 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "{limit} von {resultCount} Ergebnisse ({duration} Sekunden)"
+  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} Sekunden)"
   durationFormat: "s,SS"

@@ -39,6 +39,12 @@ const StyledIconButton = styled(IconButton)`
   color: ${({ theme }) => theme.col.gray};
 `;
 
+const TinyText = styled("p")`
+  margin: 3px 0;
+  font-size: ${({ theme }) => theme.font.xs};
+  color: ${({ theme }) => theme.col.gray};
+`;
+
 type PropsType = {
   search: string[],
   onSearch: string => void,
@@ -114,18 +120,18 @@ const SearchBox = (props: PropsType) => {
             <AnimatedDots />
           ) : (
             searchResult.searching &&
-            searchResult.resultCount >= 0 && (
-              <span className="input input-label--disabled input-label--tiny">
+            searchResult.totalResults >= 0 && (
+              <TinyText>
                 {T.translate("search.resultLabel", {
-                  limit: searchResult.limit,
-                  resultCount: searchResult.resultCount,
+                  numResults: searchResult.result.length,
+                  totalResults: searchResult.totalResults,
                   duration: duration(
                     searchResult.duration,
                     "milliseconds",
                     T.translate("search.durationFormat")
                   )
                 })}
-              </span>
+              </TinyText>
             )
           )}
         </div>

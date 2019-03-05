@@ -26,9 +26,9 @@ const StyledIconButton = styled(IconButton)`
 
 const activeStyle = ({ theme, active }) =>
   css`
-    color: ${active ? theme.col.red : theme.col.blueGray};
+    color: ${active ? theme.col.red : theme.col.black};
     ${Icon} {
-      color: ${active ? theme.col.red : theme.col.blueGray};
+      color: ${active ? theme.col.red : theme.col.black};
     }
   `;
 

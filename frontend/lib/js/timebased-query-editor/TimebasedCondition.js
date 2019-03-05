@@ -15,7 +15,7 @@ import { isEmpty } from "../common/helpers";
 
 import IconButton from "../button/IconButton";
 
-import { VerticalToggleButton } from "../form-components";
+import VerticalToggleButton from "../form-components/VerticalToggleButton";
 
 import TimebasedQueryEditorDropzone from "./TimebasedQueryEditorDropzone";
 import TimebasedConditionDayRange from "./TimebasedConditionDayRange";
@@ -48,6 +48,10 @@ const Root = styled("div")`
       background-color: ${({ theme }) => theme.col.grayVeryLight};
     }
   }
+`;
+
+const StyledVerticalToggleButton = styled(VerticalToggleButton)`
+  max-width: 180px;
 `;
 
 type PropsType = {
@@ -120,7 +124,7 @@ const TimebasedCondition = (props: PropsType) => {
         <div className="timebased-condition__nodes">
           {result0}
           <div className="timebased-condition__operator">
-            <VerticalToggleButton
+            <StyledVerticalToggleButton
               onToggle={props.onSetOperator}
               activeValue={props.condition.operator}
               options={[

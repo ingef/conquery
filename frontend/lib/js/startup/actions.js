@@ -3,9 +3,9 @@
 import type { Dispatch } from "redux-thunk";
 
 import api from "../api";
-import { expandPreviousQuery } from "../standard-query-editor/actions";
-import { loadAllPreviousQueriesInGroups } from "../previous-queries/list/actions";
-import { loadDatasets, selectDatasetInput } from "../dataset/actions";
+// import { expandPreviousQuery } from "../standard-query-editor/actions";
+// import { loadAllPreviousQueriesInGroups } from "../previous-queries/list/actions";
+import { loadDatasets } from "../dataset/actions";
 import { defaultError, defaultSuccess } from "../common/actions";
 
 import {
@@ -14,8 +14,10 @@ import {
   LOAD_CONFIG_SUCCESS
 } from "./actionTypes";
 
-export const startupOnDataset = datasetId => loadDatasets(datasetId);
+export const startup = datasetId => loadDatasets(datasetId);
 
+// TODO: Clean this up. Keeping it until expand previous queries is fixed
+//
 // export const startupOnQuery = (datasetId, queryId) => {
 //   return dispatch =>
 //     dispatch(loadDatasets(datasetId)).then(concepts => {

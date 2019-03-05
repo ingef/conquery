@@ -6,7 +6,6 @@ import { searchTrees, changeSearchQuery, clearSearchQuery } from "./actions";
 
 const mapStateToProps = state => ({
   searchResult: state.categoryTrees.search,
-  onSearch: state.onSearch,
   searchConfig: state.startup.config.search ? state.startup.config.search : {}
 });
 
