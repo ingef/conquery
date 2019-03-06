@@ -3,12 +3,11 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import classnames from "classnames";
 import { type FieldPropsType } from "redux-form";
 
 import type { CurrencyType } from "../standard-query-editor/types";
 
-import InputWithLabel from "./InputWithLabel";
+import InputText from "./InputText";
 import ToggleButton from "./ToggleButton";
 import InputRangeHeader from "./InputRangeHeader";
 
@@ -18,7 +17,7 @@ const Container = styled("div")`
   flex-direction: row;
 `;
 
-const StyledInputWithLabel = styled(InputWithLabel)`
+const StyledInputText = styled(InputText)`
   input {
     width: 100%;
     min-width: 50px;
@@ -147,12 +146,10 @@ const InputRange = (props: PropsType) => {
   return (
     <div>
       <InputRangeHeader
+        disabled={disabled}
         label={label}
         unit={unit}
         tooltip={tooltip}
-        className={classnames("input-label", {
-          "input-label--disabled": disabled
-        })}
       />
       <ToggleButton
         input={{
@@ -167,7 +164,7 @@ const InputRange = (props: PropsType) => {
       <Container>
         {isRangeMode ? (
           <>
-            <StyledInputWithLabel
+            <StyledInputText
               inputType={inputType}
               valueType={valueType}
               placeholder={placeholder}
@@ -181,7 +178,7 @@ const InputRange = (props: PropsType) => {
               }}
               inputProps={inputProps}
             />
-            <StyledInputWithLabel
+            <StyledInputText
               inputType={inputType}
               valueType={valueType}
               placeholder={placeholder}
@@ -197,7 +194,7 @@ const InputRange = (props: PropsType) => {
             />
           </>
         ) : (
-          <InputWithLabel
+          <InputText
             inputType={inputType}
             valueType={valueType}
             placeholder="-"

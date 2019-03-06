@@ -1,29 +1,12 @@
 // @flow
 
 import React from "react";
-import styled from "@emotion/styled";
 import { type FieldPropsType } from "redux-form";
 
 import { isEmpty } from "../common/helpers";
 
-import ClearableInput from "./ClearableInput";
-
-const Root = styled("label")`
-  width: ${({ fullWidth }) => (fullWidth ? "100%" : "initial")};
-
-  input {
-    width: ${({ fullWidth }) => fullWidth ? "100%" : "initial"};
-    border: 1px solid
-      ${({ theme, valueChanged }) =>
-        valueChanged ? theme.col.blueGrayDark : "initial"};
-  }
-`;
-
-const Label = styled("span")`
-  font-size: ${({ theme, tiny }) => (tiny ? theme.font.xs : theme.font.sm)};
-  display: ${({ inline }) => (inline ? "inline-block" : "block")};
-  margin: ${({ inline }) => (inline ? "0" : "2px 8px")};
-`;
+import BaseInput from "./BaseInput";
+import Labeled from "./Labeled";
 
 type PropsType = FieldPropsType & {
   label: string,
@@ -36,18 +19,19 @@ type PropsType = FieldPropsType & {
   fullWidth?: boolean
 };
 
-const InputWithLabel = (props: PropsType) => {
+const InputText = (props: PropsType) => {
   return (
-    <Root
+    <Labeled
       className={props.className}
       valueChanged={
         !isEmpty(props.input.value) &&
         props.input.value !== props.input.defaultValue
       }
       fullWidth={props.fullWidth}
+      label={props.label}
+      tinyLabel={props.tinyLabel}
     >
-      <Label tiny={props.tinyLabel}>{props.label}</Label>
-      <ClearableInput
+      <BaseInput
         inputType={props.inputType}
         valueType={props.valueType}
         placeholder={props.placeholder}
@@ -56,8 +40,8 @@ const InputWithLabel = (props: PropsType) => {
         onChange={props.input.onChange}
         inputProps={props.inputProps}
       />
-    </Root>
+    </Labeled>
   );
 };
 
-export default InputWithLabel;
+export default InputText;

@@ -22,10 +22,10 @@ queryRunner:
   endSuccess: "Query finished successfully."
   startError: "Failed to start the query."
   resultError: "Could not load the query result."
-  resultCount: "{count} results found."
+  resultCount: "{count} results"
   queryFailed: "The query failed."
   queryCanceled: "The query was canceled."
-  downloadResults: "Download results (CSV)"
+  downloadResults: "(CSV)"
 
 queryEditor:
   couldNotExpandNode: "Could not find node"

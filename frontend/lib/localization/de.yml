@@ -22,10 +22,10 @@ queryRunner:
   endSuccess: "Anfrage erfolgreich abgeschlossen."
   startError: "Anfrage starten fehlgeschlagen."
   resultError: "Anfrageergebnis konnte nicht geladen werden."
-  resultCount: "{count} Ergebnisse gefunden"
+  resultCount: "{count} Ergebnisse"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
-  downloadResults: "Ergebnisse herunterladen"
+  downloadResults: "(CSV)"
 
 queryEditor:
   couldNotExpandNode: "Knoten nicht gefunden"
