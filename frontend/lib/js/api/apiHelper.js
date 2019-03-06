@@ -20,6 +20,20 @@ import type {
   SelectedSelectorType
 } from "../standard-query-editor/types";
 
+export const transformFilterValueToApi = (filter: any) => {
+  const { value, mode } = filter;
+
+  if (value instanceof Array) {
+    return value.map(v => (v.value ? v.value : v));
+  }
+
+  if (!!mode) {
+    return mode === "range" ? value : { min: value.exact, max: value.exact };
+  }
+
+  return value;
+};
+
 export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
   if (!tables) return [];
 
@@ -40,10 +54,7 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
               .map(filter => ({
                 filter: filter.id,
                 type: filter.type,
-                value:
-                  filter.value instanceof Array
-                    ? filter.value.map(v => (v.value ? v.value : v))
-                    : filter.value
+                value: transformFilterValueToApi(filter)
               }))
           : []
       };
