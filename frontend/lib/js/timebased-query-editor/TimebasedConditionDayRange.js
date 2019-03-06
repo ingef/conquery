@@ -1,9 +1,22 @@
 // @flow
 
 import React from "react";
+import styled from '@emotion/styled';
 import T from "i18n-react";
 
-import { InputWithLabel } from "../form-components";
+import InputWithLabel from "../form-components/InputWithLabel";
+
+const Container = styled("div")`
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+`;
+
+const StyledInputWithLabel = styled(InputWithLabel)`
+  padding: 0 5px;
+`;
 
 type PropsType = {
   minDays: ?(number | string),
@@ -13,38 +26,34 @@ type PropsType = {
 };
 
 const TimebasedConditionDayRange = (props: PropsType) => (
-  <div className="timebased-condition__day-range-container">
-    <div className="timebased-condition__day-range">
+    <Container>
       {props.minDays !== undefined && (
-        <InputWithLabel
+        <StyledInputWithLabel
           inputType="number"
           input={{
             value: props.minDays,
             onChange: value => props.onSetTimebasedConditionMinDays(value)
           }}
           inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
-          className="input-range__input-with-label"
           placeholder={T.translate("common.timeUnitDays")}
           label={T.translate("timebasedQueryEditor.minDaysLabel")}
           tinyLabel
         />
       )}
       {props.maxDays !== undefined && (
-        <InputWithLabel
+        <StyledInputWithLabel
           inputType="number"
           input={{
             value: props.maxDays,
             onChange: value => props.onSetTimebasedConditionMaxDays(value)
           }}
           inputProps={{ min: 1, pattern: "^(?!-)\\d*$" }}
-          className="input-range__input-with-label"
           placeholder={T.translate("common.timeUnitDays")}
           label={T.translate("timebasedQueryEditor.maxDaysLabel")}
           tinyLabel
         />
       )}
-    </div>
-  </div>
+    </Container>
 );
 
 export default TimebasedConditionDayRange;

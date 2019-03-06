@@ -26,32 +26,27 @@ const StyledIconButton = styled(IconButton)`
   top: 0;
   right: 0;
   z-index: 1;
-  display: none;
+  display: inline;
 `;
-const Background = styled("div")`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  border-radius: ${({ theme }) => theme.borderRadius};
-`;
+
 const Root = styled("div")`
   position: relative;
   padding: 30px 5px 10px;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  border: 1px solid ${({ theme }) => theme.col.grayLight};
 
   &:hover {
-    ${StyledIconButton} {
-      display: inline;
-    }
-    ${Background} {
-      background-color: ${({ theme }) => theme.col.grayVeryLight};
-    }
+    border: 1px solid ${({ theme }) => theme.col.grayLight};
   }
 `;
 
 const StyledVerticalToggleButton = styled(VerticalToggleButton)`
   max-width: 180px;
+`;
+
+const NodesContainer = styled("div")`
+    margin-bottom: 10px;
+    position: relative;
 `;
 
 type PropsType = {
@@ -115,11 +110,10 @@ const TimebasedCondition = (props: PropsType) => {
 
   return (
     <Root>
-      <Background />
       {props.removable && (
         <StyledIconButton icon="close" onClick={props.onRemove} />
       )}
-      <div className="timebased-condition__nodes-container">
+      <NodesContainer>
         <div className="timebased-condition__horizontal-line" />
         <div className="timebased-condition__nodes">
           {result0}
@@ -155,7 +149,7 @@ const TimebasedCondition = (props: PropsType) => {
           </div>
           {result1}
         </div>
-      </div>
+      </NodesContainer>
       {props.condition.operator === DAYS_BEFORE && (
         <TimebasedConditionDayRange
           minDays={minDays}
