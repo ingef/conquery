@@ -8,7 +8,7 @@ import IconButton from "../button/IconButton";
 import { Icon } from "../icon/FaIcon";
 
 const Actions = styled("div")`
-  margin: 0 0 4px;
+  margin: 0 0 6px;
   text-align: left;
   height: 18px; // To provide enough space when only --right is available
 `;
