@@ -50,7 +50,7 @@ class EditableTextForm extends React.Component {
         onSubmit={this._onSubmit.bind(this)}
       >
         <Input type="text" ref="input" placeholder={this.props.text} />
-        <PrimaryButton type="submit" disabled={this.props.loading}>
+        <PrimaryButton type="submit" small disabled={this.props.loading}>
           {T.translate("common.save")}
         </PrimaryButton>
       </form>

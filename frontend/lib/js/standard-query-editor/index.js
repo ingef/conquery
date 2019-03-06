@@ -12,11 +12,11 @@ import { StandardQueryRunner } from "./StandardQueryRunner";
 import { QueryClearButton } from "./QueryClearButton";
 
 const StandardQueryEditor = (props: TabPropsType) => (
-  <React.Fragment>
+  <>
     <QueryClearButton />
     <QueryEditor selectedDatasetId={props.selectedDatasetId} />
     <StandardQueryRunner datasetId={props.selectedDatasetId} />
-  </React.Fragment>
+  </>
 );
 
 const queryRunnerReducer = createQueryRunnerReducer("standard");

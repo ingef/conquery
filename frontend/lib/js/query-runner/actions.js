@@ -3,7 +3,6 @@
 import { replace } from "react-router-redux";
 
 import api from "../api";
-import { toQuery } from "../routes";
 
 import { defaultSuccess, defaultError } from "../common/actions";
 
@@ -55,8 +54,6 @@ export default function createQueryRunnerActions(
           dispatch(startQuerySuccess(r));
 
           const queryId = r.id;
-
-          dispatch(replace(toQuery(datasetId, queryId)));
 
           return dispatch(queryResult(datasetId, queryId));
         },

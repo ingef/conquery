@@ -236,5 +236,5 @@ authorization:
 
 search:
   placeholder: "Search ..."
-  resultLabel: "{limit} of {resultCount} results ({duration} Seconds)"
+  resultLabel: "Showing {numResults} of {totalResults} results ({duration} Seconds)"
   durationFormat: "s,SS"

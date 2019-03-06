@@ -7,8 +7,5 @@
     "thousandSeparator": ".",
     "decimalSeparator": ",",
     "decimalScale": 2
-  },
-  "search": {
-    "limit": 50
   }
 }

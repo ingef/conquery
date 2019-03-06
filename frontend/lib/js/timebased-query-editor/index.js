@@ -28,11 +28,11 @@ export const TimebasedQueryEditorTab = {
     )
   }),
   component: (props: TabPropsType) => (
-    <React.Fragment>
+    <>
       <TimebasedQueryClearButton />
       <TimebasedQueryEditor />
       <TimebasedQueryRunner datasetId={props.selectedDatasetId} />
-    </React.Fragment>
+    </>
   )
 };
 

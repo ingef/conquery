@@ -3,7 +3,7 @@
 import * as React from "react";
 import styled from "@emotion/styled";
 import BasicButton from "./BasicButton";
-import FaIcon, { Icon } from "../icon/FaIcon";
+import FaIcon from "../icon/FaIcon";
 
 type PropsType = {
   children?: React.Node,
@@ -13,22 +13,29 @@ type PropsType = {
   icon: string
 };
 
+const StyledFaIcon = styled(FaIcon)`
+  color: ${({ theme, active }) =>
+    active ? theme.col.blueGrayDark : theme.col.black};
+`;
+
 const StyledTransparentButton = styled(BasicButton)`
   background-color: transparent;
   color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.blueGray};
+    active ? theme.col.blueGrayDark : theme.col.black};
+  opacity: 0.8;
+  transition: opacity ${({ theme }) => theme.transitionTime};
 
   border-radius: 2px;
   border: ${({ theme, frame }) =>
     frame ? "1px solid " + theme.col.gray : "none"};
 
   &:hover {
-    color: ${({ theme, active }) =>
-      active ? theme.col.blueGray : theme.col.blueGrayDark};
+    opacity: 1;
+  }
 
-    ${Icon} {
-      color: ${({ theme, active }) =>
-        active ? theme.col.blueGray : theme.col.blueGrayDark};
+  &:disabled {
+    &:hover {
+      opacity: 0.8;
     }
   }
 `;
@@ -43,7 +50,7 @@ const IconButton = ({
   ...restProps
 }: PropsType) => (
   <StyledTransparentButton small={!large} active={active} {...restProps}>
-    <FaIcon main active={active} icon={icon} {...iconProps} /> {children}
+    <StyledFaIcon main active={active} icon={icon} {...iconProps} /> {children}
   </StyledTransparentButton>
 );
 
