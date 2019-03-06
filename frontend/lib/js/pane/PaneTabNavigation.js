@@ -18,13 +18,11 @@ type PropsType = {
 
 const PaneTabNavigation = (props: PropsType) => {
   return (
-    <div className="pane-tab-navigation">
-      <TabNavigation
-        onClickTab={props.clickPaneTab}
-        activeTab={props.activeTab}
-        tabs={props.tabs}
-      />
-    </div>
+    <TabNavigation
+      onClickTab={props.clickPaneTab}
+      activeTab={props.activeTab}
+      tabs={props.tabs}
+    />
   );
 };
 

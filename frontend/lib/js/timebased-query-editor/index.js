@@ -13,8 +13,7 @@ const timebasedQueryRunnerReducer = createQueryRunnerReducer("timebased");
 
 const timebasedQueryEditorTabDescription = {
   key: "timebasedQueryEditor",
-  label: "rightPane.timebasedQueryEditor",
-  order: 100
+  label: "rightPane.timebasedQueryEditor"
 };
 
 export const TimebasedQueryEditorTab = {

@@ -5,12 +5,6 @@ import styled from "@emotion/styled";
 import T from "i18n-react";
 import type { TabType } from "./reducer";
 
-type PropsType = {
-  onClickTab: Function,
-  activeTab: string,
-  tabs: TabType[]
-};
-
 const Root = styled("div")`
   margin-bottom: 10px;
   border-bottom: 1px solid ${({ theme }) => theme.col.grayLight};
@@ -45,6 +39,12 @@ const Headline = styled("h2")`
         active ? theme.col.blueGrayDark : theme.col.grayLight};
   }
 `;
+
+type PropsType = {
+  onClickTab: Function,
+  activeTab: string,
+  tabs: TabType[]
+};
 
 const TabNavigation = (props: PropsType) => {
   return (

@@ -23,8 +23,7 @@ const queryRunnerReducer = createQueryRunnerReducer("standard");
 
 const standardQueryEditorTabDescription = {
   key: "queryEditor",
-  label: "rightPane.queryEditor",
-  order: 0
+  label: "rightPane.queryEditor"
 };
 
 export const StandardQueryEditorTab = {
