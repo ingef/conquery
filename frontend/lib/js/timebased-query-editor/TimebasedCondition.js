@@ -32,8 +32,10 @@ const StyledIconButton = styled(IconButton)`
 const Root = styled("div")`
   position: relative;
   padding: 30px 5px 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.12);
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};
+  background-color: ${({ theme }) => theme.col.graySuperLight};
 
   &:hover {
     border: 1px solid ${({ theme }) => theme.col.grayLight};
@@ -45,8 +47,30 @@ const StyledVerticalToggleButton = styled(VerticalToggleButton)`
 `;
 
 const NodesContainer = styled("div")`
-    margin-bottom: 10px;
-    position: relative;
+  margin-bottom: 10px;
+  position: relative;
+`;
+
+const Nodes = styled("div")`
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const HorizontalLine = styled("div")`
+  position: absolute;
+  top: 50%;
+  right: 10%;
+  width: 80%;
+  border-bottom: 1px solid ${({ theme }) => theme.col.blueGray};
+  margin-top: -0.5px;
+`;
+
+const Operator = styled("div")`
+  margin: 0 10px;
 `;
 
 type PropsType = {
@@ -114,10 +138,10 @@ const TimebasedCondition = (props: PropsType) => {
         <StyledIconButton icon="close" onClick={props.onRemove} />
       )}
       <NodesContainer>
-        <div className="timebased-condition__horizontal-line" />
-        <div className="timebased-condition__nodes">
+        <HorizontalLine />
+        <Nodes>
           {result0}
-          <div className="timebased-condition__operator">
+          <Operator>
             <StyledVerticalToggleButton
               onToggle={props.onSetOperator}
               activeValue={props.condition.operator}
@@ -146,9 +170,9 @@ const TimebasedCondition = (props: PropsType) => {
                 }
               ]}
             />
-          </div>
+          </Operator>
           {result1}
-        </div>
+        </Nodes>
       </NodesContainer>
       {props.condition.operator === DAYS_BEFORE && (
         <TimebasedConditionDayRange

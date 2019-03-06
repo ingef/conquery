@@ -31,10 +31,10 @@ const Root = styled("div")`
 const Group = styled("div")`
   position: relative;
   padding: 6px 8px 8px;
-  background-color: white;
+  background-color: ${({ theme }) => theme.col.graySuperLight};
   border: 1px solid
     ${({ theme, excluded }) => (excluded ? theme.col.red : theme.col.grayLight)};
-  box-shadow: 0 0 10px 0 rgba(0,0,0,0.12);
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.12);
   text-align: center;
   border-radius: ${({ theme }) => theme.borderRadius};
   min-width: 240px;
