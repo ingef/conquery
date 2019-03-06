@@ -30,7 +30,7 @@ queryRunner:
 queryEditor:
   couldNotExpandNode: "Could not find node"
   couldNotInsertConceptList: "Could not insert the Concept List"
-  filter: "Edit"
+  edit: "Edit"
   exclude: "Exclude"
   date: "Date"
   expand: "Expand"
@@ -59,6 +59,9 @@ queryNodeEditor:
   selectAFilter: "Select a filter to see its description here."
   dropConcept: "Drop another concept here"
   includeSubnodes: "Include subordinate concepts"
+  tooManyValues: "{count} values selected"
+  filters: "Filters"
+  selects: "More values"
 
 queryGroupModal:
   explanation: "Set time frame"
@@ -201,7 +204,7 @@ uploadQueryResultsModal:
     text: "File should contain one result per row with comma-separated values"
 
 uploadConceptListModal:
-  headline: "Upload List"
+  headline: "Upload concepts"
   label: "Name of the Concept"
   selectConceptRootNode: "Choose a Concept Tree root"
   insertNode: "Insert"
@@ -213,6 +216,9 @@ uploadConceptListModal:
     1: "The following value could not be resolved:"
     _: "The following {context} values could not be resolved:"
   error: "An error occurred when resolving the values."
+
+uploadFilterListModal:
+  headline: "Upload filter values"
 
 conceptListDetailsModal:
   conceptTreeRoot: "Concept Tree"

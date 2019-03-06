@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration.json.auth;
 
-import static com.bakdata.conquery.integration.common.IntegrationUtils.clearAuthStorage;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.ArrayList;

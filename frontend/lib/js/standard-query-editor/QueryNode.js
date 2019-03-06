@@ -1,29 +1,21 @@
 // @flow
 
-import React                       from 'react';
-import T                           from 'i18n-react';
-import {
-  DragSource,
-  type ConnectDragSource
-}                                  from 'react-dnd';
+import React from "react";
+import T from "i18n-react";
+import { DragSource, type ConnectDragSource } from "react-dnd";
 
-import { dndTypes }                from '../common/constants';
-import { AdditionalInfoHoverable } from '../tooltip';
-import { ErrorMessage }            from '../error-message';
-import { nodeHasActiveFilters }    from '../model/node';
+import { dndTypes } from "../common/constants";
+import { ErrorMessage } from "../error-message";
+import { nodeHasActiveFilters } from "../model/node";
 
-import QueryNodeActions            from './QueryNodeActions';
+import QueryNodeActions from "./QueryNodeActions";
 
-import type {
-  QueryNodeType,
-  DraggedNodeType,
-  DraggedQueryType
-}                                  from './types';
+import type { QueryNodeType, DraggedNodeType, DraggedQueryType } from "./types";
 
-type PropsType =  {
+type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
-  onFilterClick: Function,
+  onEditClick: Function,
   onExpandClick: Function,
   connectDragSource: Function,
   andIdx: number,
@@ -38,7 +30,7 @@ const QueryNode = (props: PropsType) => {
     <div className="query-node">
       <QueryNodeActions
         hasActiveFilters={nodeHasActiveFilters(node)}
-        onFilterClick={props.onFilterClick}
+        onEditClick={props.onEditClick}
         onDeleteNode={props.onDeleteNode}
         isExpandable={node.isPreviousQuery}
         onExpandClick={() => {
@@ -49,26 +41,19 @@ const QueryNode = (props: PropsType) => {
         previousQueryLoading={node.loading}
         error={node.error}
       />
-      {
-        node.isPreviousQuery &&
+      {node.isPreviousQuery && (
         <p className="query-node__previous-query">
-          {T.translate('queryEditor.previousQuery')}
+          {T.translate("queryEditor.previousQuery")}
         </p>
-      }
-      {
-        node.error
-        ? <ErrorMessage
-            className="query-node__content"
-            message={node.error}
-          />
-        : <p className="query-node__content">
-            <span>{ node.label || node.id }</span>
-            {
-              node.description &&
-              <span> - {node.description}</span>
-            }
-          </p>
-      }
+      )}
+      {node.error ? (
+        <ErrorMessage className="query-node__content" message={node.error} />
+      ) : (
+        <p className="query-node__content">
+          <span>{node.label || node.id}</span>
+          {node.description && <span> - {node.description}</span>}
+        </p>
+      )}
     </div>
   );
 };
@@ -94,7 +79,7 @@ const nodeSource = {
       excludeTimestamps: node.excludeTimestamps,
 
       loading: node.loading,
-      error: node.error,
+      error: node.error
     };
 
     if (node.isPreviousQuery)
@@ -103,14 +88,14 @@ const nodeSource = {
         id: node.id,
         query: node.query,
         isPreviousQuery: true
-      }
+      };
     else
       return {
         ...draggedNode,
         ids: node.ids,
         tree: node.tree,
-        tables: node.tables,
-      }
+        tables: node.tables
+      };
   }
 };
 
@@ -122,10 +107,8 @@ const collect = (connect, monitor) => ({
   isDragging: monitor.isDragging()
 });
 
-const DraggableQueryNode = DragSource(
-  dndTypes.QUERY_NODE,
-  nodeSource,
-  collect
-)(QueryNode);
+const DraggableQueryNode = DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(
+  QueryNode
+);
 
-export default AdditionalInfoHoverable(DraggableQueryNode);
+export default DraggableQueryNode;

@@ -1,6 +1,6 @@
 // @flow
 
-import { createActionTypes }          from './actionTypes';
+import { createActionTypes } from "./actionTypes";
 
 export const createQueryNodeEditorActions = (type: string): Object => {
   const {
@@ -12,12 +12,15 @@ export const createQueryNodeEditorActions = (type: string): Object => {
     TOGGLE_INCLUDE_SUBNODES
   } = createActionTypes(type);
 
-  const setDetailsViewActive = () => ({type: SET_DETAILS_VIEW_ACTIVE});
-  const setInputTableViewActive = (tableIdx) => ({type: SET_INPUT_TABLE_VIEW_ACTIVE, tableIdx});
-  const setFocusedInput = (filterIdx) => ({type: SET_FOCUSED_INPUT, filterIdx});
-  const toggleEditLabel = () => ({type: TOGGLE_EDIT_LABEL});
-  const reset = () => ({type: RESET});
-  const toggleIncludeSubnodes = () => ({type: TOGGLE_INCLUDE_SUBNODES});
+  const setDetailsViewActive = () => ({ type: SET_DETAILS_VIEW_ACTIVE });
+  const setInputTableViewActive = tableIdx => ({
+    type: SET_INPUT_TABLE_VIEW_ACTIVE,
+    tableIdx
+  });
+  const setFocusedInput = filterIdx => ({ type: SET_FOCUSED_INPUT, filterIdx });
+  const toggleEditLabel = () => ({ type: TOGGLE_EDIT_LABEL });
+  const reset = () => ({ type: RESET });
+  const toggleIncludeSubnodes = () => ({ type: TOGGLE_INCLUDE_SUBNODES });
 
   return {
     setDetailsViewActive,

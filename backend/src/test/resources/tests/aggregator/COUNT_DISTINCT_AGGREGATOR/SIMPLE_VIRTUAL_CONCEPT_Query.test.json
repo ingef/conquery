@@ -15,12 +15,8 @@
           "id": "${dataset}.geschlecht_select.geschlecht_connector"
         }
       ],
-      "select": [
-        {
-          "type": "COUNT",
-          "distinct": true,
-          "column": "vers_stamm.geschlecht"
-        }
+      "selects": [
+        "${dataset}.geschlecht_select.geschlecht_connector.count_gender"
       ]
     }
   },
@@ -35,6 +31,12 @@
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"
+          },
+          "selects": {
+            "name": "count_gender",
+            "type": "COUNT",
+            "distinct": true,
+            "column": "vers_stamm.geschlecht"
           }
         }
       ]

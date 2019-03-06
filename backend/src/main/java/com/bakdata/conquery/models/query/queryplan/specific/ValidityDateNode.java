@@ -27,7 +27,12 @@ public class ValidityDateNode extends QPChainNode {
 			return true;
 		}
 		else {
-			return getChild().aggregate(block, event);
+			if(validityDateColumn == null || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
+				return getChild().aggregate(block, event);
+			}
+			else {
+				return true;
+			}
 		}
 	}
 	

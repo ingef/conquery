@@ -1,8 +1,8 @@
 // @flow
 
-import React from 'react';
-import queryString from 'query-string';
-import { storeAuthToken }    from './helper';
+import React from "react";
+import queryString from "query-string";
+import { storeAuthToken } from "./helper";
 
 const WithAuthToken = (Component: any) => {
   type PropsType = {
@@ -16,14 +16,15 @@ const WithAuthToken = (Component: any) => {
 
     componentWillMount() {
       const { search } = this.props.location;
-      const accessToken = search ? queryString.parse(search).access_token : null;
+      const accessToken = search
+        ? queryString.parse(search).access_token
+        : null;
 
-      if (accessToken)
-        storeAuthToken(accessToken);
+      if (accessToken) storeAuthToken(accessToken);
     }
 
     render() {
-      return <Component />
+      return <Component />;
     }
   }
 

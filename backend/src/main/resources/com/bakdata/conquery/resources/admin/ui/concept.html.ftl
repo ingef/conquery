@@ -34,7 +34,7 @@
 				<div class="w-100"></div>
 					<div class="col">Filters</div>
 					<div class="col-7">
-						<#list connector.allFilters?values as filter>
+						<#list connector.collectAllFilters() as filter>
 							<div class="row">
 								<div class="col">Name</div>
 								<div class="col-7">${filter.id}</div>
@@ -47,6 +47,26 @@
 							<div class="w-100"></div>
 								<div class="col">Unit</div>
 								<div class="col-7">${filter.unit!}</div>
+							<div class="w-100"></div>
+								<div class="col">Description</div>
+								<div class="col-7">${filter.description!}</div>
+							</div>
+							<hr>
+						</#list>
+					</div>
+				<div class="w-100"></div>
+					<div class="col">Selects</div>
+					<div class="col-7">
+						<#list (connector.collectAllSelects())![] as select>
+							<div class="row">
+								<div class="col">Name</div>
+								<div class="col-7">${select.id}</div>
+							<div class="w-100"></div>
+								<div class="col">Label</div>
+								<div class="col-7">${select.label}</div>
+							<div class="w-100"></div>
+								<div class="col">Type</div>
+								<div class="col-7">${select.class.simpleName}</div>
 							<div class="w-100"></div>
 								<div class="col">Description</div>
 								<div class="col-7">${filter.description!}</div>

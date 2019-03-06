@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.concepts;
 
 import java.io.Serializable;
-import java.util.Collection;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
@@ -40,20 +41,29 @@ import lombok.Setter;
  * A connector represents the connection between a column and a concept.
  */
 @Getter @Setter @DetailedValid
-public abstract class Connector extends Labeled<ConnectorId> implements Serializable {
+public abstract class Connector extends Labeled<ConnectorId> implements Serializable, SelectHolder<Select> {
 
 	private static final long serialVersionUID = 1L;
 
 	@NotNull
-	private List<ValidityDate> validityDates;
+	private List<ValidityDate> validityDates = new ArrayList<>();
 	@JsonManagedReference
 	private ValidityDateSelectionFilter dateSelectionFilter;
 
 	@JsonBackReference
 	private Concept<?> concept;
-	@JsonIgnore @Getter(AccessLevel.NONE)
-	private transient IdMap<FilterId, Filter<?>> allFilters;
 
+	@JsonIgnore @Getter(AccessLevel.NONE)
+	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
+
+	@NotNull @Getter @Setter @JsonManagedReference
+	private List<Select> selects = new ArrayList<>();
+
+	@Override
+	public Concept<?> findConcept() {
+		return concept;
+	}
+	
 	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
 	public void setSelectableDates(List<Column> cols) {
 		this.setValidityDates(
@@ -103,7 +113,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	public boolean validateFilters(ConstraintValidatorContext context) {
 		boolean passed = true;
 
-		for(Filter<?> f:getAllFilters()) {
+		for(Filter<?> f:collectAllFilters()) {
 			for(Column c:f.getRequiredColumns()) {
 				if(c.getTable()!=getTable()) {
 					context
@@ -114,7 +124,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			}
 		}
 
-		for(Entry<String> e:getAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
+		for(Entry<String> e:collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
 			if(e.getCount()>1) {
 				passed = false;
 				context
@@ -151,21 +161,17 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	public Filter<?> getFilterByName(String name) {
-		return getAllFilters().stream().filter(f->name.equals(f.getName())).findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
+		return collectAllFilters().stream().filter(f->name.equals(f.getName())).findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
 	}
 
 	@JsonIgnore
-	protected abstract Collection<Filter<?>> collectAllFilters();
+	public abstract List<Filter<?>> collectAllFilters();
 
-	@JsonIgnore
-	public IdMap<FilterId, Filter<?>> getAllFilters() {
-		if(allFilters==null) {
-			allFilters = new IdMap<>(collectAllFilters());
-		}
-		return allFilters;
-	}
 	public <T extends Filter> T getFilter(FilterId id) {
-		return (T)getAllFilters().getOrFail(id);
+		if(allFiltersMap==null) {
+			allFiltersMap = new IdMap<>(collectAllFilters());
+		}
+		return (T)allFiltersMap.getOrFail(id);
 	}
 
 	public Column getValidityDateColumn(String name) {
@@ -177,7 +183,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	public synchronized void addImport(Import imp) {
-		for(Filter<?> f : getAllFilters().values()) {
+		for(Filter<?> f : collectAllFilters()) {
 			f.addImport(imp);
 		}
 	}

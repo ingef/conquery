@@ -10,6 +10,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.preproc.DateFormats;
+import com.bakdata.conquery.util.UrlRewriteBundle;
 
 import ch.qos.logback.classic.Level;
 import io.dropwizard.Application;
@@ -68,35 +69,32 @@ public class Conquery extends Application<ConqueryConfig> {
 			}
 		});
 		//register frontend
-		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
-			@Override
-			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				String uriPath = "/";
-				String language = configuration.getLocale().getFrontend().getLanguage();
-				environment.servlets().addServlet(
-						"",
-						new AssetServlet(
-								"/frontend/app/",
-								uriPath,
-								String.format(
-										"index.%s.html",
-										StringUtils.defaultIfEmpty(language, Locale.ENGLISH.getLanguage())
-								),
-								StandardCharsets.UTF_8))
-							.addMapping(uriPath + '*');
-			}
-
-			@Override
-			public void initialize(Bootstrap<?> bootstrap) {
-			}
-		});
+		registerFrontend(bootstrap);
 
 		//freemarker support
 		bootstrap.addBundle(new ViewBundle<>());
-		bootstrap.addBundle(new Bundle() {
+	}
+
+	protected void registerFrontend(Bootstrap<ConqueryConfig> bootstrap) {
+		bootstrap.addBundle(new UrlRewriteBundle());
+		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
 			@Override
-			public void run(Environment environment) {
-				DateFormats.initialize(new String[0]);
+			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
+				String uriPath = "/app/";
+				String language = configuration.getLocale().getFrontend().getLanguage();
+				environment.servlets().addServlet(
+					"app",
+					new AssetServlet(
+						"/frontend/app/",
+						uriPath,
+						String.format(
+								"static/index.%s.html",
+								StringUtils.defaultIfEmpty(language, Locale.ENGLISH.getLanguage())
+						),
+						StandardCharsets.UTF_8
+					)
+				)
+				.addMapping(uriPath + '*');
 			}
 
 			@Override

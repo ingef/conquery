@@ -86,7 +86,7 @@ public class DatasetsProcessor {
 				f.setLabel(I18n.LABELS.getDateSelection());
 				con.setDateSelectionFilter(f);
 				// remove the sometimes already calculated all filters map so it is recalculated
-				con.setAllFilters(null);
+				con.setAllFiltersMap(null);
 			}
 		}
 

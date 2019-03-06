@@ -12,20 +12,17 @@
       "label": "Geschlecht SELECT",
       "tables": [
         {
-          "id": "${dataset}.geschlecht_select.geschlecht_connector"
-        }
-      ],
-      "select": [
-        {
-          "type": "COUNT",
-          "column": "vers_stamm.geschlecht"
+          "id": "${dataset}.geschlecht_select.geschlecht_connector",
+          "selects" : [
+            "${dataset}.geschlecht_select.geschlecht_connector.count_genders"
+          ]
         }
       ]
     }
   },
   "concepts": [
     {
-      "label": "Geschlecht SELECT",
+      "label": "geschlecht_select",
       "type": "VIRTUAL",
       "connectors": [
         {
@@ -34,7 +31,14 @@
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"
-          }
+          },
+          "selects": [
+            {
+              "name" : "count_genders",
+              "type": "COUNT",
+              "column": "vers_stamm.geschlecht"
+            }
+          ]
         }
       ]
     }

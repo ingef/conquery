@@ -15,12 +15,8 @@
           "id": "${dataset}.geschlecht_select.geschlecht_connector"
         }
       ],
-      "select": [
-        {
-          "type": "SUM",
-          "column": "vers_stamm.sum",
-          "subtractColumn": "vers_stamm.sub"
-        }
+      "selects": [
+        "${dataset}.geschlecht_select.geschlecht_connector.select"
       ]
     }
   },
@@ -35,6 +31,12 @@
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"
+          },
+          "selects": {
+            "type": "SUM",
+            "name" : "select",
+            "column": "vers_stamm.sum",
+            "subtractColumn": "vers_stamm.sub"
           }
         }
       ]

@@ -17,6 +17,12 @@
 			<property name="severity" value="error"/>
 		</module>
 		<module name="RegexpSinglelineJava">
+			<property name="format" value='^import jersey\.repackaged'/>
+			<property name="message" value="Don't use repackaged libraries"/>
+			<property name="ignoreComments" value="true"/>
+			<property name="severity" value="error"/>
+		</module>
+		<module name="RegexpSinglelineJava">
 			<property name="format" value='^[\t]*  +\*'/>
 			<property name="message" value="Comment indent must use tab characters"/>
 			<property name="severity" value="error"/>
@@ -143,6 +149,7 @@
 			<property name="allowedAnnotations" value="Getter,Setter,Slf4j,Builder,UtilityClass"/>
 		</module>
 		<module name="JavadocVariable"/>
+		<module name="JavadocPackage"/>
 		 -->
 		<module name="RegexpSinglelineJava">
 			<property name="format" value='@author'/>
@@ -158,5 +165,4 @@
 		</module>
 		<module name="SummaryJavadocCheck"/>
 	</module>
-	<module name="JavadocPackage"/>
 </module>

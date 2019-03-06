@@ -1,8 +1,8 @@
-import _T                         from 'i18n-react';
-import moment                     from 'moment';
-import momentDurationFormatSetup  from 'moment-duration-format';
+import _T from "i18n-react";
+import moment from "moment";
+import momentDurationFormatSetup from "moment-duration-format";
 
-import { mergeDeep }              from '../common/helpers';
+import { mergeDeep } from "../common/helpers";
 
 export const T = _T;
 

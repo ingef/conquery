@@ -42,10 +42,10 @@ public class DictionaryMapping {
 			if (targetId == -1L) {
 				targetId = targetDictionary.add(value);
 				if (newIds == null) {
-					newIds = Range.exactly(id);
+					newIds = Range.exactly(targetId);
 				}
 				else {
-					newIds = newIds.span(Range.exactly(id));
+					newIds = newIds.span(Range.exactly(targetId));
 				}
 			}
 			source2TargetMap[id] = targetId;
