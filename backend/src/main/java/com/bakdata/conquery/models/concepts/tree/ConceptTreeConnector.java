@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.concepts.tree;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -27,6 +26,7 @@ public class ConceptTreeConnector extends Connector {
 	
 	@NotNull @NsIdRef
 	private Column column;
+
 	@Valid @JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();
 
@@ -36,28 +36,13 @@ public class ConceptTreeConnector extends Connector {
 	}
 
 	@Override
-	public Collection<Filter<?>> collectAllFilters() {
+	public List<Filter<?>> collectAllFilters() {
 		List<Filter<?>> l = new ArrayList<>(filters.size()+1);
 		CollectionUtils.addIgnoreNull(l, getDateSelectionFilter());
 		l.addAll(filters);
 		return l;
 	}
 
-	/*
-	@Override
-	public EventProcessingResult processEvent(Event r) throws ConceptConfigurationException {
-		ConceptTreeChild concept = getConcept().findMostSpecificConcept(column, r.<Integer>get(column), null);//see #172  new CalculatedValue<>(r::createRowMap));
-		if(concept!=null) {
-			CDateRange dateRange = extractValidityDates(r);
-			concept.incMatchingEntries(dateRange);
-
-			r.addPrefixEntry(this, concept.getPrefix());
-			return EventProcessingResult.OK;
-		}
-		else
-			return EventProcessingResult.COULD_NOT_RESOLVE;
-	}
-	*/
 	@Override
 	public TreeConcept getConcept() {
 		return (TreeConcept) super.getConcept();

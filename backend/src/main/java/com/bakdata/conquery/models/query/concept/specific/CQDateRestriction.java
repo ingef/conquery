@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -21,7 +22,6 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
-import com.bakdata.conquery.models.query.select.Select;
 
 import lombok.Getter;
 import lombok.Setter;

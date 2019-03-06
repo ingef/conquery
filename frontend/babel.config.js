@@ -3,9 +3,10 @@
 // TODO: Refactor the code and get rid of them
 
 module.exports = {
-  "presets": ["react-app"],
-  "plugins": [
+  presets: ["react-app"],
+  plugins: [
     "@babel/plugin-proposal-export-default-from",
     "@babel/plugin-proposal-export-namespace-from",
+    "emotion"
   ]
-}
+};

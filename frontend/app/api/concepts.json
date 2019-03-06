@@ -14,10 +14,34 @@
         "independent_movies"
       ],
       "detailsAvailable": true,
+      "selects": [
+        {
+          "id": "12345678",
+          "label": "Filme gespielt Gesamt",
+          "description": "Beispieldescription"
+        },
+        {
+          "id": "123456789",
+          "label": "Summe Gage",
+          "description": "Die Summe berechnet sich aus X und Y und Z und example."
+        }
+      ],
       "tables": [
         {
           "id": "feature_films",
           "label": "Feature Films",
+          "selects": [
+            {
+              "id": "12345678",
+              "label": "Anzahl unterschiedliche Studios",
+              "description": "Beispieldescription"
+            },
+            {
+              "id": "123456789",
+              "label": "Summe Budget",
+              "description": "Die Summe berechnet sich aus X und Y und Z und example."
+            }
+          ],
           "filters": [
             {
               "id": "studio",
@@ -54,7 +78,8 @@
             {
               "id": "production_country",
               "label": "Production Country",
-              "type": "BIG_MULTI_SELECT"
+              "type": "BIG_MULTI_SELECT",
+              "allowDropFile": true
             },
             {
               "id": "budget",
@@ -145,10 +170,7 @@
     "awards": {
       "label": "Awards",
       "active": true,
-      "children": [
-        "academy_award",
-        "golden_globe_award"
-      ],
+      "children": ["academy_award", "golden_globe_award"],
       "detailsAvailable": true,
       "tables": [
         {
@@ -187,9 +209,7 @@
         "australia"
       ],
       "detailsAvailable": true,
-      "tables": [
-        {}
-      ]
+      "tables": [{}]
     }
   }
 }

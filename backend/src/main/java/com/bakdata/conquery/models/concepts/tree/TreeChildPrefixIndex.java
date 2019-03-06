@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.concepts.tree;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public class TreeChildPrefixIndex {
 			treeChildrenOrig.addAll(root.getChildren());
 
 			// collect all prefix children that are itself children of prefix nodes
-			List<ConceptTreeChild> gatheredPrefixChildren = new ArrayList<>();
+			Map<String, ConceptTreeChild> gatheredPrefixChildren = new HashMap<>();
 
 			for (int i = 0; i < treeChildrenOrig.size(); i++) {
 				ConceptTreeChild child = treeChildrenOrig.get(i);
@@ -75,7 +76,12 @@ public class TreeChildPrefixIndex {
 					treeChildrenOrig.addAll(child.getChildren());
 
 					if (condition instanceof PrefixCondition) {
-						gatheredPrefixChildren.add(child);
+						for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
+							// We are interested in the most specific child, therefore the deepest.
+							gatheredPrefixChildren.merge(prefix, child,
+								(newChild, oldChild) -> oldChild.getDepth() > newChild.getDepth() ? oldChild : newChild
+							);
+						}
 					}
 				}
 				else {
@@ -86,13 +92,13 @@ public class TreeChildPrefixIndex {
 			// Insert children into index and build resolving list
 			List<ConceptTreeChild> gatheredChildren = new ArrayList<>();
 
-			for (ConceptTreeChild child : gatheredPrefixChildren) {
-				CTCondition condition = child.getCondition();
+			for (Map.Entry<String, ConceptTreeChild> entry : gatheredPrefixChildren.entrySet()) {
+				String k = entry.getKey();
+				ConceptTreeChild value = entry.getValue();
+				if (index.valueToChildIndex.put(k.getBytes(), gatheredChildren.size()) != -1)
+					log.error("Duplicate Prefix '{}' in '{}' of '{}'", k, value, root);
 
-				for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
-					index.valueToChildIndex.put(prefix.getBytes(), gatheredChildren.size());
-					gatheredChildren.add(child);
-				}
+				gatheredChildren.add(value);
 			}
 
 			index.valueToChildIndex.balance();

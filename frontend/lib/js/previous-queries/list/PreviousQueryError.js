@@ -1,18 +1,18 @@
 // @flow
 
-import React            from 'react';
+import React from "react";
 
 type PropsType = {
   query: {
-    error: string,
+    error: string
   }
 };
 
 const PreviousQueryError = (props: PropsType) => {
-  return !!props.query.error && (
-    <div className="previous-query-error">
-      {props.query.error}
-    </div>
+  return (
+    !!props.query.error && (
+      <div className="previous-query-error">{props.query.error}</div>
+    )
   );
 };
 

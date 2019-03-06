@@ -1,32 +1,25 @@
 // @flow
 
 export const isEmpty = (variable: any) => {
-  return typeof variable === 'undefined' ||
+  return (
+    typeof variable === "undefined" ||
     variable === null ||
     variable === "" ||
     (variable instanceof Array && variable.length === 0) ||
-    (variable.constructor === Object && Object.keys(variable).length === 0);
+    (variable.constructor === Object && Object.keys(variable).length === 0)
+  );
 };
 
 export const isEmptyObject = (variable: any) => {
   if (!variable) return false;
 
   return (
-    variable.constructor === Object && (
-      Object.keys(variable).length === 0 || (
-        Object.keys(variable).length > 0 &&
-        Object.keys(variable).every(k => typeof variable[k] === 'undefined')
-      )
-    )
+    variable.constructor === Object &&
+    (Object.keys(variable).length === 0 ||
+      (Object.keys(variable).length > 0 &&
+        Object.keys(variable).every(k => typeof variable[k] === "undefined")))
   );
 };
-
-export const stripObject = (obj: Object) => {
-  return Object.keys(obj).reduce((acc, k) => ({
-    ...acc,
-    [k]: (isEmpty(obj[k]) || isEmptyObject(obj[k])) ? undefined : obj[k]
-  }), {});
-}
 
 export const includes = (array: any[], element: any) => {
   return array.indexOf(element) !== -1;
@@ -40,41 +33,47 @@ export const numberToThreeDigitArray = (number: number) => {
   // Taken from:
   // http://stackoverflow.com/questions/2901102/
   // how-to-print-a-number-with-commas-as-thousands-separators-in-javascript
-  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, " ").split(' ');
+  return number
+    .toString()
+    .replace(/\B(?=(\d{3})+(?!\d))/g, " ")
+    .split(" ");
 };
 
-export const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
+export const capitalize = (str: string) =>
+  str.charAt(0).toUpperCase() + str.slice(1);
 
 export const toUpperCaseUnderscore = (str: string) => {
-  if (str.toUpperCase() === str)
-    return str;
+  if (str.toUpperCase() === str) return str;
 
-  return str.replace(
-    /[A-Z]/g,
-    (upperCaseChar) => '_' + upperCaseChar.toLowerCase()
-  ).toUpperCase();
-}
+  return str
+    .replace(/[A-Z]/g, upperCaseChar => "_" + upperCaseChar.toLowerCase())
+    .toUpperCase();
+};
 
 export const isObject = (item: any) =>
-  item && typeof item === 'object' && !Array.isArray(item);
+  item && typeof item === "object" && !Array.isArray(item);
 
 export const mergeDeep = (...elements: Object[]) => {
-  return elements
-    .filter(isObject)
-    .reduce((aggregate, current) => {
-      const nonObjectKeys = Object.keys(current).filter(key => !isObject(current[key]));
-      const objectKeys = Object.keys(current).filter(key => isObject(current[key]));
-      const newKeys = objectKeys.filter(key => !(key in aggregate));
-      const mergeKeys = objectKeys.filter(key => key in aggregate);
+  return elements.filter(isObject).reduce((aggregate, current) => {
+    const nonObjectKeys = Object.keys(current).filter(
+      key => !isObject(current[key])
+    );
+    const objectKeys = Object.keys(current).filter(key =>
+      isObject(current[key])
+    );
+    const newKeys = objectKeys.filter(key => !(key in aggregate));
+    const mergeKeys = objectKeys.filter(key => key in aggregate);
 
-      return Object.assign(
-        {},
-        aggregate,
-        ...nonObjectKeys.map(key => ({ [key]: current[key] })),
-        ...newKeys.map(key => ({ [key]: current[key] })),
-        ...mergeKeys.map(key => ({ [key]: mergeDeep(aggregate[key], current[key]) }))
-      );
-    }, {});
+    return Object.assign(
+      {},
+      aggregate,
+      ...nonObjectKeys.map(key => ({ [key]: current[key] })),
+      ...newKeys.map(key => ({ [key]: current[key] })),
+      ...mergeKeys.map(key => ({
+        [key]: mergeDeep(aggregate[key], current[key])
+      }))
+    );
+  }, {});
 };
 
 /**
@@ -86,8 +85,10 @@ export const mergeDeep = (...elements: Object[]) => {
  *  }
  * }
  * e.g.: const name = getNestedObject(user, ['address', 'street']);
-*/
+ */
 export const getNestedObject = (nestedObj, pathArr) => {
-  return pathArr.reduce((obj, key) =>
-      (obj && obj[key] !== 'undefined') ? obj[key] : undefined, nestedObj);
-}
+  return pathArr.reduce(
+    (obj, key) => (obj && obj[key] !== "undefined" ? obj[key] : undefined),
+    nestedObj
+  );
+};

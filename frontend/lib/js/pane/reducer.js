@@ -1,8 +1,8 @@
 // @flow
 
-import { combineReducers }  from 'redux';
+import { combineReducers } from "redux";
 
-import { CLICK_PANE_TAB }   from './actionTypes';
+import { CLICK_PANE_TAB } from "./actionTypes";
 
 export type TabType = {
   label: string,
@@ -11,7 +11,7 @@ export type TabType = {
 
 export type StateType = {
   left: {
-    activeTab: 'categoryTrees' | 'previousQueries',
+    activeTab: "categoryTrees" | "previousQueries",
     tabs: TabType[]
   },
   right: {
@@ -21,27 +21,27 @@ export type StateType = {
 };
 
 // Keep a map of React components for the available tabs outside the Redux state
-const registerRightPaneTabComponents = (components) => {
+const registerRightPaneTabComponents = components => {
   window.rightPaneTabComponents = components;
 };
 
-export const getRightPaneTabComponent = (tab) => {
+export const getRightPaneTabComponent = tab => {
   return window.rightPaneTabComponents[tab] || null;
-}
+};
 
-export const buildPanesReducer = (availableTabs) => {
+export const buildPanesReducer = availableTabs => {
   const tabs = Object.values(availableTabs);
 
   // Collect reducers
   const tabsReducers = Object.assign(
     {},
-    ...tabs.map(tab => ({[tab.description.key]: tab.reducer}))
+    ...tabs.map(tab => ({ [tab.description.key]: tab.reducer }))
   );
 
   // Collect components
   const tabsComponents = Object.assign(
     {},
-    ...tabs.map(tab => ({[tab.description.key]: tab.component}))
+    ...tabs.map(tab => ({ [tab.description.key]: tab.component }))
   );
   registerRightPaneTabComponents(tabsComponents);
 
@@ -51,10 +51,10 @@ export const buildPanesReducer = (availableTabs) => {
 
   const initialState: StateType = {
     left: {
-      activeTab: 'categoryTrees',
+      activeTab: "categoryTrees",
       tabs: [
-        { label: 'leftPane.categoryTrees', key: 'categoryTrees', order: 0 },
-        { label: 'leftPane.previousQueries', key: 'previousQueries', order: 1 },
+        { label: "leftPane.categoryTrees", key: "categoryTrees", order: 0 },
+        { label: "leftPane.previousQueries", key: "previousQueries", order: 1 }
       ]
     },
     right: {

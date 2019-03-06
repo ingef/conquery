@@ -1,7 +1,7 @@
 package com.bakdata.conquery.util.progressreporter;
 
 import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.MAX_PROGRESS;
-import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.ZERO_PROGRESS;
+import static com.bakdata.conquery.util.progressreporter.ProgressReporterUtil.UNKNOWN;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
@@ -53,7 +53,7 @@ public class ProgressReporterTest {
 		
 		ProgressReporterImpl pr = (ProgressReporterImpl)ProgressReporter.createStarted();
 		pr.setMax(100d);
-		assertThat(pr.getEstimate()).isEqualTo(ZERO_PROGRESS);
+		assertThat(pr.getEstimate()).contains(UNKNOWN);
 		log.info(pr.getStopwatch().toString());
 		Thread.sleep(100);
 		log.info(pr.getStopwatch().toString());
@@ -73,7 +73,7 @@ public class ProgressReporterTest {
 	public void serialisationTest() throws JsonProcessingException, InterruptedException {
 		ProgressReporterImpl pr = (ProgressReporterImpl)ProgressReporter.createStarted();
 		pr.setMax(100d);
-		assertThat(pr.getEstimate()).isEqualTo(ZERO_PROGRESS);
+		assertThat(pr.getEstimate()).contains(UNKNOWN);
 		Thread.sleep(100);
 		pr.report(1);
 		log.info(pr.getEstimate());

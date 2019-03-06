@@ -1,6 +1,6 @@
 // @flow
 
-import type { DatasetIdType }    from '../dataset/reducer';
+import type { DatasetIdType } from "../dataset/reducer";
 
 export const templates = {
   toDataset: "/dataset/:datasetId",
@@ -9,8 +9,8 @@ export const templates = {
 
 export const toDataset = (datasetId: DatasetIdType) => {
   return `/dataset/${datasetId}`;
-}
+};
 
 export const toQuery = (datasetId: DatasetIdType, queryId: string) => {
   return `/dataset/${datasetId}/query/${queryId}`;
-}
+};

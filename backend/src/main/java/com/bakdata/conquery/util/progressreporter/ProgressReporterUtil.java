@@ -18,12 +18,16 @@ public class ProgressReporterUtil {
 			.appendValue(ChronoField.HOUR_OF_DAY, 2).appendLiteral("h ").appendValue(ChronoField.MINUTE_OF_HOUR, 2)
 			.appendLiteral("m ").appendValue(ChronoField.SECOND_OF_MINUTE, 2).appendLiteral("s ").toFormatter();
 
-	/* package */ final static String ZERO_PROGRESS = "unknown";
+	/* package */ final static String UNKNOWN = "unknown     ";
 	/* package */ final static String MAX_PROGRESS = "done";
 
 	/* package */ String buildProgressReportString(boolean done, double progress, long elapsed, long waited) {
 		if (progress == 0) {
-			return ProgressReporterUtil.ZERO_PROGRESS;
+			return new StringBuilder().append("waited ")
+				.append(ProgressReporterUtil.TIME_FORMATTER
+						.format(LocalTime.MIDNIGHT.plus(Duration.ofNanos(waited))))
+				.append(String.format("- %3d%% - est. "+UNKNOWN, 0))
+				.toString();
 		} else if (done) {
 			return ProgressReporterUtil.MAX_PROGRESS;
 		} else {

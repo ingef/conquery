@@ -15,15 +15,8 @@
           "id": "${dataset}.geschlecht_select.geschlecht_connector"
         }
       ],
-      "select": [
-        {
-          "type": "SELECT",
-          "column": "vers_stamm.geschlecht",
-          "selection": [
-            "f",
-            "m"
-          ]
-        }
+      "selects": [
+        "${dataset}.geschlecht_select.geschlecht_connector.select"
       ]
     }
   },
@@ -38,6 +31,15 @@
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"
+          },
+          "selects": {
+            "type": "COUNT_OCCURENCES",
+            "name" : "select",
+            "column": "vers_stamm.geschlecht",
+            "selection": [
+              "f",
+              "m"
+            ]
           }
         }
       ]

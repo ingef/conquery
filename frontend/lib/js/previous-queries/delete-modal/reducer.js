@@ -1,7 +1,7 @@
 import {
   DELETE_PREVIOUS_QUERY_MODAL_OPEN,
-  DELETE_PREVIOUS_QUERY_MODAL_CLOSE,
-} from './actionTypes';
+  DELETE_PREVIOUS_QUERY_MODAL_CLOSE
+} from "./actionTypes";
 
 const initialState = {};
 
