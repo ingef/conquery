@@ -28,10 +28,10 @@ const styles = {
   })
 };
 
-export default ({ creatable, ...props }) => {
+export default React.forwardRef(({ creatable, ...props }, ref) => {
   return creatable ? (
-    <Creatable styles={styles} {...props} />
+    <Creatable ref={ref} styles={styles} {...props} />
   ) : (
-    <Select styles={styles} {...props} />
+    <Select ref={ref} styles={styles} {...props} />
   );
-};
+});
