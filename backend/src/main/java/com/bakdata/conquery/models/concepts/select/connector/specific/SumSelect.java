@@ -36,6 +36,13 @@ public class SumSelect extends Select {
 	@NsIdRef
 	private Column subtractColumn;
 
+	public SumSelect(Column column, Column subtractColumn) {
+		super();
+
+		this.column = column;
+		this.subtractColumn = subtractColumn;
+	}
+
 	@Override
 	protected Aggregator<?> createAggregator() {
 		if (distinct) {

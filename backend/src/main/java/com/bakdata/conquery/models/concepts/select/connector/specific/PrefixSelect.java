@@ -21,9 +21,7 @@ public class PrefixSelect extends SingleColumnSelect {
 	protected Aggregator<?> createAggregator() {
 		return new PrefixTextAggregator(getColumn(), prefix);
 	}
-	
 
-	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.STRING;
