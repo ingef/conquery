@@ -53,15 +53,13 @@ type PropsType = {
   options: string[],
   isMulti: boolean,
   searchResult: Object,
-  datasetId: string,
-  searchConfig: Object
+  datasetId: string
 };
 
 const SearchBox = (props: PropsType) => {
   const {
     datasetId,
     searchResult,
-    searchConfig,
     isMulti,
     search,
     options,
@@ -96,11 +94,7 @@ const SearchBox = (props: PropsType) => {
             inputProps={{
               onKeyPress: e => {
                 return e.key === "Enter"
-                  ? onSearch(
-                      props.datasetId,
-                      e.target.value,
-                      searchConfig.limit
-                    )
+                  ? onSearch(props.datasetId, e.target.value)
                   : null;
               }
             }}
@@ -110,9 +104,7 @@ const SearchBox = (props: PropsType) => {
               <StyledIconButton
                 icon="search"
                 aria-hidden="true"
-                onClick={() =>
-                  onSearch(datasetId, searchResult.query, searchConfig.limit)
-                }
+                onClick={() => onSearch(datasetId, searchResult.query)}
               />
             </Right>
           )}

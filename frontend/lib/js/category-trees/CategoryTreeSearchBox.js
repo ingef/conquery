@@ -5,13 +5,11 @@ import { SearchBox } from "../form-components";
 import { searchTrees, changeSearchQuery, clearSearchQuery } from "./actions";
 
 const mapStateToProps = state => ({
-  searchResult: state.categoryTrees.search,
-  searchConfig: state.startup.config.search ? state.startup.config.search : {}
+  searchResult: state.categoryTrees.search
 });
 
 const mapDispatchToProps = dispatch => ({
-  onSearch: (datasetId, query, limit) =>
-    dispatch(searchTrees(datasetId, query, limit)),
+  onSearch: (datasetId, query) => dispatch(searchTrees(datasetId, query)),
   onChange: query => dispatch(changeSearchQuery(query)),
   onClearQuery: () => dispatch(clearSearchQuery())
 });

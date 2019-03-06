@@ -33,6 +33,6 @@ export default {
     tiny: "11px"
   },
   maxWidth: "1024px",
-  borderRadius: "2px",
+  borderRadius: "1px",
   transitionTime: "0.2s"
 };

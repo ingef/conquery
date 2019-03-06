@@ -325,9 +325,7 @@ module.exports = function(app, port) {
     setTimeout(() => {
       res.setHeader("Content-Type", "application/json");
 
-      // Ignoring the limit, mocking one
-      const { query } = req.body;
-      const limit = 20;
+      const { query, limit } = req.body;
 
       const result = [];
       const awards = require("./concepts/awards");

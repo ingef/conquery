@@ -24,6 +24,8 @@ import {
   CLEAR_SEARCH_QUERY
 } from "./actionTypes";
 
+const SEARCH_LIMIT = 500;
+
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
 export const loadTreesStart = () => ({ type: LOAD_TREES_START });
@@ -99,18 +101,14 @@ export const searchTreesSuccess = (
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
-export const searchTrees = (
-  datasetId: DatasetIdType,
-  query: string,
-  limit: number
-) => {
+export const searchTrees = (datasetId: DatasetIdType, query: string) => {
   return (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query));
 
     if (isEmpty(query)) return;
 
     return api
-      .searchConcepts(datasetId, query, limit)
+      .searchConcepts(datasetId, query, SEARCH_LIMIT)
       .then(
         r => dispatch(searchTreesSuccess(query, r)),
         e => dispatch(searchTreesError(query, e))
