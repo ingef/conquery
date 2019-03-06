@@ -35,7 +35,7 @@ const Root = styled("div")`
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.12);
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};
-  background-color: white;
+  background-color: ${({ theme }) => theme.col.graySuperLight};
 
   &:hover {
     border: 1px solid ${({ theme }) => theme.col.grayLight};

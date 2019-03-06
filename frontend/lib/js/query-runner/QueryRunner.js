@@ -17,13 +17,12 @@ type PropsType = {
 };
 
 const Root = styled("div")`
-  margin-top: auto;
+  flex-shrink: 0;
   padding: 10px 20px 0 10px;
   border-top: 1px solid ${({ theme }) => theme.col.grayLight};
   display: flex;
   align-items: center;
   width: 100%;
-  min-height: 71px;
 `;
 
 const Left = styled("div")`

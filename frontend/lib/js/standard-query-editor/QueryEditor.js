@@ -15,7 +15,6 @@ type PropsType = {
 
 const Root = styled("div")`
   flex-grow: 1;
-  flex-shrink: 0;
   overflow: auto;
   padding: 0 10px 10px 10px;
 `;
