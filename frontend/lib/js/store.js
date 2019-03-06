@@ -27,6 +27,7 @@ export function makeStore(
     // Enable Webpack hot module replacement for reducers
     module.hot.accept("./app/reducers", () => {
       const nextRootReducer = buildAppReducer(tabs);
+
       store.replaceReducer(nextRootReducer);
     });
 

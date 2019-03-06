@@ -18,9 +18,6 @@ const environment = {
   apiUrl: "/api"
 };
 
-const tabs = {
-  [StandardQueryEditorTab.description.key]: StandardQueryEditorTab,
-  [TimebasedQueryEditorTab.description.key]: TimebasedQueryEditorTab
-};
+const tabs = [StandardQueryEditorTab, TimebasedQueryEditorTab];
 
 conquery(environment, tabs, theme);

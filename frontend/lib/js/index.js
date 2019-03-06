@@ -40,7 +40,7 @@ const renderRoot = (tabs: Object, theme) => {
 
   ReactDOM.render(
     <ThemeProvider theme={theme}>
-      <AppRoot store={store} browserHistory={browserHistory} tabs={tabs} />
+      <AppRoot store={store} browserHistory={browserHistory} />
     </ThemeProvider>,
     document.getElementById("root")
   );
