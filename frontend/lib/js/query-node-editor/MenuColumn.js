@@ -35,7 +35,7 @@ const CategoryHeader = styled("div")`
 `;
 
 const StyledButton = styled(TransparentHeaderButton)`
-  font-size: ${({ theme }) => theme.font.md};
+  font-size: ${({ theme }) => theme.font.lg};
   font-weight: 700;
   color: ${({ theme }) => theme.col.black};
   width: 100%;

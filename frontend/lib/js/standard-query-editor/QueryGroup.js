@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import T from "i18n-react";
 
 import { QueryEditorDropzone } from "./QueryEditorDropzone";
@@ -22,21 +23,41 @@ type PropsType = {
   onLoadPreviousQuery: Function
 };
 
-const QueryGroup = (props: PropsType) => {
-  const groupExcludeActiveClass = props.group.exclude
-    ? "query-group__group--active"
-    : "";
+const Root = styled("div")`
+  font-size: ${({ theme }) => theme.font.sm};
+  max-width: 250px;
+`;
 
+const Group = styled("div")`
+  position: relative;
+  padding: 6px 8px 8px;
+  background-color: white;
+  border: 1px solid
+    ${({ theme, excluded }) => (excluded ? theme.col.red : theme.col.grayLight)};
+  box-shadow: 0 0 10px 0 rgba(0,0,0,0.12);
+  text-align: center;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  min-width: 240px;
+`;
+
+const QueryOrConnector = styled("p")`
+  margin: 0;
+  font-size: ${({ theme }) => theme.font.sm};
+  color: ${({ theme }) => theme.col.gray};
+  text-align: center;
+`;
+
+const QueryGroup = (props: PropsType) => {
   return (
-    <div className="query-group">
+    <Root>
       <QueryEditorDropzone
         key={props.group.elements.length + 1}
         onDropNode={props.onDropNode}
         onDropFile={props.onDropFile}
         onLoadPreviousQuery={props.onLoadPreviousQuery}
       />
-      <p className="query-or-connector">{T.translate("common.or")}</p>
-      <div className={`query-group__group ${groupExcludeActiveClass}`}>
+      <QueryOrConnector>{T.translate("common.or")}</QueryOrConnector>
+      <Group excluded={props.group.exclude}>
         <QueryGroupActions
           excludeActive={props.group.exclude}
           dateActive={!!props.group.dateRange}
@@ -55,14 +76,14 @@ const QueryGroup = (props: PropsType) => {
               onExpandClick={props.onExpandClick}
             />
             {orIdx !== props.group.elements.length - 1 && (
-              <p key={"last-or"} className="query-or-connector">
+              <QueryOrConnector key={"last-or"}>
                 {T.translate("common.or")}
-              </p>
+              </QueryOrConnector>
             )}
           </div>
         ))}
-      </div>
-    </div>
+      </Group>
+    </Root>
   );
 };
 

@@ -9,7 +9,7 @@ import FaIcon from "../icon/FaIcon";
 type PropsType = {
   text: string,
   className?: string,
-  noIcon: boolean,
+  noIcon?: boolean,
   place?: string
 };
 

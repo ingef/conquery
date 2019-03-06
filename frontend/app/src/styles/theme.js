@@ -25,14 +25,14 @@ export default {
     spinner: spinner
   },
   font: {
-    huge: "30px",
-    lg: "24px",
-    md: "18px",
+    huge: "24px",
+    lg: "20px",
+    md: "16px",
     sm: "14px",
     xs: "12px",
     tiny: "11px"
   },
   maxWidth: "1024px",
-  borderRadius: "1px",
-  transitionTime: "0.2s"
+  borderRadius: "3px",
+  transitionTime: "0.1s"
 };
