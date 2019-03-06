@@ -9,9 +9,11 @@ const mountApi = require("./api");
 const isDeveloping = process.env.NODE_ENV !== "production";
 const port = process.env.PORT || 8000;
 const app = express();
+const lang = process.env.LANG || "en";
 
 // body parser must be set up before routes are attached
 app.use(bodyParser.json());
+
 mountApi(app, port);
 
 if (isDeveloping) {
@@ -19,8 +21,6 @@ if (isDeveloping) {
   const webpackMiddleware = require("webpack-dev-middleware");
   const webpackHotMiddleware = require("webpack-hot-middleware");
   const config = require("./webpack.config.js");
-
-  const lang = "en";
 
   // We will only use the english version during development
   const compiler = webpack(config.filter(x => x.name === lang));
