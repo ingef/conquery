@@ -700,7 +700,7 @@ const addConceptToNode = (state, action) => {
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    ids: [...action.concept.ids, ...node.ids]
+    ids: [...action.payload.concept.ids, ...node.ids]
   });
 };
 
@@ -713,7 +713,7 @@ const removeConceptFromNode = (state, action) => {
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    ids: node.ids.filter(id => id !== action.conceptId)
+    ids: node.ids.filter(id => id !== action.payload.conceptId)
   });
 };
 

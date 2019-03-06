@@ -8,6 +8,7 @@ import { dndTypes } from "../common/constants";
 const dropzoneTarget = {
   drop(props, monitor) {
     const item = monitor.getItem();
+
     props.onDropConcept(item);
   },
 
@@ -16,6 +17,7 @@ const dropzoneTarget = {
     // The dragged item should contain exactly one id
     // since it was dragged from the tree
     const conceptId = item.ids[0];
+
     return item.tree === node.tree && !node.ids.some(id => id === conceptId);
   }
 };
