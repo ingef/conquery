@@ -45,7 +45,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 				.orElseThrow(() -> new IllegalArgumentException("Connector not found: " + connector));
 	}
 
-	public abstract List<Select> getSelects();
+	public abstract List<? extends Select> getSelects();
 	
 	public void initElements(Validator validator) throws ConfigurationException, JSONException {}
 	
