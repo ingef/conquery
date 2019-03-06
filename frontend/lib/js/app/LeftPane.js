@@ -12,7 +12,8 @@ import { PreviousQueriesContainer } from "../previous-queries/list";
 import { UploadQueryResults } from "../previous-queries/upload";
 
 type PropsType = {
-  activeTab: string
+  activeTab: string,
+  selectedDatasetId: ?string
 };
 
 const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {

@@ -25,7 +25,7 @@ queryRunner:
   resultCount: "{count} results"
   queryFailed: "The query failed."
   queryCanceled: "The query was canceled."
-  downloadResults: "(CSV)"
+  downloadResults: "CSV"
 
 queryEditor:
   couldNotExpandNode: "Could not find node"

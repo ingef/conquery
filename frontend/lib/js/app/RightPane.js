@@ -8,7 +8,7 @@ import { getRightPaneTabComponent } from "../pane/reducer";
 
 type PropsType = {
   activeTab: string,
-  tabs: Object
+  selectedDatasetId: ?string
 };
 
 const RightPane = (props: PropsType) => {
@@ -21,6 +21,5 @@ const RightPane = (props: PropsType) => {
 
 export default connect(state => ({
   activeTab: state.panes.right.activeTab,
-  rightPaneTabs: state.panes.right.tabs,
   selectedDatasetId: state.datasets.selectedDatasetId
 }))(RightPane);
