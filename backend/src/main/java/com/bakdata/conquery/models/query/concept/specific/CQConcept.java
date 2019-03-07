@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
@@ -57,7 +58,7 @@ public class CQConcept implements CQElement {
 	private boolean excludeFromTimeAggregation = false;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan<?> plan) {
 		ConceptElement[] concepts = resolveConcepts(ids, context.getCentralRegistry());
 
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
@@ -89,7 +90,7 @@ public class CQConcept implements CQElement {
 			if(!excludeFromTimeAggregation) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
 					t.getResolvedConnector().getTable().getId(),
-					plan.getIncluded()
+					plan.getSpecialDateUnion()
 				));
 			}
 
@@ -124,13 +125,13 @@ public class CQConcept implements CQElement {
 		return result;
 	}
 
-	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
+	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan<?> plan, List<Select> select) {
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
 		for (Select s : select) {
-			AggregatorNode<?> agg = s.createAggregator(plan.getAggregators().size());
-			plan.getAggregators().add(agg.getAggregator());
+			AggregatorNode<?> agg = new AggregatorNode<>(s.createAggregator());
+			plan.addAggregator(agg.getAggregator());
 			nodes.add(agg);
 		}
 		return nodes;

@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 
 import lombok.Getter;
@@ -50,7 +51,7 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
+	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
 		return new TemporalQueryNode(reference.clone(), preceding.clone(), matcher, clone.getIncluded());
 	}
 
@@ -114,7 +115,7 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	/**
-	 * Retrieves the {@link QueryPlan#getIncluded()} time of {@link #reference} and {@link #preceding}.
+	 * Retrieves the {@link ConceptQueryPlan#getIncluded()} time of {@link #reference} and {@link #preceding}.
 	 * Then tests whether they match the specific criteria for inclusion.
 	 * If the criteria are met, the matching {@link CDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
 	 *

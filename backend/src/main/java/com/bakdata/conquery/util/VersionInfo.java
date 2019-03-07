@@ -2,28 +2,26 @@ package com.bakdata.conquery.util;
 
 import java.io.BufferedReader;
 import java.time.ZonedDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.Properties;
-
-import org.slf4j.LoggerFactory;
 
 import com.github.powerlibraries.io.In;
 
 import lombok.Getter;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
-@ToString @Getter
-public enum VersionInfo {
+@ToString @Getter @Slf4j
+public class VersionInfo {
 	
-	INSTANCE;
+	public final static VersionInfo INSTANCE = new VersionInfo();
 	
-	private final String branch;
-	private final ZonedDateTime buildTime;
-	private final String buildVersion;
-	private final String description;
-	private final String projectVersion;
-	private final boolean dirty;
-	private final String tags;
+	private String branch;
+	private ZonedDateTime buildTime;
+	private String buildVersion;
+	private String description;
+	private String projectVersion;
+	private boolean dirty;
+	private String tags;
 	
 	private VersionInfo() {
 		try {
@@ -32,22 +30,28 @@ public enum VersionInfo {
 				properties.load(in);
 			}
 			
-			branch =		properties.getProperty("git.branch");
-			ZonedDateTime dateTime;
+			branch = properties.getProperty("git.branch");
+			String timeProp = properties.getProperty("git.build.time");
 			try {
-				dateTime = ZonedDateTime.parse(properties.getProperty("git.build.time"));
-			} catch(Exception e) {
-				dateTime = null;
-				LoggerFactory.getLogger(VersionInfo.class).warn("Could not parse date time from git.properties", e);
+				buildTime = ZonedDateTime.parse(timeProp);
 			}
-			buildTime =		dateTime;
+			catch(Exception e) {
+				buildTime = null;
+				if("${git.build.time}".equals(timeProp)) {
+					log.warn("No build time version present in git.properties");
+				}
+				else {
+					log.warn("Could not parse date time from git.properties", e);
+				}
+			}
 			buildVersion =	properties.getProperty("git.build.version");
 			projectVersion =properties.getProperty("project.version");
 			description =	properties.getProperty("git.commit.id.describe");
 			dirty =			Boolean.parseBoolean(properties.getProperty("git.dirty"));
 			tags =			properties.getProperty("git.tags");
 			
-		} catch (Exception e) {
+		}
+		catch (Exception e) {
 			throw new IllegalStateException("Could not read git properties information", e);
 		}
 	}

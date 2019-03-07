@@ -4,6 +4,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 
 import lombok.NonNull;
 
@@ -20,7 +21,7 @@ public class NegatingNode extends QPChainNode {
 	}
 	
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
+	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
 		return new NegatingNode(getChild().clone(plan, clone));
 	}
 	

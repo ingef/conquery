@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QPParentNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 
 public class OrNode extends QPParentNode {
 
@@ -25,7 +26,7 @@ public class OrNode extends QPParentNode {
 	}
 	
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
+	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
 		List<QPNode> clones = new ArrayList<>(getChildren());
 		clones.replaceAll(qp->qp.clone(plan, clone));
 		return new OrNode(clones);

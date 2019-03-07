@@ -21,7 +21,7 @@ public abstract class QPNode implements EventIterating {
 	protected void init() {
 	}
 
-	public abstract QPNode clone(QueryPlan plan, QueryPlan clone);
+	public abstract QPNode clone(QueryPlan<?> plan, QueryPlan<?> clone);
 
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {

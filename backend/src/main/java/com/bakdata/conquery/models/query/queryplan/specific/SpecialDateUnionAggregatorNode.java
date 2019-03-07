@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 
 public class SpecialDateUnionAggregatorNode extends AggregatorNode<CDateSet> {
@@ -23,7 +24,7 @@ public class SpecialDateUnionAggregatorNode extends AggregatorNode<CDateSet> {
 	}
 	
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
+	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
 		SpecialDateUnion aggClone = (SpecialDateUnion) clone.getAggregators().get(getPosition());
 		return new SpecialDateUnionAggregatorNode(requiredTable, aggClone);
 	}

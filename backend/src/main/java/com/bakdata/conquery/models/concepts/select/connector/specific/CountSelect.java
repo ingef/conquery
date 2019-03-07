@@ -19,7 +19,7 @@ public class CountSelect extends SingleColumnSelect {
 	private boolean distinct = false;
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		if (distinct) {
 			return new DistinctValuesWrapperAggregatorNode<>(new CountAggregator(getColumn()), getColumn());
 		}

@@ -37,7 +37,7 @@ public class SumSelect extends Select {
 	private Column subtractColumn;
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		if (distinct) {
 			return new DistinctValuesWrapperAggregatorNode(getAggregator(), getColumn());
 		}

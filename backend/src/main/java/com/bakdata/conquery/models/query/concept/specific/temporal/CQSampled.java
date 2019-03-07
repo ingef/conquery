@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.SampledNode;
 
@@ -38,8 +39,8 @@ public class CQSampled {
 	 * @param plan the parent plan
 	 * @return a new SampledNode
 	 */
-	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
-		QueryPlan subPlan = QueryPlan.create();
+	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan<?> plan) {
+		ConceptQueryPlan subPlan = ConceptQueryPlan.create();
 		subPlan.setChild(child.createQueryPlan(ctx, plan));
 		return new SampledNode(subPlan, sampler);
 	}
