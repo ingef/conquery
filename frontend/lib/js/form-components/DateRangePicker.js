@@ -14,8 +14,6 @@ import {
 } from "../common/helpers/dateHelper";
 import { InfoTooltip } from "../tooltip";
 
-import "react-datepicker/dist/react-datepicker.css";
-
 const { DATE_FORMAT, localizedDateFormat } = dateTypes;
 
 type PropsType = FieldPropsType & {
