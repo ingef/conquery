@@ -47,6 +47,10 @@ const QueryOrConnector = styled("p")`
   text-align: center;
 `;
 
+const isDateActive = dateRange => {
+  return !!dateRange && (!!dateRange.min || !!dateRange.max);
+};
+
 const QueryGroup = (props: PropsType) => {
   return (
     <Root>
@@ -59,8 +63,8 @@ const QueryGroup = (props: PropsType) => {
       <QueryOrConnector>{T.translate("common.or")}</QueryOrConnector>
       <Group excluded={props.group.exclude}>
         <QueryGroupActions
-          excludeActive={props.group.exclude}
-          dateActive={!!props.group.dateRange}
+          excludeActive={!!props.group.exclude}
+          dateActive={isDateActive(props.group.dateRange)}
           onExcludeClick={props.onExcludeClick}
           onDeleteGroup={props.onDeleteGroup}
           onDateClick={props.onDateClick}

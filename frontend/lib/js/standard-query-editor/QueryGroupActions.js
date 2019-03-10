@@ -45,8 +45,8 @@ const RedIconButton = styled(IconButton)`
 `;
 
 type PropsType = {
-  excludeActive: string,
-  dateActive: string,
+  excludeActive: boolean,
+  dateActive: boolean,
   onExcludeClick: () => void,
   onDeleteGroup: () => void,
   onDateClick: () => void

@@ -15,10 +15,8 @@ import { type DateRangeType } from "../common/types/backend";
 import { resetAllFiltersInTables } from "../model/table";
 
 import {
-  QUERY_GROUP_MODAL_SET_MIN_DATE,
-  QUERY_GROUP_MODAL_SET_MAX_DATE,
-  QUERY_GROUP_MODAL_RESET_ALL_DATES,
-  QUERY_GROUP_MODAL_SET_TOUCHED
+  QUERY_GROUP_MODAL_SET_DATE,
+  QUERY_GROUP_MODAL_RESET_ALL_DATES
 } from "../query-group-modal/actionTypes";
 
 import {
@@ -400,20 +398,10 @@ const resetNodeAllFilters = (state, action) => {
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
-const setGroupDate = (state, action, minOrMax) => {
+const setGroupDate = (state, action) => {
   const { andIdx, date } = action.payload;
 
-  // Calculate next daterange
-  const tmpDateRange = {
-    ...state[andIdx].dateRange,
-    [minOrMax]: date
-  };
-  // Make sure it has either min or max set, otherwise "delete" the key
-  // by setting to undefined
-  const dateRange =
-    tmpDateRange.min || tmpDateRange.max ? tmpDateRange : undefined;
-
-  return setGroupProperties(state, andIdx, { dateRange });
+  return setGroupProperties(state, andIdx, { dateRange: date });
 };
 
 const resetGroupDates = (state, action) => {
@@ -422,11 +410,6 @@ const resetGroupDates = (state, action) => {
   return setGroupProperties(state, andIdx, { dateRange: null });
 };
 
-const setGroupTouched = (state, action) => {
-  const { andIdx, field } = action.payload;
-
-  return setGroupProperties(state, andIdx, { touched: { [field]: true } });
-};
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
@@ -860,14 +843,10 @@ const query = (
       return switchNodeFilterMode(state, action);
     case TOGGLE_TIMESTAMPS:
       return toggleTimestamps(state, action);
-    case QUERY_GROUP_MODAL_SET_MIN_DATE:
-      return setGroupDate(state, action, "min");
-    case QUERY_GROUP_MODAL_SET_MAX_DATE:
-      return setGroupDate(state, action, "max");
+    case QUERY_GROUP_MODAL_SET_DATE:
+      return setGroupDate(state, action);
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
       return resetGroupDates(state, action);
-    case QUERY_GROUP_MODAL_SET_TOUCHED:
-      return setGroupTouched(state, action);
     case EXPAND_PREVIOUS_QUERY:
       return expandPreviousQuery(state, action);
     case LOAD_PREVIOUS_QUERY_START:
