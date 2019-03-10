@@ -20,10 +20,6 @@ import { InfoTooltip } from "../tooltip";
 import Label from "./Label";
 import Labeled from "./Labeled";
 
-const locale = getDateLocale();
-
-registerLocale("locale", locale);
-
 const Root = styled("div")`
   text-align: ${({ center }) => (center ? "center" : "left")};
 `;
@@ -48,6 +44,12 @@ type PropsType = FieldPropsType & {
 };
 
 const InputDateRange = (props: PropsType) => {
+  React.useEffect(() => {
+    const locale = getDateLocale();
+
+    registerLocale("locale", locale);
+  });
+
   const onSetDate = value => props.input.onChange(value);
 
   const onSetMinDate = date =>
