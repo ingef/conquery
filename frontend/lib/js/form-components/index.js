@@ -14,4 +14,3 @@ export { default as InputCheckbox } from "./InputCheckbox";
 export { default as InputRangeHeader } from "./InputRangeHeader";
 export { default as InputRange } from "./InputRange";
 export { default as AsyncInputMultiSelect } from "./AsyncInputMultiSelect";
-export { default as DateRangePicker } from "./DateRangePicker";

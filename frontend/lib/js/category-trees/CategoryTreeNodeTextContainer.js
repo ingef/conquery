@@ -39,7 +39,7 @@ const CategoryTreeNodeTextContainer = (props: PropsType) => {
     <div
       className="category-tree-node__text-container"
       onClick={props.onTextClick}
-      style={{ paddingLeft: props.depth * 20 }}
+      style={{ paddingLeft: props.depth * 15 }}
     >
       <p
         className={classnames("category-tree-node__text", {
