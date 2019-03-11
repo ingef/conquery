@@ -5,10 +5,11 @@ import java.util.EnumSet;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQIntegerRangeFilter;
+import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -22,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "DURATION_SUM", base = Filter.class)
-public class DurationSumFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
+public class DurationSumFilter extends SingleColumnFilter<Range.IntegerRange> {
 
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -44,7 +45,7 @@ public class DurationSumFilter extends SingleColumnFilter<CQIntegerRangeFilter> 
 	}
 
 	@Override
-	public FilterNode createAggregator(CQIntegerRangeFilter filterValue) {
-		return new RangeFilterNode(this, filterValue, new DurationSumAggregatorNode(getColumn()));
+	public FilterNode createAggregator(FilterValue<Range.IntegerRange> filterValue) {
+		return new RangeFilterNode(this, filterValue.getValue(), new DurationSumAggregatorNode(getColumn()));
 	}
 }

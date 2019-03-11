@@ -4,24 +4,24 @@ import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 /**
  * Entity is included as long as Dates are within a certain range.
  */
-public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRangeFilter, DateDistanceFilter> {
+public class DateDistanceFilterNode extends FilterNode<Range.LongRange, DateDistanceFilter> {
 
 	private boolean hit = false;
 	private LocalDate reference;
 	private ChronoUnit unit;
 
-	public DateDistanceFilterNode(DateDistanceFilter dateDistanceFilter, FilterValue.CQIntegerRangeFilter filterValue, ChronoUnit unit) {
+	public DateDistanceFilterNode(DateDistanceFilter dateDistanceFilter, Range.LongRange filterValue, ChronoUnit unit) {
 		super(dateDistanceFilter, filterValue);
 		this.unit = unit;
 	}
@@ -46,7 +46,7 @@ public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRang
 
 		final long between = unit.between(date, reference);
 
-		return filterValue.getValue().contains(between);
+		return filterValue.contains(between);
 	}
 
 	@Override

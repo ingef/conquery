@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import com.bakdata.conquery.models.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.specific.IStringType;
@@ -10,21 +9,19 @@ import com.bakdata.conquery.models.types.specific.IStringType;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SelectFilterNode extends FilterNode<FilterValue.CQSelectFilter, SelectFilter> {
-	private final String selected;
+public class SelectFilterNode extends FilterNode<String, SelectFilter> {
+
 	private int selectedId = -1;
 	private boolean hit = false;
 
-	public SelectFilterNode(SelectFilter filter, FilterValue.CQSelectFilter filterValue) {
+	public SelectFilterNode(SelectFilter filter, String filterValue) {
 		super(filter, filterValue);
-		this.selected = filterValue.getValue();
 	}
-
 
 	@Override
 	public void nextBlock(Block block) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((IStringType) filter.getColumn().getTypeFor(block)).getStringId(selected);
+		selectedId = ((IStringType) filter.getColumn().getTypeFor(block)).getStringId(filterValue);
 	}
 
 	@Override
@@ -41,7 +38,6 @@ public class SelectFilterNode extends FilterNode<FilterValue.CQSelectFilter, Sel
 		int value = block.getString(event, filter.getColumn());
 
 		return value == selectedId;
-
 	}
 
 	@Override

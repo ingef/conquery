@@ -6,16 +6,18 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class FilterNode<FILTER_VALUE extends FilterValue<?>, FILTER extends Filter<FILTER_VALUE>> implements EventIterating {
+public abstract class FilterNode<FILTER_VALUE, FILTER extends Filter<FILTER_VALUE>> implements EventIterating {
 
+	@Getter
 	protected final FILTER filter;
+	@Getter
 	protected final FILTER_VALUE filterValue;
 
 	@Override

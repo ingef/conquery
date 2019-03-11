@@ -29,7 +29,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "NUMBER", base = Filter.class)
-public class NumberFilter extends SingleColumnFilter<FilterValue<? extends IRange<? extends Number, ?>>> {
+public class NumberFilter extends SingleColumnFilter<IRange<? extends Number, ?>> {
 
 	
 
@@ -60,16 +60,31 @@ public class NumberFilter extends SingleColumnFilter<FilterValue<? extends IRang
 	}
 
 	@Override
-	public NumberFilterNode createAggregator(FilterValue<? extends IRange<? extends Number, ?>> filterValue) {
+	public NumberFilterNode createAggregator(FilterValue<IRange<? extends Number, ?>> filterValue) {
+		final IRange<? extends Number, ?> value = filterValue.getValue();
+
 		switch (getColumn().getType()) {
 			case MONEY:
-				return new MoneyFilterNode(this, (FilterValue.CQIntegerRangeFilter) filterValue);
+				return new MoneyFilterNode(this,
+					new Range.LongRange(
+						value.getMin() != null ? value.getMin().longValue() : null,
+						value.getMax() != null ? value.getMax().longValue() : null)
+				);
 			case INTEGER:
-				return new IntegerFilterNode(this, (FilterValue<Range.LongRange>) filterValue);
+				return new IntegerFilterNode(this, new Range.LongRange(
+					value.getMin() != null ? value.getMin().longValue() : null,
+					value.getMax() != null ? value.getMax().longValue() : null)
+				);
 			case DECIMAL:
-				return new DecimalFilterNode(this, (FilterValue<Range<BigDecimal>>) filterValue);
+				return new DecimalFilterNode(this, Range.of(
+					value.getMin() != null ? BigDecimal.valueOf(value.getMin().doubleValue()) : null,
+					value.getMax() != null ? BigDecimal.valueOf(value.getMax().doubleValue()) : null)
+				);
 			case REAL:
-				return new RealFilterNode(this, (FilterValue<Range.DoubleRange>) filterValue);
+				return new RealFilterNode(this, new Range.DoubleRange(
+					value.getMin() != null ? value.getMin().doubleValue() : null,
+					value.getMax() != null ? value.getMax().doubleValue() : null)
+				);
 			default:
 				throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
 		}

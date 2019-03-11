@@ -3,20 +3,14 @@ package com.bakdata.conquery.models.query.filter.event.number;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
-import lombok.Getter;
+public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends FilterNode<RANGE, SingleColumnFilter<RANGE>> {
 
-public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends FilterNode<FilterValue<RANGE>, SingleColumnFilter<FilterValue<RANGE>>> {
-
-	@Getter
-	private RANGE range;
 	private boolean hit;
 
-	public NumberFilterNode(SingleColumnFilter filter, FilterValue<RANGE> filterValue) {
+	public NumberFilterNode(SingleColumnFilter filter, RANGE filterValue) {
 		super(filter, filterValue);
-		range = filterValue.getValue();
 	}
 
 	@Override

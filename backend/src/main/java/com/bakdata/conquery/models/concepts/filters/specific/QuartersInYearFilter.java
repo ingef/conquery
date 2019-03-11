@@ -5,9 +5,10 @@ import java.util.EnumSet;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQIntegerRangeFilter;
+import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -18,7 +19,7 @@ import lombok.Setter;
 
 @Setter @Getter
 @CPSType(id="QUARTERS_IN_YEAR", base= Filter.class)
-public class QuartersInYearFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
+public class QuartersInYearFilter extends SingleColumnFilter<Range.IntegerRange> {
 	
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.DATE);
@@ -33,8 +34,8 @@ public class QuartersInYearFilter extends SingleColumnFilter<CQIntegerRangeFilte
 
 
 	@Override
-	public FilterNode createAggregator(CQIntegerRangeFilter filterValue) {
-		return new RangeFilterNode(this, filterValue, new QuartersInYearAggregator(getColumn()));
+	public FilterNode createAggregator(FilterValue<Range.IntegerRange> filterValue) {
+		return new RangeFilterNode(this, filterValue.getValue(), new QuartersInYearAggregator(getColumn()));
 	}
 
 }

@@ -7,13 +7,12 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.Getter;
 
-public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE extends FilterValue<?>, FILTER extends Filter<FILTER_VALUE>> extends FilterNode<FILTER_VALUE, FILTER> {
+public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE, FILTER extends Filter<FILTER_VALUE>> extends FilterNode<FILTER_VALUE, FILTER> {
 
 	@Getter
 	private AGGREGATOR aggregator;

@@ -2,23 +2,19 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import com.bakdata.conquery.models.concepts.filters.specific.PrefixTextFilter;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 /**
  * Entity is included when the number of values for a specified column are within a given range.
  */
-public class PrefixTextFilterNode extends FilterNode<FilterValue.CQStringFilter, PrefixTextFilter> {
+public class PrefixTextFilterNode extends FilterNode<String, PrefixTextFilter> {
 
-	private final String prefix;
 	private boolean hit;
 
-	public PrefixTextFilterNode(PrefixTextFilter filter, FilterValue.CQStringFilter filterValue) {
+	public PrefixTextFilterNode(PrefixTextFilter filter, String filterValue) {
 		super(filter, filterValue);
-		this.prefix = filterValue.getValue();
 	}
-
 
 	@Override
 	public FilterNode<?, ?> clone(QueryPlan plan, QueryPlan clone) {
@@ -35,8 +31,8 @@ public class PrefixTextFilterNode extends FilterNode<FilterValue.CQStringFilter,
 
 		String value = (String) filter.getColumn().getTypeFor(block).createScriptValue(stringToken);
 
-		//if performance is a problem we could find the prefix once in the dictionary and then only check the values
-		return value.startsWith(prefix);
+		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
+		return value.startsWith(filterValue);
 	}
 
 	@Override

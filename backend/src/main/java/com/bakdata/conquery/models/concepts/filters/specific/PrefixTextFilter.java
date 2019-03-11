@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQStringFilter;
+import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.event.PrefixTextFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -18,7 +18,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "PREFIX_TEXT", base = Filter.class)
-public class PrefixTextFilter extends SingleColumnFilter<CQStringFilter> {
+public class PrefixTextFilter extends SingleColumnFilter<String> {
 
 
 	@Override
@@ -32,8 +32,8 @@ public class PrefixTextFilter extends SingleColumnFilter<CQStringFilter> {
 	}
 
 	@Override
-	public FilterNode createAggregator(CQStringFilter filterValue) {
-		return new PrefixTextFilterNode(this, filterValue);
+	public FilterNode createAggregator(FilterValue<String> filterValue) {
+		return new PrefixTextFilterNode(this, filterValue.getValue());
 	}
 
 }

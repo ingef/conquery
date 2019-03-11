@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.specific.IStringType;
@@ -10,17 +9,14 @@ import com.bakdata.conquery.models.types.specific.IStringType;
 /**
  * Entity is included when the number of values for a specified column are within a given range.
  */
-public class MultiSelectFilterNode<FILTER extends SingleColumnFilter<FilterValue.CQMultiSelectFilter>> extends FilterNode<FilterValue.CQMultiSelectFilter, FILTER> {
+public class MultiSelectFilterNode<FILTER extends SingleColumnFilter<String[]>> extends FilterNode<String[], FILTER> {
 
-
-	private final String[] selection;
 	private int[] selectedValues;
 	private boolean hit;
 
-	public MultiSelectFilterNode(FILTER filter, FilterValue.CQMultiSelectFilter filterValue) {
+	public MultiSelectFilterNode(FILTER filter, String[] filterValue) {
 		super(filter, filterValue);
-		this.selection = filterValue.getValue();
-		this.selectedValues = new int[selection.length];
+		this.selectedValues = new int[filterValue.length];
 	}
 
 
@@ -28,8 +24,8 @@ public class MultiSelectFilterNode<FILTER extends SingleColumnFilter<FilterValue
 	public void nextBlock(Block block) {
 		IStringType type = (IStringType) filter.getColumn().getTypeFor(block);
 
-		for (int index = 0; index < selection.length; index++) {
-			String select = selection[index];
+		for (int index = 0; index < filterValue.length; index++) {
+			String select = filterValue[index];
 			Integer parsed = type.getStringId(select);
 			selectedValues[index] = parsed;
 		}

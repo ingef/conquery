@@ -36,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "SUM", base = Filter.class)
-public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
+public class SumFilter<RANGE extends IRange<?, ?>> extends Filter<RANGE> {
 
 
 	@Valid
@@ -83,14 +83,14 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 	private boolean distinct = false;
 
 	@Override
-	public FilterNode createAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
+	public FilterNode createAggregator(FilterValue<RANGE> filterValue) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (distinct) {
-			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
+			return new RangeFilterNode(this, filterValue.getValue(), new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
 		}
 		else {
-			return new RangeFilterNode(this, filterValue, aggregator);
+			return new RangeFilterNode(this, filterValue.getValue(), aggregator);
 		}
 	}
 

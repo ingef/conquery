@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.common;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import io.dropwizard.validation.ValidationMethod;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -159,7 +160,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 	}
 
 	public static class IntegerRange extends Range<Integer> {
-		private IntegerRange(Integer min, Integer max) {
+		public IntegerRange(Integer min, Integer max) {
 			super(min == null ? Integer.MIN_VALUE : min, max == null ? Integer.MAX_VALUE : max);
 		}
 
@@ -178,7 +179,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 	}
 
 	public static class LongRange extends Range<Long> {
-		private LongRange (Long min, Long max) {
+		public LongRange (Long min, Long max) {
 			super(min == null ? Long.MIN_VALUE : min, max == null ? Long.MAX_VALUE : max);
 		}
 
@@ -197,7 +198,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 	}
 
 	public static class FloatRange extends Range<Float> {
-		private FloatRange(Float min, Float max) {
+		public FloatRange(Float min, Float max) {
 			super(min == null ? Float.MIN_VALUE : min, max == null ? Float.MAX_VALUE : max);
 		}
 
@@ -216,7 +217,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 	}
 
 	public static class DoubleRange extends Range<Double> {
-		private DoubleRange(Double min, Double max) {
+		public DoubleRange(Double min, Double max) {
 			super(min == null ? Double.MIN_VALUE : min, max == null ? Double.MAX_VALUE : max);
 		}
 
