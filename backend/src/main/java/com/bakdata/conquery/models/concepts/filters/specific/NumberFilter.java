@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
@@ -29,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "NUMBER", base = Filter.class)
-public class NumberFilter extends SingleColumnFilter<IRange<? extends Number, ?>> {
+public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
 
 	
 
@@ -60,8 +59,7 @@ public class NumberFilter extends SingleColumnFilter<IRange<? extends Number, ?>
 	}
 
 	@Override
-	public NumberFilterNode createAggregator(FilterValue<IRange<? extends Number, ?>> filterValue) {
-		final IRange<? extends Number, ?> value = filterValue.getValue();
+	public NumberFilterNode createAggregator(RANGE value) {
 
 		switch (getColumn().getType()) {
 			case MONEY:

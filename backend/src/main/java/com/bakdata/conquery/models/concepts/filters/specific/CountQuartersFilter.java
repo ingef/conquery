@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDatesAggregator;
@@ -34,12 +33,12 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.IntegerRange> 
 	}
 
 	@Override
-	public FilterNode createAggregator(FilterValue<Range.IntegerRange> filterValue) {
+	public FilterNode createAggregator(Range.IntegerRange value) {
 		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
-			return new RangeFilterNode(this, filterValue.getValue(), new CountQuartersOfDateRangeAggregator(getColumn()));
+			return new RangeFilterNode(this, value, new CountQuartersOfDateRangeAggregator(getColumn()));
 		}
 		else {
-			return new RangeFilterNode(this, filterValue.getValue(), new CountQuartersOfDatesAggregator(getColumn()));
+			return new RangeFilterNode(this, value, new CountQuartersOfDatesAggregator(getColumn()));
 		}
 	}
 }

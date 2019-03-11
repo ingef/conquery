@@ -3,8 +3,10 @@ package com.bakdata.conquery.models.concepts.filters.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
+import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
+import com.bakdata.conquery.models.query.filter.event.SelectFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -15,7 +17,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "SELECT", base = Filter.class)
-public class MultiSelectFilter extends AbstractSelectFilter<String[]> implements ISelectFilter {
+public class MultiSelectFilter extends AbstractSelectFilter<String[]> {
 
 	
 
@@ -24,7 +26,11 @@ public class MultiSelectFilter extends AbstractSelectFilter<String[]> implements
 	}
 
 	@Override
-	public MultiSelectFilterNode<MultiSelectFilter> createAggregator(FilterValue<String[]> filterValue) {
-		return new MultiSelectFilterNode<>(this, filterValue.getValue());
+	public FilterNode<?,?> createAggregator(String[] value) {
+		if(value.length == 1) {
+			return new SelectFilterNode((SingleColumnFilter<String>) this, value[0]);
+		}
+
+		return new MultiSelectFilterNode<>(this, value);
 	}
 }

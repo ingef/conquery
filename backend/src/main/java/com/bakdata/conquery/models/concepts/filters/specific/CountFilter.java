@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
@@ -41,12 +40,12 @@ public class CountFilter extends SingleColumnFilter<Range.IntegerRange> {
 	}
 
 	@Override
-	public FilterNode createAggregator(FilterValue<Range.IntegerRange> filterValue) {
+	public FilterNode createAggregator(Range.IntegerRange value) {
 		if (distinct) {
-			return new RangeFilterNode(this, filterValue.getValue(), new DistinctValuesWrapperAggregatorNode(new CountAggregator(getColumn()), getColumn()));
+			return new RangeFilterNode(this, value, new DistinctValuesWrapperAggregatorNode(new CountAggregator(getColumn()), getColumn()));
 		}
 		else {
-			return new RangeFilterNode(this, filterValue.getValue(), new CountAggregator(getColumn()));
+			return new RangeFilterNode(this, value, new CountAggregator(getColumn()));
 		}
 	}
 }

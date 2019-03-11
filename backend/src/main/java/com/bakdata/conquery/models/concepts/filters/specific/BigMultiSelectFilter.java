@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.concepts.filters.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.event.MultiSelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
@@ -23,7 +22,7 @@ public class BigMultiSelectFilter extends AbstractSelectFilter<String[]> impleme
 	}
 
 	@Override
-	public FilterNode createAggregator(FilterValue<String[]> filterValue) {
-		return new MultiSelectFilterNode(this, filterValue.getValue());
+	public FilterNode createAggregator(String[] value) {
+		return new MultiSelectFilterNode(this, value);
 	}
 }

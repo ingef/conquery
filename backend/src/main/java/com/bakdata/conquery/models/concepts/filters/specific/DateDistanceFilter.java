@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.event.DateDistanceFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -49,7 +48,7 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 	}
 	
 	@Override
-	public FilterNode createAggregator(FilterValue<Range.LongRange> filterValue) {
-		return new DateDistanceFilterNode(this, filterValue.getValue(), timeUnit);
+	public FilterNode createAggregator(Range.LongRange value) {
+		return new DateDistanceFilterNode(this, value, timeUnit);
 	}
 }

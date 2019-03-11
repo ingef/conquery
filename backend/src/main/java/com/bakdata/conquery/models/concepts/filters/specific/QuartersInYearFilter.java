@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -34,8 +33,8 @@ public class QuartersInYearFilter extends SingleColumnFilter<Range.IntegerRange>
 
 
 	@Override
-	public FilterNode createAggregator(FilterValue<Range.IntegerRange> filterValue) {
-		return new RangeFilterNode(this, filterValue.getValue(), new QuartersInYearAggregator(getColumn()));
+	public FilterNode createAggregator(Range.IntegerRange value) {
+		return new RangeFilterNode(this, value, new QuartersInYearAggregator(getColumn()));
 	}
 
 }

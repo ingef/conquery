@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.concepts.filters.specific.SelectFilter;
+import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -9,12 +9,12 @@ import com.bakdata.conquery.models.types.specific.IStringType;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SelectFilterNode extends FilterNode<String, SelectFilter> {
+public class SelectFilterNode extends FilterNode<String, SingleColumnFilter<String>> {
 
 	private int selectedId = -1;
 	private boolean hit = false;
 
-	public SelectFilterNode(SelectFilter filter, String filterValue) {
+	public SelectFilterNode(SingleColumnFilter<String> filter, String filterValue) {
 		super(filter, filterValue);
 	}
 

@@ -1,10 +1,8 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -74,7 +72,7 @@ public class CQConcept implements CQElement {
 			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
 			//add filter to children
 			for(FilterValue f : t.getFilters()) {
-				FilterNode agg = f.getFilter().createAggregator(f);
+				FilterNode agg = f.getFilter().createAggregator(f.getValue());
 				if(agg != null) {
 					filters.add(agg);
 				}

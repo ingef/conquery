@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
@@ -83,14 +82,14 @@ public class SumFilter<RANGE extends IRange<?, ?>> extends Filter<RANGE> {
 	private boolean distinct = false;
 
 	@Override
-	public FilterNode createAggregator(FilterValue<RANGE> filterValue) {
+	public FilterNode createAggregator(RANGE value) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (distinct) {
-			return new RangeFilterNode(this, filterValue.getValue(), new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
+			return new RangeFilterNode(this, value, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
 		}
 		else {
-			return new RangeFilterNode(this, filterValue.getValue(), aggregator);
+			return new RangeFilterNode(this, value, aggregator);
 		}
 	}
 

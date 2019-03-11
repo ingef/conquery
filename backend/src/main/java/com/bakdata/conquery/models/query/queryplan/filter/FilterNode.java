@@ -17,6 +17,7 @@ public abstract class FilterNode<FILTER_VALUE, FILTER extends Filter<FILTER_VALU
 
 	@Getter
 	protected final FILTER filter;
+
 	@Getter
 	protected final FILTER_VALUE filterValue;
 

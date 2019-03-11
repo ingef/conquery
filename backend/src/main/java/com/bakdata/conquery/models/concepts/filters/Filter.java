@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -48,7 +47,7 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 		return ArrayUtils.contains(getRequiredColumns(), c);
 	}
 
-	public abstract FilterNode createAggregator(FilterValue<FE_TYPE> filterValue);
+	public abstract FilterNode createAggregator(FE_TYPE filterValue);
 
 	@Override
 	public FilterId createId() {
