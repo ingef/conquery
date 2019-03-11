@@ -17,8 +17,7 @@ import {
   setTimebasedIndexResult,
   setTimebasedConditionMinDays,
   setTimebasedConditionMaxDays,
-  setTimebasedConditionMinDaysOrNoEvent,
-  setTimebasedConditionMaxDaysOrNoEvent
+  setTimebasedConditionMinDaysOrNoEvent
 } from "./actions";
 
 import TimebasedCondition from "./TimebasedCondition";
@@ -50,8 +49,7 @@ type PropsType = {
   onSetTimebasedIndexResult: () => void,
   onSetTimebasedConditionMinDays: () => void,
   onSetTimebasedConditionMaxDays: () => void,
-  onSetTimebasedConditionMinDaysOrNoEvent: () => void,
-  onSetTimebasedConditionMaxDaysOrNoEvent: () => void
+  onSetTimebasedConditionMinDaysOrNoEvent: () => void
 };
 
 const TimebasedQueryEditor = (props: PropsType) => {
@@ -87,9 +85,6 @@ const TimebasedQueryEditor = (props: PropsType) => {
             onSetTimebasedConditionMinDaysOrNoEvent={days => {
               props.onSetTimebasedConditionMinDaysOrNoEvent(idx, days);
             }}
-            onSetTimebasedConditionMaxDaysOrNoEvent={days => {
-              props.onSetTimebasedConditionMaxDaysOrNoEvent(idx, days);
-            }}
           />
 
           <Connector>{T.translate("common.and")}</Connector>
@@ -124,9 +119,7 @@ const mapDispatchToProps = dispatch => ({
   onSetTimebasedConditionMaxDays: (conditionIdx, days) =>
     dispatch(setTimebasedConditionMaxDays(conditionIdx, days)),
   onSetTimebasedConditionMinDaysOrNoEvent: (conditionIdx, days) =>
-    dispatch(setTimebasedConditionMinDaysOrNoEvent(conditionIdx, days)),
-  onSetTimebasedConditionMaxDaysOrNoEvent: (conditionIdx, days) =>
-    dispatch(setTimebasedConditionMaxDaysOrNoEvent(conditionIdx, days))
+    dispatch(setTimebasedConditionMinDaysOrNoEvent(conditionIdx, days))
 });
 
 export default connect(
