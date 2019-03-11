@@ -23,6 +23,6 @@ public class BigMultiSelectFilter extends AbstractSelectFilter<String[]> impleme
 
 	@Override
 	public FilterNode createAggregator(String[] value) {
-		return new MultiSelectFilterNode(this, value);
+		return new MultiSelectFilterNode(getColumn(), value);
 	}
 }

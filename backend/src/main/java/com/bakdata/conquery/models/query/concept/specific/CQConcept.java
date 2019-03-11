@@ -69,7 +69,7 @@ public class CQConcept implements CQElement {
 			List<Select> resolvedSelects = t.getSelects();
 
 
-			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
+			List<FilterNode<?>> filters = new ArrayList<>(t.getFilters().size());
 			//add filter to children
 			for(FilterValue f : t.getFilters()) {
 				FilterNode agg = f.getFilter().createAggregator(f.getValue());
@@ -114,7 +114,7 @@ public class CQConcept implements CQElement {
 					.toArray(ConceptElement[]::new);
 	}
 
-	private QPNode conceptChild(List<FilterNode<?, ?>> filters, List<QPNode> aggregators) {
+	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);

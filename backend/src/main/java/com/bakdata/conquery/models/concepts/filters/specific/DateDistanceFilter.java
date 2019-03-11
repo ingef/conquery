@@ -49,6 +49,6 @@ public class DateDistanceFilter extends SingleColumnFilter<Range.LongRange> {
 	
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
-		return new DateDistanceFilterNode(this, value, timeUnit);
+		return new DateDistanceFilterNode(getColumn(), timeUnit, value);
 	}
 }

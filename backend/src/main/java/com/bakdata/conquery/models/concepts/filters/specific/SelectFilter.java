@@ -23,7 +23,7 @@ public class SelectFilter extends AbstractSelectFilter<String> implements ISelec
 	}
 
 	@Override
-	public FilterNode<?, ?> createAggregator(String value) {
-		return new SelectFilterNode(this, value);
+	public FilterNode<?> createAggregator(String value) {
+		return new SelectFilterNode(getColumn(), value);
 	}
 }

@@ -17,14 +17,12 @@ import lombok.Setter;
 @CPSType(id = "SELECT", base = Filter.class)
 public class MultiSelectFilter extends AbstractSelectFilter<String[]> {
 
-	
-
 	public MultiSelectFilter() {
 		super(128, FEFilterType.MULTI_SELECT);
 	}
 
 	@Override
-	public FilterNode<?,?> createAggregator(String[] value) {
-		return new MultiSelectFilterNode<>(this, value);
+	public FilterNode<?> createAggregator(String[] value) {
+		return new MultiSelectFilterNode(getColumn(), value);
 	}
 }
