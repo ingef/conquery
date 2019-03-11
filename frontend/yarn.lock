@@ -3213,9 +3213,9 @@ diffie-hellman@^5.0.0:
     miller-rabin "^4.0.0"
     randombytes "^2.0.0"
 
-dnd-core@^6.0.0:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/dnd-core/-/dnd-core-6.0.0.tgz#d347266ebd72f0a2de6ecf5e26e4ef006ebde84b"
+dnd-core@^7.2.0:
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/dnd-core/-/dnd-core-7.2.0.tgz#70d4ab6c0c6f90423c27b1711624b5d834025bf3"
   dependencies:
     asap "^2.0.6"
     invariant "^2.2.4"
@@ -4594,7 +4594,7 @@ hoist-non-react-statics@^2.3.1:
   version "2.5.5"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-2.5.5.tgz#c5903cf409c0dfd908f388e619d86b9c1174cb47"
 
-hoist-non-react-statics@^3.1.0:
+hoist-non-react-statics@^3.3.0:
   version "3.3.0"
   resolved "https://registry.yarnpkg.com/hoist-non-react-statics/-/hoist-non-react-statics-3.3.0.tgz#b09178f0122184fb95acf525daaecb4d8f45958b"
   dependencies:
@@ -8056,19 +8056,19 @@ react-delay-input@^4.0.4:
     lodash.debounce "^4"
     prop-types "^15"
 
-react-dnd-html5-backend@6:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/react-dnd-html5-backend/-/react-dnd-html5-backend-6.0.0.tgz#e70ad62a5df95cc993739aab1f1ffe0e725a9878"
+react-dnd-html5-backend@^7.2.0:
+  version "7.2.0"
+  resolved "https://registry.yarnpkg.com/react-dnd-html5-backend/-/react-dnd-html5-backend-7.2.0.tgz#4cde55fb690020d98d7b6f3d4400c56b2ae82dfa"
   dependencies:
-    dnd-core "^6.0.0"
+    dnd-core "^7.2.0"
     lodash "^4.17.11"
 
-react-dnd@6:
-  version "6.0.0"
-  resolved "https://registry.yarnpkg.com/react-dnd/-/react-dnd-6.0.0.tgz#0780eafaa47293bf12dc8f79cf1e48ede8ba72f1"
+react-dnd@^7.3.1:
+  version "7.3.1"
+  resolved "https://registry.yarnpkg.com/react-dnd/-/react-dnd-7.3.1.tgz#40591760d11d996ac859ac6312ea6f26dbfffd23"
   dependencies:
-    dnd-core "^6.0.0"
-    hoist-non-react-statics "^3.1.0"
+    dnd-core "^7.2.0"
+    hoist-non-react-statics "^3.3.0"
     invariant "^2.1.0"
     lodash "^4.17.11"
     recompose "^0.30.0"
