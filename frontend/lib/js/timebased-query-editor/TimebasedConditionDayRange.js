@@ -19,8 +19,8 @@ const StyledInputText = styled(InputText)`
 `;
 
 type PropsType = {
-  minDays: ?(number | string),
-  maxDays: ?(number | string),
+  minDays?: ?(number | string),
+  maxDays?: ?(number | string),
   onSetTimebasedConditionMinDays: Function,
   onSetTimebasedConditionMaxDays: Function
 };
