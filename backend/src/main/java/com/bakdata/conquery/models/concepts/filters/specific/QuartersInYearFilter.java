@@ -18,7 +18,7 @@ import lombok.Setter;
 
 @Setter @Getter
 @CPSType(id="QUARTERS_IN_YEAR", base= Filter.class)
-public class QuartersInYearFilter extends SingleColumnFilter<Range.IntegerRange> {
+public class QuartersInYearFilter extends SingleColumnFilter<Range.LongRange> {
 	
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.DATE);
@@ -33,7 +33,7 @@ public class QuartersInYearFilter extends SingleColumnFilter<Range.IntegerRange>
 
 
 	@Override
-	public FilterNode createAggregator(Range.IntegerRange value) {
+	public FilterNode createAggregator(Range.LongRange value) {
 		return new RangeFilterNode(this, value, new QuartersInYearAggregator(getColumn()));
 	}
 

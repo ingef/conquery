@@ -19,7 +19,7 @@ import lombok.Setter;
 
 @Setter @Getter
 @CPSType(id="COUNT_QUARTERS", base=Filter.class)
-public class CountQuartersFilter extends SingleColumnFilter<Range.IntegerRange> {
+public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 	
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -33,7 +33,7 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.IntegerRange> 
 	}
 
 	@Override
-	public FilterNode createAggregator(Range.IntegerRange value) {
+	public FilterNode createAggregator(Range.LongRange value) {
 		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
 			return new RangeFilterNode(this, value, new CountQuartersOfDateRangeAggregator(getColumn()));
 		}

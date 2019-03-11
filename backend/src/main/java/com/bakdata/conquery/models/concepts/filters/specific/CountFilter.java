@@ -23,7 +23,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "COUNT", base = Filter.class)
-public class CountFilter extends SingleColumnFilter<Range.IntegerRange> {
+public class CountFilter extends SingleColumnFilter<Range.LongRange> {
 
 
 	private boolean distinct;
@@ -40,7 +40,7 @@ public class CountFilter extends SingleColumnFilter<Range.IntegerRange> {
 	}
 
 	@Override
-	public FilterNode createAggregator(Range.IntegerRange value) {
+	public FilterNode createAggregator(Range.LongRange value) {
 		if (distinct) {
 			return new RangeFilterNode(this, value, new DistinctValuesWrapperAggregatorNode(new CountAggregator(getColumn()), getColumn()));
 		}
