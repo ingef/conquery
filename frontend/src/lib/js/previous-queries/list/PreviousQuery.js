@@ -7,7 +7,10 @@ import { css } from "@emotion/core";
 import T from "i18n-react";
 import { DragSource } from "react-dnd";
 import { connect } from "react-redux";
-import moment from "moment";
+import formatDistance from "date-fns/formatDistance";
+import parseISO from "date-fns/parseISO";
+
+import { getDateLocale } from "../../localization";
 
 import { ErrorMessage } from "../../error-message";
 import { dndTypes } from "../../common/constants";
@@ -157,7 +160,10 @@ const PreviousQuery = (props: PropsType) => {
   const peopleFound = `${query.numberOfResults} ${T.translate(
     "previousQueries.results"
   )}`;
-  const executedAt = moment(query.createdAt).fromNow();
+  const dateLocale = getDateLocale();
+  const executedAt = formatDistance(parseISO(query.createdAt), new Date(), {
+    locale: dateLocale
+  });
   const label = query.label || query.id.toString();
   const mayEditQuery = query.own || query.shared;
   const isNotEditing = !(query.editingLabel || query.editingTags);
@@ -195,16 +201,18 @@ const PreviousQuery = (props: PropsType) => {
                 {T.translate("previousQuery.share")}
               </StyledIconButton>
             ))}
-          {mayEditQuery && !query.editingTags && (
-            <HoverButton
-              icon="plus"
-              large
-              bare
-              onClick={onToggleEditPreviousQueryTags}
-            >
-              {T.translate("previousQuery.addTag")}
-            </HoverButton>
-          )}
+          {mayEditQuery &&
+            !query.editingTags &&
+            (!query.tags || query.tags.length === 0) && (
+              <HoverButton
+                icon="plus"
+                large
+                bare
+                onClick={onToggleEditPreviousQueryTags}
+              >
+                {T.translate("previousQuery.addTag")}
+              </HoverButton>
+            )}
           <TopRight>
             {executedAt}
             {query.loading ? (

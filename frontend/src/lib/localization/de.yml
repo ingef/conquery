@@ -1,3 +1,5 @@
+locale: "de"
+
 headline: "Anfragen und Analyse"
 leftPane:
   categoryTrees: "Konzeptbäume"
@@ -67,12 +69,7 @@ queryNodeEditor:
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
-  datePlaceholder: "Datum wählen"
-  today: "Heute"
-  dateMinLabel: "Von"
-  dateMaxLabel: "Bis"
   headlineStart: "Elemente:"
-  dateFormat: "DD.MM.YYYY"
 
 deletePreviousQueryModal:
   areYouSure: "Diese Anfrage wirklich löschen?"
@@ -105,7 +102,6 @@ tooltip:
     daterange: "Zeitraum"
     from: "Von"
     to: "Bis"
-    possiblePattern: ".2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
 
 reactSelect:
   placeholder: "Auswählen ..."
@@ -125,6 +121,15 @@ inputRange:
   exactLabel: "exakt"
   minLabel: "min"
   maxLabel: "max"
+
+inputDateRange:
+  from: "Von"
+  to: "Bis"
+  placeholder: "Datum wählen"
+  today: "Heute"
+  dateFormat: "dd.MM.yyyy"
+  tooltip:
+    possiblePattern: "y2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
 
 previousQueries:
   loading: "Lade Anfragen"
@@ -239,4 +244,3 @@ authorization:
 search:
   placeholder: "Suchen ..."
   resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} Sekunden)"
-  durationFormat: "s,SS"

@@ -3,7 +3,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import { isEmpty, duration } from "../common/helpers";
+import { isEmpty } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 import IconButton from "../button/IconButton";
 import AnimatedDots from "../common/components/AnimatedDots";
@@ -117,11 +117,7 @@ const SearchBox = (props: PropsType) => {
                 {T.translate("search.resultLabel", {
                   numResults: searchResult.result.length,
                   totalResults: searchResult.totalResults,
-                  duration: duration(
-                    searchResult.duration,
-                    "milliseconds",
-                    T.translate("search.durationFormat")
-                  )
+                  duration: (searchResult.duration / 1000.0).toFixed(2)
                 })}
               </TinyText>
             )

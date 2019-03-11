@@ -52,8 +52,7 @@ module.exports = ["en", "de"].map(lang => ({
       inject: "body",
       filename: `index.${lang}.html`,
       publicPath: ifProduction("/app/static/", "/")
-    }),
-    new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /de|en/)
+    })
   ]),
   module: {
     rules: [

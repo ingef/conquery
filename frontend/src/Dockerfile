@@ -7,7 +7,7 @@ COPY ./package.json ./yarn.lock ./
 RUN yarn --no-progress --frozen-lockfile
 
 COPY . .
-RUN yarn run build-app
+RUN yarn run build
 
 CMD NODE_ENV=production node app/server
 

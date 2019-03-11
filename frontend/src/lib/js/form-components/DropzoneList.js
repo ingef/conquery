@@ -5,6 +5,7 @@ import styled from "@emotion/styled";
 
 import IconButton from "../button/IconButton";
 import Dropzone from "./Dropzone";
+import Label from "./Label";
 
 const ListItem = styled("div")`
   position: relative;
@@ -34,9 +35,7 @@ const DropzoneList = (props: PropsType) => {
 
   return (
     <div className={props.className}>
-      {props.label && (
-        <span className="input-label dropzone-list__label">{props.label}</span>
-      )}
+      {props.label && <Label>{props.label}</Label>}
       {props.items && props.items.length > 0 && (
         <div>
           {props.items.map((item, i) => (

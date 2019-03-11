@@ -9,8 +9,7 @@ import {
   ADD_TIMEBASED_CONDITION,
   REMOVE_TIMEBASED_CONDITION,
   CLEAR_TIMEBASED_QUERY,
-  SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT,
-  SET_TIMEBASED_CONDITION_MAX_DAYS_OR_NO_EVENT
+  SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT
 } from "./actionTypes";
 
 export const dropTimebasedNode = (conditionIdx, resultIdx, node, moved) => ({
@@ -49,11 +48,6 @@ export const setTimebasedConditionMinDays = (conditionIdx, days) => ({
 
 export const setTimebasedConditionMinDaysOrNoEvent = (conditionIdx, days) => ({
   type: SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT,
-  payload: { conditionIdx, days }
-});
-
-export const setTimebasedConditionMaxDaysOrNoEvent = (conditionIdx, days) => ({
-  type: SET_TIMEBASED_CONDITION_MAX_DAYS_OR_NO_EVENT,
   payload: { conditionIdx, days }
 });
 

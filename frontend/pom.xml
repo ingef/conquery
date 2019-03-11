@@ -101,17 +101,6 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>yarn build app</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>generate-resources</phase>
-
-						<configuration>
-							<arguments>build-app</arguments>
-						</configuration>
-					</execution>
-					<execution>
 						<id>yarn test</id>
 						<goals>
 							<goal>yarn</goal>
