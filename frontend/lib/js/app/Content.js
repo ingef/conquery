@@ -17,8 +17,9 @@ import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 
 const PreviewItem = styled("div")`
-  background-color: ${({ theme }) => theme.col.grayLight};
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+  background-color: ${({ theme }) => theme.col.grayVeryLight};
+  opacity: 0.9;
+  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.gray};
   width: ${({ width }) => `${width}px`};
