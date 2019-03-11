@@ -20,28 +20,21 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Mone
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 
 import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @CPSType(id = "SUM", base = Select.class)
 public class SumSelect extends Select {
 
-	@Getter
 	private boolean distinct = false;
 
-	@Getter
 	@NsIdRef
 	@NotNull
 	private Column column;
 
-	@Getter
 	@NsIdRef
 	private Column subtractColumn;
-
-	public SumSelect(Column column, Column subtractColumn) {
-		super();
-
-		this.column = column;
-		this.subtractColumn = subtractColumn;
-	}
 
 	@Override
 	protected Aggregator<?> createAggregator() {

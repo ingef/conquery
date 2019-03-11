@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.concepts.select.connector.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DurationSumAggregatorNode;
@@ -11,9 +10,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Duration
 @CPSType(id = "DURATION_SUM", base = Select.class)
 public class DurationSumSelect extends SingleColumnSelect {
 
-	public DurationSumSelect(Column column) {
-		super(column);
-	}
 
 	@Override
 	protected Aggregator<?> createAggregator() {
