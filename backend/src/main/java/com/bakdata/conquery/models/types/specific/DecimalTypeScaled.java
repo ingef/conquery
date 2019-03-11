@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.types.specific;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.CType;
@@ -38,7 +39,7 @@ public class DecimalTypeScaled<NUMBER, SUB extends CType<NUMBER, IntegerType>> e
 		BigDecimal v = (BigDecimal) value;
 		if(v.scale() > scale)
 			throw new IllegalArgumentException(value+" is out of range");
-		return subType.transformFromMajorType(null, v.unscaledValue().longValueExact());
+		return subType.transformFromMajorType(null, v.setScale(scale, RoundingMode.HALF_DOWN).unscaledValue().longValue());
 	}
 	
 	
