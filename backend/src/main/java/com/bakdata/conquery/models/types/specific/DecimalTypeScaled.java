@@ -39,7 +39,7 @@ public class DecimalTypeScaled<NUMBER, SUB extends CType<NUMBER, IntegerType>> e
 		BigDecimal v = (BigDecimal) value;
 		if(v.scale() > scale)
 			throw new IllegalArgumentException(value+" is out of range");
-		return subType.transformFromMajorType(null, v.setScale(scale, RoundingMode.HALF_DOWN).unscaledValue().longValue());
+		return subType.transformFromMajorType(null, v.setScale(scale, RoundingMode.UNNECESSARY).unscaledValue().longValue());
 	}
 	
 	
