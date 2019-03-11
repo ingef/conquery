@@ -11,7 +11,7 @@
 	</parent>
 
 
-	<artifactId>frontend</artifactId>
+	<artifactId>frontend-resources</artifactId>
 
 	<name>Conquery Frontend</name>
 
@@ -47,7 +47,7 @@
 						<outputDirectory>${workingDirectory}</outputDirectory>
 						<resources>
 							<resource>
-								<directory>src</directory>
+								<directory>${project.parent.basedir}/frontend</directory>
 							</resource>
 						</resources>
 					</configuration>
