@@ -21,7 +21,6 @@ import {
   SET_TIMEBASED_CONDITION_MIN_DAYS,
   SET_TIMEBASED_CONDITION_MAX_DAYS,
   SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT,
-  SET_TIMEBASED_CONDITION_MAX_DAYS_OR_NO_EVENT,
   SET_TIMEBASED_INDEX_RESULT,
   ADD_TIMEBASED_CONDITION,
   REMOVE_TIMEBASED_CONDITION,
@@ -224,14 +223,6 @@ const setTimebasedConditionMinDaysOrNoEvent = (state, action) => {
   });
 };
 
-const setTimebasedConditionMaxDaysOrNoEvent = (state, action) => {
-  const { days } = action.payload;
-
-  return setTimebasedConditionAttributes(state, action, {
-    maxDaysOrNoEvent: days
-  });
-};
-
 const setTimebasedIndexResult = (state, action) => {
   const { indexResult } = action.payload;
 
@@ -303,7 +294,7 @@ const initialState = {
   conditions: [getEmptyNode()]
 };
 
-// This state contains an array of and-conditions.
+// This state contains multiple and-conditions.
 // Every and-condition sets exactly two previous queries in a time-based relation.
 // To be more specific, the RESULTS of two previous queries are set in relation.
 // (The relation is measured in days)
@@ -318,7 +309,6 @@ const initialState = {
 //
 // These dates will have to be taken from a single previous query
 // (result1 or result2 from within specific condition) the "indexResult".
-//
 //
 // Example:
 //
@@ -368,8 +358,6 @@ const timebasedQuery = (
       return setTimebasedConditionMaxDays(state, action);
     case SET_TIMEBASED_CONDITION_MIN_DAYS_OR_NO_EVENT:
       return setTimebasedConditionMinDaysOrNoEvent(state, action);
-    case SET_TIMEBASED_CONDITION_MAX_DAYS_OR_NO_EVENT:
-      return setTimebasedConditionMaxDaysOrNoEvent(state, action);
     case SET_TIMEBASED_INDEX_RESULT:
       return setTimebasedIndexResult(state, action);
     case ADD_TIMEBASED_CONDITION:
