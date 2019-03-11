@@ -17,7 +17,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Getter @Setter @Slf4j
 @CPSType(id="VALIDITY_DATE_SELECTION", base=Filter.class)
-public class ValidityDateSelectionFilter extends Filter<String[]> implements ISelectFilter {
+public class ValidityDateSelectionFilter extends Filter<String> implements ISelectFilter {
 
 	
 	
@@ -40,7 +40,7 @@ public class ValidityDateSelectionFilter extends Filter<String[]> implements ISe
 	}
 	
 	@Override
-	public FilterNode createAggregator(String[] value) {
+	public FilterNode createAggregator(String value) {
 		return null;
 	}
 }

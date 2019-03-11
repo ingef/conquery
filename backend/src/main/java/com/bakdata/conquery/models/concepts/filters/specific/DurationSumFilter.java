@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "DURATION_SUM", base = Filter.class)
-public class DurationSumFilter extends SingleColumnFilter<Range.IntegerRange> {
+public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
@@ -44,7 +44,7 @@ public class DurationSumFilter extends SingleColumnFilter<Range.IntegerRange> {
 	}
 
 	@Override
-	public FilterNode createAggregator(Range.IntegerRange value) {
+	public FilterNode createAggregator(Range.LongRange value) {
 		return new RangeFilterNode(this, value, new DurationSumAggregatorNode(getColumn()));
 	}
 }
