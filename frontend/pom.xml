@@ -70,17 +70,6 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>yarn build</id>
-                        <goals>
-                            <goal>yarn</goal>
-                        </goals>
-                        <phase>generate-resources</phase>
-
-                        <configuration>
-                            <arguments>build</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>yarn set version</id>
                         <goals>
                             <goal>yarn</goal>
@@ -92,14 +81,14 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>yarn build app</id>
+                        <id>yarn build</id>
                         <goals>
                             <goal>yarn</goal>
                         </goals>
                         <phase>generate-resources</phase>
 
                         <configuration>
-                            <arguments>build-app</arguments>
+                            <arguments>build</arguments>
                         </configuration>
                     </execution>
                     <execution>
