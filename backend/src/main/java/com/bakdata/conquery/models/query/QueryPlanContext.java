@@ -11,5 +11,9 @@ public interface QueryPlanContext {
 	BlockManager getBlockManager();
 
 	CentralRegistry getCentralRegistry();
+
+	QueryPlanContext withGenerateSpecialDateUnion(boolean b);
+	
+	boolean isGenerateSpecialDateUnion();
 	
 }

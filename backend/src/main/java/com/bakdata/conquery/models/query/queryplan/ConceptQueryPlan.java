@@ -22,7 +22,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @NoArgsConstructor(access=AccessLevel.PROTECTED)
+@Getter @Setter @NoArgsConstructor(access=AccessLevel.PUBLIC)
 public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPlan {
 	
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
@@ -38,19 +38,6 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 	@Override
 	public ConceptQueryPlan clone() {
 		return clone(this, new ConceptQueryPlan());
-	}
-
-	@Override
-	public Stream<QueryPart> execute(QueryContext context, Collection<Entity> entries) {
-		//collect required tables
-		Set<Table> requiredTables = this.collectRequiredTables()
-			.stream()
-			.map(context.getStorage().getDataset().getTables()::getOrFail)
-			.collect(Collectors.toSet());
-		
-		return entries
-			.stream()
-			.map(entity -> new QueryPart(context, this, requiredTables, entity));
 	}
 
 	@Override
@@ -90,11 +77,21 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 
 	@Override
 	public <T> Aggregator<T> getCloneOf(QueryPlan originalPlan, Aggregator<T> aggregator) {
-		return null;
+		return (Aggregator<T>) aggregators.get(((ConceptQueryPlan)originalPlan).aggregators.indexOf(aggregator));
 	}
 
 	@Override
 	public void addAggregator(Aggregator<?> aggregator) {
 		aggregators.add(aggregator);
+	}
+	
+	@Override
+	public void addAggregator(int index, Aggregator<?> aggregator) {
+		aggregators.add(index, aggregator);
+	}
+
+	@Override
+	public int getAggregatorSize() {
+		return aggregators.size();
 	}
 }

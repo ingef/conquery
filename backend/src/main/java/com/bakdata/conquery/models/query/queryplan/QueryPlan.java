@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.Collection;
+import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.QueryPart;
@@ -15,17 +18,33 @@ public interface QueryPlan extends Cloneable, EventIterating {
 
 	QueryPlan clone();
 
-	Stream<QueryPart> execute(QueryContext context, Collection<Entity> entries);
+	default Stream<QueryPart> execute(QueryContext context, Collection<Entity> entries) {
+		//collect required tables
+		Set<Table> requiredTables = this.collectRequiredTables()
+			.stream()
+			.map(context.getStorage().getDataset().getTables()::getOrFail)
+			.collect(Collectors.toSet());
+		
+		return entries
+			.stream()
+			.map(entity -> new QueryPart(context, this, requiredTables, entity));
+	}
 
 	EntityResult createResult();
 
 	<T> Aggregator<T> getCloneOf(QueryPlan originalPlan, Aggregator<T> aggregator);
 
 	void addAggregator(Aggregator<?> aggregator);
+	
+	void addAggregator(int index, Aggregator<?> aggregator);
 
 	SpecialDateUnion getSpecialDateUnion();
 
 	void init(Entity entity);
 
 	boolean aggregate(Block block, int event);
+
+	int getAggregatorSize();
+	
+	boolean isContained();
 }

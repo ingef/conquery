@@ -87,7 +87,7 @@ public class CQConcept implements CQElement {
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
 
-			if(!excludeFromTimeAggregation) {
+			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
 					t.getResolvedConnector().getTable().getId(),
 					plan.getSpecialDateUnion()
