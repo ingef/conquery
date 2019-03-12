@@ -103,4 +103,18 @@
 </body>
 </html>
 </#macro>
+<#macro kv k="" v="">
+	<#if v?has_content>
+		<div class="row">
+			<div class="col">${k}</div>
+			<div class="col-7">${v}</div>
+		</div>
+	</#if>
+</#macro>
+<#macro kc k="">
+	<div class="row">
+		<div class="col">${k}</div>
+		<div class="col-7"><#nested/></div>
+	</div>
+</#macro>
 			

@@ -9,7 +9,7 @@ import com.google.common.collect.PeekingIterator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @EqualsAndHashCode(callSuper=false)
+@Getter @EqualsAndHashCode(callSuper=true)
 public class ConceptSelectId extends SelectId implements NamespacedId {
 
 	private final ConceptId concept;
