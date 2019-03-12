@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.IRange;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -23,6 +24,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.types.MajorTypeId;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "SUM", base = Filter.class)
-public class SumFilter<RANGE extends IRange<?, ?>> extends Filter<RANGE> {
+public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
 
 
 	@Valid
@@ -89,6 +91,9 @@ public class SumFilter<RANGE extends IRange<?, ?>> extends Filter<RANGE> {
 			return new RangeFilterNode(this, value, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
 		}
 		else {
+			if(getColumn().getType() == MajorTypeId.REAL)
+				return new RangeFilterNode(this, Range.DoubleRange.fromNumberFilter(value), aggregator);
+
 			return new RangeFilterNode(this, value, aggregator);
 		}
 	}

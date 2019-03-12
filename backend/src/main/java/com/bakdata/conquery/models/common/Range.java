@@ -221,6 +221,10 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min == null ? Double.MIN_VALUE : min, max == null ? Double.MAX_VALUE : max);
 		}
 
+		public static DoubleRange fromNumberFilter(IRange<? extends Number, ?> orig){
+			return new Range.DoubleRange(orig.getMin().doubleValue(), orig.getMax().doubleValue());
+		}
+
 		@Override
 		public boolean contains(Double value) {
 			return contains(value.doubleValue());
