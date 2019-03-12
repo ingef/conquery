@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQIntegerRangeFilter;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
-import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -41,7 +41,7 @@ public class CountFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
 	@Override
 	public FilterNode createAggregator(CQIntegerRangeFilter filterValue) {
 		if (distinct) {
-			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregatorNode(new CountAggregator(getColumn()), getColumn()));
+			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getColumn()));
 		}
 		else {
 			return new RangeFilterNode(this, filterValue, new CountAggregator(getColumn()));

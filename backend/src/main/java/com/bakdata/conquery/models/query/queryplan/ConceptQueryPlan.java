@@ -1,20 +1,13 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.QueryContext;
-import com.bakdata.conquery.models.query.QueryPart;
-import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 
 import lombok.AccessLevel;
@@ -34,22 +27,24 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 
 		return plan;
 	}
-
+	
 	@Override
-	public ConceptQueryPlan clone() {
-		return clone(this, new ConceptQueryPlan());
-	}
-
-	@Override
-	public ConceptQueryPlan clone(QueryPlan plan, QueryPlan clone) {
-		return clone((ConceptQueryPlan)plan, (ConceptQueryPlan)clone);
+	public ConceptQueryPlan createClone() {
+		return (ConceptQueryPlan)QueryPlan.super.createClone();
 	}
 	
-	public ConceptQueryPlan clone(ConceptQueryPlan plan, ConceptQueryPlan clone) {
+	@Override
+	public ConceptQueryPlan clone(CloneContext ctx) {
+		return ctx.clone(this);
+	}
+
+	@Override
+	public ConceptQueryPlan doClone(CloneContext ctx) {
+		ConceptQueryPlan clone = new ConceptQueryPlan();
 		for(Aggregator<?> agg:aggregators)
-			clone.aggregators.add(agg.clone());
-		clone.specialDateUnion = (SpecialDateUnion) clone.aggregators.get(aggregators.indexOf(specialDateUnion));
-		clone.setChild(getChild().clone(this, clone));
+			clone.aggregators.add(agg.clone(ctx));
+		clone.specialDateUnion = specialDateUnion.clone(ctx);
+		clone.setChild(getChild().clone(ctx));
 		return clone;
 	}
 
@@ -73,11 +68,6 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 		else {
 			return EntityResult.notContained();
 		}
-	}
-
-	@Override
-	public <T> Aggregator<T> getCloneOf(QueryPlan originalPlan, Aggregator<T> aggregator) {
-		return (Aggregator<T>) aggregators.get(((ConceptQueryPlan)originalPlan).aggregators.indexOf(aggregator));
 	}
 
 	@Override

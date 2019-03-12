@@ -4,8 +4,10 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,7 +20,7 @@ import lombok.Setter;
  */
 @AllArgsConstructor @NoArgsConstructor
 @Getter @Setter
-public class SampledNode {
+public class SampledNode implements CtxCloneable<SampledNode> {
 
 	/**
 	 * A query plan which should be sampled to a singe day.
@@ -32,7 +34,7 @@ public class SampledNode {
 	private TemporalSampler sampler;
 	
 	@Override
-	public SampledNode clone() {
-		return new SampledNode(child.clone(), sampler);
+	public SampledNode doClone(CloneContext ctx) {
+		return new SampledNode(child.clone(ctx), sampler);
 	}
 }

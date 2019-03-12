@@ -94,7 +94,7 @@
 						<goals>
 							<goal>yarn</goal>
 						</goals>
-						<phase>generate-resources</phase>
+						<phase>process-resources</phase>
 
 						<configuration>
 							<arguments>version --no-git-tag-version --new-version ${project.version}</arguments>
@@ -106,7 +106,6 @@
 							<goal>yarn</goal>
 						</goals>
 						<phase>test</phase>
-
 						<configuration>
 							<arguments>test</arguments>
 						</configuration>

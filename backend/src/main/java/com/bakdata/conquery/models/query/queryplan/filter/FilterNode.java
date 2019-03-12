@@ -8,12 +8,12 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class FilterNode<FILTER_VALUE extends FilterValue<?>, FILTER extends Filter<FILTER_VALUE>> implements EventIterating {
+public abstract class FilterNode<FILTER_VALUE extends FilterValue<?>, FILTER extends Filter<FILTER_VALUE>> implements EventIterating, CtxCloneable<FilterNode<FILTER_VALUE, FILTER>> {
 
 	protected final FILTER filter;
 	protected final FILTER_VALUE filterValue;
@@ -24,8 +24,6 @@ public abstract class FilterNode<FILTER_VALUE extends FilterValue<?>, FILTER ext
 			requiredTables.add(c.getTable().getId());
 		}
 	}
-
-	public abstract FilterNode<?,?> clone(QueryPlan plan, QueryPlan clone);
 
 	public boolean checkEvent(Block block, int event) {
 		return true;

@@ -3,8 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.NonNull;
 
@@ -21,8 +20,8 @@ public class NegatingNode extends QPChainNode {
 	}
 	
 	@Override
-	public NegatingNode clone(QueryPlan plan, QueryPlan clone) {
-		return new NegatingNode(getChild().clone(plan, clone));
+	public NegatingNode doClone(CloneContext ctx) {
+		return new NegatingNode(getChild().clone(ctx));
 	}
 	
 	@Override

@@ -9,14 +9,21 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.QueryPart;
+import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 
-public interface QueryPlan extends Cloneable, EventIterating {
+public interface QueryPlan extends EventIterating {
 
-	QueryPlan clone();
+	default QueryPlan createClone() {
+		CloneContext ctx = new CloneContext();
+		return this.clone(ctx);
+	}
+	
+	QueryPlan clone(CloneContext ctx);
 
 	default Stream<QueryPart> execute(QueryContext context, Collection<Entity> entries) {
 		//collect required tables
@@ -31,8 +38,6 @@ public interface QueryPlan extends Cloneable, EventIterating {
 	}
 
 	EntityResult createResult();
-
-	<T> Aggregator<T> getCloneOf(QueryPlan originalPlan, Aggregator<T> aggregator);
 
 	void addAggregator(Aggregator<?> aggregator);
 	

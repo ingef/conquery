@@ -11,8 +11,7 @@ import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 
@@ -66,11 +65,11 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	}
 	
 	@Override
-	public FiltersNode clone(QueryPlan plan, QueryPlan clone) {
+	public FiltersNode doClone(CloneContext ctx) {
 		List<FilterNode<?,?>> copy = new ArrayList<>(filters);
-		copy.replaceAll(fn->fn.clone(plan, clone));
+		copy.replaceAll(fn->fn.clone(ctx));
 
-		return new FiltersNode(copy, getChild().clone(plan, clone));
+		return new FiltersNode(copy, getChild().clone(ctx));
 	}
 
 	@Override

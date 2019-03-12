@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class RealSumAggregator extends SingleColumnAggregator<Double> {
 
@@ -15,7 +16,7 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 	}
 
 	@Override
-	public RealSumAggregator clone() {
+	public RealSumAggregator doClone(CloneContext ctx) {
 		return new RealSumAggregator(getColumn());
 	}
 

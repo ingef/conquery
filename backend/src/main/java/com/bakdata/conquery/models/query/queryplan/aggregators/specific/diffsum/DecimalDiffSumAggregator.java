@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 
@@ -22,7 +23,7 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public DecimalDiffSumAggregator clone() {
+	public DecimalDiffSumAggregator doClone(CloneContext ctx) {
 		return new DecimalDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
 	}
 

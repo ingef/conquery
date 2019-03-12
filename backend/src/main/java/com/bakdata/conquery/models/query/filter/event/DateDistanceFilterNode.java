@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 /**
@@ -32,7 +32,7 @@ public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRang
 	}
 
 	@Override
-	public DateDistanceFilterNode clone(QueryPlan plan, QueryPlan clone) {
+	public DateDistanceFilterNode doClone(CloneContext ctx) {
 		return new DateDistanceFilterNode(filter, filterValue, unit);
 	}
 

@@ -9,10 +9,10 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 
@@ -51,8 +51,8 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		return new TemporalQueryNode(reference.clone(), preceding.clone(), matcher, clone.getSpecialDateUnion());
+	public QPNode doClone(CloneContext ctx) {
+		return new TemporalQueryNode(reference.clone(ctx), preceding.clone(ctx), matcher, dateUnion.clone(ctx));
 	}
 
 	/**

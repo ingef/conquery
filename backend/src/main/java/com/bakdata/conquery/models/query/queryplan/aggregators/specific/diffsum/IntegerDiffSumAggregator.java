@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 
@@ -21,7 +22,7 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public IntegerDiffSumAggregator clone() {
+	public IntegerDiffSumAggregator doClone(CloneContext ctx) {
 		return new IntegerDiffSumAggregator(getAddendColumn(), getSubtrahendColumn());
 	}
 

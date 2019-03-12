@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class ConceptNode extends QPChainNode {
 
@@ -64,8 +64,8 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		return new ConceptNode(concepts, table, getChild().clone(plan, clone));
+	public QPNode doClone(CloneContext ctx) {
+		return new ConceptNode(concepts, table, getChild().clone(ctx));
 	}
 
 	@Override

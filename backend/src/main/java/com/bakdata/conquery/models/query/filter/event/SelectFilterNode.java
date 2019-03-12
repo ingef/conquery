@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.filter.event;
 import com.bakdata.conquery.models.concepts.filters.specific.SelectFilter;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.specific.IStringType;
 
@@ -28,7 +28,7 @@ public class SelectFilterNode extends FilterNode<FilterValue.CQSelectFilter, Sel
 	}
 
 	@Override
-	public SelectFilterNode clone(QueryPlan plan, QueryPlan clone) {
+	public SelectFilterNode doClone(CloneContext ctx) {
 		return new SelectFilterNode(filter, filterValue);
 	}
 

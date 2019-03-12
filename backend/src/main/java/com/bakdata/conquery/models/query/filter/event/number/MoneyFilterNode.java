@@ -4,7 +4,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class MoneyFilterNode extends NumberFilterNode<Range.LongRange> {
 
@@ -14,7 +14,7 @@ public class MoneyFilterNode extends NumberFilterNode<Range.LongRange> {
 	}
 
 	@Override
-	public MoneyFilterNode clone(QueryPlan plan, QueryPlan clone) {
+	public MoneyFilterNode doClone(CloneContext ctx) {
 		return new MoneyFilterNode(filter, filterValue);
 	}
 
