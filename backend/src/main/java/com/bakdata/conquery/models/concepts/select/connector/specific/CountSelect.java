@@ -27,6 +27,11 @@ public class CountSelect extends SingleColumnSelect {
 		super(column);
 	}
 
+	public CountSelect(@NsIdRef Column column, boolean distinct) {
+		super(column);
+		this.distinct = distinct;
+	}
+
 	@Override
 	protected Aggregator<?> createAggregator() {
 		if (distinct) {
