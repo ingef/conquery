@@ -51,7 +51,6 @@ nbactions.xml
 **/.eclipse-pmd
 **/.checkstyle
 **/*.hprof
-**/codeGenDebug/**/*
 **/.idea/
 **/codeGenDebug
 **/pom.properties

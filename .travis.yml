@@ -16,7 +16,7 @@ jobs:
       install: skip
       script:
         - mvn -B -V install -N
-        - mvn -B -V install -pl frontend
+        - mvn -B -V install -pl frontend-resources
         - mvn -B -V install -pl backend -DskipTests
         - mvn -B -V package -pl executable 
 
@@ -138,4 +138,3 @@ cache:
   directories:
     - "$HOME/.cache"
     - "$HOME/.m2"
-    - "$TRAVIS_BUILD_DIR/frontend/node_modules"

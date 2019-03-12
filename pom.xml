@@ -19,7 +19,7 @@
 	</properties>
 	
 	<modules>
-		<module>frontend</module>
+		<module>frontend-resources</module>
 		<module>backend</module>
 		<module>executable</module>
 	</modules>
