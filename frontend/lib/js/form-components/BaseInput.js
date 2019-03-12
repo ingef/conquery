@@ -54,7 +54,7 @@ type NumberFormatValueType = {
   value: string
 };
 
-const ClearableInput = (props: PropsType) => {
+const BaseInput = (props: PropsType) => {
   const { currency, pattern } = props.inputProps || {};
 
   const handleKeyPress = event => {
@@ -113,4 +113,4 @@ const ClearableInput = (props: PropsType) => {
   );
 };
 
-export default ClearableInput;
+export default BaseInput;

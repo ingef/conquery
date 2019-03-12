@@ -1,55 +1,74 @@
 // @flow
 
-import moment from "moment";
+import {
+  format,
+  parse,
+  addQuarters,
+  lastDayOfQuarter,
+  addMonths,
+  endOfMonth
+} from "date-fns";
 
-export const formatDate = (dateString: String) => {
-  return moment(dateString).format(moment.localeData().longDateFormat("L"));
-};
+export const formatDate = (date, dateFormat) =>
+  date && isValidDate(date) ? format(date, dateFormat) : null;
 
-export const duration = (value, units: string, format: string) => {
-  return moment.duration(value, units).format(format, { trim: false });
+export const parseDate = (date, dateFormat) =>
+  date ? parse(date, dateFormat, new Date()) : null;
+
+export const parseRawDate = value => parseDate(value, "ddMMyyyy");
+
+export const isValidDate = date => {
+  // https://stackoverflow.com/questions/1353684/detecting-an-invalid-date-date-instance-in-javascript
+  if (Object.prototype.toString.call(date) === "[object Date]") {
+    // it is a date
+    return !isNaN(date.getTime());
+  }
+
+  return false;
 };
 
 const DATE_PATTERN = {
-  year: /^\.(\d{4})$/,
+  year: /^[y](\d{4})$/,
   quarter_year: /^[q]([1-4]).(\d{4})$/,
-  month_year: /^[m](1[0-2]|[1-9]).(\d{4})$/,
-  date: /^\d{8}$/
+  month_year: /^[m](1[0-2]|[1-9]).(\d{4})$/
 };
 
-export const specificDatePattern = value => {
-  var minDate, maxDate, year, match;
+export const parseDateFromShortcut = value => {
+  let minDate, maxDate, year, match;
+
   switch (true) {
     case DATE_PATTERN.year.test(value):
       year = parseInt(DATE_PATTERN.year.exec(value)[1]);
-      minDate = moment([year, 0, 1]);
-      maxDate = moment([year, 11, 31]);
+
+      minDate = new Date(year, 0, 1);
+      maxDate = new Date(year, 11, 31);
+
       break;
     case DATE_PATTERN.quarter_year.test(value):
       match = DATE_PATTERN.quarter_year.exec(value);
+
       const quarter = parseInt(match[1]);
       year = parseInt(match[2]);
-      minDate = moment([year, 0, 1]).quarter(quarter);
-      maxDate = moment([year, 0, 1])
-        .quarter(quarter + 1)
-        .subtract(1, "day");
+
+      minDate = addQuarters(new Date(year, 0, 1), quarter - 1);
+      maxDate = lastDayOfQuarter(
+        addQuarters(new Date(year, 0, 1), quarter - 1)
+      );
+
       break;
     case DATE_PATTERN.month_year.test(value):
       match = DATE_PATTERN.month_year.exec(value);
+
       const month = parseInt(match[1]);
       year = parseInt(match[2]);
-      minDate = moment([year, 0, 1]).month(month - 1);
-      maxDate = moment([year, 0, 1])
-        .month(month)
-        .subtract(1, "day");
+
+      minDate = addMonths(new Date(year, 0, 1), month - 1);
+      maxDate = endOfMonth(addMonths(new Date(year, 0, 1), month - 1));
+
       break;
     default:
       break;
   }
 
-  return { minDate, maxDate };
-};
-
-export const parseDatePattern = (value, pattern) => {
-  if (value && DATE_PATTERN.date.test(value)) return moment(value, "DDMMYYYY");
+  return { min: minDate, max: maxDate };
 };

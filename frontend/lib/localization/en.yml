@@ -1,3 +1,5 @@
+locale: "en"
+
 headline: "Queries and Analyses"
 leftPane:
   categoryTrees: "Concepts"
@@ -22,10 +24,10 @@ queryRunner:
   endSuccess: "Query finished successfully."
   startError: "Failed to start the query."
   resultError: "Could not load the query result."
-  resultCount: "{count} results found."
+  resultCount: "{count} results"
   queryFailed: "The query failed."
   queryCanceled: "The query was canceled."
-  downloadResults: "Download results (CSV)"
+  downloadResults: "CSV"
 
 queryEditor:
   couldNotExpandNode: "Could not find node"
@@ -65,12 +67,7 @@ queryNodeEditor:
 
 queryGroupModal:
   explanation: "Set time frame"
-  datePlaceholder: "Choose a date"
-  today: "Today"
-  dateMinLabel: "From"
-  dateMaxLabel: "To"
   headlineStart: "Elements:"
-  dateFormat: "MM/DD/YYYY"
 
 deletePreviousQueryModal:
   areYouSure: "Should this query be deleted?"
@@ -100,10 +97,9 @@ tooltip:
   hide: "Hide"
   show: "Show more details"
   date:
-    daterange: "Date Range"
+    daterange: "Date range"
     from: "From"
     to: "To"
-    possiblePattern: ".2000 => from: 01/01/2000 to: 01/31/2000 <br/> q2.2000 => from: 04/01/2000 to: 06/30/2000 <br/> m3.2000 => from: 03/01/2000 to: 03/31/2000"
 
 reactSelect:
   placeholder: "Choose ..."
@@ -123,6 +119,16 @@ inputRange:
   exactLabel: "Exact"
   minLabel: "Min"
   maxLabel: "Max"
+
+inputDateRange:
+  from: "From"
+  to: "To"
+  placeholder: "Select date"
+  today: "Today"
+  dateFormat: "MM/dd/yyyy"
+  tooltip:
+    daterange: "Date Range"
+    possiblePattern: "y2000 => from: 01/01/2000 to: 01/31/2000 <br/> q2.2000 => from: 04/01/2000 to: 06/30/2000 <br/> m3.2000 => from: 03/01/2000 to: 03/31/2000"
 
 previousQueries:
   loading: "Loading Queries"
@@ -237,4 +243,3 @@ authorization:
 search:
   placeholder: "Search ..."
   resultLabel: "Showing {numResults} of {totalResults} results ({duration} Seconds)"
-  durationFormat: "s,SS"

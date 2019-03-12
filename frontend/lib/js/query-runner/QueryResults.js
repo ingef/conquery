@@ -7,11 +7,13 @@ import T from "i18n-react";
 import DownloadButton from "../button/DownloadButton";
 
 const Root = styled("div")`
-  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
 `;
 const Text = styled("p")`
   font-size: ${({ theme }) => theme.font.lg};
-  margin: 0 0 10px;
+  margin: 0 10px 0 0;
   line-height: 1;
 `;
 const StyledDownloadButton = styled(DownloadButton)`

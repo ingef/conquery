@@ -1,12 +1,12 @@
 // @flow
 
 import React from "react";
-import classnames from "classnames";
 import { type FieldPropsType } from "redux-form";
 
 import { isEmpty } from "../common/helpers";
 
-import ClearableInput from "./ClearableInput";
+import BaseInput from "./BaseInput";
+import Labeled from "./Labeled";
 
 type PropsType = FieldPropsType & {
   label: string,
@@ -19,24 +19,19 @@ type PropsType = FieldPropsType & {
   fullWidth?: boolean
 };
 
-const InputWithLabel = (props: PropsType) => {
+const InputText = (props: PropsType) => {
   return (
-    <label
-      className={classnames(props.className, "input", {
-        "input--value-changed":
-          !isEmpty(props.input.value) &&
-          props.input.value !== props.input.defaultValue,
-        "input--full-width": !!props.fullWidth
-      })}
+    <Labeled
+      className={props.className}
+      valueChanged={
+        !isEmpty(props.input.value) &&
+        props.input.value !== props.input.defaultValue
+      }
+      fullWidth={props.fullWidth}
+      label={props.label}
+      tinyLabel={props.tinyLabel}
     >
-      <span
-        className={classnames("input-label", {
-          "input-label--tiny": !!props.tinyLabel
-        })}
-      >
-        {props.label}
-      </span>
-      <ClearableInput
+      <BaseInput
         inputType={props.inputType}
         valueType={props.valueType}
         placeholder={props.placeholder}
@@ -45,8 +40,8 @@ const InputWithLabel = (props: PropsType) => {
         onChange={props.input.onChange}
         inputProps={props.inputProps}
       />
-    </label>
+    </Labeled>
   );
 };
 
-export default InputWithLabel;
+export default InputText;

@@ -7,11 +7,10 @@
 // (to exclude others that are relevant to the frontend only)
 // Some keys are added (e.g. the query type attribute)
 
-// TODO: Use, once feature is complete
-// import {
-//   DAYS_BEFORE,
-//   DAYS_OR_NO_EVENT_BEFORE,
-// } from '../common/constants/timebasedQueryOperatorTypes';
+import {
+  DAYS_BEFORE,
+  DAYS_OR_NO_EVENT_BEFORE
+} from "../common/constants/timebasedQueryOperatorTypes";
 
 import { isEmpty } from "../common/helpers";
 
@@ -19,6 +18,20 @@ import type {
   TableWithFilterValueType,
   SelectedSelectorType
 } from "../standard-query-editor/types";
+
+export const transformFilterValueToApi = (filter: any) => {
+  const { value, mode } = filter;
+
+  if (value instanceof Array) {
+    return value.map(v => (v.value ? v.value : v));
+  }
+
+  if (!!mode) {
+    return mode === "range" ? value : { min: value.exact, max: value.exact };
+  }
+
+  return value;
+};
 
 export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
   if (!tables) return [];
@@ -40,10 +53,7 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
               .map(filter => ({
                 filter: filter.id,
                 type: filter.type,
-                value:
-                  filter.value instanceof Array
-                    ? filter.value.map(v => (v.value ? v.value : v))
-                    : filter.value
+                value: transformFilterValueToApi(filter)
               }))
           : []
       };
@@ -127,34 +137,42 @@ const createQueryConcepts = query => {
 };
 
 // TODO: Use, once feature is complete
-// const getDayRange = (condition) => {
-//   if (condition.operator === DAYS_BEFORE)
-//     return [
-//       { minDays: condition.minDays },
-//       { maxDays: condition.maxDays },
-//     ];
-
-//   if (condition.operator === DAYS_OR_NO_EVENT_BEFORE)
-//     return [
-//       { minDays: condition.minDaysOrNoEvent },
-//       { maxDays: condition.maxDaysOrNoEvent },
-//     ];
-
-//   return [{}, {}];
-// };
+const getDays = condition => {
+  switch (condition.operator) {
+    case DAYS_BEFORE:
+      return {
+        days: {
+          min: condition.minDays,
+          max: condition.maxDays
+        }
+      };
+    case DAYS_OR_NO_EVENT_BEFORE:
+      return {
+        days: condition.minDaysOrNoEvent
+      };
+    default:
+      return {};
+  }
+};
 
 const transformTimebasedQueryToApi = query => ({
   type: "CONCEPT_QUERY",
   root: {
     type: "AND",
     children: query.conditions.map(condition => {
-      // TODO: Use, once feature is complete
-      // const [ minDays, maxDays ] = getDayRange(condition);
+      const days = getDays(condition);
+
       return {
         type: condition.operator,
-        sampler: "EARLIEST",
-        index: createSavedQuery(condition.result0.id),
-        preceding: createSavedQuery(condition.result1.id)
+        ...days,
+        index: {
+          sampler: condition.result0.timestamp,
+          child: createSavedQuery(condition.result0.id)
+        },
+        preceding: {
+          sampler: condition.result1.timestamp,
+          child: createSavedQuery(condition.result1.id)
+        }
       };
     })
   }

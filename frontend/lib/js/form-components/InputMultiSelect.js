@@ -7,7 +7,6 @@ import { type FieldPropsType } from "redux-form";
 import Dropzone from "react-dropzone";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
-import classnames from "classnames";
 import ReactTooltip from "react-tooltip";
 
 import { type SelectOptionsType } from "../common/types/backend";
@@ -16,6 +15,7 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 
 import TooManyValues from "./TooManyValues";
 import ReactSelect from "./ReactSelect";
+import Labeled from "./Labeled";
 
 type PropsType = FieldPropsType & {
   label?: string,
@@ -60,21 +60,19 @@ const InputMultiSelect = (props: PropsType) => {
     }));
 
   return (
-    <label
-      className={classnames("input", {
-        "input--value-changed":
-          !isEmpty(props.input.value) &&
-          props.input.value !== props.input.defaultValue
-      })}
+    <Labeled
+      valueChanged={
+        !isEmpty(props.input.value) &&
+        props.input.value !== props.input.defaultValue
+      }
+      disabled={props.disabled}
+      label={
+        <>
+          {props.label}
+          {props.tooltip && <InfoTooltip text={props.tooltip} />}
+        </>
+      }
     >
-      <p
-        className={classnames("input-label", {
-          "input-label--disabled": !!props.disabled
-        })}
-      >
-        {props.label}
-        {props.tooltip && <InfoTooltip text={props.tooltip} />}
-      </p>
       {props.input.value && props.input.value.length > 50 ? (
         <TooManyValues
           value={props.input.value}
@@ -131,7 +129,7 @@ const InputMultiSelect = (props: PropsType) => {
           />
         </Dropzone>
       )}
-    </label>
+    </Labeled>
   );
 };
 

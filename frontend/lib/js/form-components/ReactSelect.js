@@ -4,6 +4,9 @@ import React from "react";
 import Select from "react-select";
 import Creatable from "react-select/lib/Creatable";
 
+// TODO: Support value-changed
+//       border: 1px solid $col-blue-gray-dark !important
+
 // Helps to have a common ground for styling selects
 const styles = {
   control: (provided, state) => ({

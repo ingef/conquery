@@ -16,6 +16,7 @@ import ConceptDropzone from "./ConceptDropzone";
 import ContentCell from "./ContentCell";
 
 import InputMultiSelect from "../form-components/InputMultiSelect";
+import InputCheckbox from "../form-components/InputCheckbox";
 
 const Row = styled("div")`
   margin-bottom: 10px;
@@ -66,13 +67,13 @@ const NodeDetailsView = (props: PropsType) => {
     >
       {isExcludeTimestampsPossible && (
         <Row>
-          <StyledIconButton
-            frame
-            icon={node.excludeTimestamps ? "check-square-o" : "square-o"}
-            onClick={() => onToggleTimestamps(!node.excludeTimestamps)}
-          >
-            {T.translate("queryNodeEditor.excludeTimestamps")}
-          </StyledIconButton>
+          <InputCheckbox
+            label={T.translate("queryNodeEditor.excludeTimestamps")}
+            input={{
+              value: node.excludeTimestamps,
+              onChange: () => onToggleTimestamps(!node.excludeTimestamps)
+            }}
+          />
         </Row>
       )}
       {node.selects && (

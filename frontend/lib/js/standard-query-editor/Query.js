@@ -1,6 +1,8 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
+
 import { connect } from "react-redux";
 import type { Dispatch } from "redux";
 import T from "i18n-react";
@@ -46,9 +48,26 @@ type PropsType = {
   dateRange: Object
 };
 
+const Container = styled("div")`
+  height: 100%;
+`;
+
+const Groups = styled("div")`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+`;
+
+const QueryGroupConnector = styled("p")`
+  padding: 70px 6px;
+  font-size: ${({ theme }) => theme.font.sm};
+  color: ${({ theme }) => theme.col.gray};
+  text-align: center;
+`;
+
 const Query = (props: PropsType) => {
   return (
-    <div className="query-editor__query-container">
+    <Container>
       {props.isEmptyQuery && (
         // Render a large Dropzone
         <QueryEditorDropzone
@@ -58,7 +77,7 @@ const Query = (props: PropsType) => {
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
       )}
-      <div className="query-editor__query">
+      <Groups>
         {!props.isEmptyQuery &&
           // Render all query groups plus individual AND / OR dropzones
           props.query
@@ -77,9 +96,9 @@ const Query = (props: PropsType) => {
                 onDateClick={() => props.queryGroupModalSetNode(andIdx)}
                 onLoadPreviousQuery={props.loadPreviousQuery}
               />,
-              <p key={`${andIdx}.and`} className="query-group-connector">
+              <QueryGroupConnector key={`${andIdx}.and`}>
                 {T.translate("common.and")}
-              </p>
+              </QueryGroupConnector>
             ])
             .concat(
               <div className="dropzone-wrap" key={props.query.length + 1}>
@@ -91,8 +110,8 @@ const Query = (props: PropsType) => {
                 />
               </div>
             )}
-      </div>
-    </div>
+      </Groups>
+    </Container>
   );
 };
 

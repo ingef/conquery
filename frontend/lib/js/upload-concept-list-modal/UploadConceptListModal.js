@@ -8,7 +8,7 @@ import classnames from "classnames";
 
 import Modal from "../modal/Modal";
 import InputSelect from "../form-components/InputSelect";
-import InputWithLabel from "../form-components/InputWithLabel";
+import InputText from "../form-components/InputText";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import PrimaryButton from "../button/PrimaryButton";
 
@@ -69,7 +69,7 @@ const UploadConceptListModal = (props: PropsType) => {
     <Modal closeModal={onCloseModal} doneButton>
       <div className="upload-concept-list-modal">
         <h3>{T.translate("uploadConceptListModal.headline")}</h3>
-        <InputWithLabel
+        <InputText
           label={T.translate("uploadConceptListModal.label")}
           fullWidth
           input={{

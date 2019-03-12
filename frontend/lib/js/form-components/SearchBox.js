@@ -3,18 +3,18 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import { isEmpty, duration } from "../common/helpers";
+import { isEmpty } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 import IconButton from "../button/IconButton";
 import AnimatedDots from "../common/components/AnimatedDots";
-import ClearableInput from "../form-components/ClearableInput";
+import BaseInput from "../form-components/BaseInput";
 
 const Root = styled("div")`
   margin: 0 10px 5px 20px;
   position: relative;
 `;
 
-const StyledClearableInput = styled(ClearableInput)`
+const StyledBaseInput = styled(BaseInput)`
   width: 100%;
   input {
     width: 100%;
@@ -83,7 +83,7 @@ const SearchBox = (props: PropsType) => {
         />
       ) : (
         <div>
-          <StyledClearableInput
+          <StyledBaseInput
             placeholder={T.translate("search.placeholder")}
             value={searchResult.query || ""}
             onChange={value => {
@@ -117,11 +117,7 @@ const SearchBox = (props: PropsType) => {
                 {T.translate("search.resultLabel", {
                   numResults: searchResult.result.length,
                   totalResults: searchResult.totalResults,
-                  duration: duration(
-                    searchResult.duration,
-                    "milliseconds",
-                    T.translate("search.durationFormat")
-                  )
+                  duration: (searchResult.duration / 1000.0).toFixed(2)
                 })}
               </TinyText>
             )

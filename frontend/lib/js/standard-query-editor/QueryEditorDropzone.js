@@ -24,11 +24,8 @@ type PropsType = {
 };
 
 const dropzoneTarget = {
-  drop(props: PropsType, monitor) {
-    const item:
-      | DraggedNodeType
-      | DraggedQueryType
-      | DraggedFileType = monitor.getItem();
+  drop(props, monitor) {
+    const item = monitor.getItem();
 
     if (item.files) {
       props.onDropFile(item.files[0]);
@@ -47,27 +44,34 @@ const collect = (connect, monitor) => ({
 
 // When instantiating the QueryEditorDropzone, flow doesn't recognize that
 // connectDropTarget and isOver are being injected by react-dnd :(
-const InnerQueryEditorDropzone = (props: PropsType) =>
-  props.connectDropTarget(
+const InnerQueryEditorDropzone = ({
+  isOver,
+  isAnd,
+  isInitial,
+  connectDropTarget
+}: PropsType) => {
+  return (
     <div
+      ref={instance => connectDropTarget(instance)}
       className={classnames("query-editor-dropzone", {
-        "query-editor-dropzone--initial": props.isInitial,
-        "query-editor-dropzone--and": props.isAnd
+        "query-editor-dropzone--initial": isInitial,
+        "query-editor-dropzone--and": isAnd
       })}
     >
       <div
         className={classnames("dropzone", {
-          "dropzone--over": props.isOver
+          "dropzone--over": isOver
         })}
       >
         <p className="dropzone__text">
-          {props.isInitial
+          {isInitial
             ? T.translate("dropzone.dragElementPlease")
             : T.translate("dropzone.dragElementPleaseShort")}
         </p>
       </div>
     </div>
   );
+};
 
 export const QueryEditorDropzone = DropTarget(
   [

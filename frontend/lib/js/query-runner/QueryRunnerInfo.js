@@ -1,11 +1,20 @@
 // @flow
 
 import React from "react";
-import classnames from "classnames";
+import styled from "@emotion/styled";
 import T from "i18n-react";
 import type { StateType } from "./reducer";
 
+const Status = styled("p")`
+  font-weight: 400;
+  margin: 0 10px;
+  font-size: ${({ theme }) => theme.font.sm};
+  color: ${({ theme, success, error }) =>
+    success ? theme.col.green : error ? theme.col.red : "initial"};
+`;
+
 type PropsType = {
+  className?: string,
   queryRunner: StateType
 };
 
@@ -24,20 +33,17 @@ const getMessage = (queryRunner: StateType) => {
   return null;
 };
 
-const QueryRunnerInfo = ({ queryRunner }: PropsType) => {
+const QueryRunnerInfo = ({ queryRunner, className }: PropsType) => {
   const message = getMessage(queryRunner);
 
   return message && !queryRunner.queryResult.resultUrl ? (
-    <div className="query-runner__info">
-      <p
-        className={classnames(
-          "query-runner__status",
-          `query-runner__status--${message.type}`
-        )}
-      >
-        {message.value}
-      </p>
-    </div>
+    <Status
+      className={className}
+      success={message.type === "success"}
+      error={message.type === "error"}
+    >
+      {message.value}
+    </Status>
   ) : null;
 };
 

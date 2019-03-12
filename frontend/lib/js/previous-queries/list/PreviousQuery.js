@@ -1,13 +1,17 @@
 // @flow
 
 import React from "react";
+import { findDOMNode } from "react-dom";
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
 
 import T from "i18n-react";
 import { DragSource } from "react-dnd";
 import { connect } from "react-redux";
-import moment from "moment";
+import formatDistance from "date-fns/formatDistance";
+import parseISO from "date-fns/parseISO";
+
+import { getDateLocale } from "../../localization";
 
 import { ErrorMessage } from "../../error-message";
 import { dndTypes } from "../../common/constants";
@@ -33,9 +37,12 @@ import {
 import PreviousQueryTags from "./PreviousQueryTags";
 
 const nodeSource = {
-  beginDrag(props): DraggedQueryType {
+  beginDrag(props, monitor, component): DraggedQueryType {
+    const { width, height } = findDOMNode(component).getBoundingClientRect();
     // Return the data describing the dragged item
     return {
+      width,
+      height,
       id: props.query.id,
       label: props.query.label,
       isPreviousQuery: true
@@ -144,115 +151,126 @@ type PropsType = {
   availableTags: string[]
 };
 
-const PreviousQuery = (props: PropsType) => {
-  const {
-    query,
-    onRenamePreviousQuery,
-    onToggleEditPreviousQueryTags,
-    onToggleEditPreviousQueryLabel,
-    onRetagPreviousQuery,
-    onToggleSharePreviousQuery
-  } = props;
+// Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
+class PreviousQuery extends React.Component {
+  render() {
+    const {
+      query,
+      connectDragSource,
+      availableTags,
+      onRenamePreviousQuery,
+      onDeletePreviousQuery,
+      onToggleEditPreviousQueryTags,
+      onToggleEditPreviousQueryLabel,
+      onRetagPreviousQuery,
+      onToggleSharePreviousQuery
+    } = this.props;
 
-  const peopleFound = `${query.numberOfResults} ${T.translate(
-    "previousQueries.results"
-  )}`;
-  const executedAt = moment(query.createdAt).fromNow();
-  const label = query.label || query.id.toString();
-  const mayEditQuery = query.own || query.shared;
-  const isNotEditing = !(query.editingLabel || query.editingTags);
+    const peopleFound = `${query.numberOfResults} ${T.translate(
+      "previousQueries.results"
+    )}`;
+    const dateLocale = getDateLocale();
+    const executedAt = formatDistance(parseISO(query.createdAt), new Date(), {
+      locale: dateLocale
+    });
+    const label = query.label || query.id.toString();
+    const mayEditQuery = query.own || query.shared;
+    const isNotEditing = !(query.editingLabel || query.editingTags);
 
-  return (
-    <Root
-      ref={instance => {
-        if (isNotEditing) props.connectDragSource(instance);
-      }}
-      own={!!query.own}
-      shared={!!query.shared}
-      system={!!query.system || (!query.own && !query.shared)}
-    >
-      <TopInfos>
-        <div>
-          {query.resultUrl ? (
-            <DownloadButton bare large url={query.resultUrl}>
-              {peopleFound}
-            </DownloadButton>
-          ) : (
-            peopleFound
-          )}
-          {query.own &&
-            (query.shared ? (
-              <SharedIndicator
-                onClick={() => onToggleSharePreviousQuery(!query.shared)}
-              >
-                {T.translate("previousQuery.shared")}
-              </SharedIndicator>
+    return (
+      <Root
+        ref={instance => {
+          if (isNotEditing) connectDragSource(instance);
+        }}
+        own={!!query.own}
+        shared={!!query.shared}
+        system={!!query.system || (!query.own && !query.shared)}
+      >
+        <TopInfos>
+          <div>
+            {query.resultUrl ? (
+              <DownloadButton bare large url={query.resultUrl}>
+                {peopleFound}
+              </DownloadButton>
             ) : (
-              <StyledIconButton
-                icon="upload"
-                onClick={() => onToggleSharePreviousQuery(!query.shared)}
-              >
-                {T.translate("previousQuery.share")}
-              </StyledIconButton>
-            ))}
-          {mayEditQuery && !query.editingTags && (
-            <HoverButton
-              icon="plus"
-              large
-              bare
-              onClick={onToggleEditPreviousQueryTags}
-            >
-              {T.translate("previousQuery.addTag")}
-            </HoverButton>
-          )}
-          <TopRight>
-            {executedAt}
-            {query.loading ? (
-              <IconButton large bare icon="spinner" />
-            ) : (
-              query.own && (
-                <IconButton
-                  icon="close"
-                  tiny
-                  onClick={props.onDeletePreviousQuery}
-                />
-              )
+              peopleFound
             )}
-          </TopRight>
-        </div>
-      </TopInfos>
-      <MiddleRow>
+            {query.own &&
+              (query.shared ? (
+                <SharedIndicator
+                  onClick={() => onToggleSharePreviousQuery(!query.shared)}
+                >
+                  {T.translate("previousQuery.shared")}
+                </SharedIndicator>
+              ) : (
+                <StyledIconButton
+                  icon="upload"
+                  onClick={() => onToggleSharePreviousQuery(!query.shared)}
+                >
+                  {T.translate("previousQuery.share")}
+                </StyledIconButton>
+              ))}
+            {mayEditQuery &&
+              !query.editingTags &&
+              (!query.tags || query.tags.length === 0) && (
+                <HoverButton
+                  icon="plus"
+                  large
+                  bare
+                  onClick={onToggleEditPreviousQueryTags}
+                >
+                  {T.translate("previousQuery.addTag")}
+                </HoverButton>
+              )}
+            <TopRight>
+              {executedAt}
+              {query.loading ? (
+                <IconButton large bare icon="spinner" />
+              ) : (
+                query.own && (
+                  <IconButton
+                    icon="close"
+                    tiny
+                    onClick={onDeletePreviousQuery}
+                  />
+                )
+              )}
+            </TopRight>
+          </div>
+        </TopInfos>
+        <MiddleRow>
+          {mayEditQuery ? (
+            <StyledEditableText
+              loading={!!query.loading}
+              text={label}
+              selectTextOnMount={true}
+              editing={!!query.editingLabel}
+              onSubmit={onRenamePreviousQuery}
+              onToggleEdit={onToggleEditPreviousQueryLabel}
+            />
+          ) : (
+            <StyledSelectableLabel label={label} />
+          )}
+          <TopInfos>{query.ownerName}</TopInfos>
+        </MiddleRow>
         {mayEditQuery ? (
-          <StyledEditableText
+          <StyledEditableTags
+            tags={query.tags}
+            editing={!!query.editingTags}
             loading={!!query.loading}
-            text={label}
-            selectTextOnMount={true}
-            editing={!!query.editingLabel}
-            onSubmit={onRenamePreviousQuery}
-            onToggleEdit={onToggleEditPreviousQueryLabel}
+            onSubmit={onRetagPreviousQuery}
+            onToggleEdit={onToggleEditPreviousQueryTags}
+            tagComponent={<PreviousQueryTags tags={query.tags} />}
+            availableTags={availableTags}
           />
         ) : (
-          <StyledSelectableLabel label={label} />
+          <PreviousQueryTags tags={query.tags} />
         )}
-        <TopInfos>{query.ownerName}</TopInfos>
-      </MiddleRow>
-      {mayEditQuery ? (
-        <StyledEditableTags
-          tags={query.tags}
-          editing={!!query.editingTags}
-          loading={!!query.loading}
-          onSubmit={onRetagPreviousQuery}
-          onToggleEdit={onToggleEditPreviousQueryTags}
-          tagComponent={<PreviousQueryTags tags={query.tags} />}
-          availableTags={props.availableTags}
-        />
-      ) : (
-        <PreviousQueryTags tags={query.tags} />
-      )}
-      {!!query.error && <StyledErrorMessage message={query.error} />}
-    </Root>
-  );
-};
+        {!!query.error && <StyledErrorMessage message={query.error} />}
+      </Root>
+    );
+  }
+}
 
 const mapStateToProps = state => ({
   availableTags: state.previousQueries.tags

@@ -3,13 +3,11 @@
 import React from "react";
 import styled from "@emotion/styled";
 
-import {
-  InputSelect,
-  InputMultiSelect,
-  InputRange,
-  AsyncInputMultiSelect,
-  InputWithLabel
-} from "../form-components";
+import InputSelect from "../form-components/InputSelect";
+import InputMultiSelect from "../form-components/InputMultiSelect";
+import InputRange from "../form-components/InputRange";
+import AsyncInputMultiSelect from "../form-components/AsyncInputMultiSelect";
+import InputText from "../form-components/InputText";
 
 import {
   SELECT,
@@ -181,7 +179,7 @@ const TableFilters = (props: PropsType) => {
               );
             case STRING:
               return (
-                <InputWithLabel
+                <InputText
                   inputType="text"
                   input={{
                     value: filter.value || "",
