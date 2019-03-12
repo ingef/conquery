@@ -12,7 +12,11 @@ import lombok.Setter;
 public class ConstantValueSelect extends Select {
 	@Getter @Setter
 	private String value;
-	
+
+	public ConstantValueSelect(String value) {
+		this.value = value;
+	}
+
 	@Override
 	protected ConstantValueAggregator createAggregator() {
 		return new ConstantValueAggregator(value);

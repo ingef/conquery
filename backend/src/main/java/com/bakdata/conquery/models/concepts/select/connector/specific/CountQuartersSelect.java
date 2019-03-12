@@ -1,8 +1,10 @@
 package com.bakdata.conquery.models.concepts.select.connector.specific;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQuartersOfDateRangeAggregator;
@@ -15,6 +17,10 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQua
  */
 @CPSType(id = "COUNT_QUARTERS", base = Select.class)
 public class CountQuartersSelect extends SingleColumnSelect {
+
+	public CountQuartersSelect(@NsIdRef Column column) {
+		super(column);
+	}
 
 	@Override
 	protected Aggregator<?> createAggregator() {

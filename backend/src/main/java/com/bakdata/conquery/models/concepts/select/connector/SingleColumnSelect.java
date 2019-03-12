@@ -8,9 +8,11 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+@AllArgsConstructor
 public abstract class SingleColumnSelect extends Select {
 
 	@Getter

@@ -36,16 +36,27 @@ public class SumSelect extends Select {
 	@NsIdRef
 	private Column subtractColumn;
 
+	public SumSelect(boolean distinct, @NsIdRef Column column) {
+		this.distinct = distinct;
+		this.column = column;
+	}
+
+	public SumSelect(boolean distinct, @NsIdRef Column column, @NsIdRef Column subtractColumn) {
+		this.distinct = distinct;
+		this.column = column;
+		this.subtractColumn = subtractColumn;
+	}
+
 	@Override
-	protected Aggregator<?> createAggregator() {
+	protected Aggregator<? extends Number> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregatorNode(getAggregator(), getColumn());
+			return new DistinctValuesWrapperAggregatorNode<>(getAggregator(), getColumn());
 		}
 		else {
 			return getAggregator();
 		}
 	}
-	private ColumnAggregator<?> getAggregator() {
+	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
 			switch (getColumn().getType()) {
 				case INTEGER:
