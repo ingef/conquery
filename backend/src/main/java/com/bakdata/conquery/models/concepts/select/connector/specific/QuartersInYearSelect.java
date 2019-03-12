@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 /**
  * Entity is included when the the number of quarters with events is within a specified range.
@@ -15,6 +16,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Quarters
 @CPSType(id = "QUARTERS_IN_YEAR", base = Select.class)
 public class QuartersInYearSelect extends SingleColumnSelect {
 
+	@JsonCreator
 	public QuartersInYearSelect(@NsIdRef Column column) {
 		super(column);
 	}

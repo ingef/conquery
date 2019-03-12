@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.MultiSelectAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SelectAggregator;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -23,6 +24,7 @@ public class CountOccurencesSelect extends SingleColumnSelect {
 	@NotNull
 	private String[] selection;
 
+	@JsonCreator
 	public CountOccurencesSelect(@NsIdRef Column column, String[] selection) {
 		super(column);
 		this.selection = selection;

@@ -9,8 +9,10 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @CPSType(id = "COUNT", base = Select.class)
@@ -20,9 +22,9 @@ public class CountSelect extends SingleColumnSelect {
 	@Setter
 	private boolean distinct = false;
 
-	public CountSelect(@NsIdRef Column column, boolean distinct) {
+	@JsonCreator
+	public CountSelect(@NsIdRef Column column) {
 		super(column);
-		this.distinct = distinct;
 	}
 
 	@Override

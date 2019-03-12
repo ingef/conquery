@@ -4,6 +4,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -13,6 +14,7 @@ public class ConstantValueSelect extends Select {
 	@Getter @Setter
 	private String value;
 
+	@JsonCreator
 	public ConstantValueSelect(String value) {
 		this.value = value;
 	}
