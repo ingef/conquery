@@ -138,4 +138,3 @@ cache:
   directories:
     - "$HOME/.cache"
     - "$HOME/.m2"
-    - "$TRAVIS_BUILD_DIR/frontend/node_modules"
