@@ -19,7 +19,7 @@ const Label = styled("span")`
 `;
 
 const Container = styled("div")`
-  display: inline-block;
+  flex-shrink: 0;
   position: relative;
   font-size: 22px;
   width: 20px;

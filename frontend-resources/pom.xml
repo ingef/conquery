@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>com.bakdata.conquery</groupId>
+		<artifactId>parent</artifactId>
+		<version>0.0.0-SNAPSHOT</version>
+	</parent>
+
+
+	<artifactId>frontend-resources</artifactId>
+
+	<name>Conquery Frontend</name>
+
+	<properties>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<workingDirectory>${project.build.directory}/working</workingDirectory>
+	</properties>
+
+	<build>
+		<resources>
+			<resource>
+				<directory>${workingDirectory}/app/dist/</directory>
+				<targetPath>frontend/app/static/</targetPath>
+				<excludes>
+					<exclude>**/stats.json</exclude>
+				</excludes>
+			</resource>
+		</resources>
+		<plugins>
+			<!-- copy src into target/working -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>copy-project</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${workingDirectory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.parent.basedir}/frontend</directory>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<!-- Initiation Frontend -->
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.7.5</version>
+				<executions>
+					<execution>
+						<id>install node and yarn</id>
+						<goals>
+							<goal>install-node-and-yarn</goal>
+						</goals>
+						<phase>generate-resources</phase>
+					</execution>
+					<execution>
+						<id>yarn install</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>generate-resources</phase>
+
+						<configuration>
+							<arguments>install --frozen-lockfile --non-interactive --ignore-engines</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>yarn build</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>generate-resources</phase>
+
+						<configuration>
+							<arguments>build</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>yarn set version</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>generate-resources</phase>
+
+						<configuration>
+							<arguments>version --no-git-tag-version --new-version ${project.version}</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>yarn test</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>test</phase>
+
+						<configuration>
+							<arguments>test</arguments>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<installDirectory>${workingDirectory}</installDirectory>
+					<workingDirectory>${workingDirectory}</workingDirectory>
+					<nodeVersion>v8.12.0</nodeVersion>
+					<yarnVersion>v1.9.4</yarnVersion>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+</project>
