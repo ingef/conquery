@@ -105,16 +105,12 @@
 </#macro>
 <#macro kv k="" v="">
 	<#if v?has_content>
-		<div class="row">
-			<div class="col">${k}</div>
-			<div class="col-7">${v}</div>
-		</div>
+		<@kc k=k>${v}</@kc>
 	</#if>
 </#macro>
 <#macro kc k="">
-	<div class="row">
+	<div class="row" style="padding-top:5px">
 		<div class="col">${k}</div>
-		<div class="col-7"><#nested/></div>
+		<div class="col-10"><#nested/></div>
 	</div>
 </#macro>
-			
