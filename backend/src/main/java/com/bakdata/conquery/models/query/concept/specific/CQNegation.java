@@ -26,7 +26,7 @@ public class CQNegation implements CQElement {
 	private CQElement child;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan<?> plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		return new NegatingNode(child.createQueryPlan(context, plan));
 	}
 

@@ -28,7 +28,7 @@ public class CQAnd implements CQElement {
 	private List<CQElement> children;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan<?> plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		QPNode[] aggs = new QPNode[children.size()];
 		for(int i=0;i<aggs.length;i++) {
 			aggs[i] = children.get(i).createQueryPlan(context, plan);

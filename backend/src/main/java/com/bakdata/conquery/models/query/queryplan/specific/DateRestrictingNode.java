@@ -55,7 +55,7 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
+	public QPNode clone(QueryPlan plan, QueryPlan clone) {
 		return new DateRestrictingNode(dateRange, getChild().clone(plan, clone));
 	}
 }

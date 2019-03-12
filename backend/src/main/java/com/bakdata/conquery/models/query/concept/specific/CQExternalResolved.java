@@ -31,7 +31,7 @@ public class CQExternalResolved implements CQElement {
 	private final Map<Integer, CDateSet> values;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan<?> plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		DatasetId dataset = context.getWorker().getStorage().getDataset().getId();
 		return new ExternalNode(
 			new SpecialDateUnionAggregatorNode(

@@ -26,7 +26,7 @@ public class OrNode extends QPParentNode {
 	}
 	
 	@Override
-	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
+	public QPNode clone(QueryPlan plan, QueryPlan clone) {
 		List<QPNode> clones = new ArrayList<>(getChildren());
 		clones.replaceAll(qp->qp.clone(plan, clone));
 		return new OrNode(clones);

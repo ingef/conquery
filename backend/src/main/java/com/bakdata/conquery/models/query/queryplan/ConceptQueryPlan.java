@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter @NoArgsConstructor(access=AccessLevel.PROTECTED)
-public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPlan<ConceptQueryPlan> {
+public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPlan {
 	
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
@@ -54,7 +54,7 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 	}
 
 	@Override
-	public ConceptQueryPlan clone(QueryPlan<?> plan, QueryPlan<?> clone) {
+	public ConceptQueryPlan clone(QueryPlan plan, QueryPlan clone) {
 		return clone((ConceptQueryPlan)plan, (ConceptQueryPlan)clone);
 	}
 	
@@ -89,7 +89,7 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 	}
 
 	@Override
-	public <T> Aggregator<T> getCloneOf(QueryPlan<?> originalPlan, Aggregator<T> aggregator) {
+	public <T> Aggregator<T> getCloneOf(QueryPlan originalPlan, Aggregator<T> aggregator) {
 		return null;
 	}
 

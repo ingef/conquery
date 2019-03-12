@@ -36,7 +36,7 @@ public class CQReusedQuery implements CQElement {
 	}
 	
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan<?> plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		return ((ConceptQuery)resolvedQuery).getRoot().createQueryPlan(context, plan);
 	}
 	

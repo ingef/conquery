@@ -3,14 +3,13 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 
 public class Leaf extends QPNode {
 
 	private boolean triggered = false;
 	
 	@Override
-	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
+	public QPNode clone(QueryPlan plan, QueryPlan clone) {
 		return new Leaf();
 	}
 	

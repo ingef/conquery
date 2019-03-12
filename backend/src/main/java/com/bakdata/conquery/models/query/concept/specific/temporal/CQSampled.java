@@ -39,7 +39,7 @@ public class CQSampled {
 	 * @param plan the parent plan
 	 * @return a new SampledNode
 	 */
-	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan<?> plan) {
+	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
 		ConceptQueryPlan subPlan = ConceptQueryPlan.create();
 		subPlan.setChild(child.createQueryPlan(ctx, plan));
 		return new SampledNode(subPlan, sampler);

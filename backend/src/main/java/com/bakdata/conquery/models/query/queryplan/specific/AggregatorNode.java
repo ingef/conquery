@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 
 import lombok.Getter;
@@ -34,7 +33,7 @@ public class AggregatorNode<T> extends QPNode  {
 	}
 	
 	@Override
-	public AggregatorNode<T> clone(QueryPlan<?> plan, QueryPlan<?> clone) {
+	public AggregatorNode<T> clone(QueryPlan plan, QueryPlan clone) {
 		return new AggregatorNode<>(clone.getCloneOf(plan, aggregator));
 	}
 

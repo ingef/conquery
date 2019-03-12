@@ -21,7 +21,7 @@ public class NegatingNode extends QPChainNode {
 	}
 	
 	@Override
-	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
+	public NegatingNode clone(QueryPlan plan, QueryPlan clone) {
 		return new NegatingNode(getChild().clone(plan, clone));
 	}
 	

@@ -51,8 +51,8 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, ConceptQueryPlan clone) {
-		return new TemporalQueryNode(reference.clone(), preceding.clone(), matcher, clone.getIncluded());
+	public QPNode clone(QueryPlan plan, QueryPlan clone) {
+		return new TemporalQueryNode(reference.clone(), preceding.clone(), matcher, clone.getSpecialDateUnion());
 	}
 
 	/**
@@ -127,9 +127,9 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		CDateSet referenceDurations = getReference().getChild().getIncluded().getAggregationResult();
+		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getAggregationResult();
 		// Create copy as we are mutating the set
-		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getIncluded().getAggregationResult());
+		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getAggregationResult());
 
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);

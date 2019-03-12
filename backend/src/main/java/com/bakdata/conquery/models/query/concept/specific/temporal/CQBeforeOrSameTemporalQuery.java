@@ -23,7 +23,7 @@ public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 	}
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext ctx, QueryPlan<?> plan) {
+	public QPNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
 		return new TemporalQueryNode(
 			index.createQueryPlan(ctx, plan), 
 			preceding.createQueryPlan(ctx, plan), 

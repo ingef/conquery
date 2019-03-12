@@ -58,7 +58,7 @@ public class CQConcept implements CQElement {
 	private boolean excludeFromTimeAggregation = false;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan<?> plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		ConceptElement[] concepts = resolveConcepts(ids, context.getCentralRegistry());
 
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
@@ -125,7 +125,7 @@ public class CQConcept implements CQElement {
 		return result;
 	}
 
-	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan<?> plan, List<Select> select) {
+	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
