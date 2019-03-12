@@ -3059,6 +3059,10 @@ dnd-core@^7.2.0:
     lodash "^4.17.11"
     redux "^4.0.1"
 
+dnd-multi-backend@^3.1.11:
+  version "3.1.11"
+  resolved "https://registry.yarnpkg.com/dnd-multi-backend/-/dnd-multi-backend-3.1.11.tgz#d3e7d426b823c20ce858d0161fcc737fc455ffbb"
+
 doctrine@1.5.0:
   version "1.5.0"
   resolved "https://registry.yarnpkg.com/doctrine/-/doctrine-1.5.0.tgz#379dce730f6166f76cefa4e6707a159b02c5a6fa"
@@ -7618,6 +7622,26 @@ react-dnd-html5-backend@^7.2.0:
   dependencies:
     dnd-core "^7.2.0"
     lodash "^4.17.11"
+
+react-dnd-multi-backend@^3.1.11:
+  version "3.1.11"
+  resolved "https://registry.yarnpkg.com/react-dnd-multi-backend/-/react-dnd-multi-backend-3.1.11.tgz#06d44fd1785ce110646326fe5bdb739f1b088cc5"
+  dependencies:
+    dnd-multi-backend "^3.1.11"
+    prop-types "^15.6.2"
+    react-dnd-preview "^3.1.11"
+
+react-dnd-preview@^3.1.11:
+  version "3.1.11"
+  resolved "https://registry.yarnpkg.com/react-dnd-preview/-/react-dnd-preview-3.1.11.tgz#391cf9fb38bd5295c48c69b1469dd026c62fc470"
+  dependencies:
+    prop-types "^15.6.2"
+
+react-dnd-touch-backend@^0.8.1:
+  version "0.8.1"
+  resolved "https://registry.yarnpkg.com/react-dnd-touch-backend/-/react-dnd-touch-backend-0.8.1.tgz#d306883bbdd5663c52ab2e6722725709319c7ceb"
+  dependencies:
+    invariant "^2.2.4"
 
 react-dnd@^7.3.1:
   version "7.3.1"
