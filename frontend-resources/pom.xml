@@ -54,6 +54,26 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- workaround for https://issues.apache.org/jira/browse/MRESOURCES-236 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<id>permissions-workaround</id>
+						<phase>generate-sources</phase>
+						<configuration>
+							<target>
+								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js" perm="755"/>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 			<!-- Initiation Frontend -->
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
