@@ -18,7 +18,7 @@ public class PrefixSelect extends SingleColumnSelect {
 	private String prefix;
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new PrefixTextAggregator(getColumn(), prefix);
 	}
 	

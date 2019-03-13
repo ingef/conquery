@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 
@@ -11,9 +10,6 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.EntityResult;
 
 import lombok.RequiredArgsConstructor;
-
-import java.util.Set;
-import java.util.concurrent.Callable;
 
 @RequiredArgsConstructor
 public class QueryPart implements Callable<EntityResult> {
@@ -26,7 +22,7 @@ public class QueryPart implements Callable<EntityResult> {
 	@Override
 	public EntityResult call() throws Exception {
 		try {
-			QueryPlan queryPlan = this.plan.clone();
+			QueryPlan queryPlan = this.plan.createClone();
 			queryPlan.init(entity);
 			
 			if (requiredTables.isEmpty()) {

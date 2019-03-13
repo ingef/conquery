@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.esotericsoftware.kryo.util.IntMap;
 
 /**
@@ -60,7 +61,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public QuartersInYearAggregator clone() {
+	public QuartersInYearAggregator doClone(CloneContext ctx) {
 		return new QuartersInYearAggregator(getColumn());
 	}
 }

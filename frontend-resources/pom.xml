@@ -54,28 +54,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<!-- workaround for https://issues.apache.org/jira/browse/MRESOURCES-236 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<id>permissions-workaround</id>
-						<phase>generate-sources</phase>
-						<configuration>
-							<target>
-								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js"  perm="755" />
-								<chmod file="${workingDirectory}/node_modules/cross-env/dist/bin/cross-env.js"  perm="755" />
-								<chmod file="${workingDirectory}/node_modules/webpack/bin/webpack.js"  perm="755" />
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<!-- Initiation Frontend -->
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
@@ -87,28 +65,17 @@
 						<goals>
 							<goal>install-node-and-yarn</goal>
 						</goals>
-						<phase>generate-resources</phase>
+						<phase>generate-sources</phase>
 					</execution>
 					<execution>
 						<id>yarn install</id>
 						<goals>
 							<goal>yarn</goal>
 						</goals>
-						<phase>generate-resources</phase>
+						<phase>generate-sources</phase>
 
 						<configuration>
 							<arguments>install --frozen-lockfile --non-interactive --ignore-engines</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>yarn build</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>generate-resources</phase>
-
-						<configuration>
-							<arguments>build</arguments>
 						</configuration>
 					</execution>
 					<execution>
@@ -123,12 +90,22 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>yarn build</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>generate-resources</phase>
+
+						<configuration>
+							<arguments>build</arguments>
+						</configuration>
+					</execution>
+					<execution>
 						<id>yarn test</id>
 						<goals>
 							<goal>yarn</goal>
 						</goals>
 						<phase>test</phase>
-
 						<configuration>
 							<arguments>test</arguments>
 						</configuration>
@@ -140,6 +117,28 @@
 					<nodeVersion>v8.12.0</nodeVersion>
 					<yarnVersion>v1.9.4</yarnVersion>
 				</configuration>
+			</plugin>
+			<!-- workaround for https://issues.apache.org/jira/browse/MRESOURCES-236 -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.8</version>
+				<executions>
+					<execution>
+						<id>permissions-workaround</id>
+						<phase>process-sources</phase>
+						<configuration>
+							<target>
+								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js"  perm="755" />
+								<chmod file="${workingDirectory}/node_modules/cross-env/dist/bin/cross-env.js"  perm="755" />
+								<chmod file="${workingDirectory}/node_modules/webpack/bin/webpack.js"  perm="755" />
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
 			</plugin>
 		</plugins>
 	</build>

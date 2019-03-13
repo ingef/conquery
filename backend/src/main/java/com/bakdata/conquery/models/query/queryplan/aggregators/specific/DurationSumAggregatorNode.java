@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 
@@ -41,7 +42,7 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public DurationSumAggregatorNode clone() {
+	public DurationSumAggregatorNode doClone(CloneContext ctx) {
 		return new DurationSumAggregatorNode(getColumn());
 	}
 

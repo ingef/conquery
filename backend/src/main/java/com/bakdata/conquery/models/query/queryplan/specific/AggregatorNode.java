@@ -7,8 +7,8 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -17,7 +17,6 @@ import lombok.ToString;
 @RequiredArgsConstructor @Getter @ToString(of = "aggregator")
 public class AggregatorNode<T> extends QPNode  {
 
-	private final int position;
 	private final Aggregator<T> aggregator;
 	private boolean triggered = false;
 	
@@ -34,9 +33,8 @@ public class AggregatorNode<T> extends QPNode  {
 	}
 	
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		Aggregator<T> aggClone = (Aggregator<T>) clone.getAggregators().get(position);
-		return new AggregatorNode<>(position, aggClone);
+	public AggregatorNode<T> doClone(CloneContext ctx) {
+		return new AggregatorNode<>(aggregator.clone(ctx));
 	}
 
 	@Override

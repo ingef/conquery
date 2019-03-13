@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.Al
 public class DistinctSelect extends SingleColumnSelect {
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new AllValuesAggregator<>(getColumn());
 	}
 	

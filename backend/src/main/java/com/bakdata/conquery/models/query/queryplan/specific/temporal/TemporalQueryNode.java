@@ -9,9 +9,10 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 
@@ -50,8 +51,8 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		return new TemporalQueryNode(reference.clone(), preceding.clone(), matcher, clone.getIncluded());
+	public QPNode doClone(CloneContext ctx) {
+		return new TemporalQueryNode(reference.clone(ctx), preceding.clone(ctx), matcher, dateUnion.clone(ctx));
 	}
 
 	/**
@@ -114,7 +115,7 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	/**
-	 * Retrieves the {@link QueryPlan#getIncluded()} time of {@link #reference} and {@link #preceding}.
+	 * Retrieves the {@link ConceptQueryPlan#getIncluded()} time of {@link #reference} and {@link #preceding}.
 	 * Then tests whether they match the specific criteria for inclusion.
 	 * If the criteria are met, the matching {@link CDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
 	 *
@@ -126,9 +127,9 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		CDateSet referenceDurations = getReference().getChild().getIncluded().getAggregationResult();
+		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getAggregationResult();
 		// Create copy as we are mutating the set
-		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getIncluded().getAggregationResult());
+		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getAggregationResult());
 
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);

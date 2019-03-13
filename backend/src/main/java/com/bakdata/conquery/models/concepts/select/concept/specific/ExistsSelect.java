@@ -22,7 +22,7 @@ public class ExistsSelect extends UniversalSelect {
 	private final Set<TableId> requiredTables = collectRequiredTables();
 	
 	@Override
-	protected ExistsAggregator createAggregator() {
+	public ExistsAggregator createAggregator() {
 		return new ExistsAggregator(getRequiredTables());
 	}
 
