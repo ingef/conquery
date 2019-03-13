@@ -72,22 +72,6 @@ export const loadPreviousQuery = (datasetId, queryId) => {
   };
 };
 
-const collectAllSavedQueries = query => {
-  if (query.type === "SAVED_QUERY") return [query];
-
-  if (!query.children || query.children.length === 0) {
-    return [];
-  }
-
-  return [...query.children.map(collectAllSavedQueries)];
-};
-
-export const loadAllPreviousQueriesInQuery = (query, datasetId) => {
-  const savedQueries = collectAllSavedQueries(query);
-
-  return savedQueries.map(query => loadPreviousQuery(datasetId, query.id));
-};
-
 export const toggleEditPreviousQueryLabel = queryId => ({
   type: TOGGLE_EDIT_PREVIOUS_QUERY_LABEL,
   payload: { queryId }
