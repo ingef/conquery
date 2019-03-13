@@ -6,7 +6,6 @@ import java.util.List;
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 
 import lombok.Builder;
 import lombok.Data;
@@ -14,7 +13,7 @@ import lombok.Data;
 /**
  * This class represents a concept as it is presented to the front end.
  */
-@Data @Builder @SuppressWarnings("rawtypes")
+@Data @Builder
 public class FENode {
 	private IId<?> parent;
 	private String label;
@@ -27,4 +26,5 @@ public class FENode {
 	private List<FETable> tables;
 	private Boolean detailsAvailable;
 	private boolean codeListResolvable;
+	private List<FESelect> selects;
 }

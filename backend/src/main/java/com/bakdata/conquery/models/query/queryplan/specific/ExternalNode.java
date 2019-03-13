@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 
@@ -40,8 +40,8 @@ public class ExternalNode extends QPChainNode {
 	}
 	
 	@Override
-	public ExternalNode clone(QueryPlan plan, QueryPlan clone) {
-		return new ExternalNode(getChild().clone(plan, clone), dataset, includedEntities);
+	public ExternalNode doClone(CloneContext ctx) {
+		return new ExternalNode(getChild().clone(ctx), dataset, includedEntities);
 	}
 	
 	@Override

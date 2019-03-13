@@ -17,7 +17,7 @@ public class ConstantValueSelect extends Select {
 	private String value;
 	
 	@Override
-	protected ConstantValueAggregator createAggregator() {
+	public ConstantValueAggregator createAggregator() {
 		return new ConstantValueAggregator(value);
 	}
 

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Entity is included when number of events with non null values is within a
@@ -29,7 +30,7 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public CountAggregator clone() {
+	public CountAggregator doClone(CloneContext ctx) {
 		return new CountAggregator(getColumn());
 	}
 }

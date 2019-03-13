@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class DateRestrictingNode extends QPChainNode {
 
@@ -54,7 +54,7 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		return new DateRestrictingNode(dateRange, getChild().clone(plan, clone));
+	public QPNode doClone(CloneContext ctx) {
+		return new DateRestrictingNode(dateRange, getChild().clone(ctx));
 	}
 }

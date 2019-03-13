@@ -54,6 +54,70 @@
 					</execution>
 				</executions>
 			</plugin>
+			<!-- Initiation Frontend -->
+			<plugin>
+				<groupId>com.github.eirslett</groupId>
+				<artifactId>frontend-maven-plugin</artifactId>
+				<version>1.7.5</version>
+				<executions>
+					<execution>
+						<id>install node and yarn</id>
+						<goals>
+							<goal>install-node-and-yarn</goal>
+						</goals>
+						<phase>generate-sources</phase>
+					</execution>
+					<execution>
+						<id>yarn install</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>generate-sources</phase>
+
+						<configuration>
+							<arguments>install --frozen-lockfile --non-interactive --ignore-engines</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>yarn set version</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>compile</phase>
+
+						<configuration>
+							<arguments>version --no-git-tag-version --new-version ${project.version}</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>yarn build</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>process-classes</phase>
+
+						<configuration>
+							<arguments>build</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>yarn test</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>test</phase>
+						<configuration>
+							<arguments>test</arguments>
+						</configuration>
+					</execution>
+				</executions>
+				<configuration>
+					<installDirectory>${workingDirectory}</installDirectory>
+					<workingDirectory>${workingDirectory}</workingDirectory>
+					<nodeVersion>v8.12.0</nodeVersion>
+					<yarnVersion>v1.9.4</yarnVersion>
+				</configuration>
+			</plugin>
 			<!-- workaround for https://issues.apache.org/jira/browse/MRESOURCES-236 -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -62,7 +126,7 @@
 				<executions>
 					<execution>
 						<id>permissions-workaround</id>
-						<phase>generate-sources</phase>
+						<phase>process-sources</phase>
 						<configuration>
 							<target>
 								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js"  perm="755" />
@@ -75,71 +139,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-			<!-- Initiation Frontend -->
-			<plugin>
-				<groupId>com.github.eirslett</groupId>
-				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.7.5</version>
-				<executions>
-					<execution>
-						<id>install node and yarn</id>
-						<goals>
-							<goal>install-node-and-yarn</goal>
-						</goals>
-						<phase>generate-resources</phase>
-					</execution>
-					<execution>
-						<id>yarn install</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>generate-resources</phase>
-
-						<configuration>
-							<arguments>install --frozen-lockfile --non-interactive --ignore-engines</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>yarn build</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>generate-resources</phase>
-
-						<configuration>
-							<arguments>build</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>yarn set version</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>generate-resources</phase>
-
-						<configuration>
-							<arguments>version --no-git-tag-version --new-version ${project.version}</arguments>
-						</configuration>
-					</execution>
-					<execution>
-						<id>yarn test</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>test</phase>
-
-						<configuration>
-							<arguments>test</arguments>
-						</configuration>
-					</execution>
-				</executions>
-				<configuration>
-					<installDirectory>${workingDirectory}</installDirectory>
-					<workingDirectory>${workingDirectory}</workingDirectory>
-					<nodeVersion>v8.12.0</nodeVersion>
-					<yarnVersion>v1.9.4</yarnVersion>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

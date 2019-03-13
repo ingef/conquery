@@ -4,8 +4,8 @@ import java.util.Collection;
 
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -20,8 +20,8 @@ public class CollectionNotEmptyFilterNode<FILTER_VALUE extends FilterValue<?>> e
 	}
 
 	@Override
-	public CollectionNotEmptyFilterNode<FILTER_VALUE> clone(QueryPlan plan, QueryPlan clone) {
-		return new CollectionNotEmptyFilterNode<>(filter, filterValue, getAggregator().clone());
+	public CollectionNotEmptyFilterNode<FILTER_VALUE> doClone(CloneContext ctx) {
+		return new CollectionNotEmptyFilterNode<>(filter, filterValue, getAggregator().clone(ctx));
 	}
 
 	@Override

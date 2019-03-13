@@ -1,13 +1,9 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
+import java.util.OptionalInt;
+
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-
-import java.util.OptionalInt;
 
 /**
  * Tests if the preceding date is the same day or any day before the reference date.

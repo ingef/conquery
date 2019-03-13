@@ -103,4 +103,14 @@
 </body>
 </html>
 </#macro>
-			
+<#macro kv k="" v="">
+	<#if v?has_content>
+		<@kc k=k>${v}</@kc>
+	</#if>
+</#macro>
+<#macro kc k="">
+	<div class="row" style="padding-top:5px">
+		<div class="col">${k}</div>
+		<div class="col-10"><#nested/></div>
+	</div>
+</#macro>

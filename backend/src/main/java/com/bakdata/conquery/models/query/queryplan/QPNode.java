@@ -7,8 +7,9 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 
-public abstract class QPNode implements EventIterating {
+public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 	private transient boolean lastResult = true;
 	protected QueryContext context;
 	protected Entity entity;
@@ -20,8 +21,6 @@ public abstract class QPNode implements EventIterating {
 
 	protected void init() {
 	}
-
-	public abstract QPNode clone(QueryPlan plan, QueryPlan clone);
 
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {

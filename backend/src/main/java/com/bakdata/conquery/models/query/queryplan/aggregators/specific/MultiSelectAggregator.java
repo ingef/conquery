@@ -6,6 +6,7 @@ import org.apache.commons.collections4.multiset.HashMultiSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.types.specific.IStringType;
 
 
@@ -62,7 +63,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<MultiSet<Strin
 	}
 
 	@Override
-	public MultiSelectAggregator clone() {
+	public MultiSelectAggregator doClone(CloneContext ctx) {
 		return new MultiSelectAggregator(getColumn(), selection);
 	}
 }

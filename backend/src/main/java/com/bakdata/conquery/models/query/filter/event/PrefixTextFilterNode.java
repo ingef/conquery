@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.filter.event;
 import com.bakdata.conquery.models.concepts.filters.specific.PrefixTextFilter;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 /**
@@ -21,7 +21,7 @@ public class PrefixTextFilterNode extends FilterNode<FilterValue.CQStringFilter,
 
 
 	@Override
-	public FilterNode<?, ?> clone(QueryPlan plan, QueryPlan clone) {
+	public PrefixTextFilterNode doClone(CloneContext ctx) {
 		return new PrefixTextFilterNode(filter, filterValue);
 	}
 

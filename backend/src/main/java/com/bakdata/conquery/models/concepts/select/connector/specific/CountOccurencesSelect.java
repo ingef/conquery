@@ -19,7 +19,7 @@ public class CountOccurencesSelect extends SingleColumnSelect {
 	private String[] selection;
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		if (selection.length == 1) {
 			return new SelectAggregator(getColumn(), selection[0]);
 		}

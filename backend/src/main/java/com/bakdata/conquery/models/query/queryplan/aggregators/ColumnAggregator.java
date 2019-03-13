@@ -5,6 +5,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public abstract class ColumnAggregator<T> implements Aggregator<T> {
 
@@ -21,10 +22,12 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 	public abstract void aggregateEvent(Block block, int event);
 
 	@Override
-	public abstract ColumnAggregator<T> clone();
-
-	@Override
 	public String toString(){
 		return getClass().getSimpleName();
+	}
+	
+	@Override
+	public ColumnAggregator<T> clone(CloneContext ctx) {
+		return ctx.clone(this);
 	}
 }

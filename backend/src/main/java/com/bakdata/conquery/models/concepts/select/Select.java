@@ -27,11 +27,7 @@ public abstract class Select extends Labeled<SelectId> {
 	@Setter @Getter
 	private String description;
 
-	public AggregatorNode<?> createAggregator(int position) {
-		return new AggregatorNode<>(position, createAggregator());
-	}
-
-	protected abstract Aggregator<?> createAggregator();
+	public abstract Aggregator<?> createAggregator();
 
 	@Override
 	public SelectId createId() {

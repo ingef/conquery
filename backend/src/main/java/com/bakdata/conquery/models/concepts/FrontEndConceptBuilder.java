@@ -87,6 +87,12 @@ public class FrontEndConceptBuilder {
 					)
 				)
 				.parent(structureParent)
+				.selects(c
+					.getSelects()
+					.stream()
+					.map(FrontEndConceptBuilder::createSelect)
+					.collect(Collectors.toList())
+				)
 				.tables(c
 						.getConnectors()
 						.stream()
@@ -164,9 +170,23 @@ public class FrontEndConceptBuilder {
 				.stream()
 				.map(FrontEndConceptBuilder::createFilter)
 				.collect(Collectors.toList())
+			)
+			.selects(con
+				.getSelects()
+				.stream()
+				.map(FrontEndConceptBuilder::createSelect)
+				.collect(Collectors.toList())
 			).build();
 	}
 
+	public static FESelect createFilter(Select select) {
+		return FESelect.builder()
+			.label(select.getLabel())
+			.id(select.getId())
+			.description(select.getDescription())
+			.build();
+	}
+	
 	public static FEFilter createFilter(Filter<?> filter) {
 		FEFilter f = FEFilter.builder()
 			.id(filter.getId())

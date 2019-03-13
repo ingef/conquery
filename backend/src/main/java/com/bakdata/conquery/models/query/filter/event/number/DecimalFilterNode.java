@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class DecimalFilterNode extends NumberFilterNode<Range<BigDecimal>> {
 
@@ -15,7 +15,7 @@ public class DecimalFilterNode extends NumberFilterNode<Range<BigDecimal>> {
 	}
 
 	@Override
-	public DecimalFilterNode clone(QueryPlan plan, QueryPlan clone) {
+	public DecimalFilterNode doClone(CloneContext ctx) {
 		return new DecimalFilterNode(filter, filterValue);
 	}
 

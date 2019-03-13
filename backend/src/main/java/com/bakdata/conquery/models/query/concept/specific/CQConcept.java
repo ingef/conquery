@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
@@ -86,10 +87,10 @@ public class CQConcept implements CQElement {
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
 
-			if(!excludeFromTimeAggregation) {
+			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
 					t.getResolvedConnector().getTable().getId(),
-					plan.getIncluded()
+					plan.getSpecialDateUnion()
 				));
 			}
 
@@ -129,8 +130,8 @@ public class CQConcept implements CQElement {
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
 		for (Select s : select) {
-			AggregatorNode<?> agg = s.createAggregator(plan.getAggregators().size());
-			plan.getAggregators().add(agg.getAggregator());
+			AggregatorNode<?> agg = new AggregatorNode<>(s.createAggregator());
+			plan.addAggregator(agg.getAggregator());
 			nodes.add(agg);
 		}
 		return nodes;

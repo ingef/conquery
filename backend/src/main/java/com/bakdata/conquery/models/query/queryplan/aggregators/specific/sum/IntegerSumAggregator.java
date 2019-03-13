@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class IntegerSumAggregator extends SingleColumnAggregator<Long> {
 
@@ -14,7 +15,7 @@ public class IntegerSumAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public IntegerSumAggregator clone() {
+	public IntegerSumAggregator doClone(CloneContext ctx) {
 		return new IntegerSumAggregator(getColumn());
 	}
 
