@@ -5,24 +5,24 @@ import java.time.temporal.ChronoUnit;
 
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
 /**
  * Entity is included as long as Dates are within a certain range.
  */
-public class DateDistanceFilterNode extends FilterNode<Range.LongRange, DateDistanceFilter> {
+public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRange> {
 
 	private boolean hit = false;
 	private LocalDate reference;
 	private ChronoUnit unit;
 
-	public DateDistanceFilterNode(DateDistanceFilter dateDistanceFilter, Range.LongRange filterValue, ChronoUnit unit) {
-		super(dateDistanceFilter, filterValue);
+	public DateDistanceFilterNode(Column column, ChronoUnit unit, Range.LongRange filterValue) {
+		super(column, filterValue);
 		this.unit = unit;
 	}
 
@@ -33,16 +33,16 @@ public class DateDistanceFilterNode extends FilterNode<Range.LongRange, DateDist
 
 	@Override
 	public DateDistanceFilterNode clone(QueryPlan plan, QueryPlan clone) {
-		return new DateDistanceFilterNode(filter, filterValue, unit);
+		return new DateDistanceFilterNode(getColumn(), unit, filterValue);
 	}
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, filter.getColumn())) {
+		if (!block.has(event, getColumn())) {
 			return false;
 		}
 
-		LocalDate date = CDate.toLocalDate(block.getDate(event, filter.getColumn()));
+		LocalDate date = CDate.toLocalDate(block.getDate(event, getColumn()));
 
 		final long between = unit.between(date, reference);
 

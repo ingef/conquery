@@ -35,10 +35,10 @@ public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
 		if (getColumn().getType() == MajorTypeId.DATE_RANGE) {
-			return new RangeFilterNode(this, value, new CountQuartersOfDateRangeAggregator(getColumn()));
+			return new RangeFilterNode(value, new CountQuartersOfDateRangeAggregator(getColumn()));
 		}
 		else {
-			return new RangeFilterNode(this, value, new CountQuartersOfDatesAggregator(getColumn()));
+			return new RangeFilterNode(value, new CountQuartersOfDatesAggregator(getColumn()));
 		}
 	}
 }

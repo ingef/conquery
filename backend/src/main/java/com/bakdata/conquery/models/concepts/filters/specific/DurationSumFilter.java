@@ -45,6 +45,6 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
-		return new RangeFilterNode(this, value, new DurationSumAggregatorNode(getColumn()));
+		return new RangeFilterNode(value, new DurationSumAggregatorNode(getColumn()));
 	}
 }

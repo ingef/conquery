@@ -32,7 +32,7 @@ public class PrefixTextFilter extends SingleColumnFilter<String> {
 
 	@Override
 	public FilterNode createAggregator(String value) {
-		return new PrefixTextFilterNode(this, value);
+		return new PrefixTextFilterNode(getColumn(), value);
 	}
 
 }

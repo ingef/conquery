@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.filter;
 
 import java.util.Set;
 
-import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -12,13 +11,13 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.Getter;
 
-public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE, FILTER extends Filter<FILTER_VALUE>> extends FilterNode<FILTER_VALUE, FILTER> {
+public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
 
 	@Getter
 	private AGGREGATOR aggregator;
 
-	public AggregationResultFilterNode(AGGREGATOR aggregator, FILTER filter, FILTER_VALUE filterValue) {
-		super(filter, filterValue);
+	public AggregationResultFilterNode(AGGREGATOR aggregator, FILTER_VALUE filterValue) {
+		super(filterValue);
 		this.aggregator = aggregator;
 	}
 

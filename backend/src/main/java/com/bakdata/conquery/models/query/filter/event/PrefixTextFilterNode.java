@@ -1,35 +1,36 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.concepts.filters.specific.PrefixTextFilter;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
 /**
  * Entity is included when the number of values for a specified column are within a given range.
  */
-public class PrefixTextFilterNode extends FilterNode<String, PrefixTextFilter> {
+public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 
 	private boolean hit;
 
-	public PrefixTextFilterNode(PrefixTextFilter filter, String filterValue) {
-		super(filter, filterValue);
+	public PrefixTextFilterNode(Column column, String filterValue) {
+		super(column, filterValue);
 	}
 
 	@Override
-	public FilterNode<?, ?> clone(QueryPlan plan, QueryPlan clone) {
-		return new PrefixTextFilterNode(filter, filterValue);
+	public FilterNode<?> clone(QueryPlan plan, QueryPlan clone) {
+		return new PrefixTextFilterNode(getColumn(), filterValue);
 	}
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, filter.getColumn())) {
+		if (!block.has(event, getColumn())) {
 			return false;
 		}
 
-		int stringToken = block.getString(event, filter.getColumn());
+		int stringToken = block.getString(event, getColumn());
 
-		String value = (String) filter.getColumn().getTypeFor(block).createScriptValue(stringToken);
+		String value = (String) getColumn().getTypeFor(block).createScriptValue(stringToken);
 
 		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
 		return value.startsWith(filterValue);

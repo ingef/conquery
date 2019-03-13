@@ -34,7 +34,7 @@ public class QuartersInYearFilter extends SingleColumnFilter<Range.LongRange> {
 
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
-		return new RangeFilterNode(this, value, new QuartersInYearAggregator(getColumn()));
+		return new RangeFilterNode(value, new QuartersInYearAggregator(getColumn()));
 	}
 
 }

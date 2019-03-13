@@ -88,13 +88,13 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (distinct) {
-			return new RangeFilterNode(this, value, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
 		}
 		else {
 			if(getColumn().getType() == MajorTypeId.REAL)
-				return new RangeFilterNode(this, Range.DoubleRange.fromNumberFilter(value), aggregator);
+				return new RangeFilterNode(Range.DoubleRange.fromNumberFilter(value), aggregator);
 
-			return new RangeFilterNode(this, value, aggregator);
+			return new RangeFilterNode(value, aggregator);
 		}
 	}
 

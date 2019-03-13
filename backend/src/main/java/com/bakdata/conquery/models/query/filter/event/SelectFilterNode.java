@@ -1,41 +1,41 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 import com.bakdata.conquery.models.types.specific.IStringType;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class SelectFilterNode extends FilterNode<String, SingleColumnFilter<String>> {
+public class SelectFilterNode extends SingleColumnFilterNode<String> {
 
 	private int selectedId = -1;
 	private boolean hit = false;
 
-	public SelectFilterNode(SingleColumnFilter<String> filter, String filterValue) {
-		super(filter, filterValue);
+	public SelectFilterNode(Column column, String filterValue) {
+		super(column, filterValue);
 	}
 
 	@Override
 	public void nextBlock(Block block) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((IStringType) filter.getColumn().getTypeFor(block)).getStringId(filterValue);
+		selectedId = ((IStringType) getColumn().getTypeFor(block)).getStringId(filterValue);
 	}
 
 	@Override
 	public SelectFilterNode clone(QueryPlan plan, QueryPlan clone) {
-		return new SelectFilterNode(filter, filterValue);
+		return new SelectFilterNode(getColumn(), filterValue);
 	}
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
-		if (selectedId == -1 || !block.has(event, filter.getColumn())) {
+		if (selectedId == -1 || !block.has(event, getColumn())) {
 			return false;
 		}
 
-		int value = block.getString(event, filter.getColumn());
+		int value = block.getString(event, getColumn());
 
 		return value == selectedId;
 	}
