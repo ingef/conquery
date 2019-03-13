@@ -9,10 +9,7 @@ import T from "i18n-react";
 import { replace } from "react-router-redux";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
-import {
-  loadPreviousQuery,
-  loadAllPreviousQueriesInGroups
-} from "../previous-queries/list/actions";
+import { loadPreviousQuery } from "../previous-queries/list/actions";
 import type { DateRangeType } from "../common/types/backend";
 
 import {
@@ -136,13 +133,8 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   selectNodeForEditing: (andIdx, orIdx) =>
     dispatch(selectNodeForEditing(andIdx, orIdx)),
   queryGroupModalSetNode: andIdx => dispatch(queryGroupModalSetNode(andIdx)),
-  expandPreviousQuery: (datasetId, rootConcepts, groups, queryId) => {
-    dispatch(expandPreviousQuery(rootConcepts, groups));
-
-    dispatch(loadAllPreviousQueriesInGroups(groups, datasetId));
-
-    // dispatch(replace(toQuery(datasetId, queryId)));
-  },
+  expandPreviousQuery: (rootConcepts, query) =>
+    dispatch(expandPreviousQuery(rootConcepts, query)),
   loadPreviousQuery: (datasetId, queryId) =>
     dispatch(loadPreviousQuery(datasetId, queryId))
 });
@@ -153,13 +145,8 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...ownProps,
   loadPreviousQuery: queryId =>
     dispatchProps.loadPreviousQuery(ownProps.selectedDatasetId, queryId),
-  expandPreviousQuery: (groups, queryId) =>
-    dispatchProps.expandPreviousQuery(
-      ownProps.selectedDatasetId,
-      stateProps.rootConcepts,
-      groups,
-      queryId
-    )
+  expandPreviousQuery: query =>
+    dispatchProps.expandPreviousQuery(stateProps.rootConcepts, query)
 });
 
 export default connect(

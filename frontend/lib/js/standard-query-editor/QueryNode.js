@@ -77,11 +77,11 @@ class QueryNode extends React.Component {
           hasActiveFilters={nodeHasActiveFilters(node)}
           onEditClick={onEditClick}
           onDeleteNode={onDeleteNode}
-          isExpandable={node.isPreviousQuery}
+          isExpandable={node.isPreviousQuery && !!node.query}
           onExpandClick={() => {
             if (!node.query) return;
 
-            onExpandClick(node.query.groups, node.id);
+            onExpandClick(node.query);
           }}
           previousQueryLoading={node.loading}
           error={node.error}

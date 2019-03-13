@@ -72,16 +72,20 @@ export const loadPreviousQuery = (datasetId, queryId) => {
   };
 };
 
-export const loadAllPreviousQueriesInGroups = (groups, datasetId) => {
-  return groups.reduce(
-    (actions, group) => [
-      ...actions,
-      ...group.elements
-        .filter(element => element.type === "QUERY")
-        .map(element => loadPreviousQuery(datasetId, element.id))
-    ],
-    []
-  );
+const collectAllSavedQueries = query => {
+  if (query.type === "SAVED_QUERY") return [query];
+
+  if (!query.children || query.children.length === 0) {
+    return [];
+  }
+
+  return [...query.children.map(collectAllSavedQueries)];
+};
+
+export const loadAllPreviousQueriesInQuery = (query, datasetId) => {
+  const savedQueries = collectAllSavedQueries(query);
+
+  return savedQueries.map(query => loadPreviousQuery(datasetId, query.id));
 };
 
 export const toggleEditPreviousQueryLabel = queryId => ({
