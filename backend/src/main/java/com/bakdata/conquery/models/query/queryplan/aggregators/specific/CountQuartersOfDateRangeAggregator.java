@@ -1,17 +1,19 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
+import java.time.YearMonth;
+import java.time.temporal.ChronoField;
+import java.time.temporal.IsoFields;
+import java.time.temporal.TemporalAdjuster;
+
 import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
-
-import java.time.YearMonth;
-import java.time.temporal.ChronoField;
-import java.time.temporal.IsoFields;
-import java.time.temporal.TemporalAdjuster;
 
 /**
  * Entity is included when the number of distinct quarters for all events is
@@ -29,7 +31,7 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	}
 
 	@Override
-	public CountQuartersOfDateRangeAggregator clone() {
+	public CountQuartersOfDateRangeAggregator doClone(CloneContext ctx) {
 		return new CountQuartersOfDateRangeAggregator(getColumn());
 	}
 

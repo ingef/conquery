@@ -21,7 +21,7 @@ public class CQSameTemporalQuery extends CQAbstractTemporalQuery {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext registry, QueryPlan plan) {
-		return new TemporalQueryNode(index.createQueryPlan(registry, plan), preceding.createQueryPlan(registry, plan), new SameTemporalMatcher(), plan.getIncluded());
+		return new TemporalQueryNode(index.createQueryPlan(registry, plan), preceding.createQueryPlan(registry, plan), new SameTemporalMatcher(), plan.getSpecialDateUnion());
 	}
 	
 	@Override

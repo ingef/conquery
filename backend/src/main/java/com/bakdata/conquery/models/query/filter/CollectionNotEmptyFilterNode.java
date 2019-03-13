@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.query.filter;
 
 import java.util.Collection;
 
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.extern.slf4j.Slf4j;
 

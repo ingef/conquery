@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.filter.event.number;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+
 
 public class RealFilterNode extends NumberFilterNode<Range.DoubleRange> {
 
@@ -12,7 +12,7 @@ public class RealFilterNode extends NumberFilterNode<Range.DoubleRange> {
 	}
 
 	@Override
-	public RealFilterNode clone(QueryPlan plan, QueryPlan clone) {
+	public RealFilterNode doClone(CloneContext ctx) {
 		return new RealFilterNode(getColumn(), filterValue);
 	}
 

@@ -9,7 +9,7 @@ const mountApi = require("./api");
 const isDeveloping = process.env.NODE_ENV !== "production";
 const port = process.env.PORT || 8000;
 const app = express();
-const lang = process.env.LANG || "en";
+const lang = process.env.APP_LANG || "en";
 
 // body parser must be set up before routes are attached
 app.use(bodyParser.json());

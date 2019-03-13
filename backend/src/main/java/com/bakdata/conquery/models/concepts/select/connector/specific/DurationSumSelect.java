@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Duration
 public class DurationSumSelect extends SingleColumnSelect {
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE_RANGE:
 				return new DurationSumAggregatorNode(getColumn());

@@ -1,5 +1,13 @@
 // @flow
 
+export const objectWithoutKey = (key: string) => (obj: Object) => {
+  if (!obj.hasOwnProperty(key)) return obj;
+
+  const { [key]: deleted, ...rest } = obj;
+
+  return rest;
+};
+
 export const isEmpty = (variable: any) => {
   return (
     typeof variable === "undefined" ||

@@ -28,7 +28,7 @@ public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 			index.createQueryPlan(ctx, plan), 
 			preceding.createQueryPlan(ctx, plan), 
 			new BeforeOrSameTemporalMatcher(), 
-			plan.getIncluded()
+			plan.getSpecialDateUnion()
 		);
 	}
 	

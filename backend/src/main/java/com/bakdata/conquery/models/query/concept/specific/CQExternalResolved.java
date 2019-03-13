@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
@@ -38,7 +39,7 @@ public class CQExternalResolved implements CQElement {
 					dataset,
 					ConqueryConstants.ALL_IDS_TABLE
 				),
-				plan.getIncluded()
+				plan.getSpecialDateUnion()
 			),
 			dataset,
 			values);

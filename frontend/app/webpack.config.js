@@ -13,7 +13,7 @@ const { ifProduction, ifDevelopment } = getIfUtils(env);
 module.exports = ["en", "de"].map(lang => ({
   mode: env,
   name: lang,
-  devtool: ifDevelopment("eval-source-map"),
+  devtool: ifDevelopment("eval-source-map", "source-map"),
   entry: {
     main: removeEmpty([
       "@babel/polyfill",
@@ -30,7 +30,8 @@ module.exports = ["en", "de"].map(lang => ({
     minimizer: removeEmpty([
       ifProduction(
         new TerserPlugin({
-          parallel: true
+          parallel: true,
+          sourceMap: true
         })
       ),
       ifProduction(new OptimizeCSSAssetsPlugin())

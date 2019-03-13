@@ -5,6 +5,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.RequiredArgsConstructor;
 
@@ -30,7 +31,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	}
 
 	@Override
-	public ExistsAggregator clone() {
+	public ExistsAggregator doClone(CloneContext ctx) {
 		return new ExistsAggregator(requiredTables);
 	}
 }

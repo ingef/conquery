@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.filter;
 
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,7 @@ public class ValueAboveZeroFilterNode<FILTER_VALUE> extends AggregationResultFil
 	}
 
 	@Override
-	public FilterNode clone(QueryPlan plan, QueryPlan clone) {
+	public FilterNode doClone(CloneContext ctx) {
 		return new ValueAboveZeroFilterNode(getAggregator().clone());
 	}
 

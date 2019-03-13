@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountQua
 public class CountQuartersSelect extends SingleColumnSelect {
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE_RANGE:
 				return new CountQuartersOfDateRangeAggregator(getColumn());

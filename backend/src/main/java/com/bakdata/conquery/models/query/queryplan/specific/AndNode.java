@@ -7,7 +7,7 @@ import java.util.List;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QPParentNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class AndNode extends QPParentNode {
 
@@ -25,9 +25,9 @@ public class AndNode extends QPParentNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
+	public QPNode doClone(CloneContext ctx) {
 		List<QPNode> clones = new ArrayList<>(getChildren());
-		clones.replaceAll(qp -> qp.clone(plan, clone));
+		clones.replaceAll(qp -> qp.clone(ctx));
 		return new AndNode(clones);
 	}
 

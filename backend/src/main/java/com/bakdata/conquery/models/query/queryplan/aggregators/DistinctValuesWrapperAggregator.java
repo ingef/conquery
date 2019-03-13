@@ -7,6 +7,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 
@@ -14,7 +15,7 @@ import lombok.Getter;
  * Aggregator node forwarding only events with distinct values to {@code aggregator}.
  * @param <VALUE>
  */
-public class DistinctValuesWrapperAggregatorNode<VALUE> extends ColumnAggregator<VALUE> {
+public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
 
 	private final ColumnAggregator<VALUE> aggregator;
 	private Set<Object> observed = new HashSet<>();
@@ -22,7 +23,7 @@ public class DistinctValuesWrapperAggregatorNode<VALUE> extends ColumnAggregator
 	@Getter
 	private final Column column;
 
-	public DistinctValuesWrapperAggregatorNode(ColumnAggregator<VALUE> aggregator, Column column) {
+	public DistinctValuesWrapperAggregator(ColumnAggregator<VALUE> aggregator, Column column) {
 		this.column = column;
 		this.aggregator = aggregator;
 	}
@@ -45,7 +46,7 @@ public class DistinctValuesWrapperAggregatorNode<VALUE> extends ColumnAggregator
 	}
 
 	@Override
-	public ColumnAggregator<VALUE> clone() {
-		return new DistinctValuesWrapperAggregatorNode<>(aggregator.clone(), column);
+	public Aggregator<VALUE> doClone(CloneContext ctx) {
+		return new DistinctValuesWrapperAggregator<>(aggregator.clone(ctx), column);
 	}
 }

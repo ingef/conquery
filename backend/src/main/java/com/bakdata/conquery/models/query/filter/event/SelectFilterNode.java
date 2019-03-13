@@ -2,8 +2,7 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
+
 import com.bakdata.conquery.models.types.specific.IStringType;
 
 import lombok.extern.slf4j.Slf4j;
@@ -25,7 +24,7 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public SelectFilterNode clone(QueryPlan plan, QueryPlan clone) {
+	public SelectFilterNode doClone(CloneContext ctx) {
 		return new SelectFilterNode(getColumn(), filterValue);
 	}
 

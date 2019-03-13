@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.value.Fi
 public class FirstValueSelect extends SingleColumnSelect {
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new FirstValueAggregator(getColumn());
 	}
 }
