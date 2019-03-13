@@ -72,7 +72,7 @@
 						<goals>
 							<goal>yarn</goal>
 						</goals>
-						<phase>generate-resources</phase>
+						<phase>generate-sources</phase>
 
 						<configuration>
 							<arguments>install --frozen-lockfile --non-interactive --ignore-engines</arguments>
