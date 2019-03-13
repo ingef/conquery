@@ -65,7 +65,7 @@
 						<goals>
 							<goal>install-node-and-yarn</goal>
 						</goals>
-						<phase>generate-resources</phase>
+						<phase>generate-sources</phase>
 					</execution>
 					<execution>
 						<id>yarn install</id>
@@ -79,25 +79,25 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>yarn build</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>process-resources</phase>
-
-						<configuration>
-							<arguments>build</arguments>
-						</configuration>
-					</execution>
-					<execution>
 						<id>yarn set version</id>
 						<goals>
 							<goal>yarn</goal>
 						</goals>
-						<phase>process-resources</phase>
+						<phase>compile</phase>
 
 						<configuration>
 							<arguments>version --no-git-tag-version --new-version ${project.version}</arguments>
+						</configuration>
+					</execution>
+					<execution>
+						<id>yarn build</id>
+						<goals>
+							<goal>yarn</goal>
+						</goals>
+						<phase>process-classes</phase>
+
+						<configuration>
+							<arguments>build</arguments>
 						</configuration>
 					</execution>
 					<execution>
@@ -126,7 +126,7 @@
 				<executions>
 					<execution>
 						<id>permissions-workaround</id>
-						<phase>generate-sources</phase>
+						<phase>process-sources</phase>
 						<configuration>
 							<target>
 								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js"  perm="755" />
