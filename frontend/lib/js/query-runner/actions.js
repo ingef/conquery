@@ -1,7 +1,5 @@
 // @flow
 
-import { replace } from "react-router-redux";
-
 import api from "../api";
 
 import { defaultSuccess, defaultError } from "../common/actions";

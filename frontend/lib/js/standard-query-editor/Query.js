@@ -6,7 +6,6 @@ import styled from "@emotion/styled";
 import { connect } from "react-redux";
 import type { Dispatch } from "redux";
 import T from "i18n-react";
-import { replace } from "react-router-redux";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
