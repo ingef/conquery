@@ -72,18 +72,6 @@ export const loadPreviousQuery = (datasetId, queryId) => {
   };
 };
 
-export const loadAllPreviousQueriesInGroups = (groups, datasetId) => {
-  return groups.reduce(
-    (actions, group) => [
-      ...actions,
-      ...group.elements
-        .filter(element => element.type === "QUERY")
-        .map(element => loadPreviousQuery(datasetId, element.id))
-    ],
-    []
-  );
-};
-
 export const toggleEditPreviousQueryLabel = queryId => ({
   type: TOGGLE_EDIT_PREVIOUS_QUERY_LABEL,
   payload: { queryId }

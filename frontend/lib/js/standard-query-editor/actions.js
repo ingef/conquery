@@ -76,9 +76,9 @@ export const loadQuery = query => ({
 
 export const clearQuery = () => ({ type: CLEAR_QUERY });
 
-export const expandPreviousQuery = (rootConcepts, groups) => ({
+export const expandPreviousQuery = (rootConcepts, query) => ({
   type: EXPAND_PREVIOUS_QUERY,
-  payload: { rootConcepts, groups }
+  payload: { rootConcepts, query }
 });
 
 export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
