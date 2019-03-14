@@ -52,8 +52,8 @@ public class StoredQueriesProcessor {
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedQuery query) {
-		// see https://github.com/bakdata/conquery/issues/239
-
+		MasterMetaStorage storage = namespaces.get(dataset.getId()).getStorage().getMetaStorage();
+		storage.removeQuery(query.getId());
 	}
 
 	public void patchQuery(User user, Dataset dataset, ManagedQueryId queryId, JsonNode patch) throws JSONException {
