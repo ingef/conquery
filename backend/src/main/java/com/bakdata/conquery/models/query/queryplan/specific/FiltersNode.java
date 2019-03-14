@@ -66,7 +66,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
-		List<FilterNode<?,?>> copy = new ArrayList<>(filters);
+		List<FilterNode<?>> copy = new ArrayList<>(filters);
 		copy.replaceAll(fn->fn.clone(ctx));
 
 		return new FiltersNode(copy, getChild().clone(ctx));

@@ -18,8 +18,8 @@ public class CollectionNotEmptyFilterNode<FILTER_VALUE> extends AggregationResul
 	}
 
 	@Override
-	public CollectionNotEmptyFilterNode<FILTER_VALUE> clone(QueryPlan plan, QueryPlan clone) {
-		return new CollectionNotEmptyFilterNode<>(getAggregator().clone());
+	public CollectionNotEmptyFilterNode<FILTER_VALUE> doClone(CloneContext context) {
+		return new CollectionNotEmptyFilterNode<>(getAggregator().doClone(context));
 	}
 
 	@Override

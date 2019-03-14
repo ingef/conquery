@@ -88,7 +88,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregatorNode(aggregator, getColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getColumn()));
 		}
 		else {
 			if(getColumn().getType() == MajorTypeId.REAL)

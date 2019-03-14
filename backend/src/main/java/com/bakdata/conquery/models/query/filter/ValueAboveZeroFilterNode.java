@@ -19,7 +19,7 @@ public class ValueAboveZeroFilterNode<FILTER_VALUE> extends AggregationResultFil
 
 	@Override
 	public FilterNode doClone(CloneContext ctx) {
-		return new ValueAboveZeroFilterNode(getAggregator().clone());
+		return new ValueAboveZeroFilterNode(getAggregator().doClone(ctx));
 	}
 
 	@Override

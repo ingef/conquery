@@ -9,7 +9,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
-
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
 /**
  * Entity is included as long as Dates are within a certain range.

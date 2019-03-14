@@ -42,7 +42,7 @@ public class CountFilter extends SingleColumnFilter<Range.LongRange> {
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
 		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregatorNode(new CountAggregator(getColumn()), getColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getColumn()));
 		}
 		else {
 			return new RangeFilterNode(value, new CountAggregator(getColumn()));
