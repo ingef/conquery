@@ -125,7 +125,7 @@ const createQueryConcepts = query => {
     const orConcept = { type: "OR", children: [...concepts] };
 
     const withDate = group.dateRange
-      ? [createDateRestriction(group.dateRange, orConcept)]
+      ? createDateRestriction(group.dateRange, orConcept)
       : orConcept;
 
     return group.exclude ? createNegation(withDate) : withDate;
