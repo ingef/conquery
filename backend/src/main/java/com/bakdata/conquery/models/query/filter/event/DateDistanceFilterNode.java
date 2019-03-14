@@ -33,7 +33,7 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 
 	@Override
 	public DateDistanceFilterNode doClone(CloneContext ctx) {
-		return new DateDistanceFilterNode(getColumn(), unit, filterValue);		
+		return new DateDistanceFilterNode(getColumn(), unit, filterValue);
 	}
 
 	@Override

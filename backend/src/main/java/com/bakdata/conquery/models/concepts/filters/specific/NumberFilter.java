@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
-import com.bakdata.conquery.models.query.filter.event.number.NumberFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
@@ -30,8 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @CPSType(id = "NUMBER", base = Filter.class)
 public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
-
-	
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
