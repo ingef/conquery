@@ -121,18 +121,14 @@ const createConcept = concept => ({
 
 const createQueryConcepts = query => {
   return query.map(group => {
-    const concepts = group.dateRange
-      ? group.elements.map(concept =>
-          createDateRestriction(group.dateRange, createQueryConcept(concept))
-        )
-      : group.elements.map(concept => createQueryConcept(concept));
+    const concepts = group.elements.map(createQueryConcept);
+    const orConcept = { type: "OR", children: [...concepts] };
 
-    var result =
-      group.elements.length > 1
-        ? { type: "OR", children: [...concepts] }
-        : concepts.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+    const withDate = group.dateRange
+      ? [createDateRestriction(group.dateRange, orConcept)]
+      : orConcept;
 
-    return group.exclude ? createNegation(result) : result;
+    return group.exclude ? createNegation(withDate) : withDate;
   });
 };
 

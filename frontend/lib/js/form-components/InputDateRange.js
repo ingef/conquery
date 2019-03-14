@@ -94,7 +94,11 @@ const InputDateRange = (props: PropsType) => {
     input: { value }
   } = props;
 
-  const dateFormat = T.translate("inputDateRange.dateFormat");
+  // To save the date in this format in the state
+  const dateFormat = "yyyy-MM-dd";
+
+  // To display the date depending on the locale
+  const displayDateFormat = T.translate("inputDateRange.dateFormat");
 
   const minDate = value ? parseDate(value.min, dateFormat) : null;
   const maxDate = value ? parseDate(value.max, dateFormat) : null;
@@ -118,7 +122,7 @@ const InputDateRange = (props: PropsType) => {
             scrollableYearDropdown
             tabIndex={1}
             selectsStart
-            dateFormat={dateFormat}
+            dateFormat={displayDateFormat}
             locale={"locale"}
             selected={minDate}
             startDate={minDate}
