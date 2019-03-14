@@ -17,15 +17,13 @@ type PropsType = {
   dateRange?: ?Object
 };
 
-const Root = styled("div")`
-  padding-left: 20px;
+const Row = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
 `;
-
-const DateContainer = styled("div")`
-  display: inline-block;
+const Root = styled(Row)`
+  padding-left: 20px;
 `;
 
 const Date = styled("p")`
@@ -34,7 +32,7 @@ const Date = styled("p")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-const ConceptDateRangeTooltip = styled("div")`
+const ConceptDateRangeTooltip = styled(Row)`
   margin: 0 40px 0 25px;
 `;
 
@@ -46,13 +44,10 @@ const Text = styled("p")`
 
 const StyledFaIcon = styled(FaIcon)`
   padding-right: 15px;
-  display: inline-block;
-  vertical-align: middle;
 `;
 
 const Info = styled("div")`
-  display: inline-block;
-  vertical-align: middle;
+  flex-shrink: 0;
 `;
 
 const Number = styled("p")`
@@ -63,6 +58,11 @@ const Number = styled("p")`
 
 const Digits = styled("span")`
   padding-right: 2px;
+`;
+
+const Prefix = styled("span")`
+  display: inline-block;
+  width: 40px;
 `;
 
 const TooltipEntries = (props: PropsType) => {
@@ -81,7 +81,7 @@ const TooltipEntries = (props: PropsType) => {
 
   return (
     <Root className={props.className}>
-      <div>
+      <Row>
         <StyledFaIcon icon="bar-chart" />
         <Info>
           <Number zero={isZero}>
@@ -96,30 +96,25 @@ const TooltipEntries = (props: PropsType) => {
             )}
           </Text>
         </Info>
-      </div>
+      </Row>
       {dateRange && (
         <ConceptDateRangeTooltip>
           <StyledFaIcon icon="calendar" />
           <Info>
-            <DateContainer>
-              <Date>{T.translate("tooltip.date.from") + ":"}</Date>
-              <Date>{T.translate("tooltip.date.to") + ":"}</Date>
-            </DateContainer>
-            <DateContainer>
-              <Date>
-                {formatDate(
-                  parseDate(dateRange.min, displayDateFormat),
-                  dateFormat
-                )}
-              </Date>
-              <Date>
-                {formatDate(
-                  parseDate(dateRange.max, displayDateFormat),
-                  dateFormat
-                )}
-              </Date>
-            </DateContainer>
-            <Text>{T.translate("tooltip.date.daterange")}</Text>
+            <Date>
+              <Prefix>{T.translate("tooltip.date.from") + ":"}</Prefix>
+              {formatDate(
+                parseDate(dateRange.min, displayDateFormat),
+                dateFormat
+              )}
+            </Date>
+            <Date>
+              <Prefix>{T.translate("tooltip.date.to") + ":"}</Prefix>
+              {formatDate(
+                parseDate(dateRange.max, displayDateFormat),
+                dateFormat
+              )}
+            </Date>
           </Info>
         </ConceptDateRangeTooltip>
       )}
