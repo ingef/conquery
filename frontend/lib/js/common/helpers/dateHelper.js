@@ -28,7 +28,7 @@ export const isValidDate = date => {
 };
 
 const DATE_PATTERN = {
-  year: /^[y](\d{4})$/,
+  year: /^[yj](\d{4})$/,
   quarter_year: /^[q]([1-4]).(\d{4})$/,
   month_year: /^[m](1[0-2]|[1-9]).(\d{4})$/
 };
