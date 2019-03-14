@@ -461,6 +461,11 @@ const mergeTablesFromSavedConcept = (savedConcept, concept) => {
 
 const expandNode = (rootConcepts, node) => {
   switch (node.type) {
+    case "OR":
+      return {
+        ...node,
+        elements: node.children.map(c => expandNode(rootConcepts, c))
+      };
     case "SAVED_QUERY":
       return {
         ...node,
@@ -470,7 +475,12 @@ const expandNode = (rootConcepts, node) => {
       };
     case "DATE_RESTRICTION":
       return {
-        ...node,
+        dateRange: node.dateRange,
+        ...expandNode(rootConcepts, node.child)
+      };
+    case "NEGATION":
+      return {
+        exclude: true,
         ...expandNode(rootConcepts, node.child)
       };
     default:
@@ -509,19 +519,7 @@ const expandPreviousQuery = (
     throw new Error("Cant expand query, because root is not AND");
   }
 
-  return query.root.children.map(child => {
-    if (child.type === "OR") {
-      return {
-        ...child,
-        elements: child.children.map(c => expandNode(rootConcepts, c))
-      };
-    } else {
-      return {
-        type: "OR",
-        elements: [expandNode(rootConcepts, child)] // Single nodes
-      };
-    }
-  });
+  return query.root.children.map(child => expandNode(rootConcepts, child));
 };
 
 const findPreviousQueries = (state, action) => {
