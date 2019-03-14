@@ -37,9 +37,7 @@ const QueryResults = (props: PropsType) => {
   return (
     <Root>
       <Text>
-        {props.resultCount
-          ? T.translate("queryRunner.resultCount", { count: props.resultCount })
-          : T.translate("queryRunner.endSuccess")}
+        {T.translate("queryRunner.resultCount", { count: props.resultCount })}
       </Text>
       {isDownload && (
         <StyledDownloadButton frame primary url={props.resultUrl}>
