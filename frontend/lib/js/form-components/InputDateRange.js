@@ -148,7 +148,7 @@ const InputDateRange = (props: PropsType) => {
             scrollableYearDropdown
             tabIndex={2}
             selectsEnd
-            dateFormat={dateFormat}
+            dateFormat={displayDateFormat}
             locale={"locale"}
             selected={maxDate}
             startDate={minDate}
