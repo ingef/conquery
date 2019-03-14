@@ -6,7 +6,7 @@ import { type Dispatch } from "redux-thunk";
 import type { DateRangeType, InfoType } from "../common/types/backend";
 
 import { isEmpty } from "../common/helpers";
-import * as actions from "./actions";
+import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
 import HoverableBase from "./HoverableBase";
 
 export type AdditionalInfoHoverableNodeType = {
@@ -42,7 +42,7 @@ const AdditionalInfoHoverable = (Component: any) => {
 
       if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
 
-      dispatch(actions.displayAdditionalInfos(additionalInfos(node)));
+      dispatch(displayAdditionalInfos(additionalInfos(node)));
     },
     onToggleAdditionalInfos: () => {
       const node = ownProps.node;
@@ -50,8 +50,8 @@ const AdditionalInfoHoverable = (Component: any) => {
       if (!node.additionalInfos && isEmpty(node.matchingEntries)) return;
 
       dispatch([
-        actions.toggleAdditionalInfos(additionalInfos(node)),
-        actions.displayAdditionalInfos(additionalInfos(node))
+        toggleAdditionalInfos(),
+        displayAdditionalInfos(additionalInfos(node))
       ]);
     }
   });
