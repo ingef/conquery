@@ -70,6 +70,18 @@ import type {
 
 const initialState: StandardQueryType = [];
 
+const withDefaultValues = arr => {
+  if (!arr) return arr;
+
+  return arr.map(obj => {
+    // Tables passed
+    if (obj.selects) return { ...obj, selects: withDefaultValues(obj.selects) };
+
+    // Selects passed
+    return { ...obj, selected: !!obj.default };
+  });
+};
+
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
 ): QueryNodeType => {
@@ -92,8 +104,8 @@ const filterItem = (
   else
     return {
       ids: item.ids,
-      tables: item.tables,
-      selects: item.selects,
+      tables: withDefaultValues(item.tables),
+      selects: withDefaultValues(item.selects),
       tree: item.tree,
 
       label: item.label,

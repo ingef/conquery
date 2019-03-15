@@ -81,7 +81,8 @@ export type TableType = {
 export type SelectorType = {
   id: string,
   label: string,
-  description: string
+  description: string,
+  default?: boolean
 };
 
 export type TreeNodeIdType = string;

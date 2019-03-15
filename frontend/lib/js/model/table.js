@@ -4,11 +4,13 @@ import type { TableWithFilterValueType } from "../standard-query-editor/types";
 
 import { isEmpty } from "../common/helpers";
 
+import { objectHasSelectedSelects } from "./select";
+
 export const tablesHaveActiveFilter = (tables: TableWithFilterValueType[]) =>
   tables.some(table => tableHasActiveFilters(table));
 
 export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
-  (table.selects && table.selects.some(select => !!select.selected)) ||
+  objectHasSelectedSelects(table) ||
   (table.filters &&
     table.filters.some(
       filter => !isEmpty(filter.value) && filter.value !== filter.defaultValue
