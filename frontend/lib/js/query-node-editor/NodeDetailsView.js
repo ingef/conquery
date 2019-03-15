@@ -5,7 +5,6 @@ import styled from "@emotion/styled";
 import T from "i18n-react";
 
 import { EditableText } from "../form-components";
-import IconButton from "../button/IconButton";
 
 import { getConceptById } from "../category-trees/globalTreeStoreHelper";
 
@@ -25,11 +24,6 @@ const Row = styled("div")`
 const RowHeading = styled("h5")`
   margin: 0 0 10px 0;
   font-size: ${({ theme }) => theme.font.sm};
-`;
-
-const StyledIconButton = styled(IconButton)`
-  font-size: ${({ theme }) => theme.font.sm};
-  line-height: ${({ theme }) => theme.font.sm};
 `;
 
 const NodeDetailsView = (props: PropsType) => {

@@ -45,6 +45,16 @@ class CategoryTreeList extends React.Component<PropsType> {
             Object.keys(this.props.trees)
               // Only take those that don't have a parent, they must be root
               .filter(treeId => !this.props.trees[treeId].parent)
+              .sort((a, b) => {
+                const aTree = this.props.trees[a];
+                const bTree = this.props.trees[b];
+
+                if (!!aTree.children === !!bTree.children) {
+                  return aTree.label.localeCompare(bTree.label);
+                }
+
+                return !!aTree.children ? -1 : 1;
+              })
               .map((treeId, i) => {
                 const tree = this.props.trees[treeId];
                 const rootConcept = getConceptById(treeId);
