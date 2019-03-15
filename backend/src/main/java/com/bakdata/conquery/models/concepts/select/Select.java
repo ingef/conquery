@@ -9,9 +9,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.SelectId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import lombok.Getter;
@@ -26,6 +26,9 @@ public abstract class Select extends Labeled<SelectId> {
 
 	@Setter @Getter
 	private String description;
+
+	@Setter @Getter @JsonProperty("default")
+	private boolean isDefault = false;
 
 	public abstract Aggregator<?> createAggregator();
 

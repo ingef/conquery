@@ -16,7 +16,7 @@ const RightPane = (props: PropsType) => {
     selectedDatasetId: props.selectedDatasetId
   });
 
-  return <Pane type="right">{tab}</Pane>;
+  return <Pane right>{tab}</Pane>;
 };
 
 export default connect(state => ({

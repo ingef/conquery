@@ -16,6 +16,18 @@ import { Tooltip, ActivateTooltip } from "../tooltip";
 import LeftPane from "./LeftPane";
 import RightPane from "./RightPane";
 
+const Root = styled("div")`
+  width: 100%;
+  height: 100%;
+  position: relative;
+
+  // ADDING TO react-split-pane STYLES
+  // Because otherwise, vertical panes don't expand properly in Safari
+  .vertical {
+    height: 100%;
+  }
+`;
+
 const PreviewItem = styled("div")`
   background-color: ${({ theme }) => theme.col.grayVeryLight};
   opacity: 0.9;
@@ -36,7 +48,7 @@ type PropsType = {
 
 const Content = ({ displayTooltip }: PropsType) => {
   return (
-    <div className="content">
+    <Root>
       <SplitPane
         split="horizontal"
         primary="second"
@@ -58,7 +70,7 @@ const Content = ({ displayTooltip }: PropsType) => {
         {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
       </SplitPane>
       <Preview generator={generatePreview} />
-    </div>
+    </Root>
   );
 };
 
