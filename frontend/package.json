@@ -35,7 +35,7 @@
     "lodash.difference": "^4.5.0",
     "mustache": "^2.3.0",
     "prettier": "^1.16.4",
-    "query-string": "^5.1.0",
+    "query-string": "^6.4.0",
     "react": "^16.8.1",
     "react-animated-dots": "^1.0.0",
     "react-datepicker": "^2.1.0",
