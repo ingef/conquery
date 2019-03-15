@@ -176,6 +176,7 @@ public class BlockManager {
 			entities
 				.computeIfAbsent(block.getEntity(), Entity::new)
 				.removeBlock(blockId);
+
 			for(Concept<?> c:concepts) {
 				ConceptId conceptName = c.getId();
 				for(Connector con:c.getConnectors()) {
@@ -189,7 +190,7 @@ public class BlockManager {
 								storage.removeCBlock(cBlockId);
 								entities
 									.computeIfAbsent(block.getEntity(), Entity::new)
-									.removeCBlock(cBlockId);
+									.removeCBlock(con, block);
 							}
 						}
 					}
@@ -200,23 +201,35 @@ public class BlockManager {
 
 	public void removeConcept(ConceptId conceptId) {
 		Concept<?> c = concepts.remove(conceptId);
-		if(c!=null) {
-			for(Connector con:c.getConnectors()) {
-				try(Locked lock = cBlockLocks.acquire(con.getId())) {
-					Table t = con.getTable();
-					for(Import imp : t.findImports(storage)) {
-						for(int bucket : worker.getInfo().getIncludedBuckets()) {
-							for(int entity : Entity.iterateBucket(bucket)) {
-								BlockId blockId = new BlockId(imp.getId(), entity);
-								Optional<Block> block = blocks.getOptional(blockId);
-								if(block.isPresent()) {
-									CBlockId cBlockId = new CBlockId(blockId, con.getId());
-									if(cBlocks.remove(cBlockId) != null) {
-										storage.removeCBlock(cBlockId);
-										entities
-											.computeIfAbsent(entity, Entity::new)
-											.removeCBlock(cBlockId);
-									}
+
+		if (c == null) {
+			return;
+		}
+
+		for(Connector con:c.getConnectors()) {
+
+			try(Locked lock = cBlockLocks.acquire(con.getId())) {
+
+				Table t = con.getTable();
+
+				for(Import imp : t.findImports(storage)) {
+
+					for(int bucket : worker.getInfo().getIncludedBuckets()) {
+
+						for(int entity : Entity.iterateBucket(bucket)) {
+
+							BlockId blockId = new BlockId(imp.getId(), entity);
+							Optional<Block> block = blocks.getOptional(blockId);
+
+							if(block.isPresent()) {
+
+								CBlockId cBlockId = new CBlockId(blockId, con.getId());
+
+								if(cBlocks.remove(cBlockId) != null) {
+									storage.removeCBlock(cBlockId);
+									entities
+										.computeIfAbsent(entity, Entity::new)
+										.removeCBlock(con, block.get());
 								}
 							}
 						}
