@@ -61,6 +61,8 @@ type PropsType = {
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
 class TimebasedNode extends React.Component {
+  props: PropsType;
+
   render() {
     const {
       node,
