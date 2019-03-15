@@ -144,7 +144,8 @@ const nodeSource = {
         ...draggedNode,
         ids: node.ids,
         tree: node.tree,
-        tables: node.tables
+        tables: node.tables,
+        selects: node.selects
       };
   }
 };
