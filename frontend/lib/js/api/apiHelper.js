@@ -33,6 +33,14 @@ export const transformFilterValueToApi = (filter: any) => {
   return value;
 };
 
+export const transformSelectsToApi = (selects?: ?(SelectedSelectorType[])) => {
+  if (!selects) return [];
+
+  return selects
+    ? selects.filter(({ selected }) => !!selected).map(({ id }) => id)
+    : [];
+};
+
 export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
   if (!tables) return [];
 
@@ -42,11 +50,7 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
       // Explicitly whitelist the tables that we allow to send to the API
       return {
         id: table.connectorId,
-        selects: table.selects
-          ? table.selects
-              .filter(({ selected }) => !!selected)
-              .map(({ id }) => id)
-          : [],
+        selects: transformSelectsToApi(table.selects),
         filters: table.filters
           ? table.filters
               .filter(filter => !isEmpty(filter.value)) // Only send filters with a value
@@ -58,14 +62,6 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
           : []
       };
     });
-};
-
-export const transformSelectsToApi = (selects?: ?(SelectedSelectorType[])) => {
-  if (!selects) return [];
-
-  return selects
-    ? selects.filter(({ selected }) => !!selected).map(({ id }) => id)
-    : [];
 };
 
 export const transformElementGroupsToApi = elementGroups =>

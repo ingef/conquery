@@ -43,9 +43,11 @@
                   {
                     "ids": ["action_movies"],
                     "type": "CONCEPT",
+                    "selects": ["123456789"],
                     "tables": [
                       {
                         "id": "feature_films",
+                        "selects": ["12345678"],
                         "filters": [
                           {
                             "id": "budget",
