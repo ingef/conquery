@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.concepts.filters.specific;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
 import com.bakdata.conquery.models.query.filter.event.SelectFilterNode;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
@@ -16,16 +15,15 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "SINGLE_SELECT", base = Filter.class)
-public class SelectFilter extends AbstractSelectFilter<CQSelectFilter> implements ISelectFilter {
+public class SelectFilter extends AbstractSelectFilter<String> implements ISelectFilter {
 
 	
-
 	public SelectFilter() {
 		super(128, FEFilterType.SELECT);
 	}
 
 	@Override
-	public FilterNode<?, ?> createAggregator(CQSelectFilter filterValue) {
-		return new SelectFilterNode(this, filterValue);
+	public FilterNode<?> createAggregator(String value) {
+		return new SelectFilterNode(getColumn(), value);
 	}
 }

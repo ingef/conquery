@@ -17,9 +17,9 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 public class FiltersNode extends QPChainNode implements EventIterating {
 
-	private final List<FilterNode<?,?>> filters;
+	private final List<FilterNode<?>> filters;
 
-	public FiltersNode(List<FilterNode<?, ?>> filters, QPNode child) {
+	public FiltersNode(List<FilterNode<?>> filters, QPNode child) {
 		super(child);
 		this.filters = filters;
 	}
@@ -27,7 +27,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
-		for(FilterNode<?,?> f:filters) {
+		for(FilterNode<?> f:filters) {
 			f.nextTable(ctx, currentTable);
 		}
 	}
@@ -35,20 +35,20 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	@Override
 	public void nextBlock(Block block) {
 		super.nextBlock(block);
-		for(FilterNode<?,?> f:filters) {
+		for(FilterNode<?> f:filters) {
 			f.nextBlock(block);
 		}
 	}
 	
 	@Override
 	public final boolean nextEvent(Block block, int event) {
-		for(FilterNode<?,?> f : filters) {
+		for(FilterNode<?> f : filters) {
 			if (!f.checkEvent(block, event)) {
 				return true;
 			}
 		}
 
-		for(FilterNode<?,?> f : filters) {
+		for(FilterNode<?> f : filters) {
 			f.acceptEvent(block, event);
 		}
 
@@ -56,7 +56,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	}
 
 	public boolean isContained() {
-		for(FilterNode<?,?> f : filters) {
+		for(FilterNode<?> f : filters) {
 			if (!f.isContained()) {
 				return false;
 			}
@@ -66,7 +66,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	
 	@Override
 	public FiltersNode doClone(CloneContext ctx) {
-		List<FilterNode<?,?>> copy = new ArrayList<>(filters);
+		List<FilterNode<?>> copy = new ArrayList<>(filters);
 		copy.replaceAll(fn->fn.clone(ctx));
 
 		return new FiltersNode(copy, getChild().clone(ctx));
@@ -75,7 +75,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		for(FilterNode<?,?> f:filters) {
+		for(FilterNode<?> f:filters) {
 			f.collectRequiredTables(requiredTables);
 		}
 	}

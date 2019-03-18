@@ -1,20 +1,21 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
+import java.util.EnumSet;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQIntegerRangeFilter;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.types.MajorTypeId;
+
 import lombok.Getter;
 import lombok.Setter;
-
-import java.util.EnumSet;
 
 /**
  * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
@@ -22,7 +23,7 @@ import java.util.EnumSet;
 @Getter
 @Setter
 @CPSType(id = "COUNT", base = Filter.class)
-public class CountFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
+public class CountFilter extends SingleColumnFilter<Range.LongRange> {
 
 
 	private boolean distinct;
@@ -39,12 +40,12 @@ public class CountFilter extends SingleColumnFilter<CQIntegerRangeFilter> {
 	}
 
 	@Override
-	public FilterNode createAggregator(CQIntegerRangeFilter filterValue) {
+	public FilterNode createAggregator(Range.LongRange value) {
 		if (distinct) {
-			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getColumn()));
 		}
 		else {
-			return new RangeFilterNode(this, filterValue, new CountAggregator(getColumn()));
+			return new RangeFilterNode(value, new CountAggregator(getColumn()));
 		}
 	}
 }

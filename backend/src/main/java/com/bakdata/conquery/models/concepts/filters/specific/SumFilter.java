@@ -8,10 +8,10 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.common.IRange;
+import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.RangeFilterNode;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Inte
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.types.MajorTypeId;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -36,7 +37,7 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "SUM", base = Filter.class)
-public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
+public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
 
 
 	@Valid
@@ -83,14 +84,17 @@ public class SumFilter extends Filter<FilterValue<? extends IRange<?, ?>>> {
 	private boolean distinct = false;
 
 	@Override
-	public FilterNode createAggregator(FilterValue<? extends IRange<?, ?>> filterValue) {
+	public FilterNode createAggregator(RANGE value) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (distinct) {
-			return new RangeFilterNode(this, filterValue, new DistinctValuesWrapperAggregator(aggregator, getColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getColumn()));
 		}
 		else {
-			return new RangeFilterNode(this, filterValue, aggregator);
+			if(getColumn().getType() == MajorTypeId.REAL)
+				return new RangeFilterNode(Range.DoubleRange.fromNumberFilter(value), aggregator);
+
+			return new RangeFilterNode(value, aggregator);
 		}
 	}
 

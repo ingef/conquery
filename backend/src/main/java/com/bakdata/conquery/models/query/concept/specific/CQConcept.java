@@ -1,10 +1,8 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -27,7 +25,6 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
@@ -72,10 +69,10 @@ public class CQConcept implements CQElement {
 			List<Select> resolvedSelects = t.getSelects();
 
 
-			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
+			List<FilterNode<?>> filters = new ArrayList<>(t.getFilters().size());
 			//add filter to children
 			for(FilterValue f : t.getFilters()) {
-				FilterNode agg = f.getFilter().createAggregator(f);
+				FilterNode agg = f.getFilter().createAggregator(f.getValue());
 				if(agg != null) {
 					filters.add(agg);
 				}
@@ -117,7 +114,7 @@ public class CQConcept implements CQElement {
 					.toArray(ConceptElement[]::new);
 	}
 
-	private QPNode conceptChild(List<FilterNode<?, ?>> filters, List<QPNode> aggregators) {
+	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);

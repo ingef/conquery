@@ -1,42 +1,38 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.concepts.filters.specific.PrefixTextFilter;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
 /**
  * Entity is included when the number of values for a specified column are within a given range.
  */
-public class PrefixTextFilterNode extends FilterNode<FilterValue.CQStringFilter, PrefixTextFilter> {
+public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 
-	private final String prefix;
 	private boolean hit;
 
-	public PrefixTextFilterNode(PrefixTextFilter filter, FilterValue.CQStringFilter filterValue) {
-		super(filter, filterValue);
-		this.prefix = filterValue.getValue();
+	public PrefixTextFilterNode(Column column, String filterValue) {
+		super(column, filterValue);
 	}
-
 
 	@Override
 	public PrefixTextFilterNode doClone(CloneContext ctx) {
-		return new PrefixTextFilterNode(filter, filterValue);
+		return new PrefixTextFilterNode(getColumn(), filterValue);
 	}
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, filter.getColumn())) {
+		if (!block.has(event, getColumn())) {
 			return false;
 		}
 
-		int stringToken = block.getString(event, filter.getColumn());
+		int stringToken = block.getString(event, getColumn());
 
-		String value = (String) filter.getColumn().getTypeFor(block).createScriptValue(stringToken);
+		String value = (String) getColumn().getTypeFor(block).createScriptValue(stringToken);
 
-		//if performance is a problem we could find the prefix once in the dictionary and then only check the values
-		return value.startsWith(prefix);
+		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
+		return value.startsWith(filterValue);
 	}
 
 	@Override
