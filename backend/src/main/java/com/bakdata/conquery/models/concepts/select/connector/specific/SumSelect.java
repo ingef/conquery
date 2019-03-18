@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -26,7 +27,7 @@ import lombok.Setter;
 @Getter
 @Setter
 @CPSType(id = "SUM", base = Select.class)
-@NoArgsConstructor()
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 public class SumSelect extends Select {
 
 	private boolean distinct = false;
@@ -38,12 +39,11 @@ public class SumSelect extends Select {
 	@NsIdRef
 	private Column subtractColumn;
 
-	public SumSelect(boolean distinct, @NsIdRef Column column) {
-		this.distinct = distinct;
-		this.column = column;
+	public SumSelect(boolean distinct, Column column) {
+		this(distinct, column, null);
 	}
 
-	public SumSelect(boolean distinct, @NsIdRef Column column, @NsIdRef Column subtractColumn) {
+	public SumSelect(boolean distinct, Column column, Column subtractColumn) {
 		this.distinct = distinct;
 		this.column = column;
 		this.subtractColumn = subtractColumn;

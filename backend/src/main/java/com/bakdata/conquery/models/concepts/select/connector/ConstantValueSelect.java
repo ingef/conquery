@@ -7,17 +7,14 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.Constant
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @CPSType(id = "CONSTANT_VALUE", base = Select.class)
+@RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class ConstantValueSelect extends Select {
 	@Getter @Setter
 	private String value;
-
-	@JsonCreator
-	public ConstantValueSelect(String value) {
-		this.value = value;
-	}
 
 	@Override
 	public ConstantValueAggregator createAggregator() {

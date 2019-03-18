@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAgg
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @CPSType(id = "COUNT", base = Select.class)
@@ -24,7 +23,7 @@ public class CountSelect extends SingleColumnSelect {
 
 	@JsonCreator
 	public CountSelect(@NsIdRef Column column) {
-		super(column);
+		this(column, false);
 	}
 
 	public CountSelect(@NsIdRef Column column, boolean distinct) {
