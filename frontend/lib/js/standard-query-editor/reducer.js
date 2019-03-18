@@ -4,7 +4,7 @@ import T from "i18n-react";
 import difference from "lodash.difference";
 
 import {
-  getConceptsByIdsWithTables,
+  getConceptsByIdsWithTablesAndSelects,
   getConceptById
 } from "../category-trees/globalTreeStoreHelper";
 
@@ -462,24 +462,45 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
   });
 };
 
-// Look for tables in the already savedConcept. If they were not included in the
-// respective query concept, exclude them.
-// Also, apply all necessary filters
-const mergeTablesFromSavedConcept = (savedConcept, concept) => {
-  return savedConcept.tables
-    ? savedConcept.tables.map(savedTable => {
+const mergeSelects = (savedSelects, conceptOrTable) => {
+  if (!conceptOrTable || !conceptOrTable.selects) return savedSelects || null;
+
+  if (!savedSelects) return null;
+
+  return savedSelects.map(select => {
+    const selectedSelect = conceptOrTable.selects.find(id => id === select.id);
+
+    return { ...select, selected: !!selectedSelect };
+  });
+};
+
+const mergeTables = (savedTables, concept) => {
+  return savedTables
+    ? savedTables.map(savedTable => {
         // Find corresponding table in previous queryObject
         // TODO: Disentangle id / connectorId mixing
         const table = concept.tables.find(t => t.id === savedTable.connectorId);
         const filters = mergeFiltersFromSavedConcept(savedTable, table);
+        const selects = mergeSelects(savedTable.selects, table);
 
         return {
           ...savedTable,
           exclude: !table,
-          filters
+          filters,
+          selects
         };
       })
     : [];
+};
+
+// Look for tables in the already savedConcept. If they were not included in the
+// respective query concept, exclude them.
+// Also, apply all necessary filters
+const mergeFromSavedConcept = (savedConcept, concept) => {
+  const tables = mergeTables(savedConcept.tables, concept);
+  const selects = mergeSelects(savedConcept.selects, concept);
+
+  return { selects, tables };
 };
 
 const expandNode = (rootConcepts, node) => {
@@ -508,7 +529,10 @@ const expandNode = (rootConcepts, node) => {
       };
     default:
       const ids = node.ids || [node.id];
-      const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
+      const lookupResult = getConceptsByIdsWithTablesAndSelects(
+        ids,
+        rootConcepts
+      );
 
       if (!lookupResult)
         return {
@@ -516,13 +540,14 @@ const expandNode = (rootConcepts, node) => {
           error: T.translate("queryEditor.couldNotExpandNode")
         };
 
-      const tables = mergeTablesFromSavedConcept(lookupResult, node);
+      const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
       const label = node.label || lookupResult.concepts[0].label;
 
       return {
         ...node,
         label,
         tables,
+        selects,
         tree: lookupResult.root
       };
   }
@@ -654,7 +679,7 @@ const createQueryNodeFromConceptListUploadResult = (
   resolvedConcepts,
   selectedConceptRootNode
 ): DraggedNodeType => {
-  const lookupResult = getConceptsByIdsWithTables(
+  const lookupResult = getConceptsByIdsWithTablesAndSelects(
     resolvedConcepts,
     rootConcepts
   );
@@ -664,6 +689,7 @@ const createQueryNodeFromConceptListUploadResult = (
         label,
         ids: resolvedConcepts,
         tables: lookupResult.tables,
+        selects: lookupResult.selects,
         tree: lookupResult.root
       }
     : null;

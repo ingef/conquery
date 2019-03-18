@@ -74,7 +74,7 @@ const findParentConcepts = (concepts: NodeType[]): NodeType[] => {
   return findParentConcepts([parentConceptWithId, ...concepts]);
 };
 
-export const getConceptsByIdsWithTables = (
+export const getConceptsByIdsWithTablesAndSelects = (
   conceptIds: TreeNodeIdType[],
   rootConcepts: TreesType
 ): ?{
@@ -83,12 +83,9 @@ export const getConceptsByIdsWithTables = (
   tables: TableType[]
 } => {
   const concepts = conceptIds
-    .map(c => {
-      const concept = getConceptById(c);
-
-      return concept !== null ? { ...concept, id: c } : null;
-    })
-    .filter(c => !!c);
+    .map(id => ({ concept: getConceptById(id), id }))
+    .filter(({ concept }) => !!concept)
+    .map(({ concept, id }) => ({ ...concept, id }));
 
   if (concepts.length !== conceptIds.length) return null;
 
@@ -96,18 +93,23 @@ export const getConceptsByIdsWithTables = (
     c => c.id.toString() // toString so we can find them by object keys
   );
 
-  const parentConceptsWithTables = Object.keys(rootConcepts)
-    .filter(id => includes(parentConceptIds, id) && !!rootConcepts[id].tables)
-    .map(id => ({ id, concept: rootConcepts[id] }));
+  const rootConceptId = Object.keys(rootConcepts).find(
+    id => includes(parentConceptIds, id) && !!rootConcepts[id].tables
+  );
 
   // There should only be one exact root node that has table information
   // If it's more or less than one, something went wrong
-  if (parentConceptsWithTables.length !== 1) return null;
+  if (!rootConceptId) return null;
+
+  const rootConcept = rootConcepts[rootConceptId];
+
+  const selects = rootConcept.selects ? { selects: rootConcept.selects } : {};
 
   return {
     concepts,
-    root: parentConceptsWithTables[0].id,
-    tables: parentConceptsWithTables[0].concept.tables
+    root: rootConceptId,
+    tables: rootConcept.tables,
+    ...selects
   };
 };
 
