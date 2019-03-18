@@ -17,6 +17,7 @@ import { isInSearchResult } from "./selectors";
 const Root = styled("div")`
   flex-grow: 1;
   flex-shrink: 0;
+  flex-basis: 0;
   overflow-y: auto;
   padding: 0 10px 0 20px;
 
