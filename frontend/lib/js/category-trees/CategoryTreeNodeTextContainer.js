@@ -1,18 +1,46 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import { findDOMNode } from "react-dom";
 import { DragSource } from "react-dnd";
 import Highlighter from "react-highlight-words";
-import classnames from "classnames";
 
 import { AdditionalInfoHoverable } from "../tooltip";
 import { isEmpty } from "../common/helpers";
 import { dndTypes } from "../common/constants";
 
+import FaIcon from "../icon/FaIcon";
 import { type AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoHoverable";
 import { type DraggedNodeType } from "../standard-query-editor/types";
 import { type SearchType } from "./reducer";
+
+const Root = styled("div")`
+  position: relative; // Needed to fix a drag & drop issue in Safari
+  cursor: pointer;
+  padding: 0 15px 0 15px;
+  margin: 2px 0;
+  padding-left: ${({ depth }) => depth * 15 + "px"};
+`;
+
+const Text = styled("p")`
+  user-select: none;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  margin: 0;
+  padding: 0 14px;
+  line-height: 20px;
+  color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.black)};
+
+  background-color: ${({ theme, open }) =>
+    open ? theme.col.blueGrayVeryLight : "transparent"};
+
+  &:hover {
+    background-color: ${({ theme, open }) =>
+      open
+        ? `rgba(${theme.col.blueGrayVeryLight}, 0.8)`
+        : theme.col.blueGrayVeryLight};
+  }
+`;
 
 type PropsType = {
   node: AdditionalInfoHoverableNodeType & {
@@ -30,6 +58,11 @@ type PropsType = {
   search?: SearchType
 };
 
+const StyledFaIcon = styled(FaIcon)`
+  color: ${({ theme }) => theme.col.blueGrayDark};
+  padding-right: 7px;
+`;
+
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
 class CategoryTreeNodeTextContainer extends React.Component {
   render() {
@@ -39,25 +72,20 @@ class CategoryTreeNodeTextContainer extends React.Component {
     const searching = props.search && props.search.searching;
     const description = ` - ${props.node.description}`;
 
-    const render = (
-      <div
-        className="category-tree-node__text-container"
+    return (
+      <Root
+        ref={instance => {
+          // Don't allow dragging with inactive elements
+          if (props.active !== false) {
+            props.connectDragSource(instance);
+          }
+        }}
         onClick={props.onTextClick}
-        style={{ paddingLeft: props.depth * 15 }}
+        depth={props.depth}
       >
-        <p
-          className={classnames("category-tree-node__text", {
-            "category-tree-node__text--open": !!props.open,
-            "category-tree-node__text--zero": zeroEntries
-          })}
-        >
+        <Text open={props.open} zero={zeroEntries}>
           {props.node.hasChildren && (
-            <i
-              className={classnames("category-tree-node__icon", "fa", {
-                "fa-folder-open": !!props.open || searching,
-                "fa-folder": !props.open && !searching
-              })}
-            />
+            <StyledFaIcon icon={!!props.open ? "folder-open" : "folder"} />
           )}
           <span>
             {searching ? (
@@ -79,12 +107,9 @@ class CategoryTreeNodeTextContainer extends React.Component {
           ) : (
             props.node.description && description
           )}
-        </p>
-      </div>
+        </Text>
+      </Root>
     );
-
-    // Don't allow dragging with inactive elements
-    return props.active === false ? render : props.connectDragSource(render);
   }
 }
 

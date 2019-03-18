@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 
 import {
   type TreeNodeIdType,
@@ -15,6 +16,16 @@ import { getConceptById } from "./globalTreeStoreHelper";
 import Openable from "./Openable";
 import CategoryTreeNodeTextContainer from "./CategoryTreeNodeTextContainer";
 import { isInSearchResult } from "./selectors";
+
+const Root = styled("div")`
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
+const StyledCategoryTreeNodeTextContainer = styled(
+  CategoryTreeNodeTextContainer
+)`
+  display: inline-block;
+`;
 
 // Concept data that is necessary to display tree nodes. Includes additional infos
 // for the tooltip as well as the id of the corresponding tree
@@ -68,8 +79,8 @@ class CategoryTreeNode extends React.Component<PropsType> {
 
     return (
       render && (
-        <div className="category-tree-node">
-          <CategoryTreeNodeTextContainer
+        <Root>
+          <StyledCategoryTreeNodeTextContainer
             node={{
               id,
               label: data.label,
@@ -96,8 +107,8 @@ class CategoryTreeNode extends React.Component<PropsType> {
             onTextClick={this._onToggleOpen.bind(this)}
             search={search}
           />
-          {!!data.children && (open || searching) && (
-            <div className="category-tree-node__children">
+          {!!data.children && open && (
+            <div>
               {data.children.map((childId, i) => {
                 const child = getConceptById(childId);
 
@@ -113,7 +124,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
               })}
             </div>
           )}
-        </div>
+        </Root>
       )
     );
   }
