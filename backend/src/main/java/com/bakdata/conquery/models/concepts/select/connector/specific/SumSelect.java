@@ -18,34 +18,47 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
 @CPSType(id = "SUM", base = Select.class)
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
 public class SumSelect extends Select {
 
-	@Getter
 	private boolean distinct = false;
 
-	@Getter
 	@NsIdRef
 	@NotNull
 	private Column column;
 
-	@Getter
 	@NsIdRef
 	private Column subtractColumn;
 
+	public SumSelect(boolean distinct, Column column) {
+		this(distinct, column, null);
+	}
+
+	public SumSelect(boolean distinct, Column column, Column subtractColumn) {
+		this.distinct = distinct;
+		this.column = column;
+		this.subtractColumn = subtractColumn;
+	}
+
 	@Override
-	public Aggregator<?> createAggregator() {
+	public Aggregator<? extends Number> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregator(getAggregator(), getColumn());
+			return new DistinctValuesWrapperAggregator<>(getAggregator(), getColumn());
 		}
 		else {
 			return getAggregator();
 		}
 	}
-	private ColumnAggregator<?> getAggregator() {
+	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
 			switch (getColumn().getType()) {
 				case INTEGER:
