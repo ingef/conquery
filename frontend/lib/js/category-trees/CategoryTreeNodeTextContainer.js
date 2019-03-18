@@ -35,11 +35,14 @@ const Text = styled("p")`
     open ? theme.col.blueGrayVeryLight : "transparent"};
 
   &:hover {
-    background-color: ${({ theme, open }) =>
-      open
-        ? `rgba(${theme.col.blueGrayVeryLight}, 0.8)`
-        : theme.col.blueGrayVeryLight};
+    background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
+    opacity: ${({ open }) => (open ? "0.9" : "1")};
   }
+`;
+
+const StyledFaIcon = styled(FaIcon)`
+  padding-right: 7px;
+  width: 20px;
 `;
 
 type PropsType = {
@@ -58,54 +61,58 @@ type PropsType = {
   search?: SearchType
 };
 
-const StyledFaIcon = styled(FaIcon)`
-  color: ${({ theme }) => theme.col.blueGrayDark};
-  padding-right: 7px;
-`;
-
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
 class CategoryTreeNodeTextContainer extends React.Component {
   render() {
-    const { props } = this;
+    const {
+      node,
+      depth,
+      search,
+      active,
+      open,
+      connectDragSource,
+      onTextClick
+    } = this.props;
+
     const zeroEntries =
-      !isEmpty(props.node.matchingEntries) && props.node.matchingEntries === 0;
-    const searching = props.search && props.search.searching;
-    const description = ` - ${props.node.description}`;
+      !isEmpty(node.matchingEntries) && node.matchingEntries === 0;
+    const searching = search && search.searching;
+    const description = ` - ${node.description}`;
 
     return (
       <Root
         ref={instance => {
           // Don't allow dragging with inactive elements
-          if (props.active !== false) {
-            props.connectDragSource(instance);
+          if (active !== false) {
+            connectDragSource(instance);
           }
         }}
-        onClick={props.onTextClick}
-        depth={props.depth}
+        onClick={onTextClick}
+        depth={depth}
       >
-        <Text open={props.open} zero={zeroEntries}>
-          {props.node.hasChildren && (
-            <StyledFaIcon icon={!!props.open ? "folder-open" : "folder"} />
+        <Text open={open} zero={zeroEntries}>
+          {node.hasChildren && (
+            <StyledFaIcon active icon={!!open ? "folder-open" : "folder"} />
           )}
           <span>
             {searching ? (
               <Highlighter
-                searchWords={props.search && props.search.words}
+                searchWords={search && search.words}
                 autoEscape={true}
-                textToHighlight={props.node.label}
+                textToHighlight={node.label}
               />
             ) : (
-              props.node.label
+              node.label
             )}
           </span>
-          {searching && props.node.description ? (
+          {searching && node.description ? (
             <Highlighter
-              searchWords={props.search && props.search.words}
+              searchWords={search && search.words}
               autoEscape={true}
               textToHighlight={description}
             />
           ) : (
-            props.node.description && description
+            node.description && description
           )}
         </Text>
       </Root>
