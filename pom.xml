@@ -13,8 +13,8 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>10</maven.compiler.source>
 		<maven.compiler.target>10</maven.compiler.target>
-		<junit.minor>4.0</junit.minor>
-		<junit.version>5.4.1</junit.version>
+		<junit.minor>4.1</junit.minor>
+		<junit.version>5.${junit.minor}</junit.version>
 		<junit.platform.version>1.${junit.minor}</junit.platform.version>
 	</properties>
 	
