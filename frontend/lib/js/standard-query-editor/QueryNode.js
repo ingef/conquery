@@ -9,6 +9,7 @@ import { DragSource, type ConnectDragSource } from "react-dnd";
 import { dndTypes } from "../common/constants";
 import { ErrorMessage } from "../error-message";
 import { nodeHasActiveFilters } from "../model/node";
+import { isQueryExpandable } from "../model/query";
 
 import QueryNodeActions from "./QueryNodeActions";
 
@@ -77,7 +78,7 @@ class QueryNode extends React.Component {
           hasActiveFilters={nodeHasActiveFilters(node)}
           onEditClick={onEditClick}
           onDeleteNode={onDeleteNode}
-          isExpandable={node.isPreviousQuery && !!node.query}
+          isExpandable={isQueryExpandable(node)}
           onExpandClick={() => {
             if (!node.query) return;
 
