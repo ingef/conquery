@@ -18,7 +18,7 @@ public class RandomValueSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new RandomValueAggregator(getColumn());
 	}
 

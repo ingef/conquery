@@ -3,8 +3,6 @@
 import type { Dispatch } from "redux-thunk";
 
 import api from "../api";
-// import { expandPreviousQuery } from "../standard-query-editor/actions";
-// import { loadAllPreviousQueriesInGroups } from "../previous-queries/list/actions";
 import { loadDatasets } from "../dataset/actions";
 import { defaultError, defaultSuccess } from "../common/actions";
 
@@ -15,25 +13,6 @@ import {
 } from "./actionTypes";
 
 export const startup = datasetId => loadDatasets(datasetId);
-
-// TODO: Clean this up. Keeping it until expand previous queries is fixed
-//
-// export const startupOnQuery = (datasetId, queryId) => {
-//   return dispatch =>
-//     dispatch(loadDatasets(datasetId)).then(concepts => {
-//       if (!concepts) return;
-
-//       return api.getStoredQuery(datasetId, queryId).then(
-//         storedQuery => {
-//           dispatch(expandPreviousQuery(concepts, storedQuery.query.groups));
-//           dispatch(
-//             loadAllPreviousQueriesInGroups(storedQuery.query.groups, datasetId)
-//           );
-//         },
-//         e => dispatch(selectDatasetInput(datasetId))
-//       );
-//     });
-// };
 
 export const loadConfigStart = () => ({ type: LOAD_CONFIG_START });
 export const loadConfigError = (err: any) =>

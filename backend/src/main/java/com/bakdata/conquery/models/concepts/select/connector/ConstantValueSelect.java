@@ -20,7 +20,7 @@ public class ConstantValueSelect extends Select {
 	}
 
 	@Override
-	protected ConstantValueAggregator createAggregator() {
+	public ConstantValueAggregator createAggregator() {
 		return new ConstantValueAggregator(value);
 	}
 

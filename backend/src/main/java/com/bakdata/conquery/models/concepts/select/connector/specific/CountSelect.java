@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.CountAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -33,9 +33,9 @@ public class CountSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregatorNode<>(new CountAggregator(getColumn()), getColumn());
+			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getColumn());
 		}
 		else {
 			return new CountAggregator(getColumn());

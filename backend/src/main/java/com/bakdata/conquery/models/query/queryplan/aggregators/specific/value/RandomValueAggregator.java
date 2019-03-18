@@ -5,6 +5,7 @@ import java.util.Random;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
@@ -54,7 +55,7 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	}
 
 	@Override
-	public RandomValueAggregator clone() {
+	public RandomValueAggregator doClone(CloneContext ctx) {
 		return new RandomValueAggregator(getColumn());
 	}
 }

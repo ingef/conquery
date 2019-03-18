@@ -22,7 +22,7 @@ public class QuartersInYearSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new QuartersInYearAggregator(getColumn());
 	}
 	

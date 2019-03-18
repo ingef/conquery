@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
@@ -14,7 +15,7 @@ public class ConstantValueAggregator implements Aggregator<String> {
 	private final String value;
 	
 	@Override
-	public ConstantValueAggregator clone() {
+	public ConstantValueAggregator doClone(CloneContext ctx) {
 		return this;
 	}
 

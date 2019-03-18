@@ -24,7 +24,7 @@ public class CountQuartersSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		switch (getColumn().getType()) {
 			case DATE_RANGE:
 				return new CountQuartersOfDateRangeAggregator(getColumn());

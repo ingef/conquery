@@ -8,7 +8,7 @@ import {
   getConceptById
 } from "../category-trees/globalTreeStoreHelper";
 
-import { isEmpty } from "../common/helpers";
+import { isEmpty, objectWithoutKey } from "../common/helpers";
 
 import { type DateRangeType } from "../common/types/backend";
 
@@ -70,6 +70,18 @@ import type {
 
 const initialState: StandardQueryType = [];
 
+const withDefaultValues = arr => {
+  if (!arr) return arr;
+
+  return arr.map(obj => {
+    // Tables passed
+    if (obj.selects) return { ...obj, selects: withDefaultValues(obj.selects) };
+
+    // Selects passed
+    return { ...obj, selected: !!obj.default };
+  });
+};
+
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
 ): QueryNodeType => {
@@ -92,8 +104,8 @@ const filterItem = (
   else
     return {
       ids: item.ids,
-      tables: item.tables,
-      selects: item.selects,
+      tables: withDefaultValues(item.tables),
+      selects: withDefaultValues(item.selects),
       tree: item.tree,
 
       label: item.label,
@@ -446,7 +458,8 @@ const mergeTablesFromSavedConcept = (savedConcept, concept) => {
   return savedConcept.tables
     ? savedConcept.tables.map(savedTable => {
         // Find corresponding table in previous queryObject
-        const table = concept.tables.find(t => t.id === savedTable.id);
+        // TODO: Disentangle id / connectorId mixing
+        const table = concept.tables.find(t => t.id === savedTable.connectorId);
         const filters = mergeFiltersFromSavedConcept(savedTable, table);
 
         return {
@@ -458,6 +471,52 @@ const mergeTablesFromSavedConcept = (savedConcept, concept) => {
     : [];
 };
 
+const expandNode = (rootConcepts, node) => {
+  switch (node.type) {
+    case "OR":
+      return {
+        ...node,
+        elements: node.children.map(c => expandNode(rootConcepts, c))
+      };
+    case "SAVED_QUERY":
+      return {
+        ...node,
+        id: node.query,
+        query: node.resolvedQuery,
+        isPreviousQuery: true
+      };
+    case "DATE_RESTRICTION":
+      return {
+        dateRange: node.dateRange,
+        ...expandNode(rootConcepts, node.child)
+      };
+    case "NEGATION":
+      return {
+        exclude: true,
+        ...expandNode(rootConcepts, node.child)
+      };
+    default:
+      const ids = node.ids || [node.id];
+      const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
+
+      if (!lookupResult)
+        return {
+          ...node,
+          error: T.translate("queryEditor.couldNotExpandNode")
+        };
+
+      const tables = mergeTablesFromSavedConcept(lookupResult, node);
+      const label = node.label || lookupResult.concepts[0].label;
+
+      return {
+        ...node,
+        label,
+        tables,
+        tree: lookupResult.root
+      };
+  }
+};
+
 // Completely override all groups in the editor with the previous groups, but
 // a) merge elements with concept data from category trees (esp. "tables")
 // b) load nested previous queries contained in that query,
@@ -466,40 +525,13 @@ const expandPreviousQuery = (
   state,
   action: { payload: { groups: QueryGroupType[] } }
 ) => {
-  const { rootConcepts, groups } = action.payload;
+  const { rootConcepts, query } = action.payload;
 
-  return groups.map(group => {
-    return {
-      ...group,
-      elements: group.elements.map(element => {
-        if (element.type === "QUERY") {
-          return {
-            ...element,
-            isPreviousQuery: true
-          };
-        } else {
-          const ids = element.ids || [element.id];
-          const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
+  if (!query.root || query.root.type !== "AND") {
+    throw new Error("Cant expand query, because root is not AND");
+  }
 
-          if (!lookupResult)
-            return {
-              ...element,
-              error: T.translate("queryEditor.couldNotExpandNode")
-            };
-
-          const tables = mergeTablesFromSavedConcept(lookupResult, element);
-          const label = element.label || lookupResult.concepts[0].label;
-
-          return {
-            ...element,
-            label,
-            tables,
-            tree: lookupResult.root
-          };
-        }
-      })
-    };
-  });
+  return query.root.children.map(child => expandNode(rootConcepts, child));
 };
 
 const findPreviousQueries = (state, action) => {
@@ -515,7 +547,7 @@ const findPreviousQueries = (state, action) => {
         .map(concept => ({
           andIdx,
           orIdx: concept.orIdx,
-          node: concept
+          node: objectWithoutKey("orIdx")(concept)
         }));
     })
     .filter(group => group.length > 0);
@@ -559,7 +591,7 @@ const loadPreviousQuerySuccess = (state, action) => {
     ...label,
     id: action.payload.data.id,
     loading: false,
-    query: action.payload.data.query
+    query: action.payload.data.query.query // TODO: Backend bug, here should be only "query"
   });
 };
 const loadPreviousQueryError = (state, action) => {

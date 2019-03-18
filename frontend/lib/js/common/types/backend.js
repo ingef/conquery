@@ -1,7 +1,9 @@
 // @flow
 
 // This file specifies data types that are provided by the backend api
-// and subsequently stored in window.categoryTrees (see globalTreeStoreHelper)
+//
+// Part of the data is saved in the redux state
+// Other parts (concept trees) are stored in window.categoryTrees (see globalTreeStoreHelper)
 
 export type SelectOptionType = {
   label: string,
@@ -69,9 +71,6 @@ export type FilterType =
   | MultiSelectFilterType
   | RangeFilterType;
 
-export type TreeNodeIdType = string;
-export type QueryIdType = string;
-
 export type TableType = {
   id: string,
   label: string,
@@ -82,9 +81,11 @@ export type TableType = {
 export type SelectorType = {
   id: string,
   label: string,
-  description: string
+  description: string,
+  default?: boolean
 };
 
+export type TreeNodeIdType = string;
 export type NodeType = {
   parent: TreeNodeIdType,
   label: string,
@@ -127,3 +128,5 @@ export type SearchResult = {
   limit: number,
   size: number
 };
+
+export type QueryIdType = string;

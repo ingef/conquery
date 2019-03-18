@@ -1,81 +1,33 @@
 <#import "templates/template.html.ftl" as layout>
 <@layout.layout>
-	<div class="row">
-		<div class="col">Name</div>
-		<div class="col-7">${c.id}</div>
-	<div class="w-100"></div>
-		<div class="col">Label</div>
-		<div class="col-7">${c.label}</div>
-	<div class="w-100"></div>
-		<div class="col">Type</div>
-		<div class="col-7">${c.class.simpleName}</div>
-	<div class="w-100"></div>
-		<div class="col">Structure Parent</div>
-		<div class="col-7">${c.structureParent!}</div>
-	<div class="w-100"></div>
-		<div class="col">Elements</div>
-		<div class="col-7">${c.countElements()}</div>
-	<div class="w-100"></div>
-		<div class="col">Connectors</div>
-		<div class="col-7">
-			<#list c.connectors as connector>
-				<div class="row">
-					<div class="col">Name</div>
-					<div class="col-7">${connector.id}</div>
-				<div class="w-100"></div>
-					<div class="col">Label</div>
-					<div class="col-7">${connector.label}</div>
-				<div class="w-100"></div>
-					<div class="col">Validity Dates</div>
-					<div class="col-7">[ ${connector.validityDates?join(', ')} ]</div>
-				<div class="w-100"></div>
-					<div class="col">Table</div>
-					<div class="col-7">${connector.table}</div>
-				<div class="w-100"></div>
-					<div class="col">Filters</div>
-					<div class="col-7">
-						<#list connector.collectAllFilters() as filter>
-							<div class="row">
-								<div class="col">Name</div>
-								<div class="col-7">${filter.id}</div>
-							<div class="w-100"></div>
-								<div class="col">Label</div>
-								<div class="col-7">${filter.label}</div>
-							<div class="w-100"></div>
-								<div class="col">Type</div>
-								<div class="col-7">${filter.class.simpleName}</div>
-							<div class="w-100"></div>
-								<div class="col">Unit</div>
-								<div class="col-7">${filter.unit!}</div>
-							<div class="w-100"></div>
-								<div class="col">Description</div>
-								<div class="col-7">${filter.description!}</div>
-							</div>
-							<hr>
-						</#list>
-					</div>
-				<div class="w-100"></div>
-					<div class="col">Selects</div>
-					<div class="col-7">
-						<#list (connector.collectAllSelects())![] as select>
-							<div class="row">
-								<div class="col">Name</div>
-								<div class="col-7">${select.id}</div>
-							<div class="w-100"></div>
-								<div class="col">Label</div>
-								<div class="col-7">${select.label}</div>
-							<div class="w-100"></div>
-								<div class="col">Type</div>
-								<div class="col-7">${select.class.simpleName}</div>
-							<div class="w-100"></div>
-								<div class="col">Description</div>
-								<div class="col-7">${filter.description!}</div>
-							</div>
-							<hr>
-						</#list>
-					</div>
-				<hr/>
+	<@layout.kv k="Name" v=c.id/>
+	<@layout.kv k="Label" v=c.label/>
+	<@layout.kv k="Type" v=c.class.simpleName/>
+	<@layout.kv k="Structure Parent" v=c.structureParent/>
+	<@layout.kv k="Elements" v=c.countElements()/>
+	<@layout.kc k="Connectors">
+	<#list c.connectors as connector>
+		<@layout.kv k="Name" v=connector.id/>
+		<@layout.kv k="Label" v=connector.label/>
+		<@layout.kv k="Validity Dates" v=connector.validityDates?join(', ')/>
+		<@layout.kv k="Table" v=connector.table/>
+		<@layout.kc k="Filters">
+			<#list connector.collectAllFilters() as filter>
+				<@layout.kv k="Name" v=filter.id/>
+				<@layout.kv k="Label" v=filter.label/>
+				<@layout.kv k="Type" v=filter.class.simpleName/>
+				<@layout.kv k="Unit" v=filter.unit/>
+				<@layout.kv k="Description" v=filter.description/>
 			</#list>
-		</div>
-	</div>
+		</@layout.kc>
+		<@layout.kc k="Selects">
+			<#list connector.selects as select>
+				<@layout.kv k="Name" v=select.id/>
+				<@layout.kv k="Label" v=select.label/>
+				<@layout.kv k="Type" v=select.class.simpleName/>
+				<@layout.kv k="Description" v=select.description/>
+			</#list>
+		</@layout.kc>
+	</#list>
+	</@layout.kc>
 </@layout.layout>

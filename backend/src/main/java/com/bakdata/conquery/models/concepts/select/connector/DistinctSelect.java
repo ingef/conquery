@@ -18,7 +18,7 @@ public class DistinctSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new AllValuesAggregator<>(getColumn());
 	}
 	

@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class SpecialDateUnion implements Aggregator<CDateSet> {
 
@@ -46,7 +47,12 @@ public class SpecialDateUnion implements Aggregator<CDateSet> {
 	}
 
 	@Override
-	public SpecialDateUnion clone() {
+	public SpecialDateUnion clone(CloneContext ctx) {
+		return (SpecialDateUnion) Aggregator.super.clone(ctx);
+	}
+	
+	@Override
+	public SpecialDateUnion doClone(CloneContext ctx) {
 		return new SpecialDateUnion();
 	}
 

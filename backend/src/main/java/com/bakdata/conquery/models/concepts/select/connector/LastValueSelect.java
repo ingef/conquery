@@ -18,7 +18,7 @@ public class LastValueSelect extends SingleColumnSelect {
 	}
 
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<?> createAggregator() {
 		return new LastValueAggregator(getColumn());
 	}
 

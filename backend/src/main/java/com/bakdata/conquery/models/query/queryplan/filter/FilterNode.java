@@ -2,30 +2,22 @@ package com.bakdata.conquery.models.query.queryplan.filter;
 
 import java.util.Set;
 
-import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
-public abstract class FilterNode<FILTER_VALUE extends FilterValue<?>, FILTER extends Filter<FILTER_VALUE>> implements EventIterating {
+public abstract class FilterNode<FILTER_VALUE> implements EventIterating, CtxCloneable<FilterNode<FILTER_VALUE>> {
 
-	protected final FILTER filter;
+	@Getter
 	protected final FILTER_VALUE filterValue;
 
 	@Override
-	public void collectRequiredTables(Set<TableId> requiredTables) {
-		for(Column c:filter.getRequiredColumns()) {
-			requiredTables.add(c.getTable().getId());
-		}
-	}
-
-	public abstract FilterNode<?,?> clone(QueryPlan plan, QueryPlan clone);
+	public abstract void collectRequiredTables(Set<TableId> requiredTables);
 
 	public boolean checkEvent(Block block, int event) {
 		return true;

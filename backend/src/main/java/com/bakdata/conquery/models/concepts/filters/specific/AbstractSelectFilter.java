@@ -1,22 +1,5 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
-import com.bakdata.conquery.models.api.description.FEFilter;
-import com.bakdata.conquery.models.api.description.FEFilterType;
-import com.bakdata.conquery.models.api.description.FEValue;
-import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
-import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.IStringType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.Sets;
-import com.zigurs.karlis.utils.search.QuickSearch;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
-
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
@@ -25,11 +8,28 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.api.description.FEFilter;
+import com.bakdata.conquery.models.api.description.FEFilterType;
+import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.specific.IStringType;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.Sets;
+import com.zigurs.karlis.utils.search.QuickSearch;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+
 @Getter
 @Setter
 @Slf4j
 @RequiredArgsConstructor
-public abstract class AbstractSelectFilter<FE_TYPE extends FilterValue<?>> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
+public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<FE_TYPE> implements ISelectFilter {
 
 	protected Set<String> values;
 	protected Map<String, String> labels = Collections.emptyMap();
