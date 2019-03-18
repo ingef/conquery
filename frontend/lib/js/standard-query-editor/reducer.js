@@ -28,7 +28,11 @@ import {
 
 import { UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../upload-concept-list-modal/actionTypes";
 
-import { INTEGER_RANGE } from "../form-components/filterTypes";
+import {
+  INTEGER_RANGE,
+  REAL_RANGE,
+  MONEY_RANGE
+} from "../form-components/filterTypes";
 
 import type { StateType } from "../query-runner/reducer";
 
@@ -435,18 +439,25 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
   if (!savedTable.filters) return null;
 
   return savedTable.filters.map(filter => {
-    const tableFilter = table.filters.find(f => f.id === filter.id) || {};
-    const mode =
-      tableFilter.type === INTEGER_RANGE
-        ? tableFilter.value && !isEmpty(tableFilter.value.exact)
-          ? { mode: "exact" }
-          : { mode: "range" }
-        : {};
+    // TODO: Improve the api and don't use `.filter`, but `.id` or `.filterId`
+    const matchingFilter =
+      table.filters.find(f => f.filter === filter.id) || {};
+
+    const filterModeWithValue =
+      matchingFilter.type === INTEGER_RANGE ||
+      matchingFilter.type === REAL_RANGE ||
+      matchingFilter.type === MONEY_RANGE
+        ? matchingFilter.value &&
+          !isEmpty(matchingFilter.value.min) &&
+          !isEmpty(matchingFilter.value.max) &&
+          matchingFilter.value.min === matchingFilter.value.max
+          ? { mode: "exact", value: { exact: matchingFilter.value.min } }
+          : { mode: "range", value: matchingFilter.value }
+        : matchingFilter;
 
     return {
       ...filter,
-      ...tableFilter, // => this one may contain a "value" property
-      ...mode
+      ...filterModeWithValue // => this one may contain a "value" property
     };
   });
 };
