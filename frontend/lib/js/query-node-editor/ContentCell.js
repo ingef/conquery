@@ -7,7 +7,7 @@ const Root = styled("div")`
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
-  min-width: 200px;
+  min-width: 220px;
 `;
 
 const Headline = styled("h4")`

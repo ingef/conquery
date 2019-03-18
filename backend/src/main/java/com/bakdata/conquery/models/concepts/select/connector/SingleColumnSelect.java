@@ -6,19 +6,26 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.externalservice.ResultType;
+import com.bakdata.conquery.models.types.MajorTypeId;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.Setter;
 
+@AllArgsConstructor
 public abstract class SingleColumnSelect extends Select {
 
 	@Getter
+	@Setter
 	@NsIdRef
 	@NotNull
 	private Column column;
 	
 	@Override
-	public ResultType getResultType() {
-		switch (getColumn().getType()) {
+	public abstract ResultType getResultType();
+
+	public static ResultType resolveResultType(MajorTypeId majorTypeId) {
+		switch (majorTypeId) {
 			case STRING:
 				return ResultType.STRING;
 			case BOOLEAN:
@@ -35,7 +42,7 @@ public abstract class SingleColumnSelect extends Select {
 			case REAL:
 				return ResultType.NUMERIC;
 			default:
-				throw new IllegalStateException(String.format("Invalid column type '%s' for Aggregator", getColumn().getType()));
+				throw new IllegalStateException(String.format("Invalid column type '%s'", majorTypeId));
 		}
 	}
 }
