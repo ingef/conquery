@@ -7,90 +7,111 @@
   "version": 0,
   "tags": ["Fun"],
   "query": {
-    "groups": [
-      {
-        "exclude": true,
-        "dateRange": {
-          "min": "1969-12-01",
-          "max": "2012-01-31"
-        },
-        "elements": [
+    "queryId": "0f104f67-949c-49aa-9023-66722caa1a5d",
+    "shared": false,
+
+    "creationTime": "2019-03-12T17:26:00.621428",
+    "dataset": "demo",
+    "label": "myquery",
+    "lastResultCount": 1899,
+    "owner": "user.SUPERUSER$40SUPERUSER",
+    "query": {
+      "type": "CONCEPT_QUERY",
+      "root": {
+        "type": "AND",
+        "children": [
           {
-            "id": 25602,
-            "type": "QUERY",
-            "label": "Example query",
-            "createdAt": "2016-12-02T14:19:09Z",
-            "status": "DONE",
-            "numberOfResults": 2465,
-            "resultUrl": "/api/results/1234-123123123-123123-1231.csv"
+            "type": "NEGATION",
+            "child": {
+              "type": "DATE_RESTRICTION",
+              "dateRange": {
+                "min": "1969-12-01",
+                "max": "2012-01-31"
+              },
+              "child": {
+                "type": "OR",
+                "children": [
+                  {
+                    "id": 25602,
+                    "type": "SAVED_QUERY",
+                    "label": "Example query",
+                    "createdAt": "2016-12-02T14:19:09Z",
+                    "status": "DONE",
+                    "numberOfResults": 2465,
+                    "resultUrl": "/api/results/1234-123123123-123123-1231.csv"
+                  },
+                  {
+                    "ids": ["action_movies"],
+                    "type": "CONCEPT",
+                    "tables": [
+                      {
+                        "id": "feature_films",
+                        "filters": [
+                          {
+                            "id": "budget",
+                            "value": {
+                              "min": 10000000,
+                              "max": 150000000
+                            }
+                          }
+                        ]
+                      },
+                      {
+                        "id": "tv_series"
+                      }
+                    ]
+                  },
+                  {
+                    "ids": ["horror_movies"],
+                    "type": "CONCEPT",
+                    "tables": [
+                      {
+                        "id": "feature_films",
+                        "filters": [
+                          {
+                            "id": "studio",
+                            "value": "universal"
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                ]
+              }
+            }
           },
           {
-            "ids": ["action_movies"],
-            "type": "CONCEPT",
-            "tables": [
+            "type": "OR",
+            "children": [
               {
-                "id": "feature_films",
-                "filters": [
+                "ids": ["best_actor_award"],
+                "type": "CONCEPT",
+                "tables": [
                   {
-                    "id": "budget",
-                    "value": {
-                      "min": 10000000,
-                      "max": 150000000
-                    }
+                    "id": "awards",
+                    "filters": [
+                      {
+                        "id": "award_type",
+                        "type": "MULTI_SELECT",
+                        "value": ["won"]
+                      }
+                    ]
                   }
                 ]
               },
               {
-                "id": "tv_series"
-              }
-            ]
-          },
-          {
-            "ids": ["horror_movies"],
-            "type": "CONCEPT",
-            "tables": [
-              {
-                "id": "feature_films",
-                "filters": [
+                "ids": ["best_actress_award"],
+                "type": "CONCEPT",
+                "tables": [
                   {
-                    "id": "studio",
-                    "value": "universal"
-                  }
-                ]
-              }
-            ]
-          }
-        ]
-      },
-      {
-        "elements": [
-          {
-            "ids": ["best_actor_award"],
-            "type": "CONCEPT",
-            "tables": [
-              {
-                "id": "awards",
-                "filters": [
-                  {
-                    "id": "award_type",
-                    "type": "MULTI_SELECT",
-                    "value": ["won"]
-                  }
-                ]
-              }
-            ]
-          },
-          {
-            "ids": ["best_actress_award"],
-            "type": "CONCEPT",
-            "tables": [
-              {
-                "id": "awards",
-                "filters": [
-                  {
-                    "id": "award_type",
-                    "type": "MULTI_SELECT",
-                    "value": ["won"]
+                    "id": "awards",
+                    "filters": [
+                      {
+                        "id": "award_type",
+                        "type": "MULTI_SELECT",
+                        "value": ["won"]
+                      }
+                    ]
                   }
                 ]
               }
@@ -98,6 +119,6 @@
           }
         ]
       }
-    ]
+    }
   }
 }

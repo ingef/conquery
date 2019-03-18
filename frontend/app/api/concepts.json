@@ -18,12 +18,18 @@
         {
           "id": "12345678",
           "label": "Filme gespielt Gesamt",
-          "description": "Beispieldescription"
+          "description": "Beispieldescription",
+          "default": true
         },
         {
           "id": "123456789",
           "label": "Summe Gage",
           "description": "Die Summe berechnet sich aus X und Y und Z und example."
+        },
+        {
+          "id": "123456789",
+          "label": "Hatte Spaß im Dreh",
+          "description": "Der Spaß ist manchmal gegeben und manchmal nicht."
         }
       ],
       "tables": [
@@ -34,7 +40,8 @@
             {
               "id": "12345678",
               "label": "Anzahl unterschiedliche Studios",
-              "description": "Beispieldescription"
+              "description": "Beispieldescription",
+              "default": true
             },
             {
               "id": "123456789",

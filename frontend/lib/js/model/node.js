@@ -3,19 +3,14 @@
 import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 
 import { tablesHaveActiveFilter } from "./table";
+import { objectHasSelectedSelects } from "./select";
 
 export const nodeHasActiveFilters = (node: ConceptQueryNodeType) =>
   node.excludeTimestamps ||
   node.includeSubnodes ||
-  nodeHasSelectedSelects(node) ||
+  objectHasSelectedSelects(node) ||
   nodeHasActiveTableFilters(node) ||
   nodeHasExludedTable(node);
-
-export const nodeHasSelectedSelects = (node: ConceptQueryNodeType) => {
-  if (!node.selects) return false;
-
-  return node.selects.some(select => select.selected);
-};
 
 export const nodeHasActiveTableFilters = (node: ConceptQueryNodeType) => {
   if (!node.tables) return false;
