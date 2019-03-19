@@ -2,15 +2,12 @@ package com.bakdata.conquery.models.common;
 
 import java.time.LocalDate;
 import java.time.Month;
-import java.time.Year;
 import java.time.YearMonth;
 import java.time.temporal.ChronoField;
 import java.time.temporal.ChronoUnit;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
-
-import com.google.common.collect.Range;
 
 import lombok.experimental.UtilityClass;
 @UtilityClass
