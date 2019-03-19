@@ -12,6 +12,7 @@ import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
 
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
@@ -164,6 +165,9 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void inputClosed(IoSession session) throws Exception {}
+	
+	@Override
+	public void event(IoSession session, FilterEvent event) throws Exception {}
 	
 	private void setLocation(IoSession session) {
 		String loc = session.getLocalAddress().toString();
