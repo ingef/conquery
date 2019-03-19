@@ -1,13 +1,11 @@
 package com.bakdata.conquery.io.jackson;
 
 import java.io.IOException;
-import java.util.Map;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.core.MultivaluedMap;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.fasterxml.jackson.core.JsonParser;

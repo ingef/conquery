@@ -18,7 +18,6 @@ import javax.validation.Payload;
 
 import com.bakdata.conquery.models.exceptions.validators.ValidName.ValidNameList;
 import com.bakdata.conquery.models.exceptions.validators.ValidName.ValidNameValidator;
-import com.bakdata.conquery.models.identifiable.Named;
 
 import lombok.extern.slf4j.Slf4j;
 

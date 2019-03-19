@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 
 public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
-	private transient boolean lastResult = true;
 	protected QueryContext context;
 	protected Entity entity;
 
@@ -27,18 +26,9 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 		this.context = ctx;
 	}
 
-	public final boolean aggregate(Block block, int event) {
-		if (lastResult) {
-			lastResult = nextEvent(block, event);
-		}
-		return lastResult;
-	}
+	public abstract void nextEvent(Block block, int event);
 
-	public abstract boolean nextEvent(Block block, int event);
-
-	public boolean isContained() {
-		return lastResult;
-	}
+	public abstract boolean isContained();
 
 	public List<QPNode> getChildren() {
 		return Collections.emptyList();

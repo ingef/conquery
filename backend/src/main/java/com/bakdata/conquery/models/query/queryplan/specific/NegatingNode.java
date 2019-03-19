@@ -14,9 +14,8 @@ public class NegatingNode extends QPChainNode {
 	}
 	
 	@Override
-	public boolean nextEvent(Block block, int event) {
-		getChild().aggregate(block, event);
-		return true;
+	public void nextEvent(Block block, int event) {
+		getChild().nextEvent(block, event);
 	}
 	
 	@Override

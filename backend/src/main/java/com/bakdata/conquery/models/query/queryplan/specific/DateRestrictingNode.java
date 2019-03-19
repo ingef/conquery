@@ -41,11 +41,10 @@ public class DateRestrictingNode extends QPChainNode {
 
 
 	@Override
-	public boolean nextEvent(Block block, int event) {
+	public void nextEvent(Block block, int event) {
 		if (block.eventIsContainedIn(event, validityDateColumn, dateRange)) {
-			return getChild().aggregate(block, event);
+			getChild().nextEvent(block, event);
 		}
-		return true;
 	}
 
 	@Override

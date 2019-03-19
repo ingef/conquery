@@ -6,13 +6,10 @@ import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -21,10 +21,9 @@ public class AggregatorNode<T> extends QPNode  {
 	private boolean triggered = false;
 	
 	@Override
-	public boolean nextEvent(Block block, int event) {
+	public void nextEvent(Block block, int event) {
 		triggered = true;
 		aggregator.aggregateEvent(block, event);
-		return true;
 	}
 
 	@Override

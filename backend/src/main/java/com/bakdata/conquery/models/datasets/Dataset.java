@@ -2,14 +2,12 @@ package com.bakdata.conquery.models.datasets;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;

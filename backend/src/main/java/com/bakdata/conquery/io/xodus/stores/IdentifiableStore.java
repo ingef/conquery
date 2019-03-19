@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
+
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
