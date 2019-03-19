@@ -50,12 +50,14 @@
 					</execution>
 				</executions>
 				<configuration>
+					<verbose>true</verbose>
 					<dotGitDirectory>../.git</dotGitDirectory>
 					<injectAllReactorProjects>true</injectAllReactorProjects>
 					<dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat>
 					<gitDescribe>
 						<skip>false</skip>
-						<always>false</always>
+						<!-- do not only use annotated tags -->
+						<tags>true</tags>
 					</gitDescribe>
 				</configuration>
 			</plugin>
