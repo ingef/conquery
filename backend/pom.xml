@@ -9,7 +9,13 @@
 		<version>0.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>backend</artifactId>
-
+	
+	<properties>
+		<!-- default value if git-commit-id is executed -->
+		<git.build.time>${maven.build.timestamp}</git.build.time>
+		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
+	</properties>
+	
 	<build>
 		<resources>
 			<resource>
@@ -42,18 +48,12 @@
 							<goal>revision</goal>
 						</goals>
 					</execution>
-					<execution>
-						<id>validate-the-git-infos</id>
-						<goals>
-							<goal>validateRevision</goal>
-						</goals>
-					</execution>
 				</executions>
 				<configuration>
 					<verbose>true</verbose>
 					<dotGitDirectory>../.git</dotGitDirectory>
 					<injectAllReactorProjects>true</injectAllReactorProjects>
-					<dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat>
+					<dateFormat>${maven.build.timestamp.format}</dateFormat>
 					<gitDescribe>
 						<skip>false</skip>
 						<!-- do not only use annotated tags -->
