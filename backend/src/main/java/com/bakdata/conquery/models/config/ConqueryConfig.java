@@ -5,9 +5,9 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.auth.AuthConfig;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.models.preproc.DateFormats;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;

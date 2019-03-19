@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
-import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.jackson.Jackson;

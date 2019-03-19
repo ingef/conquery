@@ -5,12 +5,11 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 
 import lombok.Getter;
 import lombok.Setter;
 
-public abstract class SingleColumnFilter<FE_TYPE extends FilterValue<?>> extends Filter<FE_TYPE> implements ISingleColumnFilter {
+public abstract class SingleColumnFilter<FE_TYPE> extends Filter<FE_TYPE> implements ISingleColumnFilter {
 
 	@Valid @NotNull @Getter @Setter @NsIdRef
 	private Column column;

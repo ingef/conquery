@@ -6,9 +6,7 @@ import java.util.List;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.Permission;
 
-import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.identifiable.ids.specific.NullSubjectId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 
 public class NullSubject extends PermissionOwner<NullSubjectId> {
 

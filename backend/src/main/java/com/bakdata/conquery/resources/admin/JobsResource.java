@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.admin;
 
-import com.bakdata.conquery.io.jersey.AuthCookie;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -13,6 +12,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManager;

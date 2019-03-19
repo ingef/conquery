@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.jobs;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.MatchingStats;

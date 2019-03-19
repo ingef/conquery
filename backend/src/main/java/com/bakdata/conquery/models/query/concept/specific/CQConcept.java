@@ -1,10 +1,8 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Deque;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -71,10 +69,10 @@ public class CQConcept implements CQElement {
 			List<Select> resolvedSelects = t.getSelects();
 
 
-			List<FilterNode<?,?>> filters = new ArrayList<>(t.getFilters().size());
+			List<FilterNode<?>> filters = new ArrayList<>(t.getFilters().size());
 			//add filter to children
 			for(FilterValue f : t.getFilters()) {
-				FilterNode agg = f.getFilter().createAggregator(f);
+				FilterNode agg = f.getFilter().createAggregator(f.getValue());
 				if(agg != null) {
 					filters.add(agg);
 				}
@@ -86,10 +84,10 @@ public class CQConcept implements CQElement {
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
 
-			if(!excludeFromTimeAggregation) {
+			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
 					t.getResolvedConnector().getTable().getId(),
-					plan.getIncluded()
+					plan.getSpecialDateUnion()
 				));
 			}
 
@@ -116,7 +114,7 @@ public class CQConcept implements CQElement {
 					.toArray(ConceptElement[]::new);
 	}
 
-	private QPNode conceptChild(List<FilterNode<?, ?>> filters, List<QPNode> aggregators) {
+	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);
@@ -129,8 +127,8 @@ public class CQConcept implements CQElement {
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
 		for (Select s : select) {
-			AggregatorNode<?> agg = s.createAggregator(plan.getAggregators().size());
-			plan.getAggregators().add(agg.getAggregator());
+			AggregatorNode<?> agg = new AggregatorNode<>(s.createAggregator());
+			plan.addAggregator(agg.getAggregator());
 			nodes.add(agg);
 		}
 		return nodes;

@@ -11,12 +11,11 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.filter.event.number.DecimalFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.IntegerFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.MoneyFilterNode;
-import com.bakdata.conquery.models.query.filter.event.number.NumberFilterNode;
 import com.bakdata.conquery.models.query.filter.event.number.RealFilterNode;
+import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -29,26 +28,20 @@ import lombok.extern.slf4j.Slf4j;
 @Setter
 @Slf4j
 @CPSType(id = "NUMBER", base = Filter.class)
-public class NumberFilter extends SingleColumnFilter<FilterValue<? extends IRange<? extends Number, ?>>> {
-
-	
+public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends SingleColumnFilter<RANGE> {
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		Column column = getColumn();
 		switch (column.getType()) {
 			case MONEY: //see #170  introduce money filter into frontend
-			case INTEGER: {
+			case INTEGER:
 				f.setType(FEFilterType.INTEGER_RANGE);
 				return;
-			}
 			case DECIMAL:
-				f.setType(FEFilterType.DECIMAL_RANGE);
-				return;
-			case REAL: {
+			case REAL:
 				f.setType(FEFilterType.REAL_RANGE);
 				return;
-			}
 			default:
 				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
 		}
@@ -60,16 +53,18 @@ public class NumberFilter extends SingleColumnFilter<FilterValue<? extends IRang
 	}
 
 	@Override
-	public NumberFilterNode createAggregator(FilterValue<? extends IRange<? extends Number, ?>> filterValue) {
+	public FilterNode<?> createAggregator(RANGE value) {
+
 		switch (getColumn().getType()) {
 			case MONEY:
-				return new MoneyFilterNode(this, (FilterValue.CQIntegerRangeFilter) filterValue);
+				return new MoneyFilterNode(getColumn(), (Range.LongRange) value);
 			case INTEGER:
-				return new IntegerFilterNode(this, (FilterValue<Range.LongRange>) filterValue);
+				return new IntegerFilterNode(getColumn(), (Range.LongRange) value
+				);
 			case DECIMAL:
-				return new DecimalFilterNode(this, (FilterValue<Range<BigDecimal>>) filterValue);
+				return new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
 			case REAL:
-				return new RealFilterNode(this, (FilterValue<Range.DoubleRange>) filterValue);
+				return new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberFilter(value));
 			default:
 				throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
 		}

@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import { findDOMNode } from "react-dom";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import { DragSource, type ConnectDragSource } from "react-dnd";
@@ -8,6 +9,7 @@ import { DragSource, type ConnectDragSource } from "react-dnd";
 import { dndTypes } from "../common/constants";
 import { ErrorMessage } from "../error-message";
 import { nodeHasActiveFilters } from "../model/node";
+import { isQueryExpandable } from "../model/query";
 
 import QueryNodeActions from "./QueryNodeActions";
 
@@ -57,57 +59,72 @@ type PropsType = {
   connectDragSource: ConnectDragSource
 };
 
-const QueryNode = (props: PropsType) => {
-  const { node, connectDragSource, onExpandClick } = props;
+// Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
+class QueryNode extends React.Component {
+  props: PropsType;
 
-  return (
-    <Root ref={instance => connectDragSource(instance)}>
-      <QueryNodeActions
-        hasActiveFilters={nodeHasActiveFilters(node)}
-        onEditClick={props.onEditClick}
-        onDeleteNode={props.onDeleteNode}
-        isExpandable={node.isPreviousQuery}
-        onExpandClick={() => {
-          if (!node.query) return;
+  render() {
+    const {
+      node,
+      connectDragSource,
+      onExpandClick,
+      onEditClick,
+      onDeleteNode
+    } = this.props;
 
-          onExpandClick(node.query.groups, node.id);
-        }}
-        previousQueryLoading={node.loading}
-        error={node.error}
-      />
-      {node.isPreviousQuery && (
-        <PreviousQueryLabel>
-          {T.translate("queryEditor.previousQuery")}
-        </PreviousQueryLabel>
-      )}
-      {node.error ? (
-        <ErrorMessage message={node.error} />
-      ) : (
-        <Content>
-          <span>{node.label || node.id}</span>
-          {node.description && <span> - {node.description}</span>}
-        </Content>
-      )}
-    </Root>
-  );
-};
+    return (
+      <Root ref={instance => connectDragSource(instance)}>
+        <QueryNodeActions
+          hasActiveFilters={nodeHasActiveFilters(node)}
+          onEditClick={onEditClick}
+          onDeleteNode={onDeleteNode}
+          isExpandable={isQueryExpandable(node)}
+          onExpandClick={() => {
+            if (!node.query) return;
+
+            onExpandClick(node.query);
+          }}
+          previousQueryLoading={node.loading}
+          error={node.error}
+        />
+        {node.isPreviousQuery && (
+          <PreviousQueryLabel>
+            {T.translate("queryEditor.previousQuery")}
+          </PreviousQueryLabel>
+        )}
+        {node.error ? (
+          <ErrorMessage message={node.error} />
+        ) : (
+          <Content>
+            <span>{node.label || node.id}</span>
+            {node.description && <span> - {node.description}</span>}
+          </Content>
+        )}
+      </Root>
+    );
+  }
+}
 
 /**
  * Implements the drag source contract.
  */
 const nodeSource = {
-  beginDrag(props: PropsType): DraggedNodeType | DraggedQueryType {
+  beginDrag(props, monitor, component): DraggedNodeType | DraggedQueryType {
     // Return the data describing the dragged item
     // NOT using `...node` since that would also spread `children` in.
     // This item may stem from either:
     // 1) A concept (dragged from CategoryTreeNode)
     // 2) A previous query (dragged from PreviousQueries)
     const { node, andIdx, orIdx } = props;
+    const { height, width } = findDOMNode(component).getBoundingClientRect();
 
     const draggedNode = {
       moved: true,
       andIdx,
       orIdx,
+
+      width,
+      height,
 
       label: node.label,
       excludeTimestamps: node.excludeTimestamps,
@@ -128,7 +145,8 @@ const nodeSource = {
         ...draggedNode,
         ids: node.ids,
         tree: node.tree,
-        tables: node.tables
+        tables: node.tables,
+        selects: node.selects
       };
   }
 };

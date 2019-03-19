@@ -11,7 +11,6 @@ import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -52,8 +51,8 @@ public class StoredQueriesProcessor {
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedQuery query) {
-		// see https://github.com/bakdata/conquery/issues/239
-
+		MasterMetaStorage storage = namespaces.get(dataset.getId()).getStorage().getMetaStorage();
+		storage.removeQuery(query.getId());
 	}
 
 	public void patchQuery(User user, Dataset dataset, ManagedQueryId queryId, JsonNode patch) throws JSONException {

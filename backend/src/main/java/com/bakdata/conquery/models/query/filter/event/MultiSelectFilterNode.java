@@ -1,35 +1,30 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 import com.bakdata.conquery.models.types.specific.IStringType;
 
 /**
  * Entity is included when the number of values for a specified column are within a given range.
  */
-public class MultiSelectFilterNode<FILTER extends SingleColumnFilter<FilterValue.CQMultiSelectFilter>> extends FilterNode<FilterValue.CQMultiSelectFilter, FILTER> {
+public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 
-
-	private final String[] selection;
 	private int[] selectedValues;
 	private boolean hit;
 
-	public MultiSelectFilterNode(FILTER filter, FilterValue.CQMultiSelectFilter filterValue) {
-		super(filter, filterValue);
-		this.selection = filterValue.getValue();
-		this.selectedValues = new int[selection.length];
+	public MultiSelectFilterNode(Column column, String[] filterValue) {
+		super(column, filterValue);
+		this.selectedValues = new int[filterValue.length];
 	}
-
 
 	@Override
 	public void nextBlock(Block block) {
-		IStringType type = (IStringType) filter.getColumn().getTypeFor(block);
+		IStringType type = (IStringType) getColumn().getTypeFor(block);
 
-		for (int index = 0; index < selection.length; index++) {
-			String select = selection[index];
+		for (int index = 0; index < filterValue.length; index++) {
+			String select = filterValue[index];
 			Integer parsed = type.getStringId(select);
 			selectedValues[index] = parsed;
 		}
@@ -38,11 +33,11 @@ public class MultiSelectFilterNode<FILTER extends SingleColumnFilter<FilterValue
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, filter.getColumn())) {
+		if (!block.has(event, getColumn())) {
 			return false;
 		}
 
-		int stringToken = block.getString(event, filter.getColumn());
+		int stringToken = block.getString(event, getColumn());
 
 		for (int selectedValue : selectedValues) {
 			if (selectedValue == stringToken) {
@@ -54,8 +49,8 @@ public class MultiSelectFilterNode<FILTER extends SingleColumnFilter<FilterValue
 	}
 
 	@Override
-	public FilterNode<?, ?> clone(QueryPlan plan, QueryPlan clone) {
-		return new MultiSelectFilterNode<>(filter, filterValue);
+	public MultiSelectFilterNode doClone(CloneContext ctx) {
+		return new MultiSelectFilterNode(getColumn(), filterValue);
 	}
 
 	@Override

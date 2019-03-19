@@ -16,6 +16,7 @@ const FixedColumn = styled("div")`
   height: 100%;
   display: flex;
   flex-direction: column;
+  min-width: 205px;
   max-width: 220px;
   flex-shrink: 0;
   flex-grow: 1;

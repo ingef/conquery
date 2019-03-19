@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.ToString;
 
@@ -21,17 +21,14 @@ public class ValidityDateNode extends QPChainNode {
 	}
 
 	@Override
-	public boolean nextEvent(Block block, int event) {
+	public void nextEvent(Block block, int event) {
 		//if validity date is null return
 		if(validityDateColumn != null && !block.has(event, validityDateColumn)) {
-			return true;
+			return;
 		}
 		else {
 			if(validityDateColumn == null || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
-				return getChild().aggregate(block, event);
-			}
-			else {
-				return true;
+				getChild().nextEvent(block, event);
 			}
 		}
 	}
@@ -42,8 +39,8 @@ public class ValidityDateNode extends QPChainNode {
 	}
 
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		return new ValidityDateNode(validityDateColumn, getChild().clone(plan, clone));
+	public QPNode doClone(CloneContext ctx) {
+		return new ValidityDateNode(validityDateColumn, getChild().clone(ctx));
 	}
 
 	@Override

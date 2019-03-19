@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -39,7 +40,7 @@ public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long>
 	}
 
 	@Override
-	public CountQuartersOfDatesAggregator clone() {
+	public CountQuartersOfDatesAggregator doClone(CloneContext ctx) {
 		return new CountQuartersOfDatesAggregator(getColumn());
 	}
 }

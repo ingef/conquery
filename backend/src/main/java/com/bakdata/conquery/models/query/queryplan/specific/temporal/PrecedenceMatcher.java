@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
-import com.bakdata.conquery.models.common.CDateSet;
-
 import java.util.OptionalInt;
+
+import com.bakdata.conquery.models.common.CDateSet;
 
 /**
  * Interface for handling of TemporalQuery logic.

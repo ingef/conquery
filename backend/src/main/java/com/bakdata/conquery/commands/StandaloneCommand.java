@@ -1,22 +1,23 @@
 package com.bakdata.conquery.commands;
 
-import com.bakdata.conquery.Conquery;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.util.io.ConfigCloner;
-import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import io.dropwizard.setup.Bootstrap;
-import io.dropwizard.setup.Environment;
-import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
-import net.sourceforge.argparse4j.inf.Namespace;
-
 import java.io.File;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import com.bakdata.conquery.Conquery;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.util.io.ConfigCloner;
+import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
+import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import net.sourceforge.argparse4j.inf.Namespace;
 
 @Slf4j
 @Getter

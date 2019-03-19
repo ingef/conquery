@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import { findDOMNode } from "react-dom";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 import classnames from "classnames";
@@ -58,74 +59,91 @@ type PropsType = {
   isIndexResultDisabled: boolean
 };
 
-const TimebasedNode = (props: PropsType) => {
-  const toggleButton = (
-    <StyledVerticalToggleButton
-      onToggle={props.onSetTimebasedNodeTimestamp}
-      activeValue={props.node.timestamp}
-      options={[
-        {
-          label: T.translate("timebasedQueryEditor.timestampFirst"),
-          value: EARLIEST
-        },
-        {
-          label: T.translate("timebasedQueryEditor.timestampRandom"),
-          value: RANDOM
-        },
-        {
-          label: T.translate("timebasedQueryEditor.timestampLast"),
-          value: LATEST
-        }
-      ]}
-    />
-  );
+// Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
+class TimebasedNode extends React.Component {
+  props: PropsType;
 
-  return (
-    <Root
-      ref={instance => {
-        props.connectDragSource(instance);
-      }}
-    >
-      <div className="timebased-node__container">
-        <div className="timebased-node__content">
-          <div className="timebased-node__timestamp">
-            <p className="timebased-node__timestamp__title">
-              {T.translate("timebasedQueryEditor.timestamp")}
-            </p>
-            {toggleButton}
+  render() {
+    const {
+      node,
+      connectDragSource,
+      isIndexResult,
+      isIndexResultDisabled,
+      onRemove,
+      onSetTimebasedIndexResult,
+      onSetTimebasedNodeTimestamp
+    } = this.props;
+
+    const toggleButton = (
+      <StyledVerticalToggleButton
+        onToggle={onSetTimebasedNodeTimestamp}
+        activeValue={node.timestamp}
+        options={[
+          {
+            label: T.translate("timebasedQueryEditor.timestampFirst"),
+            value: EARLIEST
+          },
+          {
+            label: T.translate("timebasedQueryEditor.timestampRandom"),
+            value: RANDOM
+          },
+          {
+            label: T.translate("timebasedQueryEditor.timestampLast"),
+            value: LATEST
+          }
+        ]}
+      />
+    );
+
+    return (
+      <Root
+        ref={instance => {
+          connectDragSource(instance);
+        }}
+      >
+        <div className="timebased-node__container">
+          <div className="timebased-node__content">
+            <div className="timebased-node__timestamp">
+              <p className="timebased-node__timestamp__title">
+                {T.translate("timebasedQueryEditor.timestamp")}
+              </p>
+              {toggleButton}
+            </div>
+            <div className="timebased-node__description">
+              <StyledIconButton icon="close" onClick={onRemove} />
+              <p className="timebased-node__description__text">
+                {node.label || node.id}
+              </p>
+            </div>
           </div>
-          <div className="timebased-node__description">
-            <StyledIconButton icon="close" onClick={props.onRemove} />
-            <p className="timebased-node__description__text">
-              {props.node.label || props.node.id}
-            </p>
-          </div>
+          <button
+            className={classnames("timebased-node__index-result-btn", {
+              "timebased-node__index-result-btn--active": isIndexResult,
+              "timebased-node__index-result-btn--disabled": isIndexResultDisabled
+            })}
+            disabled={isIndexResultDisabled}
+            onClick={onSetTimebasedIndexResult}
+          >
+            {T.translate("timebasedQueryEditor.timestampResultsFrom")}
+          </button>
         </div>
-        <button
-          className={classnames("timebased-node__index-result-btn", {
-            "timebased-node__index-result-btn--active": props.isIndexResult,
-            "timebased-node__index-result-btn--disabled":
-              props.isIndexResultDisabled
-          })}
-          disabled={props.isIndexResultDisabled}
-          onClick={props.onSetTimebasedIndexResult}
-        >
-          {T.translate("timebasedQueryEditor.timestampResultsFrom")}
-        </button>
-      </div>
-    </Root>
-  );
-};
+      </Root>
+    );
+  }
+}
 
 /**
  * Implements the drag source contract.
  */
 const nodeSource = {
-  beginDrag(props) {
+  beginDrag(props, monitor, component) {
     // Return the data describing the dragged item
     const { node, conditionIdx, resultIdx } = props;
+    const { width, height } = findDOMNode(component).getBoundingClientRect();
 
     return {
+      width,
+      height,
       conditionIdx,
       resultIdx,
       node,

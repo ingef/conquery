@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -35,5 +36,7 @@ public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 	}
 
 	@Override
-	public abstract SingleColumnAggregator<T> clone();
+	public SingleColumnAggregator<T> clone(CloneContext ctx) {
+		return ctx.clone(this);
+	}
 }

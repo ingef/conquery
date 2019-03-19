@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific.temporal;
 
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

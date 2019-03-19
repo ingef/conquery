@@ -18,7 +18,7 @@ type PropsType = {
 
 const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {
   return (
-    <Pane type="left">
+    <Pane left>
       {activeTab === "categoryTrees" && (
         <CategoryTreeSearchBox datasetId={selectedDatasetId} />
       )}

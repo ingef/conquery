@@ -7,9 +7,6 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.BeforeOrSameTemporalMatcher;
-import com.bakdata.conquery.models.query.queryplan.specific.temporal.BeforeTemporalPrecedenceMatcher;
-import com.bakdata.conquery.models.query.queryplan.specific.temporal.DaysBeforePrecedenceMatcher;
-import com.bakdata.conquery.models.query.queryplan.specific.temporal.SampledNode;
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
 
 /**
@@ -28,7 +25,7 @@ public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 			index.createQueryPlan(ctx, plan), 
 			preceding.createQueryPlan(ctx, plan), 
 			new BeforeOrSameTemporalMatcher(), 
-			plan.getIncluded()
+			plan.getSpecialDateUnion()
 		);
 	}
 	

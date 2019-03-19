@@ -5,6 +5,7 @@ import java.math.BigDecimal;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 
@@ -16,7 +17,7 @@ public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public DecimalSumAggregator clone() {
+	public DecimalSumAggregator doClone(CloneContext ctx) {
 		return new DecimalSumAggregator(getColumn());
 	}
 

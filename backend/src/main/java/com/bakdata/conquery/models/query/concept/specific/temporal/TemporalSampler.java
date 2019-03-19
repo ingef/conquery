@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.query.concept.specific.temporal;
 
-import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.CDateRange;
-import com.bakdata.conquery.models.common.CDateSet;
-
 import java.time.LocalDate;
 import java.util.OptionalInt;
 import java.util.Random;
+
+import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.CDateSet;
 
 /**
  * A class implementing several sampling schemes for {@link CDateSet}.
