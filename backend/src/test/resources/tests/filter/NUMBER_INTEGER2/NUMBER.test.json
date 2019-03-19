@@ -1,10 +1,10 @@
 {
   "type": "FILTER_TEST",
-  "label": "NUMBER_DECIMAL Test",
-  "expectedCsv": "tests/filter/NUMBER_DECIMAL/expected_NUMBER_Filter.csv",
+  "label": "NUMBER_INTEGER Test",
+  "expectedCsv": "tests/filter/NUMBER_INTEGER2/expected_NUMBER_Filter.csv",
   "content": {
     "tables": {
-      "csv": "tests/filter/NUMBER_DECIMAL/content_NUMBER_Filter.csv",
+      "csv": "tests/filter/NUMBER_INTEGER2/content_NUMBER_Filter.csv",
       "primaryColumn": {
         "name": "pid",
         "type": "STRING"
@@ -12,11 +12,11 @@
       "columns": [
         {
           "name": "nr",
-          "type": "DECIMAL"
+          "type": "INTEGER"
         },
         {
           "name": "datum",
-          "type": "DATE"
+          "type": "DATE_RANGE"
         }
       ]
     }
@@ -27,15 +27,15 @@
       "column": "table.datum"
     },
     "filter": {
-      "column": "table.nr",
-      "type": "NUMBER"
+      "type": "NUMBER",
+      "column": "table.nr"
     }
   },
   "filterValue": {
-    "type": "DECIMAL_RANGE",
+    "type": "INTEGER_RANGE",
     "value": {
-      "min": 100,
-      "max": 200
+      "min": 50,
+      "max": 50
     }
   }
 }
