@@ -66,6 +66,7 @@ public abstract class FilterValue<VALUE> {
 
 	@NoArgsConstructor
 	@CPSType(id = "INTEGER_RANGE", base = FilterValue.class)
+	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
 		public CQIntegerRangeFilter(@NsIdRef Filter<?> filter, LongRange value) {
 			super(filter, value);

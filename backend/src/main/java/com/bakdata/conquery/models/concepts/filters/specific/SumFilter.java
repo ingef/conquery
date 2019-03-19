@@ -56,7 +56,9 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		Column column = getColumn();
 		switch (column.getType()) {
-			case MONEY: //see #171  introduce money filter into frontend
+			case MONEY:
+				f.setType(FEFilterType.MONEY_RANGE);
+				return;
 			case INTEGER:
 				f.setType(FEFilterType.INTEGER_RANGE);
 				return;
