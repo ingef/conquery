@@ -3,12 +3,10 @@
 import React from "react";
 import T from "i18n-react";
 import { components } from "react-select";
-import Select from "react-select/lib/Creatable";
 import { type FieldPropsType } from "redux-form";
 import Dropzone from "react-dropzone";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
-import classnames from "classnames";
 import ReactTooltip from "react-tooltip";
 
 import { type SelectOptionsType } from "../common/types/backend";
@@ -16,9 +14,11 @@ import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 import TooManyValues from "./TooManyValues";
+import ReactSelect from "./ReactSelect";
+import Labeled from "./Labeled";
 
 type PropsType = FieldPropsType & {
-  label: string,
+  label?: string,
   options: SelectOptionsType,
   disabled?: ?boolean,
   tooltip?: string,
@@ -60,21 +60,19 @@ const InputMultiSelect = (props: PropsType) => {
     }));
 
   return (
-    <label
-      className={classnames("input", {
-        "input--value-changed":
-          !isEmpty(props.input.value) &&
-          props.input.value !== props.input.defaultValue
-      })}
+    <Labeled
+      valueChanged={
+        !isEmpty(props.input.value) &&
+        props.input.value !== props.input.defaultValue
+      }
+      disabled={props.disabled}
+      label={
+        <>
+          {props.label}
+          {props.tooltip && <InfoTooltip text={props.tooltip} />}
+        </>
+      }
     >
-      <p
-        className={classnames("input-label", {
-          "input-label--disabled": !!props.disabled
-        })}
-      >
-        {props.label}
-        {props.tooltip && <InfoTooltip text={props.tooltip} />}
-      </p>
       {props.input.value && props.input.value.length > 50 ? (
         <TooManyValues
           value={props.input.value}
@@ -89,12 +87,13 @@ const InputMultiSelect = (props: PropsType) => {
           onDrop={files => props.onDropFile(files[0])}
           disabled={!allowDropFile}
         >
-          <Select
+          <ReactSelect
+            creatable
             name="form-field"
             options={options}
             components={{ MultiValueLabel }}
             value={props.input.value}
-            onChange={value => props.input.onChange(value)}
+            onChange={props.input.onChange}
             isDisabled={props.disabled}
             isMulti
             placeholder={
@@ -130,7 +129,7 @@ const InputMultiSelect = (props: PropsType) => {
           />
         </Dropzone>
       )}
-    </label>
+    </Labeled>
   );
 };
 

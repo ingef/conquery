@@ -1,6 +1,6 @@
 {
   "type": "FILTER_TEST",
-  "label": "NUMBER_DECIMAL Test",
+  "label": "NUMBER_REAL Test",
   "expectedCsv": "tests/filter/NUMBER_DECIMAL/expected_NUMBER_Filter.csv",
   "content": {
     "tables": {
@@ -32,7 +32,7 @@
     }
   },
   "filterValue": {
-    "type": "DECIMAL_RANGE",
+    "type": "REAL_RANGE",
     "value": {
       "min": 100,
       "max": 200

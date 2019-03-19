@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.concepts.select.ConnectorSelect;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.google.common.collect.PeekingIterator;
@@ -10,8 +9,8 @@ import com.google.common.collect.PeekingIterator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @EqualsAndHashCode(callSuper=false)
-public class ConnectorSelectId extends SelectId<ConnectorSelect> implements NamespacedId {
+@Getter @EqualsAndHashCode(callSuper=true)
+public class ConnectorSelectId extends SelectId implements NamespacedId {
 
 	private final ConnectorId connector;
 	

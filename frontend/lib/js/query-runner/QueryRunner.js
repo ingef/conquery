@@ -1,20 +1,43 @@
 // @flow
 
-import React               from 'react';
+import React from "react";
+import styled from '@emotion/styled';
 
-import QueryResults        from './QueryResults';
-import QueryRunningSpinner from './QueryRunningSpinner';
-import QueryRunnerInfo     from './QueryRunnerInfo';
-import QueryRunnerButton   from './QueryRunnerButton';
-
+import QueryResults from "./QueryResults";
+import QueryRunningSpinner from "./QueryRunningSpinner";
+import QueryRunnerInfo from "./QueryRunnerInfo";
+import QueryRunnerButton from "./QueryRunnerButton";
 
 type PropsType = {
   queryRunner: Object,
   isQueryRunning: boolean,
   isButtonEnabled: boolean,
   startQuery: Function,
-  stopQuery: Function,
+  stopQuery: Function
 };
+
+const Root = styled("div")`
+  flex-shrink: 0;
+  padding: 10px 20px 0 10px;
+  border-top: 1px solid ${({ theme }) => theme.col.grayLight};
+  display: flex;
+  align-items: center;
+  width: 100%;
+`;
+
+const Left = styled("div")`
+  flex-grow: 1;
+`;
+const Right = styled("div")`
+  flex-grow: 2;
+  padding-left: 20px;
+`;
+
+const LoadingGroup = styled("div")`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
 
 const QueryRunner = (props: PropsType) => {
   const {
@@ -22,41 +45,36 @@ const QueryRunner = (props: PropsType) => {
     startQuery,
     stopQuery,
     isQueryRunning,
-    isButtonEnabled,
+    isButtonEnabled
   } = props;
 
   const btnAction = isQueryRunning ? stopQuery : startQuery;
 
-  const isStartStopLoading = queryRunner.startQuery.loading ||
-                             queryRunner.stopQuery.loading;
+  const isStartStopLoading =
+    queryRunner.startQuery.loading || queryRunner.stopQuery.loading;
 
   return (
-    <div className="query-runner">
-      <div className="query-runner__left">
+    <Root>
+      <Left>
         <QueryRunnerButton
           onClick={btnAction}
           isStartStopLoading={isStartStopLoading}
           isQueryRunning={isQueryRunning}
           disabled={!isButtonEnabled}
         />
-      </div>
-      <div className="query-runner__right">
-        <div className="query-runner__loading-group">
-          <QueryRunningSpinner
-            isQueryRunning={isQueryRunning}
-          />
-          <QueryRunnerInfo
-            queryRunner={queryRunner}
-          />
-        </div>
+      </Left>
+      <Right>
+        <LoadingGroup>
+          <QueryRunningSpinner isQueryRunning={isQueryRunning} />
+          <QueryRunnerInfo queryRunner={queryRunner} />
+        </LoadingGroup>
         <QueryResults
           resultCount={queryRunner.queryResult.resultCount}
           resultUrl={queryRunner.queryResult.resultUrl}
         />
-      </div>
-    </div>
+      </Right>
+    </Root>
   );
 };
-
 
 export default QueryRunner;

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
-import com.google.common.collect.PeekingIterator;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
@@ -18,6 +17,7 @@ import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Lists;
+import com.google.common.collect.PeekingIterator;
 
 @JsonDeserialize(using=IdDeserializer.class)
 public interface IId<TYPE> {

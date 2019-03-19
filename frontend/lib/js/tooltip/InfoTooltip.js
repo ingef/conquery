@@ -2,34 +2,36 @@
 
 import React from "react";
 import ReactTooltip from "react-tooltip";
-import classnames from "classnames";
+import styled from "@emotion/styled";
+
+import FaIcon from "../icon/FaIcon";
 
 type PropsType = {
   text: string,
   className?: string,
-  symbol: boolean,
+  noIcon?: boolean,
   place?: string
 };
 
-const InfoTooltip = (props: PropsType) => {
+const Root = styled("div")`
+  display: inline-block;
+  padding: 0 10px;
+
+  div[data-id="tooltip"] {
+    text-transform: initial;
+  }
+`;
+
+const InfoTooltip = ({ className, text, noIcon, place }: PropsType) => {
   return (
-    <span className={classnames("info-tooltip", props.className)}>
-      <i
-        data-tip={props.text}
-        className={classnames({ "fa fa-question-circle-o": props.symbol })}
-      />
-      <ReactTooltip
-        place={props.place}
-        type="info"
-        effect="solid"
-        multiline={true}
-      />
-    </span>
+    <Root className={className}>
+      {!noIcon && <FaIcon data-tip={text} icon="question-circle-o" />}
+      <ReactTooltip place={place} type="info" effect="solid" multiline={true} />
+    </Root>
   );
 };
 
 InfoTooltip.defaultProps = {
-  symbol: true,
   place: "right"
 };
 

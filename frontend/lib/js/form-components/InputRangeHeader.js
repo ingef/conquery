@@ -1,23 +1,29 @@
 // @flow
 
-import React       from 'react';
-import InfoTooltip from '../tooltip/InfoTooltip';
+import React from "react";
+import styled from "@emotion/styled";
+import InfoTooltip from "../tooltip/InfoTooltip";
 
 type PropsType = {
-  className: string,
+  className?: string,
   label: string,
   unit?: string,
   tooltip?: string,
+  disabled?: boolean
 };
 
-const InputRangeHeader = ({ label, unit, className, tooltip }: PropsType) => {
-  return (
-    <p className={className}>
-      { label }
-      { unit && ` ( ${unit} )` }
-      { tooltip && <InfoTooltip text={tooltip} /> }
-    </p>
-  );
-}
+const InputRangeHeader = styled("p")`
+  font-size: ${({ theme }) => theme.font.sm};
+  margin: 2px 8px;
+  color: ${({ theme, disabled }) => (disabled ? theme.col.gray : "initial")};
+`;
 
-export default InputRangeHeader;
+export default ({ label, unit, className, tooltip, disabled }: PropsType) => {
+  return (
+    <InputRangeHeader className={className} disabled={disabled}>
+      {label}
+      {unit && ` ( ${unit} )`}
+      {tooltip && <InfoTooltip text={tooltip} />}
+    </InputRangeHeader>
+  );
+};

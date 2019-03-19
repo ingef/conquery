@@ -32,7 +32,7 @@
     }
   },
   "filterValue": {
-    "type": "DECIMAL_RANGE",
+    "type": "REAL_RANGE",
     "value": {
       "min": 100,
       "max": 200

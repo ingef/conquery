@@ -4,21 +4,19 @@ import T from "i18n-react";
 import difference from "lodash.difference";
 
 import {
-  getConceptsByIdsWithTables,
+  getConceptsByIdsWithTablesAndSelects,
   getConceptById
 } from "../category-trees/globalTreeStoreHelper";
 
-import { isEmpty } from "../common/helpers";
+import { isEmpty, objectWithoutKey } from "../common/helpers";
 
 import { type DateRangeType } from "../common/types/backend";
 
 import { resetAllFiltersInTables } from "../model/table";
 
 import {
-  QUERY_GROUP_MODAL_SET_MIN_DATE,
-  QUERY_GROUP_MODAL_SET_MAX_DATE,
-  QUERY_GROUP_MODAL_RESET_ALL_DATES,
-  QUERY_GROUP_MODAL_SET_TOUCHED
+  QUERY_GROUP_MODAL_SET_DATE,
+  QUERY_GROUP_MODAL_RESET_ALL_DATES
 } from "../query-group-modal/actionTypes";
 
 import {
@@ -30,7 +28,11 @@ import {
 
 import { UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../upload-concept-list-modal/actionTypes";
 
-import { INTEGER_RANGE } from "../form-components/filterTypes";
+import {
+  INTEGER_RANGE,
+  REAL_RANGE,
+  MONEY_RANGE
+} from "../form-components/filterTypes";
 
 import type { StateType } from "../query-runner/reducer";
 
@@ -50,6 +52,8 @@ import {
   REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
+  SET_TABLE_SELECTS,
+  SET_SELECTS,
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
@@ -69,6 +73,18 @@ import type {
 } from "./types";
 
 const initialState: StandardQueryType = [];
+
+const withDefaultValues = arr => {
+  if (!arr) return arr;
+
+  return arr.map(obj => {
+    // Tables passed
+    if (obj.selects) return { ...obj, selects: withDefaultValues(obj.selects) };
+
+    // Selects passed
+    return { ...obj, selected: !!obj.default };
+  });
+};
 
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
@@ -92,7 +108,8 @@ const filterItem = (
   else
     return {
       ids: item.ids,
-      tables: item.tables,
+      tables: withDefaultValues(item.tables),
+      selects: withDefaultValues(item.selects),
       tree: item.tree,
 
       label: item.label,
@@ -332,6 +349,37 @@ const setNodeFilterValue = (state, action) => {
   });
 };
 
+const setNodeTableSelects = (state, action) => {
+  const { tableIdx, value } = action.payload;
+  const { andIdx, orIdx } = selectEditedNode(state);
+  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const { selects } = table;
+
+  // value contains the selects that have now been selected
+  const newTable = {
+    ...table,
+    selects: selects.map(select => ({
+      ...select,
+      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+    }))
+  };
+
+  return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
+};
+
+const setNodeSelects = (state, action) => {
+  const { value } = action.payload;
+  const { andIdx, orIdx } = selectEditedNode(state);
+  const { selects } = state[andIdx].elements[orIdx];
+
+  return setElementProperties(state, andIdx, orIdx, {
+    selects: selects.map(select => ({
+      ...select,
+      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+    }))
+  });
+};
+
 const switchNodeFilterMode = (state, action) => {
   const { mode } = action.payload;
 
@@ -350,29 +398,26 @@ const resetNodeAllFilters = (state, action) => {
   const node = state[andIdx].elements[orIdx];
 
   const newState = setElementProperties(state, andIdx, orIdx, {
-    excludeTimestamps: false
+    excludeTimestamps: false,
+    selects: node.selects
+      ? node.selects.map(select => ({
+          ...select,
+          selected: false
+        }))
+      : null
   });
 
   if (!node.tables) return newState;
 
   const tables = resetAllFiltersInTables(node.tables);
+
   return updateNodeTables(newState, andIdx, orIdx, tables);
 };
 
-const setGroupDate = (state, action, minOrMax) => {
+const setGroupDate = (state, action) => {
   const { andIdx, date } = action.payload;
 
-  // Calculate next daterange
-  const tmpDateRange = {
-    ...state[andIdx].dateRange,
-    [minOrMax]: date
-  };
-  // Make sure it has either min or max set, otherwise "delete" the key
-  // by setting to undefined
-  const dateRange =
-    tmpDateRange.min || tmpDateRange.max ? tmpDateRange : undefined;
-
-  return setGroupProperties(state, andIdx, { dateRange });
+  return setGroupProperties(state, andIdx, { dateRange: date });
 };
 
 const resetGroupDates = (state, action) => {
@@ -381,11 +426,6 @@ const resetGroupDates = (state, action) => {
   return setGroupProperties(state, andIdx, { dateRange: null });
 };
 
-const setGroupTouched = (state, action) => {
-  const { andIdx, field } = action.payload;
-
-  return setGroupProperties(state, andIdx, { touched: { [field]: true } });
-};
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
@@ -399,39 +439,118 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
   if (!savedTable.filters) return null;
 
   return savedTable.filters.map(filter => {
-    const tableFilter = table.filters.find(f => f.id === filter.id) || {};
-    const mode =
-      tableFilter.type === INTEGER_RANGE
-        ? tableFilter.value && !isEmpty(tableFilter.value.exact)
-          ? { mode: "exact" }
-          : { mode: "range" }
-        : {};
+    // TODO: Improve the api and don't use `.filter`, but `.id` or `.filterId`
+    const matchingFilter =
+      table.filters.find(f => f.filter === filter.id) || {};
+
+    const filterModeWithValue =
+      matchingFilter.type === INTEGER_RANGE ||
+      matchingFilter.type === REAL_RANGE ||
+      matchingFilter.type === MONEY_RANGE
+        ? matchingFilter.value &&
+          !isEmpty(matchingFilter.value.min) &&
+          !isEmpty(matchingFilter.value.max) &&
+          matchingFilter.value.min === matchingFilter.value.max
+          ? { mode: "exact", value: { exact: matchingFilter.value.min } }
+          : { mode: "range", value: matchingFilter.value }
+        : matchingFilter;
 
     return {
       ...filter,
-      ...tableFilter, // => this one may contain a "value" property
-      ...mode
+      ...filterModeWithValue // => this one may contain a "value" property
     };
   });
+};
+
+const mergeSelects = (savedSelects, conceptOrTable) => {
+  if (!conceptOrTable || !conceptOrTable.selects) return savedSelects || null;
+
+  if (!savedSelects) return null;
+
+  return savedSelects.map(select => {
+    const selectedSelect = conceptOrTable.selects.find(id => id === select.id);
+
+    return { ...select, selected: !!selectedSelect };
+  });
+};
+
+const mergeTables = (savedTables, concept) => {
+  return savedTables
+    ? savedTables.map(savedTable => {
+        // Find corresponding table in previous queryObject
+        // TODO: Disentangle id / connectorId mixing
+        const table = concept.tables.find(t => t.id === savedTable.connectorId);
+        const filters = mergeFiltersFromSavedConcept(savedTable, table);
+        const selects = mergeSelects(savedTable.selects, table);
+
+        return {
+          ...savedTable,
+          exclude: !table,
+          filters,
+          selects
+        };
+      })
+    : [];
 };
 
 // Look for tables in the already savedConcept. If they were not included in the
 // respective query concept, exclude them.
 // Also, apply all necessary filters
-const mergeTablesFromSavedConcept = (savedConcept, concept) => {
-  return savedConcept.tables
-    ? savedConcept.tables.map(savedTable => {
-        // Find corresponding table in previous queryObject
-        const table = concept.tables.find(t => t.id === savedTable.id);
-        const filters = mergeFiltersFromSavedConcept(savedTable, table);
+const mergeFromSavedConcept = (savedConcept, concept) => {
+  const tables = mergeTables(savedConcept.tables, concept);
+  const selects = mergeSelects(savedConcept.selects, concept);
 
+  return { selects, tables };
+};
+
+const expandNode = (rootConcepts, node) => {
+  switch (node.type) {
+    case "OR":
+      return {
+        ...node,
+        elements: node.children.map(c => expandNode(rootConcepts, c))
+      };
+    case "SAVED_QUERY":
+      return {
+        ...node,
+        id: node.query,
+        query: node.resolvedQuery,
+        isPreviousQuery: true
+      };
+    case "DATE_RESTRICTION":
+      return {
+        dateRange: node.dateRange,
+        ...expandNode(rootConcepts, node.child)
+      };
+    case "NEGATION":
+      return {
+        exclude: true,
+        ...expandNode(rootConcepts, node.child)
+      };
+    default:
+      const ids = node.ids || [node.id];
+      const lookupResult = getConceptsByIdsWithTablesAndSelects(
+        ids,
+        rootConcepts
+      );
+
+      if (!lookupResult)
         return {
-          ...savedTable,
-          exclude: !table,
-          filters
+          ...node,
+          error: T.translate("queryEditor.couldNotExpandNode")
         };
-      })
-    : [];
+
+      const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
+      const label = node.label || lookupResult.concepts[0].label;
+
+      return {
+        ...node,
+        label,
+        tables,
+        selects,
+        tree: lookupResult.root
+      };
+  }
 };
 
 // Completely override all groups in the editor with the previous groups, but
@@ -442,40 +561,13 @@ const expandPreviousQuery = (
   state,
   action: { payload: { groups: QueryGroupType[] } }
 ) => {
-  const { rootConcepts, groups } = action.payload;
+  const { rootConcepts, query } = action.payload;
 
-  return groups.map(group => {
-    return {
-      ...group,
-      elements: group.elements.map(element => {
-        if (element.type === "QUERY") {
-          return {
-            ...element,
-            isPreviousQuery: true
-          };
-        } else {
-          const ids = element.ids || [element.id];
-          const lookupResult = getConceptsByIdsWithTables(ids, rootConcepts);
+  if (!query.root || query.root.type !== "AND") {
+    throw new Error("Cant expand query, because root is not AND");
+  }
 
-          if (!lookupResult)
-            return {
-              ...element,
-              error: T.translate("queryEditor.couldNotExpandNode")
-            };
-
-          const tables = mergeTablesFromSavedConcept(lookupResult, element);
-          const label = element.label || lookupResult.concepts[0].label;
-
-          return {
-            ...element,
-            label,
-            tables,
-            tree: lookupResult.root
-          };
-        }
-      })
-    };
-  });
+  return query.root.children.map(child => expandNode(rootConcepts, child));
 };
 
 const findPreviousQueries = (state, action) => {
@@ -491,7 +583,7 @@ const findPreviousQueries = (state, action) => {
         .map(concept => ({
           andIdx,
           orIdx: concept.orIdx,
-          node: concept
+          node: objectWithoutKey("orIdx")(concept)
         }));
     })
     .filter(group => group.length > 0);
@@ -535,7 +627,7 @@ const loadPreviousQuerySuccess = (state, action) => {
     ...label,
     id: action.payload.data.id,
     loading: false,
-    query: action.payload.data.query
+    query: action.payload.data.query.query // TODO: Backend bug, here should be only "query"
   });
 };
 const loadPreviousQueryError = (state, action) => {
@@ -587,7 +679,7 @@ const createQueryNodeFromConceptListUploadResult = (
   resolvedConcepts,
   selectedConceptRootNode
 ): DraggedNodeType => {
-  const lookupResult = getConceptsByIdsWithTables(
+  const lookupResult = getConceptsByIdsWithTablesAndSelects(
     resolvedConcepts,
     rootConcepts
   );
@@ -597,6 +689,7 @@ const createQueryNodeFromConceptListUploadResult = (
         label,
         ids: resolvedConcepts,
         tables: lookupResult.tables,
+        selects: lookupResult.selects,
         tree: lookupResult.root
       }
     : null;
@@ -645,7 +738,9 @@ const updateNodeLabel = (state, action) => {
 
   const { andIdx, orIdx } = node;
 
-  return setElementProperties(state, andIdx, orIdx, { label: action.label });
+  return setElementProperties(state, andIdx, orIdx, {
+    label: action.payload.label
+  });
 };
 
 const addConceptToNode = (state, action) => {
@@ -657,7 +752,7 @@ const addConceptToNode = (state, action) => {
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    ids: [...action.concept.ids, ...node.ids]
+    ids: [...action.payload.concept.ids, ...node.ids]
   });
 };
 
@@ -670,7 +765,7 @@ const removeConceptFromNode = (state, action) => {
   const node = state[andIdx].elements[orIdx];
 
   return setElementProperties(state, andIdx, orIdx, {
-    ids: node.ids.filter(id => id !== action.conceptId)
+    ids: node.ids.filter(id => id !== action.payload.conceptId)
   });
 };
 
@@ -807,20 +902,20 @@ const query = (
       return toggleNodeTable(state, action);
     case SET_FILTER_VALUE:
       return setNodeFilterValue(state, action);
+    case SET_TABLE_SELECTS:
+      return setNodeTableSelects(state, action);
+    case SET_SELECTS:
+      return setNodeSelects(state, action);
     case RESET_ALL_FILTERS:
       return resetNodeAllFilters(state, action);
     case SWITCH_FILTER_MODE:
       return switchNodeFilterMode(state, action);
     case TOGGLE_TIMESTAMPS:
       return toggleTimestamps(state, action);
-    case QUERY_GROUP_MODAL_SET_MIN_DATE:
-      return setGroupDate(state, action, "min");
-    case QUERY_GROUP_MODAL_SET_MAX_DATE:
-      return setGroupDate(state, action, "max");
+    case QUERY_GROUP_MODAL_SET_DATE:
+      return setGroupDate(state, action);
     case QUERY_GROUP_MODAL_RESET_ALL_DATES:
       return resetGroupDates(state, action);
-    case QUERY_GROUP_MODAL_SET_TOUCHED:
-      return setGroupTouched(state, action);
     case EXPAND_PREVIOUS_QUERY:
       return expandPreviousQuery(state, action);
     case LOAD_PREVIOUS_QUERY_START:

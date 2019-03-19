@@ -4,10 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QPParentNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class OrNode extends QPParentNode {
 
@@ -16,18 +15,9 @@ public class OrNode extends QPParentNode {
 	}
 	
 	@Override
-	public boolean nextEvent(Block block, int event) {
-		boolean currently = false;
-		for(QPNode agg:currentTableChildren) {
-			currently |= agg.aggregate(block, event);
-		}
-		return currently;
-	}
-	
-	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
+	public QPNode doClone(CloneContext ctx) {
 		List<QPNode> clones = new ArrayList<>(getChildren());
-		clones.replaceAll(qp->qp.clone(plan, clone));
+		clones.replaceAll(qp->qp.clone(ctx));
 		return new OrNode(clones);
 	}
 	

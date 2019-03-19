@@ -1,8 +1,8 @@
 // @flow
 
-import { combineReducers }  from 'redux';
+import { combineReducers } from "redux";
 
-import { CLICK_PANE_TAB }   from './actionTypes';
+import { CLICK_PANE_TAB } from "./actionTypes";
 
 export type TabType = {
   label: string,
@@ -11,7 +11,7 @@ export type TabType = {
 
 export type StateType = {
   left: {
-    activeTab: 'categoryTrees' | 'previousQueries',
+    activeTab: "categoryTrees" | "previousQueries",
     tabs: TabType[]
   },
   right: {
@@ -21,40 +21,39 @@ export type StateType = {
 };
 
 // Keep a map of React components for the available tabs outside the Redux state
-const registerRightPaneTabComponents = (components) => {
+// Kai's comment: This is really ugly, but at least, this keeps all of the "tabs" magic in this one file
+// TODO: Think about some other way
+const registerRightPaneTabComponents = components => {
   window.rightPaneTabComponents = components;
 };
 
-export const getRightPaneTabComponent = (tab) => {
-  return window.rightPaneTabComponents[tab] || null;
-}
+export const getRightPaneTabComponent = tab => {
+  return window.rightPaneTabComponents[tab];
+};
 
-export const buildPanesReducer = (availableTabs) => {
-  const tabs = Object.values(availableTabs);
-
+export const buildPanesReducer = tabs => {
   // Collect reducers
-  const tabsReducers = Object.assign(
-    {},
-    ...tabs.map(tab => ({[tab.description.key]: tab.reducer}))
-  );
+  const tabsReducers = tabs.reduce((all, tab) => {
+    all[tab.description.key] = tab.reducer;
 
-  // Collect components
-  const tabsComponents = Object.assign(
-    {},
-    ...tabs.map(tab => ({[tab.description.key]: tab.component}))
-  );
+    return all;
+  }, {});
+  const tabsComponents = tabs.reduce((all, tab) => {
+    all[tab.description.key] = tab.component;
+
+    return all;
+  }, {});
+
   registerRightPaneTabComponents(tabsComponents);
 
-  const defaultTab = tabs.length
-    ? tabs.sort((a, b) => a.description.order - b.description.order)[0]
-    : null;
+  const defaultTab = tabs[0];
 
   const initialState: StateType = {
     left: {
-      activeTab: 'categoryTrees',
+      activeTab: "categoryTrees",
       tabs: [
-        { label: 'leftPane.categoryTrees', key: 'categoryTrees', order: 0 },
-        { label: 'leftPane.previousQueries', key: 'previousQueries', order: 1 },
+        { label: "leftPane.categoryTrees", key: "categoryTrees" },
+        { label: "leftPane.previousQueries", key: "previousQueries" }
       ]
     },
     right: {

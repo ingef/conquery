@@ -1,3 +1,3 @@
 // @flow
 
-export { default as ScrollableList } from './ScrollableList';
+export { default as ScrollableList } from "./ScrollableList";

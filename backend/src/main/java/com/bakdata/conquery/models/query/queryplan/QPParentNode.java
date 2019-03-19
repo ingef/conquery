@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -71,6 +70,13 @@ public abstract class QPParentNode extends QPNode {
 	public void nextBlock(Block block) {
 		for(QPNode agg:currentTableChildren) {
 			agg.nextBlock(block);
+		}
+	}
+	
+	@Override
+	public void nextEvent(Block block, int event) {
+		for(QPNode agg:currentTableChildren) {
+			agg.nextEvent(block, event);
 		}
 	}
 	

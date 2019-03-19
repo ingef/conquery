@@ -1,15 +1,17 @@
-import _T                         from 'i18n-react';
-import moment                     from 'moment';
-import momentDurationFormatSetup  from 'moment-duration-format';
+import _T from "i18n-react";
 
-import { mergeDeep }              from '../common/helpers';
+import { mergeDeep } from "../common/helpers";
 
 export const T = _T;
 
-export const initializeLocalization = (language, ...texts) => {
+let dateFnsLocale = null;
+
+export const initializeLocalization = (language, dateLocale, ...texts) => {
   T.setTexts(mergeDeep(...texts));
 
-  // Set moment locale
-  momentDurationFormatSetup(moment);
-  moment.locale(language);
+  dateFnsLocale = dateLocale;
+};
+
+export const getDateLocale = () => {
+  return dateFnsLocale;
 };

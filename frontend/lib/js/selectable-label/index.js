@@ -1,1 +1,1 @@
-export SelectableLabel from './SelectableLabel';
+export SelectableLabel from "./SelectableLabel";

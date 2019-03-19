@@ -24,7 +24,7 @@ const DownloadButton = ({
 
   return (
     <a href={href} className={className}>
-      <IconButton icon="download" {...restProps}>
+      <IconButton large icon="download" {...restProps}>
         {children}
       </IconButton>
     </a>

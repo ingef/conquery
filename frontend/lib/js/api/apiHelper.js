@@ -7,17 +7,41 @@
 // (to exclude others that are relevant to the frontend only)
 // Some keys are added (e.g. the query type attribute)
 
-// TODO: Use, once feature is complete
-// import {
-//   DAYS_BEFORE,
-//   DAYS_OR_NO_EVENT_BEFORE,
-// } from '../common/constants/timebasedQueryOperatorTypes';
+import {
+  DAYS_BEFORE,
+  DAYS_OR_NO_EVENT_BEFORE
+} from "../common/constants/timebasedQueryOperatorTypes";
 
 import { isEmpty } from "../common/helpers";
 
-import { type TableType } from "../standard-query-editor/types";
+import type {
+  TableWithFilterValueType,
+  SelectedSelectorType
+} from "../standard-query-editor/types";
 
-export const transformTablesToApi = (tables: TableType[]) => {
+export const transformFilterValueToApi = (filter: any) => {
+  const { value, mode } = filter;
+
+  if (value instanceof Array) {
+    return value.map(v => (v.value ? v.value : v));
+  }
+
+  if (!!mode) {
+    return mode === "range" ? value : { min: value.exact, max: value.exact };
+  }
+
+  return value;
+};
+
+export const transformSelectsToApi = (selects?: ?(SelectedSelectorType[])) => {
+  if (!selects) return [];
+
+  return selects
+    ? selects.filter(({ selected }) => !!selected).map(({ id }) => id)
+    : [];
+};
+
+export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
   if (!tables) return [];
 
   return tables
@@ -26,16 +50,14 @@ export const transformTablesToApi = (tables: TableType[]) => {
       // Explicitly whitelist the tables that we allow to send to the API
       return {
         id: table.connectorId,
+        selects: transformSelectsToApi(table.selects),
         filters: table.filters
           ? table.filters
               .filter(filter => !isEmpty(filter.value)) // Only send filters with a value
               .map(filter => ({
                 filter: filter.id,
                 type: filter.type,
-                value:
-                  filter.value instanceof Array
-                    ? filter.value.map(v => (v.value ? v.value : v))
-                    : filter.value
+                value: transformFilterValueToApi(filter)
               }))
           : []
       };
@@ -89,55 +111,60 @@ const createConcept = concept => ({
   ids: concept.ids,
   label: concept.label,
   excludeFromTimeAggregation: concept.excludeTimestamps,
-  tables: transformTablesToApi(concept.tables)
+  tables: transformTablesToApi(concept.tables),
+  selects: transformSelectsToApi(concept.selects)
 });
 
 const createQueryConcepts = query => {
   return query.map(group => {
-    const concepts = group.dateRange
-      ? group.elements.map(concept =>
-          createDateRestriction(group.dateRange, createQueryConcept(concept))
-        )
-      : group.elements.map(concept => createQueryConcept(concept));
+    const concepts = group.elements.map(createQueryConcept);
+    const orConcept = { type: "OR", children: [...concepts] };
 
-    var result =
-      group.elements.length > 1
-        ? { type: "OR", children: [...concepts] }
-        : concepts.reduce((acc, curr) => ({ ...acc, ...curr }), {});
+    const withDate = group.dateRange
+      ? createDateRestriction(group.dateRange, orConcept)
+      : orConcept;
 
-    return group.exclude ? createNegation(result) : result;
+    return group.exclude ? createNegation(withDate) : withDate;
   });
 };
 
 // TODO: Use, once feature is complete
-// const getDayRange = (condition) => {
-//   if (condition.operator === DAYS_BEFORE)
-//     return [
-//       { minDays: condition.minDays },
-//       { maxDays: condition.maxDays },
-//     ];
-
-//   if (condition.operator === DAYS_OR_NO_EVENT_BEFORE)
-//     return [
-//       { minDays: condition.minDaysOrNoEvent },
-//       { maxDays: condition.maxDaysOrNoEvent },
-//     ];
-
-//   return [{}, {}];
-// };
+const getDays = condition => {
+  switch (condition.operator) {
+    case DAYS_BEFORE:
+      return {
+        days: {
+          min: condition.minDays,
+          max: condition.maxDays
+        }
+      };
+    case DAYS_OR_NO_EVENT_BEFORE:
+      return {
+        days: condition.minDaysOrNoEvent
+      };
+    default:
+      return {};
+  }
+};
 
 const transformTimebasedQueryToApi = query => ({
   type: "CONCEPT_QUERY",
   root: {
     type: "AND",
     children: query.conditions.map(condition => {
-      // TODO: Use, once feature is complete
-      // const [ minDays, maxDays ] = getDayRange(condition);
+      const days = getDays(condition);
+
       return {
         type: condition.operator,
-        sampler: "EARLIEST",
-        index: createSavedQuery(condition.result0.id),
-        preceding: createSavedQuery(condition.result1.id)
+        ...days,
+        index: {
+          sampler: condition.result0.timestamp,
+          child: createSavedQuery(condition.result0.id)
+        },
+        preceding: {
+          sampler: condition.result1.timestamp,
+          child: createSavedQuery(condition.result1.id)
+        }
       };
     })
   }

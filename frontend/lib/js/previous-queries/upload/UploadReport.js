@@ -1,33 +1,45 @@
 // @flow
 
-import React                     from 'react';
-import T                         from 'i18n-react';
+import React from "react";
+import styled from "@emotion/styled";
+import T from "i18n-react";
 
-import { type UploadReportType } from './reducer';
-
+import { type UploadReportType } from "./reducer";
 
 type PropsType = {
-  report: UploadReportType,
+  report: UploadReportType
 };
 
+const Root = styled("div")`
+  margin: 0 auto 10px;
+  display: inline-block;
+`;
+
+const SuccessfulCount = styled("p")`
+  margin: 0;
+  text-align: left;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
+const UnsuccessfulCount = styled(SuccessfulCount)`
+  color: ${({ theme }) => theme.col.red};
+`;
+
 const UploadReport = (props: PropsType) => (
-  <div className="upload-report">
-    <p className="upload-report__successful-count">
-      {T.translate(
-        'uploadReport.successful',
-        { count: props.report.successful}
-      )}
-    </p>
-    {
-      props.report.unsuccessful > 0 &&
-      <p className="upload-report__unsuccessful-count">
-        {T.translate(
-          'uploadReport.unsuccessful',
-          { count: props.report.unsuccessful }
-        )}
-      </p>
-    }
-  </div>
+  <Root>
+    <SuccessfulCount>
+      {T.translate("uploadReport.successful", {
+        count: props.report.successful
+      })}
+    </SuccessfulCount>
+    {props.report.unsuccessful > 0 && (
+      <UnsuccessfulCount>
+        {T.translate("uploadReport.unsuccessful", {
+          count: props.report.unsuccessful
+        })}
+      </UnsuccessfulCount>
+    )}
+  </Root>
 );
 
 export default UploadReport;

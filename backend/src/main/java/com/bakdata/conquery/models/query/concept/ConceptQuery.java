@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
 import lombok.Getter;
@@ -28,7 +29,7 @@ public class ConceptQuery implements IQuery {
 	
 	@Override
 	public QueryPlan createQueryPlan(QueryPlanContext context) {
-		QueryPlan qp = QueryPlan.create();
+		ConceptQueryPlan qp = ConceptQueryPlan.create();
 		qp.setChild(root.createQueryPlan(context, qp));
 		return qp;
 	}
@@ -44,16 +45,16 @@ public class ConceptQuery implements IQuery {
 		return this;
 	}
 	
-	public List<Select<?>> collectSelects() {
+	public List<Select> collectSelects() {
 		return root.collectSelects();
 	}
 	
 	@Override
 	public List<String> collectResultHeader() {
-		List<Select<?>> selects = this.collectSelects();
+		List<Select> selects = this.collectSelects();
 		List<String> header = new ArrayList<>(selects.size() + 1);
 		header.add(ConqueryConstants.DATES);
-		for(Select<?> select : selects) {
+		for(Select select : selects) {
 			header.add(select.getLabel());
 		}
 		return header;

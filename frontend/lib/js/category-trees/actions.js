@@ -18,11 +18,13 @@ import {
   LOAD_TREE_ERROR,
   CLEAR_TREES,
   SEARCH_TREES_START,
-  SEARCH_TREES_END,
+  SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CHANGE_SEARCH_QUERY,
   CLEAR_SEARCH_QUERY
 } from "./actionTypes";
+
+const SEARCH_LIMIT = 500;
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
 
@@ -89,27 +91,26 @@ export const searchTreesStart = (query: string) => ({
   type: SEARCH_TREES_START,
   payload: { query }
 });
-export const searchTreesEnd = (query: string, searchResult: SearchResult) => ({
-  type: SEARCH_TREES_END,
+export const searchTreesSuccess = (
+  query: string,
+  searchResult: SearchResult
+) => ({
+  type: SEARCH_TREES_SUCCESS,
   payload: { query, searchResult }
 });
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
-export const searchTrees = (
-  datasetId: DatasetIdType,
-  query: string,
-  limit: number
-) => {
+export const searchTrees = (datasetId: DatasetIdType, query: string) => {
   return (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query));
 
     if (isEmpty(query)) return;
 
     return api
-      .searchConcepts(datasetId, query, limit)
+      .searchConcepts(datasetId, query, SEARCH_LIMIT)
       .then(
-        r => dispatch(searchTreesEnd(query, r)),
+        r => dispatch(searchTreesSuccess(query, r)),
         e => dispatch(searchTreesError(query, e))
       );
   };

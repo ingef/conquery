@@ -1,9 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -15,43 +12,21 @@ import com.bakdata.conquery.models.query.QueryPart;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+public interface QueryPlan extends EventIterating {
 
-@Getter @Setter @NoArgsConstructor(access=AccessLevel.PROTECTED)
-public class QueryPlan extends QPChainNode implements Cloneable {
-	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
-	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
-
-	public static QueryPlan create() {
-		QueryPlan plan = new QueryPlan();
-		plan.aggregators.add(plan.specialDateUnion);
-
-		return plan;
+	default QueryPlan createClone() {
+		CloneContext ctx = new CloneContext();
+		return this.clone(ctx);
 	}
+	
+	QueryPlan clone(CloneContext ctx);
 
-	/**
-	 * Returns the special Aggregator representing the time the events have been included.
-	 * @return this {@link QueryPlan}'s SpecialDateUnion
-	 */
-	public SpecialDateUnion getIncluded() {
-		return specialDateUnion;
-	}
-
-	@Override
-	public QueryPlan clone() {
-		return clone(this, new QueryPlan());
-	}
-
-	public Stream<QueryPart> execute(QueryContext context, Collection<Entity> entries) {
+	default Stream<QueryPart> execute(QueryContext context, Collection<Entity> entries) {
 		//collect required tables
-		Set<Table> requiredTables = this
-			.getChild()
-			.collectRequiredTables()
+		Set<Table> requiredTables = this.collectRequiredTables()
 			.stream()
 			.map(context.getStorage().getDataset().getTables()::getOrFail)
 			.collect(Collectors.toSet());
@@ -61,33 +36,19 @@ public class QueryPlan extends QPChainNode implements Cloneable {
 			.map(entity -> new QueryPart(context, this, requiredTables, entity));
 	}
 
-	@Override
-	public QueryPlan clone(QueryPlan plan, QueryPlan clone) {
-		for(Aggregator<?> agg:aggregators)
-			clone.aggregators.add(agg.clone());
-		clone.specialDateUnion = (SpecialDateUnion) clone.aggregators.get(aggregators.indexOf(specialDateUnion));
-		clone.setChild(getChild().clone(this, clone));
-		return clone;
-	}
+	EntityResult createResult();
 
-	@Override
-	public boolean nextEvent(Block block, int event) {
-		return getChild().nextEvent(block, event);
-	}
+	void addAggregator(Aggregator<?> aggregator);
 	
-	protected EntityResult result() {
-		String[] values = new String[aggregators.size()];
-		for(int i=0;i<values.length;i++)
-			values[i] = Objects.toString(aggregators.get(i).getAggregationResult(), "");
-		return EntityResult.of(entity.getId(), values);
-	}
+	void addAggregator(int index, Aggregator<?> aggregator);
 
-	public EntityResult createResult() {
-		if(isContained()) {
-			return result();
-		}
-		else {
-			return EntityResult.notContained();
-		}
-	}
+	SpecialDateUnion getSpecialDateUnion();
+
+	void init(Entity entity);
+
+	void nextEvent(Block block, int event);
+
+	int getAggregatorSize();
+	
+	boolean isContained();
 }

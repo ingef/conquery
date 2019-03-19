@@ -6,7 +6,6 @@ import java.util.Deque;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.concepts.select.Select;
@@ -16,6 +15,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public interface CQElement {
@@ -34,10 +34,10 @@ public interface CQElement {
 		return set;
 	}
 
-	default void collectSelects(Deque<Select<?>> select) {}
+	default void collectSelects(Deque<Select> select) {}
 	
-	default List<Select<?>> collectSelects() {
-		ArrayDeque<Select<?>> deque = new ArrayDeque<>();
+	default List<Select> collectSelects() {
+		ArrayDeque<Select> deque = new ArrayDeque<>();
 		this.collectSelects(deque);
 		return new ArrayList<>(deque);
 	}

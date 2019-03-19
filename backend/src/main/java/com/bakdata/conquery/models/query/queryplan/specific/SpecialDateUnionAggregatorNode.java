@@ -4,16 +4,15 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class SpecialDateUnionAggregatorNode extends AggregatorNode<CDateSet> {
 
 	private TableId requiredTable;
 	
 	public SpecialDateUnionAggregatorNode(TableId requiredTable, SpecialDateUnion aggregator) {
-		super(0, aggregator);
+		super(aggregator);
 		this.requiredTable = requiredTable;
 	}
 
@@ -23,8 +22,8 @@ public class SpecialDateUnionAggregatorNode extends AggregatorNode<CDateSet> {
 	}
 	
 	@Override
-	public QPNode clone(QueryPlan plan, QueryPlan clone) {
-		SpecialDateUnion aggClone = (SpecialDateUnion) clone.getAggregators().get(getPosition());
+	public SpecialDateUnionAggregatorNode doClone(CloneContext ctx) {
+		SpecialDateUnion aggClone = (SpecialDateUnion) getAggregator().clone(ctx);
 		return new SpecialDateUnionAggregatorNode(requiredTable, aggClone);
 	}
 }

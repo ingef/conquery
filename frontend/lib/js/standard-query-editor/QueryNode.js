@@ -1,29 +1,57 @@
 // @flow
 
-import React                       from 'react';
-import T                           from 'i18n-react';
-import {
-  DragSource,
-  type ConnectDragSource
-}                                  from 'react-dnd';
+import React from "react";
+import { findDOMNode } from "react-dom";
+import styled from "@emotion/styled";
+import T from "i18n-react";
+import { DragSource, type ConnectDragSource } from "react-dnd";
 
-import { dndTypes }                from '../common/constants';
-import { AdditionalInfoHoverable } from '../tooltip';
-import { ErrorMessage }            from '../error-message';
-import { nodeHasActiveFilters }    from '../model/node';
+import { dndTypes } from "../common/constants";
+import { ErrorMessage } from "../error-message";
+import { nodeHasActiveFilters } from "../model/node";
+import { isQueryExpandable } from "../model/query";
 
-import QueryNodeActions            from './QueryNodeActions';
+import QueryNodeActions from "./QueryNodeActions";
 
-import type {
-  QueryNodeType,
-  DraggedNodeType,
-  DraggedQueryType
-}                                  from './types';
+import type { QueryNodeType, DraggedNodeType, DraggedQueryType } from "./types";
 
-type PropsType =  {
+const Root = styled("div")`
+  position: relative;
+  width: 100%;
+  margin: 0 auto;
+  background-color: white;
+  display: inline-block;
+  padding: 7px;
+  font-size: ${({ theme }) => theme.font.sm};
+  cursor: pointer;
+  text-align: left;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  transition: border ${({ theme }) => theme.transitionTime};
+  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
+  &:hover {
+    border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+  }
+`;
+
+const Content = styled("p")`
+  margin: 0;
+  line-height: 1.2;
+  word-break: break-word;
+  font-size: ${({ theme }) => theme.font.md};
+`;
+const PreviousQueryLabel = styled("p")`
+  margin: 0 0 3px;
+  line-height: 1.2;
+  font-size: ${({ theme }) => theme.font.xs};
+  text-transform: uppercase;
+  font-weight: 700;
+  color: ${({ theme }) => theme.col.blueGrayDark};
+`;
+
+type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
-  onFilterClick: Function,
+  onEditClick: Function,
   onExpandClick: Function,
   connectDragSource: Function,
   andIdx: number,
@@ -31,70 +59,78 @@ type PropsType =  {
   connectDragSource: ConnectDragSource
 };
 
-const QueryNode = (props: PropsType) => {
-  const { node } = props;
+// Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
+class QueryNode extends React.Component {
+  props: PropsType;
 
-  return props.connectDragSource(
-    <div className="query-node">
-      <QueryNodeActions
-        hasActiveFilters={nodeHasActiveFilters(node)}
-        onFilterClick={props.onFilterClick}
-        onDeleteNode={props.onDeleteNode}
-        isExpandable={node.isPreviousQuery}
-        onExpandClick={() => {
-          if (!node.query) return;
+  render() {
+    const {
+      node,
+      connectDragSource,
+      onExpandClick,
+      onEditClick,
+      onDeleteNode
+    } = this.props;
 
-          props.onExpandClick(node.query.groups, node.id);
-        }}
-        previousQueryLoading={node.loading}
-        error={node.error}
-      />
-      {
-        node.isPreviousQuery &&
-        <p className="query-node__previous-query">
-          {T.translate('queryEditor.previousQuery')}
-        </p>
-      }
-      {
-        node.error
-        ? <ErrorMessage
-            className="query-node__content"
-            message={node.error}
-          />
-        : <p className="query-node__content">
-            <span>{ node.label || node.id }</span>
-            {
-              node.description &&
-              <span> - {node.description}</span>
-            }
-          </p>
-      }
-    </div>
-  );
-};
+    return (
+      <Root ref={instance => connectDragSource(instance)}>
+        <QueryNodeActions
+          hasActiveFilters={nodeHasActiveFilters(node)}
+          onEditClick={onEditClick}
+          onDeleteNode={onDeleteNode}
+          isExpandable={isQueryExpandable(node)}
+          onExpandClick={() => {
+            if (!node.query) return;
+
+            onExpandClick(node.query);
+          }}
+          previousQueryLoading={node.loading}
+          error={node.error}
+        />
+        {node.isPreviousQuery && (
+          <PreviousQueryLabel>
+            {T.translate("queryEditor.previousQuery")}
+          </PreviousQueryLabel>
+        )}
+        {node.error ? (
+          <ErrorMessage message={node.error} />
+        ) : (
+          <Content>
+            <span>{node.label || node.id}</span>
+            {node.description && <span> - {node.description}</span>}
+          </Content>
+        )}
+      </Root>
+    );
+  }
+}
 
 /**
  * Implements the drag source contract.
  */
 const nodeSource = {
-  beginDrag(props: PropsType): DraggedNodeType | DraggedQueryType {
+  beginDrag(props, monitor, component): DraggedNodeType | DraggedQueryType {
     // Return the data describing the dragged item
     // NOT using `...node` since that would also spread `children` in.
     // This item may stem from either:
     // 1) A concept (dragged from CategoryTreeNode)
     // 2) A previous query (dragged from PreviousQueries)
     const { node, andIdx, orIdx } = props;
+    const { height, width } = findDOMNode(component).getBoundingClientRect();
 
     const draggedNode = {
       moved: true,
       andIdx,
       orIdx,
 
+      width,
+      height,
+
       label: node.label,
       excludeTimestamps: node.excludeTimestamps,
 
       loading: node.loading,
-      error: node.error,
+      error: node.error
     };
 
     if (node.isPreviousQuery)
@@ -103,14 +139,15 @@ const nodeSource = {
         id: node.id,
         query: node.query,
         isPreviousQuery: true
-      }
+      };
     else
       return {
         ...draggedNode,
         ids: node.ids,
         tree: node.tree,
         tables: node.tables,
-      }
+        selects: node.selects
+      };
   }
 };
 
@@ -122,10 +159,8 @@ const collect = (connect, monitor) => ({
   isDragging: monitor.isDragging()
 });
 
-const DraggableQueryNode = DragSource(
-  dndTypes.QUERY_NODE,
-  nodeSource,
-  collect
-)(QueryNode);
+const DraggableQueryNode = DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(
+  QueryNode
+);
 
-export default AdditionalInfoHoverable(DraggableQueryNode);
+export default DraggableQueryNode;

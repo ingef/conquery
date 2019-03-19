@@ -1,7 +1,21 @@
 package com.bakdata.conquery.models.concepts.tree;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.SelectHolder;
+import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -13,27 +27,19 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.specific.IStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is a single node or concept in a concept tree.
  */
 @Slf4j
 @CPSType(id="TREE", base=Concept.class)
-public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId> {
+public class TreeConcept extends Concept<ConceptTreeConnector> implements ConceptTreeNode<ConceptId>, SelectHolder<UniversalSelect> {
 	
 	@Getter @Setter
 	private int globalToLocalOffset;
@@ -49,12 +55,17 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	private int localId;
 	@JsonIgnore @Getter @Setter
 	private int depth=-1;
-
+	@NotNull @Getter @Setter @JsonManagedReference
+	private List<UniversalSelect> selects = new ArrayList<>();
 	@JsonIgnore @Getter @Setter
 	private TreeChildPrefixIndex childIndex;
-
 	@JsonIgnore
 	private Map<ImportId, ConceptTreeCache> caches = new ConcurrentHashMap<>();
+	
+	@Override
+	public Concept<?> findConcept() {
+		return getConcept();
+	}
 
 	public ConceptTreeCache getCache(ImportId importId){
 		return caches.get(importId);

@@ -1,3 +1,5 @@
+locale: "de"
+
 headline: "Anfragen und Analyse"
 leftPane:
   categoryTrees: "Konzeptbäume"
@@ -22,15 +24,15 @@ queryRunner:
   endSuccess: "Anfrage erfolgreich abgeschlossen."
   startError: "Anfrage starten fehlgeschlagen."
   resultError: "Anfrageergebnis konnte nicht geladen werden."
-  resultCount: "{count} Ergebnisse gefunden"
+  resultCount: "{count} Ergebnisse"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
-  downloadResults: "Ergebnisse herunterladen"
+  downloadResults: "CSV"
 
 queryEditor:
   couldNotExpandNode: "Knoten nicht gefunden"
   couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
-  filter: "Bearbeiten"
+  edit: "Bearbeiten"
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
@@ -62,15 +64,12 @@ queryNodeEditor:
   dropConcept: "Füge ein weiteres Konzept hinzu"
   includeSubnodes: "Untergeordnete Konzepte einbeziehen"
   tooManyValues: "{count} Werte ausgewählt"
+  filters: "Filter"
+  selects: "Zusatzwerte"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
-  datePlaceholder: "Datum wählen"
-  today: "Heute"
-  dateMinLabel: "Von"
-  dateMaxLabel: "Bis"
   headlineStart: "Elemente:"
-  dateFormat: "DD.MM.YYYY"
 
 deletePreviousQueryModal:
   areYouSure: "Diese Anfrage wirklich löschen?"
@@ -103,7 +102,6 @@ tooltip:
     daterange: "Zeitraum"
     from: "Von"
     to: "Bis"
-    possiblePattern: ".2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
 
 reactSelect:
   placeholder: "Auswählen ..."
@@ -123,6 +121,15 @@ inputRange:
   exactLabel: "exakt"
   minLabel: "min"
   maxLabel: "max"
+
+inputDateRange:
+  from: "Von"
+  to: "Bis"
+  placeholder: "Datum wählen"
+  today: "Heute"
+  dateFormat: "dd.MM.yyyy"
+  tooltip:
+    possiblePattern: "y2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
 
 previousQueries:
   loading: "Lade Anfragen"
@@ -236,5 +243,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "{limit} von {resultCount} Ergebnisse ({duration} Sekunden)"
-  durationFormat: "s,SS"
+  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} Sekunden)"

@@ -1,6 +1,6 @@
 // @flow
 
-import { toUpperCaseUnderscore } from '../common/helpers';
+import { toUpperCaseUnderscore } from "../common/helpers";
 
 export const createActionTypes = (type: string) => {
   const uppercasedType = toUpperCaseUnderscore(type);
@@ -13,6 +13,6 @@ export const createActionTypes = (type: string) => {
     UPDATE_NAME: `query-node-editor/UPDATE_${uppercasedType}_NAME`,
     RESET: `query-node-editor/RESET_${uppercasedType}`,
     RESOLVE_FILTER_VALUES: `query-node-editor/RESOLVE_${uppercasedType}_FILTER_VALUES`,
-    TOGGLE_INCLUDE_SUBNODES: `query-node-editor/TOGGLE_${uppercasedType}_INCLUDE_SUBNODES`,
+    TOGGLE_INCLUDE_SUBNODES: `query-node-editor/TOGGLE_${uppercasedType}_INCLUDE_SUBNODES`
   };
 };

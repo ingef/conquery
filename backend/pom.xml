@@ -9,7 +9,13 @@
 		<version>0.0.0-SNAPSHOT</version>
 	</parent>
 	<artifactId>backend</artifactId>
-
+	
+	<properties>
+		<!-- default value if git-commit-id is executed -->
+		<git.build.time>${maven.build.timestamp}</git.build.time>
+		<maven.build.timestamp.format>yyyy-MM-dd'T'HH:mm:ssXXX</maven.build.timestamp.format>
+	</properties>
+	
 	<build>
 		<resources>
 			<resource>
@@ -42,20 +48,15 @@
 							<goal>revision</goal>
 						</goals>
 					</execution>
-					<execution>
-						<id>validate-the-git-infos</id>
-						<goals>
-							<goal>validateRevision</goal>
-						</goals>
-					</execution>
 				</executions>
 				<configuration>
 					<dotGitDirectory>../.git</dotGitDirectory>
 					<injectAllReactorProjects>true</injectAllReactorProjects>
-					<dateFormat>yyyy-MM-dd'T'HH:mm:ssXXX</dateFormat>
+					<dateFormat>${maven.build.timestamp.format}</dateFormat>
 					<gitDescribe>
 						<skip>false</skip>
-						<always>false</always>
+						<!-- do not only use annotated tags -->
+						<tags>true</tags>
 					</gitDescribe>
 				</configuration>
 			</plugin>
@@ -157,7 +158,7 @@
 		<dependency>
 			<groupId>io.github.classgraph</groupId>
 			<artifactId>classgraph</artifactId>
-			<version>4.8.8</version>
+			<version>4.8.15</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>

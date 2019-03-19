@@ -1,5 +1,12 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.util.Collection;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
@@ -18,13 +25,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.util.functions.Collector;
-import lombok.extern.slf4j.Slf4j;
 
-import javax.validation.Validator;
-import java.io.File;
-import java.util.Collection;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
@@ -77,11 +79,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 				concept.initElements(validator);
 				
-				concept.getSelect().forEach(centralRegistry::register);
+				concept.getSelects().forEach(centralRegistry::register);
 				for (Connector c : concept.getConnectors()) {
 					centralRegistry.register(c);
 					c.collectAllFilters().forEach(centralRegistry::register);
-					c.getAllSelects().forEach(centralRegistry::register);
+					c.getSelects().forEach(centralRegistry::register);
 				}
 				//add imports of table
 				for(Import imp: getAllImports()) {
@@ -93,10 +95,10 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				}
 			})
 			.onRemove(concept -> {
-				concept.getSelect().forEach(centralRegistry::remove);
+				concept.getSelects().forEach(centralRegistry::remove);
 				//see #146  remove from Dataset.concepts
 				for(Connector c:concept.getConnectors()) {
-					c.getAllSelects().forEach(centralRegistry::remove);
+					c.getSelects().forEach(centralRegistry::remove);
 					c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
 					centralRegistry.remove(c.getId());
 				}

@@ -4,12 +4,12 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
-import com.bakdata.conquery.models.concepts.select.ConnectorSelect;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregatorNode;
+import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.DecimalDiffSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.IntegerDiffSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum.MoneyDiffSumAggregator;
@@ -18,34 +18,47 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.Deci
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.IntegerSumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.MoneySumAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.sum.RealSumAggregator;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
+@Getter
+@Setter
 @CPSType(id = "SUM", base = Select.class)
-public class SumSelect extends ConnectorSelect {
+@NoArgsConstructor(onConstructor_ = @JsonCreator)
+public class SumSelect extends Select {
 
-	@Getter
 	private boolean distinct = false;
 
-	@Getter
 	@NsIdRef
 	@NotNull
 	private Column column;
 
-	@Getter
 	@NsIdRef
 	private Column subtractColumn;
 
+	public SumSelect(boolean distinct, Column column) {
+		this(distinct, column, null);
+	}
+
+	public SumSelect(boolean distinct, Column column, Column subtractColumn) {
+		this.distinct = distinct;
+		this.column = column;
+		this.subtractColumn = subtractColumn;
+	}
+
 	@Override
-	protected Aggregator<?> createAggregator() {
+	public Aggregator<? extends Number> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregatorNode(getAggregator(), getColumn());
+			return new DistinctValuesWrapperAggregator<>(getAggregator(), getColumn());
 		}
 		else {
 			return getAggregator();
 		}
 	}
-	private ColumnAggregator<?> getAggregator() {
+	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
 			switch (getColumn().getType()) {
 				case INTEGER:
@@ -61,6 +74,9 @@ public class SumSelect extends ConnectorSelect {
 			}
 		}
 		else {
+			if(getColumn().getType() != getSubtractColumn().getType()) {
+				throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn().getType()));
+			}
 			switch (getColumn().getType()) {
 				case INTEGER:
 					return new IntegerDiffSumAggregator(getColumn(), getSubtractColumn());
@@ -73,6 +89,23 @@ public class SumSelect extends ConnectorSelect {
 				default:
 					throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
 			}
+		}
+	}
+	
+
+	
+	@Override
+	public ResultType getResultType() {
+		switch (getColumn().getType()) {
+			case INTEGER:
+				return ResultType.INTEGER;
+			case MONEY:
+				return ResultType.MONEY;
+			case DECIMAL:
+			case REAL:
+				return ResultType.NUMERIC;
+			default:
+				throw new IllegalStateException(String.format("Invalid column type '%s' for Aggregator", getColumn().getType()));
 		}
 	}
 }

@@ -13,7 +13,7 @@
       "tables": [
         {
           "id": "${dataset}.geschlecht_select.geschlecht_connector",
-          "select" : [
+          "selects" : [
             "${dataset}.geschlecht_select.geschlecht_connector.count_genders"
           ]
         }
@@ -32,13 +32,13 @@
             "label": "datum",
             "column": "vers_stamm.datum"
           },
-          "select":
+          "selects": [
             {
               "name" : "count_genders",
               "type": "COUNT",
               "column": "vers_stamm.geschlecht"
             }
-
+          ]
         }
       ]
     }

@@ -9,15 +9,16 @@ import T from "i18n-react";
 import { type QueryNodeType } from "../standard-query-editor/types";
 
 import TransparentButton from "../button/TransparentButton";
+import EscAble from "../common/components/EscAble";
 
-import { MenuColumn } from "./MenuColumn";
-import { NodeDetailsView } from "./NodeDetailsView";
-import { TableFilterView } from "./TableFilterView";
-import { DescriptionColumn } from "./DescriptionColumn";
+import MenuColumn from "./MenuColumn";
+import NodeDetailsView from "./NodeDetailsView";
+import TableView from "./TableView";
+import DescriptionColumn from "./DescriptionColumn";
 
 import { createQueryNodeEditorActions } from "./actions";
 
-const Root = styled("div")`
+const StyledEscAble = styled(EscAble)`
   padding: 0 10px;
   left: 0;
   top: 0;
@@ -32,9 +33,11 @@ const Root = styled("div")`
 const Wrapper = styled("div")`
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
   display: flex;
+  flex-direction: row;
   width: 100%;
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
+  border-radius: 3px;
 `;
 
 const CloseButton = styled(TransparentButton)`
@@ -53,8 +56,7 @@ type QueryNodeEditorState = {
   onSelectInputTableView: Function,
   onShowDescription: Function,
   onToggleEditLabel: Function,
-  onReset: Function,
-  onDropFilterValuesFile: Function
+  onReset: Function
 };
 
 export type PropsType = {
@@ -66,6 +68,7 @@ export type PropsType = {
   onCloseModal: Function,
   onUpdateLabel: Function,
   onDropConcept: Function,
+  onDropFilterValuesFile: Function,
   onRemoveConcept: Function,
   onToggleTable: Function,
   onSetFilterValue: Function,
@@ -73,6 +76,8 @@ export type PropsType = {
   onToggleTimestamps: Function,
   onSwitchFilterMode: Function,
   onLoadFilterSuggestions: Function,
+  onSelectSelects: Function,
+  onSelectTableSelects: Function,
   datasetId: number,
   suggestions: ?Object,
   onToggleIncludeSubnodes: Function
@@ -89,12 +94,12 @@ const QueryNodeEditor = (props: PropsType) => {
       : null;
 
   return (
-    <Root>
+    <StyledEscAble onEscPressed={props.onCloseModal}>
       <Wrapper>
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
         {!editorState.detailsViewActive && selectedTable != null && (
-          <TableFilterView {...props} />
+          <TableView {...props} />
         )}
         {!editorState.detailsViewActive && <DescriptionColumn {...props} />}
         <CloseButton
@@ -107,7 +112,7 @@ const QueryNodeEditor = (props: PropsType) => {
           {T.translate("common.done")}
         </CloseButton>
       </Wrapper>
-    </Root>
+    </StyledEscAble>
   );
 };
 

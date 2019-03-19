@@ -1,7 +1,9 @@
 // @flow
 
 // This file specifies data types that are provided by the backend api
-// and subsequently stored in window.categoryTrees (see globalTreeStoreHelper)
+//
+// Part of the data is saved in the redux state
+// Other parts (concept trees) are stored in window.categoryTrees (see globalTreeStoreHelper)
 
 export type SelectOptionType = {
   label: string,
@@ -28,7 +30,7 @@ export type RangeFilterFormattedValueType = {
   exact?: number
 };
 export type RangeFilterType = {
-  id: number,
+  id: string,
   label: string,
   description?: string,
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE",
@@ -44,7 +46,7 @@ export type RangeFilterType = {
 
 export type MultiSelectFilterValueType = (string | number)[];
 export type MultiSelectFilterType = {
-  id: number,
+  id: string,
   label: string,
   description?: string,
   type: "MULTI_SELECT",
@@ -55,7 +57,7 @@ export type MultiSelectFilterType = {
 
 export type SelectFilterValueType = string | number;
 export type SelectFilterType = {
-  id: number,
+  id: string,
   label: string,
   description?: string,
   type: "SELECT",
@@ -69,26 +71,32 @@ export type FilterType =
   | MultiSelectFilterType
   | RangeFilterType;
 
-export type TreeNodeIdType = string;
-export type QueryIdType = string;
-
 export type TableType = {
-  id: number,
+  id: string,
   label: string,
   exclude?: boolean,
   filters: ?(FilterType[])
 };
 
+export type SelectorType = {
+  id: string,
+  label: string,
+  description: string,
+  default?: boolean
+};
+
+export type TreeNodeIdType = string;
 export type NodeType = {
   parent: TreeNodeIdType,
   label: string,
   description: string,
   active?: boolean,
-  children: Array<TreeNodeIdType>,
-  additionalInfos?: Array<InfoType>,
+  children: TreeNodeIdType[],
+  additionalInfos?: InfoType[],
   matchingEntries?: number,
   dateRange?: DateRangeType,
-  tables: Array<TableType>,
+  tables: TableType[],
+  selects?: SelectorType[],
   detailsAvailable?: boolean,
   codeListResolvable?: boolean
 };
@@ -120,3 +128,5 @@ export type SearchResult = {
   limit: number,
   size: number
 };
+
+export type QueryIdType = string;

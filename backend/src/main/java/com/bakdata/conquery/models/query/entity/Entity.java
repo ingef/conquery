@@ -37,8 +37,16 @@ public class Entity {
 	public void removeBlock(BlockId id) {
 		blocks.values().removeIf(b->b.getId().equals(id));
 	}
-	
+
+	public void removeCBlock(Connector connector, Block block) {
+
+		if(cBlocks.remove(connector, block) == null) {
+			return;
+		}
+	}
+
 	public void removeCBlock(CBlockId id) {
+
 		throw new UnsupportedOperationException();
 	}
 

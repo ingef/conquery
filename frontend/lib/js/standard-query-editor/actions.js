@@ -26,6 +26,8 @@ import {
   REMOVE_CONCEPT_FROM_NODE,
   TOGGLE_TABLE,
   SET_FILTER_VALUE,
+  SET_SELECTS,
+  SET_TABLE_SELECTS,
   RESET_ALL_FILTERS,
   SWITCH_FILTER_MODE,
   TOGGLE_TIMESTAMPS,
@@ -74,9 +76,9 @@ export const loadQuery = query => ({
 
 export const clearQuery = () => ({ type: CLEAR_QUERY });
 
-export const expandPreviousQuery = (rootConcepts, groups) => ({
+export const expandPreviousQuery = (rootConcepts, query) => ({
   type: EXPAND_PREVIOUS_QUERY,
-  payload: { rootConcepts, groups }
+  payload: { rootConcepts, query }
 });
 
 export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
@@ -107,6 +109,15 @@ export const toggleTable = (tableIdx, isExcluded) => ({
 export const setFilterValue = (tableIdx, filterIdx, value, formattedValue) => ({
   type: SET_FILTER_VALUE,
   payload: { tableIdx, filterIdx, value, formattedValue }
+});
+
+export const setTableSelects = (tableIdx, value) => ({
+  type: SET_TABLE_SELECTS,
+  payload: { tableIdx, value }
+});
+export const setSelects = value => ({
+  type: SET_SELECTS,
+  payload: { value }
 });
 
 export const resetAllFilters = (andIdx: number, orIdx: number) => ({
@@ -190,10 +201,10 @@ export const dropFilterValuesFile = (
   const rows = await getUniqueFileRows(file);
 
   // Result looks something like that:
-  // result = {
-  //   unknownCodes: ...
+  // const result = {
+  //   // unknownCodes: ...
   //   resolvedFilter: {
-  //     value: rowSet.map(row => ({ label: row, value: row }))
+  //     value: rows.map(row => ({ label: row, value: row }))
   //   }
   // };
   const result = await dispatch(

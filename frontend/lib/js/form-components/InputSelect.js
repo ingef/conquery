@@ -2,9 +2,10 @@
 
 import React from "react";
 import T from "i18n-react";
-import Select from "react-select/lib/Creatable";
-import classnames from "classnames";
 import { type FieldPropsType } from "redux-form";
+
+import ReactSelect from "./ReactSelect";
+import Labeled from "./Labeled";
 
 import { isEmpty } from "../common/helpers";
 import { type SelectOptionsType } from "../common/types/backend";
@@ -25,21 +26,17 @@ const InputSelect = (props: PropsType) => {
     options && options.filter(v => v.value === input.defaultValue);
 
   return (
-    <label
-      className={classnames("input", {
-        "input--value-changed":
-          !isEmpty(input.value) && input.value !== input.defaultValue
-      })}
+    <Labeled
+      disabled={props.disabled}
+      valueChanged={!isEmpty(input.value) && input.value !== input.defaultValue}
+      label={
+        <>
+          {props.label}
+          {props.tooltip && <InfoTooltip text={props.tooltip} />}
+        </>
+      }
     >
-      <p
-        className={classnames("input-label", {
-          "input-label--disabled": !!props.disabled
-        })}
-      >
-        {props.label}
-        {props.tooltip && <InfoTooltip text={props.tooltip} />}
-      </p>
-      <Select
+      <ReactSelect
         name="form-field"
         value={selected}
         defaultValue={defaultValue}
@@ -74,7 +71,7 @@ const InputSelect = (props: PropsType) => {
           }
         }}
       />
-    </label>
+    </Labeled>
   );
 };
 

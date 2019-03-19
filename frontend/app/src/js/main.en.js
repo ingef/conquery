@@ -1,9 +1,11 @@
 // @flow
 
-import { initializeLocalization } from '../../../lib/js/localization';
-import translations               from '../../../lib/localization/en.yml';
-import conqueryTranslations       from '../localization/en.yml';
+import { enGB } from "date-fns/locale";
 
-initializeLocalization('en', translations, conqueryTranslations);
+import { initializeLocalization } from "../../../lib/js/localization";
+import translations from "../../../lib/localization/en.yml";
+import conqueryTranslations from "../localization/en.yml";
 
-require('./main');
+initializeLocalization("en", enGB, translations, conqueryTranslations);
+
+require("./main");

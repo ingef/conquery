@@ -1,11 +1,13 @@
 package com.bakdata.conquery.io.xodus;
 
-import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import jetbrains.exodus.env.Environment;
-
-import javax.validation.Validator;
 import java.io.Closeable;
 import java.io.File;
+
+import javax.validation.Validator;
+
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
+
+import jetbrains.exodus.env.Environment;
 
 public interface ConqueryStorage extends Closeable {
 

@@ -19,7 +19,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.specific.ConceptNode;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 
@@ -72,7 +71,7 @@ public class CQDateRestriction implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<Select<?>> select) {
+	public void collectSelects(Deque<Select> select) {
 		child.collectSelects(select);
 	}
 }

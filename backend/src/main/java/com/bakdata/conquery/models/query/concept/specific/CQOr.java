@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.validation.Valid;
 
@@ -51,7 +50,7 @@ public class CQOr implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<Select<?>> select) {
+	public void collectSelects(Deque<Select> select) {
 		for(CQElement c:children) {
 			c.collectSelects(select);
 		}

@@ -13,13 +13,13 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>10</maven.compiler.source>
 		<maven.compiler.target>10</maven.compiler.target>
-		<junit.minor>4.0</junit.minor>
+		<junit.minor>4.1</junit.minor>
 		<junit.version>5.${junit.minor}</junit.version>
 		<junit.platform.version>1.${junit.minor}</junit.platform.version>
 	</properties>
 	
 	<modules>
-		<module>frontend</module>
+		<module>frontend-resources</module>
 		<module>backend</module>
 		<module>executable</module>
 	</modules>
@@ -68,15 +68,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.0</version>
 				<configuration>
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*Tests.java</include>
-						<include>**/*TestSuite.java</include>
-						<include>**/*TestFactory.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/*SuiteTest.java</exclude>
-					</excludes>
 					<trimStackTrace>false</trimStackTrace>
 					<argLine>-Xmx1G</argLine>
 					<properties>

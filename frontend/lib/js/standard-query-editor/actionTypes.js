@@ -15,13 +15,19 @@ export const DESELECT_NODE = "query-editor/DESELECT_NODE";
 export const UPDATE_NODE_LABEL = "query-editor/UPDATE_NODE_LABEL";
 export const ADD_CONCEPT_TO_NODE = "query-editor/ADD_CONCEPT_TO_NODE";
 export const REMOVE_CONCEPT_FROM_NODE = "query-editor/REMOVE_CONCEPT_FROM_NODE";
-export const TOGGLE_TABLE =  "query-editor/TOGGLE_TABLE";
-export const SET_FILTER_VALUE =  "query-editor/SET_FILTER_VALUE";
-export const RESET_ALL_FILTERS =  "query-editor/RESET_ALL_FILTERS";
-export const SWITCH_FILTER_MODE =  "query-editor/SWITCH_FILTER_MODE";
-export const TOGGLE_TIMESTAMPS =  "query-editor/TOGGLE_TIMESTAMPS";
-export const LOAD_FILTER_SUGGESTIONS_START =  "query-editor/LOAD_FILTER_SUGGESTIONS_START";
-export const LOAD_FILTER_SUGGESTIONS_SUCCESS =  "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS";
-export const LOAD_FILTER_SUGGESTIONS_ERROR =  "query-editor/LOAD_FILTER_SUGGESTIONS_ERROR";
-export const SET_RESOLVED_FILTER_VALUES =  "query-editor/SET_RESOLVED_FILTER_VALUES";
-export const TOGGLE_INCLUDE_SUBNODES =  "query-editor/TOGGLE_INCLUDE_SUBNODES";
+export const TOGGLE_TABLE = "query-editor/TOGGLE_TABLE";
+export const SET_FILTER_VALUE = "query-editor/SET_FILTER_VALUE";
+export const SET_SELECTS = "query-editor/SET_SELECTS";
+export const SET_TABLE_SELECTS = "query-editor/SET_TABLE_SELECTS";
+export const RESET_ALL_FILTERS = "query-editor/RESET_ALL_FILTERS";
+export const SWITCH_FILTER_MODE = "query-editor/SWITCH_FILTER_MODE";
+export const TOGGLE_TIMESTAMPS = "query-editor/TOGGLE_TIMESTAMPS";
+export const LOAD_FILTER_SUGGESTIONS_START =
+  "query-editor/LOAD_FILTER_SUGGESTIONS_START";
+export const LOAD_FILTER_SUGGESTIONS_SUCCESS =
+  "query-editor/LOAD_FILTER_SUGGESTIONS_SUCCESS";
+export const LOAD_FILTER_SUGGESTIONS_ERROR =
+  "query-editor/LOAD_FILTER_SUGGESTIONS_ERROR";
+export const SET_RESOLVED_FILTER_VALUES =
+  "query-editor/SET_RESOLVED_FILTER_VALUES";
+export const TOGGLE_INCLUDE_SUBNODES = "query-editor/TOGGLE_INCLUDE_SUBNODES";

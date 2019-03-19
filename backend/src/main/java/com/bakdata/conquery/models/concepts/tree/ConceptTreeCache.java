@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.Map;
 
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.specific.IStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;

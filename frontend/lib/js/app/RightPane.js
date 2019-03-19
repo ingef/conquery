@@ -1,32 +1,25 @@
 // @flow
 
 import React from "react";
-import { Route } from "react-router";
+import { connect } from "react-redux";
 
 import { Pane } from "../pane";
-import { templates } from "../routes";
 import { getRightPaneTabComponent } from "../pane/reducer";
 
 type PropsType = {
   activeTab: string,
-  tabs: Object
+  selectedDatasetId: ?string
 };
 
-const RightPane = (props: PropsType) => (
-  <Route
-    path={templates.toDataset}
-    children={({ match }) => {
-      const selectedDatasetId =
-        match && match.params ? match.params.datasetId : null;
+const RightPane = (props: PropsType) => {
+  const tab = React.createElement(getRightPaneTabComponent(props.activeTab), {
+    selectedDatasetId: props.selectedDatasetId
+  });
 
-      const tab = React.createElement(
-        getRightPaneTabComponent(props.activeTab),
-        { selectedDatasetId }
-      );
+  return <Pane right>{tab}</Pane>;
+};
 
-      return <Pane type="right">{tab}</Pane>;
-    }}
-  />
-);
-
-export default RightPane;
+export default connect(state => ({
+  activeTab: state.panes.right.activeTab,
+  selectedDatasetId: state.datasets.selectedDatasetId
+}))(RightPane);

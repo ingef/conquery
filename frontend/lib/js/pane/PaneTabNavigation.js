@@ -1,30 +1,28 @@
 // @flow
 
-import React                from 'react';
-import type { Dispatch }    from 'redux-thunk';
-import { connect }          from 'react-redux';
+import React from "react";
+import type { Dispatch } from "redux-thunk";
+import { connect } from "react-redux";
 
-import { clickPaneTab }     from './actions'
-import type { TabType }     from './reducer';
+import { clickPaneTab } from "./actions";
+import type { TabType } from "./reducer";
 
-import TabNavigation        from './TabNavigation';
+import TabNavigation from "./TabNavigation";
 
 type PropsType = {
   tabs: TabType[],
-  paneType: 'left' | 'right',
+  paneType: "left" | "right",
   activeTab: string,
-  clickPaneTab: Function,
-}
+  clickPaneTab: Function
+};
 
 const PaneTabNavigation = (props: PropsType) => {
   return (
-    <div className="pane-tab-navigation">
-      <TabNavigation
-        onClickTab={props.clickPaneTab}
-        activeTab={props.activeTab}
-        tabs={props.tabs}
-      />
-    </div>
+    <TabNavigation
+      onClickTab={props.clickPaneTab}
+      activeTab={props.activeTab}
+      tabs={props.tabs}
+    />
   );
 };
 
@@ -34,7 +32,10 @@ const mapStateToProps = (state, ownProps) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch, ownProps) => ({
-  clickPaneTab: (tab) => dispatch(clickPaneTab(ownProps.paneType, tab))
+  clickPaneTab: tab => dispatch(clickPaneTab(ownProps.paneType, tab))
 });
 
-export default connect(mapStateToProps, mapDispatchToProps)(PaneTabNavigation);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps
+)(PaneTabNavigation);

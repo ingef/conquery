@@ -1,35 +1,25 @@
 // @flow
 
-import type {
-  ConceptQueryNodeType,
-  TableWithFilterValueType
-} from "../standard-query-editor/types";
+import type { ConceptQueryNodeType } from "../standard-query-editor/types";
 
 import { tablesHaveActiveFilter } from "./table";
+import { objectHasSelectedSelects } from "./select";
 
-export const nodeHasActiveFilters = (
-  node: ConceptQueryNodeType,
-  tables: TableWithFilterValueType[] = node.tables
-) =>
+export const nodeHasActiveFilters = (node: ConceptQueryNodeType) =>
   node.excludeTimestamps ||
   node.includeSubnodes ||
-  nodeHasActiveTableFilters(node, tables) ||
-  nodeHasExludedTable(node, tables);
+  objectHasSelectedSelects(node) ||
+  nodeHasActiveTableFilters(node) ||
+  nodeHasExludedTable(node);
 
-export const nodeHasActiveTableFilters = (
-  node: ConceptQueryNodeType,
-  tables: TableWithFilterValueType[] = node.tables
-) => {
-  if (!tables) return false;
+export const nodeHasActiveTableFilters = (node: ConceptQueryNodeType) => {
+  if (!node.tables) return false;
 
-  return tablesHaveActiveFilter(tables);
+  return tablesHaveActiveFilter(node.tables);
 };
 
-export const nodeHasExludedTable = (
-  node: ConceptQueryNodeType,
-  tables: TableWithFilterValueType[] = node.tables
-) => {
-  if (!tables) return false;
+export const nodeHasExludedTable = (node: ConceptQueryNodeType) => {
+  if (!node.tables) return false;
 
-  return tables.some(table => table.exclude);
+  return node.tables.some(table => table.exclude);
 };

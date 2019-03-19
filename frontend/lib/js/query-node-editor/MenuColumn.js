@@ -16,8 +16,10 @@ const FixedColumn = styled("div")`
   height: 100%;
   display: flex;
   flex-direction: column;
-  flex-basis: 225px;
-  min-width: 150px;
+  min-width: 205px;
+  max-width: 220px;
+  flex-shrink: 0;
+  flex-grow: 1;
 
   &:first-of-type {
     border-right: 1px solid ${({ theme }) => theme.col.grayLight};
@@ -34,20 +36,21 @@ const CategoryHeader = styled("div")`
 `;
 
 const StyledButton = styled(TransparentHeaderButton)`
-  font-size: ${({ theme }) => theme.font.md};
+  font-size: ${({ theme }) => theme.font.lg};
   font-weight: 700;
   color: ${({ theme }) => theme.col.black};
   width: 100%;
   text-align: left;
   display: inline-flex;
   flex-direction: row;
+  align-items: center;
   line-height: 21px;
 
   background-color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayLight : "initial"};
+    active ? theme.col.blueGrayVeryLight : "initial"};
   &:hover {
     background-color: ${({ theme, active }) =>
-      active ? theme.col.blueGrayLight : "initial"};
+      active ? theme.col.blueGrayVeryLight : "initial"};
   }
 `;
 
@@ -56,8 +59,14 @@ const StyledFaIcon = styled(FaIcon)`
   line-height: 21px;
 `;
 
-export const MenuColumn = (props: PropsType) => {
-  const { node, editorState } = props;
+const MenuColumn = (props: PropsType) => {
+  const {
+    node,
+    editorState,
+    showTables,
+    onToggleTable,
+    onResetAllFilters
+  } = props;
 
   const onlyOneTableIncluded = !node.isPreviousQuery
     ? node.tables.filter(table => !table.exclude).length === 1
@@ -80,46 +89,55 @@ export const MenuColumn = (props: PropsType) => {
       >
         {T.translate("queryNodeEditor.properties")}
       </StyledButton>
-      {!node.isPreviousQuery && node.aggregators && <div>Aggregators</div>}
-      {!node.isPreviousQuery && props.showTables && (
+      {!node.isPreviousQuery && showTables && (
         <div>
           <CategoryHeader>
             {T.translate("queryNodeEditor.conceptNodeTables")}
           </CategoryHeader>
-          {node.tables.map((table, tableIdx) => (
-            <StyledButton
-              key={tableIdx}
-              active={
-                editorState.selectedInputTableIdx === tableIdx &&
-                !editorState.detailsViewActive
-              }
-              onClick={() => {
-                editorState.onSelectInputTableView(tableIdx);
-              }}
-            >
-              <StyledFaIcon
-                left
-                icon={table.exclude ? "square-o" : "check-square-o"}
-                disabled={!allowToggleTables[tableIdx]}
-                onClick={event => {
-                  event.stopPropagation();
+          {node.tables.map((table, tableIdx) => {
+            const isActive =
+              editorState.selectedInputTableIdx === tableIdx &&
+              !editorState.detailsViewActive;
 
-                  if (allowToggleTables[tableIdx])
-                    props.onToggleTable(tableIdx, !table.exclude);
+            return (
+              <StyledButton
+                key={tableIdx}
+                active={isActive}
+                onClick={() => {
+                  editorState.onSelectInputTableView(tableIdx);
                 }}
-              />
-              {table.label}
-              {tableHasActiveFilters(table) && (
-                <FaIcon right light icon="filter" />
-              )}
-            </StyledButton>
-          ))}
+              >
+                <StyledFaIcon
+                  left
+                  icon={table.exclude ? "square-o" : "check-square-o"}
+                  disabled={!allowToggleTables[tableIdx]}
+                  onClick={event => {
+                    event.stopPropagation();
+
+                    if (allowToggleTables[tableIdx])
+                      onToggleTable(tableIdx, !table.exclude);
+                  }}
+                />
+                {table.label}
+                {tableHasActiveFilters(table) && (
+                  <StyledFaIcon
+                    right
+                    white={isActive}
+                    light={!isActive}
+                    icon="filter"
+                  />
+                )}
+              </StyledButton>
+            );
+          })}
           <ResetAllFiltersButton
             node={node}
-            onResetAllFilters={props.onResetAllFilters}
+            onResetAllFilters={onResetAllFilters}
           />
         </div>
       )}
     </FixedColumn>
   );
 };
+
+export default MenuColumn;

@@ -15,7 +15,7 @@
           "id": "${dataset}.geschlecht_select.geschlecht_connector"
         }
       ],
-      "select": [
+      "selects": [
         "${dataset}.geschlecht_select.geschlecht_connector.select"
       ]
     }
@@ -32,8 +32,8 @@
             "label": "datum",
             "column": "vers_stamm.datum"
           },
-          "select" : {
-            "type": "SELECT",
+          "selects": {
+            "type": "COUNT_OCCURENCES",
             "name" : "select",
             "column": "vers_stamm.geschlecht",
             "selection": [

@@ -1,4 +1,4 @@
-import { createActionTypes }     from './actionTypes';
+import { createActionTypes } from "./actionTypes";
 
 export const createQueryNodeEditorReducer = (type: string) => {
   const initialState = {
@@ -6,7 +6,7 @@ export const createQueryNodeEditorReducer = (type: string) => {
     selectedInputTableIdx: 0,
     selectedInput: null,
     editingLabel: false
-   };
+  };
 
   const {
     SET_DETAILS_VIEW_ACTIVE,
@@ -28,13 +28,13 @@ export const createQueryNodeEditorReducer = (type: string) => {
           ...state,
           detailsViewActive: false,
           selectedInputTableIdx: action.tableIdx,
-          selectedInput: null,
-        }
+          selectedInput: null
+        };
       case SET_FOCUSED_INPUT:
         return {
           ...state,
           selectedInput: action.filterIdx
-        }
+        };
       case TOGGLE_EDIT_LABEL:
         return {
           ...state,
@@ -46,4 +46,4 @@ export const createQueryNodeEditorReducer = (type: string) => {
         return state;
     }
   };
-}
+};

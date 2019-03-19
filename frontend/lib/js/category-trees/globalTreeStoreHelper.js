@@ -1,12 +1,12 @@
 // @flow
-import { includes }                       from '../common/helpers';
+import { includes } from "../common/helpers";
 import type {
   NodeType,
   TableType,
   TreeNodeIdType
-}                                         from '../common/types/backend';
+} from "../common/types/backend";
 
-import type { TreesType }                 from './reducer';
+import type { TreesType } from "./reducer";
 
 // Globally store the huge (1-5 MB) trees for read only
 // - keeps the redux store free from huge data
@@ -15,13 +15,12 @@ window.categoryTrees = {};
 // To make this global variable a little more sane to use,
 // we only use it with the following  getters / setters
 
-
 //
 // RESETTER
 //
 export function resetAllTrees() {
   window.categoryTrees = {};
-};
+}
 
 //
 // SETTER
@@ -34,11 +33,11 @@ export function setTree(
   // This replaces the root concept with the one loaded initially (at /concepts)
   const concepts = {
     ...tree,
-    [treeId]: rootConcept,
+    [treeId]: rootConcept
   };
 
   window.categoryTrees[treeId] = concepts;
-};
+}
 
 //
 // GETTER
@@ -73,21 +72,20 @@ const findParentConcepts = (concepts: NodeType[]): NodeType[] => {
   // Will return a list like
   // [rootConcept, childConcept, grandChildConcept, grandGrandChildConcept, ...]
   return findParentConcepts([parentConceptWithId, ...concepts]);
-}
+};
 
-export const getConceptsByIdsWithTables = (
+export const getConceptsByIdsWithTablesAndSelects = (
   conceptIds: TreeNodeIdType[],
   rootConcepts: TreesType
-) : ?{
-  concepts: (NodeType & {id: TreeNodeIdType})[],
+): ?{
+  concepts: (NodeType & { id: TreeNodeIdType })[],
   root: TreeNodeIdType,
   tables: TableType[]
 } => {
-  const concepts = conceptIds.map(c => {
-    const concept = getConceptById(c);
-
-    return concept !== null ? {...concept, id: c} : null;
-  }).filter(c => !!c);
+  const concepts = conceptIds
+    .map(id => ({ concept: getConceptById(id), id }))
+    .filter(({ concept }) => !!concept)
+    .map(({ concept, id }) => ({ ...concept, id }));
 
   if (concepts.length !== conceptIds.length) return null;
 
@@ -95,28 +93,30 @@ export const getConceptsByIdsWithTables = (
     c => c.id.toString() // toString so we can find them by object keys
   );
 
-  const parentConceptsWithTables = Object.keys(rootConcepts)
-    .filter(id =>
-      includes(parentConceptIds, id) &&
-      !!rootConcepts[id].tables
-    )
-    .map(id => ({id, concept: rootConcepts[id]}));
+  const rootConceptId = Object.keys(rootConcepts).find(
+    id => includes(parentConceptIds, id) && !!rootConcepts[id].tables
+  );
 
   // There should only be one exact root node that has table information
   // If it's more or less than one, something went wrong
-  if (parentConceptsWithTables.length !== 1) return null;
+  if (!rootConceptId) return null;
+
+  const rootConcept = rootConcepts[rootConceptId];
+
+  const selects = rootConcept.selects ? { selects: rootConcept.selects } : {};
 
   return {
     concepts,
-    root: parentConceptsWithTables[0].id,
-    tables: parentConceptsWithTables[0].concept.tables
+    root: rootConceptId,
+    tables: rootConcept.tables,
+    ...selects
   };
-}
+};
 
 export const hasConceptChildren = node => {
   if (!node) return false;
 
   const concept = getConceptById(node.ids);
 
-  return (concept && concept.children && concept.children.length > 0);
-}
+  return concept && concept.children && concept.children.length > 0;
+};

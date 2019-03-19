@@ -1,52 +1,52 @@
 package com.bakdata.conquery.models.query.filter.event;
 
-import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter;
+import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+
+import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.QueryContext;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
 /**
  * Entity is included as long as Dates are within a certain range.
  */
-public class DateDistanceFilterNode extends FilterNode<FilterValue.CQIntegerRangeFilter, DateDistanceFilter> {
+public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRange> {
 
-	private boolean hit;
-	private CDateSet dateRestriction;
+	private boolean hit = false;
+	private LocalDate reference;
+	private ChronoUnit unit;
 
-	public DateDistanceFilterNode(DateDistanceFilter dateDistanceFilter, FilterValue.CQIntegerRangeFilter filterValue) {
-		super(dateDistanceFilter, filterValue);
+	public DateDistanceFilterNode(Column column, ChronoUnit unit, Range.LongRange filterValue) {
+		super(column, filterValue);
+		this.unit = unit;
 	}
-
 
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		dateRestriction = ctx.getDateRestriction();
+		reference = CDate.toLocalDate(ctx.getDateRestriction().getMinValue());
 	}
 
 	@Override
-	public DateDistanceFilterNode clone(QueryPlan plan, QueryPlan clone) {
-		return new DateDistanceFilterNode(filter, filterValue);
+	public DateDistanceFilterNode doClone(CloneContext ctx) {
+		return new DateDistanceFilterNode(getColumn(), unit, filterValue);
 	}
 
 	@Override
 	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, filter.getColumn())) {
+		if (!block.has(event, getColumn())) {
 			return false;
 		}
 
+		LocalDate date = CDate.toLocalDate(block.getDate(event, getColumn()));
 
-		int date = block.getDate(event, filter.getColumn());
+		final long between = unit.between(date, reference);
 
-		if (date <= dateRestriction.getMinValue()) {
-			return filterValue.getValue().contains(dateRestriction.getMinValue() - date);
-		}
-		else {
-			return filterValue.getValue().contains(dateRestriction.getMaxValue() - date);
-		}
+		return filterValue.contains(between);
 	}
 
 	@Override

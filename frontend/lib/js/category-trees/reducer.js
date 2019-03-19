@@ -1,6 +1,6 @@
 // @flow
 
-import type { NodeType, TreeNodeIdType }  from '../common/types/backend';
+import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 
 import {
   LOAD_TREES_START,
@@ -11,14 +11,14 @@ import {
   LOAD_TREE_ERROR,
   CLEAR_TREES,
   SEARCH_TREES_START,
-  SEARCH_TREES_END,
+  SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
-  CHANGE_SEARCH_QUERY,
-}                                         from './actionTypes';
-import { setTree }                        from './globalTreeStoreHelper';
+  CHANGE_SEARCH_QUERY
+} from "./actionTypes";
+import { setTree } from "./globalTreeStoreHelper";
 
-export type TreesType = { [treeId: string]: NodeType }
+export type TreesType = { [treeId: string]: NodeType };
 
 export type SearchType = {
   searching: boolean,
@@ -29,13 +29,13 @@ export type SearchType = {
   limit: number,
   resultCount: number,
   duration: number
-}
+};
 
 export type StateType = {
   loading: boolean,
   version: any,
   trees: TreesType,
-  search?: SearchType,
+  search?: SearchType
 };
 
 const initialState: StateType = {
@@ -45,39 +45,37 @@ const initialState: StateType = {
   search: {
     searching: false,
     loading: false,
-    updateComponent: true,
-    query: '',
+    query: "",
     words: [],
     result: [],
     limit: 0,
-    resultCount: 0,
+    totalResults: 0,
     duration: 0
   }
 };
 
-const setSearchTreesEnd = (state: StateType, action: Object): StateType => {
-  const { query, searchResult } = action.payload;
+const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
+  const {
+    query,
+    searchResult: { result, size, limit }
+  } = action.payload;
+
   const searching = query && query.length > 0;
-  const result = searchResult ? searchResult.result || [] : [];
-  const limit = searchResult ? searchResult.limit : 50;
-  const size = searchResult ? searchResult.size : 0;
-  const matches = searchResult ? searchResult.matches : 0;
 
   return {
     ...state,
     search: {
-      searching: searching,
+      searching,
       loading: false,
-      updateComponent: true,
-      query: query,
-      words: query ? query.split(' ') : [],
-      result: result,
-      limit: matches <= limit ? matches : limit,
-      resultCount: searching ? size : 0,
-      duration: (Date.now() - state.search.duration)
+      query,
+      words: query ? query.split(" ") : [],
+      result: result || [],
+      limit,
+      totalResults: searching ? size : 0,
+      duration: Date.now() - state.search.duration
     }
-  }
-}
+  };
+};
 
 const setSearchTreesStart = (state: StateType, action: Object): StateType => {
   const { query } = action.payload;
@@ -87,19 +85,21 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
     search: {
       searching: false,
       loading: query && query.length > 0,
-      updateComponent: true,
       query: query,
-      words: query ? query.split(' ') : [],
+      words: query ? query.split(" ") : [],
       result: [],
       resultCount: 0,
       limit: 0,
       duration: Date.now()
     }
-  }
-}
+  };
+};
 
-
-const updateTree = (state: StateType, action: Object, attributes: Object): StateType => {
+const updateTree = (
+  state: StateType,
+  action: Object,
+  attributes: Object
+): StateType => {
   return {
     ...state,
     trees: {
@@ -131,7 +131,10 @@ const setTreeSuccess = (state: StateType, action: Object): StateType => {
 };
 
 const setTreeError = (state: StateType, action: Object): StateType => {
-  return updateTree(state, action, { loading: false, error: action.payload.message });
+  return updateTree(state, action, {
+    loading: false,
+    error: action.payload.message
+  });
 };
 
 const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
@@ -141,7 +144,7 @@ const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
     version: action.payload.data.version,
     trees: action.payload.data.concepts
   };
-}
+};
 
 const categoryTrees = (
   state: StateType = initialState,
@@ -167,25 +170,25 @@ const categoryTrees = (
       return initialState;
     case SEARCH_TREES_START:
       return setSearchTreesStart(state, action);
-    case SEARCH_TREES_END:
-      return setSearchTreesEnd(state, action);
+    case SEARCH_TREES_SUCCESS:
+      return setSearchTreesSuccess(state, action);
     case SEARCH_TREES_ERROR:
-      return { ...state,
+      return {
+        ...state,
         search: { loading: false },
         error: action.payload.message
       };
     case CLEAR_SEARCH_QUERY:
       return {
         ...state,
-        search: { searching: false, query: '', updateComponent: true }
+        search: { searching: false, query: "" }
       };
     case CHANGE_SEARCH_QUERY:
       return {
         ...state,
         search: {
           ...state.search,
-          query: action.payload.query,
-          updateComponent: false
+          query: action.payload.query
         }
       };
     default:

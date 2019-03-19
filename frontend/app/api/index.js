@@ -66,7 +66,16 @@ module.exports = function(app, port) {
   app.get("/api/datasets", function response(req, res) {
     res.setHeader("Content-Type", "application/json");
 
-    res.send(JSON.stringify([{ id: "imdb", label: "IMDb" }]));
+    res.send(
+      JSON.stringify([
+        { id: "imdb", label: "IMDb" },
+        { id: "empty-set", label: "Empty Dataset" },
+        {
+          id: "another-empty-set",
+          label: "Another empty dataset with a long name"
+        }
+      ])
+    );
   });
 
   /*
@@ -316,7 +325,7 @@ module.exports = function(app, port) {
     setTimeout(() => {
       res.setHeader("Content-Type", "application/json");
 
-      const { query } = req.body;
+      const { query, limit } = req.body;
 
       const result = [];
       const awards = require("./concepts/awards");
@@ -327,8 +336,14 @@ module.exports = function(app, port) {
       result.push(...findConcepts(movieAppearance, query));
       result.push(...findConcepts(placeOfBirth, query));
 
+      const returnedResult = result.slice(0, limit);
+
       // see type SearchResult
-      res.send({ result: result, limit: 20, size: result.length });
+      res.send({
+        limit,
+        result: returnedResult,
+        size: result.length
+      });
     }, NO_DELAY);
   });
 

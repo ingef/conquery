@@ -3,7 +3,7 @@ const webpack = require("webpack");
 const ProgressBarPlugin = require("progress-bar-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const TerserPlugin = require("terser-webpack-plugin");
 const { getIfUtils, removeEmpty } = require("webpack-config-utils");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
@@ -13,7 +13,7 @@ const { ifProduction, ifDevelopment } = getIfUtils(env);
 module.exports = ["en", "de"].map(lang => ({
   mode: env,
   name: lang,
-  devtool: ifDevelopment("eval-source-map"),
+  devtool: ifDevelopment("eval-source-map", "source-map"),
   entry: {
     main: removeEmpty([
       "@babel/polyfill",
@@ -29,8 +29,9 @@ module.exports = ["en", "de"].map(lang => ({
   optimization: {
     minimizer: removeEmpty([
       ifProduction(
-        new UglifyJsPlugin({
-          parallel: true
+        new TerserPlugin({
+          parallel: true,
+          sourceMap: true
         })
       ),
       ifProduction(new OptimizeCSSAssetsPlugin())
@@ -52,8 +53,7 @@ module.exports = ["en", "de"].map(lang => ({
       inject: "body",
       filename: `index.${lang}.html`,
       publicPath: ifProduction("/app/static/", "/")
-    }),
-    new webpack.ContextReplacementPlugin(/moment[\/\\]locale$/, /de|en/)
+    })
   ]),
   module: {
     rules: [

@@ -1,20 +1,14 @@
 // @flow
 
-import React                  from 'react';
-import { connect }            from 'react-redux';
-import classnames             from 'classnames';
-import T                      from 'i18n-react';
-import { DropTarget }         from 'react-dnd';
+import React from "react";
+import { connect } from "react-redux";
+import classnames from "classnames";
+import T from "i18n-react";
+import { DropTarget } from "react-dnd";
 
-import {
-  PREVIOUS_QUERY,
-  TIMEBASED_NODE,
-} from '../common/constants/dndTypes';
+import { PREVIOUS_QUERY, TIMEBASED_NODE } from "../common/constants/dndTypes";
 
-import {
-  removeTimebasedNode
-} from './actions';
-
+import { removeTimebasedNode } from "./actions";
 
 const dropzoneTarget = {
   drop(props, monitor) {
@@ -44,40 +38,35 @@ type PropsType = {
   isOver: boolean,
   onDropNode: () => void,
   connectDropTarget: () => void,
-  onRemoveTimebasedNode: () => void,
+  onRemoveTimebasedNode: () => void
 };
 
 const TimebasedQueryEditorDropzone = (props: PropsType) => {
   return props.connectDropTarget(
     <div className="timebased-query-editor-dropzone">
-      <div className={classnames(
-        'dropzone', {
-          'dropzone--over': props.isOver,
-        }
-      )}>
-        <p className="dropzone__text">
-          {
-            T.translate('dropzone.dragQuery')
-          }
-        </p>
+      <div
+        className={classnames("dropzone", {
+          "dropzone--over": props.isOver
+        })}
+      >
+        <p className="dropzone__text">{T.translate("dropzone.dragQuery")}</p>
       </div>
     </div>
   );
 };
 
-TimebasedQueryEditorDropzone.propTypes = {
-};
+TimebasedQueryEditorDropzone.propTypes = {};
 
-const mapDispatchToProps = (dispatch) => ({
+const mapDispatchToProps = dispatch => ({
   onRemoveTimebasedNode: (conditionIdx, resultIdx, moved) =>
-    dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved)),
+    dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved))
 });
 
 export default connect(
   () => ({}),
   mapDispatchToProps
-)(DropTarget(
-  [ PREVIOUS_QUERY, TIMEBASED_NODE ],
-  dropzoneTarget,
-  collect
-)(TimebasedQueryEditorDropzone));
+)(
+  DropTarget([PREVIOUS_QUERY, TIMEBASED_NODE], dropzoneTarget, collect)(
+    TimebasedQueryEditorDropzone
+  )
+);

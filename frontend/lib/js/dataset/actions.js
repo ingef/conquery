@@ -1,96 +1,64 @@
 // @flow
 
-import type { Dispatch, getState } from 'redux-thunk';
-import { reset }         from 'redux-form';
-import { replace }       from 'react-router-redux';
+import type { Dispatch, getState } from "redux-thunk";
+import { reset } from "redux-form";
 
-import { toDataset }     from '../routes';
+import api from "../api";
 
-import api from '../api';
+import { isEmpty } from "../common/helpers";
 
-import {
-  defaultError,
-  defaultSuccess
-} from '../common/actions';
+import { defaultError, defaultSuccess } from "../common/actions";
+import { loadTrees } from "../category-trees/actions";
+import { loadPreviousQueries } from "../previous-queries/list/actions";
+import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 
-import {
-  isEmpty,
-} from '../common/helpers';
-
-import {
-  loadTrees
-} from '../category-trees/actions';
-
-import {
-  loadPreviousQueries
-} from '../previous-queries/list/actions';
-
-import {
-  loadQuery,
-  clearQuery,
-} from '../standard-query-editor/actions';
-
-import {
-  type StandardQueryType
-} from '../standard-query-editor/types';
+import { type StandardQueryType } from "../standard-query-editor/types";
 
 import {
   LOAD_DATASETS_START,
   LOAD_DATASETS_SUCCESS,
   LOAD_DATASETS_ERROR,
-  SAVE_QUERY,
-} from './actionTypes';
+  SELECT_DATASET,
+  SAVE_QUERY
+} from "./actionTypes";
 
-import {
-  type DatasetType,
-  type DatasetIdType,
-} from './reducer';
-
+import { type DatasetType, type DatasetIdType } from "./reducer";
 
 export const loadDatasetsStart = () => ({ type: LOAD_DATASETS_START });
-export const loadDatasetsError = (err: any) => defaultError(LOAD_DATASETS_ERROR, err);
-export const loadDatasetsSuccess = (res: any) => defaultSuccess(LOAD_DATASETS_SUCCESS, res);
+export const loadDatasetsError = (err: any) =>
+  defaultError(LOAD_DATASETS_ERROR, err);
+export const loadDatasetsSuccess = (res: any) =>
+  defaultSuccess(LOAD_DATASETS_SUCCESS, res);
 
 // Done at the very beginning on loading the site
 export const loadDatasets = (datasetIdFromUrl: ?DatasetIdType) => {
   return (dispatch: Dispatch) => {
     dispatch(loadDatasetsStart());
 
-    return api.getDatasets()
-      .then(
-        datasets => {
-          dispatch(loadDatasetsSuccess(datasets));
+    return api.getDatasets().then(
+      datasets => {
+        dispatch(loadDatasetsSuccess(datasets));
 
-          let selectedDatasetId = datasetIdFromUrl;
+        const selectedDatasetId = datasets[0].id;
 
-          if (datasetIdFromUrl !== null)
-            // Check if the user-provided id is valid
-            if (!datasets.find(dataset => dataset.id === datasetIdFromUrl))
-              selectedDatasetId = null;
-
-          // Default to the first dataset from the list
-          if (selectedDatasetId === null && !!datasets[0])
-            selectedDatasetId = datasets[0].id;
-
-          if (datasetIdFromUrl !== selectedDatasetId)
-            dispatch(selectDatasetInput(selectedDatasetId));
-
-          if (selectedDatasetId)
-            return dispatch(loadTrees(selectedDatasetId));
-        },
-        e => dispatch(loadDatasetsError(e))
-      );
+        if (selectedDatasetId) return dispatch(loadTrees(selectedDatasetId));
+      },
+      e => dispatch(loadDatasetsError(e))
+    );
   };
 };
 
-export const selectDatasetInput = (datasetId: ?DatasetIdType) => {
-  if (datasetId && datasetId.length)
-    return replace(toDataset(datasetId));
-
-  return replace(("/"));
+export const selectDatasetInput = (id: ?DatasetIdType) => {
+  return {
+    type: SELECT_DATASET,
+    payload: { id }
+  };
 };
 
-export const saveQuery = (query: StandardQueryType, previouslySelectedDatasetId: DatasetIdType) => {
+export const saveQuery = (
+  query: StandardQueryType,
+  previouslySelectedDatasetId: DatasetIdType
+) => {
   return { type: SAVE_QUERY, payload: { query, previouslySelectedDatasetId } };
 };
 
@@ -110,10 +78,8 @@ export const selectDataset = (
     } else {
       const nextDataset = datasets.find(db => db.id === datasetId);
 
-      if (!nextDataset || !nextDataset.query)
-        dispatch(clearQuery());
-      else
-        dispatch(loadQuery(nextDataset.query));
+      if (!nextDataset || !nextDataset.query) dispatch(clearQuery());
+      else dispatch(loadQuery(nextDataset.query));
 
       dispatch(loadTrees(datasetId));
       // clearing Redux Form
@@ -124,12 +90,14 @@ export const selectDataset = (
   };
 };
 
-const selectActiveForm = (getState) => {
+const selectActiveForm = getState => {
   const state = getState();
-  return state.panes &&
+  return (
+    state.panes &&
     state.panes.right &&
     state.panes.right.tabs &&
     state.panes.right.tabs.externalForms &&
     state.panes.right.tabs.externalForms.externalForms &&
     state.panes.right.tabs.externalForms.externalForms.activeForm
-}
+  );
+};

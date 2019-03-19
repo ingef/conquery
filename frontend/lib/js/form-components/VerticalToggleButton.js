@@ -25,27 +25,27 @@ export const Option = styled("span")`
   transition: ${({ theme }) =>
     `color ${theme.transitionTime}, background-color ${theme.transitionTime}`};
   color: ${({ theme, active }) => (active ? theme.col.black : theme.col.gray)};
-  border-left: 1px solid ${({ theme }) => theme.col.blueGrayDark};
-  border-right: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+  border-left: 1px solid ${({ theme }) => theme.col.blueGray};
+  border-right: 1px solid ${({ theme }) => theme.col.blueGray};
   background-color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayLight : "white"};
+    active ? theme.col.blueGrayVeryLight : "white"};
 
   &:first-of-type {
     margin-left: 0; /* first childs left border does not overlap */
-    border-top: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+    border-top: 1px solid ${({ theme }) => theme.col.blueGray};
     border-top-left-radius: 2px;
     border-top-right-radius: 2px;
   }
 
   &:last-of-type {
-    border-bottom: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+    border-bottom: 1px solid ${({ theme }) => theme.col.blueGray};
     border-bottom-left-radius: 2px;
     border-bottom-right-radius: 2px;
   }
 
   &:hover {
     background-color: ${({ theme, active }) =>
-      active ? theme.col.blueGrayLight : theme.col.grayVeryLight};
+      active ? theme.col.blueGrayVeryLight : theme.col.grayVeryLight};
   }
 `;
 

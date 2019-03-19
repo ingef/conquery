@@ -18,7 +18,7 @@ public class NullProgressReporter implements ProgressReporter{
 
 	@Override
 	public String getEstimate() {
-		return ProgressReporterUtil.ZERO_PROGRESS;
+		return ProgressReporterUtil.UNKNOWN;
 	}
 
 	@Override

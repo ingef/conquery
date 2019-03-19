@@ -1,90 +1,124 @@
 // @flow
 
-import React      from 'react';
-import T          from 'i18n-react';
-import classnames from 'classnames';
+import React from "react";
+import styled from "@emotion/styled";
+import T from "i18n-react";
 import {
   formatDate,
-  numberToThreeDigitArray,
-}                 from '../common/helpers';
+  parseDate,
+  numberToThreeDigitArray
+} from "../common/helpers";
 
+import FaIcon from "../icon/FaIcon";
 
 type PropsType = {
   className?: string,
   matchingEntries?: ?number,
-  dateRange?: ?Object,
+  dateRange?: ?Object
 };
 
-const _renderMatchingEntriesTooltip = (matchingEntries) => (
-  <span>
-    <i className="tooltip-entries__icon fa fa-bar-chart" />
-    <div className="tooltip-entries__info">
-      <p className="tooltip-entries__number">
-        {
-          numberToThreeDigitArray(matchingEntries)
-            .map((threeDigits, i) => (
-              <span key={i} className="tooltip-entries__digits">{threeDigits}</span>
-            ))
-        }
-      </p>
-      <p className="tooltip-entries__text">
-        {
-          T.translate(
-            'tooltip.entriesFound',
-            { context: matchingEntries } // For pluralization
-          )
-        }
-      </p>
-    </div>
-  </span>
-);
+const Row = styled("div")`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+const Root = styled(Row)`
+  padding-left: 20px;
+`;
 
-const _renderConceptDateRangeTooltip = (dateRange) => (
-  <span style={{marginLeft: 36}}>
-    <i className="tooltip-entries__icon fa fa-calendar" />
-    <div className="tooltip-entries__info">
-      <div className="tooltip-entries__date-container">
-          <p className="tooltip-entries__date">
-            {T.translate('tooltip.date.from') + ":"}
-          </p>
-        <p className="tooltip-entries__date">
-          {T.translate('tooltip.date.to') + ":"}
-          </p>
-      </div>
-      <div className="tooltip-entries__date-container">
-          <p className="tooltip-entries__date">
-            {formatDate(dateRange.lowerEndpoint)}
-          </p>
-        <p className="tooltip-entries__date">
-        {formatDate(dateRange.upperEndpoint)}
-          </p>
-      </div>
-      <p className="tooltip-entries__text">
-        {T.translate('tooltip.date.daterange')}
-      </p>
-    </div>
-  </span>
-);
+const Date = styled("p")`
+  margin: 0;
+  padding-right: 6px;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
 
+const ConceptDateRangeTooltip = styled(Row)`
+  margin: 0 40px 0 25px;
+`;
+
+const Text = styled("p")`
+  margin: 0 0 5px;
+  font-size: ${({ theme }) => theme.font.xs};
+  color: ${({ theme, zero }) => (zero ? theme.col.red : "inherit")};
+`;
+
+const StyledFaIcon = styled(FaIcon)`
+  padding-right: 15px;
+`;
+
+const Info = styled("div")`
+  flex-shrink: 0;
+`;
+
+const Number = styled("p")`
+  margin: 0;
+  font-size: ${({ theme }) => theme.font.md};
+  color: ${({ theme, zero }) => (zero ? theme.col.red : "inherit")};
+`;
+
+const Digits = styled("span")`
+  padding-right: 2px;
+`;
+
+const Prefix = styled("span")`
+  display: inline-block;
+  width: 40px;
+`;
 
 const TooltipEntries = (props: PropsType) => {
-  if (typeof props.matchingEntries === 'undefined' || props.matchingEntries === null) return null;
+  if (
+    typeof props.matchingEntries === "undefined" ||
+    props.matchingEntries === null
+  )
+    return null;
+
+  const { matchingEntries, dateRange } = props;
+
+  const isZero = props.matchingEntries === 0;
+
+  const dateFormat = T.translate("inputDateRange.dateFormat");
+  const displayDateFormat = "yyyy-MM-dd";
 
   return (
-    <div className={classnames(
-      props.className,
-      "tooltip-entries", {
-        'tooltip-entries--zero': props.matchingEntries === 0
-      },
-    )}>
-      <div className="tooltip-entries__right-container">
-        {_renderMatchingEntriesTooltip(props.matchingEntries)}
-        {
-          props.dateRange &&
-            _renderConceptDateRangeTooltip(props.dateRange)
-        }
-      </div>
-    </div>
+    <Root className={props.className}>
+      <Row>
+        <StyledFaIcon icon="bar-chart" />
+        <Info>
+          <Number zero={isZero}>
+            {numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
+              <Digits key={i}>{threeDigits}</Digits>
+            ))}
+          </Number>
+          <Text zero={isZero}>
+            {T.translate(
+              "tooltip.entriesFound",
+              { context: matchingEntries } // For pluralization
+            )}
+          </Text>
+        </Info>
+      </Row>
+      {dateRange && (
+        <ConceptDateRangeTooltip>
+          <StyledFaIcon icon="calendar" />
+          <Info>
+            <Date>
+              <Prefix>{T.translate("tooltip.date.from") + ":"}</Prefix>
+              {formatDate(
+                parseDate(dateRange.min, displayDateFormat),
+                dateFormat
+              )}
+            </Date>
+            <Date>
+              <Prefix>{T.translate("tooltip.date.to") + ":"}</Prefix>
+              {formatDate(
+                parseDate(dateRange.max, displayDateFormat),
+                dateFormat
+              )}
+            </Date>
+          </Info>
+        </ConceptDateRangeTooltip>
+      )}
+    </Root>
   );
 };
 
