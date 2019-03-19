@@ -75,6 +75,13 @@ public abstract class QPParentNode extends QPNode {
 	}
 	
 	@Override
+	public void nextEvent(Block block, int event) {
+		for(QPNode agg:currentTableChildren) {
+			agg.nextEvent(block, event);
+		}
+	}
+	
+	@Override
 	public String toString() {
 		return super.toString()+"[children = "+children+"]";
 	}

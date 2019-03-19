@@ -4,7 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -47,10 +49,10 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 		clone.setChild(getChild().clone(ctx));
 		return clone;
 	}
-
+	
 	@Override
-	public boolean nextEvent(Block block, int event) {
-		return getChild().nextEvent(block, event);
+	public void nextEvent(Block block, int event) {
+		getChild().nextEvent(block, event);
 	}
 	
 	protected EntityResult result() {

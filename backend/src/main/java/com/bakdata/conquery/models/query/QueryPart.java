@@ -34,9 +34,7 @@ public class QueryPart implements Callable<EntityResult> {
 				for(Block block : entity.getBlocks().get(currentTable)) {
 					queryPlan.nextBlock(block);
 					for(int event = block.size()-1; event >= 0 ; event--) {
-						if(!queryPlan.aggregate(block, event)) {
-							return EntityResult.notContained();
-						}
+						queryPlan.nextEvent(block, event);
 					}
 				}
 			}

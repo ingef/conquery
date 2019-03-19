@@ -21,17 +21,14 @@ public class ValidityDateNode extends QPChainNode {
 	}
 
 	@Override
-	public boolean nextEvent(Block block, int event) {
+	public void nextEvent(Block block, int event) {
 		//if validity date is null return
 		if(validityDateColumn != null && !block.has(event, validityDateColumn)) {
-			return true;
+			return;
 		}
 		else {
 			if(validityDateColumn == null || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
-				return getChild().aggregate(block, event);
-			}
-			else {
-				return true;
+				getChild().nextEvent(block, event);
 			}
 		}
 	}

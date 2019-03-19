@@ -107,11 +107,9 @@ public class TemporalQueryNode extends QPNode {
 	 * @return always true.
 	 */
 	@Override
-	public boolean nextEvent(Block block, int event) {
-		reference.getChild().aggregate(block, event);
-		preceding.getChild().aggregate(block, event);
-
-		return true;
+	public void nextEvent(Block block, int event) {
+		reference.getChild().nextEvent(block, event);
+		preceding.getChild().nextEvent(block, event);
 	}
 
 	/**
