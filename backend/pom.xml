@@ -50,7 +50,6 @@
 					</execution>
 				</executions>
 				<configuration>
-					<verbose>true</verbose>
 					<dotGitDirectory>../.git</dotGitDirectory>
 					<injectAllReactorProjects>true</injectAllReactorProjects>
 					<dateFormat>${maven.build.timestamp.format}</dateFormat>

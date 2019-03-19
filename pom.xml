@@ -68,15 +68,6 @@
 				<artifactId>maven-surefire-plugin</artifactId>
 				<version>2.22.0</version>
 				<configuration>
-					<includes>
-						<include>**/*Test.java</include>
-						<include>**/*Tests.java</include>
-						<include>**/*TestSuite.java</include>
-						<include>**/*TestFactory.java</include>
-					</includes>
-					<excludes>
-						<exclude>**/*SuiteTest.java</exclude>
-					</excludes>
 					<trimStackTrace>false</trimStackTrace>
 					<argLine>-Xmx1G</argLine>
 					<properties>

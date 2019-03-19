@@ -9,13 +9,13 @@ import org.junit.jupiter.api.Test;
 
 import com.github.powerlibraries.io.In;
 
-public class FrontendExists {
+public class FrontendExistsTest {
 
 	private static final String INDEX = "/frontend/app/static/index.en.html";
 	
 	@Test
 	public void testIfFrontendExists() throws IOException {
-		URL index = FrontendExists.class.getResource(INDEX);
+		URL index = FrontendExistsTest.class.getResource(INDEX);
 		assertThat(index)
 			.as("frontend file '%s' exists", INDEX)
 			.isNotNull();
