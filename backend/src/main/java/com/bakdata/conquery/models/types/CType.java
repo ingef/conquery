@@ -39,7 +39,12 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?,?>> implements
 			return null;
 		}
 		else {
-			return parseValue(v);
+			try {
+				return parseValue(v);
+			}
+			catch(Exception e) {
+				throw new ParsingException("Failed to parse '"+v+"' as "+this.getClass().getSimpleName(), e);
+			}
 		}
 	}
 	
