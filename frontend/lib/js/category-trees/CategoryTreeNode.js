@@ -7,10 +7,10 @@ import {
   type TreeNodeIdType,
   type InfoType,
   type DateRangeType,
-  type NodeType,
-  type SearchType
+  type NodeType
 } from "../common/types/backend";
 import { type DraggedNodeType } from "../standard-query-editor/types";
+import { type SearchType } from "./reducer";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import Openable from "./Openable";
@@ -107,7 +107,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
             onTextClick={this._onToggleOpen.bind(this)}
             search={search}
           />
-          {!!data.children && open && (
+          {!!data.children && (open || search.allOpen) && (
             <div>
               {data.children.map((childId, i) => {
                 const child = getConceptById(childId);

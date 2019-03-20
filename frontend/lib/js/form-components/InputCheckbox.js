@@ -13,7 +13,7 @@ const Row = styled("div")`
 `;
 
 const Label = styled("span")`
-  margin-left: 15px;
+  margin-left: 10px;
   font-size: ${({ theme }) => theme.font.sm};
   line-height: 1;
 `;

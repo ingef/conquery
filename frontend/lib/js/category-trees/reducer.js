@@ -14,7 +14,8 @@ import {
   SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
-  CHANGE_SEARCH_QUERY
+  CHANGE_SEARCH_QUERY,
+  TOGGLE_ALL_OPEN
 } from "./actionTypes";
 import { setTree } from "./globalTreeStoreHelper";
 
@@ -27,7 +28,7 @@ export type SearchType = {
   words: Array<string>,
   result: Array<TreeNodeIdType>,
   limit: number,
-  resultCount: number,
+  totalResults: number,
   duration: number
 };
 
@@ -35,7 +36,7 @@ export type StateType = {
   loading: boolean,
   version: any,
   trees: TreesType,
-  search?: SearchType
+  search: SearchType
 };
 
 const initialState: StateType = {
@@ -43,6 +44,7 @@ const initialState: StateType = {
   version: null,
   trees: {},
   search: {
+    allOpen: false,
     searching: false,
     loading: false,
     query: "",
@@ -88,7 +90,6 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
       query: query,
       words: query ? query.split(" ") : [],
       result: [],
-      resultCount: 0,
       limit: 0,
       duration: Date.now()
     }
@@ -166,8 +167,10 @@ const categoryTrees = (
       return setTreeSuccess(state, action);
     case LOAD_TREE_ERROR:
       return setTreeError(state, action);
+
     case CLEAR_TREES:
       return initialState;
+
     case SEARCH_TREES_START:
       return setSearchTreesStart(state, action);
     case SEARCH_TREES_SUCCESS:
@@ -175,13 +178,13 @@ const categoryTrees = (
     case SEARCH_TREES_ERROR:
       return {
         ...state,
-        search: { loading: false },
+        search: { ...state.search, loading: false },
         error: action.payload.message
       };
     case CLEAR_SEARCH_QUERY:
       return {
         ...state,
-        search: { searching: false, query: "" }
+        search: { ...state.search, searching: false, query: "" }
       };
     case CHANGE_SEARCH_QUERY:
       return {
@@ -189,6 +192,15 @@ const categoryTrees = (
         search: {
           ...state.search,
           query: action.payload.query
+        }
+      };
+
+    case TOGGLE_ALL_OPEN:
+      return {
+        ...state,
+        search: {
+          ...state.search,
+          allOpen: !state.search.allOpen
         }
       };
     default:

@@ -20,6 +20,7 @@ const Root = styled("div")`
   flex-basis: 0;
   overflow-y: auto;
   padding: 0 10px 0 20px;
+  white-space: nowrap;
 
   // Only hide the category trees when the tab is not selected
   // Because mount / unmount would reset the open states

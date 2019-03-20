@@ -101,6 +101,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 openInitially={false}
                 depth={props.depth + 1}
                 active={tree.active}
+                search={search}
               />
             ) : (
               <CategoryTreeFolder
@@ -111,6 +112,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 openInitially={false}
                 depth={props.depth + 1}
                 active={tree.active}
+                search={search}
               />
             );
           }
