@@ -35,9 +35,4 @@ public class CountQuartersSelect extends SingleColumnSelect {
 		}
 
 	}
-	
-	@Override
-	public ResultType getResultType() {
-		return ResultType.INTEGER;
-	}
 }

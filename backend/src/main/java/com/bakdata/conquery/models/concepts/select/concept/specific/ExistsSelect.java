@@ -29,9 +29,4 @@ public class ExistsSelect extends UniversalSelect {
 	private Set<TableId> collectRequiredTables() {
 		return this.getHolder().findConcept().getConnectors().stream().map(Connector::getTable).map(Table::getId).collect(Collectors.toSet());
 	}
-
-	@Override
-	public ResultType getResultType() {
-		return ResultType.BOOLEAN;
-	}
 }

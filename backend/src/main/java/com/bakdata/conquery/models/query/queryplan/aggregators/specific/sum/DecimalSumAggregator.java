@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -35,5 +36,10 @@ public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 	@Override
 	public BigDecimal getAggregationResult() {
 		return sum;
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.NUMERIC;
 	}
 }

@@ -21,9 +21,4 @@ public class RandomValueSelect extends SingleColumnSelect {
 	public Aggregator<?> createAggregator() {
 		return new RandomValueAggregator(getColumn());
 	}
-
-	@Override
-	public ResultType getResultType() {
-		return resolveResultType(getColumn().getType());
-	}
 }

@@ -62,18 +62,4 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 	 * @param imp the import added
 	 */
 	public void addImport(Import imp) {}
-
-	/*
-	public Condition createSimpleCondition(FE_TYPE qf) {return null;}
-	public Condition createGroupCondition(FE_TYPE qf) {return null;}
-	public Select<Record> generateComplexFilter(ComplexFilterExecutor exec, QueryContext context, FE_TYPE qf, Table<?> baseTable) {return null;}
-
-	public abstract Field<Object> select();
-	public abstract Field<Object> aggregate(QueryContext context);
-	public Field<Object> combine(QueryContext context) {
-		return JooqHelper.aggregateSameValueOrNull(DSL.field(DSL.name(DBNames.QUERY_RESULTS.FEATURE)));
-	}
-	public Field<Object> map(Field<Object> f) {
-		return f;
-	}*/
 }

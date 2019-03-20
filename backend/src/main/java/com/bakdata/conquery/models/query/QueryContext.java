@@ -17,5 +17,6 @@ public class QueryContext {
 	private Column validityDateColumn;
 	@NonNull
 	private CDateSet dateRestriction = CDateSet.createFull();
+	private boolean prettyPrint = true;
 	private final WorkerStorage storage;
 }

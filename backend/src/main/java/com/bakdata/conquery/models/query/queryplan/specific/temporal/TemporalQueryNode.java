@@ -125,9 +125,9 @@ public class TemporalQueryNode extends QPNode {
 			return false;
 		}
 
-		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getAggregationResult();
+		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
 		// Create copy as we are mutating the set
-		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getAggregationResult());
+		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
 
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);

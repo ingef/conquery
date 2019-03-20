@@ -22,11 +22,9 @@ public class MoneyType extends CType<Long, MoneyType> {
 	@Override
 	protected Long parseValue(String value) throws ParsingException {
 		return NumberParsing
-				.parseMoney(value)
-				.getNumber()
-				.numberValueExact(BigDecimal.class)
-				.multiply(BigDecimal.valueOf(10).pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits()))
-				.longValueExact();
+			.parseMoney(value)
+			.multiply(BigDecimal.valueOf(10).pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits()))
+			.longValueExact();
 	}
 	
 	@Override

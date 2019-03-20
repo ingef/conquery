@@ -29,6 +29,9 @@ public abstract class Select extends Labeled<SelectId> {
 
 	@Setter @Getter @JsonProperty("default")
 	private boolean isDefault = false;
+	
+	@JsonIgnore @Getter(lazy=true)
+	private final ResultType resultType = createAggregator().getResultType();
 
 	public abstract Aggregator<?> createAggregator();
 
@@ -40,7 +43,4 @@ public abstract class Select extends Labeled<SelectId> {
 		else
 			return new ConceptSelectId(holder.findConcept().getId(), getName());
 	}
-	
-	@JsonIgnore
-	public abstract ResultType getResultType();
 }
