@@ -209,7 +209,9 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			}
 		}
 		//after the close command was send
-		context.awaitClose();
+		if(context != null) {
+			context.awaitClose();
+		}
 		log.info("Connection was closed by master");
 		connector.dispose();
 	}

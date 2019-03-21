@@ -1,9 +1,12 @@
 package com.bakdata.conquery.commands;
 
+import java.util.concurrent.TimeUnit;
+
 import org.eclipse.jetty.util.component.ContainerLifeCycle;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.DebugMode;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;
@@ -44,13 +47,26 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 				DebugMode.setActive(configuration.getDebugMode());
 			}
 			run(environment, namespace, configuration);
+			environment.lifecycle().attach(lifeCycle);
 			lifeCycle.start();
-		} catch(Throwable t) {
-			log.error("Uncaught Exception in "+getName(), t);
-			throw t;
+			
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					try {
+						lifeCycle.stop();
+					}
+					catch (Exception e) {
+						log.error("Interrupted during shutdown", e);
+					}
+				}
+			});
+			Uninterruptibles.sleepUninterruptibly(Long.MAX_VALUE, TimeUnit.DAYS);
 		}
-		finally {
+		catch(Throwable t) {
+			log.error("Uncaught Exception in "+getName(), t);
 			lifeCycle.stop();
+			throw t;
 		}
 	}
 
