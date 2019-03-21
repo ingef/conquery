@@ -49,10 +49,10 @@ public class QueryManager {
 	}
 
 	public ManagedQuery createQuery(IQuery query, User user) throws JSONException {
-		return createQuery(query, UUID.randomUUID(), user, new PrintSettings());
+		return createQuery(query, UUID.randomUUID(), user);
 	}
 	
-	public ManagedQuery createQuery(IQuery query, UUID queryId, User user, PrintSettings settings) throws JSONException {
+	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) throws JSONException {
 		query = query.resolve(new QueryResolveContext(
 			namespace.getStorage().getMetaStorage(),
 			namespace
@@ -69,7 +69,7 @@ public class QueryManager {
 		return managed;
 	}
 	
-	public ManagedQuery reexecuteQuery(ManagedQuery query, PrintSettings settings) throws JSONException {
+	public ManagedQuery reexecuteQuery(ManagedQuery query) throws JSONException {
 		query.initExecutable(namespace);
 		queries.add(query);
 		
