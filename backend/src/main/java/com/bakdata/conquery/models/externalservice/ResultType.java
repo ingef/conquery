@@ -14,7 +14,10 @@ public enum ResultType {
 	BOOLEAN {
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			return Boolean.TRUE.equals(f) ? "t" : "f";
+			if(f instanceof Boolean)
+				return (Boolean)f ? "t" : "f";
+			else
+				return "";
 		}
 	},
 	INTEGER {
