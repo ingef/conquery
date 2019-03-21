@@ -30,6 +30,7 @@ public class PreprocessorCommand extends ConfiguredCommand<ConqueryConfig> {
 		if(config.getDebugMode() != null) {
 			DebugMode.setActive(config.getDebugMode());
 		}
+		config.initializeDatePatterns();
 		
 		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
 		for(PreprocessingDirectories directories:config.getPreprocessor().getDirectories()) {
