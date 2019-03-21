@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import org.apache.commons.collections4.MultiSet;
-import org.apache.commons.collections4.multiset.HashMultiSet;
+import java.util.HashMap;
+import java.util.Map;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.types.specific.IStringType;
 
 
-public class MultiSelectAggregator extends SingleColumnAggregator<MultiSet<String>> {
+public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, Integer>> {
 
 	private final String[] selection;
 	private final int[] hits;
@@ -50,13 +50,13 @@ public class MultiSelectAggregator extends SingleColumnAggregator<MultiSet<Strin
 	}
 
 	@Override
-	public MultiSet<String> getAggregationResult() {
-		MultiSet<String> out = new HashMultiSet<>();
+	public Map<String, Integer> getAggregationResult() {
+		Map<String, Integer> out = new HashMap<>();
 
 		for (int i = 0; i < hits.length; i++) {
 			int hit = hits[i];
 			if (hit > 0) {
-				out.add(selection[i], hit);
+				out.merge(selection[i], hit, (a,b)->a+b);
 			}
 		}
 

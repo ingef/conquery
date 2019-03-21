@@ -18,6 +18,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultiset;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class ResultTypeTest {
@@ -49,7 +51,8 @@ public class ResultTypeTest {
 			Arguments.of(PLAIN, ResultType.MONEY, 51839274L, "51839274"),
 			Arguments.of(PLAIN, ResultType.NUMERIC, 0.2, "0.2"),
 			Arguments.of(PLAIN, ResultType.NUMERIC, new BigDecimal("716283712389817246892743124.12312"), "716283712389817246892743124.12312"),
-			Arguments.of(PLAIN, ResultType.STRING, "test", "test")
+			Arguments.of(PLAIN, ResultType.STRING, "test", "test"),
+			Arguments.of(PLAIN, ResultType.STRING, ImmutableMap.of("a", 2, "c", 1), "{a=2, c=1}")
 		);
 	}
 	
