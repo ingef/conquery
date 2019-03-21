@@ -1,5 +1,7 @@
 package com.bakdata.conquery.commands;
 
+import org.eclipse.jetty.util.component.ContainerLifeCycle;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.DebugMode;
 
@@ -35,14 +37,20 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 		configuration.getServerFactory().configure(environment);
 
 		bootstrap.run(configuration, environment);
+		
+		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
 		try {
 			if(configuration.getDebugMode() != null) {
 				DebugMode.setActive(configuration.getDebugMode());
 			}
 			run(environment, namespace, configuration);
+			lifeCycle.start();
 		} catch(Throwable t) {
 			log.error("Uncaught Exception in "+getName(), t);
 			throw t;
+		}
+		finally {
+			lifeCycle.stop();
 		}
 	}
 
