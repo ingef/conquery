@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -67,5 +68,10 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	@Override
 	public Long getAggregationResult() {
 		return (long) quarters.size();
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.INTEGER;
 	}
 }

@@ -34,7 +34,9 @@ public class QueryExecutor implements Closeable {
 		QueryPlan plan = query.getQuery().createQueryPlan(context);
 		return execute(
 				context.getBlockManager(),
-				new QueryContext(context.getWorker().getStorage()),
+				new QueryContext(
+					context.getWorker().getStorage()
+				),
 				query.getId(),
 				plan,
 				pool

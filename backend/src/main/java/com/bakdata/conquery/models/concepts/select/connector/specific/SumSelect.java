@@ -91,21 +91,4 @@ public class SumSelect extends Select {
 			}
 		}
 	}
-	
-
-	
-	@Override
-	public ResultType getResultType() {
-		switch (getColumn().getType()) {
-			case INTEGER:
-				return ResultType.INTEGER;
-			case MONEY:
-				return ResultType.MONEY;
-			case DECIMAL:
-			case REAL:
-				return ResultType.NUMERIC;
-			default:
-				throw new IllegalStateException(String.format("Invalid column type '%s' for Aggregator", getColumn().getType()));
-		}
-	}
 }

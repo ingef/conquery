@@ -27,9 +27,4 @@ public class DurationSumSelect extends SingleColumnSelect {
 				throw new IllegalStateException(String.format("Duration Sum requires either DateRange or Dates, not %s", getColumn()));
 		}
 	}
-	
-	@Override
-	public ResultType getResultType() {
-		return ResultType.INTEGER;
-	}
 }

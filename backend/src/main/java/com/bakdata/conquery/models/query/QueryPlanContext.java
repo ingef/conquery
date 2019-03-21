@@ -15,5 +15,4 @@ public interface QueryPlanContext {
 	QueryPlanContext withGenerateSpecialDateUnion(boolean b);
 	
 	boolean isGenerateSpecialDateUnion();
-	
 }

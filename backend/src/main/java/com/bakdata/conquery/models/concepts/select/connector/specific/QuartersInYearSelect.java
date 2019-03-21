@@ -5,7 +5,6 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.QuartersInYearAggregator;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -24,10 +23,5 @@ public class QuartersInYearSelect extends SingleColumnSelect {
 	@Override
 	public Aggregator<?> createAggregator() {
 		return new QuartersInYearAggregator(getColumn());
-	}
-	
-	@Override
-	public ResultType getResultType() {
-		return ResultType.INTEGER;
 	}
 }

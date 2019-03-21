@@ -2,9 +2,6 @@ package com.bakdata.conquery.models.preproc;
 
 import java.math.BigDecimal;
 
-import org.javamoney.moneta.FastMoney;
-
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 
 public class NumberParsing {
@@ -35,11 +32,9 @@ public class NumberParsing {
 		}
 	}
 	
-	public static FastMoney parseMoney(String value) throws ParsingException {
+	public static BigDecimal parseMoney(String value) throws ParsingException {
 		try {
-			return FastMoney
-					.of(parseBig(value), ConqueryConfig.getInstance().getLocale().getCurrency())
-					.stripTrailingZeros();
+			return parseBig(value).stripTrailingZeros();
 		} catch (ParsingException e) {
 			throw ParsingException.of(value, "money", e);
 		}

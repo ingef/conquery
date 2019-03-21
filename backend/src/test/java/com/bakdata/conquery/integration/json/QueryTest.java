@@ -39,6 +39,7 @@ import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
@@ -105,7 +106,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			ConceptQuery q = new ConceptQuery();
 			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 			
-			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId, DevAuthConfig.USER);
+			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId, DevAuthConfig.USER, new PrintSettings());
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getStatus() == QueryStatus.FAILED) {

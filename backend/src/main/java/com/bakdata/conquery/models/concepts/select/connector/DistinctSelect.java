@@ -21,11 +21,4 @@ public class DistinctSelect extends SingleColumnSelect {
 	public Aggregator<?> createAggregator() {
 		return new AllValuesAggregator<>(getColumn());
 	}
-	
-
-	
-	@Override
-	public ResultType getResultType() {
-		return ResultType.STRING;
-	}
 }

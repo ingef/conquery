@@ -40,11 +40,4 @@ public class CountSelect extends SingleColumnSelect {
 			return new CountAggregator(getColumn());
 		}
 	}
-	
-
-	
-	@Override
-	public ResultType getResultType() {
-		return ResultType.INTEGER;
-	}
 }

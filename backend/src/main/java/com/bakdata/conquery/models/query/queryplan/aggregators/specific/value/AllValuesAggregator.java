@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -31,5 +32,10 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	@Override
 	public AllValuesAggregator doClone(CloneContext ctx) {
 		return new AllValuesAggregator(getColumn());
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.STRING;
 	}
 }

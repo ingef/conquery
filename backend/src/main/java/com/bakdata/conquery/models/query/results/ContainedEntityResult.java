@@ -5,7 +5,7 @@ import java.util.stream.Stream;
 public interface ContainedEntityResult extends EntityResult {
 
 	int getEntityId();
-	Stream<String[]> streamValues();
+	Stream<Object[]> streamValues();
 	
 	static Stream<ContainedEntityResult> filterCast(EntityResult result) {
 		if(result instanceof ContainedEntityResult) {

@@ -21,9 +21,4 @@ public class LastValueSelect extends SingleColumnSelect {
 	public Aggregator<?> createAggregator() {
 		return new LastValueAggregator(getColumn());
 	}
-
-	@Override
-	public ResultType getResultType() {
-		return resolveResultType(getColumn().getType());
-	}
 }
