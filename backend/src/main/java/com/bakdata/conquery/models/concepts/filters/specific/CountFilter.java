@@ -35,7 +35,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@Valid
 	@Getter @Setter @NsIdRef
-	private Column distinctBy;
+	private Column distinctByColumn;
 
 
 	@Override
@@ -47,7 +47,8 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
 		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctBy() == null ? getColumn() :getDistinctBy()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn() == null ? getColumn() :
+				getDistinctByColumn()));
 		}
 		else {
 			return new RangeFilterNode(value, new CountAggregator(getColumn()));
@@ -56,6 +57,6 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[] { getColumn(), distinct ? getDistinctBy() : null };
+		return new Column[] { getColumn(), distinct ? getDistinctByColumn() : null };
 	}
 }
