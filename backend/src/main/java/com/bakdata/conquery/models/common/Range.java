@@ -230,6 +230,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			if(getMax() != null && value > getMax()) {
 				return false;
 			}
+			if(Float.isNaN(value)) {
+				return false;
+			}
 			return true;
 		}
 	}
@@ -257,6 +260,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 				return false;
 			}
 			if(getMax() != null && value > getMax()) {
+				return false;
+			}
+			if(Double.isNaN(value)) {
 				return false;
 			}
 			return true;
