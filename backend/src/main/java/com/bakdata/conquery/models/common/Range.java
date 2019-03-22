@@ -164,7 +164,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min, max);
 		}
 
-		public static IntegerRange fromNumberFilter(IRange<? extends Number, ?> orig){
+		public static IntegerRange fromNumberRange(IRange<? extends Number, ?> orig){
 			return new Range.IntegerRange(orig.getMin().intValue(), orig.getMax().intValue());
 		}
 
@@ -193,7 +193,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min, max);
 		}
 
-		public static LongRange fromNumberFilter(IRange<? extends Number, ?> orig){
+		public static LongRange fromNumberRange(IRange<? extends Number, ?> orig){
 			return new Range.LongRange(orig.getMin().longValue(), orig.getMax().longValue());
 		}
 
@@ -222,7 +222,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min, max);
 		}
 
-		public static FloatRange fromNumberFilter(IRange<? extends Number, ?> orig){
+		public static FloatRange fromNumberRange(IRange<? extends Number, ?> orig){
 			return new Range.FloatRange(orig.getMin().floatValue(), orig.getMax().floatValue());
 		}
 
@@ -254,7 +254,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min, max);
 		}
 
-		public static DoubleRange fromNumberFilter(IRange<? extends Number, ?> orig){
+		public static DoubleRange fromNumberRange(IRange<? extends Number, ?> orig){
 			return new Range.DoubleRange(orig.getMin().doubleValue(), orig.getMax().doubleValue());
 		}
 

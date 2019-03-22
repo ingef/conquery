@@ -66,7 +66,7 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 			case DECIMAL:
 				return new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
 			case REAL:
-				return new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberFilter(value));
+				return new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberRange(value));
 			default:
 				throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
 		}

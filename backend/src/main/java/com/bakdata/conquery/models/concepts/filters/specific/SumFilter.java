@@ -94,7 +94,7 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		}
 		else {
 			if(getColumn().getType() == MajorTypeId.REAL)
-				return new RangeFilterNode(Range.DoubleRange.fromNumberFilter(value), aggregator);
+				return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), aggregator);
 
 			return new RangeFilterNode(value, aggregator);
 		}
