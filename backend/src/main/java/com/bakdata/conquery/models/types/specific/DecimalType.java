@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 @CPSType(base=CType.class, id="DECIMAL")
 public class DecimalType extends CType<BigDecimal, DecimalType> {
 
-	private int maxScale = Integer.MAX_VALUE;
+	private int maxScale = Integer.MIN_VALUE;
 	private BigDecimal maxAbs;
 	
 	public DecimalType() {
@@ -23,7 +23,7 @@ public class DecimalType extends CType<BigDecimal, DecimalType> {
 	@Override
 	protected void registerValue(BigDecimal v) {
 		BigDecimal abs = v.abs();
-		if(v.scale() < maxScale)
+		if(v.scale() > maxScale)
 			maxScale = v.scale();
 		if(maxAbs == null || maxAbs.compareTo(abs)<0) {
 			maxAbs = abs;
