@@ -161,7 +161,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 
 	public static class IntegerRange extends Range<Integer> {
 		public IntegerRange(Integer min, Integer max) {
-			super(min == null ? Integer.MIN_VALUE : min, max == null ? Integer.MAX_VALUE : max);
+			super(min, max);
 		}
 
 		@Override
@@ -174,13 +174,19 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public boolean contains(int value) {
-			return value >= getMin() && value <= getMax();
+			if(getMin() != null && value < getMin()) {
+				return false;
+			}
+			if(getMax() != null && value > getMax()) {
+				return false;
+			}
+			return true;
 		}
 	}
 
 	public static class LongRange extends Range<Long> {
 		public LongRange (Long min, Long max) {
-			super(min == null ? Long.MIN_VALUE : min, max == null ? Long.MAX_VALUE : max);
+			super(min, max);
 		}
 
 		@Override
@@ -193,13 +199,19 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public boolean contains(long value) {
-			return value >= getMin() && value <= getMax();
+			if(getMin() != null && value < getMin()) {
+				return false;
+			}
+			if(getMax() != null && value > getMax()) {
+				return false;
+			}
+			return true;
 		}
 	}
 
 	public static class FloatRange extends Range<Float> {
 		public FloatRange(Float min, Float max) {
-			super(min == null ? Float.MIN_VALUE : min, max == null ? Float.MAX_VALUE : max);
+			super(min, max);
 		}
 
 		@Override
@@ -212,13 +224,19 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public boolean contains(float value) {
-			return value >= getMin() && value <= getMax();
+			if(getMin() != null && value < getMin()) {
+				return false;
+			}
+			if(getMax() != null && value > getMax()) {
+				return false;
+			}
+			return true;
 		}
 	}
 
 	public static class DoubleRange extends Range<Double> {
 		public DoubleRange(Double min, Double max) {
-			super(min == null ? Double.MIN_VALUE : min, max == null ? Double.MAX_VALUE : max);
+			super(min, max);
 		}
 
 		public static DoubleRange fromNumberFilter(IRange<? extends Number, ?> orig){
@@ -235,7 +253,13 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public boolean contains(double value) {
-			return value >= getMin() && value <= getMax();
+			if(getMin() != null && value < getMin()) {
+				return false;
+			}
+			if(getMax() != null && value > getMax()) {
+				return false;
+			}
+			return true;
 		}
 	}
 }
