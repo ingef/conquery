@@ -46,11 +46,20 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 	@Setter
 	@NsIdRef
 	private Column column;
+
 	@Valid
 	@Getter
 	@Setter
 	@NsIdRef
 	private Column subtractColumn;
+
+	private boolean distinct = false;
+
+	@Valid
+	@Getter
+	@Setter
+	@NsIdRef
+	private Column distinctByColumn;
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
@@ -74,23 +83,18 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		}
 	}
 
+	@Override
 	public Column[] getRequiredColumns() {
-		if (getSubtractColumn() == null) {
-			return new Column[]{getColumn()};
-		}
-		else {
-			return new Column[]{getColumn(), getSubtractColumn()};
-		}
+		return new Column[]{getColumn(), getSubtractColumn(), distinct ? getDistinctByColumn() : null };
 	}
-
-	private boolean distinct = false;
 
 	@Override
 	public FilterNode createAggregator(RANGE value) {
 		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn() == null ? getColumn() :
+				getDistinctByColumn()));
 		}
 		else {
 			if(getColumn().getType() == MajorTypeId.REAL)
