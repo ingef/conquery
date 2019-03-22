@@ -7,7 +7,7 @@
 
 	<packaging>pom</packaging>
 	<name>Conquery Parent</name>
-		
+
 	<properties>
 		<lombok.version>1.18.6</lombok.version>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -17,13 +17,13 @@
 		<junit.version>5.${junit.minor}</junit.version>
 		<junit.platform.version>1.${junit.minor}</junit.platform.version>
 	</properties>
-	
+
 	<modules>
 		<module>frontend-resources</module>
 		<module>backend</module>
 		<module>executable</module>
 	</modules>
-	
+
 	<dependencyManagement>
 		<dependencies>
 			<dependency>
@@ -50,7 +50,7 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -80,4 +80,89 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<profiles>
+		<profile>
+			<id>setVersion</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>pl.project13.maven</groupId>
+						<artifactId>git-commit-id-plugin</artifactId>
+						<version>2.2.6</version>
+						<inherited>false</inherited>
+						<executions>
+							<execution>
+								<id>get-the-git-infos</id>
+								<goals>
+									<goal>revision</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<!-- do not only use annotated tags -->
+							<tags>true</tags>
+							<failOnUnableToExtractRepoInfo>true</failOnUnableToExtractRepoInfo>
+							<dateFormat>${maven.build.timestamp.format}</dateFormat>
+							<skipPoms>false</skipPoms>
+							<gitDescribe>
+								<skip>false</skip>
+								<!-- do not only use annotated tags -->
+								<tags>true</tags>
+							</gitDescribe>
+						</configuration>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>build-helper-maven-plugin</artifactId>
+						<version>1.7</version>
+						<inherited>false</inherited>
+						<executions>
+							<execution>
+								<id>regex-property</id>
+								<goals>
+									<goal>regex-property</goal>
+								</goals>
+								<phase>initialize</phase>
+								<configuration>
+									<name>newVersion</name>
+									<value>${git.commit.id.describe}</value>
+									<regex>v(\d+\.\d+\.\d+)</regex>
+									<replacement>$1-SNAPSHOT</replacement>
+								</configuration>
+							</execution>
+						</executions>
+					</plugin>
+					<plugin>
+						<groupId>org.codehaus.mojo</groupId>
+						<artifactId>versions-maven-plugin</artifactId>
+						<version>2.7</version>
+						<inherited>false</inherited>
+						<executions>
+							<execution>
+								<id>set</id>
+								<phase>initialize</phase>
+								<goals>
+									<goal>set</goal>
+								</goals>
+								<configuration>
+									<newVersion>${newVersion}</newVersion>
+								</configuration>
+							</execution>
+							<execution>
+								<id>commit</id>
+								<phase>initialize</phase>
+								<goals>
+									<goal>commit</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>

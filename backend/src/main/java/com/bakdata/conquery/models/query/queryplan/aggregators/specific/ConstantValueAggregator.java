@@ -10,9 +10,10 @@ import lombok.RequiredArgsConstructor;
 
 @Getter
 @RequiredArgsConstructor
-public class ConstantValueAggregator implements Aggregator<String> {
+public class ConstantValueAggregator implements Aggregator<Object> {
 
-	private final String value;
+	private final Object value;
+	private final ResultType type;
 	
 	@Override
 	public ConstantValueAggregator doClone(CloneContext ctx) {
@@ -20,7 +21,7 @@ public class ConstantValueAggregator implements Aggregator<String> {
 	}
 
 	@Override
-	public String getAggregationResult() {
+	public Object getAggregationResult() {
 		return value;
 	}
 
@@ -29,6 +30,6 @@ public class ConstantValueAggregator implements Aggregator<String> {
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.STRING;
+		return type;
 	}
 }
