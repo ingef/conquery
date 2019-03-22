@@ -115,7 +115,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 		for(Filter<?> f:collectAllFilters()) {
 			for(Column c:f.getRequiredColumns()) {
-				if(c.getTable()!=getTable()) {
+				if (c != null && c.getTable() != getTable()) {
 					context
 						.buildConstraintViolationWithTemplate("The filter "+f.getId()+" must be of the same table "+this.getTable().getId()+" as its connector "+this.getId())
 						.addConstraintViolation();
