@@ -22,7 +22,7 @@ public class QueryToCSVRenderer {
 
 	private static final char DELIMETER = ConqueryConfig.getInstance().getCsv().getDelimeter();
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
-	private static final Joiner JOINER = Joiner.on(DELIMETER);
+	private static final Joiner JOINER = Joiner.on(DELIMETER).useForNull("");
 	private static final String HEADER = JOINER.join(ID_MAPPING.getPrintIdFields());
 
 	private final Namespace namespace;
