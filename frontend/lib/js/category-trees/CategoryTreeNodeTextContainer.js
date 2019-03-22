@@ -76,7 +76,6 @@ class CategoryTreeNodeTextContainer extends React.Component {
 
     const zeroEntries =
       !isEmpty(node.matchingEntries) && node.matchingEntries === 0;
-    const searching = search && search.searching;
     const description = ` - ${node.description}`;
 
     return (
@@ -95,9 +94,9 @@ class CategoryTreeNodeTextContainer extends React.Component {
             <StyledFaIcon active icon={!!open ? "folder-open" : "folder"} />
           )}
           <span>
-            {searching ? (
+            {search.words ? (
               <Highlighter
-                searchWords={search && search.words}
+                searchWords={search.words}
                 autoEscape={true}
                 textToHighlight={node.label}
               />
@@ -105,9 +104,9 @@ class CategoryTreeNodeTextContainer extends React.Component {
               node.label
             )}
           </span>
-          {searching && node.description ? (
+          {search.words && node.description ? (
             <Highlighter
-              searchWords={search && search.words}
+              searchWords={search.words}
               autoEscape={true}
               textToHighlight={description}
             />

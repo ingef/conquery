@@ -22,11 +22,11 @@ import { setTree } from "./globalTreeStoreHelper";
 export type TreesType = { [treeId: string]: NodeType };
 
 export type SearchType = {
-  searching: boolean,
+  allOpen: boolean,
   loading: boolean,
   query: string,
-  words: Array<string>,
-  result: Array<TreeNodeIdType>,
+  words: ?(string[]),
+  result: ?(TreeNodeIdType[]),
   limit: number,
   totalResults: number,
   duration: number
@@ -39,21 +39,22 @@ export type StateType = {
   search: SearchType
 };
 
+const initialSearch = {
+  allOpen: false,
+  loading: false,
+  query: "",
+  words: null,
+  result: null,
+  limit: 0,
+  totalResults: 0,
+  duration: 0
+};
+
 const initialState: StateType = {
   loading: false,
   version: null,
   trees: {},
-  search: {
-    allOpen: false,
-    searching: false,
-    loading: false,
-    query: "",
-    words: [],
-    result: [],
-    limit: 0,
-    totalResults: 0,
-    duration: 0
-  }
+  search: initialSearch
 };
 
 const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
@@ -62,18 +63,16 @@ const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
     searchResult: { result, size, limit }
   } = action.payload;
 
-  const searching = query && query.length > 0;
-
   return {
     ...state,
     search: {
-      searching,
+      ...state.search,
       loading: false,
       query,
-      words: query ? query.split(" ") : [],
-      result: result || [],
+      words: query.split(" "),
+      result: result || [], // An array with a max. length of limit
       limit,
-      totalResults: searching ? size : 0,
+      totalResults: size || 0, // The number of all potential matches (possiby greater than limit)
       duration: Date.now() - state.search.duration
     }
   };
@@ -85,11 +84,12 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
   return {
     ...state,
     search: {
-      searching: false,
+      ...state.search,
       loading: query && query.length > 0,
       query: query,
       words: query ? query.split(" ") : [],
       result: [],
+      totalResults: 0,
       limit: 0,
       duration: Date.now()
     }
@@ -184,7 +184,7 @@ const categoryTrees = (
     case CLEAR_SEARCH_QUERY:
       return {
         ...state,
-        search: { ...state.search, searching: false, query: "" }
+        search: initialSearch
       };
     case CHANGE_SEARCH_QUERY:
       return {

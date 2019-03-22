@@ -3,6 +3,7 @@
 import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
+
 import { isEmpty } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 import IconButton from "../button/IconButton";
@@ -101,7 +102,7 @@ const SearchBox = (props: PropsType) => {
             }}
             inputProps={{
               onKeyPress: e => {
-                return e.key === "Enter"
+                return e.key === "Enter" && !isEmpty(e.target.value)
                   ? onSearch(props.datasetId, e.target.value)
                   : null;
               }
@@ -119,7 +120,7 @@ const SearchBox = (props: PropsType) => {
           {searchResult.loading ? (
             <AnimatedDots />
           ) : (
-            searchResult.searching &&
+            searchResult.result &&
             searchResult.totalResults >= 0 && (
               <Row>
                 <TinyText>

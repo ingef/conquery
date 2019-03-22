@@ -15,7 +15,7 @@ import { type SearchType } from "./reducer";
 import { getConceptById } from "./globalTreeStoreHelper";
 import Openable from "./Openable";
 import CategoryTreeNodeTextContainer from "./CategoryTreeNodeTextContainer";
-import { isInSearchResult } from "./selectors";
+import { isNodeInSearchResult } from "./selectors";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -71,61 +71,58 @@ class CategoryTreeNode extends React.Component<PropsType> {
 
   render() {
     const { id, data, depth, open, search } = this.props;
-    const searching = search && search.searching;
 
-    const render = searching
-      ? isInSearchResult(id, data.children, search)
-      : true;
+    const shouldRender = isNodeInSearchResult(id, data.children, search);
+
+    if (!shouldRender) return null;
 
     return (
-      render && (
-        <Root>
-          <StyledCategoryTreeNodeTextContainer
-            node={{
-              id,
+      <Root>
+        <StyledCategoryTreeNodeTextContainer
+          node={{
+            id,
+            label: data.label,
+            description: data.description,
+            matchingEntries: data.matchingEntries,
+            dateRange: data.dateRange,
+            additionalInfos: data.additionalInfos,
+            hasChildren: !!data.children && data.children.length > 0
+          }}
+          createQueryElement={(): DraggedNodeType => {
+            const { tables, selects } = getConceptById(data.tree);
+
+            return {
+              ids: [id],
               label: data.label,
-              description: data.description,
-              matchingEntries: data.matchingEntries,
-              dateRange: data.dateRange,
-              additionalInfos: data.additionalInfos,
-              hasChildren: !!data.children && data.children.length > 0
-            }}
-            createQueryElement={(): DraggedNodeType => {
-              const { tables, selects } = getConceptById(data.tree);
+              tables,
+              selects,
+              tree: data.tree
+            };
+          }}
+          open={open}
+          depth={depth}
+          active={data.active}
+          onTextClick={this._onToggleOpen.bind(this)}
+          search={search}
+        />
+        {!!data.children && (open || search.allOpen) && (
+          <div>
+            {data.children.map((childId, i) => {
+              const child = getConceptById(childId);
 
-              return {
-                ids: [id],
-                label: data.label,
-                tables,
-                selects,
-                tree: data.tree
-              };
-            }}
-            open={open}
-            depth={depth}
-            active={data.active}
-            onTextClick={this._onToggleOpen.bind(this)}
-            search={search}
-          />
-          {!!data.children && (open || search.allOpen) && (
-            <div>
-              {data.children.map((childId, i) => {
-                const child = getConceptById(childId);
-
-                return child ? (
-                  <OpenableCategoryTreeNode
-                    key={i}
-                    id={childId}
-                    data={selectTreeNodeData(child, data.tree)}
-                    depth={this.props.depth + 1}
-                    search={this.props.search}
-                  />
-                ) : null;
-              })}
-            </div>
-          )}
-        </Root>
-      )
+              return child ? (
+                <OpenableCategoryTreeNode
+                  key={i}
+                  id={childId}
+                  data={selectTreeNodeData(child, data.tree)}
+                  depth={this.props.depth + 1}
+                  search={this.props.search}
+                />
+              ) : null;
+            })}
+          </div>
+        )}
+      </Root>
     );
   }
 }
