@@ -34,7 +34,9 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		Column column = getColumn();
 		switch (column.getType()) {
-			case MONEY: //see #170  introduce money filter into frontend
+			case MONEY:
+				f.setType(FEFilterType.MONEY_RANGE);
+				return;
 			case INTEGER:
 				f.setType(FEFilterType.INTEGER_RANGE);
 				return;
@@ -64,7 +66,7 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 			case DECIMAL:
 				return new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
 			case REAL:
-				return new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberFilter(value));
+				return new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberRange(value));
 			default:
 				throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
 		}

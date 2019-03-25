@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.value;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -52,5 +53,10 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	@Override
 	public LastValueAggregator doClone(CloneContext ctx) {
 		return new LastValueAggregator(getColumn());
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.resolveResultType(getColumn().getType());
 	}
 }

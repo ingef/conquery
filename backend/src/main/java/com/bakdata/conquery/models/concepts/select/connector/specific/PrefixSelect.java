@@ -30,9 +30,4 @@ public class PrefixSelect extends SingleColumnSelect {
 	public Aggregator<?> createAggregator() {
 		return new PrefixTextAggregator(getColumn(), prefix);
 	}
-
-	@Override
-	public ResultType getResultType() {
-		return ResultType.STRING;
-	}
 }

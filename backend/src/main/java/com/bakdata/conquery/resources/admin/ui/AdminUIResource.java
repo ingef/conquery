@@ -4,6 +4,7 @@ import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -153,7 +154,7 @@ public class AdminUIResource {
 					.values()
 					.stream()
 					.collect(Collectors.toMap(
-						si -> si.getRemoteAddress().toString(),
+						si -> Objects.toString(si.getRemoteAddress()),
 						SlaveInformation::getJobManagerStatus
 					))
 			)

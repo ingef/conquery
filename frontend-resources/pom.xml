@@ -129,9 +129,9 @@
 						<phase>process-sources</phase>
 						<configuration>
 							<target>
-								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js"  perm="755" />
-								<chmod file="${workingDirectory}/node_modules/cross-env/dist/bin/cross-env.js"  perm="755" />
-								<chmod file="${workingDirectory}/node_modules/webpack/bin/webpack.js"  perm="755" />
+								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js"  perm="777" />
+								<chmod file="${workingDirectory}/node_modules/cross-env/dist/bin/cross-env.js"  perm="777" />
+								<chmod file="${workingDirectory}/node_modules/webpack/bin/webpack.js"  perm="777" />
 							</target>
 						</configuration>
 						<goals>

@@ -1,10 +1,13 @@
 package com.bakdata.conquery.models.events.generation;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
@@ -17,6 +20,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -75,7 +79,7 @@ public class GenerationTests {
 						event[9] = Integer.valueOf(r.nextInt()).toString();
 					}
 					if(r.nextBoolean()) {
-						event[10] = BigDecimal.valueOf(r.nextLong(), 2);
+						event[10] = BigDecimal.valueOf(r.nextInt(4), r.nextInt(10)-5);
 					}
 					if(r.nextBoolean()) {
 						event[11] = Long.valueOf((byte)r.nextInt());
@@ -163,6 +167,30 @@ public class GenerationTests {
 	@MethodSource("createRandomContent")
 	public void testSerialization(int numberOfValues, List<Object[]> arrays) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, NoSuchMethodException, SecurityException, JSONException {
 		Block block = generateBlock(arrays);
+		for(int i=0;i<arrays.size();i++) {
+			for(int c=0;c<arrays.get(i).length;c++) {
+				Column fake = new Column();
+				fake.setPosition(c);
+				
+				Object orig = arrays.get(i)[c];
+				if(orig == null) {
+					assertThat(block.has(i, fake))
+						.as("checking "+c+":"+i+" = null")
+						.isFalse();
+				}
+				else if(orig instanceof BigDecimal) {
+					assertThat((BigDecimal)block.getAsObject(i, fake))
+						.as("checking "+c+":"+i+" = '"+orig+"'")
+						.usingComparator(BigDecimal::compareTo)
+						.isEqualTo(orig);
+				}
+				else {
+					assertThat(block.getAsObject(i, fake))
+						.as("checking "+c+":"+i+" = '"+orig+"'")
+						.isEqualTo(orig);
+				}
+			}
+		}
 		CentralRegistry registry = new CentralRegistry();
 		registry.register(block.getImp());
 

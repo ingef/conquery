@@ -6,7 +6,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.DistinctValuesWrapperAggregator;
@@ -32,6 +31,11 @@ public class SumSelect extends Select {
 
 	private boolean distinct = false;
 
+	@Getter
+	@Setter
+	@NsIdRef
+	private Column distinctByColumn;
+
 	@NsIdRef
 	@NotNull
 	private Column column;
@@ -52,7 +56,7 @@ public class SumSelect extends Select {
 	@Override
 	public Aggregator<? extends Number> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregator<>(getAggregator(), getColumn());
+			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
 		}
 		else {
 			return getAggregator();
@@ -89,23 +93,6 @@ public class SumSelect extends Select {
 				default:
 					throw new IllegalStateException(String.format("Invalid column type '%s' for SUM Aggregator", getColumn().getType()));
 			}
-		}
-	}
-	
-
-	
-	@Override
-	public ResultType getResultType() {
-		switch (getColumn().getType()) {
-			case INTEGER:
-				return ResultType.INTEGER;
-			case MONEY:
-				return ResultType.MONEY;
-			case DECIMAL:
-			case REAL:
-				return ResultType.NUMERIC;
-			default:
-				throw new IllegalStateException(String.format("Invalid column type '%s' for Aggregator", getColumn().getType()));
 		}
 	}
 }

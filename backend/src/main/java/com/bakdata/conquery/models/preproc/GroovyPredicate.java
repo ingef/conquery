@@ -14,4 +14,12 @@ public abstract class GroovyPredicate extends Script {
 	
 	@Override
 	public abstract Boolean run();
+	
+	@Override
+	public Object getProperty(String property) {
+		if("row".equals(property)) {
+			return row;
+		}
+		return super.getProperty(property);
+	}
 }

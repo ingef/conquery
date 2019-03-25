@@ -18,7 +18,7 @@ public class ExternalEntityId implements EntityId{
 	 * @param csvEntityId the given csvEntityId.
 	 * @return the casted ExternalEntityId.
 	 */
-	static ExternalEntityId from(CsvEntityId csvEntityId){
+	public static ExternalEntityId from(CsvEntityId csvEntityId){
 		return new ExternalEntityId(new String[]{ csvEntityId.getCsvId()});
 	}
 }

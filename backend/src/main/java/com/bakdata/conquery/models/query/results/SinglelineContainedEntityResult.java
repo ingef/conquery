@@ -16,10 +16,10 @@ import lombok.ToString;
 public class SinglelineContainedEntityResult implements ContainedEntityResult {
 
 	private final int entityId;
-	private final String[] values;
+	private final Object[] values;
 
 	@Override
-	public Stream<String[]> streamValues() {
+	public Stream<Object[]> streamValues() {
 		return Stream.ofNullable(values);
 	}
 }

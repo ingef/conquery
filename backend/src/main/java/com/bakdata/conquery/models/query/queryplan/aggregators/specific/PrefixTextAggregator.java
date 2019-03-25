@@ -5,6 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -45,5 +46,10 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	@Override
 	public PrefixTextAggregator doClone(CloneContext ctx) {
 		return new PrefixTextAggregator(getColumn(), prefix);
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.STRING;
 	}
 }

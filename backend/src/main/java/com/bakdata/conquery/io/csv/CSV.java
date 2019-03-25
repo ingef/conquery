@@ -83,9 +83,11 @@ public class CSV implements Closeable {
 	}
 
 	public Iterator<String[]> iterateContent(Logger log) throws IOException {
-		Iterator<String[]> it = new CsvParser(settings)
+		Iterator<String[]> it = new AsyncIterator<>(
+			new CsvParser(settings)
 				.iterate(reader)
-				.iterator();
+				.iterator()
+		);
 		
 		//skip the header line
 		if(config.isSkipHeader() && it.hasNext()) {

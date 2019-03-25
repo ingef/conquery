@@ -80,11 +80,18 @@ const InputDateRange = (props: PropsType) => {
   };
 
   const onChangeRawMax = (value, dateFormat) => {
-    let { max } = parseDateFromShortcut(value);
+    let { min, max } = parseDateFromShortcut(value);
 
     if (!max) max = parseRawDate(value);
 
-    onSetMaxDate(formatDate(max));
+    if (min) {
+      onSetDate({
+        min: formatDate(min, dateFormat),
+        max: formatDate(max, dateFormat)
+      });
+    } else {
+      onSetMaxDate(formatDate(max, dateFormat));
+    }
   };
 
   const {

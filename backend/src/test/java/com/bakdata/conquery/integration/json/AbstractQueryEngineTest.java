@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
@@ -45,7 +46,9 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			fail("Query failed");
 		}
 
-		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace()).toCSV(managed).collect(Collectors.toList());
+		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace())
+			.toCSV(new PrintSettings(false), managed)
+			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();
 

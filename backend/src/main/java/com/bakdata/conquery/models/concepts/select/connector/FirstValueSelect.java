@@ -21,9 +21,4 @@ public class FirstValueSelect extends SingleColumnSelect {
 	public Aggregator<?> createAggregator() {
 		return new FirstValueAggregator(getColumn());
 	}
-
-	@Override
-	public ResultType getResultType() {
-		return resolveResultType(getColumn().getType());
-	}
 }

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.types.specific.IStringType;
@@ -50,5 +51,10 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public SelectAggregator doClone(CloneContext ctx) {
 		return new SelectAggregator(getColumn(), selected);
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.INTEGER;
 	}
 }
