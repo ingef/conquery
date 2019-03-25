@@ -74,7 +74,7 @@ import type {
 
 const initialState: StandardQueryType = [];
 
-const withDefaultValues = arr => {
+export const withDefaultValues = arr => {
   if (!arr) return arr;
 
   return arr.map(obj => {

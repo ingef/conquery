@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.types.specific;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.math.RoundingMode;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -31,7 +32,7 @@ public class DecimalTypeScaled<NUMBER, SUB extends CType<NUMBER, IntegerType>> e
 
 	@Override
 	public BigDecimal createScriptValue(NUMBER value) {
-		return BigDecimal.valueOf((Long)subType.createScriptValue(value), scale);
+		return scale(scale, (Long)subType.createScriptValue(value));
 	}
 	
 	@Override
@@ -39,18 +40,26 @@ public class DecimalTypeScaled<NUMBER, SUB extends CType<NUMBER, IntegerType>> e
 		BigDecimal v = (BigDecimal) value;
 		if(v.scale() > scale)
 			throw new IllegalArgumentException(value+" is out of range");
-		return subType.transformFromMajorType(null, v.setScale(scale, RoundingMode.UNNECESSARY).unscaledValue().longValue());
+		return subType.transformFromMajorType(null, unscale(scale,v).longValueExact());
 	}
 	
 	
 	@Override
 	public BigDecimal transformToMajorType(NUMBER value, DecimalType majorType) {
-		return BigDecimal.valueOf((Long)subType.transformToMajorType(value, null), scale);
+		return scale(scale,(Long)subType.transformToMajorType(value, null));
 	}
 
 	@Override
 	public boolean canStoreNull() {
 		return false;
+	}
+
+	public static BigInteger unscale(int scale, BigDecimal value) {
+		return value.movePointRight(scale).toBigIntegerExact();
+	}
+	
+	public static BigDecimal scale(int scale, long value) {
+		return BigDecimal.valueOf(value, scale);
 	}
 	
 	

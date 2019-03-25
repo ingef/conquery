@@ -7,6 +7,8 @@ os:
 jdk:
   - openjdk11
 
+before_install: mvn initialize -P setVersion
+
 jobs:
   include:
     - stage: "Tests"
@@ -71,6 +73,7 @@ jobs:
     #Deploy
     - stage: "Deploy Develop to Heroku"
       if: branch = develop AND type = push
+      before_install: mvn initialize -P setVersion
       install: 
         - mvn -B -V -T 1C install -DskipTests
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
@@ -90,10 +93,7 @@ jobs:
     - stage: "Releases"
       name: "Prerelease"
       if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
-      before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
-      install:
-        - mvn versions:set -DnewVersion="$TAG_VERSION" versions:commit
-        - mvn -B -V -T 1C package -DskipTests
+      install: mvn -B -V -T 1C package -DskipTests
       script: skip
       deploy:
         provider: releases
@@ -111,10 +111,7 @@ jobs:
 
     - name: "Release"
       if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
-      before_install: export TAG_VERSION=$(sed 's/^v//' <<< $TRAVIS_TAG)
-      install:
-        - mvn versions:set -DnewVersion="$TAG_VERSION" versions:commit
-        - mvn -B -V -T 1C package -DskipTests
+      install: mvn -B -V -T 1C package -DskipTests
       script: skip
       deploy:
         provider: releases

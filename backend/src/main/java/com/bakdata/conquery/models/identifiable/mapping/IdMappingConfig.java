@@ -69,7 +69,6 @@ public abstract class IdMappingConfig {
 		else {
 			return ExternalEntityId.from(csvEntityId);
 		}
-
 	}
 
 	@NonNull
