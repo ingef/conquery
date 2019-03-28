@@ -44,24 +44,24 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		return String.format("[%s, %s]", getMin(), getMax());
 	}
 
-	public static <T extends Comparable<T>> Range<T> exactly(T exactly) {
+	public static <T extends Comparable<?>> Range<T> exactly(T exactly) {
 		return new Range<>(exactly, exactly);
 	}
 
 	@JsonCreator
-	public static <T extends Comparable<T>> Range<T> of(@JsonProperty("min") T min, @JsonProperty("max") T max) {
+	public static <T extends Comparable<?>> Range<T> of(@JsonProperty("min") T min, @JsonProperty("max") T max) {
 		return new Range<>(min, max);
 	}
 
-	public static <T extends Comparable<T>> Range<T> atMost(T bound) {
+	public static <T extends Comparable<?>> Range<T> atMost(T bound) {
 		return new Range<>(null, bound);
 	}
 
-	public static <T extends Comparable<T>> Range<T> atLeast(T bound) {
+	public static <T extends Comparable<?>> Range<T> atLeast(T bound) {
 		return new Range<>(bound, null);
 	}
 
-	public static <T extends Comparable<T>> Range<T> all() {
+	public static <T extends Comparable<?>> Range<T> all() {
 		return new Range<>(null, null);
 	}
 
@@ -164,6 +164,10 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min, max);
 		}
 
+		public static IntegerRange fromNumberRange(IRange<? extends Number, ?> orig){
+			return new Range.IntegerRange(orig.getMin().intValue(), orig.getMax().intValue());
+		}
+
 		@Override
 		public boolean contains(Integer value) {
 			return contains(value.intValue());
@@ -189,6 +193,10 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min, max);
 		}
 
+		public static LongRange fromNumberRange(IRange<? extends Number, ?> orig){
+			return new Range.LongRange(orig.getMin().longValue(), orig.getMax().longValue());
+		}
+
 		@Override
 		public boolean contains(Long value) {
 			return contains(value.longValue());
@@ -212,6 +220,10 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 	public static class FloatRange extends Range<Float> {
 		public FloatRange(Float min, Float max) {
 			super(min, max);
+		}
+
+		public static FloatRange fromNumberRange(IRange<? extends Number, ?> orig){
+			return new Range.FloatRange(orig.getMin().floatValue(), orig.getMax().floatValue());
 		}
 
 		@Override
@@ -242,7 +254,7 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			super(min, max);
 		}
 
-		public static DoubleRange fromNumberFilter(IRange<? extends Number, ?> orig){
+		public static DoubleRange fromNumberRange(IRange<? extends Number, ?> orig){
 			return new Range.DoubleRange(orig.getMin().doubleValue(), orig.getMax().doubleValue());
 		}
 
