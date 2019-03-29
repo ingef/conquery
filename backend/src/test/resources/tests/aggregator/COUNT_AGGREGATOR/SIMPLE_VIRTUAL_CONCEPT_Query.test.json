@@ -6,15 +6,15 @@
     "type": "CONCEPT_QUERY",
     "root": {
       "ids": [
-        "${dataset}.geschlecht_select"
+        "${dataset}.select"
       ],
       "type": "CONCEPT",
-      "label": "Geschlecht SELECT",
+      "label": "select",
       "tables": [
         {
-          "id": "${dataset}.geschlecht_select.geschlecht_connector",
+          "id": "${dataset}.select.connector",
           "selects" : [
-            "${dataset}.geschlecht_select.geschlecht_connector.count_genders"
+            "${dataset}.select.connector.count_genders"
           ]
         }
       ]
@@ -22,11 +22,11 @@
   },
   "concepts": [
     {
-      "label": "geschlecht_select",
+      "label": "select",
       "type": "VIRTUAL",
       "connectors": [
         {
-          "label": "geschlecht_connector",
+          "label": "connector",
           "table": "vers_stamm",
           "validityDates": {
             "label": "datum",
