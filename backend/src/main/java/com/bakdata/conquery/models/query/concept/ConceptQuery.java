@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.select.Select;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -57,7 +56,7 @@ public class ConceptQuery implements IQuery {
 		header.add(ConqueryConstants.DATES_INFO);
 		for(Select select : selects) {
 			header.add(new ResultInfo(
-				select.getLabel(),//select.getId().toStringWithoutDataset(),
+				select.getId().toStringWithoutDataset(),
 				select.getResultType()
 			));
 		}
