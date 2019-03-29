@@ -14,7 +14,9 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
+@AllArgsConstructor
+@Getter
+@EqualsAndHashCode(callSuper = false)
 public abstract class SelectId extends AId<Select> implements NamespacedId {
 
 	private final String select;
@@ -26,11 +28,11 @@ public abstract class SelectId extends AId<Select> implements NamespacedId {
 
 	public static enum Parser implements IId.Parser<SelectId> {
 		INSTANCE;
-		
+
 		@Override
 		public SelectId parse(PeekingIterator<String> parts) {
 			ConnectorId parent = ConnectorId.Parser.INSTANCE.parse(parts);
-			if(!parts.hasNext()) {
+			if (!parts.hasNext()) {
 				return new ConceptSelectId(parent.getConcept(), parent.getConnector());
 			}
 			else {
@@ -40,6 +42,6 @@ public abstract class SelectId extends AId<Select> implements NamespacedId {
 	}
 
 	public String toStringWithoutDataset() {
-		return StringUtils.removeStart(toString(), getDataset().toString()+IId.JOIN_CHAR);
+		return StringUtils.removeStart(toString(), getDataset().toString() + IId.JOIN_CHAR);
 	}
 }
