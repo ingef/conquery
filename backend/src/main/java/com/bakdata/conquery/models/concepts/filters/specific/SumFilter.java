@@ -72,8 +72,6 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 				f.setType(FEFilterType.INTEGER_RANGE);
 				return;
 			case DECIMAL:
-				f.setType(FEFilterType.DECIMAL_RANGE);
-				return;
 			case REAL: {
 				f.setType(FEFilterType.REAL_RANGE);
 				return;
