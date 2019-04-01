@@ -161,7 +161,7 @@ timebasedQueryEditor:
   opBeforeOrSame: "VOR ODER GLEICH"
   opDays: "TAGE VOR"
   opSame: "GLEICH"
-  opDaysOrNoEventBefore: "TAGE ODER KEIN EREIGNIS DAVOR"
+  opDaysOrNoEventBefore: "KEIN EREIGNIS IN TAGE VOR"
   timestampFirst: "ERSTER"
   timestampLast: "LETZTER"
   timestampRandom: "ZUFÄLLIG"
@@ -169,8 +169,8 @@ timebasedQueryEditor:
   condition: "Bedingung"
   timestampResultsFrom: "Nutze als Ergebnis-Zeitstempel"
   addCondition: "Bedingung hinzufügen"
-  minDaysLabel: "Min. Tage"
-  maxDaysLabel: "Max. Tage"
+  minDaysLabel: "Beginn Tage"
+  maxDaysLabel: "Ende Tage"
 
 externalForms:
   forms: "Formulare"

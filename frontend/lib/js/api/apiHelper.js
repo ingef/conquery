@@ -157,11 +157,11 @@ const transformTimebasedQueryToApi = query => ({
       return {
         type: condition.operator,
         ...days,
-        index: {
+        preceding: {
           sampler: condition.result0.timestamp,
           child: createSavedQuery(condition.result0.id)
         },
-        preceding: {
+        index: {
           sampler: condition.result1.timestamp,
           child: createSavedQuery(condition.result1.id)
         }
