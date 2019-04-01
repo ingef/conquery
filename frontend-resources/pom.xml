@@ -129,9 +129,9 @@
 						<phase>process-sources</phase>
 						<configuration>
 							<target>
-								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js"  perm="755" />
-								<chmod file="${workingDirectory}/node_modules/cross-env/dist/bin/cross-env.js"  perm="755" />
-								<chmod file="${workingDirectory}/node_modules/webpack/bin/webpack.js"  perm="755" />
+								<chmod file="${workingDirectory}/node_modules/rimraf/bin.js"  perm="777" />
+								<chmod file="${workingDirectory}/node_modules/cross-env/dist/bin/cross-env.js"  perm="777" />
+								<chmod file="${workingDirectory}/node_modules/webpack/bin/webpack.js"  perm="777" />
 							</target>
 						</configuration>
 						<goals>
@@ -141,5 +141,40 @@
 				</executions>
 			</plugin>
 		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.apache.maven.plugins
+										</groupId>
+										<artifactId>
+											maven-antrun-plugin
+										</artifactId>
+										<versionRange>
+											[1.8,)
+										</versionRange>
+										<goals>
+											<goal>run</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore/>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>

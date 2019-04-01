@@ -59,12 +59,9 @@ public class ExternalNode extends QPChainNode {
 	}
 
 	@Override
-	public boolean nextEvent(Block block, int event) {
+	public void nextEvent(Block block, int event) {
 		if(contained != null) {
-			return getChild().nextEvent(block, event);
-		}
-		else {
-			return false;
+			getChild().nextEvent(block, event);
 		}
 	}
 	

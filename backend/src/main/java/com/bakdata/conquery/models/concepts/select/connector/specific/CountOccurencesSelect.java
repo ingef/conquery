@@ -38,9 +38,4 @@ public class CountOccurencesSelect extends SingleColumnSelect {
 
 		return new MultiSelectAggregator(getColumn(), selection);
 	}
-	
-	@Override
-	public ResultType getResultType() {
-		return ResultType.INTEGER;
-	}
 }

@@ -1,20 +1,11 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
-import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.ResourceUtil;
-import com.fasterxml.jackson.databind.JsonNode;
-import io.dropwizard.auth.Auth;
-import io.dropwizard.jersey.PATCH;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
@@ -25,9 +16,20 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
-import java.util.stream.Collectors;
+
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.ResourceUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+
+import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.PATCH;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)

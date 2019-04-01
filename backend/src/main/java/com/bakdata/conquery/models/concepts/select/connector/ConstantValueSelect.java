@@ -14,15 +14,12 @@ import lombok.Setter;
 @RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class ConstantValueSelect extends Select {
 	@Getter @Setter
-	private String value;
+	private Object value;
+	@Getter @Setter
+	private ResultType resultType;
 
 	@Override
 	public ConstantValueAggregator createAggregator() {
-		return new ConstantValueAggregator(value);
-	}
-
-	@Override
-	public ResultType getResultType() {
-		return ResultType.STRING;
+		return new ConstantValueAggregator(value, resultType);
 	}
 }

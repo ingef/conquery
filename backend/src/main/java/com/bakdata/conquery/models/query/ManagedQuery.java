@@ -15,10 +15,12 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.concept.ResultInfo;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
@@ -138,7 +140,7 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	}
 
 	@JsonIgnore
-	public List<String> getResultHeader() {
-		return query.collectResultHeader();
+	public List<ResultInfo> getResultInfos() {
+		return query.collectResultInfos();
 	}
 }

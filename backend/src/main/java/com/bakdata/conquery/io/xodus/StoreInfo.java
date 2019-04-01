@@ -1,7 +1,5 @@
 package com.bakdata.conquery.io.xodus;
 
-import java.util.Map;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.BigStore;
 import com.bakdata.conquery.io.xodus.stores.CachedStore;
@@ -29,6 +27,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
@@ -40,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor @Getter
 public enum StoreInfo implements IStoreInfo {
 	DATASET			("DATASET", 		Dataset.class,				Boolean.class),
-	ID_MAPPING		("ID_MAPPING", 		Map.class,		Boolean.class),
+	ID_MAPPING		("ID_MAPPING", 		PersistentIdMap.class,		Boolean.class),
 	NAMESPACES		("NAMESPACES", 		Namespaces.class,			Boolean.class),
 	SLAVE			("NETWORK_SLAVE", 	SlaveInformation.class,		Boolean.class),
 	DICTIONARIES	("DICTIONARIES", 	Dictionary.class,			DictionaryId.class),

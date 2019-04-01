@@ -1,20 +1,23 @@
 package com.bakdata.conquery.models.auth;
 
+import java.io.IOException;
+
+import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.SecurityContext;
+
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.realm.AuthorizingRealm;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.User;
+
 import io.dropwizard.auth.AuthDynamicFeature;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.realm.AuthorizingRealm;
-
-import javax.ws.rs.NotAuthorizedException;
-import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.SecurityContext;
-import java.io.IOException;
 
 /**
  * This filter hooks into dropwizard's request handling to extract and process

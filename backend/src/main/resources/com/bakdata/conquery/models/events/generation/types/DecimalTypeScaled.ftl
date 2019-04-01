@@ -16,5 +16,5 @@
 </#macro>
 <#macro majorTypeTransformation type>
 	<#import "/com/bakdata/conquery/models/events/generation/types/${type.subType.class.simpleName}.ftl" as sub/>
-	BigDecimal.valueOf(<@sub.majorTypeTransformation type=type.subType><#nested/></@sub.majorTypeTransformation>,${type.scale})
+	BigDecimal.valueOf(<@sub.majorTypeTransformation type=type.subType><#nested/></@sub.majorTypeTransformation>,${type.getScale()})
 </#macro>

@@ -1,8 +1,7 @@
 package com.bakdata.conquery.io.jackson;
 
+import java.util.Currency;
 import java.util.List;
-
-import javax.money.CurrencyUnit;
 
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.CurrencyUnitDeserializer;
@@ -22,8 +21,8 @@ public class ConquerySerializersModule extends SimpleModule {
 
 	private ConquerySerializersModule() {
 		super("Conquery Module", PackageVersion.VERSION);
-		addDeserializer(CurrencyUnit.class, new CurrencyUnitDeserializer());
-		addSerializer(CurrencyUnit.class, new CurrencyUnitSerializer());
+		addDeserializer(Currency.class, new CurrencyUnitDeserializer());
+		addSerializer(Currency.class, new CurrencyUnitSerializer());
 		addAbstractTypeMapping(Int2ObjectMap.class, Int2ObjectOpenHashMap.class);
 
 		//register IdKeySerializer for all id types

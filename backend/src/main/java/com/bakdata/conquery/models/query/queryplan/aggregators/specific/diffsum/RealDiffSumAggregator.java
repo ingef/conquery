@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -47,5 +48,10 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	@Override
 	public Double getAggregationResult() {
 		return sum;
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.NUMERIC;
 	}
 }

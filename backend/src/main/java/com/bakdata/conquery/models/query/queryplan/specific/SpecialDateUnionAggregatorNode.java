@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-public class SpecialDateUnionAggregatorNode extends AggregatorNode<CDateSet> {
+public class SpecialDateUnionAggregatorNode extends AggregatorNode<String> {
 
 	private TableId requiredTable;
 	

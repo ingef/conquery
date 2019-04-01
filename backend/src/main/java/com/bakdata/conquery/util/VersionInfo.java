@@ -36,13 +36,7 @@ public class VersionInfo {
 				buildTime = ZonedDateTime.parse(timeProp);
 			}
 			catch(Exception e) {
-				buildTime = null;
-				if("${git.build.time}".equals(timeProp)) {
-					log.warn("No build time version present in git.properties");
-				}
-				else {
-					log.warn("Could not parse date time from git.properties", e);
-				}
+				log.error("Could not parse date time from git.properties", e);
 			}
 			buildVersion =	properties.getProperty("git.build.version");
 			projectVersion =properties.getProperty("project.version");

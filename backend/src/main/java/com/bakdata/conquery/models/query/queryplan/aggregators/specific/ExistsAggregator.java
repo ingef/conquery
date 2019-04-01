@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import java.util.Set;
 
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -33,5 +34,10 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	@Override
 	public ExistsAggregator doClone(CloneContext ctx) {
 		return new ExistsAggregator(requiredTables);
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.BOOLEAN;
 	}
 }

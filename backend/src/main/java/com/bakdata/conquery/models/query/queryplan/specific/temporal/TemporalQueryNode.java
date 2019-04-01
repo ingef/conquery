@@ -107,15 +107,13 @@ public class TemporalQueryNode extends QPNode {
 	 * @return always true.
 	 */
 	@Override
-	public boolean nextEvent(Block block, int event) {
-		reference.getChild().aggregate(block, event);
-		preceding.getChild().aggregate(block, event);
-
-		return true;
+	public void nextEvent(Block block, int event) {
+		reference.getChild().nextEvent(block, event);
+		preceding.getChild().nextEvent(block, event);
 	}
 
 	/**
-	 * Retrieves the {@link ConceptQueryPlan#getIncluded()} time of {@link #reference} and {@link #preceding}.
+	 * Retrieves the {@link ConceptQueryPlan#getSpecialDateUnion()} ()} time of {@link #reference} and {@link #preceding}.
 	 * Then tests whether they match the specific criteria for inclusion.
 	 * If the criteria are met, the matching {@link CDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
 	 *
@@ -123,13 +121,13 @@ public class TemporalQueryNode extends QPNode {
 	 */
 	@Override
 	public final boolean isContained() {
-		if (!(reference.getChild().isContained() && preceding.getChild().isContained())) {
+		if (!reference.getChild().isContained()) {
 			return false;
 		}
 
-		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getAggregationResult();
+		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
 		// Create copy as we are mutating the set
-		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getAggregationResult());
+		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
 
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);
@@ -141,7 +139,7 @@ public class TemporalQueryNode extends QPNode {
 
 		OptionalInt sampledPreceding = getReference().getSampler().sample(precedingDurations);
 
-		if (!precedingDurations.isEmpty() && matcher.isContained(sampledReference, sampledPreceding)) {
+		if (matcher.isContained(sampledReference, sampledPreceding)) {
 			dateUnion.merge(precedingDurations);
 			return true;
 		}

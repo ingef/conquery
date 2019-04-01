@@ -3,11 +3,9 @@ package com.bakdata.conquery.io.jackson;
 import java.util.Locale;
 import java.util.Set;
 
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.annotation.JsonSetter.Value;
 import com.fasterxml.jackson.annotation.Nulls;
-import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationContext;
@@ -49,6 +47,7 @@ public class Jackson {
 			.enable(DeserializationFeature.FAIL_ON_READING_DUP_TREE_KEY)
 			.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 			.enable(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS)
+			.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
 			.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS)
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.setLocale(Locale.ROOT)

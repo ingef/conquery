@@ -4,6 +4,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -49,5 +50,10 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 	@Override
 	public Long getAggregationResult() {
 		return set.countDays();
+	}
+	
+	@Override
+	public ResultType getResultType() {
+		return ResultType.INTEGER;
 	}
 }

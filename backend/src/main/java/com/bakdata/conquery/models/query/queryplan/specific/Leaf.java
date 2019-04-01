@@ -14,9 +14,8 @@ public class Leaf extends QPNode {
 	}
 	
 	@Override
-	public boolean nextEvent(Block block, int event) {
+	public void nextEvent(Block block, int event) {
 		triggered = true;
-		return true;
 	}
 
 	@Override

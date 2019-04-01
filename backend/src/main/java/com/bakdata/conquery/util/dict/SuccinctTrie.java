@@ -18,6 +18,7 @@ import com.google.common.collect.AbstractIterator;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
+import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import lombok.Data;
 import lombok.Getter;
 
@@ -137,7 +138,7 @@ public class SuccinctTrie implements Iterable<String> {
 					parentIndex[nodeIndex] = node.parent.getPositionInArray();
 				}
 
-				List<HelpNode> children = new ArrayList<>(node.children.values());
+				Collection<HelpNode> children = node.children.values();
 				nodesInNextDepth.addAll(children);
 				nodesInOrder.addAll(children);
 
