@@ -1,23 +1,66 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import { findDOMNode } from "react-dom";
 import { DragSource } from "react-dnd";
 import Highlighter from "react-highlight-words";
-import classnames from "classnames";
 
 import { AdditionalInfoHoverable } from "../tooltip";
 import { isEmpty } from "../common/helpers";
 import { dndTypes } from "../common/constants";
 
+import FaIcon from "../icon/FaIcon";
 import { type AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoHoverable";
 import { type DraggedNodeType } from "../standard-query-editor/types";
 import { type SearchType } from "./reducer";
 
+const Root = styled("div")`
+  position: relative; // Needed to fix a drag & drop issue in Safari
+  cursor: pointer;
+  padding: 0 15px 0 15px;
+  margin: 2px 0;
+  padding-left: ${({ depth }) => depth * 15 + "px"};
+`;
+
+const Text = styled("p")`
+  user-select: none;
+  border-radius: ${({ theme }) => theme.borderRadius};
+  margin: 0;
+  padding: 0 14px;
+  line-height: 20px;
+  color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.black)};
+
+  background-color: ${({ theme, open }) =>
+    open ? theme.col.grayVeryLight : "transparent"};
+
+  &:hover {
+    background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
+    opacity: ${({ open }) => (open ? "0.9" : "1")};
+  }
+`;
+
+const StyledFaIcon = styled(FaIcon)`
+  padding-right: 7px;
+  width: 20px;
+`;
+
+const ResultsNumber = styled("span")`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 2px 4px;
+  margin-left: 5px;
+  font-size: ${({ theme }) => theme.font.xs};
+  border-radius: 3px;
+  color: ${({ theme }) => theme.col.blueGrayDark};
+  font-weight: 700;
+`;
+
 type PropsType = {
   node: AdditionalInfoHoverableNodeType & {
     label: string,
-    hasChildren: boolean,
     description?: string,
     matchingEntries?: number
   },
@@ -30,61 +73,74 @@ type PropsType = {
   search?: SearchType
 };
 
+function shouldShowNumber(search, node) {
+  return (
+    search.result &&
+    search.result[node.id] > 0 &&
+    (node.children && node.children.some(child => search.result[child] > 0))
+  );
+}
+
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
 class CategoryTreeNodeTextContainer extends React.Component {
   render() {
-    const { props } = this;
-    const zeroEntries =
-      !isEmpty(props.node.matchingEntries) && props.node.matchingEntries === 0;
-    const searching = props.search && props.search.searching;
-    const description = ` - ${props.node.description}`;
+    const {
+      node,
+      depth,
+      search,
+      active,
+      open,
+      connectDragSource,
+      onTextClick
+    } = this.props;
 
-    const render = (
-      <div
-        className="category-tree-node__text-container"
-        onClick={props.onTextClick}
-        style={{ paddingLeft: props.depth * 15 }}
+    const zeroEntries =
+      !isEmpty(node.matchingEntries) && node.matchingEntries === 0;
+    const description = ` - ${node.description}`;
+    const showNumber = shouldShowNumber(search, node);
+    const hasChildren = !!node.children && node.children.length > 0;
+
+    return (
+      <Root
+        ref={instance => {
+          // Don't allow dragging with inactive elements
+          if (active !== false) {
+            connectDragSource(instance);
+          }
+        }}
+        onClick={onTextClick}
+        depth={depth}
       >
-        <p
-          className={classnames("category-tree-node__text", {
-            "category-tree-node__text--open": !!props.open,
-            "category-tree-node__text--zero": zeroEntries
-          })}
-        >
-          {props.node.hasChildren && (
-            <i
-              className={classnames("category-tree-node__icon", "fa", {
-                "fa-folder-open": !!props.open || searching,
-                "fa-folder": !props.open && !searching
-              })}
-            />
+        <Text open={open} zero={zeroEntries}>
+          {hasChildren && (
+            <StyledFaIcon active icon={!!open ? "folder-open" : "folder"} />
           )}
           <span>
-            {searching ? (
+            {search.words ? (
               <Highlighter
-                searchWords={props.search && props.search.words}
+                searchWords={search.words}
                 autoEscape={true}
-                textToHighlight={props.node.label}
+                textToHighlight={node.label}
               />
             ) : (
-              props.node.label
+              node.label
             )}
           </span>
-          {searching && props.node.description ? (
+          {search.words && node.description ? (
             <Highlighter
-              searchWords={props.search && props.search.words}
+              searchWords={search.words}
               autoEscape={true}
               textToHighlight={description}
             />
           ) : (
-            props.node.description && description
+            node.description && description
           )}
-        </p>
-      </div>
+          {showNumber && (
+            <ResultsNumber>{search.result[node.id]}</ResultsNumber>
+          )}
+        </Text>
+      </Root>
     );
-
-    // Don't allow dragging with inactive elements
-    return props.active === false ? render : props.connectDragSource(render);
   }
 }
 

@@ -1,8 +1,9 @@
 // @flow
 
-import React from "react";
+import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
+
 import { isEmpty } from "../common/helpers";
 import ReactSelect from "../form-components/ReactSelect";
 import IconButton from "../button/IconButton";
@@ -45,12 +46,19 @@ const TinyText = styled("p")`
   color: ${({ theme }) => theme.col.gray};
 `;
 
+const Row = styled("div")`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
 type PropsType = {
   search: string[],
   onSearch: string => void,
   onChange: () => void,
   onClearQuery: () => void,
   options: string[],
+  textAppend?: React.Node,
   isMulti: boolean,
   searchResult: Object,
   datasetId: string
@@ -63,6 +71,7 @@ const SearchBox = (props: PropsType) => {
     isMulti,
     search,
     options,
+    textAppend,
     onSearch,
     onChange,
     onClearQuery
@@ -93,7 +102,7 @@ const SearchBox = (props: PropsType) => {
             }}
             inputProps={{
               onKeyPress: e => {
-                return e.key === "Enter"
+                return e.key === "Enter" && !isEmpty(e.target.value)
                   ? onSearch(props.datasetId, e.target.value)
                   : null;
               }
@@ -111,15 +120,18 @@ const SearchBox = (props: PropsType) => {
           {searchResult.loading ? (
             <AnimatedDots />
           ) : (
-            searchResult.searching &&
+            searchResult.result &&
             searchResult.totalResults >= 0 && (
-              <TinyText>
-                {T.translate("search.resultLabel", {
-                  numResults: searchResult.result.length,
-                  totalResults: searchResult.totalResults,
-                  duration: (searchResult.duration / 1000.0).toFixed(2)
-                })}
-              </TinyText>
+              <Row>
+                <TinyText>
+                  {T.translate("search.resultLabel", {
+                    numResults: Object.keys(searchResult.result).length,
+                    totalResults: searchResult.totalResults,
+                    duration: (searchResult.duration / 1000.0).toFixed(2)
+                  })}
+                </TinyText>
+                {textAppend}
+              </Row>
             )
           )}
         </div>

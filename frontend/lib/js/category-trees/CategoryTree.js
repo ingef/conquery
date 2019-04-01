@@ -1,10 +1,13 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 import T from "i18n-react";
 
 import { ErrorMessage } from "../error-message";
 import type { NodeType, TreeNodeIdType } from "../common/types/backend";
+import FaIcon from "../icon/FaIcon";
 
 import CategoryTreeNode from "./CategoryTreeNode";
 import { type SearchType } from "./reducer";
@@ -20,28 +23,44 @@ type PropsType = {
   search?: SearchType
 };
 
+const otherTextStyles = css`
+  padding-left: 20px;
+  font-size: $font-sm;
+  margin: 2px 0;
+`;
+
+const LoadingTree = styled("p")`
+  ${otherTextStyles};
+`;
+const StyledErrorMessage = styled(ErrorMessage)`
+  ${otherTextStyles};
+`;
+
+const Spinner = styled("span")`
+  margin-right: 5px;
+`;
+
 const CategoryTree = (props: PropsType) => {
   if (props.loading)
     return (
-      <p className="category-tree-list__loading-tree">
-        <span className="category-tree-list__loading-tree__spinner">
-          <i className="fa fa-spinner" />
-        </span>
+      <LoadingTree>
+        <Spinner>
+          <FaIcon icon="spinner" />
+        </Spinner>
         <span>
           {T.translate("categoryTreeList.loading", { tree: props.label })}
         </span>
-      </p>
+      </LoadingTree>
     );
   else if (props.error)
     return (
-      <ErrorMessage
-        className="category-tree-list__error-tree"
+      <StyledErrorMessage
         message={T.translate("categoryTreeList.error", { tree: props.label })}
       />
     );
   else if (props.tree)
     return (
-      <div className="category-tree">
+      <div>
         <CategoryTreeNode
           id={props.id}
           data={{ ...props.tree, tree: props.treeId }}

@@ -21,7 +21,8 @@ import {
   SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CHANGE_SEARCH_QUERY,
-  CLEAR_SEARCH_QUERY
+  CLEAR_SEARCH_QUERY,
+  TOGGLE_ALL_OPEN
 } from "./actionTypes";
 
 const SEARCH_LIMIT = 500;
@@ -121,3 +122,5 @@ export const changeSearchQuery = query => ({
   type: CHANGE_SEARCH_QUERY,
   payload: { query }
 });
+
+export const toggleAllOpen = () => ({ type: TOGGLE_ALL_OPEN });

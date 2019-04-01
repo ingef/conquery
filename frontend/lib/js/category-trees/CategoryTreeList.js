@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import { connect } from "react-redux";
 import T from "i18n-react";
 
@@ -11,13 +12,38 @@ import { getConceptById } from "./globalTreeStoreHelper";
 import { type TreesType, type SearchType } from "./reducer";
 import CategoryTree from "./CategoryTree";
 import CategoryTreeFolder from "./CategoryTreeFolder";
-import { isInSearchResult } from "./selectors";
+import { isNodeInSearchResult } from "./selectors";
+
+const Root = styled("div")`
+  flex-grow: 1;
+  flex-shrink: 0;
+  flex-basis: 0;
+  overflow-y: auto;
+  padding: 0 10px 0 20px;
+  white-space: nowrap;
+
+  // Only hide the category trees when the tab is not selected
+  // Because mount / unmount would reset the open states
+  // that are React states and not part of the Redux state
+  // because if they were part of Redux state, the entire tree
+  // would have to re-render when a single node would be opened
+  //
+  // Also: Can't set it to initial, because IE11 doesn't work then
+  // => Empty string instead
+  display: ${({ show }) => (show ? "" : "none")};
+`;
 
 type PropsType = {
   trees: TreesType,
   activeTab: string,
   search?: SearchType
 };
+
+const StyledErrorMessage = styled(ErrorMessage)`
+  padding-left: 20px;
+  font-size: ${({ theme }) => theme.font.sm};
+  margin: 2px 0;
+`;
 
 class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
@@ -27,20 +53,7 @@ class CategoryTreeList extends React.Component<PropsType> {
 
     return (
       !search.loading && (
-        <div
-          className="category-tree-list"
-          style={{
-            // Only hide the category trees when the tab is not selected
-            // Because mount / unmount would reset the open states
-            // that are React states and not part of the Redux state
-            // because if they were part of Redux state, the entire tree
-            // would have to re-render when a single node would be opened
-            //
-            // Also: Can't set it to initial, because IE11 doesn't work then
-            // => Empty string instead
-            display: this.props.activeTab !== "categoryTrees" ? "none" : ""
-          }}
-        >
+        <Root show={this.props.activeTab === "categoryTrees"}>
           {this.props.trees ? (
             Object.keys(this.props.trees)
               // Only take those that don't have a parent, they must be root
@@ -59,9 +72,11 @@ class CategoryTreeList extends React.Component<PropsType> {
                 const tree = this.props.trees[treeId];
                 const rootConcept = getConceptById(treeId);
 
-                const render = search.searching
-                  ? isInSearchResult(treeId, tree.children, search)
-                  : true;
+                const render = isNodeInSearchResult(
+                  treeId,
+                  tree.children,
+                  search
+                );
 
                 if (!render) return null;
 
@@ -91,12 +106,11 @@ class CategoryTreeList extends React.Component<PropsType> {
                 );
               })
           ) : (
-            <ErrorMessage
-              className="category-tree-list__error-tree"
+            <StyledErrorMessage
               message={T.translate("categoryTreeList.noTrees")}
             />
           )}
-        </div>
+        </Root>
       )
     );
   }

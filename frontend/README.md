@@ -1,13 +1,15 @@
 # conquery-frontend
 
 ## Technologies
+
 - ES6
 - react / redux
 - webpack
 - simple express.js server for a mock api
 
-
 ## Run (production)
+
+### Using docker
 
 **Requirements**
 
@@ -23,12 +25,20 @@
 
 Commands analogoues to `start_production.sh` script.
 
+### Using node / express
+
+```
+yarn
+yarn run build
+PORT=8000 yarn run start-production
+```
+
 ## Install & start (development)
 
 **Requirements**
 
-- `node` 8.9 LTS
-- `yarn` >= 1.3.2
+- `node` 8 (LTS)
+- `yarn`
 
 **Install**
 
@@ -37,6 +47,7 @@ $ yarn
 ```
 
 **Start**
+
 ```bash
 $ yarn start
 ```
@@ -59,3 +70,10 @@ Depending on the use-case, we're still calling the same concepts differently som
 - **Dataset / Database** – data set that is used to ask queries against
 - **Tooltip** – small area (below), that contains additional information on hovering over certain elements
 - **Additional Infos** – data (key-value pairs) that are part of concept nodes and can be displayed inside the tooltip
+
+## Various technical explanations
+
+### Drag and Drop
+
+- We're using MultiBackend to support Drag and Drop for touch and html5.
+- To render a Drag and Drop preview on mobile, we'll have to calculate `width` and `height` of the drag source.

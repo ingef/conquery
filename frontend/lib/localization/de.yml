@@ -14,6 +14,8 @@ categoryTreeList:
   loading: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
   noTrees: "Konnte Konzeptbäume nicht laden."
+  openAll: "Alle aufklappen"
+  closeAll: "Einzeln aufklappen"
 
 queryRunner:
   start: "Anfrage starten"
@@ -243,4 +245,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} Sekunden)"
+  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} s)"

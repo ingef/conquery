@@ -3,6 +3,7 @@
 import React from "react";
 
 type PropsType = {
+  className?: string,
   onDisplayAdditionalInfos: Function,
   onToggleAdditionalInfos: Function
 };
@@ -14,7 +15,7 @@ const HoverableBase = (Component: any) =>
     render() {
       return (
         <div
-          className="additional-info-hoverable"
+          className={this.props.className}
           onMouseEnter={this.props.onDisplayAdditionalInfos}
           onClick={this.props.onToggleAdditionalInfos}
         >
