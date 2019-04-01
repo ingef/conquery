@@ -130,9 +130,9 @@ export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
   payload: { tableIdx, filterIdx, mode }
 });
 
-export const toggleTimestamps = isExcluded => ({
+export const toggleTimestamps = (andIdx, orIdx) => ({
   type: TOGGLE_TIMESTAMPS,
-  payload: { isExcluded }
+  payload: { andIdx, orIdx }
 });
 
 export const toggleIncludeSubnodes = includeSubnodes => ({

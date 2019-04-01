@@ -65,6 +65,7 @@ type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
   onEditClick: Function,
+  onToggleTimestamps: Function,
   onExpandClick: Function,
   connectDragSource: Function,
   andIdx: number,
@@ -82,7 +83,8 @@ class QueryNode extends React.Component {
       connectDragSource,
       onExpandClick,
       onEditClick,
-      onDeleteNode
+      onDeleteNode,
+      onToggleTimestamps
     } = this.props;
 
     return (
@@ -110,6 +112,7 @@ class QueryNode extends React.Component {
           excludeTimestamps={node.excludeTimestamps}
           onEditClick={onEditClick}
           onDeleteNode={onDeleteNode}
+          onToggleTimestamps={onToggleTimestamps}
           isExpandable={isQueryExpandable(node)}
           onExpandClick={() => {
             if (!node.query) return;

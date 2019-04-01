@@ -14,8 +14,8 @@ type PropsType = {
 };
 
 const StyledFaIcon = styled(FaIcon)`
-  color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayDark : theme.col.black};
+  color: ${({ theme, active, red }) =>
+    red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
 `;
 
 const StyledTransparentButton = styled(BasicButton)`
@@ -44,13 +44,15 @@ const StyledTransparentButton = styled(BasicButton)`
 const IconButton = ({
   icon,
   active,
+  red,
   large,
   children,
   iconProps,
   ...restProps
 }: PropsType) => (
   <StyledTransparentButton small={!large} active={active} {...restProps}>
-    <StyledFaIcon main active={active} icon={icon} {...iconProps} /> {children}
+    <StyledFaIcon main active={active} red={red} icon={icon} {...iconProps} />{" "}
+    {children}
   </StyledTransparentButton>
 );
 
