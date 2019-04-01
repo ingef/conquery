@@ -99,8 +99,7 @@ export const getConcept = (
 export function postQueries(
   datasetId: DatasetIdType,
   query: Object,
-  queryType: string,
-  version: any
+  queryType: string
 ) {
   // Transform into backend-compatible format
   const body = transformQueryToApi(query, queryType);

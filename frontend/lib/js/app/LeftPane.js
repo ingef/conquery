@@ -3,6 +3,8 @@
 import React from "react";
 import { connect } from "react-redux";
 
+import { type DatasetIdType } from "../dataset/reducer";
+
 import { Pane } from "../pane";
 import { CategoryTreeList, CategoryTreeSearchBox } from "../category-trees";
 import { DeletePreviousQueryModal } from "../previous-queries/delete-modal";
@@ -13,7 +15,7 @@ import { UploadQueryResults } from "../previous-queries/upload";
 
 type PropsType = {
   activeTab: string,
-  selectedDatasetId: ?string
+  selectedDatasetId: ?DatasetIdType
 };
 
 const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {
