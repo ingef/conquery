@@ -19,7 +19,8 @@ import {
   dropConceptListFile,
   toggleExcludeGroup,
   expandPreviousQuery,
-  selectNodeForEditing
+  selectNodeForEditing,
+  toggleTimestamps
 } from "./actions";
 import type {
   StandardQueryType,
@@ -91,6 +92,9 @@ const Query = (props: PropsType) => {
                 onExcludeClick={() => props.toggleExcludeGroup(andIdx)}
                 onDateClick={() => props.queryGroupModalSetNode(andIdx)}
                 onLoadPreviousQuery={props.loadPreviousQuery}
+                onToggleTimestamps={orIdx =>
+                  props.toggleTimestamps(andIdx, orIdx)
+                }
               />,
               <QueryGroupConnector key={`${andIdx}.and`}>
                 {T.translate("common.and")}
@@ -129,6 +133,8 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
   deleteGroup: (andIdx, orIdx) => dispatch(deleteGroup(andIdx, orIdx)),
   toggleExcludeGroup: andIdx => dispatch(toggleExcludeGroup(andIdx)),
+  toggleTimestamps: (andIdx, orIdx) =>
+    dispatch(toggleTimestamps(andIdx, orIdx)),
   selectNodeForEditing: (andIdx, orIdx) =>
     dispatch(selectNodeForEditing(andIdx, orIdx)),
   queryGroupModalSetNode: andIdx => dispatch(queryGroupModalSetNode(andIdx)),

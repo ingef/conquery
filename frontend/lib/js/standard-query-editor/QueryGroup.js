@@ -20,7 +20,8 @@ type PropsType = {
   onExpandClick: Function,
   onDateClick: Function,
   onDeleteGroup: Function,
-  onLoadPreviousQuery: Function
+  onLoadPreviousQuery: Function,
+  onToggleTimestamps: Function
 };
 
 const Root = styled("div")`
@@ -77,6 +78,7 @@ const QueryGroup = (props: PropsType) => {
               orIdx={orIdx}
               onDeleteNode={() => props.onDeleteNode(orIdx)}
               onEditClick={() => props.onEditClick(orIdx)}
+              onToggleTimestamps={() => props.onToggleTimestamps(orIdx)}
               onExpandClick={props.onExpandClick}
             />
             {orIdx !== props.group.elements.length - 1 && (

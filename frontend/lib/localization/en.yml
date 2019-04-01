@@ -58,6 +58,7 @@ queryNodeEditor:
   properties: "Properties"
   resetAll: "Reset all"
   excludeTimestamps: "Exclude from time calculation"
+  excludingTimestamps: "Excluded from time calculation"
   description: "Description"
   noDescriptionProvided: "No description provided."
   selectAFilter: "Select a filter to see its description here."

@@ -65,7 +65,7 @@ const NodeDetailsView = (props: PropsType) => {
             label={T.translate("queryNodeEditor.excludeTimestamps")}
             input={{
               value: node.excludeTimestamps,
-              onChange: () => onToggleTimestamps(!node.excludeTimestamps)
+              onChange: () => onToggleTimestamps()
             }}
           />
         </Row>

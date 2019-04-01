@@ -643,16 +643,21 @@ const renamePreviousQuery = (state, action) => {
   });
 };
 
+function getIndicesFromSelectedOrAction(state, action) {
+  const { andIdx, orIdx } = action.payload;
+
+  if (andIdx !== null && orIdx !== null) {
+    return { andIdx, orIdx };
+  }
+
+  return selectEditedNode(state);
+}
+
 const toggleTimestamps = (state, action) => {
-  const { isExcluded } = action.payload;
-
-  const nodePosition = selectEditedNode(state);
-  if (!nodePosition) return state;
-
-  const { andIdx, orIdx } = nodePosition;
+  const { andIdx, orIdx } = getIndicesFromSelectedOrAction(state, action);
 
   return setElementProperties(state, andIdx, orIdx, {
-    excludeTimestamps: isExcluded
+    excludeTimestamps: !state[andIdx].elements[orIdx].excludeTimestamps
   });
 };
 
