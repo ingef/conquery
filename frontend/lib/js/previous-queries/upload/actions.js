@@ -44,9 +44,6 @@ export const uploadFile = (datasetId: DatasetIdType, file: any) => (
 
   Papa.parse(file, {
     complete: results => {
-      // TODO: THIS IS NOT COMPLETE
-      // RESULTS NEED TO BE TRANSFORMED
-      console.log(results.data);
       return api.postQueries(datasetId, results, "external").then(
         r => {
           dispatch(uploadFileSuccess(r));

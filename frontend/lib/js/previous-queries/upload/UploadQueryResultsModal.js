@@ -28,6 +28,10 @@ const Success = styled("div")`
   color: ${({ theme }) => theme.col.green};
 `;
 
+const StyledFaIcon = styled(FaIcon)`
+  font-size: 40px;
+`;
+
 type PropsType = {
   onCloseModal: Function,
   onUploadFile: Function,
@@ -71,7 +75,7 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
           {this.props.success && (
             <Success>
               <p>
-                <FaIcon icon="check-circle" className="fa-5x" />
+                <StyledFaIcon icon="check-circle" />
               </p>
               <p>
                 {T.translate("uploadQueryResultsModal.previousQueryCreated")}
