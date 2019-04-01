@@ -2,6 +2,7 @@
 
 import React from "react";
 import styled from "@emotion/styled";
+
 import { Startup } from "../startup";
 import { Header } from "../header";
 import Content from "./Content";

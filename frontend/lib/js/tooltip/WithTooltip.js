@@ -1,32 +1,28 @@
 // @flow
 
 import * as React from "react";
-import ReactTooltip from "react-tooltip";
 import styled from "@emotion/styled";
+import { Tooltip } from "react-tippy";
+import "react-tippy/dist/tippy.css";
 
 type PropsType = {
   className?: string,
   children: React.Node,
-  place?: string
+  place?: string,
+  text?: string
 };
 
-const Root = styled("div")`
-  div[data-id="tooltip"] {
-    text-transform: initial;
-  }
-`;
-
-const WithTooltip = ({ className, children, place }: PropsType) => {
+const WithTooltip = ({ className, children, place, text }: PropsType) => {
   return (
-    <Root className={className}>
+    <Tooltip
+      position={place || "top"}
+      arrow={true}
+      duration={0}
+      delay={[0, 0]}
+      title={text}
+    >
       {children}
-      <ReactTooltip
-        place={place || "top"}
-        type="info"
-        effect="solid"
-        multiline={true}
-      />
-    </Root>
+    </Tooltip>
   );
 };
 

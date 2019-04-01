@@ -53,7 +53,7 @@
     "react-router-redux": "^5.0.0-alpha.8",
     "react-select": "^2.0.0",
     "react-split-pane": "^0.1.77",
-    "react-tooltip": "^3.10.0",
+    "react-tippy": "^1.2.3",
     "redux": "^3.6.0",
     "redux-form": "^7.2.3",
     "redux-multi": "^0.1.12",

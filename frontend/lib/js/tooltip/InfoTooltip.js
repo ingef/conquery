@@ -21,8 +21,8 @@ const Root = styled(WithTooltip)`
 
 const InfoTooltip = ({ className, text, noIcon, place }: PropsType) => {
   return (
-    <Root className={className} place={place || "right"}>
-      {!noIcon && <FaIcon data-tip={text} icon="question-circle-o" />}
+    <Root className={className} text={text}>
+      {!noIcon && <FaIcon icon="question-circle-o" />}
     </Root>
   );
 };

@@ -37,20 +37,17 @@ const StyledIconButton = styled(IconButton)`
 const QueryNodeActions = (props: PropsType) => {
   return (
     <Actions>
-      <WithTooltip>
-        <StyledIconButton
-          icon="close"
-          onClick={e => {
-            e.stopPropagation();
-            props.onDeleteNode();
-          }}
-        />
-      </WithTooltip>
+      <StyledIconButton
+        icon="close"
+        onClick={e => {
+          e.stopPropagation();
+          props.onDeleteNode();
+        }}
+      />
       {props.excludeTimestamps && (
-        <WithTooltip>
+        <WithTooltip text={T.translate("queryNodeEditor.excludingTimestamps")}>
           <StyledIconButton
             red
-            data-tip={T.translate("queryNodeEditor.excludingTimestamps")}
             icon="calendar-o"
             onClick={e => {
               e.stopPropagation();
@@ -60,18 +57,13 @@ const QueryNodeActions = (props: PropsType) => {
         </WithTooltip>
       )}
       {!props.error && !!props.previousQueryLoading && (
-        <WithTooltip>
-          <StyledFaIcon
-            noFrame
-            icon="spinner"
-            data-tip={T.translate("queryEditor.loadingPreviousQuery")}
-          />
+        <WithTooltip text={T.translate("queryEditor.loadingPreviousQuery")}>
+          <StyledFaIcon noFrame icon="spinner" />
         </WithTooltip>
       )}
       {!props.error && props.isExpandable && !props.previousQueryLoading && (
-        <WithTooltip>
+        <WithTooltip text={T.translate("queryEditor.expand")}>
           <StyledIconButton
-            data-tip={T.translate("queryEditor.expand")}
             noFrame
             icon="expand"
             onClick={e => {
