@@ -181,8 +181,4 @@ const collect = (connect, monitor) => ({
   isDragging: monitor.isDragging()
 });
 
-const DraggableQueryNode = DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(
-  QueryNode
-);
-
-export default DraggableQueryNode;
+export default DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(QueryNode);
