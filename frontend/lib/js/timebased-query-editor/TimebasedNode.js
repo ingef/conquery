@@ -116,21 +116,23 @@ class TimebasedNode extends React.Component {
               </p>
             </div>
           </div>
-          <button
-            className={classnames("timebased-node__index-result-btn", {
-              "timebased-node__index-result-btn--active": isIndexResult,
-              "timebased-node__index-result-btn--disabled": isIndexResultDisabled
-            })}
-            disabled={isIndexResultDisabled}
-            onClick={onSetTimebasedIndexResult}
-          >
-            {T.translate("timebasedQueryEditor.timestampResultsFrom")}
-          </button>
         </div>
       </Root>
     );
   }
 }
+
+// Button indexResult (to re-enable this soon)
+// <button
+//   className={classnames("timebased-node__index-result-btn", {
+//     "timebased-node__index-result-btn--active": isIndexResult,
+//     "timebased-node__index-result-btn--disabled": isIndexResultDisabled
+//   })}
+//   disabled={isIndexResultDisabled}
+//   onClick={onSetTimebasedIndexResult}
+// >
+//   {T.translate("timebasedQueryEditor.timestampResultsFrom")}
+// </button>
 
 /**
  * Implements the drag source contract.
