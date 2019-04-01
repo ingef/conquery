@@ -245,4 +245,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} Sekunden)"
+  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} s)"

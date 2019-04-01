@@ -12,7 +12,7 @@ import { getConceptById } from "./globalTreeStoreHelper";
 import { type TreesType, type SearchType } from "./reducer";
 import CategoryTree from "./CategoryTree";
 import CategoryTreeFolder from "./CategoryTreeFolder";
-import { isInSearchResult } from "./selectors";
+import { isNodeInSearchResult } from "./selectors";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -72,9 +72,11 @@ class CategoryTreeList extends React.Component<PropsType> {
                 const tree = this.props.trees[treeId];
                 const rootConcept = getConceptById(treeId);
 
-                const render = search.searching
-                  ? isInSearchResult(treeId, tree.children, search)
-                  : true;
+                const render = isNodeInSearchResult(
+                  treeId,
+                  tree.children,
+                  search
+                );
 
                 if (!render) return null;
 

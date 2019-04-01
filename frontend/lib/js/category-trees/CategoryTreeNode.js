@@ -76,6 +76,8 @@ class CategoryTreeNode extends React.Component<PropsType> {
 
     if (!shouldRender) return null;
 
+    const isOpen = open || search.allOpen;
+
     return (
       <Root>
         <StyledCategoryTreeNodeTextContainer
@@ -86,7 +88,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
             matchingEntries: data.matchingEntries,
             dateRange: data.dateRange,
             additionalInfos: data.additionalInfos,
-            hasChildren: !!data.children && data.children.length > 0
+            children: data.children
           }}
           createQueryElement={(): DraggedNodeType => {
             const { tables, selects } = getConceptById(data.tree);
@@ -99,13 +101,13 @@ class CategoryTreeNode extends React.Component<PropsType> {
               tree: data.tree
             };
           }}
-          open={open}
+          open={isOpen}
           depth={depth}
           active={data.active}
           onTextClick={this._onToggleOpen.bind(this)}
           search={search}
         />
-        {!!data.children && (open || search.allOpen) && (
+        {!!data.children && isOpen && (
           <div>
             {data.children.map((childId, i) => {
               const child = getConceptById(childId);

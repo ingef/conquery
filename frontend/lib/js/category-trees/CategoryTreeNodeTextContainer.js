@@ -45,10 +45,22 @@ const StyledFaIcon = styled(FaIcon)`
   width: 20px;
 `;
 
+const ResultsNumber = styled("span")`
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 2px 4px;
+  margin-left: 5px;
+  font-size: ${({ theme }) => theme.font.xs};
+  border-radius: 3px;
+  background-color: ${({ theme }) => theme.col.blueGrayDark};
+  color: white;
+`;
+
 type PropsType = {
   node: AdditionalInfoHoverableNodeType & {
     label: string,
-    hasChildren: boolean,
     description?: string,
     matchingEntries?: number
   },
@@ -60,6 +72,14 @@ type PropsType = {
   connectDragSource: Function,
   search?: SearchType
 };
+
+function shouldShowNumber(search, node) {
+  return (
+    search.result &&
+    search.result[node.id] > 0 &&
+    (node.children && node.children.some(child => search.result[child] > 0))
+  );
+}
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
 class CategoryTreeNodeTextContainer extends React.Component {
@@ -77,6 +97,8 @@ class CategoryTreeNodeTextContainer extends React.Component {
     const zeroEntries =
       !isEmpty(node.matchingEntries) && node.matchingEntries === 0;
     const description = ` - ${node.description}`;
+    const showNumber = shouldShowNumber(search, node);
+    const hasChildren = !!node.children && node.children.length > 0;
 
     return (
       <Root
@@ -90,7 +112,7 @@ class CategoryTreeNodeTextContainer extends React.Component {
         depth={depth}
       >
         <Text open={open} zero={zeroEntries}>
-          {node.hasChildren && (
+          {hasChildren && (
             <StyledFaIcon active icon={!!open ? "folder-open" : "folder"} />
           )}
           <span>
@@ -112,6 +134,9 @@ class CategoryTreeNodeTextContainer extends React.Component {
             />
           ) : (
             node.description && description
+          )}
+          {showNumber && (
+            <ResultsNumber>{search.result[node.id]}</ResultsNumber>
           )}
         </Text>
       </Root>

@@ -1,16 +1,10 @@
 // @flow
 
-import { includes } from "../common/helpers/commonHelper";
-
 import { type TreeNodeIdType } from "../common/types/backend";
 import { type SearchType } from "./reducer";
 
 const isChildWithinResults = (children: [], search: SearchType) => {
-  for (let child of children) {
-    if (includes(search.result, child)) return true;
-  }
-
-  return false;
+  return children.some(child => search.result.hasOwnProperty(child));
 };
 
 export const isNodeInSearchResult = (
@@ -20,7 +14,7 @@ export const isNodeInSearchResult = (
 ) => {
   if (!search.result) return true;
 
-  if (search.result.includes(id)) return true;
+  if (search.result.hasOwnProperty(id)) return true;
 
   if (!!children && children.length > 0)
     return isChildWithinResults(children, search);

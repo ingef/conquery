@@ -16,7 +16,7 @@ import {
 import TransparentButton from "../button/TransparentButton";
 
 const StyledButton = styled(TransparentButton)`
-  margin: 5px;
+  margin: 3px 0 3px 5px;
 `;
 
 const CategoryTreeSearchBox = ({ allOpen, onToggleAllOpen, ...props }) => (

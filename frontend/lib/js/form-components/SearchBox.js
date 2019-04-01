@@ -125,7 +125,7 @@ const SearchBox = (props: PropsType) => {
               <Row>
                 <TinyText>
                   {T.translate("search.resultLabel", {
-                    numResults: searchResult.result.length,
+                    numResults: Object.keys(searchResult.result).length,
                     totalResults: searchResult.totalResults,
                     duration: (searchResult.duration / 1000.0).toFixed(2)
                   })}
