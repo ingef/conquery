@@ -32,7 +32,7 @@ const Text = styled("p")`
   color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.black)};
 
   background-color: ${({ theme, open }) =>
-    open ? theme.col.blueGrayVeryLight : "transparent"};
+    open ? theme.col.grayVeryLight : "transparent"};
 
   &:hover {
     background-color: ${({ theme }) => theme.col.blueGrayVeryLight};
@@ -54,8 +54,8 @@ const ResultsNumber = styled("span")`
   margin-left: 5px;
   font-size: ${({ theme }) => theme.font.xs};
   border-radius: 3px;
-  background-color: ${({ theme }) => theme.col.blueGrayDark};
-  color: white;
+  color: ${({ theme }) => theme.col.blueGrayDark};
+  font-weight: 700;
 `;
 
 type PropsType = {
