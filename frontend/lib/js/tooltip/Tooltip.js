@@ -45,13 +45,15 @@ const Tooltip = (props: PropsType) => {
     dateRange
   } = additionalInfos;
 
-  const searchHighlight = text => (
-    <Highlighter
-      searchWords={props.search.words || []}
-      autoEscape={true}
-      textToHighlight={text || ""}
-    />
-  );
+  const searchHighlight = text => {
+    return (
+      <Highlighter
+        searchWords={props.search.words || []}
+        autoEscape={true}
+        textToHighlight={text || ""}
+      />
+    );
+  };
 
   return (
     <div className="tooltip">

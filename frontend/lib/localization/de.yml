@@ -14,6 +14,8 @@ categoryTreeList:
   loading: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
   noTrees: "Konnte Konzeptbäume nicht laden."
+  openAll: "Alle aufklappen"
+  closeAll: "Einzeln aufklappen"
 
 queryRunner:
   start: "Anfrage starten"
@@ -58,6 +60,7 @@ queryNodeEditor:
   properties: "Eigenschaften"
   resetAll: "Alle zurücksetzen"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
+  excludingTimestamps: "Von Zeitberechnung ausgeschlossen"
   description: "Beschreibung"
   noDescriptionProvided: "Keine Beschreibung verfügbar."
   selectAFilter: "Kein Filter ausgewählt."
@@ -159,7 +162,7 @@ timebasedQueryEditor:
   opBeforeOrSame: "VOR ODER GLEICH"
   opDays: "TAGE VOR"
   opSame: "GLEICH"
-  opDaysOrNoEventBefore: "TAGE ODER KEIN EREIGNIS DAVOR"
+  opDaysOrNoEventBefore: "KEIN EREIGNIS IN TAGE VOR"
   timestampFirst: "ERSTER"
   timestampLast: "LETZTER"
   timestampRandom: "ZUFÄLLIG"
@@ -167,8 +170,8 @@ timebasedQueryEditor:
   condition: "Bedingung"
   timestampResultsFrom: "Nutze als Ergebnis-Zeitstempel"
   addCondition: "Bedingung hinzufügen"
-  minDaysLabel: "Min. Tage"
-  maxDaysLabel: "Max. Tage"
+  minDaysLabel: "Beginn Tage"
+  maxDaysLabel: "Ende Tage"
 
 externalForms:
   forms: "Formulare"
@@ -243,4 +246,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} Sekunden)"
+  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} s)"

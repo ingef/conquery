@@ -31,7 +31,7 @@ export async function getFileRows(file: File) {
   const rows = cleanFileContent(text);
 
   if (rows.length === 0) {
-    new Error("An empty file was dropped");
+    throw new Error("An empty file was dropped");
   }
 
   return rows;

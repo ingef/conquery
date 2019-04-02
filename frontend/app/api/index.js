@@ -360,32 +360,39 @@ module.exports = function(app, port) {
 
 const findConcepts = (concepts, query) => {
   const matches = Object.keys(concepts)
-    .map(key => ({ id: key, label: concepts[key].label }))
-    .filter(res => res.label.toLowerCase().includes(query.toLowerCase()));
+    .map(key => ({
+      id: key,
+      label: concepts[key].label,
+      description: concepts[key].description
+    }))
+    .filter(co => {
+      // The actual backend search also uses the additional infos
+      return (
+        co.label.toLowerCase().includes(query.toLowerCase()) ||
+        (co.description &&
+          co.description.toLowerCase().includes(query.toLowerCase()))
+      );
+    })
+    .map(({ id }) => id);
 
-  return fetchParents(concepts, matches);
+  return [...new Set(fetchParents(concepts, matches))];
 };
 
 const fetchParents = (concepts, matches) => {
-  for (var ma in matches) visit(matches[ma].id, concepts, matches);
+  for (var ma in matches) {
+    // Updates matches as a side-effect
+    visitParentOf(matches[ma], concepts, matches);
+  }
 
-  return matches.map(r => r.id);
+  return matches;
 };
 
-const visit = (id, concepts, matches) => {
-  for (let co in concepts) {
-    const children = concepts[co].children;
-    const parent = concepts[co].parent;
+const visitParentOf = (id, concepts, matches) => {
+  const concept = concepts[id];
 
-    if (children !== undefined) {
-      const idx = children.indexOf(id);
+  if (concept) {
+    matches.push(concept.parent);
 
-      if (idx >= 0) {
-        matches.push({ id: parent });
-        children.slice(idx); // remove element for next iterate
-
-        return visit(parent, concepts, matches);
-      }
-    }
+    return visitParentOf(concept.parent, concepts, matches);
   }
 };

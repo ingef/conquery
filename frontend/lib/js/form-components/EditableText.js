@@ -18,11 +18,15 @@ type PropsType = {
 };
 
 const StyledIconButton = styled(IconButton)`
-  margin-right: 5px;
+  margin-right: ${({ large }) => (large ? "10px" : "5px")};
+  padding: 2px 0;
 `;
 
 const Text = styled("p")`
   margin: 0;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
 `;
 
 class EditableText extends React.Component<PropsType> {
@@ -39,7 +43,7 @@ class EditableText extends React.Component<PropsType> {
     ) : (
       <Text className={this.props.className}>
         <StyledIconButton
-          large
+          large={this.props.large}
           bare
           icon="edit"
           onClick={this.props.onToggleEdit}

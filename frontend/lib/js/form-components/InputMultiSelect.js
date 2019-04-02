@@ -7,11 +7,11 @@ import { type FieldPropsType } from "redux-form";
 import Dropzone from "react-dropzone";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
-import ReactTooltip from "react-tooltip";
 
 import { type SelectOptionsType } from "../common/types/backend";
 import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import TooManyValues from "./TooManyValues";
 import ReactSelect from "./ReactSelect";
@@ -41,8 +41,9 @@ const InputMultiSelect = (props: PropsType) => {
 
     return (
       <components.MultiValueLabel {...params}>
-        <span data-tip={valueLabel}>{valueLabel}</span>
-        <ReactTooltip type="info" place="top" effect="solid" />
+        <WithTooltip text={valueLabel}>
+          <span>{valueLabel}</span>
+        </WithTooltip>
       </components.MultiValueLabel>
     );
   };

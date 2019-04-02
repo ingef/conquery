@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 
 import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 
@@ -10,6 +11,15 @@ import CategoryTree from "./CategoryTree";
 import CategoryTreeNodeTextContainer from "./CategoryTreeNodeTextContainer";
 import { type SearchType } from "./reducer";
 
+const Root = styled("div")`
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+const StyledCategoryTreeNodeTextContainer = styled(
+  CategoryTreeNodeTextContainer
+)`
+  display: inline-block;
+`;
+
 type PropsType = {
   depth: number,
   trees: Object,
@@ -18,7 +28,7 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
-  search?: SearchType
+  search: SearchType
 };
 
 const sumMatchingEntries = (children, initSum) => {
@@ -38,8 +48,8 @@ const CategoryTreeFolder = (props: PropsType) => {
       : sumMatchingEntries(tree.children, tree.matchingEntries);
 
   return (
-    <div className="category-tree-folder category-tree-node">
-      <CategoryTreeNodeTextContainer
+    <Root>
+      <StyledCategoryTreeNodeTextContainer
         node={{
           id: props.treeId,
           label: props.tree.label,
@@ -57,6 +67,7 @@ const CategoryTreeFolder = (props: PropsType) => {
         depth={props.depth}
         active={props.active}
         onTextClick={props.onToggleOpen}
+        search={search}
       />
       {props.open &&
         props.tree.children &&
@@ -91,6 +102,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 openInitially={false}
                 depth={props.depth + 1}
                 active={tree.active}
+                search={search}
               />
             ) : (
               <CategoryTreeFolder
@@ -101,11 +113,12 @@ const CategoryTreeFolder = (props: PropsType) => {
                 openInitially={false}
                 depth={props.depth + 1}
                 active={tree.active}
+                search={search}
               />
             );
           }
         })}
-    </div>
+    </Root>
   );
 };
 

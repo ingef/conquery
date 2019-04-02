@@ -17,13 +17,14 @@ const StyledContentCell = styled(ContentCell)`
 const DescriptionColumn = (props: PropsType) => {
   const { node, editorState } = props;
 
-  const selectedTable = node.tables[editorState.selectedInputTableIdx];
+  const selectedTable =
+    node.tables && node.tables[editorState.selectedInputTableIdx];
 
   return (
     <StyledContentCell headline={T.translate("queryNodeEditor.description")}>
       <div className="query-node-editor__description">
-        {selectedTable != null &&
-          editorState.selectedInput != null &&
+        {selectedTable &&
+          editorState.selectedInput &&
           !isEmpty(
             selectedTable.filters[editorState.selectedInput].description
           ) && (
@@ -31,14 +32,14 @@ const DescriptionColumn = (props: PropsType) => {
               {selectedTable.filters[editorState.selectedInput].description}
             </span>
           )}
-        {selectedTable != null &&
-          editorState.selectedInput != null &&
+        {selectedTable &&
+          editorState.selectedInput &&
           isEmpty(
             selectedTable.filters[editorState.selectedInput].description
           ) && (
             <span>{T.translate("queryNodeEditor.noDescriptionProvided")}</span>
           )}
-        {editorState.selectedInput == null && (
+        {editorState.selectedInput === null && (
           <span>{T.translate("queryNodeEditor.selectAFilter")}</span>
         )}
       </div>

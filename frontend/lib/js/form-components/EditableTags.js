@@ -23,7 +23,7 @@ const EditableTagsDisplay = styled("div")`
   flex-direction: row;
 `;
 const StyledIconButton = styled(IconButton)`
-  margin-right: 3px;
+  margin-right: 5px;
 `;
 
 const StyledTags = styled(Tags)`
@@ -43,7 +43,7 @@ const EditableTags = (props: PropsType) => {
   ) : (
     !!props.tags && props.tags.length > 0 && (
       <EditableTagsDisplay className={props.className}>
-        <StyledIconButton large bare icon="edit" onClick={props.onToggleEdit} />
+        <StyledIconButton bare icon="edit" onClick={props.onToggleEdit} />
         {props.tagComponent || <StyledTags tags={props.tags} />}
       </EditableTagsDisplay>
     )
