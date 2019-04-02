@@ -49,18 +49,18 @@ class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
-    const { search } = this.props;
+    const { activeTab, search, trees } = this.props;
 
     return (
       !search.loading && (
-        <Root show={this.props.activeTab === "categoryTrees"}>
+        <Root show={activeTab === "categoryTrees"}>
           {this.props.trees ? (
             Object.keys(this.props.trees)
               // Only take those that don't have a parent, they must be root
-              .filter(treeId => !this.props.trees[treeId].parent)
+              .filter(treeId => !trees[treeId].parent)
               .sort((a, b) => {
-                const aTree = this.props.trees[a];
-                const bTree = this.props.trees[b];
+                const aTree = trees[a];
+                const bTree = trees[b];
 
                 if (!!aTree.children === !!bTree.children) {
                   return aTree.label.localeCompare(bTree.label);
@@ -69,7 +69,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                 return !!aTree.children ? -1 : 1;
               })
               .map((treeId, i) => {
-                const tree = this.props.trees[treeId];
+                const tree = trees[treeId];
                 const rootConcept = getConceptById(treeId);
 
                 const render = isNodeInSearchResult(
@@ -90,18 +90,18 @@ class CategoryTreeList extends React.Component<PropsType> {
                     loading={!!tree.loading}
                     error={tree.error}
                     depth={0}
-                    search={this.props.search}
+                    search={search}
                   />
                 ) : (
                   <CategoryTreeFolder
                     key={i}
-                    trees={this.props.trees}
+                    trees={trees}
                     tree={tree}
                     treeId={treeId}
                     depth={0}
                     active={tree.active}
                     openInitially
-                    search={this.props.search}
+                    search={search}
                   />
                 );
               })

@@ -28,7 +28,7 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
-  search?: SearchType
+  search: SearchType
 };
 
 const sumMatchingEntries = (children, initSum) => {
@@ -67,6 +67,7 @@ const CategoryTreeFolder = (props: PropsType) => {
         depth={props.depth}
         active={props.active}
         onTextClick={props.onToggleOpen}
+        search={search}
       />
       {props.open &&
         props.tree.children &&
