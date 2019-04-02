@@ -142,9 +142,8 @@ public class Block_${suffix} extends Block {
 		switch(column.getPosition()) {
 	<#list types as type>
 	<#list imp.columns as col>
-		<#if col.type.lines == col.type.nullLines>
 		<#-- there are no getters for null only columns-->
-		<#elseif col.type.typeId == type>
+		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
 			case ${col.position}:
 				return events[event].get${safeName(col.name)?cap_first}AsMajor();
 		</#if>
@@ -162,13 +161,15 @@ public class Block_${suffix} extends Block {
 		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
-			<#if col.type.typeId == "DATE">
-			case ${col.position}:
-				return dateRange.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			<#elseif col.type.typeId == "DATE_RANGE">
-			case ${col.position}:
-				return dateRange.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			</#if>
+		    <#if col.type.lines != col.type.nullLines>
+                <#if col.type.typeId == "DATE">
+                case ${col.position}:
+                    return dateRange.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                <#elseif col.type.typeId == "DATE_RANGE">
+                case ${col.position}:
+                    return dateRange.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                </#if>
+            </#if>
 		</#list>
 			default:
 				throw new IllegalArgumentException("Column "+column+" is not a date type");
@@ -182,13 +183,15 @@ public class Block_${suffix} extends Block {
 		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
-			<#if col.type.typeId == "DATE">
-				case ${col.position}:
-				return dateRanges.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			<#elseif col.type.typeId == "DATE_RANGE">
-				case ${col.position}:
-				return dateRanges.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			</#if>
+            <#if col.type.lines != col.type.nullLines>
+                <#if col.type.typeId == "DATE">
+                    case ${col.position}:
+                    return dateRanges.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                <#elseif col.type.typeId == "DATE_RANGE">
+                    case ${col.position}:
+                    return dateRanges.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                </#if>
+            </#if>
 		</#list>
 		default:
 		throw new IllegalArgumentException("Column "+column+" is not a date type");
@@ -202,13 +205,15 @@ public class Block_${suffix} extends Block {
 		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
-			<#if col.type.typeId == "DATE">
-			case ${col.position}:
-				return new CDateRange(events[event].get${safeName(col.name)?cap_first}(), events[event].get${safeName(col.name)?cap_first}());
-			<#elseif col.type.typeId == "DATE_RANGE">
-			case ${col.position}:
-				return events[event].get${safeName(col.name)?cap_first}();
-			</#if>
+            <#if col.type.lines != col.type.nullLines>
+                <#if col.type.typeId == "DATE">
+                case ${col.position}:
+                    return new CDateRange(events[event].get${safeName(col.name)?cap_first}(), events[event].get${safeName(col.name)?cap_first}());
+                <#elseif col.type.typeId == "DATE_RANGE">
+                case ${col.position}:
+                    return events[event].get${safeName(col.name)?cap_first}();
+                </#if>
+            </#if>
 		</#list>
 			default:
 				throw new IllegalArgumentException("Column "+column+" is not a date type");
