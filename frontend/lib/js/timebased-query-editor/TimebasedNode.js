@@ -24,13 +24,10 @@ const StyledIconButton = styled(IconButton)`
   top: 0;
   right: 0;
   z-index: 1;
-  display: none;
 `;
 
 const Root = styled("div")`
-  display: table-cell;
-  vertical-align: middle;
-  margin: 0 auto;
+  margin: 0 5px;
   width: 200px;
   font-size: ${({ theme }) => theme.font.sm};
 `;

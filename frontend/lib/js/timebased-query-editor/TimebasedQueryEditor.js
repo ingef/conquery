@@ -24,7 +24,6 @@ import TimebasedCondition from "./TimebasedCondition";
 
 const Root = styled("div")`
   flex-grow: 1;
-  flex-shrink: 0;
   overflow-y: auto;
   padding: 0 20px 0 10px;
 `;

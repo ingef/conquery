@@ -191,7 +191,7 @@ class PreviousQuery extends React.Component {
         <TopInfos>
           <div>
             {query.resultUrl ? (
-              <DownloadButton bare large url={query.resultUrl}>
+              <DownloadButton bare url={query.resultUrl}>
                 {peopleFound}
               </DownloadButton>
             ) : (
@@ -207,6 +207,7 @@ class PreviousQuery extends React.Component {
               ) : (
                 <StyledIconButton
                   icon="upload"
+                  bare
                   onClick={() => onToggleSharePreviousQuery(!query.shared)}
                 >
                   {T.translate("previousQuery.share")}
@@ -217,7 +218,6 @@ class PreviousQuery extends React.Component {
               (!query.tags || query.tags.length === 0) && (
                 <HoverButton
                   icon="plus"
-                  large
                   bare
                   onClick={onToggleEditPreviousQueryTags}
                 >
@@ -227,7 +227,7 @@ class PreviousQuery extends React.Component {
             <TopRight>
               {executedAt}
               {query.loading ? (
-                <IconButton large bare icon="spinner" />
+                <IconButton bare icon="spinner" />
               ) : (
                 query.own && (
                   <IconButton
