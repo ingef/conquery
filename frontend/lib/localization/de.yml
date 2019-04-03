@@ -99,8 +99,6 @@ tooltip:
     _: "gefundene Einträge"
 
   placeholder: "Weitere Informationen über einen Konzeptknoten ..."
-  hide: "Verstecken"
-  show: "Weitere Informationen anzeigen"
   date:
     daterange: "Zeitraum"
     from: "Von"

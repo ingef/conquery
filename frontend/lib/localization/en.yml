@@ -97,8 +97,6 @@ tooltip:
     _: "entries found"
 
   placeholder: "More information about a concept ..."
-  hide: "Hide"
-  show: "Show more details"
   date:
     daterange: "Date range"
     from: "From"
