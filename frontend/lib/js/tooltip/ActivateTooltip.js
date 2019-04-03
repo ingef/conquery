@@ -24,12 +24,11 @@ const ActivateTooltip = (props: PropsType) => {
   return (
     <div className="tooltip tooltip--activate">
       <StyledIconButton
+        small
         frame
         icon="angle-up"
         onClick={props.toggleDisplayTooltip}
-      >
-        {T.translate("tooltip.show")}
-      </StyledIconButton>
+      />
     </div>
   );
 };

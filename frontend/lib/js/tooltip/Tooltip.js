@@ -91,13 +91,11 @@ const Tooltip = (props: PropsType) => {
         dateRange={dateRange}
       />
       <StyledIconButton
-        light
+        small
         frame
         onClick={toggleDisplayTooltip}
         icon="angle-down"
-      >
-        {T.translate("tooltip.hide")}
-      </StyledIconButton>
+      />
     </div>
   );
 };
