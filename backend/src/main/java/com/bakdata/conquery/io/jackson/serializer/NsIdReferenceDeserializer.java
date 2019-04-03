@@ -1,7 +1,6 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
-import java.io.InvalidClassException;
 import java.util.InputMismatchException;
 import java.util.Optional;
 
@@ -71,7 +70,8 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 				}
 
 				return result.get();
-			} catch(Exception e) {
+			}
+			catch(Exception e) {
 				log.error("Error while resolving entry "+text+" of type "+type, e);
 				throw e;
 			}
