@@ -23,17 +23,15 @@ type PropsType = {
   search?: SearchType
 };
 
-const otherTextStyles = css`
+const LoadingTree = styled("p")`
   padding-left: 20px;
-  font-size: $font-sm;
+  font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
 `;
-
-const LoadingTree = styled("p")`
-  ${otherTextStyles};
-`;
 const StyledErrorMessage = styled(ErrorMessage)`
-  ${otherTextStyles};
+  padding-left: 20px;
+  font-size: ${({ theme }) => theme.font.sm};
+  margin: 2px 0;
 `;
 
 const Spinner = styled("span")`
