@@ -90,6 +90,7 @@ const InputMultiSelect = (props: PropsType) => {
         >
           <ReactSelect
             creatable
+            createOptionPosition="first"
             name="form-field"
             options={options}
             components={{ MultiValueLabel }}
