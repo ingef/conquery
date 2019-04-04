@@ -20,13 +20,15 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
-@CPSType(id="CONCEPT_QUERY", base=IQuery.class)
+@Getter
+@Setter
+@CPSType(id = "CONCEPT_QUERY", base = IQuery.class)
 public class ConceptQuery implements IQuery {
-	
-	@Valid @NotNull
+
+	@Valid
+	@NotNull
 	protected CQElement root;
-	
+
 	@Override
 	public QueryPlan createQueryPlan(QueryPlanContext context) {
 		ConceptQueryPlan qp = ConceptQueryPlan.create();
@@ -44,26 +46,31 @@ public class ConceptQuery implements IQuery {
 		this.root = root.resolve(context);
 		return this;
 	}
-	
+
 	public List<SelectDescriptor> collectSelects() {
 		return root.collectSelects();
 	}
-	
+
 	@Override
 	public List<ResultInfo> collectResultInfos() {
 
 		List<SelectDescriptor> selects = this.collectSelects();
 		List<ResultInfo> header = new ArrayList<>(selects.size() + 1);
-		
+
 		header.add(ConqueryConstants.DATES_INFO);
 		/*
-		 * Column name is constructed from the most specific concept id the CQConcept has and the selector.
+		 * Column name is constructed from the most specific concept id the CQConcept
+		 * has and the selector.
 		 */
-		for(SelectDescriptor selectDescriptor : selects) {
+		for (SelectDescriptor selectDescriptor : selects) {
 			Select select = selectDescriptor.getSelect();
-			header.add(new ResultInfo(
-				selectDescriptor.getCqConcept().getIds().get(0) + "_" + select.getId().toStringWithoutDataset(),
-				select.getResultType()));
+			header
+				.add(
+					new ResultInfo(
+						selectDescriptor.getCqConcept().getIds().get(0).toStringWithoutDataset()
+							+ "_"
+							+ select.getId().toStringWithoutDataset(),
+						select.getResultType()));
 		}
 		return header;
 	}

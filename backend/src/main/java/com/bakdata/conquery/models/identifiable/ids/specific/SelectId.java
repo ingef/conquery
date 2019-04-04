@@ -40,8 +40,4 @@ public abstract class SelectId extends AId<Select> implements NamespacedId {
 			}
 		}
 	}
-
-	public String toStringWithoutDataset() {
-		return StringUtils.removeStart(toString(), getDataset().toString() + IId.JOIN_CHAR);
-	}
 }
