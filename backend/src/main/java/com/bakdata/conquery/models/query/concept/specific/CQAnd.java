@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
@@ -50,7 +51,7 @@ public class CQAnd implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<Select> select) {
+	public void collectSelects(Deque<SelectDescriptor> select) {
 		for(CQElement c:children) {
 			c.collectSelects(select);
 		}
