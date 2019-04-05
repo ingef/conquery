@@ -70,7 +70,7 @@ const InputDateRange = (props: PropsType) => {
       return onSetWhatDate(what, parseDateToState(potentialDate));
     }
 
-    let { min, max } = getDateStringFromShortcut(what, val, dateFormat);
+    const { min, max } = getDateStringFromShortcut(what, val, dateFormat);
 
     if (min && max) {
       onSetDate({ min, max });
