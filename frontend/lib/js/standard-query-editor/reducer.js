@@ -455,9 +455,20 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
           : { mode: "range", value: matchingFilter.value }
         : matchingFilter;
 
+    // If value is an array, there must be (multi-select) options to get other attributes from
+    const filterModeWithMappedValue =
+      filterModeWithValue.value && filterModeWithValue.value instanceof Array
+        ? {
+            ...filterModeWithValue,
+            value: filterModeWithValue.value.map(val =>
+              filter.options.find(op => op.value === val)
+            )
+          }
+        : filterModeWithValue;
+
     return {
       ...filter,
-      ...filterModeWithValue // => this one may contain a "value" property
+      ...filterModeWithMappedValue // => this one may contain a "value" property
     };
   });
 };
