@@ -6,69 +6,134 @@ import {
   addQuarters,
   lastDayOfQuarter,
   addMonths,
-  endOfMonth
+  endOfMonth,
+  isValid
 } from "date-fns";
 
-export const formatDate = (date, dateFormat) =>
-  date && isValidDate(date) ? format(date, dateFormat) : null;
+// To save the date in this format in the state
+const DATE_FORMAT = "yyyy-MM-dd";
 
-export const parseDate = (date, dateFormat) =>
-  date ? parse(date, dateFormat, new Date()) : null;
+export const formatDate = (date: Date, dateFormat: string) => {
+  return date ? format(date, dateFormat) : "";
+};
 
-export const parseRawDate = value => parseDate(value, "ddMMyyyy");
+export const formatDateFromState = (
+  dateString: string,
+  dateFormat: string
+): string => {
+  const date = parseDate(dateString, DATE_FORMAT);
 
-export const isValidDate = date => {
-  // https://stackoverflow.com/questions/1353684/detecting-an-invalid-date-date-instance-in-javascript
-  if (Object.prototype.toString.call(date) === "[object Date]") {
-    // it is a date
-    return !isNaN(date.getTime());
-  }
+  return date !== null ? format(date, dateFormat) : dateString;
+};
 
-  return false;
+export const parseDateToState = (date: Date) => {
+  return format(date, DATE_FORMAT);
+};
+
+export const parseDate = (dateString: string, dateFormat: string) => {
+  // Otherwise 15.06.2 parses years as 15.06.0002
+  if (!dateString || dateString.length !== dateFormat.length) return null;
+
+  const date = parse(dateString, dateFormat, new Date());
+
+  return isValid(date) ? date : null;
 };
 
 const DATE_PATTERN = {
+  raw: /(^\d{8})$/,
   year: /^[yj](\d{4})$/,
   quarter_year: /^[q]([1-4]).(\d{4})$/,
   month_year: /^[m](1[0-2]|[1-9]).(\d{4})$/
 };
 
-export const parseDateFromShortcut = value => {
-  let minDate, maxDate, year, match;
+function handleRaw(what, value, displayDateFormat) {
+  const denseFormat = displayDateFormat.replace(/[-\/\.]/g, "");
+  // Assuming the format consists of 2 M, 2 d, and 2 y
 
+  const dIdx = denseFormat.indexOf("d");
+  const d = value.substring(dIdx, dIdx + 2);
+
+  const mIdx = denseFormat.indexOf("M");
+  const m = value.substring(mIdx, mIdx + 2);
+
+  const yIdx = denseFormat.indexOf("y");
+  const y = value.substring(yIdx, yIdx + 4);
+
+  let date = new Date(parseInt(y), parseInt(m) - 1, parseInt(d));
+
+  date = isValid(date) ? date : null;
+
+  if (what === "min") return { min: date, max: null };
+  else return { min: null, max: date };
+}
+
+function handleYear(what, value) {
+  const year = parseInt(DATE_PATTERN.year.exec(value)[1]);
+
+  const min = new Date(year, 0, 1);
+  const max = new Date(year, 11, 31);
+
+  return { min, max };
+}
+
+function handleQuarter(what, value) {
+  const match = DATE_PATTERN.quarter_year.exec(value);
+
+  const quarter = parseInt(match[1]);
+  const year = parseInt(match[2]);
+
+  const min = addQuarters(new Date(year, 0, 1), quarter - 1);
+  const max = lastDayOfQuarter(addQuarters(new Date(year, 0, 1), quarter - 1));
+
+  return { min, max };
+}
+
+function handleMonth(what, value) {
+  const match = DATE_PATTERN.month_year.exec(value);
+
+  const month = parseInt(match[1]);
+  const year = parseInt(match[2]);
+
+  const min = addMonths(new Date(year, 0, 1), month - 1);
+  const max = endOfMonth(addMonths(new Date(year, 0, 1), month - 1));
+
+  return { min, max };
+}
+
+export const getDateStringFromShortcut = (
+  what: "min" | "max",
+  value: string,
+  displayDateFormat: string
+): {
+  min: ?string, // in DATE_FORMAT
+  max: ?string // in DATE_FORMAT
+} => {
+  const date = testRegexes(what, value, displayDateFormat);
+
+  return {
+    min: date.min ? format(date.min, DATE_FORMAT) : null,
+    max: date.max ? format(date.max, DATE_FORMAT) : null
+  };
+};
+
+export const testRegexes = (
+  what: "min" | "max",
+  value: string,
+  displayDateFormat: string
+): {
+  min: ?Date,
+  max: ?Date
+} => {
   switch (true) {
+    case DATE_PATTERN.raw.test(value):
+      return handleRaw(what, value, displayDateFormat);
     case DATE_PATTERN.year.test(value):
-      year = parseInt(DATE_PATTERN.year.exec(value)[1]);
-
-      minDate = new Date(year, 0, 1);
-      maxDate = new Date(year, 11, 31);
-
-      break;
+      return handleYear(what, value);
     case DATE_PATTERN.quarter_year.test(value):
-      match = DATE_PATTERN.quarter_year.exec(value);
-
-      const quarter = parseInt(match[1]);
-      year = parseInt(match[2]);
-
-      minDate = addQuarters(new Date(year, 0, 1), quarter - 1);
-      maxDate = lastDayOfQuarter(
-        addQuarters(new Date(year, 0, 1), quarter - 1)
-      );
-
-      break;
+      return handleQuarter(what, value);
     case DATE_PATTERN.month_year.test(value):
-      match = DATE_PATTERN.month_year.exec(value);
-
-      const month = parseInt(match[1]);
-      year = parseInt(match[2]);
-
-      minDate = addMonths(new Date(year, 0, 1), month - 1);
-      maxDate = endOfMonth(addMonths(new Date(year, 0, 1), month - 1));
-
-      break;
+      return handleMonth(what, value);
     default:
-      break;
+      return { min: null, max: null };
   }
-
-  return { min: minDate, max: maxDate };
 };

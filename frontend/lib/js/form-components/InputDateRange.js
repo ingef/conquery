@@ -4,18 +4,15 @@ import * as React from "react";
 import styled from "@emotion/styled";
 
 import T from "i18n-react";
-import DatePicker, { registerLocale } from "react-datepicker";
 import { type FieldPropsType } from "redux-form";
 
-import { getDateLocale } from "../localization";
 import {
-  formatDate,
+  formatDateFromState,
   parseDate,
-  isValidDate,
-  parseRawDate,
-  parseDateFromShortcut
+  parseDateToState,
+  getDateStringFromShortcut
 } from "../common/helpers/dateHelper";
-import { InfoTooltip } from "../tooltip";
+import InfoTooltip from "../tooltip/InfoTooltip";
 
 import Label from "./Label";
 import Labeled from "./Labeled";
@@ -27,6 +24,11 @@ const Pickers = styled("div")`
   display: flex;
   flex-direction: ${({ inline }) => (inline ? "row" : "column")};
   justify-content: ${({ center }) => (center ? "center" : "flex-start")};
+`;
+
+const StyledLabel = styled(Label)`
+  font-size: ${({ theme }) => theme.font.md};
+  margin-bottom: 10px;
 `;
 
 const StyledLabeled = styled(Labeled)`
@@ -43,54 +45,47 @@ type PropsType = FieldPropsType & {
   center?: boolean
 };
 
+function getDisplayDate(what, value, displayDateFormat) {
+  if (!value || !value[what]) return "";
+
+  return formatDateFromState(value[what], displayDateFormat);
+}
+
 const InputDateRange = (props: PropsType) => {
-  React.useEffect(() => {
-    const locale = getDateLocale();
+  const onSetDate = date => {
+    props.input.onChange(date);
+  };
 
-    registerLocale("locale", locale);
-  });
-
-  const onSetDate = value => props.input.onChange(value);
-
-  const onSetMinDate = date =>
+  const onSetWhatDate = (what, value) => {
     props.input.onChange({
       ...props.input.value,
-      min: date
+      [what]: value
     });
+  };
 
-  const onSetMaxDate = date =>
-    props.input.onChange({
-      ...props.input.value,
-      max: date
-    });
+  const onChangeRaw = (what, val, dateFormat) => {
+    const potentialDate = parseDate(val, dateFormat);
 
-  const onChangeRawMin = (value, dateFormat) => {
-    let { min, max } = parseDateFromShortcut(value);
+    if (potentialDate) {
+      return onSetWhatDate(what, parseDateToState(potentialDate));
+    }
 
-    if (!min) min = parseRawDate(value);
+    let { min, max } = getDateStringFromShortcut(what, val, dateFormat);
 
-    if (max) {
-      onSetDate({
-        min: formatDate(min, dateFormat),
-        max: formatDate(max, dateFormat)
-      });
+    if (min && max) {
+      onSetDate({ min, max });
+    } else if (min) {
+      onSetWhatDate("min", min);
+    } else if (max) {
+      onSetWhatDate("max", max);
     } else {
-      onSetMinDate(formatDate(min, dateFormat));
+      onSetWhatDate(what, val);
     }
   };
 
-  const onChangeRawMax = (value, dateFormat) => {
-    let { min, max } = parseDateFromShortcut(value);
-
-    if (!max) max = parseRawDate(value);
-
-    if (min) {
-      onSetDate({
-        min: formatDate(min, dateFormat),
-        max: formatDate(max, dateFormat)
-      });
-    } else {
-      onSetMaxDate(formatDate(max, dateFormat));
+  const applyDate = (what, val, displayDateFormat) => {
+    if (parseDate(val, displayDateFormat) === null) {
+      onSetWhatDate(what, "");
     }
   };
 
@@ -101,76 +96,43 @@ const InputDateRange = (props: PropsType) => {
     input: { value }
   } = props;
 
-  // To save the date in this format in the state
-  const dateFormat = "yyyy-MM-dd";
-
   // To display the date depending on the locale
   const displayDateFormat = T.translate("inputDateRange.dateFormat");
 
-  const minDate = value ? parseDate(value.min, dateFormat) : null;
-  const maxDate = value ? parseDate(value.max, dateFormat) : null;
+  const min = getDisplayDate("min", value, displayDateFormat);
+  const max = getDisplayDate("max", value, displayDateFormat);
 
   return (
     <Root center={center}>
       {label && (
-        <Label>
+        <StyledLabel>
           {label}
           <InfoTooltip
             text={T.translate("inputDateRange.tooltip.possiblePattern")}
           />
-        </Label>
+        </StyledLabel>
       )}
       <Pickers inline={inline} center={center}>
         <StyledLabeled label={T.translate("inputDateRange.from")}>
-          <DatePicker
-            id="datepicker-min"
-            isClearable
-            showYearDropdown
-            scrollableYearDropdown
+          <input
             tabIndex={1}
-            selectsStart
-            dateFormat={displayDateFormat}
-            locale={"locale"}
-            selected={minDate}
-            startDate={minDate}
-            endDate={maxDate}
-            placeholderText={T.translate("inputDateRange.placeholder")}
-            onChange={date => onSetMinDate(formatDate(date, dateFormat))}
-            onChangeRaw={event =>
-              onChangeRawMin(event.target.value, dateFormat)
+            value={min}
+            placeholder={displayDateFormat.toUpperCase()}
+            onChange={event =>
+              onChangeRaw("min", event.target.value, displayDateFormat)
             }
-            ref={r => {
-              if (r && minDate && isValidDate(minDate)) {
-                r.setOpen(false);
-                r.setSelected(minDate);
-              }
-            }}
+            onBlur={e => applyDate("min", e.target.value, displayDateFormat)}
           />
         </StyledLabeled>
         <StyledLabeled label={T.translate("inputDateRange.to")}>
-          <DatePicker
-            id="datepicker-max"
-            isClearable
-            showYearDropdown
-            scrollableYearDropdown
+          <input
             tabIndex={2}
-            selectsEnd
-            dateFormat={displayDateFormat}
-            locale={"locale"}
-            selected={maxDate}
-            startDate={minDate}
-            endDate={maxDate}
-            placeholderText={T.translate("inputDateRange.placeholder")}
-            onChange={date => onSetMaxDate(formatDate(date, dateFormat))}
-            onChangeRaw={event =>
-              onChangeRawMax(event.target.value, dateFormat)
+            value={max}
+            placeholder={displayDateFormat.toUpperCase()}
+            onChange={event =>
+              onChangeRaw("max", event.target.value, displayDateFormat)
             }
-            ref={r => {
-              if (r && maxDate && isValidDate(maxDate)) {
-                r.setOpen(false);
-                r.setSelected(maxDate);
-              }
-            }}
+            onBlur={e => applyDate("max", e.target.value, displayDateFormat)}
           />
         </StyledLabeled>
       </Pickers>
