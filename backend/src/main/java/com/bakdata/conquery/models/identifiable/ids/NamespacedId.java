@@ -10,7 +10,7 @@ public interface NamespacedId {
 	@JsonIgnore
 	DatasetId getDataset();
 
-	public default String toStringWithoutDataset() {
+	default String toStringWithoutDataset() {
 		return StringUtils.removeStart(toString(), getDataset().toString() + IId.JOIN_CHAR);
 	}
 }

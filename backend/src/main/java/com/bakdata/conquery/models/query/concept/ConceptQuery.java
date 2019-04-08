@@ -5,7 +5,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import javax.print.attribute.HashAttributeSet;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -60,7 +59,7 @@ public class ConceptQuery implements IQuery {
 		List<ResultInfo> header = new ArrayList<>(selects.size() + 1);
 
 		header.add(ConqueryConstants.DATES_INFO);
-		
+
 		HashMap<String, Integer> ocurrences = new HashMap<>();
 		/*
 		 * Column name is constructed from the most specific concept id the CQConcept
@@ -69,18 +68,11 @@ public class ConceptQuery implements IQuery {
 		for (SelectDescriptor selectDescriptor : selects) {
 			Select select = selectDescriptor.getSelect();
 			String columnName = selectDescriptor.getCqConcept().getIds().get(0).toStringWithoutDataset()
-			+ "_"
-			+ select.getId().toStringWithoutDataset();
+				+ "_"
+				+ select.getId().toStringWithoutDataset();
 			Integer occurence = ocurrences.computeIfAbsent(columnName, str -> Integer.valueOf(0));
-			
-			header
-				.add(
-					new ResultInfo(
-						columnName,
-						select.getResultType(),
-						occurence,
-						occurence.intValue())
-					);
+
+			header.add(new ResultInfo(columnName, select.getResultType(), occurence, occurence.intValue()));
 		}
 		return header;
 	}
