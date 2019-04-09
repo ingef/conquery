@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -39,9 +37,5 @@ public abstract class SelectId extends AId<Select> implements NamespacedId {
 				return new ConnectorSelectId(parent, parts.next());
 			}
 		}
-	}
-
-	public String toStringWithoutDataset() {
-		return StringUtils.removeStart(toString(), getDataset().toString() + IId.JOIN_CHAR);
 	}
 }
