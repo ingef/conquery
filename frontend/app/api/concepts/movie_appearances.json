@@ -3,11 +3,11 @@
     "parent": "movie_appearances",
     "label": "Action Movies",
     "matchingEntries": 8234,
-    "dateRange":{"lowerEndpoint":"2009-12-07","lowerBoundType":"CLOSED","upperEndpoint":"2018-03-20","upperBoundType":"CLOSED"},
+    "dateRange": { "min": "2009-12-07", "max": "2018-03-20" },
     "additionalInfos": [
       {
-          "key": "Action film",
-          "value": "is a [genre](https://en.wikipedia.org/wiki/Genre) in which the protagonist or protagonists end up in a series of challenges that typically include violence, extended fighting, physical feats, and frantic chases.\n\n ### [History](https://en.wikipedia.org/wiki/Action_film#History)\n * [Early action films](https://en.wikipedia.org/wiki/Action_film#Early_action_films)\n * [1970s](https://en.wikipedia.org/wiki/Action_film#1970s)\n * [1980s](https://en.wikipedia.org/wiki/Action_film#1980s)\n * [1990s](https://en.wikipedia.org/wiki/Action_film#1990s)\n * [2000s](https://en.wikipedia.org/wiki/Action_film#2000s)\n * [2010s](https://en.wikipedia.org/wiki/Action_film#2010s)\n\n"
+        "key": "Action film",
+        "value": "is a [genre](https://en.wikipedia.org/wiki/Genre) in which the protagonist or protagonists end up in a series of challenges that typically include violence, extended fighting, physical feats, and frantic chases.\n\n ### [History](https://en.wikipedia.org/wiki/Action_film#History)\n * [Early action films](https://en.wikipedia.org/wiki/Action_film#Early_action_films)\n * [1970s](https://en.wikipedia.org/wiki/Action_film#1970s)\n * [1980s](https://en.wikipedia.org/wiki/Action_film#1980s)\n * [1990s](https://en.wikipedia.org/wiki/Action_film#1990s)\n * [2000s](https://en.wikipedia.org/wiki/Action_film#2000s)\n * [2010s](https://en.wikipedia.org/wiki/Action_film#2010s)\n\n"
       }
     ]
   },

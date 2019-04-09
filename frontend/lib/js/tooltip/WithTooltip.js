@@ -15,6 +15,7 @@ type PropsType = {
 const WithTooltip = ({ className, children, place, text }: PropsType) => {
   return (
     <Tooltip
+      className={className}
       position={place || "top"}
       arrow={true}
       duration={0}
