@@ -23,6 +23,8 @@ jobs:
         - git diff --quiet #to fail if changes
         - git checkout $TRAVIS_BRANCH
         - git commit -a -m autoformat
+        - git config --global user.email "31185348+bakdata-bot@users.noreply.github.com"
+        - git config --global user.password "$GITHUB_TOKEN" 
         - git push
       
     #test frontend
@@ -109,7 +111,7 @@ jobs:
       script: skip
       deploy:
         provider: releases
-        api_key: $GITHUB_OAUTH_TOKEN
+        api_key: $GITHUB_TOKEN
         tag_name: $TRAVIS_TAG
         target_commitish: $TRAVIS_COMMIT
         file:
@@ -127,7 +129,7 @@ jobs:
       script: skip
       deploy:
         provider: releases
-        api_key: $GITHUB_OAUTH_TOKEN
+        api_key: $GITHUB_TOKEN
         tag_name: $TRAVIS_TAG
         target_commitish: $TRAVIS_COMMIT
         file:
