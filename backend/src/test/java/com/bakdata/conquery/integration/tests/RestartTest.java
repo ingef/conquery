@@ -20,55 +20,52 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class RestartTest implements ProgrammaticIntegrationTest {
-	
+
 	private Mandator mandator = new Mandator("99999998", "MANDATOR_LABEL");
 	private User user = new User("user@test.email", "USER_LABEL");
 
 	@Override
 	public void execute(TestConquery testConquery) throws Exception {
-		//read test sepcification
+		// read test sepcification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
 		Validator validator = Validators.newValidator();
 		DatasetId dataset;
 		ConqueryTestSpec test;
-		
-		
-		try(StandaloneSupport conquery = testConquery.getSupport()) {
+
+		try (StandaloneSupport conquery = testConquery.getSupport()) {
 			dataset = conquery.getDataset().getId();
-			
+
 			test = JsonIntegrationTest.readJson(dataset, testJson);
 			ValidatorHelper.failOnError(log, validator.validate(test));
-			
+
 			test.importRequiredData(conquery);
-	
+
 			test.executeTest(conquery);
-			
+
 			// Auth testing
 			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
 			storage.addMandator(mandator);
-			
+
 			storage.addUser(user);
 			user.addMandator(storage, mandator);
 		}
-		
-		//stop dropwizard directly so COnquerySupport does not delete the tmp directory
+
+		// stop dropwizard directly so COnquerySupport does not delete the tmp directory
 		testConquery.getDropwizard().after();
-		//restart
+		// restart
 		testConquery.beforeAll(testConquery.getBeforeAllContext());
-		
-		try(StandaloneSupport conquery = testConquery.openDataset(dataset)) {
+
+		try (StandaloneSupport conquery = testConquery.openDataset(dataset)) {
 			test.executeTest(conquery);
-			
 
 			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
 			User userStored = storage.getUser(user.getId());
 			Mandator mandatorStored = storage.getMandator(mandator.getId());
 			Mandator userRefMand = userStored.getRoles().iterator().next();
 			assertThat(mandatorStored).isSameAs(userRefMand);
-			
+
 		}
-		
-		
+
 	}
 }

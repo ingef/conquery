@@ -11,17 +11,18 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter @CPSType(id="NULL", base=Output.class)
+@Getter
+@Setter
+@CPSType(id = "NULL", base = Output.class)
 public class NullOutput extends Output {
-	
+
 	private static final long serialVersionUID = 1L;
-	
 
 	@NotNull
 	private MajorTypeId inputType;
-	
+
 	@Override
-	public List<Object> createOutput(CType<?,?> type, String[] row, int source, long sourceLine) {
+	public List<Object> createOutput(CType<?, ?> type, String[] row, int source, long sourceLine) {
 		return NULL;
 	}
 

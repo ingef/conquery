@@ -8,7 +8,7 @@ import lombok.Getter;
 
 @Getter
 public class FileView<CONTENT_TYPE> extends UIView<CONTENT_TYPE> {
-	
+
 	private final List<FileTreeReduction> files;
 
 	public FileView(String templateName, UIContext ctx, CONTENT_TYPE content, List<FileTreeReduction> files) {

@@ -19,7 +19,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
+ * This filter represents a select in the front end. This means that the user
+ * can select one or more values from a list of values.
  */
 @Getter
 @Setter
@@ -28,15 +29,18 @@ public class CountFilter extends Filter<Range.LongRange> {
 
 	@Valid
 	@NotNull
-	@Getter @Setter @NsIdRef
+	@Getter
+	@Setter
+	@NsIdRef
 	private Column column;
 
 	private boolean distinct;
 
 	@Valid
-	@Getter @Setter @NsIdRef
+	@Getter
+	@Setter
+	@NsIdRef
 	private Column distinctByColumn;
-
 
 	@Override
 	public void configureFrontend(FEFilter f) {
@@ -47,8 +51,11 @@ public class CountFilter extends Filter<Range.LongRange> {
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {
 		if (distinct) {
-			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn() == null ? getColumn() :
-				getDistinctByColumn()));
+			return new RangeFilterNode(
+				value,
+				new DistinctValuesWrapperAggregator(
+					new CountAggregator(getColumn()),
+					getDistinctByColumn() == null ? getColumn() : getDistinctByColumn()));
 		}
 		else {
 			return new RangeFilterNode(value, new CountAggregator(getColumn()));

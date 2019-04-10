@@ -18,28 +18,27 @@ public interface ValidatorHelper {
 	public static void failOnError(Logger log, Set<? extends ConstraintViolation<?>> violations) throws JSONException {
 		failOnError(log, violations, null);
 	}
-	
+
 	public static void failOnError(Logger log, Set<? extends ConstraintViolation<?>> violations, String context) throws JSONException {
 		List<String> violationMessages = violations
-				.stream()
-				.map( v->
-					ConstraintMessage.getMessage(v,Invocable.create((Inflector<Request, Void>) data -> null)))
-				.collect(Collectors.toList());
-		
+			.stream()
+			.map(v -> ConstraintMessage.getMessage(v, Invocable.create((Inflector<Request, Void>) data -> null)))
+			.collect(Collectors.toList());
+
 		failOnError(log, violationMessages, context);
 	}
-	
+
 	public static void failOnError(Logger log, List<String> violations, String context) throws JSONException {
-		if(violations.size()>0) {
-			for(String v:violations) {
+		if (violations.size() > 0) {
+			for (String v : violations) {
 				log.error(v);
 			}
-			
-			if(context!=null) {
-				throw new JSONException("Failed with "+violations.size()+" errors in "+context+".");
+
+			if (context != null) {
+				throw new JSONException("Failed with " + violations.size() + " errors in " + context + ".");
 			}
 			else {
-				throw new JSONException("Failed with "+violations.size()+" errors.");
+				throw new JSONException("Failed with " + violations.size() + " errors.");
 			}
 		}
 	}

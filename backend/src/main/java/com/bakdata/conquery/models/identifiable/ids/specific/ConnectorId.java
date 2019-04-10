@@ -12,26 +12,28 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ConnectorId extends AId<Connector> implements NamespacedId {
 
 	private final ConceptId concept;
 	private final String connector;
-	
+
 	@Override
 	public DatasetId getDataset() {
 		return concept.getDataset();
 	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		concept.collectComponents(components);
 		components.add(connector);
 	}
-	
+
 	public static enum Parser implements IId.Parser<ConnectorId> {
 		INSTANCE;
-		
+
 		@Override
 		public ConnectorId parse(PeekingIterator<String> parts) {
 			ConceptId parent = ConceptId.Parser.INSTANCE.parse(parts);

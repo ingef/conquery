@@ -11,16 +11,17 @@ public abstract class ANode<N extends ANode<N>> extends NodeParent<N> {
 	private N middle;
 	@Getter
 	private N right;
-	@Getter @Setter
+	@Getter
+	@Setter
 	private N parent;
 
 	protected abstract int ownValue();
-	
+
 	@Override
 	protected void replace(N oldNode, TTDirection direction, N newNode) {
-		switch(direction) {
+		switch (direction) {
 			case LEFT: {
-				if(left!=oldNode) {
+				if (left != oldNode) {
 					throw new IllegalStateException();
 				}
 				else {
@@ -29,7 +30,7 @@ public abstract class ANode<N extends ANode<N>> extends NodeParent<N> {
 				return;
 			}
 			case MIDDLE: {
-				if(middle!=oldNode) {
+				if (middle != oldNode) {
 					throw new IllegalStateException();
 				}
 				else {
@@ -38,7 +39,7 @@ public abstract class ANode<N extends ANode<N>> extends NodeParent<N> {
 				return;
 			}
 			case RIGHT: {
-				if(right!=oldNode) {
+				if (right != oldNode) {
 					throw new IllegalStateException();
 				}
 				else {
@@ -50,35 +51,35 @@ public abstract class ANode<N extends ANode<N>> extends NodeParent<N> {
 				throw new IllegalStateException();
 		}
 	}
-	
+
 	public void added(int v) {}
-	
+
 	protected void copyChildrenFrom(N node) {
 		this.setLeft(node.getLeft());
 		this.setMiddle(node.getMiddle());
 		this.setRight(node.getRight());
 	}
-	
+
 	@Override
 	public abstract String toString();
-	
+
 	public void setLeft(N left) {
 		this.left = left;
-		if(left != null) {
+		if (left != null) {
 			left.setParent((N) this);
 		}
 	}
-	
+
 	public void setRight(N right) {
 		this.right = right;
-		if(right != null) {
+		if (right != null) {
 			right.setParent((N) this);
 		}
 	}
-	
+
 	public void setMiddle(N middle) {
 		this.middle = middle;
-		if(middle != null) {
+		if (middle != null) {
 			middle.setParent((N) this);
 		}
 	}

@@ -39,7 +39,7 @@ public class MandatorUITest implements IntegrationTest.Simple {
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		try {
-	
+
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 			try {
 				storage.addMandator(mandator);
@@ -50,15 +50,15 @@ public class MandatorUITest implements IntegrationTest.Simple {
 				user.addMandator(storage, mandator);
 			}
 			catch (JSONException e) {
-				fail("Failed when adding to storage.",e);
+				fail("Failed when adding to storage.", e);
 			}
-	
+
 			Response response = conquery
 				.getClient()
 				.target(String.format("http://localhost:%d/admin/mandators/%s", conquery.getAdminPort(), mandatorId.toString()))
 				.request()
 				.get();
-	
+
 			assertThat(response.getStatus()).isEqualTo(200);
 			assertThat(response.readEntity(String.class))
 				// check permission

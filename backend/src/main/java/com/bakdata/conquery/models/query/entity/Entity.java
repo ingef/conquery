@@ -17,7 +17,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor @Getter @ToString(of="id")
+@RequiredArgsConstructor
+@Getter
+@ToString(of = "id")
 public class Entity {
 
 	private final int id;
@@ -27,20 +29,20 @@ public class Entity {
 	public void addBlock(Table table, Block block) {
 		blocks.put(table, block);
 	}
-	
+
 	public void addCBlock(Connector con, Import imp, Table table, Block block, CBlock cBlock) {
-		if(cBlocks.put(con, block, new EntityRow(block, cBlock, con, imp, table)) != null) {
-			throw new IllegalStateException("multiple CBlocks for block "+block+" & connector "+con);
+		if (cBlocks.put(con, block, new EntityRow(block, cBlock, con, imp, table)) != null) {
+			throw new IllegalStateException("multiple CBlocks for block " + block + " & connector " + con);
 		}
 	}
 
 	public void removeBlock(BlockId id) {
-		blocks.values().removeIf(b->b.getId().equals(id));
+		blocks.values().removeIf(b -> b.getId().equals(id));
 	}
 
 	public void removeCBlock(Connector connector, Block block) {
 
-		if(cBlocks.remove(connector, block) == null) {
+		if (cBlocks.remove(connector, block) == null) {
 			return;
 		}
 	}
@@ -55,6 +57,6 @@ public class Entity {
 	}
 
 	public static Iterable<Integer> iterateBucket(int bucket) {
-		return () -> IntStream.range(bucket*100, (bucket+1)*100).iterator();
+		return () -> IntStream.range(bucket * 100, (bucket + 1) * 100).iterator();
 	}
 }

@@ -20,45 +20,45 @@ public class QueryPart implements Callable<EntityResult> {
 	private final QueryPlan plan;
 	private final Set<Table> requiredTables;
 	private final Entity entity;
-	
+
 	@Override
 	public EntityResult call() throws Exception {
 		try {
 			QueryPlan queryPlan = this.plan.createClone();
 			queryPlan.init(entity);
-			
+
 			if (requiredTables.isEmpty()) {
 				return EntityResult.notContained();
 			}
 
-			for(Table currentTable : requiredTables) {
+			for (Table currentTable : requiredTables) {
 				queryPlan.nextTable(ctx, currentTable);
-				for(Block block : entity.getBlocks().get(currentTable)) {
+				for (Block block : entity.getBlocks().get(currentTable)) {
 					queryPlan.nextBlock(block);
-					for(int event = block.size()-1; event >= 0 ; event--) {
+					for (int event = block.size() - 1; event >= 0; event--) {
 						queryPlan.nextEvent(block, event);
 					}
 				}
 			}
-	
-			//ugly workaround which we should find a fix for
+
+			// ugly workaround which we should find a fix for
 			EntityResult result = queryPlan.createResult();
-			if(result instanceof ContainedEntityResult) {
+			if (result instanceof ContainedEntityResult) {
 				((ContainedEntityResult) result).streamValues().forEach(row -> {
-					for(int i=0;i<row.length;i++) {
-						if(row[i] instanceof Double) {
+					for (int i = 0; i < row.length; i++) {
+						if (row[i] instanceof Double) {
 							double v = (Double) row[i];
-							if(Double.isInfinite(v) || Double.isNaN(v)) {
+							if (Double.isInfinite(v) || Double.isNaN(v)) {
 								row[i] = null;
 							}
 						}
 					}
 				});
 			}
-			
+
 			return result;
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			return EntityResult.failed(entity.getId(), e);
 		}
 	}

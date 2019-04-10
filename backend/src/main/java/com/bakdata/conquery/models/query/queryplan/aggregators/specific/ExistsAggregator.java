@@ -25,7 +25,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	public Boolean getAggregationResult() {
 		return hit;
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		requiredTables.addAll(this.requiredTables);
@@ -35,7 +35,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	public ExistsAggregator doClone(CloneContext ctx) {
 		return new ExistsAggregator(requiredTables);
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.BOOLEAN;

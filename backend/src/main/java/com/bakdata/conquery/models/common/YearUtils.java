@@ -9,9 +9,12 @@ import lombok.experimental.UtilityClass;
  */
 @UtilityClass
 public final class YearUtils {
+
 	/**
 	 * Extracts the year from a date and creates a range covering that year.
-	 * @param date A integer that represents a valid year, where 0 is year 0.
+	 * 
+	 * @param date
+	 *            A integer that represents a valid year, where 0 is year 0.
 	 * @return A date range over the whole year.
 	 */
 	public static CDateRange toRange(int year) {

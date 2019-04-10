@@ -20,25 +20,29 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @ToString(callSuper=true,of={"children"})
+@Getter
+@Setter
+@ToString(callSuper = true, of = { "children" })
 public class StructureNode extends Labeled<StructureNodeId> {
 
 	public static final String MANAGED_STRUCTURE_STRUCTURE = "structure_structure";
 	public static final String MANAGED_DATASET_STRUCTURE = "dataset_structure";
-	
-	@NsIdRef @NotNull
+
+	@NsIdRef
+	@NotNull
 	private Dataset dataset;
 	private String description;
-	@Valid @JsonManagedReference(MANAGED_STRUCTURE_STRUCTURE)
+	@Valid
+	@JsonManagedReference(MANAGED_STRUCTURE_STRUCTURE)
 	private List<StructureNode> children = Collections.emptyList();
 	@JsonBackReference(MANAGED_STRUCTURE_STRUCTURE)
 	private StructureNode parent;
 	@Getter
 	private Set<ConceptId> containedRoots = Collections.emptySet();
 	private List<KeyValue> additionalInfos = Collections.emptyList();
-	
+
 	@Override
 	public StructureNodeId createId() {
-		return new StructureNodeId(dataset.getId(), parent!=null?parent.getId():null, getName());
+		return new StructureNodeId(dataset.getId(), parent != null ? parent.getId() : null, getName());
 	}
 }

@@ -10,6 +10,8 @@ import java.lang.annotation.Target;
 @Target(ElementType.TYPE)
 @Repeatable(CPSTypes.class)
 public @interface CPSType {
+
 	String id();
+
 	Class<?> base();
 }

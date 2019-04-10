@@ -32,7 +32,9 @@ public class Namespaces implements NamespaceCollection {
 	@Getter
 	@JsonIgnore
 	private transient ConcurrentMap<SocketAddress, SlaveInformation> slaves = new ConcurrentHashMap<>();
-	@Getter @Setter @JsonIgnore
+	@Getter
+	@Setter
+	@JsonIgnore
 	private transient MasterMetaStorage metaStorage;
 
 	public void add(Namespace ns) {
@@ -48,7 +50,7 @@ public class Namespaces implements NamespaceCollection {
 	public CentralRegistry findRegistry(DatasetId dataset) {
 		return datasets.get(dataset).getStorage().getCentralRegistry();
 	}
-	
+
 	@Override
 	public CentralRegistry getMetaRegistry() {
 		return metaStorage.getCentralRegistry();

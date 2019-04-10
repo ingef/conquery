@@ -36,60 +36,34 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor @Getter
+@RequiredArgsConstructor
+@Getter
 public enum StoreInfo implements IStoreInfo {
-	DATASET			("DATASET", 		Dataset.class,				Boolean.class),
-	ID_MAPPING		("ID_MAPPING", 		PersistentIdMap.class,		Boolean.class),
-	NAMESPACES		("NAMESPACES", 		Namespaces.class,			Boolean.class),
-	SLAVE			("NETWORK_SLAVE", 	SlaveInformation.class,		Boolean.class),
-	DICTIONARIES	("DICTIONARIES", 	Dictionary.class,			DictionaryId.class),
-	IMPORTS			("IMPORTS", 		Import.class,				ImportId.class),
-	CONCEPTS		("CONCEPTS", 		Concept.class,				ConceptId.class),
-	BLOCKS			("BLOCKS", 			Block.class,				BlockId.class),
-	C_BLOCKS		("C_BLOCKS", 		CBlock.class,				CBlockId.class),
-	WORKER			("WORKER",			WorkerInformation.class,	Boolean.class),
-	QUERIES			("QUERIES", 		ManagedQuery.class,			ManagedQueryId.class),
-	AUTH_PERMISSIONS("AUTH_PERMISSIONS",ConqueryPermission.class,	PermissionId.class),
-	AUTH_MANDATOR	("AUTH_MANDATOR", 	Mandator.class,				MandatorId.class),
-	AUTH_USER		("AUTH_USER", 		User.class,					UserId.class),
-	STRUCTURE		("STRUCTURE", 		StructureNode[].class,		Boolean.class),
-	;
-	
+	DATASET("DATASET", Dataset.class, Boolean.class), ID_MAPPING("ID_MAPPING", PersistentIdMap.class, Boolean.class), NAMESPACES("NAMESPACES", Namespaces.class, Boolean.class), SLAVE("NETWORK_SLAVE", SlaveInformation.class, Boolean.class), DICTIONARIES("DICTIONARIES", Dictionary.class, DictionaryId.class), IMPORTS("IMPORTS", Import.class, ImportId.class), CONCEPTS("CONCEPTS", Concept.class, ConceptId.class), BLOCKS("BLOCKS", Block.class, BlockId.class), C_BLOCKS("C_BLOCKS", CBlock.class, CBlockId.class), WORKER("WORKER", WorkerInformation.class, Boolean.class), QUERIES("QUERIES", ManagedQuery.class, ManagedQueryId.class), AUTH_PERMISSIONS("AUTH_PERMISSIONS", ConqueryPermission.class, PermissionId.class), AUTH_MANDATOR("AUTH_MANDATOR", Mandator.class, MandatorId.class), AUTH_USER("AUTH_USER", User.class, UserId.class), STRUCTURE("STRUCTURE", StructureNode[].class, Boolean.class),;
+
 	private final String xodusName;
 	private final Class<?> valueType;
 	private final Class<?> keyType;
-	
+
 	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(ConqueryStorage storage, Injectable... injectables) {
-		return new IdentifiableStore<>(
-			storage.getCentralRegistry(),
-			cached(storage),
-			injectables
-		);
+		return new IdentifiableStore<>(storage.getCentralRegistry(), cached(storage), injectables);
 	}
-	
+
 	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(ConqueryStorage storage) {
-		return new IdentifiableStore<>(
-			storage.getCentralRegistry(),
-			cached(storage)
-		);
+		return new IdentifiableStore<>(storage.getCentralRegistry(), cached(storage));
 	}
 
 	public <KEY, VALUE> CachedStore<KEY, VALUE> cached(ConqueryStorage storage) {
-		return new CachedStore<>(
-			new MPStore<>(storage.getValidator(), storage.getEnvironment(), this)
-		);
+		return new CachedStore<>(new MPStore<>(storage.getValidator(), storage.getEnvironment(), this));
 	}
-	
+
 	public <VALUE> SingletonStore<VALUE> singleton(ConqueryStorage storage, Injectable... injectables) {
 		return new SingletonStore<>(cached(storage), injectables);
 	}
-	
+
 	public <T extends Identifiable<?>> IdentifiableStore<T> big(NamespacedStorage storage) {
 		return new IdentifiableStore<>(
 			storage.getCentralRegistry(),
-			new CachedStore<>(
-				new BigStore<>(storage.getValidator(), storage.getEnvironment(), this)
-			)
-		);
+			new CachedStore<>(new BigStore<>(storage.getValidator(), storage.getEnvironment(), this)));
 	}
 }

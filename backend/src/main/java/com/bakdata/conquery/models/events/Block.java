@@ -27,44 +27,60 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor @NoArgsConstructor @JsonDeserialize(using = BlockDeserializer.class)
-public abstract class Block extends IdentifiableImpl<BlockId> implements JsonSerializable{
+@AllArgsConstructor
+@NoArgsConstructor
+@JsonDeserialize(using = BlockDeserializer.class)
+public abstract class Block extends IdentifiableImpl<BlockId> implements JsonSerializable {
 
-	@Min(0) @Setter @Getter
+	@Min(0)
+	@Setter
+	@Getter
 	private int entity;
-	@NotNull @NsIdRef @Getter
+	@NotNull
+	@NsIdRef
+	@Getter
 	private Import imp;
-	
+
 	@Override
 	public BlockId createId() {
 		return new BlockId(imp.getId(), entity);
 	}
 
 	public abstract int size();
-	
+
 	public abstract boolean has(int event, Column column);
 
 	public abstract int getString(int event, Column column);
+
 	public abstract long getInteger(int event, Column column);
+
 	public abstract boolean getBoolean(int event, Column column);
+
 	public abstract double getReal(int event, Column column);
+
 	public abstract BigDecimal getDecimal(int event, Column column);
+
 	public abstract long getMoney(int event, Column column);
+
 	public abstract int getDate(int event, Column column);
+
 	public abstract CDateRange getDateRange(int event, Column column);
+
 	public abstract Object getAsObject(int event, Column column);
 
 	public abstract boolean eventIsContainedIn(int event, Column column, CDateRange dateRange);
+
 	public abstract boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges);
+
 	public abstract CDateRange getAsDateRange(int event, Column currentColumn);
 
 	@Override
 	public void serializeWithType(JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
 		this.serialize(gen, serializers);
 	}
-	
-	public abstract Map<String, Object> calculateMap(int event, Import imp);
-	public abstract void writeContent(Output output) throws IOException;
 
+	public abstract Map<String, Object> calculateMap(int event, Import imp);
+
+	public abstract void writeContent(Output output) throws IOException;
 
 }

@@ -15,11 +15,11 @@ import com.bakdata.conquery.util.DebugMode;
 import lombok.Getter;
 
 public abstract class ClassGenerator implements Closeable {
+
 	@Getter
 	protected final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 	protected JavaFileManager fileManager;
 	private final List<String> generated = new ArrayList<>();
-
 
 	public static ClassGenerator create() throws IOException {
 		if (DebugMode.isActive()) {
@@ -29,7 +29,7 @@ public abstract class ClassGenerator implements Closeable {
 			return new MemoryClassGenerator();
 		}
 	}
-	
+
 	public ClassGenerator() {
 		this.fileManager = compiler.getStandardFileManager(null, null, null);
 	}
@@ -51,7 +51,8 @@ public abstract class ClassGenerator implements Closeable {
 		for (String cl : generated) {
 			try {
 				getClassByName(cl);
-			} catch (ClassNotFoundException e) {
+			}
+			catch (ClassNotFoundException e) {
 				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
 			}
 		}

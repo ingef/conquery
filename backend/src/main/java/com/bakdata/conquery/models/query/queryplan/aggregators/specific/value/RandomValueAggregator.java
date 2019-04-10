@@ -25,8 +25,8 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	 *
 	 * P(switching n-th value) = 1/n
 	 *
-	 * P(n-th value = output) 	= P(switching n-th value) * P(not switching values > n)
-	 * = 1/n * n/m = 1/m
+	 * P(n-th value = output) = P(switching n-th value) * P(not switching values >
+	 * n) = 1/n * n/m = 1/m
 	 *
 	 * @param block
 	 * @param event
@@ -59,7 +59,7 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	public RandomValueAggregator doClone(CloneContext ctx) {
 		return new RandomValueAggregator(getColumn());
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());

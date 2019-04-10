@@ -10,7 +10,6 @@ import lombok.Getter;
 
 public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 
-
 	@Getter
 	private Column addendColumn;
 	@Getter
@@ -29,7 +28,7 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[]{getAddendColumn(), getSubtrahendColumn()};
+		return new Column[] { getAddendColumn(), getSubtrahendColumn() };
 	}
 
 	@Override
@@ -45,7 +44,7 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	public Long getAggregationResult() {
 		return sum;
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.MONEY;

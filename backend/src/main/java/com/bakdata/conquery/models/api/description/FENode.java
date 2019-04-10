@@ -13,8 +13,10 @@ import lombok.Data;
 /**
  * This class represents a concept as it is presented to the front end.
  */
-@Data @Builder
+@Data
+@Builder
 public class FENode {
+
 	private IId<?> parent;
 	private String label;
 	private String description;

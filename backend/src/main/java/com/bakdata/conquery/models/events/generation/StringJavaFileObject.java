@@ -5,6 +5,7 @@ import java.net.URI;
 import javax.tools.SimpleJavaFileObject;
 
 public class StringJavaFileObject extends SimpleJavaFileObject {
+
 	private final CharSequence code;
 
 	public StringJavaFileObject(String name, CharSequence code) {

@@ -11,33 +11,31 @@ import com.fasterxml.jackson.databind.util.ClassUtil;
 public class MutableInjectableValues extends InjectableValues {
 
 	private final ConcurrentHashMap<String, Object> values = new ConcurrentHashMap<>();
-	
+
 	public <T> MutableInjectableValues add(Class<T> type, T value) {
-		if(!type.isInstance(value)) {
-			throw new IllegalArgumentException(value+" is not of type "+type);
+		if (!type.isInstance(value)) {
+			throw new IllegalArgumentException(value + " is not of type " + type);
 		}
 		values.put(type.getName(), value);
 		return this;
 	}
-	
+
 	public <T> MutableInjectableValues withValue(Class<T> type, T value) {
 		MutableInjectableValues res = this.copy();
 		res.values.put(type.getName(), value);
 		return res;
 	}
-	
+
 	@Override
 	public Object findInjectableValue(Object valueId, DeserializationContext ctxt, BeanProperty forProperty, Object beanInstance) throws JsonMappingException {
-		if(valueId instanceof Class) {
+		if (valueId instanceof Class) {
 			return findInjectableValue(((Class) valueId).getName(), ctxt, forProperty, beanInstance);
 		}
 		if (!(valueId instanceof String)) {
-			ctxt.reportBadDefinition(ClassUtil.classOf(valueId),
-					String.format(
-							"Unrecognized inject value id type (%s), expecting String or Class",
-							ClassUtil.classNameOf(valueId)
-					)
-			);
+			ctxt
+				.reportBadDefinition(
+					ClassUtil.classOf(valueId),
+					String.format("Unrecognized inject value id type (%s), expecting String or Class", ClassUtil.classNameOf(valueId)));
 		}
 		String key = (String) valueId;
 		return values.get(key);

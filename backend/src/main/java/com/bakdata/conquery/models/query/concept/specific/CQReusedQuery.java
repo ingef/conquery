@@ -21,11 +21,14 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id="SAVED_QUERY", base=CQElement.class)
-@RequiredArgsConstructor @AllArgsConstructor(onConstructor_=@JsonCreator)
+@CPSType(id = "SAVED_QUERY", base = CQElement.class)
+@RequiredArgsConstructor
+@AllArgsConstructor(onConstructor_ = @JsonCreator)
 public class CQReusedQuery implements CQElement {
 
-	@Getter @NotNull @Valid
+	@Getter
+	@NotNull
+	@Valid
 	private final ManagedQueryId query;
 	@Getter
 	private IQuery resolvedQuery;
@@ -34,12 +37,12 @@ public class CQReusedQuery implements CQElement {
 	public void collectRequiredQueries(Set<ManagedQueryId> requiredQueries) {
 		requiredQueries.add(query);
 	}
-	
+
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
-		return ((ConceptQuery)resolvedQuery).getRoot().createQueryPlan(context, plan);
+		return ((ConceptQuery) resolvedQuery).getRoot().createQueryPlan(context, plan);
 	}
-	
+
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		resolvedQuery = Objects.requireNonNull(context.getStorage().getQuery(query)).getQuery();

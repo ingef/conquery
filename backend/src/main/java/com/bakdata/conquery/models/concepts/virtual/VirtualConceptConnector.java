@@ -17,14 +17,17 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class VirtualConceptConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
 
-	@NotNull @NsIdRef
+	@NotNull
+	@NsIdRef
 	private Table table;
-	@Valid @JsonManagedReference
+	@Valid
+	@JsonManagedReference
 	private Filter<?> filter;
 
 	@Override

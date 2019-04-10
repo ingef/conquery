@@ -9,11 +9,12 @@ import com.google.common.collect.PeekingIterator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @EqualsAndHashCode(callSuper=true)
+@Getter
+@EqualsAndHashCode(callSuper = true)
 public class ConnectorSelectId extends SelectId implements NamespacedId {
 
 	private final ConnectorId connector;
-	
+
 	public ConnectorSelectId(ConnectorId connector, String select) {
 		super(select);
 		this.connector = connector;
@@ -32,7 +33,7 @@ public class ConnectorSelectId extends SelectId implements NamespacedId {
 
 	public enum Parser implements IId.Parser<ConnectorSelectId> {
 		INSTANCE;
-		
+
 		@Override
 		public ConnectorSelectId parse(PeekingIterator<String> parts) {
 			ConnectorId parent = ConnectorId.Parser.INSTANCE.parse(parts);

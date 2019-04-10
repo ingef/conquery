@@ -12,12 +12,20 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @ToString @NoArgsConstructor @AllArgsConstructor
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
 public class PreprocessingDirectories {
-	@NotNull @ExistingFile(directory=true)
+
+	@NotNull
+	@ExistingFile(directory = true)
 	private File csv;
-	@NotNull @ExistingFile(directory=true)
+	@NotNull
+	@ExistingFile(directory = true)
 	private File descriptions;
-	@NotNull @ExistingFile(directory=true)
+	@NotNull
+	@ExistingFile(directory = true)
 	private File preprocessedOutput;
 }

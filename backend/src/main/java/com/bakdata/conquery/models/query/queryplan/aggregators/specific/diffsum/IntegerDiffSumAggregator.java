@@ -29,7 +29,7 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[]{getAddendColumn(), getSubtrahendColumn()};
+		return new Column[] { getAddendColumn(), getSubtrahendColumn() };
 	}
 
 	@Override
@@ -44,7 +44,7 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 	public Long getAggregationResult() {
 		return sum;
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

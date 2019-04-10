@@ -12,25 +12,38 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 
 public interface NamespacedStorage extends ConqueryStorage {
-	
+
 	void addDictionary(Dictionary dict) throws JSONException;
+
 	Dictionary getDictionary(DictionaryId id);
+
 	void updateDictionary(Dictionary dict) throws JSONException;
+
 	void removeDictionary(DictionaryId id);
+
 	Dictionary computeDictionary(DictionaryId id) throws JSONException;
+
 	Dictionary getPrimaryDictionary();
-	
+
 	void addImport(Import imp) throws JSONException;
+
 	Import getImport(ImportId id);
+
 	Collection<Import> getAllImports();
+
 	void updateImport(Import imp) throws JSONException;
+
 	void removeImport(ImportId id);
-	
+
 	Dataset getDataset();
+
 	void updateDataset(Dataset dataset) throws JSONException;
-	
+
 	Concept<?> getConcept(ConceptId id);
+
 	void updateConcept(Concept<?> concept) throws JSONException;
+
 	void removeConcept(ConceptId id);
+
 	Collection<? extends Concept<?>> getAllConcepts();
 }

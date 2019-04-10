@@ -21,6 +21,7 @@ public class CSVReader {
 
 	public static Iterable<String[]> readRaw(Reader r) {
 		return new Iterable<String[]>() {
+
 			@Override
 			public Iterator<String[]> iterator() {
 				CsvParser parser = createParser();
@@ -59,7 +60,8 @@ public class CSVReader {
 			String[] r = parser.parseNext();
 			if (r == null) {
 				return endOfData();
-			} else {
+			}
+			else {
 				return r;
 			}
 		}

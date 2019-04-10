@@ -14,12 +14,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor @Getter @ToString(of = "aggregator")
-public class AggregatorNode<T> extends QPNode  {
+@RequiredArgsConstructor
+@Getter
+@ToString(of = "aggregator")
+public class AggregatorNode<T> extends QPNode {
 
 	private final Aggregator<T> aggregator;
 	private boolean triggered = false;
-	
+
 	@Override
 	public void nextEvent(Block block, int event) {
 		triggered = true;
@@ -30,7 +32,7 @@ public class AggregatorNode<T> extends QPNode  {
 	public boolean isContained() {
 		return triggered;
 	}
-	
+
 	@Override
 	public AggregatorNode<T> doClone(CloneContext ctx) {
 		return new AggregatorNode<>(aggregator.clone(ctx));
@@ -40,12 +42,12 @@ public class AggregatorNode<T> extends QPNode  {
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		aggregator.collectRequiredTables(requiredTables);
 	}
-	
+
 	@Override
 	public void nextBlock(Block block) {
 		aggregator.nextBlock(block);
 	}
-	
+
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		aggregator.nextTable(ctx, currentTable);

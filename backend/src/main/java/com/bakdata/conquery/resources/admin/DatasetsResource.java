@@ -69,8 +69,8 @@ import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-@Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
+@Produces({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
 @PermitAll
 @Slf4j
 @Getter
@@ -90,12 +90,14 @@ public class DatasetsResource {
 		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager, maintenanceService);
 	}
 
-	@GET @Produces(MediaType.TEXT_HTML)
+	@GET
+	@Produces(MediaType.TEXT_HTML)
 	public View getDatasets() {
 		return new UIView<>("datasets.html.ftl", ctx, namespaces.getAllDatasets());
 	}
 
-	@GET @Produces(MediaType.TEXT_HTML)
+	@GET
+	@Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}")
 	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
 		return new FileView<>(
@@ -105,23 +107,15 @@ public class DatasetsResource {
 			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
 	}
 
-	
 	@GET
 	@Path("/{" + DATASET_NAME + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
 		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
 		if (mapping != null) {
-			return new UIView<>(
-				"idmapping.html.ftl",
-				ctx,
-				mapping
-			);
-		} else {
-			return new UIView<>(
-				"add_idmapping.html.ftl",
-				ctx,
-				datasetId
-			);
+			return new UIView<>("idmapping.html.ftl", ctx, mapping);
+		}
+		else {
+			return new UIView<>("add_idmapping.html.ftl", ctx, datasetId);
 		}
 	}
 
@@ -131,19 +125,22 @@ public class DatasetsResource {
 	public Response addIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("data_csv") InputStream data) throws IOException, JSONException {
 		processor.setIdMapping(data, namespaces.get(datasetId));
 		return Response
-				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
-				.build();
+			.seeOther(
+				UriBuilder
+					.fromPath("/admin/")
+					.path(DatasetsResource.class)
+					.path(DatasetsResource.class, "getDataset")
+					.build(datasetId.toString()))
+			.build();
 	}
 
-
-	@GET @Produces(MediaType.TEXT_HTML)
+	@GET
+	@Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
 	public View getTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) {
 		Namespace ns = namespaces.get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
-		Table table = dataset
-			.getTables()
-			.getOrFail(tableParam);
+		Table table = dataset.getTables().getOrFail(tableParam);
 
 		List<Import> imports = ns
 			.getStorage()
@@ -158,33 +155,24 @@ public class DatasetsResource {
 			new TableStatistics(
 				table,
 				imports.stream().mapToLong(Import::getNumberOfBlocks).sum(),
-				imports.stream().mapToLong(Import::getNumberOfEntries).sum()
-			)
-		);
+				imports.stream().mapToLong(Import::getNumberOfEntries).sum()));
 	}
 
-	@GET @Produces(MediaType.TEXT_HTML)
+	@GET
+	@Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
 	public View getConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(CONCEPT_NAME) ConceptId conceptParam) {
 		Namespace ns = namespaces.get(datasetId);
-		Concept<?> concept = ns
-			.getStorage()
-			.getConcept(conceptParam);
+		Concept<?> concept = ns.getStorage().getConcept(conceptParam);
 
-		return new UIView<>(
-			"concept.html.ftl",
-			ctx,
-			concept
-		);
+		return new UIView<>("concept.html.ftl", ctx, concept);
 	}
 
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
 		processor.addDataset(name);
-		return Response
-			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
-			.build();
+		return Response.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build()).build();
 	}
 
 	@POST
@@ -200,7 +188,12 @@ public class DatasetsResource {
 			}
 		}
 		return Response
-			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
+			.seeOther(
+				UriBuilder
+					.fromPath("/admin/")
+					.path(DatasetsResource.class)
+					.path(DatasetsResource.class, "getDataset")
+					.build(datasetId.toString()))
 			.build();
 	}
 
@@ -240,13 +233,13 @@ public class DatasetsResource {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
 		processor.addConcept(dataset, concept);
-		
+
 		Uninterruptibles.sleepUninterruptibly(2, TimeUnit.SECONDS);
 	}
-	
+
 	@POST
 	@Path("/{" + DATASET_NAME + "}/structure")
-	public void setStructure(@PathParam(DATASET_NAME) DatasetId datasetId, @NotNull@Valid StructureNode[] structure) throws JSONException {
+	public void setStructure(@PathParam(DATASET_NAME) DatasetId datasetId, @NotNull @Valid StructureNode[] structure) throws JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
 		processor.setStructure(dataset, structure);

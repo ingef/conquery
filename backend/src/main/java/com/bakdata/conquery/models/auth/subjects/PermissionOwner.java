@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
  *            The id type by which an instance is identified
  */
 @Slf4j
-@JsonIgnoreProperties( { "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
+@JsonIgnoreProperties({ "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Subject {
 
 	@Getter

@@ -96,16 +96,15 @@ public class QueryTest extends AbstractQueryEngineTest {
 	private void importPreviousQueries(StandaloneSupport support) throws JSONException, IOException {
 		// Load previous query results if available
 		int id = 1;
-		for(ResourceFile queryResults : content.getPreviousQueryResults()) {
+		for (ResourceFile queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
 			ConqueryConfig config = ConfigCloner.clone(support.getConfig());
 			config.getCsv().setSkipHeader(false);
-			String[][] data = CSV.streamContent(config.getCsv(), queryResults.stream(), log)
-				.toArray(String[][]::new);
+			String[][] data = CSV.streamContent(config.getCsv(), queryResults.stream(), log).toArray(String[][]::new);
 
 			ConceptQuery q = new ConceptQuery();
 			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
-			
+
 			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId, DevAuthConfig.USER);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
@@ -114,8 +113,8 @@ public class QueryTest extends AbstractQueryEngineTest {
 			}
 		}
 
-		//wait only if we actually did anything
-		if(!content.getPreviousQueryResults().isEmpty()) {
+		// wait only if we actually did anything
+		if (!content.getPreviousQueryResults().isEmpty()) {
 			support.waitUntilWorkDone();
 		}
 	}
@@ -130,11 +129,11 @@ public class QueryTest extends AbstractQueryEngineTest {
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : content.getTables()) {
-			//copy csv to tmp folder
+			// copy csv to tmp folder
 			String name = rTable.getCsv().getName().substring(0, rTable.getCsv().getName().lastIndexOf('.'));
 			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
-			//create import descriptor
+			// create import descriptor
 			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);
 			ImportDescriptor desc = new ImportDescriptor();
 			desc.setInputFile(inputFile);
@@ -149,14 +148,14 @@ public class QueryTest extends AbstractQueryEngineTest {
 					input.getOutput()[i] = copyOutput(i + 1, rTable.getColumns()[i]);
 				}
 			}
-			desc.setInputs(new Input[]{input});
+			desc.setInputs(new Input[] { input });
 			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 			preprocessedFiles.add(inputFile.getPreprocessedFile());
 		}
-		//preprocess
+		// preprocess
 		support.preprocessTmp();
 
-		//import preprocessedFiles
+		// import preprocessedFiles
 		for (File file : preprocessedFiles) {
 			support.getDatasetsProcessor().addImport(support.getDataset(), file);
 		}
@@ -174,11 +173,10 @@ public class QueryTest extends AbstractQueryEngineTest {
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTree(
-				support,
-				rawConcepts,
-				Jackson.MAPPER.getTypeFactory().constructParametricType(List.class, Concept.class),
-				list -> list.forEach(c -> c.setDataset(support.getDataset().getId()))
-		);
+			support,
+			rawConcepts,
+			Jackson.MAPPER.getTypeFactory().constructParametricType(List.class, Concept.class),
+			list -> list.forEach(c -> c.setDataset(support.getDataset().getId())));
 
 		for (Concept<?> concept : concepts) {
 			support.getDatasetsProcessor().addConcept(dataset, concept);

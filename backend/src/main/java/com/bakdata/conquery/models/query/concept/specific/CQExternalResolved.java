@@ -21,24 +21,20 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id="EXTERNAL_RESOLVED", base=CQElement.class)
-@RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@CPSType(id = "EXTERNAL_RESOLVED", base = CQElement.class)
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
 public class CQExternalResolved implements CQElement {
 
-	@Getter @NotNull @NonNull
+	@Getter
+	@NotNull
+	@NonNull
 	private final Map<Integer, CDateSet> values;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		DatasetId dataset = context.getWorker().getStorage().getDataset().getId();
 		return new ExternalNode(
-			new SpecialDateUnionAggregatorNode(
-				new TableId(
-					dataset,
-					ConqueryConstants.ALL_IDS_TABLE
-				),
-				plan.getSpecialDateUnion()
-			),
+			new SpecialDateUnionAggregatorNode(new TableId(dataset, ConqueryConstants.ALL_IDS_TABLE), plan.getSpecialDateUnion()),
 			dataset,
 			values);
 	}

@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.NullSubjectId;
 public class NullSubject extends PermissionOwner<NullSubjectId> {
 
 	public final static NullSubject INSTANCE = new NullSubject();
-	
+
 	private NullSubject() {
 		super();
 	}

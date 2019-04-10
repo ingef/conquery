@@ -26,8 +26,8 @@ import com.google.common.math.IntMath;
 import lombok.EqualsAndHashCode;
 
 @EqualsAndHashCode
-@JsonSerialize(using=CDateSetSerializer.class)
-@JsonDeserialize(using=CDateSetDeserializer.class)
+@JsonSerialize(using = CDateSetSerializer.class)
+@JsonDeserialize(using = CDateSetDeserializer.class)
 public class CDateSet {
 
 	private static final Pattern PARSE_PATTERN = Pattern.compile("(\\{|,\\s*)((\\d{4}-\\d{2}-\\d{2})?/(\\d{4}-\\d{2}-\\d{2})?)");
@@ -38,7 +38,7 @@ public class CDateSet {
 	public static CDateSet create() {
 		return new CDateSet(new TreeMap<>());
 	}
-	
+
 	public static CDateSet createFull() {
 		CDateSet set = new CDateSet(new TreeMap<>());
 		set.add(CDateRange.all());
@@ -50,7 +50,7 @@ public class CDateSet {
 		result.addAll(rangeSet);
 		return result;
 	}
-	
+
 	public static CDateSet create(CDateRange range) {
 		CDateSet result = create();
 		result.add(range);
@@ -133,7 +133,9 @@ public class CDateSet {
 
 	/**
 	 * Tests if the supplied {@link LocalDate} is contained by this Set.
-	 * @param value the Date to check
+	 * 
+	 * @param value
+	 *            the Date to check
 	 * @return true iff any Set contains the value
 	 */
 	public boolean contains(LocalDate value) {
@@ -142,29 +144,31 @@ public class CDateSet {
 
 	/**
 	 * Tests if the supplied {@link CDate} is contained by this Set.
-	 * @param value the Date to check
+	 * 
+	 * @param value
+	 *            the Date to check
 	 * @return true iff any Set contains the value
 	 */
 	public boolean contains(int value) {
 		return rangeContaining(value) != null;
 	}
-	
+
 	public boolean isEmpty() {
 		return asRanges().isEmpty();
 	}
-	
+
 	public void clear() {
 		rangesByLowerBound.clear();
 	}
-	
+
 	public boolean enclosesAll(CDateSet other) {
 		return enclosesAll(other.asRanges());
 	}
-	
+
 	public void addAll(CDateSet other) {
 		addAll(other.asRanges());
 	}
-	
+
 	public void removeAll(CDateSet other) {
 		removeAll(other.asRanges());
 	}
@@ -189,7 +193,7 @@ public class CDateSet {
 			remove(range);
 		}
 	}
-	
+
 	public boolean intersects(CDateRange range) {
 		checkNotNull(range);
 		Entry<Integer, CDateRange> ceilingEntry = rangesByLowerBound.ceilingEntry(range.getMinValue());
@@ -216,21 +220,21 @@ public class CDateSet {
 
 	public void add(CDateRange rangeToAdd) {
 		checkNotNull(rangeToAdd);
-		
+
 		int lbToAdd = rangeToAdd.getMinValue();
 		int ubToAdd = rangeToAdd.getMaxValue();
 
 		Entry<Integer, CDateRange> entryBelowLB = rangesByLowerBound.lowerEntry(lbToAdd);
 		if (entryBelowLB != null) {
 			CDateRange rangeBelowLB = entryBelowLB.getValue();
-			//left neighbor would be connected
+			// left neighbor would be connected
 			if (rangeBelowLB.getMaxValue() >= lbToAdd - 1) {
 				lbToAdd = rangeBelowLB.getMinValue();
-				//left neighbor encloses new range
+				// left neighbor encloses new range
 				if (rangeBelowLB.getMaxValue() > ubToAdd) {
 					ubToAdd = rangeBelowLB.getMaxValue();
 				}
-				
+
 			}
 		}
 
@@ -247,18 +251,19 @@ public class CDateSet {
 
 		putRange(new CDateRange(lbToAdd, ubToAdd));
 	}
-	
+
 	public void remove(CDateRange rangeToRemove) {
 		checkNotNull(rangeToRemove);
 
 		Entry<Integer, CDateRange> entryBelowLB = rangesByLowerBound.lowerEntry(rangeToRemove.getMinValue());
 		if (entryBelowLB != null) {
 			CDateRange rangeBelowLB = entryBelowLB.getValue();
-			//left neighbor intersects removed range => shorten it to everything before removed range
+			// left neighbor intersects removed range => shorten it to everything before
+			// removed range
 			if (rangeBelowLB.getMaxValue() >= rangeToRemove.getMinValue()) {
 				putRange(new CDateRange(rangeBelowLB.getMinValue(), rangeToRemove.getMinValue() - 1));
-				
-				//left neighbor reaches beyond removed range => have to add cut of right part
+
+				// left neighbor reaches beyond removed range => have to add cut of right part
 				if (rangeBelowLB.getMaxValue() > rangeToRemove.getMaxValue()) {
 					putRange(new CDateRange(rangeToRemove.getMaxValue() + 1, rangeBelowLB.getMaxValue()));
 				}
@@ -268,20 +273,20 @@ public class CDateSet {
 		Entry<Integer, CDateRange> entryBelowUB = rangesByLowerBound.floorEntry(rangeToRemove.getMaxValue());
 		if (entryBelowUB != null) {
 			CDateRange rangeBelowUB = entryBelowUB.getValue();
-			//if reaches beyond removed range => have to add cut of right part
+			// if reaches beyond removed range => have to add cut of right part
 			if (rangeBelowUB.getMaxValue() > rangeToRemove.getMaxValue()) {
 				// { > }
 				putRange(new CDateRange(rangeToRemove.getMaxValue() + 1, rangeBelowUB.getMaxValue()));
 			}
 		}
 
-		rangesByLowerBound.subMap(rangeToRemove.getMinValue(), IntMath.saturatedAdd(rangeToRemove.getMaxValue(),1)).clear();
+		rangesByLowerBound.subMap(rangeToRemove.getMinValue(), IntMath.saturatedAdd(rangeToRemove.getMaxValue(), 1)).clear();
 	}
 
 	private void putRange(CDateRange range) {
 		rangesByLowerBound.put(range.getMinValue(), range);
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder sb = new StringBuilder();
@@ -292,63 +297,64 @@ public class CDateSet {
 	}
 
 	public void retainAll(CDateSet retained) {
-		if(retained.isEmpty()) {
+		if (retained.isEmpty()) {
 			this.clear();
 			return;
 		}
-		if(retained.asRanges().iterator().next().isAll()) {
+		if (retained.asRanges().iterator().next().isAll()) {
 			return;
 		}
 
 		List<CDateRange> l = new ArrayList<>(retained.rangesByLowerBound.values());
-		
-		//remove all before the first range
-		if(!l.get(0).isAtMost()) {
+
+		// remove all before the first range
+		if (!l.get(0).isAtMost()) {
 			this.remove(new CDateRange(Integer.MIN_VALUE, l.get(0).getMinValue() - 1));
 		}
-		
-		//remove all between ranges
-		for(int i=0;i<l.size()-1;i++) {
-			this.remove(new CDateRange(l.get(i).getMaxValue() + 1, l.get(i+1).getMinValue() - 1));
+
+		// remove all between ranges
+		for (int i = 0; i < l.size() - 1; i++) {
+			this.remove(new CDateRange(l.get(i).getMaxValue() + 1, l.get(i + 1).getMinValue() - 1));
 		}
-		
-		//remove all after the last Range
-		if(!l.get(l.size()-1).isAtLeast()) {
-			this.remove(new CDateRange(l.get(l.size()-1).getMaxValue() + 1, Integer.MAX_VALUE));
+
+		// remove all after the last Range
+		if (!l.get(l.size() - 1).isAtLeast()) {
+			this.remove(new CDateRange(l.get(l.size() - 1).getMaxValue() + 1, Integer.MAX_VALUE));
 		}
 	}
-	
+
 	public void retainAll(CDateRange retained) {
-		if(retained.isAll()) {
+		if (retained.isAll()) {
 			return;
 		}
 
-		//remove all before the range
-		if(!retained.isAtMost()) {
+		// remove all before the range
+		if (!retained.isAtMost()) {
 			this.remove(new CDateRange(Integer.MIN_VALUE, retained.getMinValue() - 1));
 		}
-		
-		//remove all after the Range
-		if(!retained.isAtLeast()) {
+
+		// remove all after the Range
+		if (!retained.isAtLeast()) {
 			this.remove(new CDateRange(retained.getMaxValue() + 1, Integer.MAX_VALUE));
 		}
 	}
 
 	/**
 	 * Counts the number of days represented by this CDateSet.
+	 * 
 	 * @return the number of days or null if there are infinite days in the set
 	 */
 	public Long countDays() {
-		//if we have no entries we return zero days
-		if(rangesByLowerBound.firstEntry() == null) {
+		// if we have no entries we return zero days
+		if (rangesByLowerBound.firstEntry() == null) {
 			return 0L;
 		}
-		if(rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry().getValue().isOpen()) {
+		if (rangesByLowerBound.firstEntry().getValue().isOpen() || rangesByLowerBound.lastEntry().getValue().isOpen()) {
 			return null;
 		}
 		long sum = 0;
-		for(CDateRange r:this.asRanges()) {
-			sum+=r.getMaxValue() - r.getMinValue() + 1;
+		for (CDateRange r : this.asRanges()) {
+			sum += r.getMaxValue() - r.getMinValue() + 1;
 		}
 		return sum;
 	}
@@ -360,20 +366,16 @@ public class CDateSet {
 	public int getMaxValue() {
 		return rangesByLowerBound.lastEntry().getValue().getMaxValue();
 	}
-	
+
 	public static CDateSet parse(String value) {
-		List<CDateRange> ranges = PARSE_PATTERN
-			.matcher(value)
-			.results()
-			.map(mr -> {
-				try {
-					return DateRangeType.parseISORange(mr.group(2));
-				}
-				catch(Exception e) {
-					throw new RuntimeException(e);
-				}
-			})
-			.collect(Collectors.toList());
+		List<CDateRange> ranges = PARSE_PATTERN.matcher(value).results().map(mr -> {
+			try {
+				return DateRangeType.parseISORange(mr.group(2));
+			}
+			catch (Exception e) {
+				throw new RuntimeException(e);
+			}
+		}).collect(Collectors.toList());
 		return CDateSet.create(ranges);
 	}
 }

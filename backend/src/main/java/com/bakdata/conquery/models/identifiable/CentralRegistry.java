@@ -12,15 +12,16 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 
 import lombok.NoArgsConstructor;
 
-@SuppressWarnings({"rawtypes", "unchecked"}) @NoArgsConstructor
+@SuppressWarnings({ "rawtypes", "unchecked" })
+@NoArgsConstructor
 public class CentralRegistry implements Injectable {
-	
+
 	private final IdMap map = new IdMap<>();
-	
+
 	public void register(Identifiable<?> ident) {
 		map.add(ident);
 	}
-	
+
 	public <T extends Identifiable<?>> T resolve(IId<T> name) {
 		return (T) map.getOrFail(name);
 	}
@@ -32,7 +33,7 @@ public class CentralRegistry implements Injectable {
 	public void remove(IId<?> id) {
 		map.remove(id);
 	}
-	
+
 	public void remove(Identifiable<?> ident) {
 		remove(ident.getId());
 	}
@@ -44,9 +45,10 @@ public class CentralRegistry implements Injectable {
 
 	public static CentralRegistry get(DeserializationContext ctxt) throws JsonMappingException {
 		CentralRegistry result = (CentralRegistry) ctxt.findInjectableValue(CentralRegistry.class.getName(), null, null);
-		if(result == null) {
-			NamespaceCollection alternative = (NamespaceCollection)ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
-			if(alternative == null) {
+		if (result == null) {
+			NamespaceCollection alternative = (NamespaceCollection) ctxt
+				.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+			if (alternative == null) {
 				throw new NoSuchElementException("Could not find injected central registry");
 			}
 			else {

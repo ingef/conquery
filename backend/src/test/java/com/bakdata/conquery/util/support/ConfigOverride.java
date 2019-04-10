@@ -14,7 +14,9 @@ public interface ConfigOverride {
 
 	/**
 	 * Is called upon initialization of the test instance of Conquery.
-	 * @param config The configuration that is initialized with the defaults.
+	 * 
+	 * @param config
+	 *            The configuration that is initialized with the defaults.
 	 */
 	void override(ConqueryConfig config);
 }

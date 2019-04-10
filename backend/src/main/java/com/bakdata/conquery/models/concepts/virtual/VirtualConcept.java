@@ -17,10 +17,13 @@ import lombok.Setter;
 /**
  * This is a single node or concept in a concept tree.
  */
-@CPSType(id="VIRTUAL", base=Concept.class)
+@CPSType(id = "VIRTUAL", base = Concept.class)
 public class VirtualConcept extends Concept<VirtualConceptConnector> implements SelectHolder<Select> {
-	
-	@NotNull @Getter @Setter @JsonManagedReference
+
+	@NotNull
+	@Getter
+	@Setter
+	@JsonManagedReference
 	private List<Select> selects = new ArrayList<>();
 
 	@Override

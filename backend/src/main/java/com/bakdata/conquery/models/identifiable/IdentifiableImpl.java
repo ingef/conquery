@@ -7,31 +7,31 @@ import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
 public abstract class IdentifiableImpl<ID extends IId<? extends IdentifiableImpl<? extends ID>>> implements Identifiable<ID> {
-	
+
 	@JsonIgnore
 	protected transient ID cachedId;
 	@JsonIgnore
 	private transient int cachedHash = Integer.MIN_VALUE;
 
-	@JsonIgnore @Override
+	@JsonIgnore
+	@Override
 	public ID getId() {
-		if(cachedId == null) {
+		if (cachedId == null) {
 			cachedId = createId();
 		}
 		return cachedId;
 	}
-	
+
 	public abstract ID createId();
-	
-	
+
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"["+ getId() + "]";
+		return this.getClass().getSimpleName() + "[" + getId() + "]";
 	}
-	
+
 	@Override
 	public int hashCode() {
-		if(cachedHash == Integer.MIN_VALUE) {
+		if (cachedHash == Integer.MIN_VALUE) {
 			int result = 1;
 			result = 31 * result + ((getId() == null) ? 0 : getId().hashCode());
 			cachedHash = result;
@@ -55,7 +55,8 @@ public abstract class IdentifiableImpl<ID extends IId<? extends IdentifiableImpl
 			if (other.getId() != null) {
 				return false;
 			}
-		} else if (!getId().equals(other.getId())) {
+		}
+		else if (!getId().equals(other.getId())) {
 			return false;
 		}
 		return true;

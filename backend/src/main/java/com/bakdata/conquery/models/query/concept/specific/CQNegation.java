@@ -17,12 +17,15 @@ import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(id="NEGATION", base=CQElement.class)
+@CPSType(id = "NEGATION", base = CQElement.class)
 @Setter
 @Getter
 public class CQNegation implements CQElement {
 
-	@Valid @NotNull @Getter @Setter
+	@Valid
+	@NotNull
+	@Getter
+	@Setter
 	private CQElement child;
 
 	@Override
@@ -35,7 +38,7 @@ public class CQNegation implements CQElement {
 		child = child.resolve(context);
 		return this;
 	}
-	
+
 	@Override
 	public void collectSelects(Deque<SelectDescriptor> select) {
 		child.collectSelects(select);

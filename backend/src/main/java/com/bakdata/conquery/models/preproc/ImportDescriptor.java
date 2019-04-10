@@ -20,34 +20,33 @@ import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
-	
+
 	@NotEmpty
 	private String table;
-	@NotEmpty @Valid
+	@NotEmpty
+	@Valid
 	private Input[] inputs;
-	
+
 	@JsonIgnore
 	private transient InputFile inputFile;
-	
+
 	@JsonIgnore
-	@ValidationMethod(message="The output of each input needs the same number of output columns of the same type and name")
+	@ValidationMethod(message = "The output of each input needs the same number of output columns of the same type and name")
 	public boolean isSameTypesInEachInput() {
-		if(inputs.length==1) {
+		if (inputs.length == 1) {
 			return true;
 		}
 		List<MajorTypeId[]> types = new ArrayList<>();
-		for(int i=0;i<inputs.length;i++) {
-			MajorTypeId[] inp = Arrays
-				.stream(inputs[i].getOutput())
-				.map(Output::getResultType)
-				.toArray(MajorTypeId[]::new);
-			
-			for(MajorTypeId[] o:types) {
-				if(!Arrays.equals(inp, o)) {
+		for (int i = 0; i < inputs.length; i++) {
+			MajorTypeId[] inp = Arrays.stream(inputs[i].getOutput()).map(Output::getResultType).toArray(MajorTypeId[]::new);
+
+			for (MajorTypeId[] o : types) {
+				if (!Arrays.equals(inp, o)) {
 					return false;
 				}
 			}
@@ -55,14 +54,12 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 		}
 		return true;
 	}
-	
+
 	public int calculateValidityHash() {
-		HashCodeBuilder validityHashBuilder = new HashCodeBuilder()
-				.append(this.getInputFile().getDescriptionFile().length());
-		
-		for(Input input:this.getInputs()) {
-			validityHashBuilder
-				.append(input.getSourceFile().length());
+		HashCodeBuilder validityHashBuilder = new HashCodeBuilder().append(this.getInputFile().getDescriptionFile().length());
+
+		for (Input input : this.getInputs()) {
+			validityHashBuilder.append(input.getSourceFile().length());
 		}
 		validityHashBuilder.append(15);
 		return validityHashBuilder.toHashCode();
@@ -77,5 +74,5 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 	public String toString() {
 		return "ImportDescriptor [table=" + table + ", name=" + getName() + ", file=" + getInputFile().getDescriptionFile() + "]";
 	}
-	
+
 }

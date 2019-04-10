@@ -9,9 +9,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 public class PreprocessingConfig {
-	@NotEmpty @Valid
+
+	@NotEmpty
+	@Valid
 	private PreprocessingDirectories[] directories;
 	@Min(1)
 	private int threads = Runtime.getRuntime().availableProcessors();

@@ -4,7 +4,7 @@ import java.math.RoundingMode;
 
 import com.google.common.math.DoubleMath;
 
-public class NullProgressReporter implements ProgressReporter{
+public class NullProgressReporter implements ProgressReporter {
 
 	@Override
 	public double getProgress() {
@@ -22,16 +22,13 @@ public class NullProgressReporter implements ProgressReporter{
 	}
 
 	@Override
-	public void report(double steps) {
-	}
+	public void report(double steps) {}
 
 	@Override
-	public void setMax(double max) {
-	}
+	public void setMax(double max) {}
 
 	@Override
-	public void done() {
-	}
+	public void done() {}
 
 	@Override
 	public boolean isDone() {
@@ -39,8 +36,7 @@ public class NullProgressReporter implements ProgressReporter{
 	}
 
 	@Override
-	public void start() {
-	}
+	public void start() {}
 
 	@Override
 	public long getWaitedSeconds() {
@@ -49,7 +45,7 @@ public class NullProgressReporter implements ProgressReporter{
 
 	@Override
 	public long getStartTime() {
-		return DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN);
+		return DoubleMath.roundToLong(System.currentTimeMillis() / 1_000, RoundingMode.DOWN);
 	}
 
 	@Override

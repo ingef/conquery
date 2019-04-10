@@ -10,7 +10,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
+ * This filter represents a select in the front end. This means that the user
+ * can select one or more values from a list of values.
  */
 @Getter
 @Setter

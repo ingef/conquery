@@ -22,14 +22,14 @@ public class CDateSetDeserializer extends StdDeserializer<CDateSet> {
 	public CDateSet deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		if (p.currentToken() == JsonToken.START_ARRAY) {
 			int[] ints = p.readValueAs(int[].class);
-			
+
 			CDateSet set = CDateSet.create();
-			for(int i=0; i<ints.length; i+=2) {
-				set.add(new CDateRange(ints[i], ints[i+1]));
+			for (int i = 0; i < ints.length; i += 2) {
+				set.add(new CDateRange(ints[i], ints[i + 1]));
 			}
 			return set;
 		}
-		else if(p.currentToken() == JsonToken.VALUE_STRING) {
+		else if (p.currentToken() == JsonToken.VALUE_STRING) {
 			return CDateSet.parse(p.readValueAs(String.class));
 		}
 		else {

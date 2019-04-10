@@ -1,6 +1,5 @@
 package com.bakdata.conquery;
 
-
 public class TestTags {
 
 	public static final String INTEGRATION_PROGRAMMATIC = "INTEGRATION_PROGRAMMATIC";

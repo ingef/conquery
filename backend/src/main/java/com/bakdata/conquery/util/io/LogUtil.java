@@ -16,24 +16,26 @@ public class LogUtil {
 	public String printPath(File f) {
 		return printPath(f.toPath());
 	}
-	
+
 	public String printPath(Path p) {
 		try {
 			return p.toRealPath(LinkOption.NOFOLLOW_LINKS).toString();
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			return p.toAbsolutePath().toString();
 		}
 	}
-	
+
 	public String printException(Exception e) {
 		try {
 			SBPrintWriter errorPrinter = Out.string().asPrint();
 			e.printStackTrace(errorPrinter);
 			errorPrinter.close();
 			return errorPrinter.getResult();
-		} catch (IOException e1) {
+		}
+		catch (IOException e1) {
 			throw new IllegalStateException(e1);
 		}
-		
+
 	}
 }
