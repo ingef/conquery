@@ -71,6 +71,7 @@ jobs:
 
     #format and commit and fail if changes
     - name: "Formatting"
+      if: type = push
       install: skip
       script:
         - mvn net.revelc.code.formatter:formatter-maven-plugin:2.9.0:format -Dconfigfile="utilities/eclipse.formatter.xml" -Dlineending=LF
