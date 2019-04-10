@@ -45,6 +45,17 @@ const StyledErrorMessage = styled(ErrorMessage)`
   margin: 2px 0;
 `;
 
+const sortTrees = trees => (a, b) => {
+  const aTree = trees[a];
+  const bTree = trees[b];
+
+  if (!!aTree.children === !!bTree.children) {
+    return aTree.label.localeCompare(bTree.label);
+  }
+
+  return !!aTree.children ? -1 : 1;
+};
+
 class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
@@ -54,20 +65,11 @@ class CategoryTreeList extends React.Component<PropsType> {
     return (
       !search.loading && (
         <Root show={activeTab === "categoryTrees"}>
-          {this.props.trees ? (
-            Object.keys(this.props.trees)
+          {trees ? (
+            Object.keys(trees)
               // Only take those that don't have a parent, they must be root
               .filter(treeId => !trees[treeId].parent)
-              .sort((a, b) => {
-                const aTree = trees[a];
-                const bTree = trees[b];
-
-                if (!!aTree.children === !!bTree.children) {
-                  return aTree.label.localeCompare(bTree.label);
-                }
-
-                return !!aTree.children ? -1 : 1;
-              })
+              .sort(sortTrees(trees))
               .map((treeId, i) => {
                 const tree = trees[treeId];
                 const rootConcept = getConceptById(treeId);

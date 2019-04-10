@@ -1,4 +1,5 @@
 const path = require("path");
+const glob = require("glob");
 const version = require("../../package.json").version;
 
 // Taken from:
@@ -328,13 +329,14 @@ module.exports = function(app, port) {
       const { query, limit } = req.body;
 
       const result = [];
-      const awards = require("./concepts/awards");
-      const movieAppearance = require("./concepts/movie_appearances");
-      const placeOfBirth = require("./concepts/place_of_birth");
 
-      result.push(...findConcepts(awards, query));
-      result.push(...findConcepts(movieAppearance, query));
-      result.push(...findConcepts(placeOfBirth, query));
+      const allConcepts = glob
+        .sync(path.join(__dirname, "./concepts/**/*.json"))
+        .map(file => {
+          const content = require(path.resolve(file));
+
+          result.push(...findConcepts(content, query));
+        });
 
       const returnedResult = result.slice(0, limit);
 
@@ -390,7 +392,7 @@ const fetchParents = (concepts, matches) => {
 const visitParentOf = (id, concepts, matches) => {
   const concept = concepts[id];
 
-  if (concept) {
+  if (concept && concept.parent) {
     matches.push(concept.parent);
 
     return visitParentOf(concept.parent, concepts, matches);

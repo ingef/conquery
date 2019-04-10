@@ -60,7 +60,10 @@ const initialState: StateType = {
 };
 
 const treeWithCounts = (tree, result, searchTerm) => {
-  const isNodeIncluded = includes(tree.id, searchTerm);
+  const isNodeIncluded =
+    includes(tree.label.toLowerCase(), searchTerm.toLowerCase()) ||
+    (tree.description &&
+      includes(tree.description.toLowerCase(), searchTerm.toLowerCase()));
 
   const children = tree.children
     ? tree.children.filter(key => includes(result, key))

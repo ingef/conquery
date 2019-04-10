@@ -8,7 +8,7 @@ import { defaultSuccess, defaultError } from "../common/actions";
 import type { TreeNodeIdType, SearchResult } from "../common/types/backend";
 import { isEmpty } from "../common/helpers";
 
-import { resetAllTrees } from "./globalTreeStoreHelper";
+import { resetAllTrees, search } from "./globalTreeStoreHelper";
 import {
   LOAD_TREES_START,
   LOAD_TREES_SUCCESS,
@@ -108,6 +108,7 @@ export const searchTrees = (datasetId: DatasetIdType, query: string) => {
 
     if (isEmpty(query)) return;
 
+    // return search(query).then(
     return api
       .searchConcepts(datasetId, query, SEARCH_LIMIT)
       .then(
