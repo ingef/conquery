@@ -12,9 +12,22 @@ before_install: mvn initialize -P setVersion
 jobs:
   include:
     - stage: "Tests"
+
+    #format and commit and fail if changes
+      name: "Formatting"
+      if: type = push
+      before_install: skip
+      install: skip
+      script:
+        - mvn net.revelc.code.formatter:formatter-maven-plugin:2.9.0:format -Dconfigfile="$TRAVIS_BUILD_DIR/utilities/eclipse.formatter.xml" -Dlineending=LF
+        - git diff --quiet #to fail if changes
+        - git checkout $TRAVIS_BRANCH
+        - git add -A
+        - git commit
+        - git push
       
     #test frontend
-      name: "Frontend Tests"
+    - name: "Frontend Tests"
       install: skip
       script:
         - mvn -B -V install -N
@@ -68,17 +81,6 @@ jobs:
         - cd backend
         - mvn -B -V -T 1C install -DskipTests
       script: mvn -B test -Dgroups="INTEGRATION_JSON"
-
-    #format and commit and fail if changes
-    - name: "Formatting"
-      if: type = push
-      before_install: skip
-      install: skip
-      script:
-        - mvn net.revelc.code.formatter:formatter-maven-plugin:2.9.0:format -Dconfigfile="$TRAVIS_BUILD_DIR/utilities/eclipse.formatter.xml" -Dlineending=LF
-        - git diff --quiet #to fail if changes
-        - git commit
-        - git push
   
 
     #Deploy
