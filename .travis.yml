@@ -24,8 +24,8 @@ jobs:
         - git checkout $TRAVIS_BRANCH
         - git commit -a -m autoformat
         - git config --global user.email "31185348+bakdata-bot@users.noreply.github.com"
-        - git config --global user.password "$GITHUB_TOKEN" 
-        - git push
+        - git remote add repo https://${GITHUB_TOKEN}@github.com/bakdata/conquery.git
+        - git push repo
       
     #test frontend
     - name: "Frontend Tests"
