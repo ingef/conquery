@@ -68,6 +68,16 @@ jobs:
         - cd backend
         - mvn -B -V -T 1C install -DskipTests
       script: mvn -B test -Dgroups="INTEGRATION_JSON"
+
+    #format and commit and fail if changes
+    - name: "Formatting"
+      install: skip
+      script:
+        - mvn net.revelc.code.formatter:formatter-maven-plugin:2.9.0:format -Dconfigfile="utilities/eclipse.formatter.xml" -Dlineending=LF
+        - git diff #to fail if changes
+        - git add -AND
+        - git commit
+        - git push
   
 
     #Deploy
