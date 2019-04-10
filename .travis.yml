@@ -22,11 +22,13 @@ jobs:
         - mvn net.revelc.code.formatter:formatter-maven-plugin:2.9.0:format -Dconfigfile="$TRAVIS_BUILD_DIR/utilities/eclipse.formatter.xml" -Dlineending=LF
         - >
           git diff-index --quiet HEAD || 
-          git checkout $TRAVIS_BRANCH &&
-          git commit -a -m autoformat &&
-          git config --global user.email "31185348+bakdata-bot@users.noreply.github.com" &&
-          git remote set-url origin https://${GITHUB_TOKEN}@github.com/bakdata/conquery.git &&
-          git push
+          {
+            git checkout $TRAVIS_BRANCH &&
+            git commit -a -m autoformat &&
+            git config --global user.email "31185348+bakdata-bot@users.noreply.github.com" &&
+            git remote set-url origin "https://${GITHUB_TOKEN}@github.com/bakdata/conquery.git" &&
+            git push
+          }
       
     #test frontend
     - name: "Frontend Tests"
