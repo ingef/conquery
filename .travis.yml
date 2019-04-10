@@ -76,8 +76,7 @@ jobs:
       install: skip
       script:
         - mvn net.revelc.code.formatter:formatter-maven-plugin:2.9.0:format -Dconfigfile="$TRAVIS_BUILD_DIR/utilities/eclipse.formatter.xml" -Dlineending=LF
-        - git diff #to fail if changes
-        - git add -A
+        - git diff --quiet #to fail if changes
         - git commit
         - git push
   
