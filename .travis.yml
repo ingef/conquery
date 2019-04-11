@@ -24,8 +24,8 @@ jobs:
           git diff-index --quiet HEAD || 
           {
             git checkout $TRAVIS_BRANCH &&
+            git config user.email "31185348+bakdata-bot@users.noreply.github.com" &&
             git commit -a -m autoformat &&
-            git config --global user.email "31185348+bakdata-bot@users.noreply.github.com" &&
             git remote set-url origin "https://${GITHUB_TOKEN}@github.com/bakdata/conquery.git" &&
             git push
           }
