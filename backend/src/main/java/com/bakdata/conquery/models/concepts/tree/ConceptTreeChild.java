@@ -21,72 +21,61 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 
 	@JsonIgnore
 	private transient int[] prefix;
-	@JsonManagedReference // @Valid
-	@Getter
-	@Setter
+	@JsonManagedReference //@Valid
+	@Getter @Setter
 	private List<ConceptTreeChild> children = Collections.emptyList();
-	@JsonIgnore
-	@Getter
-	@Setter
+	@JsonIgnore @Getter @Setter
 	private int localId;
-	@JsonBackReference
-	@Getter
-	@Setter
+	@JsonBackReference @Getter @Setter
 	private ConceptTreeNode<?> parent;
-	@JsonIgnore
-	@Getter
-	@Setter
-	private int depth = -1;
-	@Getter
-	@NotNull
-	@Setter
+	@JsonIgnore @Getter @Setter
+	private int depth=-1;
+	@Getter @NotNull @Setter
 	private CTCondition condition = null;
 
-	@JsonIgnore
-	@Getter
-	@Setter
+	@JsonIgnore @Getter @Setter
 	private TreeChildPrefixIndex childIndex;
 
-	@Override
-	@JsonIgnore
+	@Override @JsonIgnore
 	public int[] getPrefix() {
-		if (prefix == null) {
+		if(prefix==null) {
 			int[] pPrefix = getParent().getPrefix();
-			prefix = Arrays.copyOf(pPrefix, pPrefix.length + 1);
-			prefix[prefix.length - 1] = this.getLocalId();
+			prefix = Arrays.copyOf(pPrefix, pPrefix.length+1);
+			prefix[prefix.length-1] = this.getLocalId();
 		}
 		return prefix;
 	}
-
+	
 	public void init() throws ConceptConfigurationException {
-		if (condition != null) {
+		if(condition!=null) {
 			condition.init(this);
 		}
 	}
 	/*
-	 * @Override public void incMatchingEntries(CDateRange conceptDateRange) {
-	 * super.incMatchingEntries(conceptDateRange); if(getParent()!=null)
-	 * getParent().incMatchingEntries(conceptDateRange); }
-	 */
+	@Override
+	public void incMatchingEntries(CDateRange conceptDateRange) {
+		super.incMatchingEntries(conceptDateRange);
+		if(getParent()!=null)
+			getParent().incMatchingEntries(conceptDateRange);
+	}*/
 
 	@Override
 	public ConceptTreeChildId createId() {
 		return new ConceptTreeChildId(parent.getId(), getName());
 	}
 
-	@Override
-	@JsonIgnore
+	@Override @JsonIgnore
 	public TreeConcept getConcept() {
 		ConceptTreeNode<?> n = this;
-		while (n != null) {
-			if (n instanceof TreeConcept) {
-				return (TreeConcept) n;
+		while(n!=null) {
+			if(n instanceof TreeConcept) {
+				return (TreeConcept)n;
 			}
 			n = n.getParent();
 		}
-		throw new IllegalStateException("The node " + this + " seems to have no root");
+		throw new IllegalStateException("The node "+this+" seems to have no root");
 	}
-
+	
 	@Override
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return conceptPrefix.length > depth && conceptPrefix[depth] == localId;

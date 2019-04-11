@@ -14,25 +14,23 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-@CPSType(id = "CONCAT", base = Output.class)
+@Getter @Setter @CPSType(id="CONCAT", base=Output.class)
 public class ConcatOutput extends Output {
 
 	private static final long serialVersionUID = 1L;
 	public static final String DELIMETER = "|";
-	private static final String DOUBLE_DELIMETER = DELIMETER + DELIMETER;
-
+	private static final String DOUBLE_DELIMETER = DELIMETER+DELIMETER;
+	
 	@NotEmpty
 	private int[] inputColumns;
-
+	
 	@Override
-	public List<Object> createOutput(CType<?, ?> type, String[] row, int source, long sourceLine) throws ParsingException {
+	public List<Object> createOutput(CType<?,?> type, String[] row, int source, long sourceLine) throws ParsingException {
 		StringBuilder result = new StringBuilder();
-		for (int c : inputColumns) {
+		for(int c:inputColumns) {
 			result.append(escape(row[c])).append(DELIMETER);
 		}
-		result.setLength(result.length() - 1);
+		result.setLength(result.length()-1);
 		return Collections.singletonList(type.parse(result.toString()));
 	}
 

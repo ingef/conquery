@@ -8,12 +8,7 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class BufferUtil {
-
 	public static String toUtf8String(IoBuffer buffer) {
-		return new String(
-			buffer.array(),
-			buffer.arrayOffset() + buffer.position(),
-			buffer.limit() - buffer.position(),
-			StandardCharsets.UTF_8);
+		return new String(buffer.array(), buffer.arrayOffset()+ buffer.position(), buffer.limit()-buffer.position(), StandardCharsets.UTF_8);
 	}
 }

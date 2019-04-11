@@ -13,14 +13,13 @@ import com.google.common.collect.PeekingIterator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper=false)
 public class MandatorId extends PermissionOwnerId<Mandator> {
-
 	public static final String TYPE = "mandator";
-
+	
 	@Getter
 	private final String mandator;
-
+	
 	public MandatorId(String mandator) {
 		super();
 		this.mandator = mandator;
@@ -31,10 +30,10 @@ public class MandatorId extends PermissionOwnerId<Mandator> {
 		components.add(TYPE);
 		components.add(mandator);
 	}
-
+	
 	enum Parser implements IId.Parser<MandatorId> {
 		INSTANCE;
-
+		
 		@Override
 		public MandatorId parse(PeekingIterator<String> parts) {
 			com.bakdata.conquery.models.identifiable.ids.IId.Parser<?> parser = createParser(PermissionOwnerId.class);

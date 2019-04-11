@@ -26,29 +26,28 @@ public class IdMappingTest {
 		return Stream.of(Arguments.of(data));
 	}
 
-	@ParameterizedTest
-	@MethodSource({ "testData" })
+	@ParameterizedTest @MethodSource({ "testData" })
 	public void generalTest(List<Pair<String, List<String>>> data) {
 		TestIdMappingConfig mappingConfig = new TestIdMappingConfig();
 	}
 
 	public class TestIdMappingConfig extends IdMappingConfig {
-
-		@Override
+				@Override
 		public IdMappingAccessor[] getIdAccessors() {
 			return new IdMappingAccessor[] {
 				new DefaultIdMappingAccessor(this, new int[] { 0 }),
-				new DefaultIdMappingAccessor(this, new int[] { 1, 2 }) };
+				new DefaultIdMappingAccessor(this, new int[] { 1, 2 })
+			};
 		}
 
 		@Override
 		public String[] getPrintIdFields() {
-			return new String[] { "first", "second", "third" };
+			return new String[]{"first", "second", "third"};
 		}
 
 		@Override
 		public String[] getHeader() {
-			return new String[] { "first", "second", "third" };
+			return new String[]{"first", "second", "third"};
 		}
 
 	}

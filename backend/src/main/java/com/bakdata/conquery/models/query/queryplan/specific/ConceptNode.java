@@ -19,7 +19,7 @@ public class ConceptNode extends QPChainNode {
 	private final CQTable table;
 	private boolean active = false;
 	private EntityRow currentRow = null;
-
+	
 	public ConceptNode(ConceptElement[] concepts, CQTable table, QPNode child) {
 		super(child);
 		this.concepts = concepts;
@@ -35,21 +35,19 @@ public class ConceptNode extends QPChainNode {
 	@Override
 	public void nextEvent(Block block, int event) {
 		if (active) {
-			// check concepts
+			//check concepts
 			int[] mostSpecificChildren;
 			if (currentRow.getCBlock().getMostSpecificChildren() != null
 				&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
 
-				for (ConceptElement ce : concepts) { // see #177 we could improve this by building a a prefix tree over
-														// concepts.prefix
+				for (ConceptElement ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.matchesPrefix(mostSpecificChildren)) {
 						getChild().nextEvent(block, event);
 					}
 				}
 			}
 			else {
-				for (ConceptElement ce : concepts) { // see #178 we could improve this by building a a prefix tree over
-														// concepts.prefix
+				for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.getConcept() == ce) {
 						getChild().nextEvent(block, event);
 					}
@@ -57,7 +55,7 @@ public class ConceptNode extends QPChainNode {
 			}
 		}
 	}
-
+	
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();
@@ -73,11 +71,11 @@ public class ConceptNode extends QPChainNode {
 		super.collectRequiredTables(requiredTables);
 		requiredTables.add(table.getResolvedConnector().getTable().getId());
 	}
-
+	
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		active = table.getResolvedConnector().getTable().equals(currentTable);
-		if (active)
+		if(active)
 			super.nextTable(ctx, currentTable);
 	}
 }

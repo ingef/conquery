@@ -28,7 +28,7 @@ public class MemoryClassGenerator extends ClassGenerator {
 
 	@Override
 	public Class<?> getClassByName(String fullClassName) throws ClassNotFoundException {
-		return Class.forName(fullClassName, true, classLoader);
+		return Class.forName(fullClassName,true, classLoader);
 	}
 
 	@Override
@@ -36,9 +36,9 @@ public class MemoryClassGenerator extends ClassGenerator {
 		try (JavaFileManager fileManager = new MemJavaFileManager(compiler, classLoader)) {
 			StringWriter output = new StringWriter();
 			CompilationTask task = compiler.getTask(output, fileManager, null, Arrays.asList("-g:none"), null, files);
-
+			
 			if (!task.call()) {
-				throw new IllegalStateException("Failed to compile: " + output);
+				throw new IllegalStateException("Failed to compile: "+output);
 			}
 		}
 	}
@@ -49,8 +49,7 @@ public class MemoryClassGenerator extends ClassGenerator {
 		for (String cl : generated) {
 			try {
 				getClassByName(cl);
-			}
-			catch (ClassNotFoundException e) {
+			} catch (ClassNotFoundException e) {
 				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
 			}
 		}

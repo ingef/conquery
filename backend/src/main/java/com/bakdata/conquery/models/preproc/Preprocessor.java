@@ -48,16 +48,15 @@ public class Preprocessor {
 	public List<ImportDescriptor> findInitialDescriptors(PreprocessingDirectories dirs, Validator validator) throws IOException, JSONException {
 		List<ImportDescriptor> l = new ArrayList<>();
 		File in = dirs.getDescriptions().getAbsoluteFile();
-		for (File descriptionFile : in.listFiles()) {
-			if (descriptionFile.getName().endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)) {
+		for(File descriptionFile:in.listFiles()) {
+			if(descriptionFile.getName().endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)) {
 				InputFile file = InputFile.fromDescriptionFile(descriptionFile, dirs);
 				try {
 					ImportDescriptor descr = file.readDescriptor(validator);
 					descr.setInputFile(file);
 					l.add(descr);
-				}
-				catch (Exception e) {
-					log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
+				} catch(Exception e) {
+					log.error("Failed to process "+LogUtil.printPath(descriptionFile), e);
 				}
 			}
 		}
@@ -70,20 +69,17 @@ public class Preprocessor {
 			return;
 		}
 
-		File tmp = ConqueryFileUtil
-			.createTempFile(
-				descriptor.getInputFile().getPreprocessedFile().getName(),
-				ConqueryConstants.EXTENSION_PREPROCESSED.substring(1));
-		if (!Files.isWritable(tmp.getParentFile().toPath())) {
-			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(tmp.getParentFile()));
+		File tmp = ConqueryFileUtil.createTempFile(descriptor.getInputFile().getPreprocessedFile().getName(), ConqueryConstants.EXTENSION_PREPROCESSED.substring(1));
+		if(!Files.isWritable(tmp.getParentFile().toPath())) {
+			throw new IllegalArgumentException("No write permission in "+LogUtil.printPath(tmp.getParentFile()));
 		}
-		if (!Files.isWritable(descriptor.getInputFile().getPreprocessedFile().toPath().getParent())) {
-			throw new IllegalArgumentException(
-				"No write permission in " + LogUtil.printPath(descriptor.getInputFile().getPreprocessedFile().toPath().getParent()));
+		if(!Files.isWritable(descriptor.getInputFile().getPreprocessedFile().toPath().getParent())) {
+			throw new IllegalArgumentException("No write permission in "+LogUtil.printPath(descriptor.getInputFile().getPreprocessedFile().toPath().getParent()));
 		}
-		if (descriptor.getInputFile().getPreprocessedFile().exists()) {
+		if(descriptor.getInputFile().getPreprocessedFile().exists()) {
 			FileUtils.forceDelete(descriptor.getInputFile().getPreprocessedFile());
 		}
+
 
 		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
 		Preprocessed result = new Preprocessed(config.getPreprocessor(), descriptor);
@@ -91,24 +87,19 @@ public class Preprocessor {
 		try (HCFile outFile = new HCFile(tmp, true)) {
 			try (com.esotericsoftware.kryo.io.Output out = new com.esotericsoftware.kryo.io.Output(outFile.writeContent())) {
 				result.setBlockOut(out);
-				long lineId = config.getCsv().isSkipHeader() ? 1 : 0;
-				for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
+				long lineId = config.getCsv().isSkipHeader()?1:0;
+				for(int inputSource=0;inputSource<descriptor.getInputs().length;inputSource++) {
 					Input input = descriptor.getInputs()[inputSource];
-					final String name = descriptor.toString() + ":" + descriptor.getTable() + "[" + inputSource + "]";
+					final String name = descriptor.toString()+":"+descriptor.getTable()+"["+inputSource+"]";
 					ConqueryMDC.setLocation(name);
 
-					try (CSV csv = new CSV(config.getCsv(), input.getSourceFile())) {
+					try(CSV csv = new CSV(config.getCsv(), input.getSourceFile())) {
 						Iterator<String[]> it = csv.iterateContent(log);
 
-						while (it.hasNext()) {
+						while(it.hasNext()) {
 							String[] row = it.next();
-							Integer primary = getPrimary(
-								(StringType) result.getPrimaryColumn().getType(),
-								row,
-								lineId,
-								inputSource,
-								input.getPrimary());
-							if (primary != null) {
+							Integer primary = getPrimary((StringType) result.getPrimaryColumn().getType(), row, lineId, inputSource, input.getPrimary());
+							if(primary != null) {
 								int primaryId = result.addPrimary(primary);
 								parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
 							}
@@ -122,17 +113,11 @@ public class Preprocessor {
 						}
 					}
 				}
-				// find the optimal subtypes
+				//find the optimal subtypes
 				log.info("finding optimal column types");
-				log
-					.info(
-						"{}.{}: {} -> {}",
-						result.getName(),
-						result.getPrimaryColumn().getName(),
-						result.getPrimaryColumn().getOriginalType(),
-						result.getPrimaryColumn().getType());
+				log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getOriginalType(), result.getPrimaryColumn().getType());
 
-				for (PPColumn c : result.getColumns()) {
+				for(PPColumn c:result.getColumns()) {
 					c.findBestType();
 					log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getOriginalType(), c.getType());
 				}
@@ -144,6 +129,7 @@ public class Preprocessor {
 				result.writeHeader(out);
 			}
 		}
+
 
 		FileUtils.moveFile(tmp, result.getFile().getPreprocessedFile());
 
@@ -186,39 +172,37 @@ public class Preprocessor {
 	private Integer getPrimary(StringType primaryType, String[] row, long lineId, int source, Output primaryOutput) {
 		try {
 			List<Object> primary = primaryOutput.createOutput(primaryType, row, source, lineId);
-			if (primary.size() != 1 || !(primary.get(0) instanceof Integer)) {
-				throw new IllegalStateException("The returned primary was the illegal value " + primary + " in " + Arrays.toString(row));
+			if(primary.size()!=1 || !(primary.get(0) instanceof Integer)) {
+				throw new IllegalStateException("The returned primary was the illegal value "+primary+" in "+Arrays.toString(row));
 			}
-			return (int) primary.get(0);
-		}
-		catch (ParsingException e) {
+			return (int)primary.get(0);
+		} catch (ParsingException e) {
 			long errors = errorCounter.getAndIncrement();
-			if (errors < MAX_ERROR_PRINTING) {
-				log.warn("Failed to parse primary from line:" + lineId + " content:" + Arrays.toString(row), e);
+			if(errors<MAX_ERROR_PRINTING) {
+				log.warn("Failed to parse primary from line:"+lineId+" content:"+Arrays.toString(row), e);
 			}
-			else if (errors == MAX_ERROR_PRINTING) {
-				log.warn("More erroneous lines occurred. Only the first " + MAX_ERROR_PRINTING + " were printed.");
+			else if(errors == MAX_ERROR_PRINTING) {
+				log.warn("More erroneous lines occurred. Only the first "+MAX_ERROR_PRINTING+" were printed.");
 			}
 			return null;
 		}
 	}
 
 	private static boolean checkExistingHash(ImportDescriptor descriptor) throws IOException {
-		if (descriptor.getInputFile().getPreprocessedFile().exists()) {
+		if(descriptor.getInputFile().getPreprocessedFile().exists()) {
 			log.info("EXISTS ALREADY");
 			int currentHash = descriptor.calculateValidityHash();
 			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false)) {
 				try (InputStream is = outFile.readHeader()) {
 					PPHeader header = Jackson.BINARY_MAPPER.readValue(is, PPHeader.class);
-					if (header.getValidityHash() == currentHash) {
+					if(header.getValidityHash()==currentHash) {
 						log.info("HASH STILL VALID");
 						return true;
 					}
 					else {
 						log.info("HASH OUTDATED");
 					}
-				}
-				catch (Exception e) {
+				} catch(Exception e) {
 					log.warn("HEADER READING FAILED", e);
 				}
 			}
@@ -229,49 +213,54 @@ public class Preprocessor {
 	private static List<Object[]> generateOutput(Input input, PPColumn[] columns, String[] row, int source, long lineId) throws ParsingException {
 		List<Object[]> resultRows = new ArrayList<>();
 		int oid = 0;
-		for (int c = 0; c < input.getOutput().length; c++) {
+		for(int c = 0; c<input.getOutput().length; c++) {
 			Output out = input.getOutput()[c];
-			CType<?, ?> type = columns[c].getType();
+			CType<?,?> type = columns[c].getType();
 			Class<?> jType = Primitives.wrap(type.getPrimitiveType());
 
 			List<Object> result;
 			result = out.createOutput(type, row, source, lineId);
-			if (result == null) {
-				throw new IllegalStateException(out + " returned null result for " + Arrays.toString(row));
+			if(result==null) {
+				throw new IllegalStateException(out+" returned null result for "+Arrays.toString(row));
 			}
-			else if (result.stream().filter(Objects::nonNull).anyMatch(Predicates.not(jType::isInstance))) {
+			else if(result.stream().filter(Objects::nonNull).anyMatch(Predicates.not(jType::isInstance))) {
 				throw new IllegalStateException(
-					out
+						out
 						+ " returned result with wrong types for "
 						+ Arrays.toString(row)
 						+ " "
-						+ result.stream().filter(Objects::nonNull).filter(Predicates.not(jType::isInstance)).collect(Collectors.toList()));
+						+ result.stream()
+							.filter(Objects::nonNull)
+							.filter(Predicates.not(jType::isInstance))
+							.collect(Collectors.toList())
+				);
 			}
 
-			// if the result is a single NULL and we don't want to include such rows
-			if (result.size() == 1 && result.get(0) == null && out.isRequired()) {
+
+			//if the result is a single NULL and we don't want to include such rows
+			if(result.size()==1 && result.get(0)==null && out.isRequired()) {
 				return Collections.emptyList();
 			}
 			else {
-				if (resultRows.isEmpty()) {
-					for (Object v : result) {
+				if(resultRows.isEmpty()) {
+					for(Object v:result) {
 						Object[] newRow = new Object[input.getOutput().length];
-						newRow[oid] = v;
+						newRow[oid]=v;
 						resultRows.add(newRow);
 					}
 				}
 				else {
-					if (result.size() == 1) {
-						for (Object[] resultRow : resultRows) {
-							resultRow[oid] = result.get(0);
+					if(result.size()==1) {
+						for(Object[] resultRow:resultRows) {
+							resultRow[oid]=result.get(0);
 						}
 					}
 					else {
-						List<Object[]> newResultRows = new ArrayList<>(resultRows.size() * result.size());
-						for (Object v : result) {
-							for (Object[] resultRow : resultRows) {
-								Object[] newResultRow = Arrays.copyOf(resultRow, resultRow.length);
-								newResultRow[oid] = v;
+						List<Object[]> newResultRows = new ArrayList<>(resultRows.size()*result.size());
+						for(Object v:result) {
+							for(Object[] resultRow:resultRows) {
+								Object[] newResultRow = Arrays.copyOf(resultRow,resultRow.length);
+								newResultRow[oid]=v;
 								newResultRows.add(newResultRow);
 							}
 						}

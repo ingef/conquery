@@ -36,23 +36,29 @@ public class IdRefrenceTest {
 		registry.register(table);
 		User user = new User("usermail", "userlabel");
 		registry.register(user);
-
-		String json = Jackson.MAPPER.writeValueAsString(new ListHolder(Collections.singletonList(table), Collections.singletonList(user)));
-
-		assertThat(json).contains("\"user.usermail\"").contains("\"dataset.table\"");
-
+		
+		String json = Jackson.MAPPER.writeValueAsString(
+			new ListHolder(
+				Collections.singletonList(table),
+				Collections.singletonList(user)
+			)
+		);
+		
+		assertThat(json)
+			.contains("\"user.usermail\"")
+			.contains("\"dataset.table\"");
+		
 		ListHolder holder = new SingletonNamespaceCollection(registry)
 			.injectInto(Jackson.MAPPER.readerFor(ListHolder.class))
 			.readValue(json);
-
+		
 		assertThat(holder.getUsers().get(0)).isSameAs(user);
 		assertThat(holder.getTables().get(0)).isSameAs(table);
 	}
-
+	
 	@Getter
-	@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+	@RequiredArgsConstructor(onConstructor_=@JsonCreator)
 	public static class ListHolder {
-
 		@NsIdRefCollection
 		private final List<Table> tables;
 		@MetaIdRefCollection

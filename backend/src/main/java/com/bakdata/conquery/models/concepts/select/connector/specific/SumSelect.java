@@ -56,15 +56,12 @@ public class SumSelect extends Select {
 	@Override
 	public Aggregator<? extends Number> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregator<>(
-				getAggregator(),
-				getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
+			return new DistinctValuesWrapperAggregator<>(getAggregator(), getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
 		}
 		else {
 			return getAggregator();
 		}
 	}
-
 	private ColumnAggregator<? extends Number> getAggregator() {
 		if (subtractColumn == null) {
 			switch (getColumn().getType()) {
@@ -81,13 +78,8 @@ public class SumSelect extends Select {
 			}
 		}
 		else {
-			if (getColumn().getType() != getSubtractColumn().getType()) {
-				throw new IllegalStateException(
-					String
-						.format(
-							"Column types are not the same: Column %s\tSubstractColumn %s",
-							getColumn().getType(),
-							getSubtractColumn().getType()));
+			if(getColumn().getType() != getSubtractColumn().getType()) {
+				throw new IllegalStateException(String.format("Column types are not the same: Column %s\tSubstractColumn %s", getColumn().getType(), getSubtractColumn().getType()));
 			}
 			switch (getColumn().getType()) {
 				case INTEGER:

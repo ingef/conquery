@@ -11,10 +11,8 @@ import lombok.Setter;
 import lombok.ToString;
 
 @ToString
-@Getter
-@Setter
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-@CPSType(id = "CONTAINED", base = EntityResult.class)
+@Getter @Setter @RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@CPSType(id="CONTAINED", base=EntityResult.class)
 public class SinglelineContainedEntityResult implements ContainedEntityResult {
 
 	private final int entityId;

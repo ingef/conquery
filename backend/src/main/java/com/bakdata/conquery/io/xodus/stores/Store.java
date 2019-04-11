@@ -16,11 +16,11 @@ public interface Store<KEY, VALUE> extends Closeable {
 	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer);
 
 	public void update(KEY key, VALUE value) throws JSONException;
-
+	
 	public void remove(KEY key);
 
 	public void fillCache();
-
+	
 	public int count();
 
 	public Collection<VALUE> getAll();

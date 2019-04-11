@@ -36,90 +36,91 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@Slf4j
+@Getter @Setter @NoArgsConstructor @Slf4j
 public class Import extends NamedImpl<ImportId> {
 
-	@Valid
-	@NotNull
+	@Valid @NotNull
 	private TableId table;
-	@JsonManagedReference
-	@NotNull
+	@JsonManagedReference @NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
 	private long numberOfBlocks;
 	private long numberOfEntries;
 	@JsonIgnore
 	private transient BlockFactory blockFactory;
-
+	
 	@Override
 	public ImportId createId() {
 		return new ImportId(table, getName());
 	}
-
+	
 	@JsonIgnore
 	public int getNullWidth() {
-		// count the columns which can not store null
-		return Ints
-			.checkedCast(
-				Arrays
-					.stream(columns)
-					.filter(col -> col.getType().requiresExternalNullStore() && col.getType().getNullLines() < col.getType().getLines())
-					.count());
+		//count the columns which can not store null
+		return Ints.checkedCast(Arrays.stream(columns).
+				filter(col -> col.getType().requiresExternalNullStore()
+						&& col.getType().getNullLines() < col.getType().getLines())
+				.count());
 	}
 
 	public void loadExternalInfos(NamespacedStorage storage) {
-		// see #149 primary column?
-		for (ImportColumn col : columns) {
+		//see #149  primary column?
+		for(ImportColumn col:columns) {
 			col.getType().loadExternalInfos(storage);
 		}
 	}
 
 	@JsonIgnore
 	public synchronized BlockFactory getBlockFactory() {
-		if (blockFactory == null) {
+		if(blockFactory == null) {
 			String eventSource = null;
 			String blockSource = null;
 			String factorySource = null;
-			try (ClassGenerator gen = ClassGenerator.create()) {
+			try(ClassGenerator gen = ClassGenerator.create()) {
 				String suffix = ConqueryEscape.escape(this.getId().toString().replace('.', '_'));
-
+				
 				eventSource = applyTemplate("EventTemplate.ftl", suffix);
 				blockSource = applyTemplate("BlockTemplate.ftl", suffix);
 				factorySource = applyTemplate("BlockFactoryTemplate.ftl", suffix);
-
-				if (DebugMode.isActive()) {
+				
+				if(DebugMode.isActive()) {
 					log.debug("Generated classes for {}:\n{}\n{}\n{}", this, eventSource, blockSource, factorySource);
 				}
-
-				gen.addForCompile("com.bakdata.conquery.models.events.generation.Event_" + suffix, eventSource);
-				gen.addForCompile("com.bakdata.conquery.models.events.generation.Block_" + suffix, blockSource);
-				gen.addForCompile("com.bakdata.conquery.models.events.generation.BlockFactory_" + suffix, factorySource);
-
+				
+				gen.addForCompile(
+					"com.bakdata.conquery.models.events.generation.Event_"+suffix,
+					eventSource
+				);
+				gen.addForCompile(
+					"com.bakdata.conquery.models.events.generation.Block_"+suffix,
+					blockSource
+				);
+				gen.addForCompile(
+					"com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix,
+					factorySource
+				);
+				
 				gen.compile();
-
+				
 				blockFactory = (BlockFactory) gen
-					.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_" + suffix)
+					.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix)
 					.getConstructor()
 					.newInstance();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Failed to generate classes for {}:\n{}\n{}\n{}", this, eventSource, blockSource, factorySource);
 				throw new IllegalStateException("Failed to generate Block/Event classes", e);
 			}
 		}
-
+		
 		return blockFactory;
 	}
-
+	
 	private String applyTemplate(String templateName, String suffix) {
-		try (Reader reader = In.resource(BlockFactory.class, templateName).withUTF8().asReader();
-			StringWriter writer = new StringWriter()) {
-
+		try(Reader reader = In.resource(BlockFactory.class, templateName).withUTF8().asReader();
+				StringWriter writer = new StringWriter()) {
+			
 			Configuration cfg = Freemarker.createForJavaTemplates();
-
-			new Template("template_" + templateName, reader, cfg)
+	
+			new Template("template_"+templateName, reader, cfg)
 				.process(
 					ImmutableMap
 						.builder()
@@ -129,13 +130,13 @@ public class Import extends NamedImpl<ImportId> {
 						.put("safeName", SafeName.INSTANCE)
 						.put("safeJavaString", SafeJavaString.INSTANCE)
 						.build(),
-					writer);
-
+					writer
+			);
+			
 			writer.close();
 			return writer.toString();
-		}
-		catch (TemplateException | IOException e) {
-			throw new IllegalStateException("Failed to generate class " + templateName + " for " + this, e);
+		} catch (TemplateException | IOException e) {
+			throw new IllegalStateException("Failed to generate class "+templateName+" for "+this, e);
 		}
 	}
 
@@ -144,7 +145,7 @@ public class Import extends NamedImpl<ImportId> {
 		imp.setTable(new TableId(new DatasetId("preprocessing"), table));
 		imp.setName(tag);
 		ImportColumn[] impCols = new ImportColumn[columns.length];
-		for (int c = 0; c < impCols.length; c++) {
+		for(int c = 0; c < impCols.length; c++) {
 			ImportColumn col = new ImportColumn();
 			col.setName(columns[c].getName());
 			col.setParent(imp);
@@ -153,8 +154,8 @@ public class Import extends NamedImpl<ImportId> {
 			impCols[c] = col;
 		}
 		imp.setColumns(impCols);
-
+		
 		return imp;
 	}
-
+	
 }

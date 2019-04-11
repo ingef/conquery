@@ -15,27 +15,27 @@ public interface IRange<VALUE extends Comparable, CLASS extends IRange<VALUE, CL
 	CLASS span(@NonNull CLASS other);
 
 	default com.google.common.collect.Range<VALUE> toGuavaRange() {
-		if (isAtLeast()) {
+		if(isAtLeast()) {
 			return com.google.common.collect.Range.atLeast(getMin());
 		}
-		if (isAtMost()) {
+		if(isAtMost()) {
 			return com.google.common.collect.Range.atMost(getMax());
 		}
-		if (isAll()) {
+		if(isAll()) {
 			return com.google.common.collect.Range.all();
 		}
 		return com.google.common.collect.Range.closed(getMin(), getMax());
 	}
 
 	default boolean intersects(CLASS other) {
-		if (other == null) {
+		if(other == null) {
 			return false;
 		}
 
 		return other.contains(this.getMin())
-			|| other.contains(this.getMax())
-			|| this.contains(other.getMin())
-			|| this.contains(this.getMax());
+				|| other.contains(this.getMax())
+				|| this.contains(other.getMin())
+				|| this.contains(this.getMax());
 	}
 
 	default boolean isOpen() {

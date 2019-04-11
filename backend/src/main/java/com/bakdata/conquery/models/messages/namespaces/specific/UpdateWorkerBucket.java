@@ -11,17 +11,15 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id = "UPDATE_SLAVE_IDENTITY", base = NamespacedMessage.class)
-@Slf4j
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
+@CPSType(id="UPDATE_SLAVE_IDENTITY", base=NamespacedMessage.class) @Slf4j
+@RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter
 public class UpdateWorkerBucket extends WorkerMessage {
 
 	private final WorkerInformation info;
-
+	
 	@Override
 	public void react(Worker context) throws Exception {
-		// new included buckets from master
+		//new included buckets from master
 		context.getInfo().setIncludedBuckets(info.getIncludedBuckets());
 		context.getStorage().updateWorker(info);
 	}

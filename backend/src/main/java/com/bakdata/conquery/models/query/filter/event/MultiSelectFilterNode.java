@@ -7,8 +7,7 @@ import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode
 import com.bakdata.conquery.models.types.specific.IStringType;
 
 /**
- * Entity is included when the number of values for a specified column are
- * within a given range.
+ * Entity is included when the number of values for a specified column are within a given range.
  */
 public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 
@@ -30,6 +29,7 @@ public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 			selectedValues[index] = parsed;
 		}
 	}
+
 
 	@Override
 	public boolean checkEvent(Block block, int event) {

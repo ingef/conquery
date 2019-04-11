@@ -29,14 +29,18 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[] { getAddendColumn(), getSubtrahendColumn() };
+		return new Column[]{getAddendColumn(), getSubtrahendColumn()};
 	}
 
 	@Override
 	public void aggregateEvent(Block block, int event) {
-		double addend = block.has(event, getAddendColumn()) ? block.getReal(event, getAddendColumn()) : 0;
+		double addend = block.has(event, getAddendColumn())
+								? block.getReal(event, getAddendColumn())
+								: 0;
 
-		double subtrahend = block.has(event, getSubtrahendColumn()) ? block.getReal(event, getSubtrahendColumn()) : 0;
+		double subtrahend = block.has(event, getSubtrahendColumn())
+									? block.getReal(event, getSubtrahendColumn())
+									: 0;
 
 		sum = sum + addend - subtrahend;
 	}
@@ -45,7 +49,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	public Double getAggregationResult() {
 		return sum;
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;

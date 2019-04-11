@@ -15,12 +15,12 @@ public class IdReferenceSerializer extends StdSerializer<Identifiable> {
 	public IdReferenceSerializer() {
 		super(Identifiable.class);
 	}
-
+	
 	@Override
 	public void serialize(Identifiable value, JsonGenerator gen, SerializerProvider provider) throws IOException {
 		gen.writeString(value.getId().toString());
 	}
-
+	
 	@Override
 	public void serializeWithType(Identifiable value, JsonGenerator gen, SerializerProvider serializers, TypeSerializer typeSer) throws IOException {
 		serialize(value, gen, serializers);

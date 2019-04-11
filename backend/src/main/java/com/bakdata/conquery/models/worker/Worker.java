@@ -18,7 +18,6 @@ import lombok.Getter;
 import lombok.Setter;
 
 public class Worker implements MessageSender.Transforming<NamespaceMessage, NetworkMessage<?>>, Closeable {
-
 	@Getter
 	private final JobManager jobManager;
 	@Getter
@@ -29,7 +28,7 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	private final WorkerInformation info;
 	@Setter
 	private NetworkSession session;
-
+	
 	public Worker(WorkerInformation info, JobManager jobManager, WorkerStorage storage, QueryExecutor queryExecutor) {
 		this.info = info;
 		this.jobManager = jobManager;
@@ -48,13 +47,13 @@ public class Worker implements MessageSender.Transforming<NamespaceMessage, Netw
 	public MasterMessage transform(NamespaceMessage message) {
 		return new ForwardToNamespace(info.getDataset(), message);
 	}
-
+	
 	@Override
 	public void close() throws IOException {
 		queryExecutor.close();
 		storage.close();
 	}
-
+	
 	@Override
 	public String toString() {
 		return "Worker[" + info.getId() + ", " + session.getLocalAddress() + "]";

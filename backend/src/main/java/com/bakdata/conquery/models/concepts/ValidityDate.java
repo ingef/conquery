@@ -12,17 +12,14 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@NoArgsConstructor
+@Getter @Setter @NoArgsConstructor
 public class ValidityDate extends Labeled<ValidityDateId> {
 
-	@NsIdRef
-	@NotNull
+	@NsIdRef @NotNull
 	private Column column;
 	@JsonBackReference
 	private Connector connector;
-
+	
 	@Override
 	public ValidityDateId createId() {
 		return new ValidityDateId(connector.getId(), getName());

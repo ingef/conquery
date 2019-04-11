@@ -24,9 +24,8 @@ public class Weigher {
 	public long combine(long leftWeight, long middleWeight, long rightWeight) {
 		long mean = (leftWeight + middleWeight + rightWeight) / 3;
 
-		return -((leftWeight - mean) * (leftWeight - mean)
-			+ (middleWeight - mean) * (middleWeight - mean)
-			+ (rightWeight - mean) * (rightWeight - mean));
+		return -((leftWeight - mean) * (leftWeight - mean) + (middleWeight - mean) * (middleWeight - mean)
+				+ (rightWeight - mean) * (rightWeight - mean));
 	}
 
 	private long calculateWeight(ABytesNode node) {
@@ -34,10 +33,8 @@ public class Weigher {
 			return 0;
 		}
 		else {
-			return node.key().length
-				+ calculateWeight(node.getLeft())
-				+ calculateWeight(node.getRight())
-				+ calculateWeight(node.getMiddle());
+			return node.key().length + calculateWeight(node.getLeft()) + calculateWeight(node.getRight())
+					+ calculateWeight(node.getMiddle());
 		}
 	}
 }

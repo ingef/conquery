@@ -15,8 +15,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @CPSType(id = "DATE_DISTANCE", base = Select.class)
-@Getter
-@Setter
+@Getter @Setter
 public class DateDistanceSelect extends SingleColumnSelect {
 
 	public DateDistanceSelect(Column column) {
@@ -30,6 +29,8 @@ public class DateDistanceSelect extends SingleColumnSelect {
 	}
 
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
+
+
 
 	@Override
 	public Aggregator<?> createAggregator() {

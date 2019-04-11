@@ -23,39 +23,37 @@ import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
 @Path("/")
 @AuthCookie
 public class JobsResource {
-
+	
 	private final JobManager jobManager;
-
-	@POST
-	@Path("/jobs")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	
+	@POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addDemoJob() {
 		jobManager.addSlowJob(new Job() {
-
 			private final UUID id = UUID.randomUUID();
-
 			@Override
 			public void execute() {
-				while (!progressReporter.isDone()) {
+				while(!progressReporter.isDone()) {
 					progressReporter.report(0.01d);
-					if (progressReporter.getProgress() >= 1) {
+					if(progressReporter.getProgress()>=1) {
 						progressReporter.done();
 					}
-					Uninterruptibles.sleepUninterruptibly((int) (Math.random() * 200), TimeUnit.SECONDS);
+					Uninterruptibles.sleepUninterruptibly((int)(Math.random()*200), TimeUnit.SECONDS);
 				}
 			}
 
 			@Override
 			public String getLabel() {
-				return "Demo " + id;
+				return "Demo "+id;
 			}
 		});
-
-		return Response.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build()).build();
+		
+		return Response
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
+			.build();
 	}
 }

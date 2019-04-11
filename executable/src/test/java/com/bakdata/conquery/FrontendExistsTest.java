@@ -12,12 +12,19 @@ import com.github.powerlibraries.io.In;
 public class FrontendExistsTest {
 
 	private static final String INDEX = "/frontend/app/static/index.en.html";
-
+	
 	@Test
 	public void testIfFrontendExists() throws IOException {
 		URL index = FrontendExistsTest.class.getResource(INDEX);
-		assertThat(index).as("frontend file '%s' exists", INDEX).isNotNull();
-
-		assertThat(In.resource(index).readAll()).as("check %s for correct content", INDEX).contains("conquery", "bakdata");
+		assertThat(index)
+			.as("frontend file '%s' exists", INDEX)
+			.isNotNull();
+		
+		assertThat(In.resource(index).readAll())
+			.as("check %s for correct content", INDEX)
+			.contains(
+				"conquery",
+				"bakdata"
+			);
 	}
 }

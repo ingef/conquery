@@ -22,14 +22,13 @@ public class ConqueryConstants {
 	public static final ResultInfo DATES_INFO = new ResultInfo("dates", ResultType.STRING, 0, 0);
 
 	public static class AuthenticationUtil {
-
 		public static final String REALM_NAME = "CONQUERY";
 	}
-
+	
 	public static DictionaryId getPrimaryDictionary(Dataset dataset) {
 		return getPrimaryDictionary(dataset.getId());
 	}
-
+	
 	public static DictionaryId getPrimaryDictionary(DatasetId dataset) {
 		return DictionaryId.Parser.INSTANCE.parse(Arrays.asList(dataset.toString(), "primary_dictionary"));
 	}

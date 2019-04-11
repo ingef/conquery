@@ -9,18 +9,13 @@ import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-@Data
-@RequiredArgsConstructor
-@NoArgsConstructor
+@Data @RequiredArgsConstructor @NoArgsConstructor
 public class PPColumn {
-
 	@NonNull
 	private String name;
-	@SuppressWarnings("rawtypes")
-	@NonNull
+	@SuppressWarnings("rawtypes") @NonNull
 	private CType type;
-	@JsonIgnore
-	@SuppressWarnings("rawtypes")
+	@JsonIgnore @SuppressWarnings("rawtypes")
 	private transient CType originalType = null;
 
 	public PPColumn(Output output) {

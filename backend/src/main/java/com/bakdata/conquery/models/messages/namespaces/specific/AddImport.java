@@ -11,11 +11,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@CPSType(id = "ADD_IMPORT", base = NamespacedMessage.class)
-@AllArgsConstructor
-@NoArgsConstructor
-@Setter
-@Getter
+@CPSType(id="ADD_IMPORT", base=NamespacedMessage.class)
+@AllArgsConstructor @NoArgsConstructor @Setter @Getter
 public class AddImport extends WorkerMessage.Slow {
 
 	private Import imp;

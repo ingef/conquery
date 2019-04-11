@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ValueAboveZeroFilterNode<FILTER_VALUE> extends AggregationResultFilterNode<Aggregator<Long>, FILTER_VALUE> {
 
+
 	public ValueAboveZeroFilterNode(Aggregator<Long> aggregator) {
 		super(aggregator, null);
 	}

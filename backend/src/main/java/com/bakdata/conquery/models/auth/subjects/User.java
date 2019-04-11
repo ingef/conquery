@@ -21,41 +21,32 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-public class User extends PermissionOwner<UserId> implements Principal {
-
-	@Getter
-	@Setter
-	@MetaIdRefCollection
+public class User extends PermissionOwner<UserId> implements Principal{
+	@Getter @Setter @MetaIdRefCollection
 	private Set<Mandator> roles = new HashSet<>();
-	@Getter
-	@Setter
-	@NonNull
-	@NotNull
+	@Getter @Setter @NonNull @NotNull
 	private String email;
-	@Getter
-	@Setter
-	@NonNull
-	@NotNull
+	@Getter @Setter @NonNull @NotNull
 	private String label;
 
 	public User(String email, String label) {
 		this.email = email;
 		this.label = label;
 	}
-
+	
 	@Override
 	public boolean isPermitted(Permission permission) {
-		if (isPermittedSelfOnly((ConqueryPermission) permission)) {
+		if(isPermittedSelfOnly((ConqueryPermission)permission)) {
 			return true;
 		}
-
-		return isPermittedByMandators((ConqueryPermission) permission);
+		
+		return isPermittedByMandators((ConqueryPermission)permission);
 	}
 
 	@Override
 	public boolean[] isPermitted(List<Permission> permissions) {
 		boolean[] ret = new boolean[permissions.size()];
-		for (int i = 0; i < permissions.size(); ++i) {
+		for(int i = 0; i < permissions.size(); ++i) {
 			ret[i] = isPermitted(permissions.get(i));
 		}
 		return ret;
@@ -63,26 +54,26 @@ public class User extends PermissionOwner<UserId> implements Principal {
 
 	@Override
 	public boolean isPermittedAll(Collection<Permission> permissions) {
-		for (Permission permission : permissions) {
-			if (!isPermitted(permission)) {
+		for(Permission permission : permissions) {
+			if(!isPermitted(permission)) {
 				return false;
 			}
 		}
 		return true;
 	}
-
+	
 	@Override
 	public UserId createId() {
 		return new UserId(email);
 	}
-
+	
 	public void removeRole(Mandator mandator) {
 		roles.remove(mandator);
 	}
-
+	
 	private boolean isPermittedByMandators(ConqueryPermission permission) {
-		for (Mandator mandator : roles) {
-			if (mandator.isPermittedSelfOnly(permission)) {
+		for(Mandator mandator : roles) {
+			if(mandator.isPermittedSelfOnly(permission)) {
 				return true;
 			}
 		}
@@ -90,14 +81,14 @@ public class User extends PermissionOwner<UserId> implements Principal {
 	}
 
 	public void addMandator(MasterMetaStorage storage, Mandator mandator) throws JSONException {
-		if (!roles.contains(mandator)) {
+		if(!roles.contains(mandator)) {
 			addMandatorLocal(mandator);
 			storage.updateUser(this);
 		}
 	}
-
+	
 	public void removeMandatorLocal(MasterMetaStorage storage, Mandator mandator) throws JSONException {
-		if (roles.contains(mandator)) {
+		if(roles.contains(mandator)) {
 			roles.remove(mandator);
 			storage.updateUser(this);
 		}
@@ -112,9 +103,9 @@ public class User extends PermissionOwner<UserId> implements Principal {
 	public String getName() {
 		return email;
 	}
-
+	
 	@Override
-	public Set<ConqueryPermission> getPermissions() {
+	public Set<ConqueryPermission> getPermissions(){
 		Set<ConqueryPermission> permissions = new HashSet<>(super.getPermissions());
 		for (Mandator mandator : roles) {
 			permissions.addAll(mandator.getPermissions());

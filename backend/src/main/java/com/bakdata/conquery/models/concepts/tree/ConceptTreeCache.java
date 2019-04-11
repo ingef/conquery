@@ -31,13 +31,13 @@ public class ConceptTreeCache {
 	public ConceptTreeCache(TreeConcept treeConcept, IStringType type) {
 		this.type = type;
 		this.treeConcept = treeConcept;
-
+		
 		values = new ConceptTreeChild[type.size()];
 		cached = Bits.store(type.size());
 	}
 
 	public ConceptTreeChild findMostSpecificChild(int id, CalculatedValue<Map<String, Object>> rowMap) throws ConceptConfigurationException {
-		if (cached.getBit(id)) {
+		if(cached.getBit(id)) {
 			hits++;
 			return values[id];
 		}
@@ -47,7 +47,7 @@ public class ConceptTreeCache {
 		String scriptValue = type.createScriptValue(id);
 		final ConceptTreeChild child = treeConcept.findMostSpecificChild(scriptValue, rowMap);
 
-		if (!rowMap.isCalculated()) {
+		if(!rowMap.isCalculated()) {
 			cached.setBit(id, true);
 			this.values[id] = child;
 		}

@@ -25,13 +25,10 @@ import lombok.extern.slf4j.Slf4j;
 import lombok.Getter;
 
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, include = JsonTypeInfo.As.PROPERTY, property = "type")
-@Slf4j
-@CPSBase
+@Slf4j @CPSBase
 public abstract class ConqueryTestSpec {
-
-	@Getter
-	@Setter
-	@NotNull
+	
+	@Getter @Setter @NotNull
 	private String label;
 
 	public abstract void executeTest(StandaloneSupport support) throws Exception;
@@ -48,11 +45,7 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		return parseSubTree(
-			support,
-			node,
-			Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]),
-			modifierBeforeValidation);
+		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
 	}
 
 	public <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
@@ -60,11 +53,11 @@ public abstract class ConqueryTestSpec {
 	}
 
 	public <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
-		ObjectMapper mapper = support
-			.getDataset()
-			.injectInto(
-				new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry())
-					.injectInto(Jackson.MAPPER.copy()));
+		ObjectMapper mapper = support.getDataset().injectInto(
+			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
+					Jackson.MAPPER.copy()
+			)
+		);
 		T result = mapper.readerFor(expectedType).readValue(node);
 
 		if (modifierBeforeValidation != null) {

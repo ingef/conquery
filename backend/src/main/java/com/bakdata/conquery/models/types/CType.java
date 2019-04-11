@@ -20,12 +20,10 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-@Getter
-@Setter
-@RequiredArgsConstructor
-public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?, ?>> implements MajorTypeIdHolder {
+@Getter @Setter @RequiredArgsConstructor
+public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?,?>> implements MajorTypeIdHolder {
 
 	@JsonIgnore
 	private transient final MajorTypeId typeId;
@@ -36,24 +34,23 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?, ?>> implement
 	private long nullLines = 0;
 
 	public void init(DatasetId dataset) {}
-
 	public JAVA_TYPE parse(String v) throws ParsingException {
-		if (v == null) {
+		if(v==null) {
 			return null;
 		}
 		else {
 			try {
 				return parseValue(v);
 			}
-			catch (Exception e) {
-				throw new ParsingException("Failed to parse '" + v + "' as " + this.getClass().getSimpleName(), e);
+			catch(Exception e) {
+				throw new ParsingException("Failed to parse '"+v+"' as "+this.getClass().getSimpleName(), e);
 			}
 		}
 	}
-
+	
 	public JAVA_TYPE addLine(JAVA_TYPE v) {
 		lines++;
-		if (v == null) {
+		if(v == null) {
 			nullLines++;
 		}
 		else {
@@ -66,14 +63,14 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?, ?>> implement
 
 	protected void registerValue(JAVA_TYPE v) {};
 
-	public CType<?, MAJOR_TYPE> bestSubType() {
+	public CType<?,MAJOR_TYPE> bestSubType() {
 		return this;
 	}
-
+	
 	public JAVA_TYPE transformFromMajorType(MAJOR_TYPE majorType, Object value) {
-		return (JAVA_TYPE) value;
+		return (JAVA_TYPE)value;
 	}
-
+	
 	public Object transformToMajorType(JAVA_TYPE value, MAJOR_TYPE majorType) {
 		return value;
 	}
@@ -82,16 +79,11 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?, ?>> implement
 		return value;
 	}
 
-	public Object createPrintValue(JAVA_TYPE value) {
-		return value != null ? createScriptValue(value) : "";
-	}
+	public Object createPrintValue(JAVA_TYPE value) { return value != null ? createScriptValue(value) : ""; }
 
 	public void writeHeader(OutputStream out) throws IOException {}
-
 	public void readHeader(JsonParser input) throws IOException {}
-
 	public void storeExternalInfos(NamespacedStorage storage, Consumer<Dictionary> dictionaryConsumer) {}
-
 	public void loadExternalInfos(NamespacedStorage storage) {}
 
 	@Override
@@ -104,11 +96,11 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?, ?>> implement
 	}
 
 	public boolean requiresExternalNullStore() {
-		return !canStoreNull() && getNullLines() > 0;
+		return !canStoreNull() && getNullLines()>0;
 	}
 
 	@JsonIgnore
-	public Class<?> getBoxedType() {
+	public Class<?> getBoxedType(){
 		return Primitives.wrap(getPrimitiveType());
 	}
 }

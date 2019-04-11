@@ -14,15 +14,14 @@ public abstract class AId<TYPE> implements IId<TYPE> {
 
 	@Override
 	public abstract boolean equals(Object obj);
-
+	
 	@Override
 	public abstract int hashCode();
-
-	@Override
-	@JsonValue
+	
+	@Override @JsonValue
 	public String toString() {
 		List<Object> components = getComponents();
-		components.replaceAll(o -> ConqueryEscape.escape(Objects.toString(o)));
+		components.replaceAll(o->ConqueryEscape.escape(Objects.toString(o)));
 		return IId.JOINER.join(components);
 	}
 

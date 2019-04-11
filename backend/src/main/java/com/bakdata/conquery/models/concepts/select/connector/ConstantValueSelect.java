@@ -11,14 +11,11 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @CPSType(id = "CONSTANT_VALUE", base = Select.class)
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@RequiredArgsConstructor(onConstructor_=@JsonCreator)
 public class ConstantValueSelect extends Select {
-
-	@Getter
-	@Setter
+	@Getter @Setter
 	private Object value;
-	@Getter
-	@Setter
+	@Getter @Setter
 	private ResultType resultType;
 
 	@Override

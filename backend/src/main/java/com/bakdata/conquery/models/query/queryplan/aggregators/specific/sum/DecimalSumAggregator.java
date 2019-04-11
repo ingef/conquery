@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 
+
 	private BigDecimal sum = BigDecimal.ZERO;
 
 	public DecimalSumAggregator(Column column) {
@@ -36,7 +37,7 @@ public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 	public BigDecimal getAggregationResult() {
 		return sum;
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;

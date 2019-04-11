@@ -27,7 +27,7 @@ public class TreeChildPrefixIndex {
 	public ConceptTreeChild findMostSpecificChild(String stringValue, CalculatedValue<Map<String, Object>> rowMap) {
 		ValueNode nearestNode = valueToChildIndex.getNearestNode(stringValue.getBytes());
 
-		if (nearestNode != null) {
+		if(nearestNode != null) {
 			return treeChildren[nearestNode.getValue()];
 		}
 
@@ -35,29 +35,28 @@ public class TreeChildPrefixIndex {
 	}
 
 	/***
-	 * Test if the condition maintains a prefix structure, this is necessary for
-	 * creating an index.
-	 * 
+	 * Test if the condition maintains a prefix structure, this is necessary for creating an index.
 	 * @param cond
 	 * @return
 	 */
 	private static boolean isPrefixMaintainigCondition(CTCondition cond) {
 		return cond instanceof PrefixCondition
-			|| cond instanceof PrefixRangeCondition
-			|| (cond instanceof OrCondition
-				&& ((OrCondition) cond).getConditions().stream().allMatch(TreeChildPrefixIndex::isPrefixMaintainigCondition));
+				|| cond instanceof PrefixRangeCondition
+				|| (cond instanceof OrCondition
+					&& ((OrCondition) cond).getConditions().stream().allMatch(TreeChildPrefixIndex::isPrefixMaintainigCondition))
+				;
 	}
 
 	public static void putIndexInto(ConceptTreeNode root) {
-		if (root.getChildIndex() != null) {
+		if(root.getChildIndex() != null) {
 			return;
 		}
 		synchronized (root) {
-			if (root.getChildIndex() != null) {
+			if(root.getChildIndex() != null) {
 				return;
 			}
-
-			if (root.getChildren().isEmpty()) {
+			
+			if(root.getChildren().isEmpty()) {
 				return;
 			}
 
@@ -73,17 +72,15 @@ public class TreeChildPrefixIndex {
 				ConceptTreeChild child = treeChildrenOrig.get(i);
 				CTCondition condition = child.getCondition();
 
-				if (isPrefixMaintainigCondition(condition)) {
+				if(isPrefixMaintainigCondition(condition)) {
 					treeChildrenOrig.addAll(child.getChildren());
 
 					if (condition instanceof PrefixCondition) {
 						for (String prefix : ((PrefixCondition) condition).getPrefixes()) {
 							// We are interested in the most specific child, therefore the deepest.
-							gatheredPrefixChildren
-								.merge(
-									prefix,
-									child,
-									(newChild, oldChild) -> oldChild.getDepth() > newChild.getDepth() ? oldChild : newChild);
+							gatheredPrefixChildren.merge(prefix, child,
+								(newChild, oldChild) -> oldChild.getDepth() > newChild.getDepth() ? oldChild : newChild
+							);
 						}
 					}
 				}
@@ -110,7 +107,7 @@ public class TreeChildPrefixIndex {
 
 			log.trace("Index below {} contains {} nodes", root.getId(), index.treeChildren.length);
 
-			if (index.treeChildren.length == 0) {
+			if(index.treeChildren.length == 0) {
 				return;
 			}
 

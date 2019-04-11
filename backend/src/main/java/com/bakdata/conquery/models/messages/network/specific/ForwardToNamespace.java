@@ -16,14 +16,13 @@ import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id = "FORWARD_TO_NAMESPACE", base = NetworkMessage.class)
-@RequiredArgsConstructor
-@Getter
+@CPSType(id="FORWARD_TO_NAMESPACE", base=NetworkMessage.class)
+@RequiredArgsConstructor @Getter
 public class ForwardToNamespace extends MasterMessage implements SlowMessage {
 
 	private final DatasetId datasetId;
 	private final NamespaceMessage message;
-
+	
 	@Override
 	public void react(Master context) throws Exception {
 		Namespace ns = Objects.requireNonNull(context.getNamespaces().get(datasetId));
@@ -38,16 +37,16 @@ public class ForwardToNamespace extends MasterMessage implements SlowMessage {
 
 	@Override
 	public ProgressReporter getProgressReporter() {
-		return ((SlowMessage) message).getProgressReporter();
+		return ((SlowMessage)message).getProgressReporter();
 	}
 
 	@Override
 	public void setProgressReporter(ProgressReporter progressReporter) {
-		((SlowMessage) message).setProgressReporter(progressReporter);
+		((SlowMessage)message).setProgressReporter(progressReporter);
 	}
-
+	
 	@Override
 	public String toString() {
-		return message.toString() + " for dataset " + datasetId;
+		return message.toString()+" for dataset "+datasetId;
 	}
 }

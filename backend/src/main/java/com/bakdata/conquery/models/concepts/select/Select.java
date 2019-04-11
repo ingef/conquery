@@ -17,34 +17,28 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Getter;
 import lombok.Setter;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public abstract class Select extends Labeled<SelectId> {
 
-	@JsonBackReference
-	@Getter
-	@Setter
+	@JsonBackReference @Getter @Setter
 	private SelectHolder<?> holder;
 
-	@Setter
-	@Getter
+	@Setter @Getter
 	private String description;
 
-	@Setter
-	@Getter
-	@JsonProperty("default")
+	@Setter @Getter @JsonProperty("default")
 	private boolean isDefault = false;
-
-	@JsonIgnore
-	@Getter(lazy = true)
+	
+	@JsonIgnore @Getter(lazy=true)
 	private final ResultType resultType = createAggregator().getResultType();
 
 	public abstract Aggregator<?> createAggregator();
 
 	@Override
 	public SelectId createId() {
-		if (holder instanceof Connector) {
-			return new ConnectorSelectId(((Connector) holder).getId(), getName());
+		if(holder instanceof Connector) {
+			return new ConnectorSelectId(((Connector)holder).getId(), getName());
 		}
 		else
 			return new ConceptSelectId(holder.findConcept().getId(), getName());

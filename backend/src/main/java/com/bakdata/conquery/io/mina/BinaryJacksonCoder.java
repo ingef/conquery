@@ -28,7 +28,9 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 	public BinaryJacksonCoder(NamespaceCollection namespaces, Validator validator) {
 		this.validator = validator;
 		this.writer = Jackson.BINARY_MAPPER.writerFor(NetworkMessage.class);
-		this.reader = namespaces.injectInto(Jackson.BINARY_MAPPER.readerFor(NetworkMessage.class)).without(Feature.AUTO_CLOSE_SOURCE);
+		this.reader = namespaces
+				.injectInto(Jackson.BINARY_MAPPER.readerFor(NetworkMessage.class))
+				.without(Feature.AUTO_CLOSE_SOURCE);
 	}
 
 	@Override
@@ -37,25 +39,21 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 
 		UUID id = message.getMessageId();
 		Chunkable chunkable = new Chunkable(id, writer, message);
-		if (log.isTraceEnabled()) {
-			Jackson.MAPPER
-				.writerFor(NetworkMessage.class)
-				.with(SerializationFeature.INDENT_OUTPUT)
-				.writeValue(new File("dumps/out_" + id + ".json"), message);
+		if(log.isTraceEnabled()) {
+			Jackson.MAPPER.writerFor(NetworkMessage.class).with(SerializationFeature.INDENT_OUTPUT).writeValue(new File("dumps/out_"+id+".json"), message);
 		}
 		return chunkable;
 	}
 
 	@Override
 	public NetworkMessage<?> decode(ChunkedMessage message) throws Exception {
-		try (EndCheckableInputStream is = message.createInputStream()) {
+		try(EndCheckableInputStream is = message.createInputStream()) {
 			Object obj = reader.readValue(is);
-			if (!is.isAtEnd()) {
-				throw new IllegalStateException(
-					"After reading the JSON message " + message.getId() + " -> " + obj + " the buffer has still bytes available");
+			if(!is.isAtEnd()) {
+				throw new IllegalStateException("After reading the JSON message "+message.getId()+" -> "+obj+" the buffer has still bytes available");
 			}
 			ValidatorHelper.failOnError(log, validator.validate(obj), "decoding " + obj.getClass().getSimpleName());
-			return (NetworkMessage<?>) obj;
+			return (NetworkMessage<?>)obj;
 		}
 	}
 }

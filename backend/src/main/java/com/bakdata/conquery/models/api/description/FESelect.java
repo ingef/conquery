@@ -8,10 +8,8 @@ import lombok.Data;
 /**
  * This class represents a concept filter as it is presented to the front end.
  */
-@Data
-@Builder
+@Data @Builder
 public class FESelect {
-
 	private SelectId id;
 	private String label;
 	private String description;

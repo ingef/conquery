@@ -11,16 +11,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter
-@Setter
-@ToString
+@Getter @Setter @ToString
 public class StorageConfig {
 
 	@ExistingFile(directory = true)
 	private File directory = new File("storage");
 	@ExistingFile(directory = true)
 	private File preprocessedRoot;
-	@NotNull
-	@Valid
+	@NotNull @Valid
 	private XodusConfig xodus = new XodusConfig();
 }

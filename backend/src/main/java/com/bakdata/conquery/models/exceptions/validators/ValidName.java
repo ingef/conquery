@@ -21,40 +21,44 @@ import com.bakdata.conquery.models.exceptions.validators.ValidName.ValidNameVali
 
 import lombok.extern.slf4j.Slf4j;
 
+
 @Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = ValidNameValidator.class)
 @Documented
 @Repeatable(ValidNameList.class)
 public @interface ValidName {
-
+	
 	String message() default "The name is not valid";
 
-	Class<?>[] groups() default {};
+	Class<?>[] groups() default { };
 
-	Class<? extends Payload>[] payload() default {};
+	Class<? extends Payload>[] payload() default { };
 
 	@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@interface ValidNameList {
-
 		ValidName[] value();
 	}
-
+	
 	@Slf4j
 	public static class ValidNameValidator implements ConstraintValidator<ValidName, String> {
 
 		@Override
 		public boolean isValid(String value, ConstraintValidatorContext context) {
 			context.disableDefaultConstraintViolation();
-			if (value == null) {
-				context.buildConstraintViolationWithTemplate("The name is null").addConstraintViolation();
+			if(value==null) {
+				context
+					.buildConstraintViolationWithTemplate("The name is null")
+					.addConstraintViolation();
 				return false;
 			}
 			else {
-				if (value.length() == 0) {
-					context.buildConstraintViolationWithTemplate("A name can not be an empty string").addConstraintViolation();
+				if(value.length()==0) {
+					context
+						.buildConstraintViolationWithTemplate("A name can not be an empty string")
+						.addConstraintViolation();
 					return false;
 				}
 			}

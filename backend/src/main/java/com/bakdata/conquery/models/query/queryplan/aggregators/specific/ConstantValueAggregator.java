@@ -14,7 +14,7 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 
 	private final Object value;
 	private final ResultType type;
-
+	
 	@Override
 	public ConstantValueAggregator doClone(CloneContext ctx) {
 		return this;
@@ -27,7 +27,7 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 
 	@Override
 	public void aggregateEvent(Block block, int event) {}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return type;

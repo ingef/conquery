@@ -44,91 +44,120 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class IntegrationTests {
 
+	
 	private static final String DEFAULT_TEST_ROOT = "tests/";
-
+	
 	@RegisterExtension
 	public static final TestConquery CONQUERY = new TestConquery();
 
-	@TestFactory
-	@Tag(TestTags.INTEGRATION_JSON)
+	@TestFactory @Tag(TestTags.INTEGRATION_JSON)
 	public List<DynamicNode> jsonTests() throws IOException {
-		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE), DEFAULT_TEST_ROOT);
-
+		final String testRoot = Objects.requireNonNullElse(
+			System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
+			DEFAULT_TEST_ROOT
+		);
+		
 		ResourceTree tree = new ResourceTree(null, null);
-		tree.addAll(CPSTypeIdResolver.SCAN_RESULT.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + ".*\\.test\\.json$")));
-
-		// collect tests from directory
+		tree.addAll(
+			CPSTypeIdResolver.SCAN_RESULT
+				.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + ".*\\.test\\.json$"))
+		);
+		
+		//collect tests from directory
 		if (tree.getChildren().isEmpty()) {
 			log.warn("Could not find tests in {}", testRoot);
 			return Collections.emptyList();
 		}
 		else {
-			return tree.reduce().getChildren().values().stream().map(this::collectTests).collect(Collectors.toList());
+			return tree.reduce().getChildren().values()
+				.stream()
+				.map(this::collectTests)
+				.collect(Collectors.toList());
 		}
 	}
-
-	@TestFactory
-	@Tag(TestTags.INTEGRATION_PROGRAMMATIC)
+	
+	@TestFactory @Tag(TestTags.INTEGRATION_PROGRAMMATIC)
 	public Stream<DynamicNode> programmaticTests() throws IOException {
-		List<Class<?>> programmatic = CPSTypeIdResolver.SCAN_RESULT
+		List<Class<?>> programmatic = CPSTypeIdResolver
+			.SCAN_RESULT
 			.getClassesImplementing(ProgrammaticIntegrationTest.class.getName())
 			.loadClasses();
 
-		return programmatic.stream().<ProgrammaticIntegrationTest>map(c -> {
-			try {
-				return c.asSubclass(ProgrammaticIntegrationTest.class).getDeclaredConstructor().newInstance();
-			}
-			catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		})
-			.map(
-				c -> DynamicTest
-					.dynamicTest(
-						c.getClass().getSimpleName(),
-						// classpath URI
-						URI.create("classpath:/" + c.getClass().getName().replace('.', '/') + ".java"),
-						new IntegrationTest.Wrapper(CONQUERY, c)));
+		return programmatic
+			.stream()
+			.<ProgrammaticIntegrationTest>map(c-> {
+				try {
+					return c.asSubclass(ProgrammaticIntegrationTest.class).getDeclaredConstructor().newInstance();
+				}
+				catch(Exception e) {
+					throw new RuntimeException(e);
+				}
+			})
+			.map(c->
+				DynamicTest.dynamicTest(
+					c.getClass().getSimpleName(),
+					//classpath URI
+					URI.create("classpath:/"+c.getClass().getName().replace('.', '/')+".java"),
+					new IntegrationTest.Wrapper(CONQUERY, c)
+				)
+			);
 	}
 
 	private DynamicContainer collectTests(ResourceTree currentDir) {
 		List<DynamicNode> list = new ArrayList<>();
-
-		for (ResourceTree child : currentDir.getChildren().values()) {
-			if (!child.getChildren().isEmpty()) {
+		
+		for(ResourceTree child : currentDir.getChildren().values()) {
+			if(!child.getChildren().isEmpty()) {
 				list.add(collectTests(child));
 			}
-			else if (child.getValue() != null) {
+			else if(child.getValue() != null) {
 				list.add(readTest(child.getValue(), child.getName()));
 			}
 		}
-
+		
 		list.sort(Comparator.comparing(DynamicNode::getDisplayName));
-
-		return dynamicContainer(currentDir.getName(), URI.create("classpath:/" + currentDir.getFullName()), list.stream());
+		
+		return dynamicContainer(
+			currentDir.getName(),
+			URI.create("classpath:/"+currentDir.getFullName()),
+			list.stream()
+		);
 	}
 
 	private static DynamicTest readTest(Resource resource, String name) {
-		try (InputStream in = resource.open()) {
+		try(InputStream in = resource.open()) {
 			JsonNode node = Jackson.MAPPER.readTree(in);
-
-			if (node.get("label") != null)
+			
+			
+			if(node.get("label") != null)
 				name = node.get("label").asText();
-
-			return DynamicTest
-				.dynamicTest(name, resource.getURL().toURI(), new IntegrationTest.Wrapper(CONQUERY, new JsonIntegrationTest(node)));
+			
+			
+			
+			return DynamicTest.dynamicTest(
+				name,
+				resource.getURL().toURI(),
+				new IntegrationTest.Wrapper(CONQUERY, new JsonIntegrationTest(node))
+			);
 		}
-		catch (Exception e) {
+		catch(Exception e) {
 			try {
-				return DynamicTest.dynamicTest(name, resource.getURL().toURI(), () -> {
-					throw e;
-				});
+				return DynamicTest.dynamicTest(
+					name,
+					resource.getURL().toURI(),
+					() -> {
+						throw e;
+					}
+				);
 			}
 			catch (URISyntaxException e1) {
 				log.error("Failed while trying to create errored test", e1);
-				return DynamicTest.dynamicTest(name, () -> {
-					throw e;
-				});
+				return DynamicTest.dynamicTest(
+					name,
+					() -> {
+						throw e;
+					}
+				);
 			}
 		}
 	}

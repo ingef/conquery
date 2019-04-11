@@ -11,27 +11,24 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
-@Getter
-@Setter
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-@CPSType(id = "FAILED", base = EntityResult.class)
+@Getter @Setter @RequiredArgsConstructor(onConstructor_=@JsonCreator)
+@CPSType(id="FAILED", base=EntityResult.class)
 public class FailedEntityResult implements EntityResult {
 
 	private final int entityId;
 	@NotEmpty
 	private final String exceptionStackTrace;
-
+	
 	public FailedEntityResult(int entityId, Throwable exception) {
 		this.entityId = entityId;
 		this.exceptionStackTrace = ExceptionUtils.getStackTrace(exception);
 	}
-
-	@JsonIgnore
-	@Override
+	
+	@JsonIgnore @Override
 	public boolean isFailed() {
 		return true;
 	}
-
+	
 	@Override
 	public FailedEntityResult asFailed() {
 		return this;

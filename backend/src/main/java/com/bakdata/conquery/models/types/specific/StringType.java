@@ -28,14 +28,9 @@ import lombok.Setter;
 @CPSType(base = CType.class, id = "STRING")
 public class StringType extends CType<Integer, StringType> implements IStringType {
 
-	@Getter
-	@Setter
-	@NotNull
-	@Nonnull
+	@Getter @Setter @NotNull @Nonnull
 	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
-	@JsonIgnore
-	@Setter
-	@Getter
+	@JsonIgnore @Setter @Getter
 	private transient Dictionary dictionary = new Dictionary(dictionaryId);
 
 	public StringType() {
@@ -47,18 +42,18 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 		dictionaryId = new DictionaryId(dataset, dictionaryId.getDictionary());
 		dictionary.setDataset(dataset);
 	}
-
+	
 	@Override
 	protected Integer parseValue(String value) {
 		return dictionary.add(value);
 	}
 
-	@Override
-	@Deprecated
+
+	@Override @Deprecated
 	public String createScriptValue(Integer value) {
 		return createScriptValue(value.intValue());
 	}
-
+	
 	@Override
 	public String createScriptValue(int value) {
 		return dictionary.getElement(value);
@@ -95,7 +90,7 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 	@Override
 	public CType<?, StringType> bestSubType() {
 		dictionary.tryCompress();
-		if (dictionary.size() == 0) {
+		if(dictionary.size() == 0) {
 			return this;
 		}
 
@@ -103,18 +98,18 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 
 		for (String value : dictionary) {
 			bases.removeIf(encoding -> !encoding.canDecode(value));
-			if (bases.isEmpty())
+			if(bases.isEmpty())
 				return this;
 		}
 
 		if (!bases.isEmpty()) {
 			return new StringTypeEncoded(
-				bases
-					.stream()
-					.min(StringTypeEncoded.Encoding::compareTo)
-					.orElseThrow(() -> new IllegalStateException("Bases not empty, but no valid minimum.")),
-				getLines(),
-				getNullLines());
+					bases.stream()
+						.min(StringTypeEncoded.Encoding::compareTo)
+						.orElseThrow(() -> new IllegalStateException("Bases not empty, but no valid minimum.")),
+					getLines(),
+					getNullLines()
+			);
 		}
 
 		return this;
@@ -122,14 +117,14 @@ public class StringType extends CType<Integer, StringType> implements IStringTyp
 
 	@Override
 	public boolean canStoreNull() {
-		return true; // dictionaries can store null as -1
+		return true; //dictionaries can store null as -1
 	}
 
 	@Override
 	public int size() {
 		return dictionary.size();
 	}
-
+	
 	@Override
 	public Iterator<String> iterator() {
 		return dictionary.iterator();

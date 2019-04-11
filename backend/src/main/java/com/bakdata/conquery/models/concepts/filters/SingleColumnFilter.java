@@ -11,15 +11,11 @@ import lombok.Setter;
 
 public abstract class SingleColumnFilter<FE_TYPE> extends Filter<FE_TYPE> implements ISingleColumnFilter {
 
-	@Valid
-	@NotNull
-	@Getter
-	@Setter
-	@NsIdRef
+	@Valid @NotNull @Getter @Setter @NsIdRef
 	private Column column;
-
+	
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[] { getColumn() };
+		return new Column[]{getColumn()};
 	}
 }

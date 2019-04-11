@@ -22,7 +22,6 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import com.sun.xml.bind.v2.schemagen.xmlschema.List;
 
 public class Jackson {
-
 	public static final ObjectMapper MAPPER;
 	public static final ObjectMapper BINARY_MAPPER;
 
@@ -30,11 +29,11 @@ public class Jackson {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
 	}
-
+	
 	@SuppressWarnings("unchecked")
 	public static <T extends ObjectMapper> T configure(T objectMapper) {
 		SimpleModule serializers = new SimpleModule();
-
+		
 		objectMapper
 			.enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
 			.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -59,15 +58,19 @@ public class Jackson {
 			.registerModule(new GuavaModule())
 			.registerModule(ConquerySerializersModule.INSTANCE)
 			.setSerializationInclusion(Include.NON_NULL)
-			// .setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
+			//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
 			.setInjectableValues(new MutableInjectableValues());
-
-		objectMapper.configOverride(List.class).setSetterInfo(Value.forValueNulls(Nulls.AS_EMPTY));
-		objectMapper.configOverride(Set.class).setSetterInfo(Value.forValueNulls(Nulls.AS_EMPTY));
-
-		return (T) objectMapper;
+		
+		objectMapper
+			.configOverride(List.class)
+			.setSetterInfo(Value.forValueNulls(Nulls.AS_EMPTY));
+		objectMapper
+			.configOverride(Set.class)
+			.setSetterInfo(Value.forValueNulls(Nulls.AS_EMPTY));
+		
+		return (T)objectMapper;
 	}
-
+	
 	public static <T> T findInjectable(DeserializationContext ctxt, Class<T> clazz) throws JsonMappingException {
 		return (T) ctxt.findInjectableValue(clazz.getName(), null, null);
 	}

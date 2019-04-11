@@ -12,7 +12,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
 public class Workers implements NamespaceCollection {
-
 	@Getter
 	private Map<WorkerId, Worker> workers = new HashMap<>();
 	@JsonIgnore

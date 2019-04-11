@@ -39,9 +39,7 @@ public class DurationSumFilter extends SingleColumnFilter<Range.LongRange> {
 				return;
 			}
 			default:
-				throw new ConceptConfigurationException(
-					getConnector(),
-					"DURATION_SUM filter is incompatible with columns of type " + getColumn().getType());
+				throw new ConceptConfigurationException(getConnector(), "DURATION_SUM filter is incompatible with columns of type " + getColumn().getType());
 		}
 	}
 

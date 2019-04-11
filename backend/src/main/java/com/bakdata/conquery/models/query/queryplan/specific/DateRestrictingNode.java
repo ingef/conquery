@@ -26,7 +26,11 @@ public class DateRestrictingNode extends QPChainNode {
 		CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
 		dateRestriction.retainAll(dateRange);
 
-		super.nextTable(ctx.withDateRestriction(dateRestriction), currentTable);
+		super.nextTable(
+				ctx.withDateRestriction(dateRestriction),
+				currentTable
+		);
+
 
 		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());
 
@@ -34,6 +38,7 @@ public class DateRestrictingNode extends QPChainNode {
 			throw new IllegalStateException("The validityDateColumn " + validityDateColumn + " is not a DATE TYPE");
 		}
 	}
+
 
 	@Override
 	public void nextEvent(Block block, int event) {

@@ -15,13 +15,13 @@ import com.github.powerlibraries.io.In;
 public class TemplateTest {
 
 	public static Collection<Class<?>> findAllCTypes() {
-		return CPSTypeIdResolver.listImplementations(CType.class);
+		return CPSTypeIdResolver
+			.listImplementations(CType.class);
 	}
-
-	@ParameterizedTest
-	@MethodSource("findAllCTypes")
+	
+	@ParameterizedTest @MethodSource("findAllCTypes")
 	public void checkIfTemplateExists(Class<?> type) throws IOException {
-		assertThat(In.resource("/com/bakdata/conquery/models/events/generation/types/" + type.getSimpleName() + ".ftl").readAll())
+		assertThat(In.resource("/com/bakdata/conquery/models/events/generation/types/"+type.getSimpleName()+".ftl").readAll())
 			.contains("<#macro nullValue type")
 			.contains("<#macro kryoSerialization type")
 			.contains("<#macro kryoDeserialization type")

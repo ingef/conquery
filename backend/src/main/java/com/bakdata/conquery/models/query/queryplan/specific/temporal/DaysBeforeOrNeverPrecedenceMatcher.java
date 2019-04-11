@@ -6,8 +6,7 @@ import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
 
 /**
- * Tests if the preceding date is {@link #days} before the reference, if not it
- * must not be present.
+ * Tests if the preceding date is {@link #days} before the reference, if not it must not be present.
  */
 public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 
@@ -17,11 +16,13 @@ public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 		this.days = days;
 	}
 
+
 	@Override
 	public void removePreceding(CDateSet preceding, int sample) {
 		// Only consider samples that are before reference's sample event
 		preceding.remove(CDateRange.atLeast(sample));
 	}
+
 
 	@Override
 	public boolean isContained(OptionalInt reference, OptionalInt preceding) {

@@ -13,10 +13,8 @@ public class MediaTypeFixFilter implements ClientRequestFilter {
 	@Override
 	public void filter(ClientRequestContext requestContext) throws IOException {
 		String contentType = requestContext.getHeaderString(HttpHeaders.CONTENT_TYPE);
-		if (contentType != null && contentType.startsWith("multipart/form-data;boundary=")) {
-			requestContext
-				.getHeaders()
-				.put(HttpHeaders.CONTENT_TYPE, Collections.singletonList("multipart/form-data; boundary=" + contentType.substring(29)));
+		if(contentType != null && contentType.startsWith("multipart/form-data;boundary=")) {
+			requestContext.getHeaders().put(HttpHeaders.CONTENT_TYPE, Collections.singletonList("multipart/form-data; boundary="+contentType.substring(29)));
 		}
 	}
 

@@ -67,11 +67,11 @@ public class AdminUIProcessor {
 				otherPermissions.add(permission);
 			}
 		}
-
+		
 		List<Dataset> datasets = storage.getNamespaces().getAllDatasets();
 
 		return new FEMandatorContent(
-			(Mandator) mandatorId.getOwner(storage),
+			(Mandator)mandatorId.getOwner(storage),
 			getUsers(mandatorId),
 			datasetPermissions,
 			queryPermissions,
@@ -79,48 +79,38 @@ public class AdminUIProcessor {
 			Ability.READ.asSet(),
 			datasets);
 	}
-
+	
 	/**
 	 * Handles creation of permissions.
-	 * 
-	 * @param permission
-	 *            The permission to create.
-	 * @throws JSONException
-	 *             is thrown upon procession JSONs.
+	 * @param permission The permission to create.
+	 * @throws JSONException is thrown upon procession JSONs.
 	 */
 	public void createPermission(ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.addPermission(getOwnerFromPermission(permission, storage), permission, storage);
 	}
-
+	
 	/**
 	 * Handles deletion of permissions.
-	 * 
-	 * @param permission
-	 *            The permission to delete.
-	 * @throws JSONException
-	 *             is thrown upon procession JSONs.
+	 * @param permission The permission to delete.
+	 * @throws JSONException is thrown upon procession JSONs.
 	 */
 	public void deletePermission(ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
 	}
-
+	
 	/**
-	 * Retrieves the {@link PermissionOwner} from an permission that should be
-	 * created or deleted.
-	 * 
-	 * @param permission
-	 *            The permission with an owner.
-	 * @param storage
-	 *            A storage from which the owner is retrieved.
+	 * Retrieves the {@link PermissionOwner} from an permission that should be created or deleted.
+	 * @param permission The permission with an owner.
+	 * @param storage A storage from which the owner is retrieved.
 	 * @return The Owner.
 	 */
 	private static PermissionOwner<?> getOwnerFromPermission(ConqueryPermission permission, MasterMetaStorage storage) {
 		PermissionOwnerId<?> ownerId = permission.getOwnerId();
-		if (ownerId == null) {
+		if(ownerId == null) {
 			throw new IllegalArgumentException("The ownerId is not allowed to be null.");
 		}
-		PermissionOwner<?> owner = ownerId.getOwner(storage);
-		if (owner == null) {
+		PermissionOwner<?> owner =  ownerId.getOwner(storage);
+		if(owner == null) {
 			throw new IllegalArgumentException("The provided ownerId belongs to know subject.");
 		}
 		return owner;

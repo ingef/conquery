@@ -10,17 +10,17 @@ import com.google.common.collect.PeekingIterator;
 public abstract class ConceptElementId<T extends ConceptElement<?>> extends AId<T> implements NamespacedId {
 
 	public abstract ConceptId findConcept();
-
+	
 	@JsonIgnore
 	public abstract String getName();
-
+	
 	public static enum Parser implements IId.Parser<ConceptElementId<?>> {
 		INSTANCE;
-
+		
 		@Override
 		public ConceptElementId<?> parse(PeekingIterator<String> parts) {
 			ConceptElementId<?> result = ConceptId.Parser.INSTANCE.parse(parts);
-			while (parts.hasNext()) {
+			while(parts.hasNext()) {
 				result = new ConceptTreeChildId(result, parts.next());
 			}
 			return result;

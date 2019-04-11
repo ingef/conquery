@@ -18,8 +18,7 @@ import jetbrains.exodus.env.Environments;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter
-@Slf4j
+@Getter @Slf4j
 public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 	protected final File directory;
@@ -27,7 +26,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	protected final Environment environment;
 	@Getter
 	protected final CentralRegistry centralRegistry = new CentralRegistry();
-	private final List<KeyIncludingStore<?, ?>> stores = new ArrayList<>();
+	private final List<KeyIncludingStore<?,?>> stores = new ArrayList<>();
 
 	public ConqueryStorageImpl(Validator validator, StorageConfig config, File directory) {
 		this.directory = directory;
@@ -35,14 +34,15 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 		this.environment = Environments.newInstance(directory, config.getXodus().createConfig());
 	}
 
-	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {}
-
+	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {
+	}
+	
 	@Override
 	public void loadData() {
 		createStores(stores::add);
 		log.info("Loading storage {} from {}", this.getClass().getSimpleName(), directory);
 		Stopwatch all = Stopwatch.createStarted();
-		for (KeyIncludingStore<?, ?> store : stores) {
+		for(KeyIncludingStore<?, ?> store : stores) {
 			store.loadData();
 		}
 		log.info("Loaded complete {} storage within {}", this.getClass().getSimpleName(), all.stop());
@@ -50,7 +50,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 	@Override
 	public void close() throws IOException {
-		for (KeyIncludingStore<?, ?> store : stores) {
+		for(KeyIncludingStore<?, ?> store : stores) {
 			store.close();
 		}
 		environment.close();

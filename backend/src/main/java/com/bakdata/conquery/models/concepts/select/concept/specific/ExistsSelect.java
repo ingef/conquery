@@ -18,23 +18,15 @@ import lombok.Getter;
 @CPSType(id = "EXISTS", base = Select.class)
 public class ExistsSelect extends UniversalSelect {
 
-	@JsonIgnore
-	@Getter(lazy = true)
+	@JsonIgnore @Getter(lazy=true)
 	private final Set<TableId> requiredTables = collectRequiredTables();
-
+	
 	@Override
 	public ExistsAggregator createAggregator() {
 		return new ExistsAggregator(getRequiredTables());
 	}
 
 	private Set<TableId> collectRequiredTables() {
-		return this
-			.getHolder()
-			.findConcept()
-			.getConnectors()
-			.stream()
-			.map(Connector::getTable)
-			.map(Table::getId)
-			.collect(Collectors.toSet());
+		return this.getHolder().findConcept().getConnectors().stream().map(Connector::getTable).map(Table::getId).collect(Collectors.toSet());
 	}
 }

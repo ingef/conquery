@@ -6,8 +6,7 @@ import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
 
 /**
- * Tests if the preceding date is the same day or any day before the reference
- * date.
+ * Tests if the preceding date is the same day or any day before the reference date.
  */
 public class BeforeOrSameTemporalMatcher implements PrecedenceMatcher {
 

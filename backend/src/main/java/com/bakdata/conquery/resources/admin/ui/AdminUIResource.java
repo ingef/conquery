@@ -46,7 +46,7 @@ import io.dropwizard.views.View;
 import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
 @Slf4j
 @Path("/")
@@ -89,36 +89,37 @@ public class AdminUIResource {
 	@POST
 	@Path("/mandators")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postMandator(@NotEmpty @FormDataParam("mandantor_name") String name, @NotEmpty @FormDataParam("mandantor_id") String idString) throws JSONException {
+	public Response postMandator(
+		@NotEmpty @FormDataParam("mandantor_name") String name,
+		@NotEmpty @FormDataParam("mandantor_id") String idString) throws JSONException {
 		processor.createMandator(name, idString);
 		return Response.ok().build();
 	}
-
+	
 	/**
 	 * End point for retrieving information about a specific mandator.
-	 * 
-	 * @param mandatorId
-	 *            Unique id of the mandator.
+	 * @param mandatorId Unique id of the mandator.
 	 * @return A view holding the information about the mandator.
 	 */
-	@GET
-	@Path("/mandators/{" + MANDATOR_NAME + "}")
-	public View getMandator(@PathParam(MANDATOR_NAME) MandatorId mandatorId) {
+	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
+	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
 		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
 	}
-
+	
 	@POST
 	@Path("/permissions/")
 	@Consumes(ExtraMimeTypes.JSON_STRING)
-	public Response createPermission(ConqueryPermission permission) throws JSONException {
+	public Response createPermission(
+		ConqueryPermission permission) throws JSONException {
 		processor.createPermission(permission);
 		return Response.ok().build();
 	}
-
+	
 	@DELETE
 	@Path("/permissions/")
 	@Consumes(ExtraMimeTypes.JSON_STRING)
-	public Response deletePermission(ConqueryPermission permission) throws JSONException {
+	public Response deletePermission(
+		ConqueryPermission permission) throws JSONException {
 		processor.deletePermission(permission);
 		return Response.ok().build();
 	}
@@ -136,7 +137,9 @@ public class AdminUIResource {
 			throw new IllegalStateException("Query failed");
 		}
 
-		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next()).toCSV(managed).collect(Collectors.joining("\n"));
+		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next())
+			.toCSV(managed)
+			.collect(Collectors.joining("\n"));
 	}
 
 	@GET
@@ -150,7 +153,11 @@ public class AdminUIResource {
 					.getSlaves()
 					.values()
 					.stream()
-					.collect(Collectors.toMap(si -> Objects.toString(si.getRemoteAddress()), SlaveInformation::getJobManagerStatus)))
+					.collect(Collectors.toMap(
+						si -> Objects.toString(si.getRemoteAddress()),
+						SlaveInformation::getJobManagerStatus
+					))
+			)
 			.build();
 		return new UIView<>("jobs.html.ftl", context, status);
 	}

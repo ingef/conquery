@@ -13,23 +13,23 @@ public class OrNode extends QPParentNode {
 	public OrNode(List<QPNode> children) {
 		super(children);
 	}
-
+	
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		List<QPNode> clones = new ArrayList<>(getChildren());
-		clones.replaceAll(qp -> qp.clone(ctx));
+		clones.replaceAll(qp->qp.clone(ctx));
 		return new OrNode(clones);
 	}
-
+	
 	@Override
 	public boolean isContained() {
 		boolean currently = false;
-		for (QPNode agg : getChildren()) {
+		for(QPNode agg:getChildren()) {
 			currently |= agg.isContained();
 		}
 		return currently;
 	}
-
+	
 	public static QPNode of(Collection<QPNode> children) {
 		switch (children.size()) {
 			case 0:

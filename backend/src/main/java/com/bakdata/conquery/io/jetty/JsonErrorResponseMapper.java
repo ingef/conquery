@@ -11,12 +11,17 @@ public class JsonErrorResponseMapper {
 
 	public static Response toResponse(Response response) {
 		ErrorMessage errorMessage = buildErrorMessage(response);
-		return Response.fromResponse(response).type(MediaType.APPLICATION_JSON_TYPE).entity(errorMessage).build();
+		return Response.fromResponse(response)
+			.type(MediaType.APPLICATION_JSON_TYPE)
+			.entity(errorMessage)
+			.build();
 	}
 
 	private static ErrorMessage buildErrorMessage(Response response) {
 		int status = response.getStatus();
-		String message = Optional.ofNullable(response.getEntity()).map(Object::toString).orElse(null);
+		String message = Optional.ofNullable(response.getEntity())
+				.map(Object::toString)
+				.orElse(null);
 		return new ErrorMessage(status, message);
 	}
 

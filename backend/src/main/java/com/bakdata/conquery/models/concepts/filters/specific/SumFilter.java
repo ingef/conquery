@@ -39,6 +39,7 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "SUM", base = Filter.class)
 public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter<RANGE> {
 
+
 	@Valid
 	@NotNull
 	@Getter
@@ -76,15 +77,13 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 				return;
 			}
 			default:
-				throw new ConceptConfigurationException(
-					getConnector(),
-					"NUMBER filter is incompatible with columns of type " + column.getType());
+				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
 		}
 	}
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[] { getColumn(), getSubtractColumn(), distinct ? getDistinctByColumn() : null };
+		return new Column[]{getColumn(), getSubtractColumn(), distinct ? getDistinctByColumn() : null };
 	}
 
 	@Override
@@ -92,12 +91,11 @@ public class SumFilter<RANGE extends IRange<? extends Number, ?>> extends Filter
 		ColumnAggregator<?> aggregator = getAggregator();
 
 		if (distinct) {
-			return new RangeFilterNode(
-				value,
-				new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn() == null ? getColumn() : getDistinctByColumn()));
+			return new RangeFilterNode(value, new DistinctValuesWrapperAggregator(aggregator, getDistinctByColumn() == null ? getColumn() :
+				getDistinctByColumn()));
 		}
 		else {
-			if (getColumn().getType() == MajorTypeId.REAL)
+			if(getColumn().getType() == MajorTypeId.REAL)
 				return new RangeFilterNode(Range.DoubleRange.fromNumberRange(value), aggregator);
 
 			return new RangeFilterNode(value, aggregator);

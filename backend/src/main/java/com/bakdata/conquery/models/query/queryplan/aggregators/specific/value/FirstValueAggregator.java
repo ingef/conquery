@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+
 public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;
@@ -28,7 +29,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	@Override
 	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn()) || !block.has(event, validityDateColumn)) {
+		if (!block.has(event, getColumn()) || ! block.has(event, validityDateColumn)) {
 			return;
 		}
 
@@ -54,7 +55,7 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	public FirstValueAggregator doClone(CloneContext ctx) {
 		return new FirstValueAggregator(getColumn());
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());

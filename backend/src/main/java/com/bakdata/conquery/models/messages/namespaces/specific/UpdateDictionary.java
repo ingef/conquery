@@ -12,11 +12,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@CPSType(id = "UPDATE_DICTIONARY", base = NamespacedMessage.class)
-@AllArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
-@Setter
-@ToString(callSuper = true)
+@CPSType(id="UPDATE_DICTIONARY", base=NamespacedMessage.class)
+@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @Setter @ToString(callSuper=true)
 public class UpdateDictionary extends WorkerMessage.Slow {
 
 	private Dictionary dictionary;

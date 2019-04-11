@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
+
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
@@ -43,7 +44,7 @@ public class StoredQueriesProcessor {
 		return allQueries
 			.stream()
 			.filter(q -> q.getStatus() == QueryStatus.DONE)
-			// to exclude subtypes from somewhere else
+			//to exclude subtypes from somewhere else
 			.filter(q -> q.getQuery().getClass().equals(ConceptQuery.class))
 			.map(mq -> SQStatus.buildFromQuery(namespaces.getMetaStorage(), mq, URLBuilder.fromRequest(req)))
 			.collect(Collectors.toList());
@@ -62,13 +63,11 @@ public class StoredQueriesProcessor {
 			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)), String.class);
 			query.setTags(newTags);
 			storage.updateQuery(query);
-		}
-		else if (patch.has("label")) {
+		} else if (patch.has("label")) {
 			authorize(user, queryId, Ability.LABEL);
 			query.setLabel(patch.get("label").textValue());
 			storage.updateQuery(query);
-		}
-		else if (patch.has("shared")) {
+		} else if (patch.has("shared")) {
 			authorize(user, queryId, Ability.SHARE);
 			QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, queryId);
 			boolean shared = patch.get("shared").asBoolean();
@@ -82,8 +81,7 @@ public class StoredQueriesProcessor {
 					}
 					query.setShared(shared);
 					storage.updateQuery(query);
-				}
-				catch (JSONException e) {
+				} catch (JSONException e) {
 					log.error("", e);
 				}
 			});

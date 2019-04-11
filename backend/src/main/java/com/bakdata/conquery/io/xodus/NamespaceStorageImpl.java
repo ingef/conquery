@@ -21,38 +21,41 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class NamespaceStorageImpl extends NamespacedStorageImpl implements NamespaceStorage {
-
-	@Getter
-	@Setter
-	@NonNull
+	
+	@Getter @Setter @NonNull
 	private MasterMetaStorage metaStorage;
 	protected SingletonStore<PersistentIdMap> idMapping;
 	protected SingletonStore<StructureNode[]> structure;
-
+	
 	public NamespaceStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
 	}
+
 
 	@Override
 	public PersistentIdMap getIdMapping() {
 		return idMapping.get();
 	}
 
+
 	@Override
 	public void updateIdMapping(PersistentIdMap idMapping) throws JSONException {
 		this.idMapping.update(idMapping);
 	}
 
+	
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
 		structure = StoreInfo.STRUCTURE.singleton(this, new SingletonNamespaceCollection(centralRegistry));
 		idMapping = StoreInfo.ID_MAPPING.singleton(this);
-		collector.collect(structure).collect(idMapping);
+		collector
+			.collect(structure)
+			.collect(idMapping);
 	}
 
 	@Override
 	public StructureNode[] getStructure() {
-		return Objects.requireNonNullElseGet(structure.get(), () -> new StructureNode[0]);
+		return Objects.requireNonNullElseGet(structure.get(), ()->new StructureNode[0]);
 	}
 
 	@Override

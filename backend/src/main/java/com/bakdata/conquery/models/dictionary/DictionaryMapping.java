@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.dictionary;
 
+
 import java.util.Arrays;
 
 import com.bakdata.conquery.models.common.Range;
@@ -20,11 +21,11 @@ public class DictionaryMapping {
 	private int[] source2TargetMap;
 	private Range<Integer> newIds;
 
-	public static DictionaryMapping create(Dictionary from, Dictionary to) {
+	public static DictionaryMapping create(Dictionary from, Dictionary to){
 		DictionaryMapping mapping = new DictionaryMapping(from, to);
 
 		mapping.mapValues();
-		if (Arrays.stream(mapping.source2TargetMap).distinct().count() < mapping.source2TargetMap.length) {
+		if(Arrays.stream(mapping.source2TargetMap).distinct().count() < mapping.source2TargetMap.length) {
 			throw new IllegalStateException("Multiple source ids map to the same target");
 		}
 
@@ -37,7 +38,7 @@ public class DictionaryMapping {
 		for (int id = 0; id < sourceDictionary.size(); id++) {
 			byte[] value = sourceDictionary.getElementBytes(id);
 			int targetId = targetDictionary.getId(value);
-			// if id was unknown until now
+			//if id was unknown until now
 			if (targetId == -1L) {
 				targetId = targetDictionary.add(value);
 				if (newIds == null) {

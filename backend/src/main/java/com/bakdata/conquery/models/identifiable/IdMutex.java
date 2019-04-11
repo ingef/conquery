@@ -7,15 +7,14 @@ import java.util.concurrent.Semaphore;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 
 public class IdMutex<T extends IId<?>> {
-
 	private final ConcurrentHashMap<T, Locked> mutexMap = new ConcurrentHashMap<>();
-
+	
 	public Locked acquire(T key) {
 		Locked lock = mutexMap.get(key);
-		if (lock == null) {
+		if(lock == null) {
 			synchronized (mutexMap) {
 				lock = mutexMap.get(key);
-				if (lock == null) {
+				if(lock == null) {
 					lock = new Locked();
 					mutexMap.put(key, lock);
 				}
@@ -24,9 +23,8 @@ public class IdMutex<T extends IId<?>> {
 		lock.acquireUninterruptibly();
 		return lock;
 	}
-
+	
 	public static final class Locked extends Semaphore implements Closeable {
-
 		private static final long serialVersionUID = 1L;
 
 		public Locked() {

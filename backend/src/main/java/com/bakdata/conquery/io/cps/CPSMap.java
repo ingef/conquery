@@ -15,8 +15,7 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class CPSMap implements Iterable<Entry<Class<?>, String>> {
-
+public class CPSMap implements Iterable<Entry<Class<?>, String>>{
 	private Multimap<Class<?>, String> class2TypeLabels = HashMultimap.create();
 	private Map<String, Class<?>> typeLabel2Class;
 
@@ -27,21 +26,21 @@ public class CPSMap implements Iterable<Entry<Class<?>, String>> {
 	public void calculateInverse() {
 		ImmutableMultimap<Class<?>, String> immutable = ImmutableMultimap.copyOf(class2TypeLabels);
 		class2TypeLabels = immutable;
-
+		
 		ImmutableMultimap<String, Class<?>> rev = immutable.inverse();
 		int failed = 0;
-		for (Entry<String, Collection<Class<?>>> e : rev.asMap().entrySet()) {
-			if (e.getValue().size() > 1) {
+		for(Entry<String, Collection<Class<?>>> e:rev.asMap().entrySet()) {
+			if(e.getValue().size()>1) {
 				log.error("There are multiple objects with the type id {}: {}", e.getKey(), e.getValue());
 				failed++;
 			}
 		}
-		if (failed > 0) {
-			throw new IllegalStateException(failed + " errors (see above)");
+		if(failed > 0) {
+			throw new IllegalStateException(failed+" errors (see above)");
 		}
 		typeLabel2Class = rev.entries().stream().collect(Collectors.toMap(Entry::getKey, Entry::getValue));
 	}
-
+	
 	public void merge(CPSMap other) {
 		class2TypeLabels.putAll(other.class2TypeLabels);
 	}
@@ -61,11 +60,11 @@ public class CPSMap implements Iterable<Entry<Class<?>, String>> {
 
 	public String getTypeIdForClass(Class<?> suggestedType) {
 		Collection<String> ids = class2TypeLabels.get(suggestedType);
-		if (ids.isEmpty()) {
-			// check if other base
+		if(ids.isEmpty()) {
+			//check if other base
 			CPSType anno = suggestedType.getAnnotation(CPSType.class);
-			if (anno == null) {
-				throw new IllegalStateException("There is no id for the class " + suggestedType + " for.");
+			if(anno == null) {
+				throw new IllegalStateException("There is no id for the class "+suggestedType+" for.");
 			}
 			else {
 				return anno.id();

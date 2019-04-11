@@ -22,10 +22,10 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 	public abstract void aggregateEvent(Block block, int event);
 
 	@Override
-	public String toString() {
+	public String toString(){
 		return getClass().getSimpleName();
 	}
-
+	
 	@Override
 	public ColumnAggregator<T> clone(CloneContext ctx) {
 		return ctx.clone(this);

@@ -21,14 +21,12 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id = "ADD_WORKER", base = NetworkMessage.class)
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
-@Slf4j
+@CPSType(id="ADD_WORKER", base=NetworkMessage.class)
+@RequiredArgsConstructor(onConstructor_=@JsonCreator) @Getter @Slf4j
 public class AddWorker extends SlaveMessage.Slow {
 
 	private final Dataset dataset;
-
+	
 	@Override
 	public void react(Slave context) throws Exception {
 		log.info("creating a new worker for {}", dataset);
@@ -41,7 +39,12 @@ public class AddWorker extends SlaveMessage.Slow {
 		WorkerStorage workerStorage = new WorkerStorageImpl(context.getValidator(), config.getStorage(), dir);
 		workerStorage.loadData();
 		workerStorage.updateDataset(dataset);
-		Worker worker = new Worker(info, context.getJobManager(), workerStorage, new QueryExecutor(config));
+		Worker worker = new Worker(
+			info,
+			context.getJobManager(),
+			workerStorage,
+			new QueryExecutor(config)
+		);
 		worker.setSession(context.getRawSession());
 		workerStorage.setWorker(info);
 		context.getWorkers().add(worker);
@@ -49,7 +52,7 @@ public class AddWorker extends SlaveMessage.Slow {
 	}
 
 	private File createWorkerName(ConqueryConfig config) {
-		String name = "worker_" + dataset.getId() + "_" + UUID.randomUUID();
+		String name = "worker_"+dataset.getId()+"_"+UUID.randomUUID();
 		return new File(config.getStorage().getDirectory(), name);
 	}
 }

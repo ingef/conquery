@@ -10,13 +10,11 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-@CPSType(id = "SOURCE", base = Output.class)
+@Getter @Setter @CPSType(id="SOURCE", base=Output.class)
 public class SourceOutput extends Output {
-
+	
 	private static final long serialVersionUID = 1L;
-
+	
 	@Override
 	public List<Object> createOutput(CType type, String[] row, int source, long sourceLine) {
 		return Collections.singletonList((long) source);

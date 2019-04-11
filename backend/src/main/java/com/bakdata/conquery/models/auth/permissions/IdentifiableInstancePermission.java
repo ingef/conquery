@@ -14,44 +14,43 @@ import lombok.Getter;
 import lombok.ToString;
 
 @Getter
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper=true)
+@EqualsAndHashCode(callSuper=true)
 public abstract class IdentifiableInstancePermission<ID extends AId<?>> extends ConqueryPermission {
-
 	protected final ID instanceId;
-
-	public IdentifiableInstancePermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, ID instanceId) {
+	
+	public IdentifiableInstancePermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities,  ID instanceId) {
 		super(ownerId, abilities);
 		this.instanceId = instanceId;
 	}
-
+	
 	@JsonCreator
-	public IdentifiableInstancePermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, ID instanceId, UUID jsonId) {
+	public IdentifiableInstancePermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities,  ID instanceId, UUID jsonId) {
 		super(ownerId, abilities, jsonId);
 		this.instanceId = instanceId;
 	}
-
+	
 	@Override
 	public boolean implies(Permission permission) {
 		// Check owner and accesses
-		if (!super.implies(permission)) {
+		if(!super.implies(permission)) {
 			return false;
 		}
-
+		
 		// Check permission category
-		if (!(permission instanceof IdentifiableInstancePermission)) {
+		if(!(permission instanceof IdentifiableInstancePermission)) {
 			return false;
 		}
-
+		
 		IdentifiableInstancePermission<?> ip = (IdentifiableInstancePermission<?>) permission;
-
+		
 		// Check instance
 		return this.getInstanceId().equals(ip.getInstanceId());
 	}
 
 	@Override
 	public abstract IdentifiableInstancePermission<ID> withOwner(PermissionOwnerId<?> newOwner);
-
+	
 	public ID getTarget() {
 		return instanceId;
 	}

@@ -8,10 +8,8 @@ import javax.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Getter @Setter
 public class LocaleConfig {
-
 	@NotNull
 	private Currency currency = Currency.getInstance("EUR");
 	@NotNull

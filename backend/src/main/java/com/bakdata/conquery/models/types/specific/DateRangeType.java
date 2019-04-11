@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
-@CPSType(base = CType.class, id = "DATE_RANGE")
+@CPSType(base=CType.class, id="DATE_RANGE")
 public class DateRangeType extends CType<CDateRange, DateRangeType> {
 
 	public DateRangeType() {
@@ -22,16 +22,20 @@ public class DateRangeType extends CType<CDateRange, DateRangeType> {
 	}
 
 	public static CDateRange parseISORange(String value) throws ParsingException {
-		if (value == null) {
+		if(value==null) {
 			return null;
 		}
 		String[] parts = StringUtils.split(value, '/');
-		if (parts.length != 2) {
+		if(parts.length!=2) {
 			throw ParsingException.of(value, "daterange");
 		}
 		DateFormats formats = DateFormats.instance();
 
-		return CDateRange.of(formats.parseToLocalDate(parts[0]), formats.parseToLocalDate(parts[1]));
+
+		return CDateRange.of(
+				formats.parseToLocalDate(parts[0]),
+				formats.parseToLocalDate(parts[1])
+		);
 	}
 
 	@Override

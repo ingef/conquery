@@ -28,95 +28,91 @@ import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 
 public class BigStoreTest {
-
+	
 	private File tmpDir;
 	private Environment env;
-
+	
 	@BeforeEach
 	public void init() {
 		tmpDir = Files.createTempDir();
 		env = Environments.newInstance(tmpDir);
 	}
-
+	
 	@AfterEach
 	public void destroy() throws IOException {
 		env.close();
 		FileUtils.deleteDirectory(tmpDir);
 	}
-
+	
 	@Test
 	public void testFull() throws JSONException, IOException {
 		try (BigStore<DictionaryId, Dictionary> store = new BigStore<>(Validators.newValidator(), env, StoreInfo.DICTIONARIES)) {
 			store.setChunkSize(Ints.checkedCast(Size.megabytes(1).toBytes()));
-
+			
 			Dictionary nDict = new Dictionary();
 			nDict.setName("dict");
 			nDict.setDataset(new DatasetId("test"));
-
-			for (int v = 0; v < 1000000; v++) {
+			
+			for(int v = 0; v < 1000000; v++) {
 				nDict.add(Integer.toHexString(v));
 			}
 			nDict.compress();
-
-			// check if manual serialization deserialization works
+			
+			//check if manual serialization deserialization works
 			byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);
 			Dictionary simpleCopy = Jackson.BINARY_MAPPER.readValue(bytes, Dictionary.class);
-			for (int v = 0; v < 1000000; v++) {
+			for(int v = 0; v < 1000000; v++) {
 				assertThat(simpleCopy.getId(Integer.toHexString(v))).isEqualTo(v);
 			}
-
-			// check if store works
+			
+			//check if store works
 			store.add(nDict.getId(), nDict);
-
-			// check if the bytes in the store are the same as bytes
+			
+			//check if the bytes in the store are the same as bytes
 			assertThat(
-				new SequenceInputStream(
-					Iterators
-						.asEnumeration(
-							store
-								.getMetaStore()
-								.get(nDict.getId())
-								.loadData(store.getDataStore())
-								.map(ByteArrayInputStream::new)
-								.iterator()))).hasSameContentAs(new ByteArrayInputStream(bytes));
-
+				new SequenceInputStream(Iterators.asEnumeration(store
+					.getMetaStore()
+					.get(nDict.getId())
+					.loadData(store.getDataStore())
+					.map(ByteArrayInputStream::new)
+					.iterator()))
+			).hasSameContentAs(new ByteArrayInputStream(bytes));
+			
 			Dictionary copy = store.get(nDict.getId());
-			for (int v = 0; v < 1000000; v++) {
+			for(int v = 0; v < 1000000; v++) {
 				assertThat(copy.getId(Integer.toHexString(v))).isEqualTo(v);
 			}
 		}
 	}
-
+	
 	@Test
 	public void testEmpty() throws JSONException, IOException {
 		try (BigStore<DictionaryId, Dictionary> store = new BigStore<>(Validators.newValidator(), env, StoreInfo.DICTIONARIES)) {
 			store.setChunkSize(Ints.checkedCast(Size.megabytes(1).toBytes()));
-
+			
 			Dictionary nDict = new Dictionary();
 			nDict.setName("dict");
 			nDict.setDataset(new DatasetId("test"));
-
+			
 			nDict.compress();
-			// check if manual serialization deserialization works
+			//check if manual serialization deserialization works
 			byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);
 			Dictionary simpleCopy = Jackson.BINARY_MAPPER.readValue(bytes, Dictionary.class);
 			assertThat(simpleCopy).isEmpty();
-
-			// check if store works
+			
+			//check if store works
 			store.add(nDict.getId(), nDict);
-
-			// check if the bytes in the store are the same as bytes
+			
+			//check if the bytes in the store are the same as bytes
 			assertThat(
-				new SequenceInputStream(
-					Iterators
-						.asEnumeration(
-							store
-								.getMetaStore()
-								.get(nDict.getId())
-								.loadData(store.getDataStore())
-								.map(ByteArrayInputStream::new)
-								.iterator()))).hasSameContentAs(new ByteArrayInputStream(bytes));
-
+				new SequenceInputStream(Iterators.asEnumeration(store
+					.getMetaStore()
+					.get(nDict.getId())
+					.loadData(store.getDataStore())
+					.map(ByteArrayInputStream::new)
+					.iterator()))
+			).hasSameContentAs(new ByteArrayInputStream(bytes));
+			
 			Dictionary copy = store.get(nDict.getId());
 			assertThat(copy).isEmpty();
 		}

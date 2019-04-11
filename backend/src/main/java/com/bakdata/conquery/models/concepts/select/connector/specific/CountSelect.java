@@ -36,9 +36,7 @@ public class CountSelect extends Select {
 	@Override
 	public Aggregator<?> createAggregator() {
 		if (distinct) {
-			return new DistinctValuesWrapperAggregator<>(
-				new CountAggregator(getColumn()),
-				getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
+			return new DistinctValuesWrapperAggregator<>(new CountAggregator(getColumn()), getDistinctByColumn() == null ? getColumn() : getDistinctByColumn());
 		}
 		else {
 			return new CountAggregator(getColumn());

@@ -8,12 +8,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor @NoArgsConstructor
 public abstract class NamedImpl<ID extends IId<? extends IdentifiableImpl<? extends ID>>> extends IdentifiableImpl<ID> implements Named<ID> {
 
-	@ValidName
-	@Getter(onMethod_ = @Override)
-	@Setter
+	@ValidName @Getter(onMethod_=@Override) @Setter
 	private String name;
 }

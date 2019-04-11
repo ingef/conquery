@@ -18,17 +18,17 @@ import com.fasterxml.jackson.jaxrs.cfg.ObjectReaderModifier;
 import lombok.RequiredArgsConstructor;
 
 public class PathParamInjector implements ContainerRequestFilter {
-
+	
 	@Override
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		ObjectReaderInjector.set(new Modifier(requestContext.getUriInfo().getPathParameters()));
 	}
-
+	
 	@RequiredArgsConstructor
 	public static class Modifier extends ObjectReaderModifier implements Injectable {
 
 		private final MultivaluedMap<String, String> pathParams;
-
+		
 		@Override
 		public ObjectReader modify(EndpointConfigBase<?> endpoint, MultivaluedMap<String, String> httpHeaders, JavaType resultType, ObjectReader reader, JsonParser p) throws IOException {
 			return this.injectInto(reader);
@@ -36,11 +36,11 @@ public class PathParamInjector implements ContainerRequestFilter {
 
 		@Override
 		public MutableInjectableValues inject(MutableInjectableValues values) {
-			if (pathParams.containsKey(ResourceConstants.DATASET_NAME)) {
+			if(pathParams.containsKey(ResourceConstants.DATASET_NAME)) {
 				values.add(DatasetId.class, DatasetId.Parser.INSTANCE.parse(pathParams.getFirst(ResourceConstants.DATASET_NAME)));
 			}
 			return values;
 		}
-
+		
 	}
 }
