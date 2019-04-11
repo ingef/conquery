@@ -21,7 +21,6 @@ const PreviousQueriesContainer = (props: PropsType) => {
       datasetId={props.datasetId}
       queries={props.queries}
       loading={props.loading}
-      error={props.error}
       loadQueries={props.loadQueries}
     />
   );
@@ -33,8 +32,7 @@ const mapStateToProps = state => ({
     state.previousQueriesSearch,
     state.previousQueriesFilter
   ),
-  loading: state.previousQueries.loading,
-  error: state.previousQueries.error
+  loading: state.previousQueries.loading
 });
 
 const mapDispatchToProps = dispatch => ({

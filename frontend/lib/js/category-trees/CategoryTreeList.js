@@ -3,16 +3,16 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
-import T from "i18n-react";
 
 import type { StateType } from "../app/reducers";
-import { ErrorMessage } from "../error-message";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import { type TreesType, type SearchType } from "./reducer";
 import CategoryTree from "./CategoryTree";
 import CategoryTreeFolder from "./CategoryTreeFolder";
-import { isNodeInSearchResult } from "./selectors";
+import { isNodeInSearchResult, getAreTreesAvailable } from "./selectors";
+
+import EmptyConceptTreeList from "./EmptyConceptTreeList";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -35,15 +35,10 @@ const Root = styled("div")`
 
 type PropsType = {
   trees: TreesType,
+  areTreesAvailable: boolean,
   activeTab: string,
   search?: SearchType
 };
-
-const StyledErrorMessage = styled(ErrorMessage)`
-  padding-left: 20px;
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 2px 0;
-`;
 
 const sortTrees = trees => (a, b) => {
   const aTree = trees[a];
@@ -60,12 +55,12 @@ class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
-    const { activeTab, search, trees } = this.props;
+    const { activeTab, search, trees, areTreesAvailable } = this.props;
 
     return (
       !search.loading && (
         <Root show={activeTab === "categoryTrees"}>
-          {trees ? (
+          {areTreesAvailable ? (
             Object.keys(trees)
               // Only take those that don't have a parent, they must be root
               .filter(treeId => !trees[treeId].parent)
@@ -108,9 +103,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                 );
               })
           ) : (
-            <StyledErrorMessage
-              message={T.translate("categoryTreeList.noTrees")}
-            />
+            <EmptyConceptTreeList />
           )}
         </Root>
       )
@@ -121,6 +114,7 @@ class CategoryTreeList extends React.Component<PropsType> {
 const mapStateToProps = (state: StateType) => {
   return {
     trees: state.categoryTrees.trees,
+    areTreesAvailable: getAreTreesAvailable(state),
     activeTab: state.panes.left.activeTab,
     search: state.categoryTrees.search
   };
