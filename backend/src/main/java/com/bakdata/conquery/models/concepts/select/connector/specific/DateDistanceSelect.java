@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.DateDistanceAggregatorNode;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -18,6 +19,7 @@ public class DateDistanceSelect extends SingleColumnSelect {
 
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
 
+	@JsonCreator
 	public DateDistanceSelect(Column column) {
 		super(column);
 	}
