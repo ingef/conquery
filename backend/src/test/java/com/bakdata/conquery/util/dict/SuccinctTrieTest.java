@@ -44,11 +44,11 @@ public class SuccinctTrieTest {
 
 		Dictionary replicatedDict = Dictionary.copyUncompressed(dict);
 		replicatedDict.compress();
-
+		
 		assertThat(IntStream.range(0, dict.size())).allSatisfy(id -> {
 			assertThat(replicatedDict.getElement(id)).isEqualTo(dict.getElement(id));
 		});
-
+		
 	}
 
 	@Test
@@ -72,7 +72,7 @@ public class SuccinctTrieTest {
 		}
 
 		dict.compress();
-
+		
 		assertThat(dict.getElement(0)).isEqualTo("hat");
 		assertThat(dict.getElement(1)).isEqualTo("it");
 		assertThat(dict.getElement(2)).isEqualTo("is");
@@ -83,7 +83,8 @@ public class SuccinctTrieTest {
 	}
 
 	@Test
-	public void serializationTest() throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
+	public void serializationTest()
+			throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 
 		Dictionary dict = new Dictionary();
 		dict.setDataset(new DatasetId("test"));
@@ -93,12 +94,12 @@ public class SuccinctTrieTest {
 		dict.compress();
 		SerializationTestUtil.testSerialization(dict, Dictionary.class);
 	}
-
+	
 	public static long[] getSeeds() {
-		return new long[] { 0L, 7L };
+		return new long[] {0L, 7L};
 	}
 
-	@ParameterizedTest(name = "seed: {0}")
+	@ParameterizedTest(name="seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
 		final Dictionary dict = new Dictionary();
@@ -108,27 +109,33 @@ public class SuccinctTrieTest {
 
 		Random random = new Random(seed);
 
-		IntStream.range(0, 8192).boxed().sorted(TernaryTreeTestUtil.shuffle(random)).forEach(rep -> {
-			final String prefix = Integer.toString(rep, 26);
-
-			reference.put(prefix, count.get());
-			dict.add(prefix.getBytes());
-			count.incrementAndGet();
-		});
-
+		IntStream
+			.range(0, 8192)
+			.boxed()
+			.sorted(TernaryTreeTestUtil.shuffle(random))
+			.forEach( rep -> {
+				final String prefix = Integer.toString(rep, 26);
+	
+				reference.put(prefix, count.get());
+				dict.add(prefix.getBytes());
+				count.incrementAndGet();
+			});
+		
 		log.info("structure build");
 		dict.compress();
 		log.info("trie compressed");
-		// assert key value lookup
+		//assert key value lookup
 		assertThat(reference.entrySet().stream()).allSatisfy(entry -> {
-			assertThat(dict.getId(entry.getKey())).isEqualTo(entry.getValue());
+			assertThat(dict.getId(entry.getKey()))
+				.isEqualTo(entry.getValue());
 		});
-
+		
 		log.info("forward lookup done");
 
-		// assert reverse lookup
+		//assert reverse lookup
 		assertThat(reference.inverse().entrySet().stream()).allSatisfy(entry -> {
-			assertThat(dict.getElementBytes(entry.getKey())).isEqualTo(entry.getValue().getBytes());
+			assertThat(dict.getElementBytes(entry.getKey()))
+				.isEqualTo(entry.getValue().getBytes());
 		});
 		log.info("reverse lookup done");
 	}

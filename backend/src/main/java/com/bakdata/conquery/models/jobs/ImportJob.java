@@ -64,12 +64,12 @@ public class ImportJob extends Job {
 		try (HCFile file = new HCFile(importFile, false)) {
 
 			if (log.isInfoEnabled()) {
-				log
-					.info(
+				log.info(
 						"Reading HCFile {}:\n\theader size: {}\n\tcontent size: {}",
 						importFile,
 						FileUtils.byteCountToDisplaySize(file.getHeaderSize()),
-						FileUtils.byteCountToDisplaySize(file.getContentSize()));
+						FileUtils.byteCountToDisplaySize(file.getContentSize())
+				);
 			}
 			PPHeader header;
 			try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
@@ -93,20 +93,19 @@ public class ImportJob extends Job {
 				}
 			}
 
-			// see #161 match to table check if it exists and columns are of the right type
 
-			// check that all workers are connected
+			//see #161  match to table check if it exists and columns are of the right type
+
+			//check that all workers are connected
 			namespace.checkConnections();
 
-			// update primary dictionary
+			//update primary dictionary
 			log.debug("\tupdating primary dictionary");
-			// see #168 this leads to a crash if the primary values are not full strings
+			//see #168  this leads to a crash if the primary values are not full strings
 			Dictionary entities = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
 			this.progressReporter.report(1);
 			log.debug("\tcompute dictionary");
-			Dictionary primaryDict = namespace
-				.getStorage()
-				.computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
+			Dictionary primaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
 			primaryDict = Dictionary.copyUncompressed(primaryDict);
 			log.debug("\tmap values");
 			DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
@@ -118,20 +117,21 @@ public class ImportJob extends Job {
 			namespace.sendToAll(new UpdateDictionary(primaryDict));
 			this.progressReporter.report(1);
 			log.debug("\tsending secondary dictionaries");
-			for (PPColumn col : header.getColumns()) {
-				col.getType().storeExternalInfos(namespace.getStorage(), (Consumer<Dictionary>) (dict -> {
-					try {
-						namespace.getStorage().addDictionary(dict);
-						namespace.sendToAll(new UpdateDictionary(dict));
-					}
-					catch (Exception e) {
-						throw new RuntimeException("Failed to store dictionary " + dict, e);
-					}
-				}));
+			for(PPColumn col:header.getColumns()) {
+				col.getType().storeExternalInfos(namespace.getStorage(),
+					(Consumer<Dictionary>)(dict -> {
+						try {
+							namespace.getStorage().addDictionary(dict);
+							namespace.sendToAll(new UpdateDictionary(dict));
+						} catch(Exception e) {
+							throw new RuntimeException("Failed to store dictionary "+dict, e);
+						}
+					})
+				);
 			}
 			this.progressReporter.report(1);
 
-			// partition the new IDs between the slaves
+			//partition the new IDs between the slaves
 			log.debug("\tpartition new IDs");
 			IntSet newBuckets = new IntOpenHashSet();
 			for (int newId : RangeUtil.iterate(primaryMapping.getNewIds())) {
@@ -148,9 +148,9 @@ public class ImportJob extends Job {
 			}
 
 			namespace.updateWorkerMap();
-			// namespace.getStorage().updateupdateMeta(namespace);
+			//namespace.getStorage().updateupdateMeta(namespace);
 
-			// update the allIdsTable
+			//update the allIdsTable
 			log.info("\tupdating id information");
 			Import allIdsImp = new Import();
 			allIdsImp.setName(new ImportId(table, header.getName()).toString());
@@ -162,7 +162,8 @@ public class ImportJob extends Job {
 			namespace.sendToAll(new AddImport(allIdsImp));
 			this.progressReporter.report(1);
 
-			// create data import and store/send it
+
+			//create data import and store/send it
 			log.info("\tupdating import information");
 			Import imp = new Import();
 			imp.setName(header.getName());
@@ -184,7 +185,7 @@ public class ImportJob extends Job {
 
 			this.progressReporter.report(1);
 
-			// import the new ids into the all ids table
+			//import the new ids into the all ids table
 			if (primaryMapping.getNewIds() != null) {
 				BlockFactory factory = allIdsImp.getBlockFactory();
 				final Map<WorkerInformation, ImportBits> allIdsBits = new ConcurrentHashMap<>();
@@ -196,12 +197,13 @@ public class ImportJob extends Job {
 					ib.setBytes(bytes);
 					try {
 						worker.getConnectedSlave().waitForFreeJobqueue();
-					}
-					catch (InterruptedException e) {
+					} catch (InterruptedException e) {
 						log.error("Interrupted while waiting for worker " + worker + " to have free space in queue", e);
 					}
 					worker.send(ib);
-				}); Output buffer = new Output(2048);) {
+				});
+					Output buffer = new Output(2048);
+				) {
 					ProgressReporter child = this.progressReporter.subJob(5);
 					child.setMax(primaryMapping.getNewIds().getMax() - primaryMapping.getNewIds().getMin() + 1);
 
@@ -210,7 +212,8 @@ public class ImportJob extends Job {
 						Block block = factory.createBlock(entityId, allIdsImp, Collections.singletonList(new Object[0]));
 						block.writeContent(buffer);
 
-						// copy content into ImportBits
+
+						//copy content into ImportBits
 						int size = buffer.position();
 						WorkerInformation responsibleWorker = namespace.getResponsibleWorker(entityId);
 						if (responsibleWorker == null) {
@@ -220,13 +223,7 @@ public class ImportJob extends Job {
 						GroupingByteBuffer responsibleAllIdsBuffer = allIdsBuffer.get(responsibleWorker);
 						responsibleAllIdsBuffer.ensureCapacity(size);
 						allIdsBits.get(responsibleWorker).addBits(new ImportBits.Bit(entityId, size));
-						System
-							.arraycopy(
-								buffer.getBuffer(),
-								0,
-								responsibleAllIdsBuffer.internalArray(),
-								responsibleAllIdsBuffer.offset(),
-								size);
+						System.arraycopy(buffer.getBuffer(), 0, responsibleAllIdsBuffer.internalArray(), responsibleAllIdsBuffer.offset(), size);
 						responsibleAllIdsBuffer.advance(size);
 
 						child.report(1);
@@ -234,7 +231,7 @@ public class ImportJob extends Job {
 				}
 			}
 
-			// import the actual data
+			//import the actual data
 			log.info("\timporting");
 			final Map<WorkerInformation, ImportBits> bits = new ConcurrentHashMap<>();
 			for (WorkerInformation wi : namespace.getWorkers()) {
@@ -246,17 +243,17 @@ public class ImportJob extends Job {
 					ib.setBytes(bytes);
 					try {
 						worker.getConnectedSlave().waitForFreeJobqueue();
-					}
-					catch (InterruptedException e) {
+					} catch (InterruptedException e) {
 						log.error("Interrupted while waiting for worker " + worker + " to have free space in queue", e);
 					}
 					worker.send(ib);
-				});) {
+				});
+			) {
 
 				ProgressReporter child = this.progressReporter.subJob(5);
 				child.setMax(header.getGroups() + 1);
 				for (long group = 0; group < header.getGroups(); group++) {
-					// copy content into ImportBits
+					//copy content into ImportBits
 					int entityId = primaryMapping.source2Target(in.readInt(true));
 					int size = in.readInt(true);
 					WorkerInformation responsibleWorker = namespace.getResponsibleWorker(entityId);
@@ -272,8 +269,7 @@ public class ImportJob extends Job {
 					child.report(1);
 				}
 			}
-		}
-		catch (KryoException | IOException e) {
+		} catch (KryoException | IOException e) {
 			throw new IllegalStateException("Failed to load the file " + importFile, e);
 		}
 	}

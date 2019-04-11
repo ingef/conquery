@@ -63,9 +63,10 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private AuthDynamicFeature authDynamicFeature;
 
 	public void run(ConqueryConfig config, Environment environment) throws IOException, JSONException {
-		// inject namespaces into the objectmapper
-		((MutableInjectableValues) environment.getObjectMapper().getInjectableValues()).add(NamespaceCollection.class, namespaces);
-
+		//inject namespaces into the objectmapper
+		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
+			.add(NamespaceCollection.class, namespaces);
+			
 		this.jobManager = new JobManager("master");
 		this.environment = environment;
 
@@ -76,8 +77,11 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		this.validator = environment.getValidator();
 		this.config = config;
 
-		this.maintenanceService = environment.lifecycle().scheduledExecutorService("Maintenance Service").build();
-
+		this.maintenanceService = environment
+			.lifecycle()
+			.scheduledExecutorService("Maintenance Service")
+			.build();
+		
 		environment.lifecycle().manage(this);
 
 		log.info("Started meta storage");
@@ -91,14 +95,15 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 				}
 			}
 		}
-
+		
+		
 		this.storage = new MasterMetaStorageImpl(namespaces, environment.getValidator(), config.getStorage());
 		this.storage.loadData();
 		namespaces.setMetaStorage(this.storage);
 		for (Namespace sn : namespaces.getNamespaces()) {
 			sn.getStorage().setMetaStorage(storage);
 		}
-
+		
 		config.getAuthentication().initializeAuthConstellation(storage);
 
 		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(storage, config.getAuthentication());
@@ -107,8 +112,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		for (Class<?> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
 			try {
 				((ResourcesProvider) resourceProvider.getConstructor().newInstance()).registerResources(this);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error("Failed to register Resource {}", e);
 			}
 		}
@@ -123,7 +127,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
-		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
+		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
 		namespaces.getSlaves().put(session.getRemoteAddress(), new SlaveInformation(new NetworkSession(session)));
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
@@ -146,19 +150,19 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		if (message instanceof MasterMessage) {
 			MasterMessage mrm = (MasterMessage) message;
 			log.trace("Master recieved {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
-			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(
-				mrm,
-				new NetworkMessageContext.Master(jobManager, new NetworkSession(session), namespaces));
+			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(mrm, new NetworkMessageContext.Master(
+				jobManager,
+				new NetworkSession(session),
+				namespaces
+			));
 
 			if (mrm.isSlowMessage()) {
 				((SlowMessage) mrm).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
-			}
-			else {
+			} else {
 				jobManager.addFastJob(job);
 			}
-		}
-		else {
+		} else {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
 		}
@@ -179,23 +183,20 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	public void stop() throws Exception {
 		try {
 			acceptor.dispose();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error(acceptor + " could not be closed", e);
 		}
 		for (Namespace namespace : namespaces.getNamespaces()) {
 			try {
 				namespace.getStorage().close();
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				log.error(namespace + " could not be closed", e);
 			}
 
 		}
 		try {
 			storage.close();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			log.error(storage + " could not be closed", e);
 		}
 	}

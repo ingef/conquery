@@ -12,6 +12,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RangeFilterNode<TYPE extends Comparable> extends AggregationResultFilterNode<Aggregator<TYPE>, IRange<TYPE, ?>> {
 
+
 	public RangeFilterNode(IRange<TYPE, ?> filterValue, Aggregator<TYPE> aggregator) {
 		super(aggregator, filterValue);
 	}

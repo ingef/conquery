@@ -25,10 +25,13 @@ public class ConquerySerializersModule extends SimpleModule {
 		addSerializer(Currency.class, new CurrencyUnitSerializer());
 		addAbstractTypeMapping(Int2ObjectMap.class, Int2ObjectOpenHashMap.class);
 
-		// register IdKeySerializer for all id types
-		List<Class<?>> idTypes = CPSTypeIdResolver.SCAN_RESULT.getClassesImplementing(IId.class.getName()).loadClasses();
+		//register IdKeySerializer for all id types
+		List<Class<?>> idTypes = CPSTypeIdResolver
+			.SCAN_RESULT
+			.getClassesImplementing(IId.class.getName())
+			.loadClasses();
 
-		for (Class<?> type : idTypes) {
+		for(Class<?> type : idTypes) {
 			addKeyDeserializer(type, new IdKeyDeserializer<>());
 		}
 	}

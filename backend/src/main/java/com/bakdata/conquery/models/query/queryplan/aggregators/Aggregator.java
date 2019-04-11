@@ -11,7 +11,7 @@ public interface Aggregator<T> extends CtxCloneable<Aggregator<T>>, EventIterati
 	T getAggregationResult();
 
 	void aggregateEvent(Block block, int event);
-
+	
 	@JsonIgnore
 	ResultType getResultType();
 }

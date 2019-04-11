@@ -33,7 +33,7 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	public AllValuesAggregator doClone(CloneContext ctx) {
 		return new AllValuesAggregator(getColumn());
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.STRING;

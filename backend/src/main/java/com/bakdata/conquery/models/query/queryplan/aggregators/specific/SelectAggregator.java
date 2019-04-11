@@ -52,7 +52,7 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	public SelectAggregator doClone(CloneContext ctx) {
 		return new SelectAggregator(getColumn(), selected);
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

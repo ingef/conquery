@@ -23,10 +23,11 @@ import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
+
 public class CSV implements Closeable {
-
+	
 	private static final ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
-
+	
 	private final CsvParserSettings settings;
 	private final CSVConfig config;
 	private BufferedReader reader;
@@ -38,7 +39,7 @@ public class CSV implements Closeable {
 		this(config, new FileInputStream(file), file.getName().endsWith(".gz"));
 		totalSizeToRead = file.length();
 	}
-
+	
 	public CSV(CSVConfig config, InputStream input, boolean gzip) throws IOException {
 		this.config = config;
 		CsvFormat format = new CsvFormat();
@@ -54,40 +55,49 @@ public class CSV implements Closeable {
 		{
 			settings.setFormat(format);
 		}
-
+		
+		
 		counter = new CountingInputStream(input);
-
-		InputStream in = gzip ? new GZIPInputStream(counter) : counter;
-
+		
+		InputStream in = gzip?new GZIPInputStream(counter):counter;
+			
 		reader = new BufferedReader(new InputStreamReader(in, config.getEncoding()));
 	}
 
 	public static Stream<String[]> streamContent(CSVConfig config, File file, Logger log) throws IOException {
 		CSV csv = new CSV(config, file);
-		return StreamSupport
-			.stream(Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED), false)
-			.onClose(csv::closeUnchecked);
+		return StreamSupport.stream(
+			Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED),
+			false
+		)
+		.onClose(csv::closeUnchecked);
 	}
-
+	
 	public static Stream<String[]> streamContent(CSVConfig config, InputStream input, Logger log) throws IOException {
 		CSV csv = new CSV(config, input, false);
-		return StreamSupport
-			.stream(Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED), false)
-			.onClose(csv::closeUnchecked);
+		return StreamSupport.stream(
+			Spliterators.spliteratorUnknownSize(csv.iterateContent(log), Spliterator.ORDERED),
+			false
+		)
+		.onClose(csv::closeUnchecked);
 	}
 
 	public Iterator<String[]> iterateContent(Logger log) throws IOException {
-		Iterator<String[]> it = new AsyncIterator<>(new CsvParser(settings).iterate(reader).iterator());
-
-		// skip the header line
-		if (config.isSkipHeader() && it.hasNext()) {
+		Iterator<String[]> it = new AsyncIterator<>(
+			new CsvParser(settings)
+				.iterate(reader)
+				.iterator()
+		);
+		
+		//skip the header line
+		if(config.isSkipHeader() && it.hasNext()) {
 			it.next();
 		}
-
-		if (totalSizeToRead > 1024 * 1024) {
+		
+		if(totalSizeToRead > 1024*1024) {
 			PROGRESS_BAR.addMaxValue(totalSizeToRead);
 			return new Iterator<String[]>() {
-
+				
 				@Override
 				public String[] next() {
 					long newRead = counter.getByteCount();
@@ -95,7 +105,7 @@ public class CSV implements Closeable {
 					read = newRead;
 					return it.next();
 				}
-
+				
 				@Override
 				public boolean hasNext() {
 					return it.hasNext();
@@ -106,7 +116,7 @@ public class CSV implements Closeable {
 			return it;
 		}
 	}
-
+	
 	@Override
 	public void close() throws IOException {
 		reader.close();
@@ -116,7 +126,7 @@ public class CSV implements Closeable {
 		try {
 			reader.close();
 		}
-		catch (Exception e) {
+		catch(Exception e) {
 			throw new RuntimeException(e);
 		}
 	}

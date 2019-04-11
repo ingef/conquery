@@ -44,7 +44,7 @@ public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long>
 	public CountQuartersOfDatesAggregator doClone(CloneContext ctx) {
 		return new CountQuartersOfDatesAggregator(getColumn());
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

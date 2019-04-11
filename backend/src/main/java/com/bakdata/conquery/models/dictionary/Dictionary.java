@@ -20,11 +20,9 @@ import lombok.Setter;
 @NoArgsConstructor
 public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<String> {
 
-	@Getter
-	@Setter
+	@Getter @Setter
 	private DatasetId dataset;
-	@Getter
-	@Setter
+	@Getter @Setter
 	private SuccinctTrie trie = new SuccinctTrie();
 
 	public Dictionary(DictionaryId dictionaryId) {
@@ -37,7 +35,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 		dict.trie = SuccinctTrie.createUncompressed(compressedDictionary.trie);
 		return dict;
 	}
-
+	
 	@Override
 	public DictionaryId createId() {
 		return new DictionaryId(dataset, getName());
@@ -52,8 +50,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 		int c = trie.get(bytes);
 		if (c == -1) {
 			return trie.put(bytes);
-		}
-		else {
+		} else {
 			return c;
 		}
 	}
@@ -69,7 +66,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	public synchronized int getId(String element) {
 		return trie.get(element.getBytes(StandardCharsets.UTF_8));
 	}
-
+	
 	public synchronized int getId(byte[] element) {
 		return trie.get(element);
 	}
@@ -87,7 +84,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 		IoBuffer buffer = IoBuffer.allocate(512);
 		buffer.setAutoExpand(true);
 		trie.getReverse(id, buffer);
-		byte[] out = new byte[buffer.limit() - buffer.position()];
+		byte[] out = new byte[buffer.limit()-buffer.position()];
 		buffer.get(out);
 		buffer.free();
 		return out;
@@ -107,7 +104,6 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	@Setter
 	@NoArgsConstructor
 	public static class DictionaryEntry {
-
 		private String value;
 		private int id;
 
@@ -116,7 +112,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	public void compress() {
 		trie.compress();
 	}
-
+	
 	public void tryCompress() {
 		trie.tryCompress();
 	}
@@ -125,4 +121,5 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 		return trie.getValues();
 	}
 
+	
 }

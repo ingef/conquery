@@ -7,14 +7,11 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 
 /**
- * Bundles a {@link Select} of a Query with the {@link CQConcept}, it occured
- * in. This is needed for generating more descriptive and individual column
- * names in a CSV.
+ * Bundles a {@link Select} of a Query with the {@link CQConcept}, it occured in.
+ * This is needed for generating more descriptive and individual column names in a CSV.
  */
-@Data
-@AllArgsConstructor
+@Data @AllArgsConstructor
 public class SelectDescriptor {
-
 	private Select select;
 	private CQConcept cqConcept;
 

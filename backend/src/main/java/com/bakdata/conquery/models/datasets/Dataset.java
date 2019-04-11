@@ -18,18 +18,16 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
+@Getter @Setter
 public class Dataset extends Labeled<DatasetId> implements Injectable {
 
-	@JsonManagedReference
-	@Valid
+	@JsonManagedReference @Valid
 	private IdMap<TableId, Table> tables = new IdMap<>();
-
-	@JsonIgnore
-	@Valid
+	
+	@JsonIgnore @Valid
 	private List<Concept<?>> concepts = new ArrayList<>();
-
+	
+	
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues mutableInjectableValues) {
 		return mutableInjectableValues.add(Dataset.class, this);

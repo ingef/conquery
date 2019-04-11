@@ -16,6 +16,7 @@ public class BeforeTemporalPrecedenceMatcher implements PrecedenceMatcher {
 		preceding.remove(CDateRange.atLeast(sample));
 	}
 
+
 	@Override
 	public boolean isContained(OptionalInt reference, OptionalInt preceding) {
 		if (!preceding.isPresent() || !reference.isPresent()) {

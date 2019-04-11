@@ -19,9 +19,7 @@ public abstract class CQAbstractTemporalQuery implements CQElement {
 	protected final CQSampled index;
 
 	/**
-	 * The query being executed, compared to index. Events in preceding will be
-	 * cut-off to be always before index, or at the same day, depending on the
-	 * queries specific implementations.
+	 * The query being executed, compared to index. Events in preceding will be cut-off to be always before index, or at the same day, depending on the queries specific implementations.
 	 */
 	protected final CQSampled preceding;
 

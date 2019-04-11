@@ -11,19 +11,13 @@ public interface PrecedenceMatcher {
 
 	/**
 	 * Remove days before {@code sample} according to specified logic.
-	 * 
-	 * @param preceding
-	 *            the set to manipulate
-	 * @param sample
-	 *            the last {@link com.bakdata.conquery.models.common.CDate} to be
-	 *            included.
+	 * @param preceding the set to manipulate
+	 * @param sample the last {@link com.bakdata.conquery.models.common.CDate} to be included.
 	 */
 	void removePreceding(CDateSet preceding, int sample);
 
 	/**
-	 * Tests if {@code preceding} matches {@code reference} according to the
-	 * implementation classes specific criteria.
-	 * 
+	 * Tests if {@code preceding} matches {@code reference} according to the implementation classes specific criteria.
 	 * @param reference
 	 * @param preceding
 	 * @return

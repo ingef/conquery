@@ -10,17 +10,13 @@ import com.google.common.math.DoubleMath;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-@Getter
-@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
-public class ImmutableProgressReporter implements ProgressReporter {
-
-	@Getter(onMethod_ = @JsonValue)
+@Getter @RequiredArgsConstructor(onConstructor_=@JsonCreator)
+public class ImmutableProgressReporter implements ProgressReporter{
+	@Getter(onMethod_=@JsonValue)
 	private final Values values;
-
+	
 	@Data
 	public static final class Values {
-
 		private double progress = 0;
 		private boolean done = false;
 		private boolean started = false;
@@ -28,15 +24,15 @@ public class ImmutableProgressReporter implements ProgressReporter {
 		private long createdTime;
 		private long startTime;
 	}
-
+	
 	public ImmutableProgressReporter(ProgressReporter pr) {
 		values = new Values();
 		values.progress = pr.getProgress();
-		values.startTime = DoubleMath.roundToLong(System.currentTimeMillis() / 1_000, RoundingMode.DOWN) - pr.getStartTime();
+		values.startTime = DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN) - pr.getStartTime();
 		values.done = pr.isDone();
 		values.started = pr.isStarted();
-		if (!values.started) {
-			values.createdTime = DoubleMath.roundToLong(System.currentTimeMillis() / 1_000, RoundingMode.DOWN) - pr.getWaitedSeconds();
+		if(!values.started) {
+			values.createdTime = DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN) - pr.getWaitedSeconds();
 		}
 	}
 
@@ -45,18 +41,16 @@ public class ImmutableProgressReporter implements ProgressReporter {
 		long elapsed = System.nanoTime() - values.startTime;
 		return ProgressReporterUtil.buildProgressReportString(values.done, values.progress, elapsed, values.waitedSeconds * 1_000_000_000);
 	}
-
-	@Override
-	@JsonProperty
+	
+	@Override @JsonProperty
 	public long getWaitedSeconds() {
-		if (values.started) {
+		if(values.started) {
 			return values.waitedSeconds;
-		}
-		else {
-			return DoubleMath.roundToLong(System.currentTimeMillis() / 1_000, RoundingMode.DOWN) - values.createdTime;
+		} else {
+			return DoubleMath.roundToLong(System.currentTimeMillis()/1_000, RoundingMode.DOWN) - values.createdTime;
 		}
 	}
-
+	
 	@Override
 	public void start() {
 		throw new UnsupportedOperationException();

@@ -21,31 +21,31 @@ public class BytesTTMapDeserializer extends JsonDeserializer<BytesTTMap> {
 
 	@Override
 	public BytesTTMap deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
-		expect(ctxt, p.currentToken(), JsonToken.START_ARRAY);
+		expect(ctxt, p.currentToken(),	JsonToken.START_ARRAY);
 
-		ABytesNode n = read(p, ctxt);
+		ABytesNode n = read(p,ctxt);
 		expect(ctxt, p.nextToken(), JsonToken.END_ARRAY);
-
-		if (n == null) {
+		
+		if(n == null) {
 			return new BytesTTMap();
 		}
 		else {
 			return new BytesTTMap(n);
 		}
 	}
-
+	
 	private ABytesNode read(JsonParser p, DeserializationContext ctxt) throws IOException {
 		ABytesNode n;
-		if (p.nextToken() == JsonToken.VALUE_NULL) {
+		if(p.nextToken() == JsonToken.VALUE_NULL) {
 			return null;
 		}
 		expect(ctxt, p.currentToken(), JsonToken.VALUE_NUMBER_INT);
-		BitStore flags = Bits.asStore(new byte[] { p.getByteValue() });
-
-		if (flags.getBit(1)) {
+		BitStore flags = Bits.asStore(new byte[] {p.getByteValue()});
+		
+		if(flags.getBit(1)) {
 			expect(ctxt, p.nextToken(), JsonToken.VALUE_EMBEDDED_OBJECT);
 			byte[] key = readBytes(p);
-			if (flags.getBit(0)) {
+			if(flags.getBit(0)) {
 				expect(ctxt, p.nextToken(), JsonToken.VALUE_NUMBER_INT);
 				int value = p.getIntValue();
 				n = new BytesPatriciaValueNode(key, value);
@@ -57,7 +57,7 @@ public class BytesTTMapDeserializer extends JsonDeserializer<BytesTTMap> {
 		else {
 			expect(ctxt, p.nextToken(), JsonToken.VALUE_NUMBER_INT);
 			byte key = p.getByteValue();
-			if (flags.getBit(0)) {
+			if(flags.getBit(0)) {
 				expect(ctxt, p.nextToken(), JsonToken.VALUE_NUMBER_INT);
 				int value = p.getIntValue();
 				n = new BytesValueNode(key, value);
@@ -66,26 +66,26 @@ public class BytesTTMapDeserializer extends JsonDeserializer<BytesTTMap> {
 				n = new BytesNode(key);
 			}
 		}
-
-		if (flags.getBit(2)) {
+		
+		if(flags.getBit(2)) {
 			n.setLeft(read(p, ctxt));
 		}
-		if (flags.getBit(3)) {
+		if(flags.getBit(3)) {
 			n.setMiddle(read(p, ctxt));
 		}
-		if (flags.getBit(4)) {
+		if(flags.getBit(4)) {
 			n.setRight(read(p, ctxt));
 		}
-
+		
 		return n;
 	}
 
 	private void expect(DeserializationContext ctxt, JsonToken token, JsonToken expected) throws JsonMappingException {
-		if (token != expected) {
-			ctxt.reportInputMismatch(BytesTTMap.class, "Expected " + expected + " but found " + token);
+		if(token != expected) {
+			ctxt.reportInputMismatch(BytesTTMap.class, "Expected "+expected+" but found "+token);
 		}
 	}
-
+	
 	private byte[] readBytes(JsonParser p) throws IOException {
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		p.readBinaryValue(baos);

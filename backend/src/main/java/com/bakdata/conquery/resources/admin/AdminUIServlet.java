@@ -29,9 +29,9 @@ public class AdminUIServlet {
 	public void register(MasterCommand masterCommand) {
 		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
-
+		
 		RESTServer.configure(masterCommand.getConfig(), jerseyConfig);
-
+		
 		JettyConfigurationUtil.configure(jerseyConfig);
 		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
 
@@ -39,21 +39,9 @@ public class AdminUIServlet {
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(masterCommand.getEnvironment().getObjectMapper()));
 
-		// jerseyConfig.getSingletons().add(new
-		// UnitOfWorkResourceMethodDispatchAdapter(hibernateBundle.getSessionFactory()));
-		jerseyConfig
-			.register(
-				new AdminUIResource(
-					masterCommand.getConfig(),
-					masterCommand.getNamespaces(),
-					masterCommand.getJobManager(),
-					new AdminUIProcessor(masterCommand.getStorage())));
-		DatasetsResource datasets = new DatasetsResource(
-			masterCommand.getConfig(),
-			masterCommand.getStorage(),
-			masterCommand.getNamespaces(),
-			masterCommand.getJobManager(),
-			masterCommand.getMaintenanceService());
+		//jerseyConfig.getSingletons().add(new UnitOfWorkResourceMethodDispatchAdapter(hibernateBundle.getSessionFactory()));
+		jerseyConfig.register(new AdminUIResource(masterCommand.getConfig(), masterCommand.getNamespaces(), masterCommand.getJobManager(), new AdminUIProcessor(masterCommand.getStorage())));
+		DatasetsResource datasets = new DatasetsResource(masterCommand.getConfig(), masterCommand.getStorage(), masterCommand.getNamespaces(), masterCommand.getJobManager(), masterCommand.getMaintenanceService());
 		datasetsProcessor = datasets.getProcessor();
 		jerseyConfig.register(datasets);
 		jerseyConfig.register(new JobsResource(masterCommand.getJobManager()));

@@ -15,30 +15,30 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter
-@Setter
-@Slf4j
-@CPSType(id = "VALIDITY_DATE_SELECTION", base = Filter.class)
+@Getter @Setter @Slf4j
+@CPSType(id="VALIDITY_DATE_SELECTION", base=Filter.class)
 public class ValidityDateSelectionFilter extends Filter<String> implements ISelectFilter {
 
+	
+	
 	@Override
 	public void configureFrontend(FEFilter f) {
 		f.setType(FEFilterType.SELECT);
-		f
-			.setOptions(
-				FEValue
-					.fromLabels(
-						getConnector()
-							.getValidityDates()
-							.stream()
-							.collect(Collectors.toMap(ValidityDate::getName, ValidityDate::getLabel))));
+		f.setOptions(
+			FEValue.fromLabels(
+				getConnector()
+				.getValidityDates()
+				.stream()
+				.collect(Collectors.toMap(ValidityDate::getName, ValidityDate::getLabel))
+			)
+		);
 	}
-
+	
 	@Override
 	public Column[] getRequiredColumns() {
 		return getConnector().getValidityDates().stream().map(ValidityDate::getColumn).toArray(Column[]::new);
 	}
-
+	
 	@Override
 	public FilterNode createAggregator(String value) {
 		return null;

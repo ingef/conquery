@@ -9,12 +9,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Wither;
 
-@RequiredArgsConstructor
-@AllArgsConstructor
-@Getter
-@Wither
+@RequiredArgsConstructor @AllArgsConstructor @Getter @Wither
 public class QueryPlanContextImpl implements QueryPlanContext {
-
 	private final Worker worker;
 	private boolean generateSpecialDateUnion = true;
 

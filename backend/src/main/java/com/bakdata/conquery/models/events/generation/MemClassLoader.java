@@ -4,7 +4,6 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class MemClassLoader extends ClassLoader {
-
 	private final Map<String, MemJavaFileObject> classFiles = new HashMap<String, MemJavaFileObject>();
 
 	public MemClassLoader() {

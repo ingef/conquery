@@ -17,11 +17,10 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter
-@Getter
-@CPSType(id = "COUNT_QUARTERS", base = Filter.class)
+@Setter @Getter
+@CPSType(id="COUNT_QUARTERS", base=Filter.class)
 public class CountQuartersFilter extends SingleColumnFilter<Range.LongRange> {
-
+	
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.DATE, MajorTypeId.DATE_RANGE);

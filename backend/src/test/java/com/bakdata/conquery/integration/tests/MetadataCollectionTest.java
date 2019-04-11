@@ -23,32 +23,32 @@ public class MetadataCollectionTest implements ProgrammaticIntegrationTest, Inte
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		// read test sepcification
+		//read test sepcification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
-
+		
 		DatasetId dataset = conquery.getDataset().getId();
-
+		
 		ConqueryTestSpec test = JsonIntegrationTest.readJson(dataset, testJson);
 		ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
-
+		
 		test.importRequiredData(conquery);
-
-		// ensure the metadata is collected
-		for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+		
+		//ensure the metadata is collected
+		for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 			slave.getJobManager().addSlowJob(new UpdateMatchingStats(slave.getWorkers()));
 		}
-
+		
 		conquery.waitUntilWorkDone();
-
+		
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-
-		// check the number of matched events
+		
+		//check the number of matched events
 		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(4);
 		assertThat(concept.getChildren()).allSatisfy(c -> {
 			assertThat(c.getMatchingStats().countEvents()).isEqualTo(2);
 		});
-
-		// check the date ranges
+		
+		//check the date ranges
 		assertThat(concept.getMatchingStats().spanEvents())
 			.isEqualTo(CDateRange.of(LocalDate.parse("2010-07-15"), LocalDate.parse("2013-11-10")));
 		assertThat(concept.getChildren().get(0).getMatchingStats().spanEvents())

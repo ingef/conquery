@@ -14,7 +14,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class RequiredColumn {
-
 	@NotEmpty
 	private String name;
 	@NotNull

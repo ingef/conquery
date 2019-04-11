@@ -23,50 +23,52 @@ import com.bakdata.conquery.models.exceptions.validators.EqualsNotColumnType.Equ
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.MajorTypeIdHolder;
 
+
 @Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = EqualsNotColumnTypeValidator.class)
 @Documented
 @Repeatable(EqualsNotColumnTypeList.class)
 public @interface EqualsNotColumnType {
-
+	
 	String message() default "The selected type '${validatedValue}' may not equal any of {value}";
 
-	Class<?>[] groups() default {};
+	Class<?>[] groups() default { };
 
-	Class<? extends Payload>[] payload() default {};
-
+	Class<? extends Payload>[] payload() default { };
+	
 	MajorTypeId[] value();
 
 	@Target({ FIELD, METHOD, PARAMETER, ANNOTATION_TYPE })
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@interface EqualsNotColumnTypeList {
-
 		EqualsNotColumnType[] value();
 	}
-
+	
 	public static class EqualsNotColumnTypeValidator implements ConstraintValidator<EqualsNotColumnType, MajorTypeIdHolder> {
 
 		private EnumSet<MajorTypeId> forbidden;
 
 		@Override
 		public void initialize(EqualsNotColumnType anno) {
-			this.forbidden = EnumSet.copyOf(Arrays.asList(anno.value()));
+			this.forbidden=EnumSet.copyOf(Arrays.asList(anno.value()));
 		}
-
+		
 		@Override
 		public boolean isValid(MajorTypeIdHolder value, ConstraintValidatorContext context) {
-			if (value == null) {
+			if(value==null) {
 				context.disableDefaultConstraintViolation();
-				context.buildConstraintViolationWithTemplate("The resulting type is null").addConstraintViolation();
+				context
+					.buildConstraintViolationWithTemplate("The resulting type is null")
+					.addConstraintViolation();
 				return false;
 			}
 
-			if (forbidden.contains(value.getTypeId())) {
+			if(forbidden.contains(value.getTypeId())) {
 				return false;
 			}
-
+			
 			return true;
 		}
 	}

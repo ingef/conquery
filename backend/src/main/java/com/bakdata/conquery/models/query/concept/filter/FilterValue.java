@@ -28,7 +28,6 @@ import lombok.ToString;
 @CPSBase
 @ToString(of = "value")
 public abstract class FilterValue<VALUE> {
-
 	@Valid
 	@NotNull
 	@Nonnull
@@ -39,11 +38,11 @@ public abstract class FilterValue<VALUE> {
 	@Nonnull
 	private VALUE value;
 
+
 	@NoArgsConstructor
 	@CPSType(id = "MULTI_SELECT", base = FilterValue.class)
 	@CPSType(id = "BIG_MULTI_SELECT", base = FilterValue.class)
 	public static class CQMultiSelectFilter extends FilterValue<String[]> {
-
 		public CQMultiSelectFilter(@NsIdRef Filter<?> filter, String[] value) {
 			super(filter, value);
 		}
@@ -52,7 +51,6 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "SELECT", base = FilterValue.class)
 	public static class CQSelectFilter extends FilterValue<String> {
-
 		public CQSelectFilter(@NsIdRef Filter<?> filter, String value) {
 			super(filter, value);
 		}
@@ -61,7 +59,6 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "STRING", base = FilterValue.class)
 	public static class CQStringFilter extends FilterValue<String> {
-
 		public CQStringFilter(@NsIdRef Filter<?> filter, String value) {
 			super(filter, value);
 		}
@@ -71,7 +68,6 @@ public abstract class FilterValue<VALUE> {
 	@CPSType(id = "INTEGER_RANGE", base = FilterValue.class)
 	@CPSType(id = "MONEY_RANGE", base = FilterValue.class)
 	public static class CQIntegerRangeFilter extends FilterValue<LongRange> {
-
 		public CQIntegerRangeFilter(@NsIdRef Filter<?> filter, LongRange value) {
 			super(filter, value);
 		}
@@ -80,7 +76,6 @@ public abstract class FilterValue<VALUE> {
 	@NoArgsConstructor
 	@CPSType(id = "REAL_RANGE", base = FilterValue.class)
 	public static class CQRealRangeFilter extends FilterValue<Range<BigDecimal>> {
-
 		public CQRealRangeFilter(@NsIdRef Filter<?> filter, Range<BigDecimal> value) {
 			super(filter, value);
 		}

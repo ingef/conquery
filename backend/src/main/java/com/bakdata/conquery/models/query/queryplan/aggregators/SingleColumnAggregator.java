@@ -14,6 +14,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
+
 @AllArgsConstructor
 public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 

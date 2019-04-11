@@ -20,15 +20,17 @@ public class TernaryTreeTestUtil {
 	}
 
 	public static boolean isBalanced(ABytesNode node) {
-		if (node == null) {
+		if(node == null) {
 			return true;
 		}
 
 		TernaryTreeBalancer.With balancer = new TernaryTreeBalancer.With(node, null);
-		final boolean balanced = balancer.getClockwiseScore() <= balancer.getCurrentScore()
-			&& balancer.getCounterClockwiseScore() <= balancer.getCurrentScore();
+		final boolean balanced = balancer.getClockwiseScore() <= balancer.getCurrentScore() && balancer.getCounterClockwiseScore() <= balancer.getCurrentScore();
 
-		return balanced && isBalanced(node.getLeft()) && isBalanced(node.getMiddle()) && isBalanced(node.getRight());
+		return  balanced
+				&& isBalanced(node.getLeft())
+				&& isBalanced(node.getMiddle())
+				&& isBalanced(node.getRight());
 	}
 
 }

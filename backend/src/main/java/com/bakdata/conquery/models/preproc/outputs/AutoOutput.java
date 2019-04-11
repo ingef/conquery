@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 import lombok.Data;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public interface AutoOutput {
 
@@ -26,7 +26,6 @@ public interface AutoOutput {
 
 	@Data
 	class OutRow {
-
 		private final int primaryId;
 		private final PPColumn[] types;
 		private final Object[] data;

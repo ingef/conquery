@@ -26,26 +26,24 @@ public class SpecialDateUnion implements Aggregator<String> {
 	public void aggregateEvent(Block block, int event) {
 		if (currentColumn != null) {
 			CDateRange range = block.getAsDateRange(event, currentColumn);
-			if (range != null) {
+			if(range != null) {
 				CDateSet add = CDateSet.create(dateRestriction);
 				add.retainAll(CDateSet.create(range));
 				set.addAll(add);
 				return;
 			}
 		}
-
-		if (dateRestriction.countDays() != null) {
+		
+		if(dateRestriction.countDays() != null) {
 			set.addAll(dateRestriction);
 		}
 	}
 
 	/**
 	 * Helper method to insert dates from outside.
-	 * 
-	 * @param other
-	 *            CDateSet to be included.
+	 * @param other CDateSet to be included.
 	 */
-	public void merge(CDateSet other) {
+	public void merge(CDateSet other){
 		set.addAll(other);
 	}
 
@@ -53,7 +51,7 @@ public class SpecialDateUnion implements Aggregator<String> {
 	public SpecialDateUnion clone(CloneContext ctx) {
 		return (SpecialDateUnion) Aggregator.super.clone(ctx);
 	}
-
+	
 	@Override
 	public SpecialDateUnion doClone(CloneContext ctx) {
 		return new SpecialDateUnion();
@@ -63,11 +61,11 @@ public class SpecialDateUnion implements Aggregator<String> {
 	public String getAggregationResult() {
 		return set.toString();
 	}
-
+	
 	public CDateSet getResultSet() {
 		return set;
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.STRING;

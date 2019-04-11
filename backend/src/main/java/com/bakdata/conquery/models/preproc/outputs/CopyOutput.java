@@ -14,12 +14,11 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter
-@Setter
-@CPSType(id = "COPY", base = Output.class)
+@Getter @Setter @CPSType(id="COPY", base=Output.class)
 public class CopyOutput extends Output {
-
+	
 	private static final long serialVersionUID = 1L;
+	
 
 	@Min(0)
 	private int inputColumn;
@@ -27,8 +26,8 @@ public class CopyOutput extends Output {
 	private MajorTypeId inputType;
 
 	@Override
-	public List<Object> createOutput(CType<?, ?> type, String[] row, int source, long sourceLine) throws ParsingException {
-		if (row[inputColumn] == null) {
+	public List<Object> createOutput(CType<?,?> type, String[] row, int source, long sourceLine) throws ParsingException {
+		if(row[inputColumn]==null) {
 			return NULL;
 		}
 		else {

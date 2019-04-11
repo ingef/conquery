@@ -10,14 +10,14 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * This filter represents a select in the front end. This means that the user
- * can select one or more values from a list of values.
+ * This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
  */
 @Getter
 @Setter
 @CPSType(id = "SINGLE_SELECT", base = Filter.class)
 public class SelectFilter extends AbstractSelectFilter<String> implements ISelectFilter {
 
+	
 	public SelectFilter() {
 		super(128, FEFilterType.SELECT);
 	}

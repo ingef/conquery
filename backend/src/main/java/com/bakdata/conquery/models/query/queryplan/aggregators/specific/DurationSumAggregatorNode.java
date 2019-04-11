@@ -29,8 +29,8 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 			return;
 		}
 
-		// otherwise the result would be something weird
-		if (block.getAsDateRange(event, getColumn()).isOpen()) {
+		//otherwise the result would be something weird
+		if(block.getAsDateRange(event, getColumn()).isOpen()) {
 			return;
 		}
 
@@ -51,7 +51,7 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 	public Long getAggregationResult() {
 		return set.countDays();
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

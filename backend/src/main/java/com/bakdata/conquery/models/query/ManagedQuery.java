@@ -56,12 +56,11 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	/**
 	 * The number of contained entities the last time this query was executed.
 	 *
-	 * @param lastResultCount
-	 *            the new count for JACKSON
+	 * @param lastResultCount the new count for JACKSON
 	 * @returns the number of contained entities
 	 */
 	private long lastResultCount;
-	// we don't want to store or send query results or other result metadata
+	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private QueryStatus status = QueryStatus.RUNNING;
 	@JsonIgnore
@@ -104,12 +103,7 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 					execution.countDown();
 				}
 				FailedEntityResult failed = er.asFailed();
-				log
-					.error(
-						"Failed query {} at least for the entity {} with:\n{}",
-						queryId,
-						failed.getEntityId(),
-						failed.getExceptionStackTrace());
+				log.error("Failed query {} at least for the entity {} with:\n{}", queryId, failed.getEntityId(), failed.getExceptionStackTrace());
 			}
 		}
 		synchronized (execution) {
@@ -120,6 +114,8 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 			}
 		}
 	}
+
+
 
 	private void finish() {
 		finishTime = LocalDateTime.now();

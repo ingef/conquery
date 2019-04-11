@@ -30,21 +30,20 @@ public class QueryToCSVRenderer {
 	public Stream<String> toCSV(ManagedQuery query) {
 		return toCSV(new PrintSettings(), query);
 	}
-
+	
 	public Stream<String> toCSV(PrintSettings cfg, ManagedQuery query) {
 		if (query.getStatus() != QueryStatus.DONE) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query" + query.getId());
 		}
 		List<ResultInfo> infos = query.getResultInfos();
-		return Stream
-			.concat(
-				Stream.of(HEADER + DELIMETER + JOINER.join(infos.stream().map(ResultInfo::getUniqueName).iterator())),
-				createCSVBody(cfg, infos, query));
+		return Stream.concat(
+			Stream.of(HEADER + DELIMETER + JOINER.join(infos.stream().map(ResultInfo::getUniqueName).iterator())),
+			createCSVBody(cfg, infos, query)
+		);
 	}
 
 	private Stream<String> createCSVBody(PrintSettings cfg, List<ResultInfo> infos, ManagedQuery query) {
-		return query
-			.getResults()
+		return query.getResults()
 			.stream()
 			.flatMap(ContainedEntityResult::filterCast)
 			.map(result -> Pair.of(createId(result), result))
@@ -54,16 +53,23 @@ public class QueryToCSVRenderer {
 
 	private String createId(ContainedEntityResult cer) {
 		Dictionary dict = namespace.getStorage().getPrimaryDictionary();
-		return JOINER.join(ID_MAPPING.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace).getExternalId());
+		return JOINER.join(
+			ID_MAPPING
+				.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace)
+				.getExternalId()
+		);
 	}
-
+	
 	private Stream<String> createCSVLine(PrintSettings cfg, List<ResultInfo> infos, Pair<String, ContainedEntityResult> idResult) {
-		return idResult.getValue().streamValues().map(result -> idResult.getKey() + DELIMETER + JOINER.join(print(cfg, infos, result)));
+		return idResult
+			.getValue()
+			.streamValues()
+			.map(result -> idResult.getKey() + DELIMETER + JOINER.join(print(cfg, infos, result)));
 	}
-
+	
 	public static String[] print(PrintSettings cfg, List<ResultInfo> infos, Object[] value) {
 		String[] result = new String[value.length];
-		for (int i = 0; i < infos.size(); i++) {
+		for(int i=0;i<infos.size();i++) {
 			result[i] = infos.get(i).getType().printNullable(cfg, value[i]);
 		}
 		return result;

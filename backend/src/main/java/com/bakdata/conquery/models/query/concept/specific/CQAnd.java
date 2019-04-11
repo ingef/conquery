@@ -22,40 +22,36 @@ import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import lombok.Getter;
 import lombok.Setter;
 
-@CPSType(id = "AND", base = CQElement.class)
+@CPSType(id="AND", base=CQElement.class)
 public class CQAnd implements CQElement {
-
-	@Getter
-	@Setter
-	@NotEmpty
-	@Valid
+	@Getter @Setter @NotEmpty @Valid
 	private List<CQElement> children;
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		QPNode[] aggs = new QPNode[children.size()];
-		for (int i = 0; i < aggs.length; i++) {
+		for(int i=0;i<aggs.length;i++) {
 			aggs[i] = children.get(i).createQueryPlan(context, plan);
 		}
 		return new AndNode(Arrays.asList(aggs));
 	}
-
+	
 	@Override
 	public void collectRequiredQueries(Set<ManagedQueryId> requiredQueries) {
-		for (CQElement c : children) {
+		for(CQElement c:children) {
 			c.collectRequiredQueries(requiredQueries);
 		}
 	}
 
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
-		children.replaceAll(c -> c.resolve(context));
+		children.replaceAll(c->c.resolve(context));
 		return this;
 	}
-
+	
 	@Override
 	public void collectSelects(Deque<SelectDescriptor> select) {
-		for (CQElement c : children) {
+		for(CQElement c:children) {
 			c.collectSelects(select);
 		}
 	}

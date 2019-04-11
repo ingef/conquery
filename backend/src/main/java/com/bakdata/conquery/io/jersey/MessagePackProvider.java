@@ -47,5 +47,6 @@ public class MessagePackProvider<T> implements MessageBodyReader<T>, MessageBody
 	public T readFrom(Class<T> type, Type genericType, Annotation[] annotations, MediaType mediaType, MultivaluedMap<String, String> httpHeaders, InputStream entityStream) throws IOException, WebApplicationException {
 		return Jackson.BINARY_MAPPER.readValue(entityStream, type);
 	}
-
+	
+	
 }

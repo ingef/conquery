@@ -45,8 +45,7 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 
-@Slf4j
-@Getter
+@Slf4j @Getter
 public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed {
 
 	private NioSocketConnector connector;
@@ -62,6 +61,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	public SlaveCommand() {
 		super("slave", "Connects this instance as a slave to a running master.");
 	}
+	
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
@@ -69,41 +69,52 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		jobManager = new JobManager(label);
 		environment.lifecycle().manage(jobManager);
 		environment.lifecycle().manage(this);
-
-		scheduler = environment.lifecycle().scheduledExecutorService("Scheduled Messages").build();
-
-		scheduler.scheduleAtFixedRate(() -> {
-			if (context.isConnected()) {
-				context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
-			}
-		}, 30, 5, TimeUnit.SECONDS);
-
+		
+		scheduler = environment
+			.lifecycle()
+			.scheduledExecutorService("Scheduled Messages")
+			.build();
+		
+		scheduler.scheduleAtFixedRate(
+			() -> {
+				if(context.isConnected()) {
+					context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
+				}
+			},
+			30, 5, TimeUnit.SECONDS
+		);
+		
 		scheduler.scheduleAtFixedRate(() -> jobManager.addSlowJob(new UpdateMatchingStats(workers)), 30, 900, TimeUnit.SECONDS);
 
 		this.config = config;
 		validator = environment.getValidator();
-
+		
 		File storageDir = config.getStorage().getDirectory();
-		for (File directory : storageDir.listFiles()) {
-			if (directory.getName().startsWith("worker_")) {
+		for(File directory : storageDir.listFiles()) {
+			if(directory.getName().startsWith("worker_")) {
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
-				if (workerStorage != null) {
-					Worker worker = new Worker(workerStorage.getWorker(), jobManager, workerStorage, new QueryExecutor(config));
+				if(workerStorage != null) {
+					Worker worker = new Worker(
+						workerStorage.getWorker(),
+						jobManager,
+						workerStorage,
+						new QueryExecutor(config)
+					);
 					workers.add(worker);
 				}
 			}
 		}
 	}
-
+	
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		setLocation(session);
-		if (message instanceof SlaveMessage) {
+		if(message instanceof SlaveMessage) {
 			SlaveMessage srm = (SlaveMessage) message;
 			log.trace("Slave recieved {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<SlaveMessage, NetworkMessageContext.Slave> job = new ReactingJob<>(srm, context);
-
-			if (((Message) message).isSlowMessage()) {
+			
+			if(((Message)message).isSlowMessage()) {
 				((SlowMessage) message).setProgressReporter(job.getProgressReporter());
 				jobManager.addSlowJob(job);
 			}
@@ -116,27 +127,27 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			return;
 		}
 	}
-
+	
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		setLocation(session);
 		log.error("cought exception", cause);
 	}
-
+	
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
 		setLocation(session);
 		NetworkSession networkSession = new NetworkSession(session);
 		context = new NetworkMessageContext.Slave(jobManager, networkSession, workers, config, validator);
 		log.info("Connected to master @ {}", session.getRemoteAddress());
-		for (Worker w : workers.getWorkers().values()) {
+		for(Worker w:workers.getWorkers().values()) {
 			w.setSession(new NetworkSession(session));
 			WorkerInformation info = w.getInfo();
 			log.info("Sending worker identity '{}'", info.getName());
 			networkSession.send(new RegisterWorker(info));
 		}
 	}
-
+	
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
 		setLocation(session);
@@ -154,52 +165,51 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void inputClosed(IoSession session) throws Exception {}
-
+	
 	@Override
 	public void event(IoSession session, FilterEvent event) throws Exception {}
-
+	
 	private void setLocation(IoSession session) {
 		String loc = session.getLocalAddress().toString();
 		ConqueryMDC.setLocation(loc);
 	}
-
+	
 	@Override
 	public void start() throws Exception {
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(workers, validator);
 		connector.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		connector.setHandler(this);
 		connector.getSessionConfig().setAll(config.getCluster().getMina());
-
+		
 		InetSocketAddress address = new InetSocketAddress(
-			config.getCluster().getMasterURL().getHostAddress(),
-			config.getCluster().getPort());
+				config.getCluster().getMasterURL().getHostAddress(),
+				config.getCluster().getPort()
+		);
 
-		while (true) {
+		while(true) {
 			try {
 				log.info("Trying to connect to {}", address);
 				ConnectFuture future = connector.connect(address);
 				future.awaitUninterruptibly();
 
 				break;
-			}
-			catch (RuntimeIoException e) {
-				log.warn("Failed to connect to " + address, e);
+			} catch(RuntimeIoException e) {
+				log.warn("Failed to connect to "+address, e);
 			}
 		}
 	}
 
 	@Override
 	public void stop() throws Exception {
-		for (Worker w : workers.getWorkers().values()) {
+		for(Worker w : workers.getWorkers().values()) {
 			try {
 				w.close();
-			}
-			catch (Exception e) {
-				log.error(w + " could not be closed", e);
+			} catch(Exception e) {
+				log.error(w+" could not be closed", e);
 			}
 		}
-		// after the close command was send
-		if (context != null) {
+		//after the close command was send
+		if(context != null) {
 			context.awaitClose();
 		}
 		log.info("Connection was closed by master");

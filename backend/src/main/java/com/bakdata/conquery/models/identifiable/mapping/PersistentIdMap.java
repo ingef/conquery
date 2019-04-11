@@ -5,12 +5,10 @@ import java.util.Map;
 import lombok.Data;
 
 /**
- * Mapping from Csv Entity Id to External Entity Id and back from the
- * combinations of Accessor + IDs to the Entity Id.
+ *  Mapping from Csv Entity Id to External Entity Id and back from the combinations of Accessor + IDs to the Entity Id.
  */
 @Data
 public class PersistentIdMap {
-
 	/**
 	 * The map from csv entity ids to external entity ids.
 	 */

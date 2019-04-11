@@ -70,17 +70,11 @@ public class ContentTreeProcessor {
 		if (search != null) {
 			result = createSourceSearchResult(tf.getSourceSearch(), text);
 		}
-
+		
 		if (tf.getRealLabels() != null) {
-			result
-				.addAll(
-					tf
-						.getRealLabels()
-						.entrySet()
-						.stream()
-						.filter(r -> r.getValue().equalsIgnoreCase(text))
-						.map(r -> new FEValue(r.getKey(), r.getValue()))
-						.collect(Collectors.toList()));
+			result.addAll(tf.getRealLabels().entrySet().stream()
+				.filter(r -> r.getValue().equalsIgnoreCase(text))
+				.map(r -> new FEValue(r.getKey(), r.getValue())).collect(Collectors.toList()));
 		}
 
 		// see https://github.com/bakdata/conquery/issues/235
@@ -172,7 +166,7 @@ public class ContentTreeProcessor {
 		for (String value : values) {
 			result.addAll(search.findItems(value, 50));
 		}
-
+		
 		return result
 			.stream()
 			.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
@@ -187,22 +181,19 @@ public class ContentTreeProcessor {
 			result.setColumn(bmsf.getColumn());
 			result.setRealLabels(bmsf.getRealLabels());
 			result.setSourceSearch(bmsf.getSourceSearch());
-		}
-		else if (filter instanceof MultiSelectFilter) {
+		} else if (filter instanceof MultiSelectFilter) {
 			MultiSelectFilter msf = (MultiSelectFilter) filter;
 			result.setColumn(msf.getColumn());
 			result.setRealLabels(msf.getRealLabels());
 			result.setSourceSearch(msf.getSourceSearch());
-		}
-		else {
+		} else {
 			try {
-				throw new WebApplicationException(
-					String.format("Could not resolved Filter values for this Type. Filter: %s", filter.getName()));
-			}
-			catch (WebApplicationException ex) {
+				throw new WebApplicationException(String.format("Could not resolved Filter values for this Type. Filter: %s", filter.getName()));
+			} catch (WebApplicationException ex) {
 				log.error(ex.getMessage());
 			}
 		}
+		
 
 		return result;
 	}
@@ -215,7 +206,7 @@ public class ContentTreeProcessor {
 		if (search != null) {
 			filterValues.addAll(createSourceSearchResult(search, values.toArray(new String[values.size()])));
 		}
-
+		
 		if (rf.getRealLabels() != null) {
 			List<String> resolveFilterValues = new ArrayList<>(rf.getRealLabels().values());
 			List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());

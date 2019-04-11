@@ -14,10 +14,9 @@ public interface UnknownUserHandler {
 	/**
 	 * Handles valid user information unknown to the system.
 	 * 
-	 * @param info
-	 *            Info about the unknown user.
-	 * @return A new {@link User} constructed from the {@link AuthenticationInfo}, a
-	 *         default user, or {@code null} if the request should fail.
+	 * @param info Info about the unknown user.
+	 * @return A new {@link User} constructed from the {@link AuthenticationInfo},
+	 * a default user, or {@code null} if the request should fail.
 	 */
 	User handle(AuthenticationInfo info);
 }

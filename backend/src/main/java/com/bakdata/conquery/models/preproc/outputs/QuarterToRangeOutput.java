@@ -27,10 +27,13 @@ public class QuarterToRangeOutput extends Output {
 	public List<Object> createOutput(CType<?, ?> type, String[] row, int source, long sourceLine) {
 		if (row[yearColumn] == null || row[quarterColumn] == null) {
 			return NULL;
-		}
-		else {
-			return Collections
-				.singletonList(QuarterUtils.fromQuarter(Integer.parseInt(row[yearColumn]), Integer.parseInt(row[quarterColumn])));
+		} else {
+			return Collections.singletonList(
+				QuarterUtils.fromQuarter(
+					Integer.parseInt(row[yearColumn]),
+					Integer.parseInt(row[quarterColumn])
+				)
+			);
 		}
 	}
 

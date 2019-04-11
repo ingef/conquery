@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
+@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 public interface CQElement {
 
@@ -26,7 +26,7 @@ public interface CQElement {
 	QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan);
 
 	default void collectRequiredQueries(Set<ManagedQueryId> requiredQueries) {}
-
+	
 	default Set<ManagedQueryId> collectRequiredQueries() {
 		HashSet<ManagedQueryId> set = new HashSet<>();
 		this.collectRequiredQueries(set);
@@ -34,7 +34,7 @@ public interface CQElement {
 	}
 
 	default void collectSelects(Deque<SelectDescriptor> select) {}
-
+	
 	default List<SelectDescriptor> collectSelects() {
 		ArrayDeque<SelectDescriptor> deque = new ArrayDeque<>();
 		this.collectSelects(deque);

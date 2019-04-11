@@ -10,9 +10,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.temporal.BeforeOrSam
 import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQueryNode;
 
 /**
- * Creates a query that will contain all entities where {@code preceding}
- * contains events that happened on the same day or before the events of
- * {@code index}. And the time where this has happened.
+ * Creates a query that will contain all entities where {@code preceding} contains events that happened on the same day or before the events of {@code index}. And the time where this has happened.
  */
 @CPSType(id = "BEFORE_OR_SAME", base = CQElement.class)
 public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
@@ -24,12 +22,13 @@ public class CQBeforeOrSameTemporalQuery extends CQAbstractTemporalQuery {
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {
 		return new TemporalQueryNode(
-			index.createQueryPlan(ctx, plan),
-			preceding.createQueryPlan(ctx, plan),
-			new BeforeOrSameTemporalMatcher(),
-			plan.getSpecialDateUnion());
+			index.createQueryPlan(ctx, plan), 
+			preceding.createQueryPlan(ctx, plan), 
+			new BeforeOrSameTemporalMatcher(), 
+			plan.getSpecialDateUnion()
+		);
 	}
-
+	
 	@Override
 	public CQBeforeOrSameTemporalQuery resolve(QueryResolveContext context) {
 		return new CQBeforeOrSameTemporalQuery(index.resolve(context), preceding.resolve(context));

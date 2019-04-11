@@ -6,17 +6,15 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor
-@ToString(of = "value")
+@RequiredArgsConstructor @ToString(of="value")
 public class CalculatedValue<T> {
-
 	@NonNull
 	private Supplier<T> calculation;
 
 	private T value;
 
 	public T getValue() {
-		if (!isCalculated()) {
+		if(!isCalculated()) {
 			value = calculation.get();
 		}
 

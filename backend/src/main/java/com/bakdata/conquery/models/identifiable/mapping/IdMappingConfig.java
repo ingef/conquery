@@ -34,11 +34,9 @@ public abstract class IdMappingConfig {
 		}
 
 		// first column is the external key, the rest is part of the csv id
-		csvIterator
-			.forEachRemaining(
-				(s) -> mapping
-					.getCsvIdToExternalIdMap()
-					.put(new CsvEntityId(s[0]), new ExternalEntityId(Arrays.copyOfRange(s, 1, s.length))));
+		csvIterator.forEachRemaining(
+			(s)-> mapping.getCsvIdToExternalIdMap().put(new CsvEntityId(s[0]), new ExternalEntityId(Arrays.copyOfRange(s,1,s.length)))
+		);
 
 		checkIntegrity(mapping.getCsvIdToExternalIdMap());
 		for (IdMappingAccessor accessor : getIdAccessors()) {
@@ -56,8 +54,8 @@ public abstract class IdMappingConfig {
 	public abstract IdMappingAccessor[] getIdAccessors();
 
 	@JsonIgnore
-	public String[] getPrintIdFields() {
-		return ArrayUtils.subarray(getHeader(), 1, getHeaderSize());
+	public String[] getPrintIdFields(){
+		return ArrayUtils.subarray(getHeader(),1,getHeaderSize());
 	}
 
 	@JsonIgnore
@@ -65,7 +63,7 @@ public abstract class IdMappingConfig {
 
 	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace) {
 		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null) {
+		if (mapping != null){
 			return mapping.getCsvIdToExternalIdMap().get(csvEntityId);
 		}
 		else {
@@ -83,14 +81,11 @@ public abstract class IdMappingConfig {
 		return DefaultIdAccessorImpl.INSTANCE;
 	}
 
+
 	/**
-	 * Checks if the given CsvContent produces unique results in perspective to all
-	 * IdMappingAccessors.
-	 * 
-	 * @param data
-	 *            Map of CsvEntityId to External Ids as read from the given CSV.
-	 * @throws IllegalArgumentException
-	 *             if the inserted Ids are not unique.
+	 * Checks if the given CsvContent produces unique results in perspective to all IdMappingAccessors.
+	 * @param data Map of CsvEntityId to External Ids as read from the given CSV.
+	 * @throws IllegalArgumentException if the inserted Ids are not unique.
 	 */
 	private void checkIntegrity(Map<CsvEntityId, ExternalEntityId> data) {
 		// check that each idMappingAccessor leads to at most one tuple
@@ -98,8 +93,8 @@ public abstract class IdMappingConfig {
 			long distinctSize = data.values().stream().map(p -> idMappingAccessor.extract(p.getExternalId())).distinct().count();
 			// check if we still have the same size as before
 			if (distinctSize != data.size()) {
-				throw new IllegalArgumentException(
-					"The inserted IDs are not unique respective to the idMapping Accessor " + idMappingAccessor);
+				throw new IllegalArgumentException("The inserted IDs are not unique respective to the idMapping Accessor "
+					+ idMappingAccessor);
 			}
 		}
 	}

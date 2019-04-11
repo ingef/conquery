@@ -8,28 +8,28 @@ import com.bakdata.conquery.models.common.Range;
 
 public class RangeUtil {
 
-	public static <T extends Comparable<T>> Predicate<T> lessThan(T reference) {
+	public static <T extends Comparable<T>> Predicate<T> lessThan(T reference){
 		return value -> value.compareTo(reference) < 0;
 	}
 
-	public static <T extends Comparable<T>> Predicate<T> atMost(T reference) {
+	public static <T extends Comparable<T>> Predicate<T> atMost(T reference){
 		return value -> value.compareTo(reference) <= 0;
 	}
 
-	public static <T extends Comparable<T>> Predicate<T> biggerThan(T reference) {
+	public static <T extends Comparable<T>> Predicate<T> biggerThan(T reference){
 		return value -> value.compareTo(reference) > 0;
 	}
 
-	public static <T extends Comparable<T>> Predicate<T> atLeast(T reference) {
+	public static <T extends Comparable<T>> Predicate<T> atLeast(T reference){
 		return value -> value.compareTo(reference) >= 0;
 	}
 
-	public static <T extends Comparable<T>> Predicate<T> exactly(T reference) {
+	public static <T extends Comparable<T>> Predicate<T> exactly(T reference){
 		return value -> value.compareTo(reference) == 0;
 	}
 
 	public static Iterable<Integer> iterate(Range<Integer> range) {
-		if (range == null) {
+		if(range == null) {
 			return Collections.emptyList();
 		}
 		if (range.isOpen()) {
@@ -40,7 +40,6 @@ public class RangeUtil {
 		final int max = range.getMax();
 
 		return () -> new PrimitiveIterator.OfInt() {
-
 			private int current = min;
 
 			@Override

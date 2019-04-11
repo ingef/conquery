@@ -14,14 +14,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter
-@Setter
-@ToString
-@CPSType(id = "MULTILINE_CONTAINED", base = EntityResult.class)
+@Getter @Setter @ToString
+@CPSType(id="MULTILINE_CONTAINED", base=EntityResult.class)
 public class MultilineContainedEntityResult implements ContainedEntityResult {
 
-	// this is needed because of
-	// https://github.com/FasterXML/jackson-databind/issues/2024
+	//this is needed because of https://github.com/FasterXML/jackson-databind/issues/2024
 	public MultilineContainedEntityResult(int entityId, List<Object[]> values) {
 		this.entityId = entityId;
 		this.values = Objects.requireNonNullElse(values, Collections.emptyList());

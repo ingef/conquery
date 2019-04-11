@@ -12,23 +12,21 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
-@EqualsAndHashCode(callSuper = false)
+@AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
 public class WorkerId extends AId<WorkerInformation> implements NamespacedId {
 
 	private final DatasetId dataset;
 	private final String worker;
-
+	
 	@Override
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(worker);
 	}
-
+	
 	public static enum Parser implements IId.Parser<WorkerId> {
 		INSTANCE;
-
+		
 		@Override
 		public WorkerId parse(PeekingIterator<String> parts) {
 			return new WorkerId(DatasetId.Parser.INSTANCE.parse(parts), parts.next());

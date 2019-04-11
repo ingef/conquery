@@ -8,7 +8,6 @@ import javax.tools.JavaFileObject.Kind;
 import javax.tools.StandardJavaFileManager;
 
 public class MemJavaFileManager extends ForwardingJavaFileManager<StandardJavaFileManager> {
-
 	private final MemClassLoader classLoader;
 
 	public MemJavaFileManager(JavaCompiler compiler, MemClassLoader classLoader) {

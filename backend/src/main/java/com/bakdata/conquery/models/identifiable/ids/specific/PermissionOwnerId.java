@@ -11,21 +11,22 @@ import com.google.common.collect.PeekingIterator;
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 
-@RequiredArgsConstructor
-@EqualsAndHashCode(callSuper = false)
-public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AId<T> {
 
+@RequiredArgsConstructor @EqualsAndHashCode(callSuper=false)
+public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AId<T> {
 	@Override
-	public void collectComponents(List<Object> components) {}
+	public void collectComponents(List<Object> components) {
+	}
+	
 
 	public enum Parser implements IId.Parser<PermissionOwnerId<?>> {
 		INSTANCE;
-
+		
 		@Override
 		public PermissionOwnerId<?> parse(PeekingIterator<String> parts) {
 			String type = parts.next();
 			String ownerId = parts.next();
-			switch (type) {
+			switch(type) {
 				case UserId.TYPE:
 					return new UserId(ownerId);
 				case MandatorId.TYPE:
@@ -37,6 +38,6 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 			}
 		}
 	}
-
+	
 	public abstract PermissionOwner<?> getOwner(MasterMetaStorage storage);
 }

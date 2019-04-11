@@ -13,15 +13,16 @@ import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
 
 public class XodusStore implements Closeable {
-
 	private final Store store;
 	private final Environment environment;
-
+	
 	public XodusStore(Environment env, IStoreInfo storeId) {
 		this.environment = env;
-		this.store = env.computeInTransaction(t -> env.openStore(storeId.getXodusName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t));
+		this.store = env.computeInTransaction(
+			t->env.openStore(storeId.getXodusName(), StoreConfig.WITHOUT_DUPLICATES_WITH_PREFIXING, t)
+		);
 	}
-
+	
 	public void add(ByteIterable key, ByteIterable value) {
 		environment.executeInTransaction(t -> store.add(t, key, value));
 	}
@@ -32,8 +33,8 @@ public class XodusStore implements Closeable {
 
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
 		environment.executeInReadonlyTransaction(t -> {
-			try (Cursor c = store.openCursor(t)) {
-				while (c.getNext()) {
+			try(Cursor c = store.openCursor(t)) {
+				while(c.getNext()) {
 					consumer.accept(c.getKey(), c.getValue());
 				}
 			}
@@ -43,7 +44,7 @@ public class XodusStore implements Closeable {
 	public void update(ByteIterable key, ByteIterable value) {
 		environment.executeInTransaction(t -> store.put(t, key, value));
 	}
-
+	
 	public void remove(ByteIterable key) {
 		environment.executeInTransaction(t -> store.delete(t, key));
 	}
@@ -54,7 +55,7 @@ public class XodusStore implements Closeable {
 	public int count() {
 		return Ints.checkedCast(environment.computeInReadonlyTransaction(store::count));
 	}
-
+	
 	@Override
 	public String toString() {
 		return store.getName();

@@ -12,21 +12,19 @@ import lombok.NonNull;
 
 public enum ResultType {
 	BOOLEAN {
-
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if (f instanceof Boolean)
-				return (Boolean) f ? "t" : "f";
+			if(f instanceof Boolean)
+				return (Boolean)f ? "t" : "f";
 			else
 				return "";
 		}
 	},
 	INTEGER {
-
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if (cfg.isPrettyPrint()) {
-				return NUMBER_FORMAT.format(((Number) f).longValue());
+			if(cfg.isPrettyPrint()) {
+				return NUMBER_FORMAT.format(((Number)f).longValue());
 			}
 			else {
 				return f.toString();
@@ -34,10 +32,9 @@ public enum ResultType {
 		}
 	},
 	NUMERIC {
-
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if (cfg.isPrettyPrint()) {
+			if(cfg.isPrettyPrint()) {
 				return DECIMAL_FORMAT.format(f);
 			}
 			else {
@@ -45,18 +42,27 @@ public enum ResultType {
 			}
 		}
 	},
-	CATEGORICAL, DATE, STRING, MONEY {
-
+	CATEGORICAL,
+	DATE,
+	STRING,
+	MONEY {
 		@Override
 		public String print(PrintSettings cfg, Object f) {
-			if (cfg.isPrettyPrint()) {
-				return DECIMAL_FORMAT.format(new BigDecimal(((Number) f).longValue()).movePointLeft(CURRENCY_DIGITS));
+			if(cfg.isPrettyPrint()) {
+				return DECIMAL_FORMAT.format(new BigDecimal(((Number)f).longValue()).movePointLeft(CURRENCY_DIGITS));
 			}
 			else {
 				return INTEGER.print(cfg, f);
 			}
 		}
 	};
+	
+	
+	
+	
+	
+	
+	
 
 	private static final NumberFormat NUMBER_FORMAT;
 	private static final NumberFormat DECIMAL_FORMAT;
@@ -79,11 +85,11 @@ public enum ResultType {
 			return print(cfg, f);
 		}
 	}
-
+	
 	public String print(PrintSettings cfg, @NonNull Object f) {
 		return f.toString();
 	}
-
+	
 	public static ResultType resolveResultType(MajorTypeId majorTypeId) {
 		switch (majorTypeId) {
 			case STRING:

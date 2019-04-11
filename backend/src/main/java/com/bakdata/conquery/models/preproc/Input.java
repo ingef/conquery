@@ -25,34 +25,36 @@ import lombok.Data;
 
 @Data
 public class Input implements Serializable {
-
+	
 	private static final long serialVersionUID = 1L;
-	private static final String[] AUTO_IMPORTS = Stream.of(LocalDate.class, Range.class).map(Class::getName).toArray(String[]::new);
+	private static final String[] AUTO_IMPORTS = Stream.of(
+			LocalDate.class,
+			Range.class
+		).map(Class::getName).toArray(String[]::new);
 
-	@NotNull
-	@ExistingFile
+	@NotNull @ExistingFile
 	private File sourceFile;
 	private String filter;
 	@Valid
 	private AutoOutput autoOutput;
-	@NotNull
-	@Valid
+	@NotNull @Valid
 	private Output primary;
 	@Valid
 	private Output[] output;
-
+	
 	@JsonIgnore
 	private transient GroovyPredicate script;
 
 	@JsonIgnore
-	@ValidationMethod(message = "Each column requires a unique name")
+	@ValidationMethod(message="Each column requires a unique name")
 	public boolean isEachNameUnique() {
 		return IntStream
 			.range(0, this.getWidth())
 			.mapToObj(this::getColumnDescription)
 			.map(ColumnDescription::getName)
 			.distinct()
-			.count() == this.getWidth();
+			.count()
+			== this.getWidth();
 	}
 
 	@JsonIgnore
@@ -67,26 +69,25 @@ public class Input implements Serializable {
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message = "The primary column must be of type STRING")
+	@ValidationMethod(message="The primary column must be of type STRING")
 	public boolean isPrimaryString() {
-		return primary.getResultType() == MajorTypeId.STRING;
+		return primary.getResultType()==MajorTypeId.STRING;
 	}
-
+	
 	public boolean filter(String[] row) {
-		if (filter == null) {
+		if(filter == null) {
 			return true;
 		}
 		else {
-			if (script == null) {
+			if(script==null) {
 				try {
 					CompilerConfiguration config = new CompilerConfiguration();
 					config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
 					config.setScriptBaseClass(GroovyPredicate.class.getName());
 					GroovyShell groovy = new GroovyShell(config);
-
+					
 					script = (GroovyPredicate) groovy.parse(filter);
-				}
-				catch (Exception | Error e) {
+				} catch(Exception|Error e) {
 					throw new RuntimeException("Failed to compile filter '" + filter + "'", e);
 				}
 			}
@@ -97,10 +98,10 @@ public class Input implements Serializable {
 
 	@JsonIgnore
 	public int getWidth() {
-		return checkAutoOutput() ? autoOutput.getWidth() : getOutput().length;
+		return checkAutoOutput()? autoOutput.getWidth() : getOutput().length;
 	}
 
 	public ColumnDescription getColumnDescription(int i) {
-		return checkAutoOutput() ? autoOutput.getColumnDescription(i) : output[i].getColumnDescription();
+		return checkAutoOutput()? autoOutput.getColumnDescription(i) : output[i].getColumnDescription();
 	}
 }

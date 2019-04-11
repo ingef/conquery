@@ -19,30 +19,23 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id = "UPDATE_JOB_MANAGER_STATUS", base = NetworkMessage.class)
-@NoArgsConstructor
-@AllArgsConstructor
-@Getter
-@Setter
-@ToString(of = "slaveId", callSuper = true)
+@CPSType(id="UPDATE_JOB_MANAGER_STATUS", base=NetworkMessage.class)
+@NoArgsConstructor @AllArgsConstructor @Getter @Setter @ToString(of="slaveId", callSuper=true)
 @Slf4j
 public class UpdateJobManagerStatus extends MasterMessage {
-
 	@NotNull
 	private List<JobStatus> status = Collections.emptyList();
 
 	@Override
 	public void react(Master context) throws Exception {
-		SlaveInformation slave = context.getNamespaces().getSlaves().get(context.getRemoteAddress());
-
-		if (slave == null) {
-			log
-				.error(
-					"Could not find slave {}, I only know of {}",
-					context.getRemoteAddress(),
-					context.getNamespaces().getSlaves().keySet());
-		}
-		else {
+		SlaveInformation slave = context
+			.getNamespaces()
+			.getSlaves()
+			.get(context.getRemoteAddress());
+		
+		if(slave == null) {
+			log.error("Could not find slave {}, I only know of {}", context.getRemoteAddress(), context.getNamespaces().getSlaves().keySet());
+		} else {
 			slave.setJobManagerStatus(status);
 		}
 	}

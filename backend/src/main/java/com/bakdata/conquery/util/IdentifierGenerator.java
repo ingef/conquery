@@ -10,13 +10,13 @@ public class IdentifierGenerator {
 	public static String createIdentifier(Object obj) {
 		return createIdentifier(obj.hashCode());
 	}
-
+	
 	public static String createIdentifier(int hash) {
 		int version = IntMath.mod(hash, COMBINATIONS);
-		return ADJECTIVES[IntMath.mod(version, ADJECTIVES.length)] + " " + CREATURES[version / ADJECTIVES.length];
+		return ADJECTIVES[IntMath.mod(version, ADJECTIVES.length)]+" "+CREATURES[version/ADJECTIVES.length];
 	}
-
-	private static final String[] CREATURES = {
+	
+	private static final String [] CREATURES = {
 		"Banshee",
 		"Basilisk",
 		"Bigfoot",
@@ -75,7 +75,8 @@ public class IdentifierGenerator {
 		"Will-o'-wisp",
 		"Werewolf",
 		"Wraith",
-		"Zombie" };
+		"Zombie"
+	};
 
 	private static final String[] ADJECTIVES = {
 		"able",
@@ -470,7 +471,8 @@ public class IdentifierGenerator {
 		"wonderful",
 		"volcanic",
 		"vulnerable",
-		"zealous" };
-
+		"zealous"
+	};
+	
 	private static final int COMBINATIONS = ADJECTIVES.length * CREATURES.length;
 }

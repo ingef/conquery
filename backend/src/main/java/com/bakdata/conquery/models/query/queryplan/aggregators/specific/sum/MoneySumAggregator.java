@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class MoneySumAggregator extends SingleColumnAggregator<Long> {
 
+
 	private long sum = 0L;
 
 	public MoneySumAggregator(Column column) {
@@ -34,7 +35,7 @@ public class MoneySumAggregator extends SingleColumnAggregator<Long> {
 	public Long getAggregationResult() {
 		return sum;
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.MONEY;

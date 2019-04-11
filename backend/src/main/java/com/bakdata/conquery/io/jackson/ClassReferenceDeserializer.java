@@ -32,25 +32,20 @@ public class ClassReferenceDeserializer extends StdScalarDeserializer<Object> im
 		String fullyQualifiedClassName = p.getValueAsString();
 		try {
 			Class<?> result = ctxt.findClass(fullyQualifiedClassName);
-			if (expectedType != null) {
-				if (expectedType.hasGenericTypes()) {
-					if (!expectedType.getBindings().getBoundType(0).getRawClass().isAssignableFrom(result)) {
-						throw new JsonParseException(
-							p,
-							"The class " + fullyQualifiedClassName + " is not of type " + expectedType.getBindings().getBoundType(0));
+			if(expectedType!=null) {
+				if(expectedType.hasGenericTypes()) {
+					if(!expectedType.getBindings().getBoundType(0).getRawClass().isAssignableFrom(result)) {
+						throw new JsonParseException(p, "The class "+fullyQualifiedClassName+" is not of type "+expectedType.getBindings().getBoundType(0));
 					}
 				}
 			}
 			return result.getConstructor().newInstance();
+		} catch (ClassNotFoundException e) {
+			throw new JsonParseException(p, "Could not deserialize "+fullyQualifiedClassName, e);
+		} catch (InstantiationException|IllegalAccessException|IllegalArgumentException|InvocationTargetException|NoSuchMethodException|SecurityException e) {
+			throw new JsonParseException(p, "Could not instantiate "+fullyQualifiedClassName, e);
 		}
-		catch (ClassNotFoundException e) {
-			throw new JsonParseException(p, "Could not deserialize " + fullyQualifiedClassName, e);
-		}
-		catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
-			| NoSuchMethodException | SecurityException e) {
-			throw new JsonParseException(p, "Could not instantiate " + fullyQualifiedClassName, e);
-		}
-
+		
 	}
 
 	@Override

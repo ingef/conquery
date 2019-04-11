@@ -40,11 +40,8 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Create a Range containing only the supplied date. The value needs to be a
-	 * valid CDate.
-	 * 
-	 * @param value
-	 *            The value this range contains, as {@link CDate}.
+	 * Create a Range containing only the supplied date. The value needs to be a valid CDate.
+	 * @param value The value this range contains, as {@link CDate}.
 	 * @return
 	 */
 	public static CDateRange exactly(int value) {
@@ -53,9 +50,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	/**
 	 * Creates a new Range containing containing only the supplied date.
-	 * 
-	 * @param value
-	 *            the value the resulting range will contain.
+	 * @param value the value the resulting range will contain.
 	 * @return
 	 */
 	public static CDateRange exactly(LocalDate value) {
@@ -64,21 +59,19 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	/**
 	 * Copy-constructor from {@link Range}.
-	 * 
-	 * @param value
-	 *            the Range to copy from.
+	 * @param value the Range to copy from.
 	 * @return
 	 */
 	public static CDateRange of(Range<LocalDate> value) {
-		return new CDateRange(CDate.ofLocalDate(value.getMin(), Integer.MIN_VALUE), CDate.ofLocalDate(value.getMax(), Integer.MAX_VALUE));
+		return new CDateRange(
+			CDate.ofLocalDate(value.getMin(), Integer.MIN_VALUE),
+			CDate.ofLocalDate(value.getMax(), Integer.MAX_VALUE)
+		);
 	}
 
 	/**
-	 * Creates a new Range containing all dates after {@code value}, and
-	 * {@code value}.
-	 * 
-	 * @param value
-	 *            the min value of the range
+	 * Creates a new Range containing all dates after {@code value}, and {@code value}.
+	 * @param value the min value of the range
 	 * @return
 	 */
 	public static CDateRange atLeast(LocalDate value) {
@@ -86,11 +79,8 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new Range containing all dates after {@code value}, and
-	 * {@code value}.
-	 * 
-	 * @param value
-	 *            the min value of the range, in {@link CDate} format
+	 * Creates a new Range containing all dates after {@code value}, and {@code value}.
+	 * @param value the min value of the range, in {@link CDate} format
 	 * @return
 	 */
 	public static CDateRange atLeast(int value) {
@@ -98,11 +88,8 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new Range containing all dates before {@code value}, and
-	 * {@code value}.
-	 * 
-	 * @param value
-	 *            the max value of the range, in {@link CDate} format
+	 * Creates a new Range containing all dates before {@code value}, and {@code value}.
+	 * @param value the max value of the range, in {@link CDate} format
 	 * @return
 	 */
 	public static CDateRange atMost(int value) {
@@ -110,35 +97,31 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new Range containing all dates before {@code value}, and
-	 * {@code value}.
-	 * 
-	 * @param value
-	 *            the min value of the range
+	 * Creates a new Range containing all dates before {@code value}, and {@code value}.
+	 * @param value the min value of the range
 	 * @return
 	 */
 	public static CDateRange atMost(LocalDate value) {
 		return atMost(CDate.ofLocalDate(value));
 	}
 
+
 	/**
-	 * Creates a new range containing all values between {@code min} and
-	 * {@code max}.
-	 * 
-	 * @param min
-	 *            lower bound of the range
-	 * @param max
-	 *            upper bound of the range
+	 * Creates a new range containing all values between {@code min} and {@code max}.
+	 * @param min lower bound of the range
+	 * @param max upper bound of the range
 	 * @return
 	 */
 	@JsonCreator
 	public static CDateRange of(LocalDate min, LocalDate max) {
-		return new CDateRange(CDate.ofLocalDate(min, Integer.MIN_VALUE), CDate.ofLocalDate(max, Integer.MAX_VALUE));
+		return new CDateRange(
+			CDate.ofLocalDate(min, Integer.MIN_VALUE),
+			CDate.ofLocalDate(max, Integer.MAX_VALUE)
+		);
 	}
 
 	/**
 	 * Creates a new range containing all valid {@link CDate} values.
-	 * 
 	 * @return
 	 */
 	public static CDateRange all() {
@@ -268,11 +251,12 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 			return false;
 		}
 
-		return other.contains(this.getMinValue())
-			|| other.contains(this.getMaxValue())
+		return
+				other.contains(this.getMinValue())
+				|| other.contains(this.getMaxValue())
 
-			|| this.contains(other.getMinValue())
-			|| this.contains(other.getMaxValue());
+				|| this.contains(other.getMinValue())
+				|| this.contains(other.getMaxValue());
 	}
 
 	public boolean isConnected(CDateRange other) {
@@ -280,8 +264,11 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 			return false;
 		}
 
-		// either they intersect or they are right next to each other
-		return this.intersects(other) || this.getMinValue() - 1 == other.getMaxValue() || this.getMaxValue() == other.getMinValue() - 1;
+		//either they intersect or they are right next to each other
+		return
+				this.intersects(other)
+				|| this.getMinValue() - 1 == other.getMaxValue()
+				|| this.getMaxValue() == other.getMinValue() - 1;
 	}
 
 	public boolean encloses(CDateRange other) {
@@ -289,7 +276,9 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 			return false;
 		}
 
-		return getMaxValue() >= other.getMaxValue() && getMinValue() <= other.getMinValue();
+		return
+				getMaxValue() >= other.getMaxValue()
+				&& getMinValue() <= other.getMinValue();
 	}
 
 	public Stream<LocalDate> stream(TemporalUnit unit) {
@@ -316,7 +305,6 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	/**
 	 * Tests if the Range has an upper bound.
-	 * 
 	 * @return {@code true} if the Range has an upper bound
 	 */
 	public boolean hasUpperBound() {
@@ -325,7 +313,6 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	/**
 	 * Tests if the Range has a lower bound.
-	 * 
 	 * @return {@code true} if the Range has a lower bound
 	 */
 	public boolean hasLowerBound() {
@@ -333,9 +320,7 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	}
 
 	/**
-	 * Creates a new {@link Range} that is an equivalent representation of
-	 * {@code this}.
-	 * 
+	 * Creates a new {@link Range} that is an equivalent representation of {@code this}.
 	 * @return
 	 */
 	public Range<LocalDate> toSimpleRange() {
@@ -345,31 +330,28 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	/**
 	 * Returns the years that are part of this date range.
 	 *
-	 * @return The years as date ranges, from the first date in range to the last in
-	 *         ascending order.
+	 * @return The years as date ranges, from the first date in range to the last in ascending order.
 	 */
 	public List<CDateRange> getCoveredYears() {
 		int startYear = this.getMin().getYear();
 		int endYear = this.getMax().getYear();
 
-		if (startYear == endYear) {
+		if(startYear == endYear) {
 			return Arrays.asList(this);
 		}
 		// Range covers multiple years
 		List<CDateRange> ranges = new ArrayList<>();
-
+		
 		// First year begins with this range
 		ranges.add(CDateRange.of(this.getMin(), LocalDate.of(startYear, 12, 31)));
-
+		
 		// Years in between
-		if (endYear - startYear > 1) {
-			ranges
-				.addAll(
-					IntStream
-						.rangeClosed(startYear + 1, endYear - 1)
-						// Create date range with first days of year and the last day
-						.mapToObj(year -> CDateRange.of(LocalDate.ofYearDay(year, 1), LocalDate.of(year, 12, 31)))
-						.collect(Collectors.toList()));
+		if(endYear-startYear > 1) {
+			ranges.addAll(IntStream
+				.rangeClosed(startYear+1, endYear-1)
+				// Create date range with first days of year and the last day 
+				.mapToObj(year -> CDateRange.of(LocalDate.ofYearDay(year, 1), LocalDate.of(year, 12, 31)))
+				.collect(Collectors.toList()));
 		}
 		// Last year end with this range
 		ranges.add(CDateRange.of(LocalDate.of(endYear, 1, 1), this.getMax()));
@@ -379,45 +361,45 @@ public class CDateRange implements IRange<LocalDate, CDateRange> {
 	/**
 	 * Returns the quarters that are part of this date range.
 	 *
-	 * @return The quarters as date ranges, from the first date in range to the last
-	 *         in ascending order.
+	 * @return The quarters as date ranges, from the first date in range to the
+	 *         last in ascending order.
 	 */
 	public List<CDateRange> getCoveredQuarters() {
 		List<CDateRange> ranges = new ArrayList<>();
-
+		
 		// First quarter begins with this range
 		CDateRange start = CDateRange.of(getMin(), QuarterUtils.getLastDayOfQuarter(getMin()));
 		CDateRange end = CDateRange.of(QuarterUtils.getFirstDayOfQuarter(getMax()), getMax());
 		ranges.add(start);
 		LocalDate nextQuarterDate = this.getMin().plus(1, IsoFields.QUARTER_YEARS);
-		while (nextQuarterDate.isBefore(end.getMin())) {
+		while(nextQuarterDate.isBefore(end.getMin())) {
 			ranges.add(QuarterUtils.fromDate(nextQuarterDate));
 			nextQuarterDate = nextQuarterDate.plus(1, IsoFields.QUARTER_YEARS);
 		}
 		// Don't add the end if its the same quarter as start
-		if (!start.equals(end)) {
+		if(!start.equals(end)) {
 			// Last year end with this range
 			ranges.add(end);
 		}
 
 		return ranges;
 	}
-
+	
 	/**
 	 * Returns the days that are part of this date range as ranges.
 	 *
-	 * @return The days as date ranges, from the first date in range to the last in
-	 *         ascending order.
+	 * @return The days as date ranges, from the first date in range to the
+	 *         last in ascending order.
 	 */
 	public List<CDateRange> getCoveredDays() {
 
 		List<CDateRange> ranges = new ArrayList<>();
-		for (int i = this.min; i <= this.max; i++) {
+		for(int i = this.min; i <= this.max; i++) {
 			ranges.add(CDateRange.exactly(i));
 		}
 		return ranges;
 	}
-
+	
 	@JsonCreator
 	public static CDateRange parse(String value) throws ParsingException {
 		return DateRangeType.parseISORange(value);

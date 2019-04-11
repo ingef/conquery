@@ -14,14 +14,12 @@ import lombok.Setter;
 /**
  * This condition requires each value to be exactly as given in the list.
  */
-@CPSType(id = "EQUAL", base = CTCondition.class)
+@CPSType(id="EQUAL", base=CTCondition.class)
 public class EqualCondition implements CTCondition {
 
 	private static final long serialVersionUID = 1L;
-
-	@Setter
-	@Getter
-	@NotEmpty
+	
+	@Setter @Getter @NotEmpty
 	private HashSet<String> values;
 
 	@Override

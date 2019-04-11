@@ -14,15 +14,13 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public interface ISingleColumnFilter {
 
 	public void setColumn(Column c);
-
 	public Column getColumn();
-
+	
 	@ValidationMethod2
 	public default boolean validateColumnType(ConstraintValidatorContext ctx) {
-		if (!getAcceptedColumnTypes().contains(getColumn().getType())) {
+		if(!getAcceptedColumnTypes().contains(getColumn().getType())) {
 			ctx
-				.buildConstraintViolationWithTemplate(
-					"The column needs to have one of the types " + getAcceptedColumnTypes() + " (was " + getColumn().getType() + ")")
+				.buildConstraintViolationWithTemplate("The column needs to have one of the types "+getAcceptedColumnTypes()+" (was "+getColumn().getType()+")")
 				.addConstraintViolation();
 			return false;
 		}
@@ -30,7 +28,7 @@ public interface ISingleColumnFilter {
 			return true;
 		}
 	}
-
+	
 	@JsonIgnore
 	public default EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.allOf(MajorTypeId.class);

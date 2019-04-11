@@ -13,13 +13,8 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id = "COLLECT_QUERY_RESULT", base = NamespacedMessage.class)
-@Slf4j
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
-@ToString(callSuper = true)
+@CPSType(id="COLLECT_QUERY_RESULT", base=NamespacedMessage.class) @Slf4j
+@AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)
 public class CollectQueryResult extends NamespaceMessage.Slow {
 
 	private ShardResult result;

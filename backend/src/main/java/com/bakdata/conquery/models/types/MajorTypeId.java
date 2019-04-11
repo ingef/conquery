@@ -17,15 +17,22 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public enum MajorTypeId implements MajorTypeIdHolder {
 
-	STRING(false, "String", StringType::new), INTEGER(false, "Integer", IntegerType::new), BOOLEAN(false, "Boolean", BooleanType::new), REAL(false, "Real", RealType::new), DECIMAL(false, "Decimal", DecimalType::new), MONEY(false, "Money", MoneyType::new), DATE(true, "Date", DateType::new), DATE_RANGE(true, "DateRange", DateRangeType::new);
-
+	STRING(false, "String", StringType::new),
+	INTEGER(false, "Integer", IntegerType::new),
+	BOOLEAN(false, "Boolean", BooleanType::new),
+	REAL(false, "Real", RealType::new),
+	DECIMAL(false, "Decimal", DecimalType::new),
+	MONEY(false, "Money", MoneyType::new),
+	DATE(true, "Date", DateType::new),
+	DATE_RANGE(true, "DateRange", DateRangeType::new);
+	
 	@Getter
 	private final boolean dateCompatible;
 	@Getter
 	private final String label;
-	private final Supplier<CType<?, ?>> supplier;
-
-	public CType<?, ?> createType() {
+	private final Supplier<CType<?,?>> supplier;
+	
+	public CType<?,?> createType() {
 		return supplier.get();
 	}
 

@@ -17,30 +17,30 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public interface NamespaceCollection extends Injectable {
 
 	static NamespaceCollection get(DeserializationContext ctxt) throws JsonMappingException {
-		NamespaceCollection namespaces = (NamespaceCollection) ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
-		if (namespaces == null) {
+		NamespaceCollection namespaces = (NamespaceCollection) ctxt
+				.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+		if(namespaces == null) {
 			throw new NoSuchElementException("Could not find injected namespaces");
 		}
 		else {
 			return namespaces;
 		}
 	}
-
+	
 	@Override
 	default MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(NamespaceCollection.class, this);
 	}
-
+	
 	CentralRegistry findRegistry(DatasetId dataset);
-
 	@JsonIgnore
 	CentralRegistry getMetaRegistry();
 
-	default <ID extends NamespacedId & IId<T>, T extends Identifiable<?>> T resolve(ID id) {
+	default <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> T resolve(ID id) {
 		return findRegistry(id.getDataset()).resolve(id);
 	}
-
-	default <ID extends NamespacedId & IId<T>, T extends Identifiable<?>> Optional<T> getOptional(ID id) {
+	
+	default <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> Optional<T> getOptional(ID id) {
 		return findRegistry(id.getDataset()).getOptional(id);
 	}
 }

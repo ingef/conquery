@@ -12,23 +12,21 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@AllArgsConstructor
-@Getter
-@EqualsAndHashCode(callSuper = false)
+@AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
 public class TableId extends AId<Table> implements NamespacedId {
 
 	private final DatasetId dataset;
 	private final String table;
-
+	
 	@Override
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(table);
 	}
-
+	
 	public static enum Parser implements IId.Parser<TableId> {
 		INSTANCE;
-
+		
 		@Override
 		public TableId parse(PeekingIterator<String> parts) {
 			DatasetId dataset = DatasetId.Parser.INSTANCE.parse(parts);

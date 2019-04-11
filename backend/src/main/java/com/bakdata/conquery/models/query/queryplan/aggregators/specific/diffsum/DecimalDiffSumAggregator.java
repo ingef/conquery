@@ -30,7 +30,7 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[] { getAddendColumn(), getSubtrahendColumn() };
+		return new Column[]{getAddendColumn(), getSubtrahendColumn()};
 	}
 
 	@Override
@@ -46,7 +46,7 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	public BigDecimal getAggregationResult() {
 		return sum;
 	}
-
+	
 	@Override
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;

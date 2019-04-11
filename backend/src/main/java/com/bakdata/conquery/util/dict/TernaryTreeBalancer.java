@@ -58,19 +58,16 @@ public class TernaryTreeBalancer {
 				if (cwScore == maxRotateScore) {
 					log.trace("Rotating {} clockwise", node);
 					rotateClockwise();
-				}
-				else if (ccwScore == maxRotateScore) {
+				} else if (ccwScore == maxRotateScore) {
 					log.trace("Rotating {} counter-clockwise", node);
 					rotateCounterClockwise();
-				}
-				else if (cwCcwScore == maxRotateScore) {
+				} else if (cwCcwScore == maxRotateScore) {
 					log.trace("Rotating {} clockwise counter-clockwise", node);
 					if (node.getRight() != null) {
 						withRight(node.getRight()).rotateClockwise();
 					}
 					rotateCounterClockwise();
-				}
-				else {
+				} else {
 					log.trace("Rotating {} counter-clockwise clockwise", node);
 					if (node.getLeft() != null) {
 						withLeft(node.getLeft()).rotateCounterClockwise();
@@ -100,18 +97,18 @@ public class TernaryTreeBalancer {
 		}
 
 		private long getClockwiseCounterClockwiseScore() {
-			long leftWeight = Weigher
-				.combineWeights(
-					Weigher.getLeftWeight(node),
-					Weigher.getMiddleAndHereWeight(node),
-					node.getRight() != null && node.getRight().getLeft() != null ? Weigher.getLeftWeight(node.getRight().getLeft()) : 0L);
+			long leftWeight = Weigher.combineWeights(Weigher.getLeftWeight(node), Weigher.getMiddleAndHereWeight(node),
+					node.getRight() != null && node.getRight().getLeft() != null
+							? Weigher.getLeftWeight(node.getRight().getLeft())
+							: 0L);
 			long middleWeight = node.getRight() != null && node.getRight().getLeft() != null
-				? Weigher.getMiddleAndHereWeight(node.getRight().getLeft())
-				: 0L;
+					? Weigher.getMiddleAndHereWeight(node.getRight().getLeft())
+					: 0L;
 
-			long rightWeight = Weigher
-				.combineWeights(
-					node.getRight() != null && node.getRight().getLeft() != null ? Weigher.getRightWeight(node.getRight().getLeft()) : 0L,
+			long rightWeight = Weigher.combineWeights(
+					node.getRight() != null && node.getRight().getLeft() != null
+							? Weigher.getRightWeight(node.getRight().getLeft())
+							: 0L,
 					node.getRight() != null ? Weigher.getMiddleAndHereWeight(node.getRight()) : 0L,
 					node.getRight() != null ? Weigher.getRightWeight(node.getRight()) : 0L);
 			return Weigher.combine(leftWeight, middleWeight, rightWeight);
@@ -121,40 +118,35 @@ public class TernaryTreeBalancer {
 			long leftWeight = node.getLeft() != null ? Weigher.getLeftWeight(node.getLeft()) : 0L;
 			long middleWeight = node.getLeft() != null ? Weigher.getMiddleAndHereWeight(node.getLeft()) : 0L;
 
-			long rightWeight = Weigher
-				.combineWeights(
+			long rightWeight = Weigher.combineWeights(
 					node.getLeft() != null ? Weigher.getRightWeight(node.getLeft()) : 0L,
-					Weigher.getMiddleAndHereWeight(node),
-					Weigher.getRightWeight(node));
+					Weigher.getMiddleAndHereWeight(node), Weigher.getRightWeight(node));
 
 			return Weigher.combine(leftWeight, middleWeight, rightWeight);
 		}
 
 		public long getCounterClockwiseClockwiseScore() {
-			long rightWeight = Weigher
-				.combineWeights(
-					node.getLeft() != null && node.getLeft().getRight() != null ? Weigher.getLeftWeight(node.getLeft().getRight()) : 0L,
+			long rightWeight = Weigher.combineWeights(
+					node.getLeft() != null && node.getLeft().getRight() != null
+							? Weigher.getLeftWeight(node.getLeft().getRight())
+							: 0L,
 					node.getLeft() != null ? Weigher.getMiddleAndHereWeight(node.getLeft()) : 0L,
 					node.getLeft() != null ? Weigher.getLeftWeight(node.getLeft()) : 0L);
 
 			long middleWeight = node.getLeft() != null && node.getLeft().getRight() != null
-				? Weigher.getMiddleAndHereWeight(node.getLeft().getRight())
-				: 0L;
+					? Weigher.getMiddleAndHereWeight(node.getLeft().getRight())
+					: 0L;
 
-			long leftWeight = Weigher
-				.combineWeights(
-					Weigher.getRightWeight(node),
-					Weigher.getMiddleAndHereWeight(node),
-					node.getLeft() != null && node.getLeft().getRight() != null ? Weigher.getRightWeight(node.getLeft().getRight()) : 0L);
+			long leftWeight = Weigher.combineWeights(Weigher.getRightWeight(node), Weigher.getMiddleAndHereWeight(node),
+					node.getLeft() != null && node.getLeft().getRight() != null
+							? Weigher.getRightWeight(node.getLeft().getRight())
+							: 0L);
 
 			return Weigher.combine(leftWeight, middleWeight, rightWeight);
 		}
 
 		public long getCounterClockwiseScore() {
-			long leftWeight = Weigher
-				.combineWeights(
-					Weigher.getLeftWeight(node),
-					Weigher.getMiddleAndHereWeight(node),
+			long leftWeight = Weigher.combineWeights(Weigher.getLeftWeight(node), Weigher.getMiddleAndHereWeight(node),
 					node.getRight() != null ? Weigher.getLeftWeight(node.getRight()) : 0L);
 			long middleWeight = node.getRight() != null ? Weigher.getMiddleAndHereWeight(node.getRight()) : 0L;
 			long rightWeight = node.getRight() != null ? Weigher.getRightWeight(node.getRight()) : 0L;
@@ -163,7 +155,8 @@ public class TernaryTreeBalancer {
 		}
 
 		public long getCurrentScore() {
-			return Weigher.combine(Weigher.getLeftWeight(node), Weigher.getMiddleAndHereWeight(node), Weigher.getRightWeight(node));
+			return Weigher.combine(Weigher.getLeftWeight(node), Weigher.getMiddleAndHereWeight(node),
+					Weigher.getRightWeight(node));
 		}
 
 		private void rotateClockwise() {

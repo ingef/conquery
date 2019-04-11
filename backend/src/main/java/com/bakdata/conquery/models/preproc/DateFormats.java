@@ -54,7 +54,7 @@ public class DateFormats {
 				return LocalDate.parse(value, lastFormat);
 			}
 			catch (DateTimeParseException e) {
-				// intentionally left blank
+				//intentionally left blank
 			}
 		}
 		for (DateTimeFormatter format : formats) {
@@ -65,7 +65,7 @@ public class DateFormats {
 					return res;
 				}
 				catch (DateTimeParseException e) {
-					// intentionally left blank
+					//intentionally left blank
 				}
 			}
 		}
@@ -76,8 +76,7 @@ public class DateFormats {
 		try {
 			parseToLocalDate(value);
 			return true;
-		}
-		catch (ParsingException e) {
+		} catch (ParsingException e) {
 			return false;
 		}
 	}
@@ -85,22 +84,21 @@ public class DateFormats {
 	public LocalDate parseToLocalDate(String value) throws ParsingException {
 		try {
 			LocalDate d = DATE_CACHE.computeIfAbsent(value, this::tryParse);
-
-			if (DATE_CACHE.size() > 64000) {
+			
+			if(DATE_CACHE.size()>64000) {
 				Iterator<Entry<String, LocalDate>> it = DATE_CACHE.entrySet().iterator();
 				it.next();
 				it.remove();
 			}
-
-			if (d != ERROR_DATE) {
+			
+			if(d!=ERROR_DATE) {
 				return d;
 			}
 			else {
 				throw ParsingException.of(value, "date");
 			}
-		}
-		catch (Exception e) {
-			if (e instanceof ParsingException) {
+		} catch(Exception e) {
+			if(e instanceof ParsingException) {
 				throw e;
 			}
 			else {

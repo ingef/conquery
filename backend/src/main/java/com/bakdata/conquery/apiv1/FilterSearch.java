@@ -51,7 +51,10 @@ public class FilterSearch {
 		log.info("Processing Reference List '{}' ...", file.getAbsolutePath());
 		long time = System.currentTimeMillis();
 
-		quick = new QuickSearch.QuickSearchBuilder().withUnmatchedPolicy(IGNORE).withMergePolicy(INTERSECTION).build();
+		quick = new QuickSearch.QuickSearchBuilder()
+			.withUnmatchedPolicy(IGNORE)
+			.withMergePolicy(INTERSECTION)
+			.build();
 
 		try {
 			Iterator<String[]> it = CSVReader.readRaw(file).iterator();
@@ -79,8 +82,7 @@ public class FilterSearch {
 			filter.setSourceSearch(quick);
 			search.put(key, quick);
 			log.info("Processed Reference List '{}' in {} ms", file.getAbsolutePath(), System.currentTimeMillis() - time);
-		}
-		catch (IOException ex) {
+		} catch (IOException ex) {
 			log.error(ex.getMessage());
 		}
 	}

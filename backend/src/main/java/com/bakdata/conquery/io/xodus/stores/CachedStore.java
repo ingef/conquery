@@ -16,22 +16,22 @@ import com.google.common.base.Stopwatch;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@RequiredArgsConstructor
-@Slf4j
+@RequiredArgsConstructor @Slf4j
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final static ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
-
+	
 	private final ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;
-
+	
 	@Override
-	public void close() throws IOException {}
+	public void close() throws IOException {
+	}
 
 	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
-		if (cache.putIfAbsent(key, value) != null) {
-			throw new IllegalStateException("The id " + key + " is alread part of this store");
+		if(cache.putIfAbsent(key, value)!=null) {
+			throw new IllegalStateException("The id "+key+" is alread part of this store");
 		}
 		store.add(key, value);
 	}
@@ -57,10 +57,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		cache.remove(key);
 		store.remove(key);
 	}
-
+	
 	@Override
 	public int count() {
-		if (cache.isEmpty()) {
+		if(cache.isEmpty()) {
 			return store.count();
 		}
 		else {
@@ -74,8 +74,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		long count = count();
 		final ProgressBar bar;
 		Stopwatch timer = Stopwatch.createStarted();
-
-		if (count > 100) {
+		
+		if(count>100) {
 			synchronized (PROGRESS_BAR) {
 				bar = PROGRESS_BAR;
 				bar.addMaxValue(count);
@@ -85,21 +85,21 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		else {
 			bar = null;
 		}
-
+		
 		store.forEach(entry -> {
 			totalSize.addAndGet(entry.getByteSize());
 			cache.put(entry.getKey(), entry.getValue());
-			if (bar != null) {
+			if(bar != null) {
 				bar.addCurrentValue(1);
 			}
 		});
-		log
-			.info(
+		log.info(
 				"\tloaded store {}\n\tentries: {}\n\tsize: {}\n\tloading time: {}",
 				this,
 				cache.values().size(),
 				FileUtils.byteCountToDisplaySize(totalSize.get()),
-				timer.stop());
+				timer.stop()
+		);
 	}
 
 	@Override
@@ -111,9 +111,9 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public void inject(Injectable injectable) {
 		store.inject(injectable);
 	}
-
+	
 	@Override
 	public String toString() {
-		return "cached " + store.toString();
+		return "cached "+store.toString();
 	}
 }

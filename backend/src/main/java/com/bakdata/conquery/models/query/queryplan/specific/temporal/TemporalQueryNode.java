@@ -17,9 +17,8 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
- * QueryNode implementing the logic for TemporalQueries. Executes two queries
- * and compares the times they are included, the entity is included according to
- * a specified {@link PrecedenceMatcher}.
+ * QueryNode implementing the logic for TemporalQueries.
+ * Executes two queries and compares the times they are included, the entity is included according to a specified {@link PrecedenceMatcher}.
  */
 @Getter
 public class TemporalQueryNode extends QPNode {
@@ -57,11 +56,9 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	/**
-	 * Collects required tables of {@link #reference} and {@link #preceding} into
-	 * {@code out}.
+	 * Collects required tables of {@link #reference} and {@link #preceding} into {@code out}.
 	 *
-	 * @param out
-	 *            the set to be filled with data.
+	 * @param out the set to be filled with data.
 	 */
 	@Override
 	public void collectRequiredTables(Set<TableId> out) {
@@ -72,8 +69,7 @@ public class TemporalQueryNode extends QPNode {
 	/**
 	 * Initializes the {@link TemporalQueryNode} and its children.
 	 *
-	 * @param entity
-	 *            the Entity to be worked on.
+	 * @param entity the Entity to be worked on.
 	 */
 	@Override
 	public void init(Entity entity) {
@@ -85,9 +81,7 @@ public class TemporalQueryNode extends QPNode {
 
 	/**
 	 * Calls nextBlock on its children.
-	 * 
-	 * @param block
-	 *            the new Block
+	 * @param block the new Block
 	 */
 	@Override
 	public void nextBlock(Block block) {
@@ -97,11 +91,8 @@ public class TemporalQueryNode extends QPNode {
 
 	/**
 	 * Calls nextBlock on its children.documentation code for refactored matchers.
-	 * 
-	 * @param ctx
-	 *            The new QueryContext
-	 * @param currentTable
-	 *            the new Table
+	 * @param ctx The new QueryContext
+	 * @param currentTable the new Table
 	 */
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
@@ -111,11 +102,8 @@ public class TemporalQueryNode extends QPNode {
 
 	/**
 	 * Delegates aggregation to {@link #reference} and {@link #preceding}.
-	 * 
-	 * @param block
-	 *            the specific Block
-	 * @param event
-	 *            the event to aggregate over
+	 * @param block the specific Block
+	 * @param event the event to aggregate over
 	 * @return always true.
 	 */
 	@Override
@@ -125,11 +113,9 @@ public class TemporalQueryNode extends QPNode {
 	}
 
 	/**
-	 * Retrieves the {@link ConceptQueryPlan#getSpecialDateUnion()} ()} time of
-	 * {@link #reference} and {@link #preceding}. Then tests whether they match the
-	 * specific criteria for inclusion. If the criteria are met, the matching
-	 * {@link CDateSet} is put into the @{@link SpecialDateUnion} node of the
-	 * Queries associated QueryPlan.
+	 * Retrieves the {@link ConceptQueryPlan#getSpecialDateUnion()} ()} time of {@link #reference} and {@link #preceding}.
+	 * Then tests whether they match the specific criteria for inclusion.
+	 * If the criteria are met, the matching {@link CDateSet} is put into the @{@link SpecialDateUnion} node of the Queries associated QueryPlan.
 	 *
 	 * @return true, iff the Events match the specific criteria.
 	 */
@@ -142,6 +128,7 @@ public class TemporalQueryNode extends QPNode {
 		CDateSet referenceDurations = getReference().getChild().getSpecialDateUnion().getResultSet();
 		// Create copy as we are mutating the set
 		CDateSet precedingDurations = CDateSet.create(getPreceding().getChild().getSpecialDateUnion().getResultSet());
+
 
 		OptionalInt sampledReference = getReference().getSampler().sample(referenceDurations);
 

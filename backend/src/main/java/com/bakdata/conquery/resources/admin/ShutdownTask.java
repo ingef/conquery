@@ -21,22 +21,19 @@ public class ShutdownTask extends Task implements ServerLifecycleListener {
 
 	@Override
 	public void execute(ImmutableMultimap<String, String> parameters, PrintWriter output) throws Exception {
-		if (server == null) {
+		if(server == null) {
 			output.print("Server not yet started");
 		}
 		else {
 			output.print("Shutting down");
 			log.info("Received Shutdown command");
-			// this must be done in an extra step or the shutdown will wait for this request
-			// to be resolved
+			//this must be done in an extra step or the shutdown will wait for this request to be resolved
 			new Thread("shutdown waiter thread") {
-
 				@Override
 				public void run() {
 					try {
 						server.stop();
-					}
-					catch (Exception e) {
+					} catch (Exception e) {
 						log.error("Failed while shutting down", e);
 					}
 				}

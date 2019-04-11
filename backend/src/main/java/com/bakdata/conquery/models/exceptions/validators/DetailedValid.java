@@ -23,43 +23,44 @@ import com.google.common.collect.Multimap;
 public @interface DetailedValid {
 
 	String message() default "";
+	
+	Class<?>[] groups() default { };
 
-	Class<?>[] groups() default {};
-
-	Class<? extends Payload>[] payload() default {};
-
+	Class<? extends Payload>[] payload() default { };
+	
 	@Target(ElementType.METHOD)
 	@Retention(RetentionPolicy.RUNTIME)
 	@interface ValidationMethod2 {}
-
+	
+	
 	class DetailedValidValidator implements ConstraintValidator<DetailedValid, Object> {
-
+		
 		private final Multimap<Class<?>, Method> methods = HashMultimap.create();
-
+		
 		@Override
-		public void initialize(DetailedValid anno) {}
+		public void initialize(DetailedValid anno) {
+		}
 
 		@Override
 		public boolean isValid(Object obj, ConstraintValidatorContext context) {
 			Class<?> cl = obj.getClass();
-			if (!methods.containsKey(cl)) {
-				for (Method m : obj.getClass().getMethods()) {
-					if (m.isAnnotationPresent(ValidationMethod2.class)
-						&& boolean.class.equals(m.getReturnType())
-						&& Arrays.equals(new Class<?>[] { ConstraintValidatorContext.class }, m.getParameterTypes())) {
+			if(!methods.containsKey(cl)) {
+				for(Method m:obj.getClass().getMethods()) {
+					if(m.isAnnotationPresent(ValidationMethod2.class)
+							&& boolean.class.equals(m.getReturnType())
+							&& Arrays.equals(new Class<?>[]{ConstraintValidatorContext.class}, m.getParameterTypes())) {
 						m.setAccessible(true);
 						methods.put(cl, m);
 					}
 				}
 			}
-
+			
 			context.disableDefaultConstraintViolation();
 			boolean passed = true;
-			for (Method m : methods.get(cl)) {
+			for(Method m:methods.get(cl)) {
 				try {
-					passed &= (Boolean) m.invoke(obj, context);
-				}
-				catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
+					passed &= (Boolean)m.invoke(obj, context);
+				} catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException e) {
 					throw new IllegalStateException(e);
 				}
 			}
@@ -67,3 +68,8 @@ public @interface DetailedValid {
 		}
 	}
 }
+
+
+
+
+

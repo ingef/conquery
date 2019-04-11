@@ -17,18 +17,19 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.Data;
 
 @Data
-@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "operation")
+@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="operation")
 @CPSBase
 public abstract class Output implements Serializable {
-
+	
 	private static final long serialVersionUID = 1L;
 	public static final List<Object> NULL = Collections.singletonList(null);
-
+	
+	
 	@NotEmpty
 	private String name;
 	private boolean required = false;
 
-	public abstract List<Object> createOutput(CType<?, ?> type, String[] row, int source, long sourceLine) throws ParsingException;
+	public abstract List<Object> createOutput(CType<?,?> type, String[] row, int source, long sourceLine) throws ParsingException;
 
 	@JsonIgnore
 	public abstract MajorTypeId getResultType();

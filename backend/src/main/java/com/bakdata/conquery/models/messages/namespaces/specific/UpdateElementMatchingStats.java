@@ -19,33 +19,30 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.ToString;
 
-@CPSType(id = "UPDATE_METADATA", base = NamespacedMessage.class)
-@AllArgsConstructor(onConstructor_ = @JsonCreator)
-@Getter
-@ToString
+@CPSType(id="UPDATE_METADATA", base=NamespacedMessage.class)
+@AllArgsConstructor(onConstructor_=@JsonCreator) @Getter @ToString
 public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
-
 	private final WorkerId source;
 	@ToString.Exclude
 	private final Map<ConceptElementId<?>, MatchingStats.Entry> values;
-
+	
 	@Override
 	public void react(Namespace context) throws Exception {
-		for (Entry<ConceptElementId<?>, MatchingStats.Entry> entry : values.entrySet()) {
+		for(Entry<ConceptElementId<?>, MatchingStats.Entry> entry : values.entrySet()) {
 			ConceptElementId<?> target = entry.getKey();
 			MatchingStats.Entry value = entry.getValue();
-
+			
 			Concept<?> c = context.getStorage().getConcept(target.findConcept());
-			// if a child node
-			if (target instanceof ConceptTreeChildId) {
+			//if a child node
+			if(target instanceof ConceptTreeChildId) {
 				ConceptTreeNode<?> child = c.getChildById((ConceptTreeChildId) target);
 				child.getMatchingStats().updateEntry(source, value);
 			}
-			// otherwise just update the concept
+			//otherwise just update the concept
 			else {
 				c.getMatchingStats().updateEntry(source, value);
 			}
 		}
 	}
-
+	
 }

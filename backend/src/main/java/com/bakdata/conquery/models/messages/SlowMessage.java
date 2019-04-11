@@ -7,11 +7,9 @@ public interface SlowMessage extends Message {
 
 	@JsonIgnore
 	ProgressReporter getProgressReporter();
-
 	void setProgressReporter(ProgressReporter progressReporter);
-
-	@Override
-	@JsonIgnore
+	
+	@Override @JsonIgnore
 	default boolean isSlowMessage() {
 		return true;
 	}

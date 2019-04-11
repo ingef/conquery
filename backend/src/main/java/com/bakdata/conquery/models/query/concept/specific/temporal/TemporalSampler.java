@@ -13,16 +13,12 @@ import com.bakdata.conquery.models.common.CDateSet;
  */
 public enum TemporalSampler {
 	/**
-	 * Sampler that returns the earliest date of the {@link CDateSet}, if present,
-	 * or empty if the Set has no lowerbound.
+	 * Sampler that returns the earliest date of the {@link CDateSet}, if present, or empty if the Set has no lowerbound.
 	 */
 	EARLIEST {
-
 		/**
 		 * Retrieves the earliest date contained in {@link CDateSet}.
-		 * 
-		 * @param data
-		 *            the set to be sampled from.
+		 * @param data the set to be sampled from.
 		 * @return the earliest date contained in {@link CDateSet}.
 		 */
 		@Override
@@ -39,16 +35,12 @@ public enum TemporalSampler {
 		}
 	},
 	/**
-	 * Sampler that returns the latest date of the {@link CDateSet}, if present, or
-	 * empty if the Set has no upperbound.
+	 * Sampler that returns the latest date of the {@link CDateSet}, if present, or empty if the Set has no upperbound.
 	 */
 	LATEST {
-
 		/**
 		 * Retrieves the latest date contained in {@link CDateSet}.
-		 * 
-		 * @param data
-		 *            the set to be sampled from.
+		 * @param data the set to be sampled from.
 		 * @return the latest date contained in {@link CDateSet}.
 		 */
 		@Override
@@ -68,7 +60,6 @@ public enum TemporalSampler {
 	 * Sampler that returns a random date that is inside {@link CDateSet}.
 	 */
 	RANDOM {
-
 		/**
 		 * A source for random values.
 		 */
@@ -76,8 +67,7 @@ public enum TemporalSampler {
 
 		/**
 		 *
-		 * @param data
-		 *            the set to be sampled from.
+		 * @param data the set to be sampled from.
 		 * @return a random date contained in {@code data}.
 		 */
 		@Override
@@ -88,7 +78,7 @@ public enum TemporalSampler {
 
 			CDateRange span = data.span();
 
-			if (span.isAll())
+			if(span.isAll())
 				return OptionalInt.empty();
 
 			int lower;
@@ -100,6 +90,7 @@ public enum TemporalSampler {
 				lower = CDate.ofLocalDate(LocalDate.MIN);
 			}
 
+
 			int upper;
 
 			if (span.hasUpperBound()) {
@@ -108,6 +99,7 @@ public enum TemporalSampler {
 			else {
 				upper = CDate.ofLocalDate(LocalDate.MAX);
 			}
+
 
 			if (upper == lower) {
 				return OptionalInt.of(upper);
@@ -120,18 +112,15 @@ public enum TemporalSampler {
 				sample = lower + random.nextInt(upper - lower);
 			} while (!data.contains(sample));
 
+
 			return OptionalInt.of(sample);
 		}
 	};
 
 	/**
-	 * Get a date from within the {@link CDateSet} that is produced according to a
-	 * sampling scheme.
-	 * 
-	 * @param data
-	 *            the set to be sampled from.
-	 * @return the date fitting the sampling criteria. Or
-	 *         {@link OptionalInt#empty()} if none is found.
+	 * Get a date from within the {@link CDateSet} that is produced according to a sampling scheme.
+	 * @param data the set to be sampled from.
+	 * @return the date fitting the sampling criteria. Or {@link OptionalInt#empty()} if none is found.
 	 */
 	public abstract OptionalInt sample(CDateSet data);
 

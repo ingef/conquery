@@ -21,24 +21,25 @@ public interface QueryPlan extends EventIterating {
 		CloneContext ctx = new CloneContext();
 		return this.clone(ctx);
 	}
-
+	
 	QueryPlan clone(CloneContext ctx);
 
 	default Stream<QueryPart> execute(QueryContext context, Collection<Entity> entries) {
-		// collect required tables
-		Set<Table> requiredTables = this
-			.collectRequiredTables()
+		//collect required tables
+		Set<Table> requiredTables = this.collectRequiredTables()
 			.stream()
 			.map(context.getStorage().getDataset().getTables()::getOrFail)
 			.collect(Collectors.toSet());
-
-		return entries.stream().map(entity -> new QueryPart(context, this, requiredTables, entity));
+		
+		return entries
+			.stream()
+			.map(entity -> new QueryPart(context, this, requiredTables, entity));
 	}
 
 	EntityResult createResult();
 
 	void addAggregator(Aggregator<?> aggregator);
-
+	
 	void addAggregator(int index, Aggregator<?> aggregator);
 
 	SpecialDateUnion getSpecialDateUnion();
@@ -48,6 +49,6 @@ public interface QueryPlan extends EventIterating {
 	void nextEvent(Block block, int event);
 
 	int getAggregatorSize();
-
+	
 	boolean isContained();
 }

@@ -28,8 +28,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@RequiredArgsConstructor
-@Slf4j
+@RequiredArgsConstructor @Slf4j
 public class CalculateCBlocksJob extends Job {
 
 	private final List<CalculationInformation> infos = new ArrayList<>();
@@ -40,19 +39,19 @@ public class CalculateCBlocksJob extends Job {
 
 	@Override
 	public String getLabel() {
-		return "Calculate " + infos.size() + " CBlocks for " + connector.getId();
+		return "Calculate "+infos.size()+" CBlocks for "+connector.getId();
 	}
-
+	
 	public void addCBlock(Import imp, Block block, CBlockId cBlockId) {
 		infos.add(new CalculationInformation(table, imp, block, cBlockId));
 	}
-
+	
 	@Override
 	public void execute() throws Exception {
 		boolean treeConcept = connector.getConcept() instanceof TreeConcept;
 		this.progressReporter.setMax(infos.size());
 
-		for (int i = 0; i < infos.size(); i++) {
+		for(int i=0;i<infos.size();i++) {
 			try {
 				if (!blockManager.hasCBlock(infos.get(i).getCBlockId())) {
 					CBlock cBlock = createCBlock(connector, infos.get(i));
@@ -66,27 +65,24 @@ public class CalculateCBlocksJob extends Job {
 					storage.addCBlock(cBlock);
 				}
 			}
-			catch (Exception e) {
-				throw new Exception(
-					String
-						.format(
-							"Exception in CalculateCBlocksJob (CBlock=%s, connector=%s, table=%s)",
-							infos.get(i).getCBlockId(),
-							connector,
-							table),
-					e);
+			catch (Exception e){
+				throw new Exception(String.format("Exception in CalculateCBlocksJob (CBlock=%s, connector=%s, table=%s)", infos.get(i).getCBlockId(), connector, table), e);
 			}
 			finally {
 				this.progressReporter.report(1);
 			}
 		}
 	}
-
+	
 	private CBlock createCBlock(Connector connector, CalculationInformation info) {
-		return new CBlock(info.getBlock().getId(), connector.getId());
+		return new CBlock(
+			info.getBlock().getId(),
+			connector.getId()
+		);
 	}
 
-	private void calculateCBlock(CBlock cBlock, VirtualConceptConnector connector, CalculationInformation info) {}
+	private void calculateCBlock(CBlock cBlock, VirtualConceptConnector connector, CalculationInformation info) {
+	}
 
 	private void calculateCBlock(CBlock cBlock, ConceptTreeConnector connector, CalculationInformation info) {
 
@@ -105,13 +101,14 @@ public class CalculateCBlocksJob extends Job {
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 
-		for (int event = 0; event < block.size(); event++) {
+		for(int event = 0; event < block.size(); event++) {
 			try {
-				if (block.has(event, connector.getColumn())) {
+				if(block.has(event, connector.getColumn())) {
 					int valueIndex = block.getString(event, connector.getColumn());
 					final int finalEvent = event;
 					final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
-						() -> block.calculateMap(finalEvent, info.getImp()));
+							() -> block.calculateMap(finalEvent, info.getImp())
+					);
 
 					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
 
@@ -119,38 +116,34 @@ public class CalculateCBlocksJob extends Job {
 						cBlock.getMostSpecificChildren().add(child.getPrefix());
 					}
 					else {
-						// see #174 improve handling by copying the relevant things from the old project
+						//see #174  improve handling by copying the relevant things from the old project
 						cBlock.getMostSpecificChildren().add(null);
 					}
 				}
 				else {
 					cBlock.getMostSpecificChildren().add(null);
 				}
-			}
-			catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event " + block + "-" + event + " against concept " + connector, ex);
+			} catch (ConceptConfigurationException ex) {
+				log.error("Failed to resolve event "+block+"-"+event+" against concept "+connector, ex);
 			}
 		}
 
-		// see #175 metrics candidate
-		log
-			.trace(
+		//see #175  metrics candidate
+		log.trace(
 				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
 				cache.getHits(),
 				cache.getMisses(),
 				(double) cache.getHits() / cache.getMisses(),
-				(double) cache.getHits() / (cache.getHits() + cache.getMisses()));
+				(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+		);
 	}
 
 	public boolean isEmpty() {
 		return infos.isEmpty();
 	}
 
-	@RequiredArgsConstructor
-	@Getter
-	@Setter
+	@RequiredArgsConstructor @Getter @Setter
 	private static class CalculationInformation {
-
 		private final Table table;
 		private final Import imp;
 		private final Block block;

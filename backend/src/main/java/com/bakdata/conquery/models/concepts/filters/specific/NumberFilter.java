@@ -45,15 +45,13 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 				f.setType(FEFilterType.REAL_RANGE);
 				return;
 			default:
-				throw new ConceptConfigurationException(
-					getConnector(),
-					"NUMBER filter is incompatible with columns of type " + column.getType());
+				throw new ConceptConfigurationException(getConnector(), "NUMBER filter is incompatible with columns of type " + column.getType());
 		}
 	}
 
 	@Override
 	public Column[] getRequiredColumns() {
-		return new Column[] { getColumn() };
+		return new Column[]{getColumn()};
 	}
 
 	@Override
@@ -63,14 +61,14 @@ public class NumberFilter<RANGE extends IRange<? extends Number, ?>> extends Sin
 			case MONEY:
 				return new MoneyFilterNode(getColumn(), (Range.LongRange) value);
 			case INTEGER:
-				return new IntegerFilterNode(getColumn(), (Range.LongRange) value);
+				return new IntegerFilterNode(getColumn(), (Range.LongRange) value
+				);
 			case DECIMAL:
 				return new DecimalFilterNode(getColumn(), ((Range<BigDecimal>) value));
 			case REAL:
 				return new RealFilterNode(getColumn(), Range.DoubleRange.fromNumberRange(value));
 			default:
-				throw new IllegalStateException(
-					String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
+				throw new IllegalStateException(String.format("Column type %s may not be used (Assignment should not have been possible)", getColumn()));
 		}
 	}
 }

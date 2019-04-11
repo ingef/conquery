@@ -12,28 +12,26 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = false)
+@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
 public class CBlockId extends AId<CBlock> implements NamespacedId {
 
 	private final BlockId block;
 	private final ConnectorId connector;
-
+	
 	@Override
 	public DatasetId getDataset() {
 		return connector.getDataset();
 	}
-
+	
 	@Override
 	public void collectComponents(List<Object> components) {
 		block.collectComponents(components);
 		connector.collectComponents(components);
 	}
-
+	
 	public static enum Parser implements IId.Parser<CBlockId> {
 		INSTANCE;
-
+		
 		@Override
 		public CBlockId parse(PeekingIterator<String> parts) {
 			BlockId block = BlockId.Parser.INSTANCE.parse(parts);

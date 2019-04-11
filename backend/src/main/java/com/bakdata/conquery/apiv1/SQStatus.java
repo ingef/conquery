@@ -36,9 +36,8 @@ public class SQStatus {
 	private boolean own;
 	private boolean system;
 	/**
-	 * this can hold different payloads. After an sql query it will hold the query
-	 * as a string but this will be mapped to a parsed version before giving to to
-	 * the frontend
+	 * this can hold different payloads. After an sql query it will hold the query as a string but this will be mapped to a parsed version before
+	 * giving to to the frontend
 	 */
 	private Object query;
 
@@ -77,11 +76,11 @@ public class SQStatus {
 		this.requiredTime = requiredTime;
 		this.resultUrl = resultUrl;
 	}
-
+	
 	public static SQStatus buildFromQuery(MasterMetaStorage storage, ManagedQuery query) {
 		return buildFromQuery(storage, query, null);
 	}
-
+	
 	public static SQStatus buildFromQuery(MasterMetaStorage storage, ManagedQuery query, URLBuilder urlb) {
 		Long numberOfResults = Long.valueOf(query.fetchContainedEntityResult().count());
 		return builder()
@@ -91,10 +90,9 @@ public class SQStatus {
 			.own(true)
 			.createdAt(query.getCreationTime().atZone(ZoneId.systemDefault()))
 			.query(query)
-			.requiredTime(
-				(query.getStartTime() != null && query.getFinishTime() != null)
-					? ChronoUnit.MILLIS.between(query.getStartTime(), query.getFinishTime())
-					: null)
+			.requiredTime((query.getStartTime() != null && query.getFinishTime() != null)
+				? ChronoUnit.MILLIS.between(query.getStartTime(), query.getFinishTime())
+				: null)
 			.status(query.getStatus())
 			.numberOfResults(numberOfResults > 0 ? numberOfResults : query.getLastResultCount())
 			.shared(query.isShared())
@@ -102,13 +100,13 @@ public class SQStatus {
 			.ownerName(Optional.ofNullable(query.getOwner()).map(user -> storage.getUser(user).getLabel()).orElse(null))
 			.resultUrl(
 				urlb != null
-					? urlb
-						.set(ResourceConstants.DATASET, query.getDataset().getName())
-						.set(ResourceConstants.QUERY, query.getId().toString())
-						.to(ResultCSVResource.GET_CSV_PATH)
-						.get()
-					: null)
+				? urlb
+					.set(ResourceConstants.DATASET, query.getDataset().getName())
+					.set(ResourceConstants.QUERY, query.getId().toString())
+					.to(ResultCSVResource.GET_CSV_PATH).get()
+				: null
+			)
 			.build();
 	}
-
+	
 }

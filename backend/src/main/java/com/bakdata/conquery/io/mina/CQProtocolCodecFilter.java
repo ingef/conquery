@@ -29,10 +29,9 @@ import org.apache.mina.filter.codec.RecoverableProtocolDecoderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-// see #167 this class is a copy of the one in the mina project
-// it is used because mina on default dumps even very large hex values
+//see #167  this class is a copy of the one in the mina project
+//it is used because mina on default dumps even very large hex values
 public class CQProtocolCodecFilter extends IoFilterAdapter {
-
 	/** A logger for this class */
 	private static final Logger LOGGER = LoggerFactory.getLogger(CQProtocolCodecFilter.class);
 
@@ -52,11 +51,10 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	private final ProtocolCodecFactory factory;
 
 	/**
-	 * Creates a new instance of ProtocolCodecFilter, associating a factory for the
-	 * creation of the encoder and decoder.
+	 * Creates a new instance of ProtocolCodecFilter, associating a factory
+	 * for the creation of the encoder and decoder.
 	 *
-	 * @param factory
-	 *            The associated factory
+	 * @param factory The associated factory
 	 */
 	public CQProtocolCodecFilter(ProtocolCodecFactory factory) {
 		if (factory == null) {
@@ -67,14 +65,12 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	}
 
 	/**
-	 * Creates a new instance of ProtocolCodecFilter, without any factory. The
-	 * encoder/decoder factory will be created as an inner class, using the two
-	 * parameters (encoder and decoder).
+	 * Creates a new instance of ProtocolCodecFilter, without any factory.
+	 * The encoder/decoder factory will be created as an inner class, using
+	 * the two parameters (encoder and decoder).
 	 *
-	 * @param encoder
-	 *            The class responsible for encoding the message
-	 * @param decoder
-	 *            The class responsible for decoding the message
+	 * @param encoder The class responsible for encoding the message
+	 * @param decoder The class responsible for decoding the message
 	 */
 	public CQProtocolCodecFilter(final ProtocolEncoder encoder, final ProtocolDecoder decoder) {
 		if (encoder == null) {
@@ -86,7 +82,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		// Create the inner Factory based on the two parameters
 		this.factory = new ProtocolCodecFactory() {
-
 			/**
 			 * {@inheritDoc}
 			 */
@@ -106,17 +101,16 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	}
 
 	/**
-	 * Creates a new instance of ProtocolCodecFilter, without any factory. The
-	 * encoder/decoder factory will be created as an inner class, using the two
-	 * parameters (encoder and decoder), which are class names. Instances for those
-	 * classes will be created in this constructor.
+	 * Creates a new instance of ProtocolCodecFilter, without any factory.
+	 * The encoder/decoder factory will be created as an inner class, using
+	 * the two parameters (encoder and decoder), which are class names. Instances
+	 * for those classes will be created in this constructor.
 	 *
-	 * @param encoderClass
-	 *            The class responsible for encoding the message
-	 * @param decoderClass
-	 *            The class responsible for decoding the message
+	 * @param encoderClass The class responsible for encoding the message
+	 * @param decoderClass The class responsible for decoding the message
 	 */
-	public CQProtocolCodecFilter(final Class<? extends ProtocolEncoder> encoderClass, final Class<? extends ProtocolDecoder> decoderClass) {
+	public CQProtocolCodecFilter(final Class<? extends ProtocolEncoder> encoderClass,
+			final Class<? extends ProtocolDecoder> decoderClass) {
 		if (encoderClass == null) {
 			throw new IllegalArgumentException("encoderClass");
 		}
@@ -131,14 +125,12 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 		}
 		try {
 			encoderClass.getConstructor(EMPTY_PARAMS);
-		}
-		catch (NoSuchMethodException e) {
+		} catch (NoSuchMethodException e) {
 			throw new IllegalArgumentException("encoderClass doesn't have a public default constructor.");
 		}
 		try {
 			decoderClass.getConstructor(EMPTY_PARAMS);
-		}
-		catch (NoSuchMethodException e) {
+		} catch (NoSuchMethodException e) {
 			throw new IllegalArgumentException("decoderClass doesn't have a public default constructor.");
 		}
 
@@ -146,8 +138,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		try {
 			encoder = encoderClass.newInstance();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalArgumentException("encoderClass cannot be initialized");
 		}
 
@@ -155,14 +146,12 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		try {
 			decoder = decoderClass.newInstance();
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			throw new IllegalArgumentException("decoderClass cannot be initialized");
 		}
 
 		// Create the inner factory based on the two parameters.
 		this.factory = new ProtocolCodecFactory() {
-
 			/**
 			 * {@inheritDoc}
 			 */
@@ -184,8 +173,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	/**
 	 * Get the encoder instance from a given session.
 	 *
-	 * @param session
-	 *            The associated session we will get the encoder from
+	 * @param session The associated session we will get the encoder from
 	 * @return The encoder instance, if any
 	 */
 	public ProtocolEncoder getEncoder(IoSession session) {
@@ -199,7 +187,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	public void onPreAdd(IoFilterChain parent, String name, NextFilter nextFilter) throws Exception {
 		if (parent.contains(this)) {
 			throw new IllegalArgumentException(
-				"You can't add the same filter instance more than once.  Create another instance and add it.");
+					"You can't add the same filter instance more than once.  Create another instance and add it.");
 		}
 	}
 
@@ -214,10 +202,14 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 	/**
 	 * Process the incoming message, calling the session decoder. As the incoming
-	 * buffer might contains more than one messages, we have to loop until the
-	 * decoder throws an exception.
+	 * buffer might contains more than one messages, we have to loop until the decoder
+	 * throws an exception.
 	 *
-	 * while ( buffer not empty ) try decode ( buffer ) catch break;
+	 *  while ( buffer not empty )
+	 *	try
+	 *	  decode ( buffer )
+	 *	catch
+	 *	  break;
 	 *
 	 */
 	@Override
@@ -246,13 +238,11 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 				}
 				// Finish decoding if no exception was thrown.
 				decoderOut.flush(nextFilter, session);
-			}
-			catch (Exception e) {
+			} catch (Exception e) {
 				ProtocolDecoderException pde;
 				if (e instanceof ProtocolDecoderException) {
 					pde = (ProtocolDecoderException) e;
-				}
-				else {
+				} else {
 					pde = new ProtocolDecoderException(e);
 				}
 				if (pde.getHexdump() == null) {
@@ -288,8 +278,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 		if (writeRequest instanceof MessageWriteRequest) {
 			MessageWriteRequest wrappedRequest = (MessageWriteRequest) writeRequest;
 			nextFilter.messageSent(session, wrappedRequest.getParentRequest());
-		}
-		else {
+		} else {
 			nextFilter.messageSent(session, writeRequest);
 		}
 	}
@@ -343,15 +332,13 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 			// Call the next filter
 			nextFilter.filterWrite(session, new MessageWriteRequest(writeRequest));
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			ProtocolEncoderException pee;
 
 			// Generate the correct exception
 			if (e instanceof ProtocolEncoderException) {
 				pee = (ProtocolEncoderException) e;
-			}
-			else {
+			} else {
 				pee = new ProtocolEncoderException(e);
 			}
 
@@ -370,18 +357,15 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		try {
 			decoder.finishDecode(session, decoderOut);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			ProtocolDecoderException pde;
 			if (e instanceof ProtocolDecoderException) {
 				pde = (ProtocolDecoderException) e;
-			}
-			else {
+			} else {
 				pde = new ProtocolDecoderException(e);
 			}
 			throw pde;
-		}
-		finally {
+		} finally {
 			// Dispose everything
 			disposeCodec(session);
 			decoderOut.flush(nextFilter, session);
@@ -392,7 +376,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	}
 
 	private static class EncodedWriteRequest extends DefaultWriteRequest {
-
 		public EncodedWriteRequest(Object encodedMessage, WriteFuture future, SocketAddress destination) {
 			super(encodedMessage, future, destination);
 		}
@@ -407,7 +390,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	}
 
 	private static class MessageWriteRequest extends WriteRequestWrapper {
-
 		public MessageWriteRequest(WriteRequest writeRequest) {
 			super(writeRequest);
 		}
@@ -424,7 +406,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	}
 
 	private static class ProtocolDecoderOutputImpl extends AbstractProtocolDecoderOutput {
-
 		public ProtocolDecoderOutputImpl() {
 			// Do nothing
 		}
@@ -443,7 +424,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	}
 
 	private static class ProtocolEncoderOutputImpl extends AbstractProtocolEncoderOutput {
-
 		private final IoSession session;
 
 		private final NextFilter nextFilter;
@@ -483,17 +463,17 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 			if (future == null) {
 				// Creates an empty writeRequest containing the destination
-				future = DefaultWriteFuture
-					.newNotWrittenFuture(session, new NothingWrittenException(AbstractIoSession.MESSAGE_SENT_REQUEST));
+				future = DefaultWriteFuture.newNotWrittenFuture(session, new NothingWrittenException(AbstractIoSession.MESSAGE_SENT_REQUEST));
 			}
 
 			return future;
 		}
 	}
 
-	// ----------- Helper methods ---------------------------------------------
+	//----------- Helper methods ---------------------------------------------
 	/**
-	 * Dispose the encoder, decoder, and the callback for the decoded messages.
+	 * Dispose the encoder, decoder, and the callback for the decoded
+	 * messages.
 	 */
 	private void disposeCodec(IoSession session) {
 		// We just remove the two instances of encoder/decoder to release resources
@@ -506,8 +486,9 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	}
 
 	/**
-	 * Dispose the encoder, removing its instance from the session's attributes, and
-	 * calling the associated dispose method.
+	 * Dispose the encoder, removing its instance from the
+	 * session's attributes, and calling the associated
+	 * dispose method.
 	 */
 	private void disposeEncoder(IoSession session) {
 		ProtocolEncoder encoder = (ProtocolEncoder) session.removeAttribute(ENCODER);
@@ -517,15 +498,15 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		try {
 			encoder.dispose(session);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			LOGGER.warn("Failed to dispose: " + encoder.getClass().getName() + " (" + encoder + ')');
 		}
 	}
 
 	/**
-	 * Dispose the decoder, removing its instance from the session's attributes, and
-	 * calling the associated dispose method.
+	 * Dispose the decoder, removing its instance from the
+	 * session's attributes, and calling the associated
+	 * dispose method.
 	 */
 	private void disposeDecoder(IoSession session) {
 		ProtocolDecoder decoder = (ProtocolDecoder) session.removeAttribute(DECODER);
@@ -535,15 +516,14 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 		try {
 			decoder.dispose(session);
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			LOGGER.warn("Failed to dispose: " + decoder.getClass().getName() + " (" + decoder + ')');
 		}
 	}
 
 	/**
-	 * Return a reference to the decoder callback. If it's not already created and
-	 * stored into the session, we create a new instance.
+	 * Return a reference to the decoder callback. If it's not already created
+	 * and stored into the session, we create a new instance.
 	 */
 	private ProtocolDecoderOutput getDecoderOut(IoSession session, NextFilter nextFilter) {
 		ProtocolDecoderOutput out = (ProtocolDecoderOutput) session.getAttribute(DECODER_OUT);

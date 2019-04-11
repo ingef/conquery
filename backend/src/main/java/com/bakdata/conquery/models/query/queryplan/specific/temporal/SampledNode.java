@@ -18,25 +18,21 @@ import lombok.Setter;
  * This class represents a wrapper around any type of {@link QPNode} but also
  * holds a sampler to select a single day from the child elements result.
  */
-@AllArgsConstructor
-@NoArgsConstructor
-@Getter
-@Setter
+@AllArgsConstructor @NoArgsConstructor
+@Getter @Setter
 public class SampledNode implements CtxCloneable<SampledNode> {
 
 	/**
 	 * A query plan which should be sampled to a singe day.
 	 */
-	@NotNull
-	@Valid
+	@NotNull @Valid
 	private ConceptQueryPlan child;
 	/**
 	 * The sampler to be used.
 	 */
-	@NotNull
-	@Valid
+	@NotNull @Valid
 	private TemporalSampler sampler;
-
+	
 	@Override
 	public SampledNode doClone(CloneContext ctx) {
 		return new SampledNode(child.clone(ctx), sampler);

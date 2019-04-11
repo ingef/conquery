@@ -37,72 +37,89 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected IdentifiableStore<Concept<?>> concepts;
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
-		super(validator, config, directory);
+		super(
+			validator,
+			config,
+			directory
+		);
 	}
-
+	
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
-		this.dataset = StoreInfo.DATASET.<Dataset>singleton(this).onAdd(ds -> {
-			centralRegistry.register(ds);
-			for (Table t : ds.getTables().values()) {
-				centralRegistry.register(t);
-				for (Column c : t.getColumns()) {
+		this.dataset = StoreInfo.DATASET.<Dataset>singleton(this)
+			.onAdd(ds -> {
+				centralRegistry.register(ds);
+				for(Table t:ds.getTables().values()) {
+					centralRegistry.register(t);
+					for (Column c : t.getColumns()) {
+						centralRegistry.register(c);
+					}
+				}
+			})
+			.onRemove(ds -> {
+				for(Table t:ds.getTables().values()) {
+					for (Column c : t.getColumns()) {
+						centralRegistry.remove(c);
+					}
+					centralRegistry.remove(t);
+				}
+				centralRegistry.remove(ds);
+			});
+		this.dictionaries =	StoreInfo.DICTIONARIES.big(this);
+		
+		this.concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(this)
+			.onAdd(concept -> {
+				Dataset ds = centralRegistry.resolve(
+					concept.getDataset() == null
+						? concept.getId().getDataset()
+						: concept.getDataset()
+				);
+				concept.setDataset(ds.getId());
+				ds.addConcept(concept);
+
+				concept.initElements(validator);
+				
+				concept.getSelects().forEach(centralRegistry::register);
+				for (Connector c : concept.getConnectors()) {
 					centralRegistry.register(c);
+					c.collectAllFilters().forEach(centralRegistry::register);
+					c.getSelects().forEach(centralRegistry::register);
 				}
-			}
-		}).onRemove(ds -> {
-			for (Table t : ds.getTables().values()) {
-				for (Column c : t.getColumns()) {
-					centralRegistry.remove(c);
-				}
-				centralRegistry.remove(t);
-			}
-			centralRegistry.remove(ds);
-		});
-		this.dictionaries = StoreInfo.DICTIONARIES.big(this);
-
-		this.concepts = StoreInfo.CONCEPTS.<Concept<?>>identifiable(this).onAdd(concept -> {
-			Dataset ds = centralRegistry.resolve(concept.getDataset() == null ? concept.getId().getDataset() : concept.getDataset());
-			concept.setDataset(ds.getId());
-			ds.addConcept(concept);
-
-			concept.initElements(validator);
-
-			concept.getSelects().forEach(centralRegistry::register);
-			for (Connector c : concept.getConnectors()) {
-				centralRegistry.register(c);
-				c.collectAllFilters().forEach(centralRegistry::register);
-				c.getSelects().forEach(centralRegistry::register);
-			}
-			// add imports of table
-			for (Import imp : getAllImports()) {
-				for (Connector con : concept.getConnectors()) {
-					if (con.getTable().getId().equals(imp.getTable())) {
-						con.addImport(imp);
+				//add imports of table
+				for(Import imp: getAllImports()) {
+					for(Connector con : concept.getConnectors()) {
+						if(con.getTable().getId().equals(imp.getTable())) {
+							con.addImport(imp);
+						}
 					}
 				}
-			}
-		}).onRemove(concept -> {
-			concept.getSelects().forEach(centralRegistry::remove);
-			// see #146 remove from Dataset.concepts
-			for (Connector c : concept.getConnectors()) {
-				c.getSelects().forEach(centralRegistry::remove);
-				c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
-				centralRegistry.remove(c.getId());
-			}
-		});
-		this.imports = StoreInfo.IMPORTS.<Import>identifiable(this).onAdd(imp -> {
-			imp.loadExternalInfos(this);
-			for (Concept<?> c : getAllConcepts()) {
-				for (Connector con : c.getConnectors()) {
-					if (con.getTable().getId().equals(imp.getTable())) {
-						con.addImport(imp);
+			})
+			.onRemove(concept -> {
+				concept.getSelects().forEach(centralRegistry::remove);
+				//see #146  remove from Dataset.concepts
+				for(Connector c:concept.getConnectors()) {
+					c.getSelects().forEach(centralRegistry::remove);
+					c.collectAllFilters().stream().map(Filter::getId).forEach(centralRegistry::remove);
+					centralRegistry.remove(c.getId());
+				}
+			});
+		this.imports = StoreInfo.IMPORTS.<Import>identifiable(this)
+			.onAdd(imp-> {
+				imp.loadExternalInfos(this);
+				for(Concept<?> c: getAllConcepts()) {
+					for(Connector con : c.getConnectors()) {
+						if(con.getTable().getId().equals(imp.getTable())) {
+							con.addImport(imp);
+						}
 					}
 				}
-			}
-		});
-
-		collector.collect(dataset).collect(dictionaries).collect(concepts).collect(imports);
+			});
+		
+		collector
+			.collect(dataset)
+			.collect(dictionaries)
+			.collect(concepts)
+			.collect(imports);
 	}
 
 	@Override
@@ -178,7 +195,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 	@Override
 	public Concept<?> getConcept(ConceptId id) {
-		return Optional.ofNullable(concepts.get(id)).orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
+		return Optional.ofNullable(concepts.get(id))
+			.orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
 	}
 
 	@Override

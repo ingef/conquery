@@ -13,6 +13,6 @@ public interface QueryPlanContext {
 	CentralRegistry getCentralRegistry();
 
 	QueryPlanContext withGenerateSpecialDateUnion(boolean b);
-
+	
 	boolean isGenerateSpecialDateUnion();
 }
