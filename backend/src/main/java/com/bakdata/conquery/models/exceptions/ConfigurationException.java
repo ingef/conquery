@@ -1,7 +1,8 @@
 package com.bakdata.conquery.models.exceptions;
 
 /**
- * This exception if thrown if there is any kind of error in one of the configuration files.
+ * This exception if thrown if there is any kind of error in one of the
+ * configuration files.
  */
 public class ConfigurationException extends Exception {
 

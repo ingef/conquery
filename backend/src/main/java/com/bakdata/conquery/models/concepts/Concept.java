@@ -25,40 +25,47 @@ import lombok.ToString;
 /**
  * This is a single node or concept in a concept tree.
  */
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
-@ToString(of={"name", "connectors"})
+@ToString(of = { "name", "connectors" })
 public abstract class Concept<CONNECTOR extends Connector> extends ConceptElement<ConceptId> {
-	
-	@Getter @Setter
+
+	@Getter
+	@Setter
 	private boolean hidden = false;
-	@JsonManagedReference @Valid @Getter @Setter
-	private List<CONNECTOR> connectors=Collections.emptyList();
-	@NotNull @Getter @Setter
+	@JsonManagedReference
+	@Valid
+	@Getter
+	@Setter
+	private List<CONNECTOR> connectors = Collections.emptyList();
+	@NotNull
+	@Getter
+	@Setter
 	private DatasetId dataset;
-	
+
 	public CONNECTOR getConnectorByName(String connector) {
 		return connectors
-				.stream()
-				.filter(n->n.getName().equals(connector))
-				.findAny()
-				.orElseThrow(() -> new IllegalArgumentException("Connector not found: " + connector));
+			.stream()
+			.filter(n -> n.getName().equals(connector))
+			.findAny()
+			.orElseThrow(() -> new IllegalArgumentException("Connector not found: " + connector));
 	}
 
 	public abstract List<? extends Select> getSelects();
-	
+
 	public void initElements(Validator validator) throws ConfigurationException, JSONException {}
-	
-	@Override @JsonIgnore
+
+	@Override
+	@JsonIgnore
 	public Concept<?> getConcept() {
 		return this;
 	}
-	
+
 	@Override
 	public ConceptId createId() {
 		return new ConceptId(Objects.requireNonNull(dataset), getName());
 	}
-	
+
 	public int countElements() {
 		return 1;
 	}

@@ -16,21 +16,21 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import lombok.Getter;
 import lombok.Setter;
 
-@Setter @Getter
-@CPSType(id="QUARTERS_IN_YEAR", base= Filter.class)
+@Setter
+@Getter
+@CPSType(id = "QUARTERS_IN_YEAR", base = Filter.class)
 public class QuartersInYearFilter extends SingleColumnFilter<Range.LongRange> {
-	
+
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.DATE);
 	}
-	
+
 	@Override
 	public void configureFrontend(FEFilter f) {
 		f.setType(FEFilterType.INTEGER_RANGE);
 		f.setMin(1);
 		f.setMax(4);
 	}
-
 
 	@Override
 	public FilterNode createAggregator(Range.LongRange value) {

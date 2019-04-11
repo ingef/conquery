@@ -32,7 +32,7 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	private static HashMap<Class<?>, CPSMap> globalMap;
 
 	public static final ScanResult SCAN_RESULT;
-	
+
 	private JavaType baseType;
 	private CPSMap cpsMap;
 
@@ -40,21 +40,17 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 	public void init(JavaType baseType) {
 		this.baseType = baseType;
 		this.cpsMap = new CPSMap();
-		
-		//this creates an aggregate map of all the children
-		Iterable<Class<?>> types = Traverser.forGraph(
-			(SuccessorsFunction<Class<?>>) node -> {
-				Class<?> superclass = node.getSuperclass();
-				List<Class<?>> interfaces = Arrays.asList(node.getInterfaces());
-				return superclass == null 
-					? interfaces
-					: Iterables.concat(interfaces, Collections.singleton(superclass));
-			}
-		).breadthFirst(baseType.getRawClass());
-		
-		for(Class<?> type : types) {
+
+		// this creates an aggregate map of all the children
+		Iterable<Class<?>> types = Traverser.forGraph((SuccessorsFunction<Class<?>>) node -> {
+			Class<?> superclass = node.getSuperclass();
+			List<Class<?>> interfaces = Arrays.asList(node.getInterfaces());
+			return superclass == null ? interfaces : Iterables.concat(interfaces, Collections.singleton(superclass));
+		}).breadthFirst(baseType.getRawClass());
+
+		for (Class<?> type : types) {
 			CPSMap local = globalMap.get(type);
-			if(local != null) {
+			if (local != null) {
 				cpsMap.merge(local);
 			}
 		}
@@ -64,104 +60,96 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 
 	static {
 		log.info("Scanning Classpath");
-		//scan classpaths for annotated child classes
-		
+		// scan classpaths for annotated child classes
+
 		SCAN_RESULT = new ClassGraph()
 			.enableClassInfo()
 			.enableAnnotationInfo()
-			//blacklist some packages that contain large libraries
-			.blacklistPackages(
-				"groovy",
-				"org.codehaus.groovy",
-				"org.apache",
-				"org.eclipse",
-				"com.google"
-			)
+			// blacklist some packages that contain large libraries
+			.blacklistPackages("groovy", "org.codehaus.groovy", "org.apache", "org.eclipse", "com.google")
 			.scan();
-		
+
 		log.info("Scanned: {} classes in classpath", SCAN_RESULT.getAllClasses().size());
 		Set<Class<?>> types = new HashSet<>();
 		types.addAll(SCAN_RESULT.getClassesWithAnnotation(CPSTypes.class.getName()).loadClasses());
 		types.addAll(SCAN_RESULT.getClassesWithAnnotation(CPSType.class.getName()).loadClasses());
-		
+
 		globalMap = new HashMap<>();
-		for(Class<?> type:types) {
+		for (Class<?> type : types) {
 			CPSType[] annos = type.getAnnotationsByType(CPSType.class);
-			for(CPSType anno:annos) {
-				CPSMap map = globalMap.computeIfAbsent(anno.base(), b->new CPSMap());
-				
-				//check if base is marked as base
+			for (CPSType anno : annos) {
+				CPSMap map = globalMap.computeIfAbsent(anno.base(), b -> new CPSMap());
+
+				// check if base is marked as base
 				CPSBase baseAnno = anno.base().getAnnotation(CPSBase.class);
-				if(baseAnno==null) {
-					throw new IllegalStateException("The class "+anno.base()+" is used as a CPSBase in "+type+" but not annotated as such.");
+				if (baseAnno == null) {
+					throw new IllegalStateException(
+						"The class " + anno.base() + " is used as a CPSBase in " + type + " but not annotated as such.");
 				}
-				if(!anno.base().isAssignableFrom(type)) {
-					throw new IllegalStateException("The class "+anno.base()+" is used as a CPSBase in "+type+" but type is no subclass of it.");
+				if (!anno.base().isAssignableFrom(type)) {
+					throw new IllegalStateException(
+						"The class " + anno.base() + " is used as a CPSBase in " + type + " but type is no subclass of it.");
 				}
-				
+
 				map.add(anno.id(), type);
 			}
 		}
-		
+
 		List<Class<?>> bases = SCAN_RESULT.getClassesWithAnnotation(CPSBase.class.getName()).loadClasses();
-		for(Class<?> b:bases) {
+		for (Class<?> b : bases) {
 			CPSMap map = globalMap.get(b);
-			if(map==null) {
+			if (map == null) {
 				log.warn("\tBase Class {}:\tNo registered types", b);
 			}
 			else {
 				log.info("\tBase Class {}", b);
 				map.calculateInverse();
-				for(Entry<Class<?>, String> e:map) {
+				for (Entry<Class<?>, String> e : map) {
 					log.info("\t\t{}\t->\t{}", e.getValue(), e.getKey());
 				}
 			}
-			
+
 		}
 	}
 
 	@Override
 	public JavaType typeFromId(DatabindContext context, String id) {
 		Class<?> result = cpsMap.getClassFromId(id);
-		if(result == null) {
-			throw new IllegalStateException("There is no type "+id+" for "+baseType.getTypeName()+". Try: "+getDescForKnownTypeIds());
+		if (result == null) {
+			throw new IllegalStateException(
+				"There is no type " + id + " for " + baseType.getTypeName() + ". Try: " + getDescForKnownTypeIds());
 		}
 		else {
 			return TypeFactory.defaultInstance().constructSpecializedType(baseType, result);
 		}
 	}
-	
+
 	public static Set<Class<?>> listImplementations(Class<?> base) {
 		CPSMap map = globalMap.get(base);
-		if(map == null) {
-			throw new NoSuchElementException("there are no implementations for "+base);
+		if (map == null) {
+			throw new NoSuchElementException("there are no implementations for " + base);
 		}
 		else {
 			return map.getClasses();
 		}
 	}
-	
+
 	public static Set<Pair<Class<?>, Class<?>>> listImplementations() {
 		return globalMap
-				.entrySet()
-				.stream()
-				.<Pair<Class<?>, Class<?>>>flatMap(e->
-					e.getValue()
-						.getClasses()
-						.stream()
-						.map(v->Pair.of(e.getKey(), v))
-				)
-				.collect(Collectors.toSet());
+			.entrySet()
+			.stream()
+			.<Pair<Class<?>, Class<?>>>flatMap(e -> e.getValue().getClasses().stream().map(v -> Pair.of(e.getKey(), v)))
+			.collect(Collectors.toSet());
 	}
 
 	@Override
 	public String idFromValueAndType(Object value, Class<?> suggestedType) {
 		String result = cpsMap.getTypeIdForClass(suggestedType);
-		if(result == null) {
-			//check if other base
+		if (result == null) {
+			// check if other base
 			CPSType anno = value.getClass().getAnnotation(CPSType.class);
-			if(anno == null)
-				throw new IllegalStateException("There is no id for the class "+suggestedType+" for "+baseType.getTypeName()+".");
+			if (anno == null)
+				throw new IllegalStateException("There is no id for the class " + suggestedType + " for " + baseType.getTypeName() + ".");
 			else
 				return anno.id();
 		}
@@ -169,12 +157,12 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 			return result;
 		}
 	}
-	
+
 	@Override
 	public String getDescForKnownTypeIds() {
 		return new TreeSet<>(cpsMap.getTypeIds()).toString();
 	}
-	
+
 	@Override
 	public String idFromValue(Object value) {
 		return idFromValueAndType(value, value.getClass());

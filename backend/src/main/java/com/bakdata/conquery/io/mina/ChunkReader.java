@@ -29,13 +29,14 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @RequiredArgsConstructor
+@Slf4j
+@RequiredArgsConstructor
 public class ChunkReader extends CumulativeProtocolDecoder {
-	
+
 	private static final AttributeKey MESSAGE_MANAGER = new AttributeKey(BinaryJacksonCoder.class, "messageManager");
-	
+
 	private final CQCoder<?> coder;
-	
+
 	@Override
 	protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) {
 		int pos = in.position();
@@ -45,62 +46,66 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 
 		boolean last = in.get() == ChunkWriter.LAST_MESSAGE;
 		int length = in.getInt();
-		if(length<0) {
-			throw new IllegalStateException("Read message length "+length);
+		if (length < 0) {
+			throw new IllegalStateException("Read message length " + length);
 		}
 		UUID id = new UUID(in.getLong(), in.getLong());
-		
+
 		if (in.remaining() < length) {
 			in.position(pos);
 			return false;
 		}
 
 		MessageManager messageManager = getMessageManager(session);
-		
+
 		IoBuffer copy = IoBuffer.allocate(length);
 		copy.put(in.array(), in.arrayOffset() + in.position(), length);
 		copy.flip();
 		in.skip(length);
-		
+
 		ChunkedMessage chunkedMessage = messageManager.getChunkedMessage(id);
 		chunkedMessage.addBuffer(copy);
 
 		if (last) {
 			messageManager.remove(id);
-			
-			if(chunkedMessage.size() == 0) {
+
+			if (chunkedMessage.size() == 0) {
 				throw new IllegalStateException("Received message of length 0");
 			}
-			
+
 			try {
 				out.write(coder.decode(chunkedMessage));
-			} catch (Exception e) {
-				log.error("Failed while deserializing the message "
-						+ chunkedMessage
-						+ ":'"
-						+ JacksonUtil.toJsonDebug(chunkedMessage)
-						+ "'.\n\tI tried to create a dump as "
-						+ id
-						+ ".json"
-					, e
-				);
-				
+			}
+			catch (Exception e) {
+				log
+					.error(
+						"Failed while deserializing the message "
+							+ chunkedMessage
+							+ ":'"
+							+ JacksonUtil.toJsonDebug(chunkedMessage)
+							+ "'.\n\tI tried to create a dump as "
+							+ id
+							+ ".json",
+						e);
+
 				try (InputStream is = chunkedMessage.createInputStream()) {
 					JsonNode tree = Jackson.BINARY_MAPPER.readTree(is);
-					try(OutputStream os = Out.file("dumps/reading_"+id+"_"+Math.random()+".json").asStream()) {
+					try (OutputStream os = Out.file("dumps/reading_" + id + "_" + Math.random() + ".json").asStream()) {
 						Jackson.MAPPER.copy().enable(SerializationFeature.INDENT_OUTPUT).writeValue(os, tree);
 					}
-				} catch (Exception e1) {
-					log.error("Failed to write the error json dump "+id+".json, trying as bin", e1);
-					if(DebugMode.isActive()) {
+				}
+				catch (Exception e1) {
+					log.error("Failed to write the error json dump " + id + ".json, trying as bin", e1);
+					if (DebugMode.isActive()) {
 						try (InputStream is = chunkedMessage.createInputStream()) {
 							File dumps = new File("dumps");
 							dumps.mkdirs();
-							try(OutputStream os = Out.file(dumps, "reading_"+id+"_"+Math.random()+".bin").asStream()) {
+							try (OutputStream os = Out.file(dumps, "reading_" + id + "_" + Math.random() + ".bin").asStream()) {
 								IOUtils.copy(is, os);
 							}
-						} catch (Exception e2) {
-							log.error("Failed to write the error json dump "+id+".bin", e2);
+						}
+						catch (Exception e2) {
+							log.error("Failed to write the error json dump " + id + ".bin", e2);
 						}
 					}
 				}
@@ -119,13 +124,14 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 		}
 		return messageManager;
 	}
-	
-	@Getter @RequiredArgsConstructor
+
+	@Getter
+	@RequiredArgsConstructor
 	public static class ChunkedMessage {
 
 		private final UUID id;
 		private final List<IoBuffer> buffers = new ArrayList<>();
-		
+
 		public EndCheckableInputStream createInputStream() {
 			return new EndCheckableInputStream(JacksonUtil.stream(buffers));
 		}
@@ -136,27 +142,32 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 
 		public long size() {
 			long size = 0;
-			for(IoBuffer b:buffers) {
-				size+=b.remaining();
+			for (IoBuffer b : buffers) {
+				size += b.remaining();
 			}
 			return size;
 		}
 
 		@Override
 		public String toString() {
-			return "ChunkedMessage [id=" + id + ", buffers=" + buffers.stream().map(b->b.limit()+":"+b.getHexDump(15)).collect(Collectors.toList()) + "]";
+			return "ChunkedMessage [id="
+				+ id
+				+ ", buffers="
+				+ buffers.stream().map(b -> b.limit() + ":" + b.getHexDump(15)).collect(Collectors.toList())
+				+ "]";
 		}
 	}
-	
-	@Getter @RequiredArgsConstructor
+
+	@Getter
+	@RequiredArgsConstructor
 	public static class MessageManager {
-		
+
 		private final Map<UUID, ChunkedMessage> messages = new HashMap<>();
 		private UUID lastId = null;
 		private ChunkedMessage lastMessage = null;
-		
+
 		public ChunkedMessage getChunkedMessage(UUID id) {
-			if(id == lastId) {
+			if (id == lastId) {
 				return lastMessage;
 			}
 			else {
@@ -168,7 +179,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 		}
 
 		public void remove(UUID id) {
-			if(lastId == id) {
+			if (lastId == id) {
 				lastId = null;
 				lastMessage = null;
 				messages.remove(id);

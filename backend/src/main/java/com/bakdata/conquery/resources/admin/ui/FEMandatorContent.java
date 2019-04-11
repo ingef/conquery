@@ -15,7 +15,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 
 /**
- * This class provides the corresponding FreeMarker template with the data needed.
+ * This class provides the corresponding FreeMarker template with the data
+ * needed.
  */
 @Getter
 @AllArgsConstructor
@@ -26,7 +27,7 @@ public class FEMandatorContent {
 	public List<DatasetPermission> datasetPermissions;
 	public List<QueryPermission> queryPermissions;
 	public List<ConqueryPermission> otherPermissions;
-	
+
 	public Set<Ability> abilities;
 	public List<Dataset> datasets;
 

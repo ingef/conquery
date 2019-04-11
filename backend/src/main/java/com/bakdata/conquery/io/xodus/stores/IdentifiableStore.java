@@ -10,20 +10,21 @@ import com.bakdata.conquery.util.functions.ThrowingConsumer;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-@Accessors(fluent=true) @Setter
+@Accessors(fluent = true)
+@Setter
 public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<IId<VALUE>, VALUE> {
 
 	private final CentralRegistry centralRegistry;
 	private ThrowingConsumer<VALUE> onAdd;
 	private ThrowingConsumer<VALUE> onRemove;
-	
+
 	public IdentifiableStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
 		this(centralRegistry, store, new SingletonNamespaceCollection(centralRegistry));
 	}
-	
+
 	public IdentifiableStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store, Injectable... injectables) {
 		super(store);
-		for(Injectable injectable : injectables) {
+		for (Injectable injectable : injectables) {
 			store.inject(injectable);
 		}
 		store.inject(centralRegistry);
@@ -32,34 +33,36 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 
 	@Override
 	protected IId<VALUE> extractKey(VALUE value) {
-		return (IId<VALUE>)value.getId();
+		return (IId<VALUE>) value.getId();
 	}
-	
+
 	@Override
 	protected void removed(VALUE value) {
 		try {
-			if(value != null) {
-				if(value != null && onRemove != null) {
+			if (value != null) {
+				if (value != null && onRemove != null) {
 					onRemove.accept(value);
 				}
 				centralRegistry.remove(value);
 			}
-		} catch(Exception e) {
-			throw new RuntimeException("Failed to remove "+value, e);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Failed to remove " + value, e);
 		}
 	}
 
 	@Override
 	protected void added(VALUE value) {
 		try {
-			if(value != null) {
+			if (value != null) {
 				centralRegistry.register(value);
-				if(onAdd != null) {
+				if (onAdd != null) {
 					onAdd.accept(value);
 				}
 			}
-		} catch(Exception e) {
-			throw new RuntimeException("Failed to add "+value, e);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Failed to add " + value, e);
 		}
 	}
 }

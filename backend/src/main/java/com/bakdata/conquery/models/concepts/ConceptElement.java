@@ -17,36 +17,40 @@ import lombok.Setter;
 
 public abstract class ConceptElement<ID extends ConceptElementId<? extends ConceptElement<? extends ID>>> extends Labeled<ID> {
 
-	@Getter @Setter
+	@Getter
+	@Setter
 	private String description;
-	@Getter @Setter
+	@Getter
+	@Setter
 	private List<KeyValue> additionalInfos = Collections.emptyList();
-	@Getter @Setter @JsonIgnore
+	@Getter
+	@Setter
+	@JsonIgnore
 	private MatchingStats matchingStats = new MatchingStats();
-	
+
 	public ConceptElement<?> getElementById(ConceptElementId<?> conceptElementId) {
-		if(Objects.equals(conceptElementId, this.getId())) {
+		if (Objects.equals(conceptElementId, this.getId())) {
 			return this;
 		}
 		else {
-			if(conceptElementId instanceof ConceptTreeChildId) {
-				return getChildById((ConceptTreeChildId)conceptElementId);
+			if (conceptElementId instanceof ConceptTreeChildId) {
+				return getChildById((ConceptTreeChildId) conceptElementId);
 			}
 			else {
-				throw new NoSuchElementException("Could not resolve the element "+conceptElementId +" in " + this);
+				throw new NoSuchElementException("Could not resolve the element " + conceptElementId + " in " + this);
 			}
 		}
 	}
 
 	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
-		throw new UnsupportedOperationException("The concept "+this+" has no children. Was looking for "+conceptTreeChildId);
+		throw new UnsupportedOperationException("The concept " + this + " has no children. Was looking for " + conceptTreeChildId);
 	}
-	
+
 	@Override
 	public String toString() {
 		return String.format("%s[%s]", this.getClass().getSimpleName(), getLabel());
 	}
-	
+
 	@JsonIgnore
 	public abstract Concept<?> getConcept();
 

@@ -12,17 +12,18 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class StructureNodeId extends AId<StructureNode> implements NamespacedId {
 
 	private final DatasetId dataset;
 	private final StructureNodeId parent;
 	private final String structureNode;
-	
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
-		if(parent != null) {
+		if (parent != null) {
 			parent.collectComponents(components);
 		}
 		else {
@@ -30,15 +31,15 @@ public class StructureNodeId extends AId<StructureNode> implements NamespacedId 
 		}
 		components.add(structureNode);
 	}
-	
+
 	public static enum Parser implements IId.Parser<StructureNodeId> {
 		INSTANCE;
-		
+
 		@Override
 		public StructureNodeId parse(PeekingIterator<String> parts) {
 			DatasetId dataset = DatasetId.Parser.INSTANCE.parse(parts);
 			StructureNodeId result = new StructureNodeId(dataset, null, parts.next());
-			while(parts.hasNext()) {
+			while (parts.hasNext()) {
 				result = new StructureNodeId(dataset, result, parts.next());
 			}
 			return result;

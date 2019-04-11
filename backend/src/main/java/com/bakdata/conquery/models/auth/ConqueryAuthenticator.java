@@ -19,21 +19,21 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * This dropwizard authenticator and the shiro realm are conceptually the same.
- * They authenticate -- but shiro realms can also be used for authorization.
- * We use this single authenticator to set up shiro and forward all requests to
- * shiro, where multiple realms might be configured.
- * We need this authenticator to plug in the security, and hereby shiro, into the AuthFilter.
+ * They authenticate -- but shiro realms can also be used for authorization. We
+ * use this single authenticator to set up shiro and forward all requests to
+ * shiro, where multiple realms might be configured. We need this authenticator
+ * to plug in the security, and hereby shiro, into the AuthFilter.
  */
 @Slf4j
-public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>{
-	
+public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User> {
+
 	private final MasterMetaStorage storage;
 	private final UnknownUserHandler uuHandler;
-	
+
 	public ConqueryAuthenticator(MasterMetaStorage storage, Realm realm, UnknownUserHandler uuHandler) {
 		this.storage = storage;
 		this.uuHandler = uuHandler;
-		
+
 		SecurityManager securityManager = new DefaultSecurityManager(realm);
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");
@@ -41,12 +41,12 @@ public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>
 
 	@Override
 	public Optional<User> authenticate(ConqueryToken token) throws AuthenticationException {
-		
+
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
-		User user = storage.getUser((UserId)info.getPrincipals().getPrimaryPrincipal());
-		if(user == null) {
+		User user = storage.getUser((UserId) info.getPrincipals().getPrimaryPrincipal());
+		if (user == null) {
 			user = uuHandler.handle(info);
-			if(user == null) {
+			if (user == null) {
 				throw new org.apache.shiro.authc.AuthenticationException("User not found");
 			}
 		}

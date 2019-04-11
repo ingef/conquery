@@ -56,7 +56,8 @@ public class CQExternal implements CQElement {
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		Dictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
-		Optional<DateFormat> dateFormat = format.stream()
+		Optional<DateFormat> dateFormat = format
+			.stream()
 			.map(FormatColumn::getDateFormat)
 			.filter(Objects::nonNull)
 			.collect(MoreCollectors.toOptional());
@@ -72,10 +73,11 @@ public class CQExternal implements CQElement {
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
 			if (row.length != format.size()) {
-				throw new IllegalArgumentException("There are "+ format.size()+ " columns in the format but "+ row.length + " in at least one row");
+				throw new IllegalArgumentException(
+					"There are " + format.size() + " columns in the format but " + row.length + " in at least one row");
 			}
 
-			//read the dates from the row
+			// read the dates from the row
 			try {
 				CDateSet dates = dateFormat.map(df -> {
 					try {
@@ -85,9 +87,12 @@ public class CQExternal implements CQElement {
 						throw new RuntimeException(e);
 					}
 				}).orElseGet(CDateSet::createFull);
-				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				includedEntities.put(primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
-					Objects.requireNonNull(dates));
+				// remove all fields from the data line that are not id fields, in case the
+				// mapping is not possible we avoid the data columns to be joined
+				includedEntities
+					.put(
+						primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
+						Objects.requireNonNull(dates));
 			}
 			catch (Exception e) {
 				log.warn("failed to parse dates from " + Arrays.toString(row), e);
@@ -98,19 +103,21 @@ public class CQExternal implements CQElement {
 
 	public enum DateFormat {
 		EVENT_DATE {
+
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.instance()
-					.parseToLocalDate(row[dateIndices[0]]))));
+				return CDateSet
+					.create(Collections.singleton(CDateRange.exactly(DateFormats.instance().parseToLocalDate(row[dateIndices[0]]))));
 			}
 		},
 		START_END_DATE {
+
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.instance().parseToLocalDate(row[dateIndices[0]]);
-				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
-					null :
-					DateFormats.instance().parseToLocalDate(row[dateIndices[1]]);
+				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null)
+					? null
+					: DateFormats.instance().parseToLocalDate(row[dateIndices[1]]);
 
 				CDateRange range;
 				if (start != null && end != null) {
@@ -130,12 +137,14 @@ public class CQExternal implements CQElement {
 			}
 		},
 		DATE_RANGE {
+
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.create(Collections.singleton(DateRangeType.parseISORange(row[dateIndices[0]])));
 			}
 		},
 		DATE_SET {
+
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.parse(row[dateIndices[0]]);
@@ -148,13 +157,7 @@ public class CQExternal implements CQElement {
 	@RequiredArgsConstructor
 	@Getter
 	public static enum FormatColumn {
-		ID(true, null),
-		EVENT_DATE(false, DateFormat.EVENT_DATE),
-		START_DATE(false, DateFormat.START_END_DATE),
-		END_DATE(false, DateFormat.START_END_DATE),
-		DATE_RANGE(false, DateFormat.DATE_RANGE),
-		DATE_SET(false, DateFormat.DATE_SET),
-		IGNORE(true, null);
+		ID(true, null), EVENT_DATE(false, DateFormat.EVENT_DATE), START_DATE(false, DateFormat.START_END_DATE), END_DATE(false, DateFormat.START_END_DATE), DATE_RANGE(false, DateFormat.DATE_RANGE), DATE_SET(false, DateFormat.DATE_SET), IGNORE(true, null);
 
 		private final boolean duplicatesAllowed;
 		private final DateFormat dateFormat;

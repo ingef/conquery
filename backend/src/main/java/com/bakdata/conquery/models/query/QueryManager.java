@@ -30,12 +30,7 @@ public class QueryManager {
 			return;
 		}
 
-		service.scheduleAtFixedRate(
-			this::maintain,
-			0,
-			1,
-			TimeUnit.MINUTES
-		);
+		service.scheduleAtFixedRate(this::maintain, 0, 1, TimeUnit.MINUTES);
 	}
 
 	public void maintain() {
@@ -51,29 +46,25 @@ public class QueryManager {
 	public ManagedQuery createQuery(IQuery query, User user) throws JSONException {
 		return createQuery(query, UUID.randomUUID(), user);
 	}
-	
+
 	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) throws JSONException {
-		query = query.resolve(new QueryResolveContext(
-			namespace.getStorage().getMetaStorage(),
-			namespace
-		));
+		query = query.resolve(new QueryResolveContext(namespace.getStorage().getMetaStorage(), namespace));
 		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
 		managed.setQueryId(queryId);
 		namespace.getStorage().getMetaStorage().addQuery(managed);
 		queries.add(managed);
 
-		
-		for(WorkerInformation worker : namespace.getWorkers()) {
+		for (WorkerInformation worker : namespace.getWorkers()) {
 			worker.send(new ExecuteQuery(managed));
 		}
 		return managed;
 	}
-	
+
 	public ManagedQuery reexecuteQuery(ManagedQuery query) throws JSONException {
 		query.initExecutable(namespace);
 		queries.add(query);
-		
-		for(WorkerInformation worker : namespace.getWorkers()) {
+
+		for (WorkerInformation worker : namespace.getWorkers()) {
 			worker.send(new ExecuteQuery(query));
 		}
 		return query;

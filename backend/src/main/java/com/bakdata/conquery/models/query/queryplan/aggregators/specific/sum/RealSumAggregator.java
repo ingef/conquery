@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class RealSumAggregator extends SingleColumnAggregator<Double> {
 
-
 	private double sum;
 
 	public RealSumAggregator(Column column) {
@@ -36,7 +35,7 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 	public Double getAggregationResult() {
 		return sum;
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;

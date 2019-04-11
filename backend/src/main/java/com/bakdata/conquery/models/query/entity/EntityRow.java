@@ -9,8 +9,10 @@ import com.bakdata.conquery.models.events.CBlock;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
-@Data @RequiredArgsConstructor
+@Data
+@RequiredArgsConstructor
 public class EntityRow {
+
 	private final Block block;
 	private final CBlock cBlock;
 	private final Connector connector;

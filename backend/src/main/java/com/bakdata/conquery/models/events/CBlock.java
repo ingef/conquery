@@ -15,22 +15,26 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class CBlock extends IdentifiableImpl<CBlockId> {
-	
+
 	@Valid
 	private BlockId block;
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private ConnectorId connector;
 	@Valid
 	private List<int[]> mostSpecificChildren;
-	
+
 	public CBlock(BlockId block, ConnectorId connector) {
 		this.block = block;
 		this.connector = connector;
 	}
-	
-	@Override @JsonIgnore
+
+	@Override
+	@JsonIgnore
 	public CBlockId createId() {
 		return new CBlockId(block, connector);
 	}

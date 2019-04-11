@@ -14,33 +14,36 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @NoArgsConstructor
+@Getter
+@Setter
+@NoArgsConstructor
 public class ImportColumn extends NamedImpl<ImportColumnId> {
 
 	@JsonBackReference
 	private Import parent;
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private CType type;
 	@Min(0)
 	private int position = -1;
-	
+
 	@Override
 	public ImportColumnId createId() {
 		return new ImportColumnId(parent.getId(), getName());
 	}
-	
+
 	@JsonIgnore
 	public int getNullPosition() {
-		if(type.getLines() == type.getNullLines()) {
+		if (type.getLines() == type.getNullLines()) {
 			return -1;
 		}
 		int nullPosition = 0;
-		for (ImportColumn col: parent.getColumns()) {
-			if(col==this) {
+		for (ImportColumn col : parent.getColumns()) {
+			if (col == this) {
 				break;
 			}
 			else {
-				if(col.type.requiresExternalNullStore()) {
+				if (col.type.requiresExternalNullStore()) {
 					nullPosition++;
 				}
 			}

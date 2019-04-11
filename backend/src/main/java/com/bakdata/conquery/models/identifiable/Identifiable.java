@@ -7,6 +7,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public interface Identifiable<ID extends IId<? extends Identifiable<? extends ID>>> {
 
-	@JsonIgnore @Valid
+	@JsonIgnore
+	@Valid
 	ID getId();
 }

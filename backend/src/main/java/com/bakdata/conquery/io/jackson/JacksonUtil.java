@@ -21,48 +21,38 @@ public class JacksonUtil {
 	public static String toJsonDebug(byte[] bytes) {
 		return toJsonDebug(IoBuffer.wrap(bytes));
 	}
-	
+
 	public static String toJsonDebug(List<IoBuffer> list) {
 		return toJsonDebug(stream(list));
 	}
-	
+
 	public static InputStream stream(List<IoBuffer> list) {
 		return new SequenceInputStream(
-			IteratorUtils.asEnumeration(
-				IteratorUtils.transformedIterator(
-						list.iterator(),
-						JacksonUtil::stream
-				)
-			)
-		);
+			IteratorUtils.asEnumeration(IteratorUtils.transformedIterator(list.iterator(), JacksonUtil::stream)));
 	}
 
 	public static String toJsonDebug(IoBuffer buffer) {
 		return toJsonDebug(stream(buffer));
 	}
-	
+
 	public static String toJsonDebug(ChunkedMessage msg) {
 		return toJsonDebug(stream(msg.getBuffers()));
 	}
-	
+
 	private static InputStream stream(IoBuffer buffer) {
-		return new ByteArrayInputStream(
-			buffer.array(),
-			buffer.position()+buffer.arrayOffset(),
-			buffer.remaining()
-		);
+		return new ByteArrayInputStream(buffer.array(), buffer.position() + buffer.arrayOffset(), buffer.remaining());
 	}
 
 	public static String toJsonDebug(InputStream is) {
 		StringBuilder sb = new StringBuilder();
 		try (JsonParser parser = Jackson.BINARY_MAPPER.getFactory().createParser(is)) {
 
-			for(int i=0;i<50;i++) {
+			for (int i = 0; i < 50; i++) {
 				JsonToken t = parser.nextToken();
-				if(t == null) {
+				if (t == null) {
 					break;
 				}
-				if(t.asString() != null) {
+				if (t.asString() != null) {
 					sb.append(t.asString());
 				}
 				else {
@@ -87,24 +77,22 @@ public class JacksonUtil {
 							break;
 						case VALUE_STRING:
 							String value = parser.getText();
-							if(value.length() > 50) {
-								value = value.substring(0,50)+"...";
+							if (value.length() > 50) {
+								value = value.substring(0, 50) + "...";
 							}
-							value = JavaUnicodeEscaper
-								.outsideOf(32, 0x7e)
-								.translate(value);
+							value = JavaUnicodeEscaper.outsideOf(32, 0x7e).translate(value);
 							sb.append('"').append(value).append("\",");
 							break;
 						default:
 							sb.append(t.toString());
-							log.warn("I don't know how to handle "+t);
+							log.warn("I don't know how to handle " + t);
 							break;
 					}
 				}
 			}
 			return sb.toString();
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			log.warn("Failed to create the debug json", e);
 			sb.append("DEBUG_JSON_ERROR");
 			return sb.toString();

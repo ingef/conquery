@@ -7,12 +7,12 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 public class Leaf extends QPNode {
 
 	private boolean triggered = false;
-	
+
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		return new Leaf();
 	}
-	
+
 	@Override
 	public void nextEvent(Block block, int event) {
 		triggered = true;
@@ -23,5 +23,4 @@ public class Leaf extends QPNode {
 		return triggered;
 	}
 
-	
 }

@@ -19,12 +19,11 @@ import lombok.Setter;
 @CPSType(id = "PREFIX_TEXT", base = Filter.class)
 public class PrefixTextFilter extends SingleColumnFilter<String> {
 
-
 	@Override
 	public void configureFrontend(FEFilter f) {
 		f.setType(FEFilterType.STRING);
 	}
-	
+
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);

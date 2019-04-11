@@ -27,10 +27,9 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 	}
 
 	@Override
-	public int[] getIterations(){
-		return new int[]{1000, 10000, 100000, 500000};
+	public int[] getIterations() {
+		return new int[] { 1000, 10000, 100000, 500000 };
 	}
-
 
 	@Override
 	public String getConceptSourceName() {
@@ -38,9 +37,38 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 	}
 
 	public List<String> getTestStrings() {
-		return Arrays.asList(
-				"63F", "J14B", "N01C", "I10C", "L36Z", "960Z", "M10B", "X07A", "F06E", "P04C", "R63E", "O65B", "G77B", "F60B", "I65A", "F57Z", "R16Z", "R01D", "I23B", "A11E", "B44D", "F14A", "N62B", "Q61C", "I43B", "L43Z", "B36A", "F12F", "Z64B", "G07B"
-		);
+		return Arrays
+			.asList(
+				"63F",
+				"J14B",
+				"N01C",
+				"I10C",
+				"L36Z",
+				"960Z",
+				"M10B",
+				"X07A",
+				"F06E",
+				"P04C",
+				"R63E",
+				"O65B",
+				"G77B",
+				"F60B",
+				"I65A",
+				"F57Z",
+				"R16Z",
+				"R01D",
+				"I23B",
+				"A11E",
+				"B44D",
+				"F14A",
+				"N62B",
+				"Q61C",
+				"I43B",
+				"L43Z",
+				"B36A",
+				"F12F",
+				"Z64B",
+				"G07B");
 	}
 
 	@Override
@@ -67,13 +95,15 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 
 	@Override
 	public void referenceSearch(Integer key) throws ConceptConfigurationException {
-		referenceConcept.findMostSpecificChild(dict.getElement(key),  new CalculatedValue<>(() -> Collections.singletonMap("distinction", RandomUtils.nextInt(8, 19 ))));
+		referenceConcept
+			.findMostSpecificChild(
+				dict.getElement(key),
+				new CalculatedValue<>(() -> Collections.singletonMap("distinction", RandomUtils.nextInt(8, 19))));
 	}
 
 	@Override
 	public void newSearch(Integer key) throws ConceptConfigurationException {
-		cache.findMostSpecificChild(key,  new CalculatedValue<>(() -> Collections.singletonMap("distinction", RandomUtils.nextInt(8,19 ))));
+		cache.findMostSpecificChild(key, new CalculatedValue<>(() -> Collections.singletonMap("distinction", RandomUtils.nextInt(8, 19))));
 	}
 
 }
-

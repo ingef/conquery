@@ -53,7 +53,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	private Set<StandaloneSupport> openSupports = new HashSet<>();
 	@Getter
 	private Client client;
-	
+
 	/**
 	 * Returns the extension context used by the beforeAll-callback.
 	 *
@@ -61,18 +61,18 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	 */
 	@Getter
 	private ExtensionContext beforeAllContext;
-	
+
 	public synchronized StandaloneSupport openDataset(DatasetId datasetId) {
 		try {
 			log.info("loading dataset");
 
 			return createSupport(datasetId, datasetId.getName());
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			return fail(e);
 		}
 	}
-	
+
 	public synchronized StandaloneSupport getSupport() {
 		try {
 			log.info("Setting up dataset");
@@ -81,28 +81,25 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addDataset(name);
 			return createSupport(datasetId, name);
 		}
-		catch(Exception e) {
+		catch (Exception e) {
 			return fail(e);
 		}
 	}
-	
+
 	private synchronized StandaloneSupport createSupport(DatasetId datasetId, String name) {
 		Namespaces namespaces = standaloneCommand.getMaster().getNamespaces();
 		Namespace ns = namespaces.get(datasetId);
-		
+
 		assertThat(namespaces.getSlaves()).hasSize(2);
-		
-		
-		//make tmp subdir and change cfg accordingly
-		File localTmpDir = new File(tmpDir, "tmp_"+name);
+
+		// make tmp subdir and change cfg accordingly
+		File localTmpDir = new File(tmpDir, "tmp_" + name);
 		localTmpDir.mkdir();
 		ConqueryConfig localCfg = ConfigCloner.clone(config);
-		localCfg.getPreprocessor().setDirectories(
-			new PreprocessingDirectories[]{
-				new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir)
-			}
-		);
-		
+		localCfg
+			.getPreprocessor()
+			.setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir) });
+
 		StandaloneSupport support = new StandaloneSupport(
 			this,
 			standaloneCommand,
@@ -110,87 +107,79 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			ns.getStorage().getDataset(),
 			localTmpDir,
 			localCfg,
-			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor()
-		);
-		while(ns.getWorkers().size() < ns.getNamespaces().getSlaves().size()) {
+			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor());
+		while (ns.getWorkers().size() < ns.getNamespaces().getSlaves().size()) {
 			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
 		}
 		support.waitUntilWorkDone();
 		openSupports.add(support);
 		return support;
 	}
-	
-	/*package*/ synchronized void stop(StandaloneSupport support) {
+
+	/* package */ synchronized void stop(StandaloneSupport support) {
 		log.info("Tearing down dataset");
-		
-		//standaloneCommand.getMaster().getStorage().removeDataset(support.getDataset().getId());
-		//standaloneCommand.getMaster().getStorage().getInformation().sendToAll(new RemoveDataset(dataset.getId()));
+
+		// standaloneCommand.getMaster().getStorage().removeDataset(support.getDataset().getId());
+		// standaloneCommand.getMaster().getStorage().getInformation().sendToAll(new
+		// RemoveDataset(dataset.getId()));
 
 		openSupports.remove(support);
 	}
-	
+
 	protected ConqueryConfig getConfig() throws Exception {
 		ConqueryConfig config = new ConqueryConfig();
 
-		config.getPreprocessor().setDirectories(
-				new PreprocessingDirectories[]{
-					new PreprocessingDirectories(tmpDir, tmpDir, tmpDir)
-				}
-		);
+		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		config.getStorage().setDirectory(tmpDir);
 		config.getStorage().setPreprocessedRoot(tmpDir);
 		config.getStandalone().setNumberOfSlaves(2);
-		//configure logging
+		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());
-		
-		//set random open ports
-		for(ConnectorFactory con : CollectionUtils.union(
-				((DefaultServerFactory)config.getServerFactory()).getAdminConnectors(),
-				((DefaultServerFactory)config.getServerFactory()).getApplicationConnectors()
-			)
-		) {
-			try(ServerSocket s = new ServerSocket(0)) {
-				((HttpConnectorFactory)con).setPort(s.getLocalPort());
+
+		// set random open ports
+		for (ConnectorFactory con : CollectionUtils
+			.union(
+				((DefaultServerFactory) config.getServerFactory()).getAdminConnectors(),
+				((DefaultServerFactory) config.getServerFactory()).getApplicationConnectors())) {
+			try (ServerSocket s = new ServerSocket(0)) {
+				((HttpConnectorFactory) con).setPort(s.getLocalPort());
 			}
 		}
-		try(ServerSocket s = new ServerSocket(0)) {
+		try (ServerSocket s = new ServerSocket(0)) {
 			config.getCluster().setPort(s.getLocalPort());
 		}
-		
-		//make buckets very small
+
+		// make buckets very small
 		config.getCluster().setEntityBucketSize(1);
 
 		return config;
 	}
-	
+
 	@Override
 	public void beforeAll(ExtensionContext context) throws Exception {
 		this.beforeAllContext = context;
-		//create tmp dir if it was not already created
-		if(tmpDir == null) {
+		// create tmp dir if it was not already created
+		if (tmpDir == null) {
 			tmpDir = Files.createTempDir();
 		}
 		log.info("Working in temporary directory {}", tmpDir);
-		
+
 		config = getConfig();
-		context.getTestInstance()
+		context
+			.getTestInstance()
 			.filter(ConfigOverride.class::isInstance)
 			.map(ConfigOverride.class::cast)
 			.ifPresent(co -> co.override(config));
 
-		//define server
-		dropwizard = new DropwizardTestSupport<ConqueryConfig>(
-			TestBootstrappingConquery.class,
-			config,
-			app -> {
-				standaloneCommand = new StandaloneCommand((TestBootstrappingConquery) app);
-				return new TestCommandWrapper(config, standaloneCommand);
-			}
-		);
+		// define server
+		dropwizard = new DropwizardTestSupport<ConqueryConfig>(TestBootstrappingConquery.class, config, app -> {
+			standaloneCommand = new StandaloneCommand((TestBootstrappingConquery) app);
+			return new TestCommandWrapper(config, standaloneCommand);
+		});
 
-		//start server
+		// start server
 		dropwizard.before();
-		
+
 		// create HTTP client for api tests
 		client = new JerseyClientBuilder(this.getDropwizard().getEnvironment())
 			.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
@@ -205,5 +194,4 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		FileUtils.deleteQuietly(tmpDir);
 	}
 
-	
 }

@@ -29,7 +29,6 @@ public class DebugClassGenerator extends ClassGenerator {
 	private final List<JavaFileObject> mFiles = new ArrayList<>();
 	private final List<String> generated = new ArrayList<>();
 
-
 	public DebugClassGenerator() throws IOException {
 		log.info("Started code generator in Debug Mode!");
 		tmp = new File("codeGenDebug");
@@ -63,9 +62,9 @@ public class DebugClassGenerator extends ClassGenerator {
 			Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
 			StringWriter output = new StringWriter();
 			CompilationTask task = getCompiler().getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
-			
+
 			if (!task.call()) {
-				throw new IllegalStateException("Failed to compile: "+output);
+				throw new IllegalStateException("Failed to compile: " + output);
 			}
 		}
 	}
@@ -76,7 +75,8 @@ public class DebugClassGenerator extends ClassGenerator {
 		for (String cl : generated) {
 			try {
 				getClassByName(cl);
-			} catch (ClassNotFoundException e) {
+			}
+			catch (ClassNotFoundException e) {
 				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
 			}
 		}

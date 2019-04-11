@@ -25,39 +25,28 @@ import lombok.extern.slf4j.Slf4j;
 public class QueryExecutor implements Closeable {
 
 	private final ListeningExecutorService pool;
-	
+
 	public QueryExecutor(ConqueryConfig config) {
 		this.pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
 	}
 
 	public ShardResult execute(QueryPlanContext context, ManagedQuery query) {
 		QueryPlan plan = query.getQuery().createQueryPlan(context);
-		return execute(
-				context.getBlockManager(),
-				new QueryContext(
-					context.getWorker().getStorage()
-				),
-				query.getId(),
-				plan,
-				pool
-		);
+		return execute(context.getBlockManager(), new QueryContext(context.getWorker().getStorage()), query.getId(), plan, pool);
 	}
 
 	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedQueryId queryId, QueryPlan plan, ListeningExecutorService executor) {
 		Collection<Entity> entries = blockManager.getEntities().values();
-		if(entries.isEmpty()) {
+		if (entries.isEmpty()) {
 			log.warn("entries for query {} are empty", queryId);
 		}
 		ShardResult result = new ShardResult();
 		result.setQueryId(queryId);
-		
-		List<ListenableFuture<EntityResult>> futures = plan
-			.execute(context, entries)
-			.map(executor::submit)
-			.collect(Collectors.toList());
-		
+
+		List<ListenableFuture<EntityResult>> futures = plan.execute(context, entries).map(executor::submit).collect(Collectors.toList());
+
 		result.setFuture(Futures.allAsList(futures));
-		
+
 		result.getFuture().addListener(result::finish, MoreExecutors.directExecutor());
 		return result;
 	}
@@ -70,7 +59,8 @@ public class QueryExecutor implements Closeable {
 			if (!success && log.isDebugEnabled()) {
 				log.error("Timeout has elapsed before termination completed for executor {}", pool);
 			}
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new RuntimeException(e);
 		}
 	}

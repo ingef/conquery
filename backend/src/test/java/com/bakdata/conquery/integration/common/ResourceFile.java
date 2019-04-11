@@ -15,14 +15,15 @@ import com.github.powerlibraries.io.In;
 import lombok.Getter;
 
 public class ResourceFile {
-	@Getter(onMethod_=@JsonValue)
+
+	@Getter(onMethod_ = @JsonValue)
 	private final String path;
-	
+
 	@JsonCreator
 	public ResourceFile(String path) {
 		this.path = path;
 		assertThat(ResourceFile.class.getResource(StringUtils.prependIfMissing(path, "/")))
-			.as("Resource "+path+" does not exist")
+			.as("Resource " + path + " does not exist")
 			.isNotNull();
 	}
 

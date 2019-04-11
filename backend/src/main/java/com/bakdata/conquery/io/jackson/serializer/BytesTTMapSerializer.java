@@ -18,21 +18,20 @@ public class BytesTTMapSerializer extends JsonSerializer<BytesTTMap> {
 
 	@Override
 	public void serialize(BytesTTMap value, JsonGenerator gen, SerializerProvider serializers) throws IOException {
-			
+
 		gen.writeStartArray();
-		
-		if(value.getRoot() == null) {
+
+		if (value.getRoot() == null) {
 			gen.writeNull();
 		}
 		else {
 			byte[] bytes = new byte[1];
 			BitStore flags = Bits.asStore(bytes);
-			
-					
-			//second run write the data collect the flags
+
+			// second run write the data collect the flags
 			ArrayDeque<ABytesNode> openList = new ArrayDeque<>();
 			openList.add(value.getRoot());
-			while(!openList.isEmpty()) {
+			while (!openList.isEmpty()) {
 				ABytesNode n = openList.removeFirst();
 				flags.clear();
 				flags.setBit(0, n instanceof ValueNode);
@@ -41,31 +40,30 @@ public class BytesTTMapSerializer extends JsonSerializer<BytesTTMap> {
 				flags.setBit(3, n.getMiddle() != null);
 				flags.setBit(4, n.getRight() != null);
 				gen.writeNumber(bytes[0]);
-				
-				
-				if(n instanceof BytesPatriciaNode) {
+
+				if (n instanceof BytesPatriciaNode) {
 					gen.writeBinary(n.key());
 				}
 				else {
-					gen.writeNumber(((BytesNode)n).getKey());
+					gen.writeNumber(((BytesNode) n).getKey());
 				}
-				if(n instanceof ValueNode) {
+				if (n instanceof ValueNode) {
 					gen.writeNumber(((ValueNode) n).getValue());
 				}
-				
-				//reverse because of addFirst
-				if(n.getRight() != null) {
+
+				// reverse because of addFirst
+				if (n.getRight() != null) {
 					openList.addFirst(n.getRight());
 				}
-				if(n.getMiddle() != null) {
+				if (n.getMiddle() != null) {
 					openList.addFirst(n.getMiddle());
 				}
-				if(n.getLeft() != null) {
+				if (n.getLeft() != null) {
 					openList.addFirst(n.getLeft());
 				}
 			}
 		}
-		
+
 		gen.writeEndArray();
 	}
 }

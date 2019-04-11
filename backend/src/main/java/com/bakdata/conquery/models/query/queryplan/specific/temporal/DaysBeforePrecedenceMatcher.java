@@ -6,7 +6,6 @@ import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
 
-
 /**
  * Tests if the days between reference and preceding are within {@link #days}.
  */

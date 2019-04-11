@@ -42,61 +42,59 @@ public class Conquery extends Application<ConqueryConfig> {
 	@Override
 	public void initialize(Bootstrap<ConqueryConfig> bootstrap) {
 		Jackson.configure(bootstrap.getObjectMapper());
-		//check for java compiler, needed for the class generation
+		// check for java compiler, needed for the class generation
 		if (ToolProvider.getSystemJavaCompiler() == null) {
 			throw new IllegalStateException("Conquery requires to be run on either a JDK or a ServerJRE");
 		}
 
-		//main config file is json
+		// main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
 
 		bootstrap.addCommand(new SlaveCommand());
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
 
-		//do some setup in other classes after initialization but before running a command
+		// do some setup in other classes after initialization but before running a
+		// command
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
+
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 				configuration.initializeDatePatterns();
 			}
 
 			@Override
-			public void initialize(Bootstrap<?> bootstrap) {
-			}
+			public void initialize(Bootstrap<?> bootstrap) {}
 		});
-		//register frontend
+		// register frontend
 		registerFrontend(bootstrap);
 
-		//freemarker support
+		// freemarker support
 		bootstrap.addBundle(new ViewBundle<>());
 	}
 
 	protected void registerFrontend(Bootstrap<ConqueryConfig> bootstrap) {
 		bootstrap.addBundle(new UrlRewriteBundle());
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
+
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 				String uriPath = "/app/";
 				String language = configuration.getLocale().getFrontend().getLanguage();
-				environment.servlets().addServlet(
-					"app",
-					new AssetServlet(
-						"/frontend/app/",
-						uriPath,
-						String.format(
-								"static/index.%s.html",
-								StringUtils.defaultIfEmpty(language, Locale.ENGLISH.getLanguage())
-						),
-						StandardCharsets.UTF_8
-					)
-				)
-				.addMapping(uriPath + '*');
+				environment
+					.servlets()
+					.addServlet(
+						"app",
+						new AssetServlet(
+							"/frontend/app/",
+							uriPath,
+							String.format("static/index.%s.html", StringUtils.defaultIfEmpty(language, Locale.ENGLISH.getLanguage())),
+							StandardCharsets.UTF_8))
+					.addMapping(uriPath + '*');
 			}
 
 			@Override
-			public void initialize(Bootstrap<?> bootstrap) {
-			}
+			public void initialize(Bootstrap<?> bootstrap) {}
 		});
 	}
 

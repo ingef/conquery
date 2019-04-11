@@ -23,10 +23,11 @@ public class ExternalNode extends QPChainNode {
 
 	@Getter
 	private final DatasetId dataset;
-	@Getter @NotEmpty
+	@Getter
+	@NotEmpty
 	private final Map<Integer, CDateSet> includedEntities;
 	private CDateSet contained;
-	
+
 	public ExternalNode(QPNode child, DatasetId dataset, Map<Integer, CDateSet> includedEntities) {
 		super(child);
 		this.dataset = dataset;
@@ -38,21 +39,18 @@ public class ExternalNode extends QPChainNode {
 		super.init(entity);
 		contained = includedEntities.get(entity.getId());
 	}
-	
+
 	@Override
 	public ExternalNode doClone(CloneContext ctx) {
 		return new ExternalNode(getChild().clone(ctx), dataset, includedEntities);
 	}
-	
+
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		if(contained != null) {
+		if (contained != null) {
 			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
 			newSet.retainAll(contained);
-			super.nextTable(
-				ctx.withDateRestriction(newSet),
-				currentTable
-			);
+			super.nextTable(ctx.withDateRestriction(newSet), currentTable);
 		}
 		else
 			super.nextTable(ctx, currentTable);
@@ -60,25 +58,20 @@ public class ExternalNode extends QPChainNode {
 
 	@Override
 	public void nextEvent(Block block, int event) {
-		if(contained != null) {
+		if (contained != null) {
 			getChild().nextEvent(block, event);
 		}
 	}
-	
+
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		super.collectRequiredTables(requiredTables);
-		//add the allIdsTable
-		requiredTables.add(
-			new TableId(
-				dataset,
-				ConqueryConstants.ALL_IDS_TABLE
-			)
-		);
+		// add the allIdsTable
+		requiredTables.add(new TableId(dataset, ConqueryConstants.ALL_IDS_TABLE));
 	}
 }

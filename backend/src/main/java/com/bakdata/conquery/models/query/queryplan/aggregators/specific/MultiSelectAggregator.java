@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.types.specific.IStringType;
 
-
 public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, Integer>> {
 
 	private final String[] selection;
@@ -56,7 +55,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 		for (int i = 0; i < hits.length; i++) {
 			int hit = hits[i];
 			if (hit > 0) {
-				out.merge(selection[i], hit, (a,b)->a+b);
+				out.merge(selection[i], hit, (a, b) -> a + b);
 			}
 		}
 
@@ -67,7 +66,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	public MultiSelectAggregator doClone(CloneContext ctx) {
 		return new MultiSelectAggregator(getColumn(), selection);
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

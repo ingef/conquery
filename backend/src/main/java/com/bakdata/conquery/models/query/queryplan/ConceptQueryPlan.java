@@ -17,9 +17,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@Getter @Setter @NoArgsConstructor(access=AccessLevel.PUBLIC)
+@Getter
+@Setter
+@NoArgsConstructor(access = AccessLevel.PUBLIC)
 public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPlan {
-	
+
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
 
@@ -29,12 +31,12 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 
 		return plan;
 	}
-	
+
 	@Override
 	public ConceptQueryPlan createClone() {
-		return (ConceptQueryPlan)QueryPlan.super.createClone();
+		return (ConceptQueryPlan) QueryPlan.super.createClone();
 	}
-	
+
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		return ctx.clone(this);
@@ -43,28 +45,28 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 	@Override
 	public ConceptQueryPlan doClone(CloneContext ctx) {
 		ConceptQueryPlan clone = new ConceptQueryPlan();
-		for(Aggregator<?> agg:aggregators)
+		for (Aggregator<?> agg : aggregators)
 			clone.aggregators.add(agg.clone(ctx));
 		clone.specialDateUnion = specialDateUnion.clone(ctx);
 		clone.setChild(getChild().clone(ctx));
 		return clone;
 	}
-	
+
 	@Override
 	public void nextEvent(Block block, int event) {
 		getChild().nextEvent(block, event);
 	}
-	
+
 	protected EntityResult result() {
 		Object[] values = new Object[aggregators.size()];
-		for(int i=0;i<values.length;i++)
+		for (int i = 0; i < values.length; i++)
 			values[i] = aggregators.get(i).getAggregationResult();
 		return EntityResult.of(entity.getId(), values);
 	}
 
 	@Override
 	public EntityResult createResult() {
-		if(isContained()) {
+		if (isContained()) {
 			return result();
 		}
 		else {
@@ -76,7 +78,7 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 	public void addAggregator(Aggregator<?> aggregator) {
 		aggregators.add(aggregator);
 	}
-	
+
 	@Override
 	public void addAggregator(int index, Aggregator<?> aggregator) {
 		aggregators.add(index, aggregator);

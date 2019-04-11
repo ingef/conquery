@@ -19,31 +19,36 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
 public class IdMapTest {
+
 	@Test
 	public void generalTest() throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 		Dataset d1 = new Dataset();
 		d1.setName("d1");
 		Dataset d2 = new Dataset();
 		d2.setName("d2");
-		
+
 		IdMap<DatasetId, Dataset> idMap = new IdMap<DatasetId, Dataset>();
 		idMap.add(d1);
 		idMap.add(d2);
 		ContainingDataset containedDataset = new ContainingDataset(idMap);
-		
+
 		JsonNode json = Jackson.MAPPER.valueToTree(containedDataset);
-		
-		/*assertThat(json.isArray()).isTrue();
-		assertThat(json.get(0)).isEqualTo(Jackson.MAPPER.valueToTree(d1));*/
-		
+
+		/*
+		 * assertThat(json.isArray()).isTrue();
+		 * assertThat(json.get(0)).isEqualTo(Jackson.MAPPER.valueToTree(d1));
+		 */
+
 		ContainingDataset constructed = Jackson.MAPPER.treeToValue(json, ContainingDataset.class);
 		assertThat(constructed.idMap.entrySet()).isEqualTo(containedDataset.idMap.entrySet());
 	}
-	
-	@Data @NoArgsConstructor @AllArgsConstructor
+
+	@Data
+	@NoArgsConstructor
+	@AllArgsConstructor
 	public static class ContainingDataset {
+
 		private IdMap<DatasetId, Dataset> idMap = new IdMap<>();
 	}
 }

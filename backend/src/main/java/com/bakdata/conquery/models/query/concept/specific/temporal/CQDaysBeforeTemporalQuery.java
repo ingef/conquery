@@ -13,7 +13,9 @@ import com.bakdata.conquery.models.query.queryplan.specific.temporal.TemporalQue
 import lombok.Getter;
 
 /**
- * Creates a query that will contain all entities where {@code preceding} contains events that happened {@code days} before the events of {@code index}. And the time where this has happened.
+ * Creates a query that will contain all entities where {@code preceding}
+ * contains events that happened {@code days} before the events of
+ * {@code index}. And the time where this has happened.
  */
 @CPSType(id = "DAYS_BEFORE", base = CQElement.class)
 public class CQDaysBeforeTemporalQuery extends CQAbstractTemporalQuery {
@@ -28,9 +30,13 @@ public class CQDaysBeforeTemporalQuery extends CQAbstractTemporalQuery {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext registry, QueryPlan plan) {
-		return new TemporalQueryNode(index.createQueryPlan(registry, plan), preceding.createQueryPlan(registry, plan), new DaysBeforePrecedenceMatcher(days), plan.getSpecialDateUnion());
+		return new TemporalQueryNode(
+			index.createQueryPlan(registry, plan),
+			preceding.createQueryPlan(registry, plan),
+			new DaysBeforePrecedenceMatcher(days),
+			plan.getSpecialDateUnion());
 	}
-	
+
 	@Override
 	public CQDaysBeforeTemporalQuery resolve(QueryResolveContext context) {
 		return new CQDaysBeforeTemporalQuery(index.resolve(context), preceding.resolve(context), days);

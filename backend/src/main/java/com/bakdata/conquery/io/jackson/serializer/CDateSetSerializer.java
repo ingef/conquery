@@ -18,8 +18,8 @@ public class CDateSetSerializer extends StdSerializer<CDateSet> {
 
 	@Override
 	public void serialize(CDateSet value, JsonGenerator gen, SerializerProvider provider) throws IOException {
-		gen.writeStartArray(value.asRanges().size()*2);
-		for(CDateRange range : value.asRanges()) {
+		gen.writeStartArray(value.asRanges().size() * 2);
+		for (CDateRange range : value.asRanges()) {
 			gen.writeNumber(range.getMinValue());
 			gen.writeNumber(range.getMaxValue());
 		}

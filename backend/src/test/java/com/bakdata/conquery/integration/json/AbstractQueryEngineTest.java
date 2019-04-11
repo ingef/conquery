@@ -33,7 +33,6 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	protected abstract ResourceFile getExpectedCsv();
 
-
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
@@ -54,22 +53,12 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		List<String> expected = In.stream(expectedCsv.stream()).readLines();
 
-
-		assertThat(actual)
-			.as("Results for %s are not as expected.", this)
-			.containsExactlyInAnyOrderElementsOf(expected);
-		//check that getLastResultCount returns the correct size
-		if(managed.fetchContainedEntityResult().noneMatch(MultilineContainedEntityResult.class::isInstance)) {
-			assertThat(managed.getLastResultCount())
-				.as("Result count for %s is not as expected.", this)
-				.isEqualTo(expected.size()-1);
+		assertThat(actual).as("Results for %s are not as expected.", this).containsExactlyInAnyOrderElementsOf(expected);
+		// check that getLastResultCount returns the correct size
+		if (managed.fetchContainedEntityResult().noneMatch(MultilineContainedEntityResult.class::isInstance)) {
+			assertThat(managed.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}
 
-		log.info(
-				"INTEGRATION TEST SUCCESSFUL {} {} on {} rows",
-				getClass().getSimpleName(),
-				this,
-				expected.size()
-		);
+		log.info("INTEGRATION TEST SUCCESSFUL {} {} on {} rows", getClass().getSimpleName(), this, expected.size());
 	}
 }

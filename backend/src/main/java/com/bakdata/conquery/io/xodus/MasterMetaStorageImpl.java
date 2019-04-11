@@ -26,22 +26,18 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {
-	
+
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedQuery> queries;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<ConqueryPermission> authPermissions;
 	private IdentifiableStore<Mandator> authMandator;
-	
+
 	@Getter
 	private Namespaces namespaces;
 
 	public MasterMetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {
-		super(
-			validator,
-			config,
-			new File(config.getDirectory(), "meta")
-		);
+		super(validator, config, new File(config.getDirectory(), "meta"));
 		this.namespaces = namespaces;
 	}
 
@@ -49,17 +45,18 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		this.meta = StoreInfo.NAMESPACES.singleton(this);
 		this.queries = StoreInfo.QUERIES.identifiable(this, namespaces);
-		
+
 		MasterMetaStorage storage = this;
 		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage);
 		this.authUser = StoreInfo.AUTH_USER.<User>identifiable(storage);
-		this.authPermissions = StoreInfo.AUTH_PERMISSIONS.<ConqueryPermission>identifiable(storage)
-			.onAdd(value->		value.getOwnerId().getOwner(storage).addPermissionLocal(value));
-		
+		this.authPermissions = StoreInfo.AUTH_PERMISSIONS
+			.<ConqueryPermission>identifiable(storage)
+			.onAdd(value -> value.getOwnerId().getOwner(storage).addPermissionLocal(value));
+
 		collector
 			.collect(meta)
 			.collect(authMandator)
-			//load users before queries
+			// load users before queries
 			.collect(authUser)
 			.collect(queries)
 			.collect(authPermissions);
@@ -89,48 +86,40 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	public void removeQuery(ManagedQueryId id) {
 		queries.remove(id);
 	}
-	
-	/*
-	@Override
-	public Namespaces getMeta() {
-		return meta.get();
-	}
 
-	@Override
-	public void updateMeta(Namespaces meta) throws JSONException {
-		this.meta.update(meta);
-		//see #147 ?
-		/*
-		if(blockManager != null) {
-			blockManager.init(slaveInfo);
-		}
-		*/
-	//}
-	
+	/*
+	 * @Override public Namespaces getMeta() { return meta.get(); }
+	 * 
+	 * @Override public void updateMeta(Namespaces meta) throws JSONException {
+	 * this.meta.update(meta); //see #147 ? /* if(blockManager != null) {
+	 * blockManager.init(slaveInfo); }
+	 */
+	// }
+
 	public void addPermission(ConqueryPermission permission) throws JSONException {
 		authPermissions.add(permission);
 	}
-	
+
 	public Collection<ConqueryPermission> getAllPermissions() {
 		return authPermissions.getAll();
 	}
-	
+
 	public void removePermission(PermissionId permissionId) {
 		authPermissions.remove(permissionId);
 	}
-	
+
 	public void addUser(User user) throws JSONException {
 		authUser.add(user);
 	}
-	
+
 	public User getUser(UserId userId) {
 		return authUser.get(userId);
 	}
-	
+
 	public Collection<User> getAllUsers() {
 		return authUser.getAll();
 	}
-	
+
 	public void removeUser(UserId userId) {
 		authUser.remove(userId);
 	}
@@ -138,17 +127,17 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	public void addMandator(Mandator mandator) throws JSONException {
 		authMandator.add(mandator);
 	}
-	
+
 	public Mandator getMandator(MandatorId mandatorId) {
 		return authMandator.get(mandatorId);
 	}
-	
+
 	@Override
 	public Collection<Mandator> getAllMandators() {
 		return authMandator.getAll();
 	}
-	
-	public void removeMandator(MandatorId mandatorId)  {
+
+	public void removeMandator(MandatorId mandatorId) {
 		authMandator.remove(mandatorId);
 	}
 

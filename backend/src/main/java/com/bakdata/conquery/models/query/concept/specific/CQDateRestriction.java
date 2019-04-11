@@ -29,6 +29,7 @@ import lombok.Setter;
 @Setter
 @Getter
 public class CQDateRestriction implements CQElement {
+
 	@NotNull
 	private Range<LocalDate> dateRange;
 	@Valid
@@ -39,7 +40,7 @@ public class CQDateRestriction implements CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		QPNode childAgg = child.createQueryPlan(context, plan);
 
-		//insert behind every ValidityDateNode
+		// insert behind every ValidityDateNode
 		List<QPNode> openList = new ArrayList<>();
 
 		openList.add(childAgg);
@@ -50,10 +51,11 @@ public class CQDateRestriction implements CQElement {
 			QPNode current = openList.get(i);
 			if (current instanceof ValidityDateNode) {
 				ValidityDateNode validityDateNode = (ValidityDateNode) current;
-				validityDateNode.setChild(new DateRestrictingNode(
-					CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
-					validityDateNode.getChild()
-				));
+				validityDateNode
+					.setChild(
+						new DateRestrictingNode(
+							CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
+							validityDateNode.getChild()));
 			}
 			else {
 				openList.addAll(current.getChildren());
@@ -69,7 +71,7 @@ public class CQDateRestriction implements CQElement {
 		child = child.resolve(context);
 		return this;
 	}
-	
+
 	@Override
 	public void collectSelects(Deque<SelectDescriptor> select) {
 		child.collectSelects(select);

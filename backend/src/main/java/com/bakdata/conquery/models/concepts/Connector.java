@@ -40,7 +40,9 @@ import lombok.Setter;
 /**
  * A connector represents the connection between a column and a concept.
  */
-@Getter @Setter @DetailedValid
+@Getter
+@Setter
+@DetailedValid
 public abstract class Connector extends Labeled<ConnectorId> implements Serializable, SelectHolder<Select> {
 
 	private static final long serialVersionUID = 1L;
@@ -53,30 +55,29 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@JsonBackReference
 	private Concept<?> concept;
 
-	@JsonIgnore @Getter(AccessLevel.NONE)
+	@JsonIgnore
+	@Getter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
-	@NotNull @Getter @Setter @JsonManagedReference
+	@NotNull
+	@Getter
+	@Setter
+	@JsonManagedReference
 	private List<Select> selects = new ArrayList<>();
 
 	@Override
 	public Concept<?> findConcept() {
 		return concept;
 	}
-	
+
 	@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
 	public void setSelectableDates(List<Column> cols) {
-		this.setValidityDates(
-				cols
-				.stream()
-				.map(c -> {
-					ValidityDate sd = new ValidityDate();
-					sd.setColumn(c);
-					sd.setName(c.getName());
-					return sd;
-				})
-				.collect(Collectors.toList())
-		);
+		this.setValidityDates(cols.stream().map(c -> {
+			ValidityDate sd = new ValidityDate();
+			sd.setColumn(c);
+			sd.setName(c.getName());
+			return sd;
+		}).collect(Collectors.toList()));
 	}
 
 	@Override
@@ -89,46 +90,54 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	@JsonIgnore
 	public Column getSelectableDate(String name) {
 		return validityDates
-						.stream()
-						.filter(vd -> vd.getName().equals(name))
-						.map(ValidityDate::getColumn)
-						.findAny()
-						.orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
+			.stream()
+			.filter(vd -> vd.getName().equals(name))
+			.map(ValidityDate::getColumn)
+			.findAny()
+			.orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
 	}
 
 	public CDateRange extractValidityDates(Block block, int event) {
 		throw new NotImplementedException("extractValidityDates");
-		/*validityDates.stream()
-				.map(ValidityDate::getColumn)
-				.map(record::get)
-				.flatMap(DateHelper::streamDatesOfDateObject)
-				.map(Range::singleton)
-				.reduce(Range::span)
-				.orElse(null);
-				*/
-		//see #157
+		/*
+		 * validityDates.stream() .map(ValidityDate::getColumn) .map(record::get)
+		 * .flatMap(DateHelper::streamDatesOfDateObject) .map(Range::singleton)
+		 * .reduce(Range::span) .orElse(null);
+		 */
+		// see #157
 	}
 
 	@ValidationMethod2
 	public boolean validateFilters(ConstraintValidatorContext context) {
 		boolean passed = true;
 
-		for(Filter<?> f:collectAllFilters()) {
-			for(Column c:f.getRequiredColumns()) {
+		for (Filter<?> f : collectAllFilters()) {
+			for (Column c : f.getRequiredColumns()) {
 				if (c != null && c.getTable() != getTable()) {
 					context
-						.buildConstraintViolationWithTemplate("The filter "+f.getId()+" must be of the same table "+this.getTable().getId()+" as its connector "+this.getId())
+						.buildConstraintViolationWithTemplate(
+							"The filter "
+								+ f.getId()
+								+ " must be of the same table "
+								+ this.getTable().getId()
+								+ " as its connector "
+								+ this.getId())
 						.addConstraintViolation();
 					passed = false;
 				}
 			}
 		}
 
-		for(Entry<String> e:collectAllFilters().stream().map(Filter::getName).collect(ImmutableMultiset.toImmutableMultiset()).entrySet()) {
-			if(e.getCount()>1) {
+		for (Entry<String> e : collectAllFilters()
+			.stream()
+			.map(Filter::getName)
+			.collect(ImmutableMultiset.toImmutableMultiset())
+			.entrySet()) {
+			if (e.getCount() > 1) {
 				passed = false;
 				context
-					.buildConstraintViolationWithTemplate("The filter name "+e.getElement()+" is used "+e.getCount()+" time in "+this.getId())
+					.buildConstraintViolationWithTemplate(
+						"The filter name " + e.getElement() + " is used " + e.getCount() + " time in " + this.getId())
 					.addConstraintViolation();
 			}
 		}
@@ -147,13 +156,24 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			if (!col.getType().isDateCompatible()) {
 				passed = false;
 				context
-					.buildConstraintViolationWithTemplate("The validity date column "+col.getId()+" of the connector "+this.getId()+" is not of type DATE or DATERANGE")
+					.buildConstraintViolationWithTemplate(
+						"The validity date column "
+							+ col.getId()
+							+ " of the connector "
+							+ this.getId()
+							+ " is not of type DATE or DATERANGE")
 					.addConstraintViolation();
 			}
 			if (!col.getTable().equals(getTable())) {
 				passed = false;
 				context
-					.buildConstraintViolationWithTemplate("The validity date column "+col.getId()+" is not of the same table "+this.getTable().getId()+" as its connector "+this.getId())
+					.buildConstraintViolationWithTemplate(
+						"The validity date column "
+							+ col.getId()
+							+ " is not of the same table "
+							+ this.getTable().getId()
+							+ " as its connector "
+							+ this.getId())
 					.addConstraintViolation();
 			}
 		}
@@ -161,32 +181,37 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	public Filter<?> getFilterByName(String name) {
-		return collectAllFilters().stream().filter(f->name.equals(f.getName())).findAny().orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
+		return collectAllFilters()
+			.stream()
+			.filter(f -> name.equals(f.getName()))
+			.findAny()
+			.orElseThrow(() -> new IllegalArgumentException("Unable to find filter " + name));
 	}
 
 	@JsonIgnore
 	public abstract List<Filter<?>> collectAllFilters();
 
 	public <T extends Filter> T getFilter(FilterId id) {
-		if(allFiltersMap==null) {
+		if (allFiltersMap == null) {
 			allFiltersMap = new IdMap<>(collectAllFilters());
 		}
-		return (T)allFiltersMap.getOrFail(id);
+		return (T) allFiltersMap.getOrFail(id);
 	}
 
 	public Column getValidityDateColumn(String name) {
-		for(ValidityDate vDate:validityDates) {
-			if(vDate.getName().equals(name))
+		for (ValidityDate vDate : validityDates) {
+			if (vDate.getName().equals(name))
 				return vDate.getColumn();
 		}
-		throw new NoSuchElementException("There is no validityDate called '"+name+"' in "+this);
+		throw new NoSuchElementException("There is no validityDate called '" + name + "' in " + this);
 	}
 
 	public synchronized void addImport(Import imp) {
-		for(Filter<?> f : collectAllFilters()) {
+		for (Filter<?> f : collectAllFilters()) {
 			f.addImport(imp);
 		}
 	}
 
-	//public abstract EventProcessingResult processEvent(Event r) throws ConceptConfigurationException;
+	// public abstract EventProcessingResult processEvent(Event r) throws
+	// ConceptConfigurationException;
 }

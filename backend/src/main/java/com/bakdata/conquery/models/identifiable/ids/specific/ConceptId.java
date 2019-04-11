@@ -11,7 +11,9 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
+@Getter
+@AllArgsConstructor
+@EqualsAndHashCode(callSuper = false)
 public class ConceptId extends ConceptElementId<Concept<?>> implements NamespacedId {
 
 	private final DatasetId dataset;
@@ -21,21 +23,21 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 	public DatasetId getDataset() {
 		return dataset;
 	}
-	
+
 	@Override
 	public ConceptId findConcept() {
 		return this;
 	}
-	
+
 	@Override
 	public void collectComponents(List<Object> components) {
 		dataset.collectComponents(components);
 		components.add(name);
 	}
-	
+
 	public static enum Parser implements IId.Parser<ConceptId> {
 		INSTANCE;
-		
+
 		@Override
 		public ConceptId parse(PeekingIterator<String> parts) {
 			DatasetId parent = DatasetId.Parser.INSTANCE.parse(parts);

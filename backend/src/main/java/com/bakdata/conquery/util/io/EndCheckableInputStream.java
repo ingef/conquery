@@ -12,7 +12,7 @@ public class EndCheckableInputStream extends PushbackInputStream {
 
 	public boolean isAtEnd() throws IOException {
 		int b = this.read();
-		if(b == -1) {
+		if (b == -1) {
 			return true;
 		}
 		else {

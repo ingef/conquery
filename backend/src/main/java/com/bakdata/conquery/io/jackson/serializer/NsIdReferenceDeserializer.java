@@ -29,50 +29,52 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@AllArgsConstructor @NoArgsConstructor
-public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
+@AllArgsConstructor
+@NoArgsConstructor
+public class NsIdReferenceDeserializer<ID extends NamespacedId & IId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
 
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;
 	private Parser<ID> idParser;
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public T deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
-		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
+		if (parser.getCurrentToken() == JsonToken.VALUE_STRING) {
 			String text = parser.getText();
 			try {
 				ID id;
-				
+
 				String datasetName = null;
-				//check if there was a dataset injected and if it is already a prefix
+				// check if there was a dataset injected and if it is already a prefix
 				datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, Dataset.class)).map(Dataset::getName).orElse(null);
-				//maybe only the id was injected
-				if(datasetName == null) {
+				// maybe only the id was injected
+				if (datasetName == null) {
 					datasetName = Optional.ofNullable(Jackson.findInjectable(ctxt, DatasetId.class)).map(DatasetId::getName).orElse(null);
 				}
-				
-				if(datasetName != null) {
+
+				if (datasetName != null) {
 					id = idParser.parsePrefixed(datasetName, text);
 				}
 				else {
 					id = idParser.parse(text);
 				}
-				
+
 				Optional<T> result = NamespaceCollection.get(ctxt).getOptional(id);
 
 				if (!result.isPresent()) {
-					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+id+" of type "+type.getName());
+					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry " + id + " of type " + type.getName());
 				}
 
-				if(!type.isAssignableFrom(result.get().getClass())) {
-					throw new InputMismatchException(String.format("Cannot assign %s of type %s to %s ", id, result.get().getClass(), type));
+				if (!type.isAssignableFrom(result.get().getClass())) {
+					throw new InputMismatchException(
+						String.format("Cannot assign %s of type %s to %s ", id, result.get().getClass(), type));
 				}
 
 				return result.get();
 			}
-			catch(Exception e) {
-				log.error("Error while resolving entry "+text+" of type "+type, e);
+			catch (Exception e) {
+				log.error("Error while resolving entry " + text + " of type " + type, e);
 				throw e;
 			}
 		}
@@ -80,7 +82,7 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
 		}
 	}
-	
+
 	@Override
 	public T deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
 		return this.deserialize(p, ctxt);
@@ -88,27 +90,21 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 
 	@Override
 	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
-		JavaType type = Optional
-				.ofNullable(ctxt.getContextualType())
-				.orElseGet(property::getType);
+		JavaType type = Optional.ofNullable(ctxt.getContextualType()).orElseGet(property::getType);
 
 		BeanDescription descr = ctxt.getConfig().introspect(type);
-		
-		while(type.isContainerType()) {
+
+		while (type.isContainerType()) {
 			type = type.getContentType();
 		}
 		Class<?> cl = type.getRawClass();
 		Class<IId<?>> idClass = IId.findIdClass(cl);
-		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class)idClass);
-		
-		return new NsIdReferenceDeserializer(
-				cl,
-				ctxt.getFactory().createBeanDeserializer(ctxt, type, descr),
-				parser
-		);
-		//.createContextual(ctxt, property)
+		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class) idClass);
+
+		return new NsIdReferenceDeserializer(cl, ctxt.getFactory().createBeanDeserializer(ctxt, type, descr), parser);
+		// .createContextual(ctxt, property)
 	}
-	
+
 	@Override
 	public SettableBeanProperty findBackReference(String refName) {
 		return beanDeserializer.findBackReference(refName);

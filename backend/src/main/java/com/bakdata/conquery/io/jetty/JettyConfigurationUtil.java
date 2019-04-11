@@ -12,9 +12,9 @@ import io.dropwizard.setup.Environment;
 public class JettyConfigurationUtil {
 
 	public static void configure(ConqueryConfig config, Environment environment) {
-		//change exception mapper behavior because of JERSEY-2437
-		((DefaultServerFactory)config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
-		
+		// change exception mapper behavior because of JERSEY-2437
+		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
+
 		configure(environment.jersey().getResourceConfig());
 	}
 
@@ -25,10 +25,12 @@ public class JettyConfigurationUtil {
 		resourceConfig.register(new LoggingExceptionMapper<Throwable>() {});
 		resourceConfig.register(new JsonProcessingExceptionMapper(true));
 		resourceConfig.register(new EarlyEofExceptionMapper());
-		//allow cross origin
-		/*if(config.getApi().isAllowCORSRequests())
-			resourceConfig.register(CORSResponseFilter.class);*/
-		//disable all browser caching if not expressly wanted
+		// allow cross origin
+		/*
+		 * if(config.getApi().isAllowCORSRequests())
+		 * resourceConfig.register(CORSResponseFilter.class);
+		 */
+		// disable all browser caching if not expressly wanted
 		resourceConfig.register(CachingFilter.class);
 	}
 }

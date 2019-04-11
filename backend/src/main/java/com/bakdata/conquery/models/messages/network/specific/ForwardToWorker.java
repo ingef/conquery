@@ -16,13 +16,14 @@ import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id="FORWARD_TO_WORKER", base=NetworkMessage.class)
-@RequiredArgsConstructor @Getter
+@CPSType(id = "FORWARD_TO_WORKER", base = NetworkMessage.class)
+@RequiredArgsConstructor
+@Getter
 public class ForwardToWorker extends SlaveMessage implements SlowMessage {
 
 	private final WorkerId workerId;
 	private final WorkerMessage message;
-	
+
 	@Override
 	public void react(Slave context) throws Exception {
 		Worker w = Objects.requireNonNull(context.getWorkers().getWorker(workerId));
@@ -37,16 +38,16 @@ public class ForwardToWorker extends SlaveMessage implements SlowMessage {
 
 	@Override
 	public ProgressReporter getProgressReporter() {
-		return ((SlowMessage)message).getProgressReporter();
+		return ((SlowMessage) message).getProgressReporter();
 	}
 
 	@Override
 	public void setProgressReporter(ProgressReporter progressReporter) {
-		((SlowMessage)message).setProgressReporter(progressReporter);
+		((SlowMessage) message).setProgressReporter(progressReporter);
 	}
-	
+
 	@Override
 	public String toString() {
-		return message.toString()+" for worker "+workerId;
+		return message.toString() + " for worker " + workerId;
 	}
 }

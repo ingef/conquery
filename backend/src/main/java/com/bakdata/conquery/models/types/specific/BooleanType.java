@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
-@CPSType(base=CType.class, id="BOOLEAN")
+@CPSType(base = CType.class, id = "BOOLEAN")
 public class BooleanType extends CType<Boolean, BooleanType> {
 
 	public BooleanType() {
@@ -26,7 +26,7 @@ public class BooleanType extends CType<Boolean, BooleanType> {
 			case "0":
 				return false;
 			default:
-				throw new ParsingException("The value "+value+" does not seem to be of type boolean.");
+				throw new ParsingException("The value " + value + " does not seem to be of type boolean.");
 		}
 	}
 }

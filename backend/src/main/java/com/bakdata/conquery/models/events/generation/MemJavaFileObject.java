@@ -7,6 +7,7 @@ import java.net.URI;
 import javax.tools.SimpleJavaFileObject;
 
 class MemJavaFileObject extends SimpleJavaFileObject {
+
 	private final ByteArrayOutputStream baos = new ByteArrayOutputStream();
 	private final String className;
 
