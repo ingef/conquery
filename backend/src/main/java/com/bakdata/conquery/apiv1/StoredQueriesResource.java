@@ -49,9 +49,11 @@ public class StoredQueriesResource {
 	public List<SQStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
 		authorize(user, datasetId, Ability.READ);
 
-		return processor.getAllQueries(dsUtil.getDataset(datasetId), req).stream()
-				.filter(status -> user.isPermitted(new QueryPermission(user.getId(), Ability.READ.asSet(), status.getId())))
-				.collect(Collectors.toList());
+		return processor
+			.getAllQueries(dsUtil.getDataset(datasetId), req)
+			.stream()
+			.filter(status -> user.isPermitted(new QueryPermission(user.getId(), Ability.READ.asSet(), status.getId())))
+			.collect(Collectors.toList());
 	}
 
 	@GET

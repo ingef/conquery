@@ -8,11 +8,15 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public abstract class WorkerMessage extends NamespacedMessage<Worker> {
-	
+
 	public static abstract class Slow extends WorkerMessage implements SlowMessage {
-		@JsonIgnore @Getter @Setter
+
+		@JsonIgnore
+		@Getter
+		@Setter
 		private ProgressReporter progressReporter;
 	}
 }

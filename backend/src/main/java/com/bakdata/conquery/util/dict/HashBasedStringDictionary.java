@@ -19,8 +19,6 @@ public class HashBasedStringDictionary implements Iterable<String> {
 
 	private static final int NO_ENTRY = -1;
 
-
-
 	private Object2IntMap<String> elementToId;
 	private List<String> idToElement = new ArrayList<>();
 	private int nextId = 0;
@@ -47,8 +45,8 @@ public class HashBasedStringDictionary implements Iterable<String> {
 
 	public int add(String element) {
 		int c = elementToId.getInt(element);
-		if(c==NO_ENTRY) {
-			elementToId.put(element,nextId);
+		if (c == NO_ENTRY) {
+			elementToId.put(element, nextId);
 			idToElement.add(element);
 			return nextId++;
 		}
@@ -81,7 +79,9 @@ public class HashBasedStringDictionary implements Iterable<String> {
 		return elementToId.object2IntEntrySet();
 	}
 
-	@Getter @RequiredArgsConstructor @Setter
+	@Getter
+	@RequiredArgsConstructor
+	@Setter
 	public static class DictionaryEntry {
 
 		private final String value;
@@ -94,4 +94,3 @@ public class HashBasedStringDictionary implements Iterable<String> {
 	}
 
 }
-

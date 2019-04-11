@@ -11,6 +11,7 @@ public class I18n {
 	public static final Labels LABELS;
 	static {
 		C10N.configure(new C10NConfigBase() {
+
 			@Override
 			protected void configure() {
 				install(new DefaultC10NAnnotations());
@@ -21,6 +22,7 @@ public class I18n {
 	}
 
 	public interface Labels {
+
 		@En("Select used date")
 		@De("Datum")
 		String getDateSelection();

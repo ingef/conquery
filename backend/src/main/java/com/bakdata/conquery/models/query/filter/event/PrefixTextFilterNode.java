@@ -6,7 +6,8 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
 /**
- * Entity is included when the number of values for a specified column are within a given range.
+ * Entity is included when the number of values for a specified column are
+ * within a given range.
  */
 public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 
@@ -31,7 +32,8 @@ public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 
 		String value = (String) getColumn().getTypeFor(block).createScriptValue(stringToken);
 
-		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
+		// if performance is a problem we could find the filterValue once in the
+		// dictionary and then only check the values
 		return value.startsWith(filterValue);
 	}
 

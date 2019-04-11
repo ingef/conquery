@@ -16,6 +16,7 @@ public class RequiredData {
 	@NotEmpty
 	@Valid
 	private RequiredTable[] tables;
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private List<ResourceFile> previousQueryResults = Collections.emptyList();
 }

@@ -12,13 +12,14 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
- * An annotation that guides Jackson to serialize/deserialize the field as a {@link NamespacedId} instead of the object content itself.
+ * An annotation that guides Jackson to serialize/deserialize the field as a
+ * {@link NamespacedId} instead of the object content itself.
  *
  */
 @Retention(RetentionPolicy.RUNTIME)
 @JacksonAnnotationsInside
 @JsonProperty
-@JsonSerialize(contentUsing=IdReferenceSerializer.class)
-@JsonDeserialize(contentUsing=NsIdReferenceDeserializer.class)
-@Target({ElementType.FIELD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE})
+@JsonSerialize(contentUsing = IdReferenceSerializer.class)
+@JsonDeserialize(contentUsing = NsIdReferenceDeserializer.class)
+@Target({ ElementType.FIELD, ElementType.TYPE_PARAMETER, ElementType.TYPE_USE })
 public @interface NsIdRefCollection {}

@@ -26,32 +26,34 @@ import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-@AllArgsConstructor @NoArgsConstructor
+@AllArgsConstructor
+@NoArgsConstructor
 public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiable<?>> extends JsonDeserializer<T> implements ContextualDeserializer {
 
 	private Class<?> type;
 	private JsonDeserializer<?> beanDeserializer;
 	private Parser<ID> idParser;
-	
+
 	@SuppressWarnings("unchecked")
 	@Override
 	public T deserialize(JsonParser parser, DeserializationContext ctxt) throws IOException {
-		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
+		if (parser.getCurrentToken() == JsonToken.VALUE_STRING) {
 			String text = parser.getText();
 			try {
 				Optional<T> result = CentralRegistry.get(ctxt).getOptional(idParser.parse(text));
 
 				if (!result.isPresent()) {
-					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+text+" of type "+type.getName());
+					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry " + text + " of type " + type.getName());
 				}
 
-				if(!type.isAssignableFrom(result.get().getClass())) {
+				if (!type.isAssignableFrom(result.get().getClass())) {
 					throw new InputMismatchException(String.format("Cannot assign type %s to %s ", result.get().getClass(), type));
 				}
 
 				return result.get();
-			} catch(Exception e) {
-				log.error("Error while resolving entry "+text+" of type "+type, e);
+			}
+			catch (Exception e) {
+				log.error("Error while resolving entry " + text + " of type " + type, e);
 				throw e;
 			}
 		}
@@ -59,7 +61,7 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 			return (T) ctxt.handleUnexpectedToken(type, parser.getCurrentToken(), parser, "name references should be strings");
 		}
 	}
-	
+
 	@Override
 	public T deserializeWithType(JsonParser p, DeserializationContext ctxt, TypeDeserializer typeDeserializer) throws IOException {
 		return this.deserialize(p, ctxt);
@@ -67,32 +69,26 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 
 	@Override
 	public JsonDeserializer<?> createContextual(DeserializationContext ctxt, BeanProperty property) throws JsonMappingException {
-		JavaType type = Optional
-				.ofNullable(ctxt.getContextualType())
-				.orElseGet(property::getType);
+		JavaType type = Optional.ofNullable(ctxt.getContextualType()).orElseGet(property::getType);
 
 		BeanDescription descr = ctxt.getConfig().introspect(type);
-		
-		while(type.isContainerType()) {
+
+		while (type.isContainerType()) {
 			type = type.getContentType();
 		}
 		Class<?> cl = type.getRawClass();
 		Class<IId<?>> idClass = IId.findIdClass(cl);
-		
-		if(NamespacedId.class.isAssignableFrom(idClass)) {
+
+		if (NamespacedId.class.isAssignableFrom(idClass)) {
 			throw new IllegalStateException("@MetaIdRef should only be used for non NamespacedId fields");
 		}
-		
-		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class)idClass);
-		
-		return new MetaIdReferenceDeserializer(
-				cl,
-				ctxt.getFactory().createBeanDeserializer(ctxt, type, descr),
-				parser
-		);
-		//.createContextual(ctxt, property)
+
+		Parser<IId<Identifiable<?>>> parser = IId.<IId<Identifiable<?>>>createParser((Class) idClass);
+
+		return new MetaIdReferenceDeserializer(cl, ctxt.getFactory().createBeanDeserializer(ctxt, type, descr), parser);
+		// .createContextual(ctxt, property)
 	}
-	
+
 	@Override
 	public SettableBeanProperty findBackReference(String refName) {
 		return beanDeserializer.findBackReference(refName);

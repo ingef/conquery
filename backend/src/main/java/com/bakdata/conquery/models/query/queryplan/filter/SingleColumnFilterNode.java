@@ -18,7 +18,9 @@ public abstract class SingleColumnFilterNode<FE_TYPE> extends FilterNode<FE_TYPE
 		this.column = column;
 	}
 
-	@NotNull @Getter @Setter
+	@NotNull
+	@Getter
+	@Setter
 	private Column column;
 
 	@Override

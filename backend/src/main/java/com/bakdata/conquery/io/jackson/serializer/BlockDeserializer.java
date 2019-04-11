@@ -13,7 +13,8 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
-public class BlockDeserializer extends JsonDeserializer<Block>{
+public class BlockDeserializer extends JsonDeserializer<Block> {
+
 	@Override
 	public Block deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		ObjectNode json = p.readValueAs(ObjectNode.class);

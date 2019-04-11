@@ -12,17 +12,17 @@ public class NegatingNode extends QPChainNode {
 	public NegatingNode(@NonNull QPNode child) {
 		super(child);
 	}
-	
+
 	@Override
 	public void nextEvent(Block block, int event) {
 		getChild().nextEvent(block, event);
 	}
-	
+
 	@Override
 	public NegatingNode doClone(CloneContext ctx) {
 		return new NegatingNode(getChild().clone(ctx));
 	}
-	
+
 	@Override
 	public boolean isContained() {
 		return !getChild().isContained();

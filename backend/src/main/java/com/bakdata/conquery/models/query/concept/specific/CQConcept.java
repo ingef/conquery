@@ -39,16 +39,21 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
-@CPSType(id="CONCEPT", base=CQElement.class)
+@Getter
+@Setter
+@CPSType(id = "CONCEPT", base = CQElement.class)
 public class CQConcept implements CQElement {
 
 	private String label;
-	@Valid @NotEmpty
+	@Valid
+	@NotEmpty
 	private List<ConceptElementId<?>> ids;
-	@Valid @NotEmpty @JsonManagedReference
+	@Valid
+	@NotEmpty
+	@JsonManagedReference
 	private List<CQTable> tables;
-	@Valid @NotNull
+	@Valid
+	@NotNull
 
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
@@ -64,60 +69,45 @@ public class CQConcept implements CQElement {
 		Concept<?> c = concepts[0].getConcept();
 
 		List<QPNode> tableNodes = new ArrayList<>();
-		for(CQTable t : tables) {
+		for (CQTable t : tables) {
 			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
 
 			List<Select> resolvedSelects = t.getSelects();
 
-
 			List<FilterNode<?>> filters = new ArrayList<>(t.getFilters().size());
-			//add filter to children
-			for(FilterValue f : t.getFilters()) {
+			// add filter to children
+			for (FilterValue f : t.getFilters()) {
 				FilterNode agg = f.getFilter().createAggregator(f.getValue());
-				if(agg != null) {
+				if (agg != null) {
 					filters.add(agg);
 				}
 			}
 
 			List<QPNode> aggregators = new ArrayList<>();
-			//add aggregators
+			// add aggregators
 
 			aggregators.addAll(conceptAggregators);
 			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
 
-			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
-				aggregators.add(new SpecialDateUnionAggregatorNode(
-					t.getResolvedConnector().getTable().getId(),
-					plan.getSpecialDateUnion()
-				));
+			if (!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
+				aggregators
+					.add(new SpecialDateUnionAggregatorNode(t.getResolvedConnector().getTable().getId(), plan.getSpecialDateUnion()));
 			}
 
-			tableNodes.add(
-				new ConceptNode(
-					concepts,
-					t,
-					new ValidityDateNode(
-						selectValidityDateColumn(t),
-						conceptChild(filters, aggregators)
-					)
-				)
-			);
+			tableNodes
+				.add(new ConceptNode(concepts, t, new ValidityDateNode(selectValidityDateColumn(t), conceptChild(filters, aggregators))));
 		}
 
 		return OrNode.of(tableNodes);
 	}
 
 	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
-		return
-				ids
-					.stream()
-					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-					.toArray(ConceptElement[]::new);
+		return ids.stream().map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id)).toArray(ConceptElement[]::new);
 	}
 
 	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
 		QPNode result = AndNode.of(aggregators);
-		if(!filters.isEmpty()) {
+		if (!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);
 		}
 		return result;
@@ -136,17 +126,15 @@ public class CQConcept implements CQElement {
 	}
 
 	private Column selectValidityDateColumn(CQTable t) {
-		//check if we have a manually selected validity date then use that
-		for(FilterValue<?> fv : t.getFilters()) {
-			if(fv instanceof CQSelectFilter && fv.getFilter() instanceof ValidityDateSelectionFilter) {
-				return t
-					.getResolvedConnector()
-					.getValidityDateColumn(((CQSelectFilter)fv).getValue());
+		// check if we have a manually selected validity date then use that
+		for (FilterValue<?> fv : t.getFilters()) {
+			if (fv instanceof CQSelectFilter && fv.getFilter() instanceof ValidityDateSelectionFilter) {
+				return t.getResolvedConnector().getValidityDateColumn(((CQSelectFilter) fv).getValue());
 			}
 		}
 
-		//else use this first defined validity date column
-		if(!t.getResolvedConnector().getValidityDates().isEmpty())
+		// else use this first defined validity date column
+		if (!t.getResolvedConnector().getValidityDates().isEmpty())
 			return t.getResolvedConnector().getValidityDates().get(0).getColumn();
 		else
 			return null;
@@ -154,9 +142,9 @@ public class CQConcept implements CQElement {
 
 	@Override
 	public void collectSelects(Deque<SelectDescriptor> select) {
-		selects.forEach(sel -> select.add(new SelectDescriptor(sel,this)));
+		selects.forEach(sel -> select.add(new SelectDescriptor(sel, this)));
 		for (CQTable table : tables) {
-			table.getSelects().forEach(sel -> select.add(new SelectDescriptor(sel,this)));
+			table.getSelects().forEach(sel -> select.add(new SelectDescriptor(sel, this)));
 		}
 	}
 }

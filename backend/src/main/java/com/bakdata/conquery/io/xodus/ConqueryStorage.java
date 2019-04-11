@@ -12,9 +12,12 @@ import jetbrains.exodus.env.Environment;
 public interface ConqueryStorage extends Closeable {
 
 	File getDirectory();
+
 	Validator getValidator();
+
 	Environment getEnvironment();
+
 	CentralRegistry getCentralRegistry();
-	
+
 	void loadData();
 }

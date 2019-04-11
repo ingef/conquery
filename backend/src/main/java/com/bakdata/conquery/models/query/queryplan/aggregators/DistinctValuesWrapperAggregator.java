@@ -13,7 +13,9 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
- * Aggregator node forwarding only events with distinct values to {@code aggregator}.
+ * Aggregator node forwarding only events with distinct values to
+ * {@code aggregator}.
+ * 
  * @param <VALUE>
  */
 public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
@@ -50,7 +52,7 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	public Aggregator<VALUE> doClone(CloneContext ctx) {
 		return new DistinctValuesWrapperAggregator<>(aggregator.clone(ctx), column);
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

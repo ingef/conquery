@@ -9,11 +9,12 @@ import com.google.common.collect.PeekingIterator;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-@Getter @EqualsAndHashCode(callSuper=true)
+@Getter
+@EqualsAndHashCode(callSuper = true)
 public class ConceptSelectId extends SelectId implements NamespacedId {
 
 	private final ConceptId concept;
-	
+
 	public ConceptSelectId(ConceptId concept, String select) {
 		super(select);
 		this.concept = concept;
@@ -32,7 +33,7 @@ public class ConceptSelectId extends SelectId implements NamespacedId {
 
 	public enum Parser implements IId.Parser<ConceptSelectId> {
 		INSTANCE;
-		
+
 		@Override
 		public ConceptSelectId parse(PeekingIterator<String> parts) {
 			ConceptId parent = ConceptId.Parser.INSTANCE.parse(parts);

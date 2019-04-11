@@ -17,14 +17,20 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class CQTable {
-	@Valid @NotNull
+
+	@Valid
+	@NotNull
 	private ConnectorId id;
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private List<FilterValue<?>> filters = Collections.emptyList();
 
-	@Valid @NotNull @NsIdRefCollection
+	@Valid
+	@NotNull
+	@NsIdRefCollection
 	private List<Select> selects = Collections.emptyList();
 
 	@JsonBackReference

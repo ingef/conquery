@@ -16,27 +16,23 @@ public class AsyncExecutor implements Closeable {
 	public AsyncExecutor(String name) {
 		this(name, false);
 	}
-	
+
 	public AsyncExecutor(String name, boolean restricted) {
-		if(restricted) {
-			service = new ThreadPoolExecutor(0, 5,
-					10L, TimeUnit.SECONDS,
-					new LinkedBlockingQueue<>(),
-					new ThreadFactoryBuilder()
-						.setNameFormat(name)
-						.build(),
-					new ThreadPoolExecutor.CallerRunsPolicy()
-			);
+		if (restricted) {
+			service = new ThreadPoolExecutor(
+				0,
+				5,
+				10L,
+				TimeUnit.SECONDS,
+				new LinkedBlockingQueue<>(),
+				new ThreadFactoryBuilder().setNameFormat(name).build(),
+				new ThreadPoolExecutor.CallerRunsPolicy());
 		}
 		else {
-			service = Executors.newCachedThreadPool(
-					new ThreadFactoryBuilder()
-					.setNameFormat(name)
-					.build()
-			);
+			service = Executors.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat(name).build());
 		}
 	}
-	
+
 	public void execute(Runnable r) {
 		service.execute(r);
 	}
@@ -46,7 +42,8 @@ public class AsyncExecutor implements Closeable {
 		service.shutdown();
 		try {
 			service.awaitTermination(10, TimeUnit.HOURS);
-		} catch (InterruptedException e) {
+		}
+		catch (InterruptedException e) {
 			throw new IllegalStateException(e);
 		}
 	}

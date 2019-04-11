@@ -19,24 +19,33 @@ import lombok.Setter;
  * This class represents a wrapper around any type of {@link CQElement} but also
  * holds a sampler to select a single day from the child elements result.
  */
-@AllArgsConstructor @NoArgsConstructor
-@Getter @Setter
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
 public class CQSampled {
+
 	/**
 	 * A query part which should be sampled to a singe day.
 	 */
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private CQElement child;
 	/**
 	 * The sampler to be used.
 	 */
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private TemporalSampler sampler;
-	
+
 	/**
-	 * Creates a SampleNode containing the samples and a sub query plan for this part of the query.
-	 * @param ctx the context used to create the query plan
-	 * @param plan the parent plan
+	 * Creates a SampleNode containing the samples and a sub query plan for this
+	 * part of the query.
+	 * 
+	 * @param ctx
+	 *            the context used to create the query plan
+	 * @param plan
+	 *            the parent plan
 	 * @return a new SampledNode
 	 */
 	public SampledNode createQueryPlan(QueryPlanContext ctx, QueryPlan plan) {

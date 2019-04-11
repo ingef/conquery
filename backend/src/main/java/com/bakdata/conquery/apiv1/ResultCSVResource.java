@@ -58,30 +58,33 @@ public class ResultCSVResource {
 
 		try {
 			ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, queryId);
-			Stream<String> csv =  new QueryToCSVRenderer(query.getNamespace()).toCSV(query);
-	
+			Stream<String> csv = new QueryToCSVRenderer(query.getNamespace()).toCSV(query);
+
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
+
 				@Override
 				public void write(OutputStream os) throws WebApplicationException {
 					try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
-						Iterator<String> it =  csv.iterator();
+						Iterator<String> it = csv.iterator();
 						while (it.hasNext()) {
 							writer.write(it.next());
 							writer.write(config.getCsv().getLineSeparator());
 						}
 						writer.flush();
-					} catch (EofException e) {
+					}
+					catch (EofException e) {
 						log.info("User canceled download of {}", queryId);
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						throw new WebApplicationException("Failed to load result " + queryId, e);
 					}
 				}
 			};
-	
+
 			return Response.ok(out).build();
 		}
-		catch(NoSuchElementException e) {
+		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
 		}
 	}

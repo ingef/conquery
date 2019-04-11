@@ -14,13 +14,13 @@ import jetbrains.exodus.env.Environments;
 import lombok.NonNull;
 
 public interface NamespaceStorage extends NamespacedStorage {
-	
+
 	public static NamespaceStorage tryLoad(Validator validator, StorageConfig config, File directory) {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
-		boolean exists = env.computeInTransaction(t->env.storeExists(StoreInfo.DATASET.getXodusName(), t));
+		boolean exists = env.computeInTransaction(t -> env.storeExists(StoreInfo.DATASET.getXodusName(), t));
 		env.close();
 
-		if(!exists) {
+		if (!exists) {
 			return null;
 		}
 
@@ -28,13 +28,16 @@ public interface NamespaceStorage extends NamespacedStorage {
 		storage.loadData();
 		return storage;
 	}
-	
+
 	MasterMetaStorage getMetaStorage();
+
 	void setMetaStorage(@NonNull MasterMetaStorage storage);
-	
+
 	StructureNode[] getStructure();
+
 	void updateStructure(StructureNode[] structure) throws JSONException;
-	
+
 	PersistentIdMap getIdMapping();
+
 	void updateIdMapping(PersistentIdMap idMap) throws JSONException;
 }

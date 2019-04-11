@@ -14,8 +14,11 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 
-@Getter @Setter @ToString
+@Getter
+@Setter
+@ToString
 public class ThreadPoolDefinition {
+
 	@Min(0)
 	private int minThreads = 0;
 	@Min(1)
@@ -23,16 +26,15 @@ public class ThreadPoolDefinition {
 	private boolean allowCoreThreadTimeOut = false;
 	private Duration keepAliveTime = Duration.seconds(60);
 	private Duration shutdownTime = Duration.hours(1);
-	
+
 	public ListeningExecutorService createService(String nameFormat) {
 		final ThreadPoolExecutor executor = new ThreadPoolExecutor(
-				minThreads,
-				maxThreads,
-				keepAliveTime.getQuantity(),
-				keepAliveTime.getUnit(),
-				new LinkedBlockingQueue<>(),
-				new ThreadFactoryBuilder().setNameFormat(nameFormat).build()
-		);
+			minThreads,
+			maxThreads,
+			keepAliveTime.getQuantity(),
+			keepAliveTime.getUnit(),
+			new LinkedBlockingQueue<>(),
+			new ThreadFactoryBuilder().setNameFormat(nameFormat).build());
 		executor.allowCoreThreadTimeOut(allowCoreThreadTimeOut);
 		return MoreExecutors.listeningDecorator(executor);
 	}

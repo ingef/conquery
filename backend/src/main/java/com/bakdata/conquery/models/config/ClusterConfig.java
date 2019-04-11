@@ -11,15 +11,19 @@ import io.dropwizard.validation.PortRange;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class ClusterConfig extends Configuration {
+
 	@PortRange
 	private int port = 16170;
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private InetAddress masterURL = InetAddress.getLoopbackAddress();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private MinaConfig mina = new MinaConfig();
 	@Min(1)
 	private int entityBucketSize = 100;
-	
+
 }

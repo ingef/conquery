@@ -22,7 +22,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @RequiredArgsConstructor
+@Slf4j
+@RequiredArgsConstructor
 public class StandaloneSupport implements Closeable {
 
 	private final TestConquery testConquery;
@@ -39,19 +40,18 @@ public class StandaloneSupport implements Closeable {
 	@Getter
 	private final DatasetsProcessor datasetsProcessor;
 
-
 	public void waitUntilWorkDone() {
 		log.info("Waiting for jobs to finish");
 		boolean busy;
-		//sample 10 times from the job queues to make sure we are done with everything
-		for(int i=0;i<10;i++) {
+		// sample 10 times from the job queues to make sure we are done with everything
+		for (int i = 0; i < 10; i++) {
 			do {
 				busy = false;
 				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
 				for (SlaveCommand slave : standaloneCommand.getSlaves())
 					busy |= slave.getJobManager().isSlowWorkerBusy();
 				Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
-			} while(busy);
+			} while (busy);
 		}
 		log.info("all jobs finished");
 	}
@@ -60,8 +60,7 @@ public class StandaloneSupport implements Closeable {
 		DropwizardTestSupport<ConqueryConfig> prepro = new DropwizardTestSupport<>(
 			Conquery.class,
 			config,
-			app -> new TestCommandWrapper(config, new PreprocessorCommand())
-		);
+			app -> new TestCommandWrapper(config, new PreprocessorCommand()));
 		prepro.before();
 		prepro.after();
 	}
@@ -74,9 +73,10 @@ public class StandaloneSupport implements Closeable {
 	public Validator getValidator() {
 		return standaloneCommand.getMaster().getValidator();
 	}
-	
+
 	/**
 	 * Retrieves the port of the admin API.
+	 * 
 	 * @return The port.
 	 */
 	public int getAdminPort() {
@@ -89,6 +89,7 @@ public class StandaloneSupport implements Closeable {
 
 	/**
 	 * Retrieves the port of the main API.
+	 * 
 	 * @return The port.
 	 */
 	public int getLocalPort() {

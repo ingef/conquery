@@ -7,6 +7,7 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class SingletonNamespaceCollection implements NamespaceCollection {
+
 	private final CentralRegistry registry;
 
 	@Override

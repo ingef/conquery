@@ -40,42 +40,37 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 public class SerializationTest {
 
 	@SuppressWarnings("rawtypes")
-	public static List<CType<?,?>> createCTypes() {
-		return Arrays.asList(
-			new DecimalTypeScaled(13, 2, 2, new IntegerTypeInteger()),
-			new MoneyTypeShort(),
-			new IntegerTypeShort(),
-			new IntegerTypeByte(),
-			new MoneyTypeInteger(),
-			new DecimalType(),
-			new StringTypeEncoded(Encoding.Base16LowerCase, 13,2),
-			new BooleanType(),
-			new MoneyTypeByte(),
-			new RealType(),
-			new DateType(),
-			new StringType(),
-			new IntegerType(),
-			new MoneyType(),
-			new IntegerTypeInteger(),
-			new DateRangeType()
-		);
-	}
-	
-	@Test @SuppressWarnings({ "unchecked", "rawtypes" })
-	public void testAllTypesCovered() {
-		assertThat(
-			createCTypes()
-				.stream()
-				.map(Object::getClass)
-				.collect(Collectors.toSet())
-		)
-		.containsAll(
-			(Set)CPSTypeIdResolver.listImplementations(CType.class)
-		);
+	public static List<CType<?, ?>> createCTypes() {
+		return Arrays
+			.asList(
+				new DecimalTypeScaled(13, 2, 2, new IntegerTypeInteger()),
+				new MoneyTypeShort(),
+				new IntegerTypeShort(),
+				new IntegerTypeByte(),
+				new MoneyTypeInteger(),
+				new DecimalType(),
+				new StringTypeEncoded(Encoding.Base16LowerCase, 13, 2),
+				new BooleanType(),
+				new MoneyTypeByte(),
+				new RealType(),
+				new DateType(),
+				new StringType(),
+				new IntegerType(),
+				new MoneyType(),
+				new IntegerTypeInteger(),
+				new DateRangeType());
 	}
 
-	@ParameterizedTest @MethodSource("createCTypes")
-	public void testSerialization(CType<?,?> type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
+	@Test
+	@SuppressWarnings({ "unchecked", "rawtypes" })
+	public void testAllTypesCovered() {
+		assertThat(createCTypes().stream().map(Object::getClass).collect(Collectors.toSet()))
+			.containsAll((Set) CPSTypeIdResolver.listImplementations(CType.class));
+	}
+
+	@ParameterizedTest
+	@MethodSource("createCTypes")
+	public void testSerialization(CType<?, ?> type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 		SerializationTestUtil.testSerialization(type, CType.class, Dictionary.class);
 	}
 }

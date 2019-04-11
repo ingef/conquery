@@ -10,7 +10,9 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.Wither;
 
-@Getter @AllArgsConstructor @RequiredArgsConstructor
+@Getter
+@AllArgsConstructor
+@RequiredArgsConstructor
 @Wither
 public class QueryContext {
 

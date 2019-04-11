@@ -19,25 +19,29 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class ConceptTreeConnector extends Connector {
 
 	private static final long serialVersionUID = 1L;
-	
-	@NotNull @NsIdRef
+
+	@NotNull
+	@NsIdRef
 	private Column column;
 
-	@Valid @JsonManagedReference
+	@Valid
+	@JsonManagedReference
 	private List<Filter<?>> filters = new ArrayList<>();
 
-	@Override @JsonIgnore
+	@Override
+	@JsonIgnore
 	public Table getTable() {
 		return column.getTable();
 	}
 
 	@Override
 	public List<Filter<?>> collectAllFilters() {
-		List<Filter<?>> l = new ArrayList<>(filters.size()+1);
+		List<Filter<?>> l = new ArrayList<>(filters.size() + 1);
 		CollectionUtils.addIgnoreNull(l, getDateSelectionFilter());
 		l.addAll(filters);
 		return l;

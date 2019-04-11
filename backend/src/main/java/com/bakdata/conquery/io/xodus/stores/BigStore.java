@@ -36,43 +36,30 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @Getter
+@Slf4j
+@Getter
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private final MPStore<KEY, BigStoreMeta> metaStore;
 	private final MPStore<UUID, byte[]> dataStore;
 	private final ObjectWriter valueWriter;
 	private ObjectReader valueReader;
-	@Getter @Setter
+	@Getter
+	@Setter
 	private int chunkSize = Ints.checkedCast(Size.megabytes(100).toBytes());
 	private final StoreInfo storeInfo;
-	
-	
 
 	public BigStore(Validator validator, Environment env, StoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
 		metaStore = new MPStore<>(
-				validator,
-				env,
-				new SimpleStoreInfo(
-					storeInfo.getXodusName()+"_META",
-					storeInfo.getKeyType(),
-					BigStoreMeta.class
-				)
-			);
-		dataStore = new MPStore<>(
-				validator,
-				env,
-				new SimpleStoreInfo(
-					storeInfo.getXodusName()+"_DATA",
-					UUID.class,
-					byte[].class
-				)
-			);
+			validator,
+			env,
+			new SimpleStoreInfo(storeInfo.getXodusName() + "_META", storeInfo.getKeyType(), BigStoreMeta.class));
+		dataStore = new MPStore<>(validator, env, new SimpleStoreInfo(storeInfo.getXodusName() + "_DATA", UUID.class, byte[].class));
 		this.valueWriter = Jackson.BINARY_MAPPER.writerFor(storeInfo.getValueType());
 		this.valueReader = Jackson.BINARY_MAPPER.readerFor(storeInfo.getValueType());
 	}
-	
+
 	@Override
 	public void close() throws IOException {
 		metaStore.close();
@@ -82,10 +69,10 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		BigStoreMeta meta = new BigStoreMeta();
-		if(metaStore.get(key) != null) {
-			throw new IllegalArgumentException("There is already a value associated with "+key);
+		if (metaStore.get(key) != null) {
+			throw new IllegalArgumentException("There is already a value associated with " + key);
 		}
-		
+
 		meta.getParts().addAll(writeValue(value));
 		metaStore.update(key, meta);
 	}
@@ -99,7 +86,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer) {
 		metaStore.forEach(e -> {
-			
+
 			StoreEntry<KEY, VALUE> entry = new StoreEntry<>();
 			entry.setKey(e.getKey());
 			entry.setValue(createValue(e.getKey(), e.getValue()));
@@ -117,8 +104,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void remove(KEY key) {
 		BigStoreMeta meta = metaStore.get(key);
-		if(meta != null) {
-			for(UUID id:meta.getParts()) {
+		if (meta != null) {
+			for (UUID id : meta.getParts()) {
 				dataStore.remove(id);
 			}
 			metaStore.remove(key);
@@ -137,69 +124,61 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public Collection<VALUE> getAll() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	private Collection<UUID> writeValue(VALUE value) {
 		try {
 			List<UUID> uuids = new ArrayList<>();
-			ChunkingOutputStream cos = new ChunkingOutputStream(
-				chunkSize,
-				b -> {
-					try {
-						UUID id = UUID.randomUUID();
-						uuids.add(id);
-						dataStore.add(id, b);
-					} catch(Exception e) {
-						throw new RuntimeException("Failed to write chunk", e);
-					}
+			ChunkingOutputStream cos = new ChunkingOutputStream(chunkSize, b -> {
+				try {
+					UUID id = UUID.randomUUID();
+					uuids.add(id);
+					dataStore.add(id, b);
 				}
-			);
+				catch (Exception e) {
+					throw new RuntimeException("Failed to write chunk", e);
+				}
+			});
 			try (OutputStream os = cos) {
-				valueWriter.writeValue(
-						cos,
-						value
-				);
+				valueWriter.writeValue(cos, value);
 			}
 			return uuids;
-		} catch (Exception e) {
-			throw new RuntimeException("Failed to write "+value, e);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Failed to write " + value, e);
 		}
 	}
 
 	private VALUE createValue(KEY key, BigStoreMeta meta) {
-		Iterator<ByteArrayInputStream> it = meta
-				.loadData(dataStore)
-				.map(ByteArrayInputStream::new)
-				.iterator();
-		try(InputStream in = new BufferedInputStream(new SequenceInputStream(IteratorUtils.asEnumeration(it)))) {
+		Iterator<ByteArrayInputStream> it = meta.loadData(dataStore).map(ByteArrayInputStream::new).iterator();
+		try (InputStream in = new BufferedInputStream(new SequenceInputStream(IteratorUtils.asEnumeration(it)))) {
 			return valueReader.readValue(in);
-		} catch (IOException e) {
-			throw new RuntimeException("Failed to read "+key, e);
+		}
+		catch (IOException e) {
+			throw new RuntimeException("Failed to read " + key, e);
 		}
 	}
 
 	@Getter
 	public static class BigStoreMeta {
+
 		@NotEmpty
 		private final List<UUID> parts = new ArrayList<>();
 		@JsonIgnore
 		private transient AtomicLong size;
-		
+
 		public Stream<byte[]> loadData(MPStore<UUID, byte[]> dataStore) {
 			size = new AtomicLong(0);
-			return parts
-				.stream()
-				.map(dataStore::get)
-				.peek(b -> size.addAndGet(b.length));
+			return parts.stream().map(dataStore::get).peek(b -> size.addAndGet(b.length));
 		}
 	}
-	
+
 	@Override
 	public void inject(Injectable injectable) {
 		valueReader = injectable.injectInto(valueReader);
 	}
-	
+
 	@Override
 	public String toString() {
-		return "big "+storeInfo.getXodusName()+"("+storeInfo.getValueType().getSimpleName()+")";
+		return "big " + storeInfo.getXodusName() + "(" + storeInfo.getValueType().getSimpleName() + ")";
 	}
 }

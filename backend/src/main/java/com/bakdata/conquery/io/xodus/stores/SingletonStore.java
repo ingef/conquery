@@ -6,15 +6,16 @@ import com.bakdata.conquery.util.functions.ThrowingConsumer;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-@Accessors(fluent=true) @Setter
+@Accessors(fluent = true)
+@Setter
 public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 
 	private ThrowingConsumer<VALUE> onAdd;
 	private ThrowingConsumer<VALUE> onRemove;
-	
+
 	public SingletonStore(Store<Boolean, VALUE> store, Injectable... injectables) {
 		super(store);
-		for(Injectable injectable : injectables) {
+		for (Injectable injectable : injectables) {
 			store.inject(injectable);
 		}
 	}
@@ -24,20 +25,22 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 		return Boolean.TRUE;
 	}
 
-	@Override @Deprecated
+	@Override
+	@Deprecated
 	public VALUE get(Boolean key) {
 		return get();
 	}
-	
+
 	public synchronized VALUE get() {
 		return super.get(Boolean.TRUE);
 	}
-	
-	@Override @Deprecated
+
+	@Override
+	@Deprecated
 	public void remove(Boolean key) {
 		remove();
 	}
-	
+
 	public synchronized void remove() {
 		super.remove(Boolean.TRUE);
 	}
@@ -45,22 +48,24 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	@Override
 	protected void removed(VALUE value) {
 		try {
-			if(value != null && onRemove != null) {
+			if (value != null && onRemove != null) {
 				onRemove.accept(value);
 			}
-		} catch(Exception e) {
-			throw new RuntimeException("Failed to remove "+value, e);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Failed to remove " + value, e);
 		}
 	}
 
 	@Override
 	protected void added(VALUE value) {
 		try {
-			if(value != null && onAdd != null) {
+			if (value != null && onAdd != null) {
 				onAdd.accept(value);
 			}
-		} catch(Exception e) {
-			throw new RuntimeException("Failed to add "+value, e);
+		}
+		catch (Exception e) {
+			throw new RuntimeException("Failed to add " + value, e);
 		}
 	}
 }

@@ -20,8 +20,12 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
-@CPSType(id="EXECUTE_QUERY", base=NamespacedMessage.class)
-@AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)
+@CPSType(id = "EXECUTE_QUERY", base = NamespacedMessage.class)
+@AllArgsConstructor
+@NoArgsConstructor
+@Getter
+@Setter
+@ToString(callSuper = true)
 public class ExecuteQuery extends WorkerMessage.Slow {
 
 	private ManagedQuery query;
@@ -30,8 +34,9 @@ public class ExecuteQuery extends WorkerMessage.Slow {
 	public void react(Worker context) throws Exception {
 		try {
 			ShardResult result = context.getQueryExecutor().execute(new QueryPlanContextImpl(context), query);
-			result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
-		} catch(Exception e) {
+			result.getFuture().addListener(() -> result.send(context), MoreExecutors.directExecutor());
+		}
+		catch (Exception e) {
 			ShardResult result = new ShardResult();
 			result.setFinishTime(LocalDateTime.now());
 			result.setQueryId(query.getId());

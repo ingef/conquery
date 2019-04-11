@@ -36,8 +36,8 @@ import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 
 @Slf4j
 @Tag("slow")
-@Disabled //see #179  Find fix for surefire plugin not understanding tags
-public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
+@Disabled // see #179 Find fix for surefire plugin not understanding tags
+public abstract class AbstractSearchPerformanceTest<QUERY_TYPE> {
 
 	protected TreeConcept referenceConcept;
 
@@ -48,18 +48,20 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 
 	private Dataset dataset;
 
-
 	public abstract List<QUERY_TYPE> getTestKeys();
+
 	public abstract String getName();
 
-	public abstract void referenceSearch(QUERY_TYPE key) throws ConceptConfigurationException ;
-	public abstract void newSearch(QUERY_TYPE key) throws ConceptConfigurationException ;
+	public abstract void referenceSearch(QUERY_TYPE key) throws ConceptConfigurationException;
+
+	public abstract void newSearch(QUERY_TYPE key) throws ConceptConfigurationException;
 
 	public abstract String getConceptSourceName();
-	public void postprocessConcepts() { }
 
-	public int[] getIterations(){
-		return new int[]{1000, 1000, 10000,50000};
+	public void postprocessConcepts() {}
+
+	public int[] getIterations() {
+		return new int[] { 1000, 1000, 10000, 50000 };
 	}
 
 	@BeforeEach
@@ -72,24 +74,26 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 	}
 
 	public void initializeConcepts() throws IOException, ConfigurationException, JSONException {
-		ObjectNode node = Jackson.MAPPER.readerFor(ObjectNode.class)
-										.readValue(In.resource(GroovyIndexedTest.class, getConceptSourceName()).asStream());
-
+		ObjectNode node = Jackson.MAPPER
+			.readerFor(ObjectNode.class)
+			.readValue(In.resource(GroovyIndexedTest.class, getConceptSourceName()).asStream());
 
 		// load old tree concept before altering it to force loading of indexed concept.
-		referenceConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class)))
-								.readValue(node);
+		referenceConcept = new SingletonNamespaceCollection(registry)
+			.injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class)))
+			.readValue(node);
 
 		referenceConcept.setDataset(dataset.getId());
 		referenceConcept.initElements(Validators.newValidator());
 
-		newConcept = new SingletonNamespaceCollection(registry).injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class))).readValue(node);
+		newConcept = new SingletonNamespaceCollection(registry)
+			.injectInto(dataset.injectInto(Jackson.MAPPER.readerFor(Concept.class)))
+			.readValue(node);
 		newConcept.setDataset(dataset.getId());
 		newConcept.initElements(Validators.newValidator());
 
 		postprocessConcepts();
 	}
-
 
 	public void initializeDataset() {
 		registry = new CentralRegistry();
@@ -111,24 +115,19 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 		column.setName("the_column");
 		column.setType(MajorTypeId.STRING);
 
-		table.setColumns(new Column[]{column});
+		table.setColumns(new Column[] { column });
 		column.setTable(table);
 
 		registry.register(table);
 		registry.register(column);
 	}
 
-	//@TestFactory
-	// //see #180  Re-enable these tests properly
-	public Stream<DynamicTest> createTests(){
+	// @TestFactory
+	// //see #180 Re-enable these tests properly
+	public Stream<DynamicTest> createTests() {
 		return Arrays
 			.stream(getIterations())
-			.mapToObj(iter ->
-				dynamicTest(
-					String.format("%s, %d iterations", getName(), iter),
-					() -> compareExecutionSpeed(iter)
-				)
-		);
+			.mapToObj(iter -> dynamicTest(String.format("%s, %d iterations", getName(), iter), () -> compareExecutionSpeed(iter)));
 	}
 
 	public void compareExecutionSpeed(int iterations) throws JSONException {
@@ -153,7 +152,6 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 
 			log.info("Duration for New Search: {} queries, {}", iterations, newDuration);
 		}
-
 
 		// Test Old implementation and gather results
 		Duration referenceDuration;
@@ -180,4 +178,3 @@ public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 
 	}
 }
-

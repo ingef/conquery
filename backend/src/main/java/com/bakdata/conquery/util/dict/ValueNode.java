@@ -12,8 +12,9 @@ import com.esotericsoftware.kryo.util.IntMap.Entry;
 public interface ValueNode {
 
 	public ABytesNode getParent();
+
 	public int getValue();
-	
+
 	public default Entry<String> toEntry() {
 		Entry<String> e = new Entry<>();
 		e.key = this.getValue();
@@ -25,8 +26,8 @@ public interface ValueNode {
 		List<byte[]> l = new ArrayList<>();
 		ABytesNode n = (ABytesNode) this;
 		ABytesNode last = null;
-		while(n!=null) {
-			if(last == null || last == n.getMiddle())
+		while (n != null) {
+			if (last == null || last == n.getMiddle())
 				l.add(n.key());
 			last = n;
 			n = n.getParent();
@@ -34,7 +35,7 @@ public interface ValueNode {
 		Collections.reverse(l);
 		IoBuffer buffer = IoBuffer.allocate(512);
 		buffer.setAutoExpand(true);
-		for(byte[] b : l)
+		for (byte[] b : l)
 			buffer.put(b);
 		buffer.flip();
 
@@ -48,8 +49,8 @@ public interface ValueNode {
 		List<byte[]> l = new ArrayList<>();
 		ABytesNode n = (ABytesNode) this;
 		ABytesNode last = null;
-		while(n!=null) {
-			if(last == null || last == n.getMiddle()) {
+		while (n != null) {
+			if (last == null || last == n.getMiddle()) {
 				l.add(n.key());
 			}
 			last = n;
@@ -58,7 +59,7 @@ public interface ValueNode {
 		Collections.reverse(l);
 		IoBuffer buffer = IoBuffer.allocate(512);
 		buffer.setAutoExpand(true);
-		for(byte[] b : l) {
+		for (byte[] b : l) {
 			buffer.put(b);
 		}
 		buffer.flip();

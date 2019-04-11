@@ -15,8 +15,10 @@ import it.unimi.dsi.fastutil.ints.IntArrayList;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSender.Transforming<WorkerMessage, SlaveMessage> {
+
 	@NotNull
 	private DatasetId dataset;
 	@NotNull
@@ -28,12 +30,12 @@ public class WorkerInformation extends NamedImpl<WorkerId> implements MessageSen
 	public WorkerId createId() {
 		return new WorkerId(dataset, getName());
 	}
-	
+
 	@JsonIgnore
 	public int findLargestEntityId() {
 		int max = -1;
-		for(int i=includedBuckets.size() - 1; i>=0; i--) {
-			if(includedBuckets.getInt(i) > max) {
+		for (int i = includedBuckets.size() - 1; i >= 0; i--) {
+			if (includedBuckets.getInt(i) > max) {
 				max = includedBuckets.getInt(i);
 			}
 		}

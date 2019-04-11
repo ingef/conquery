@@ -1,6 +1,5 @@
 package com.bakdata.conquery.integration.json.auth;
 
-
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
@@ -36,20 +35,25 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * This testspec checks if permission related data can be cleanly serialized and deserialized
- * using the provided store.
+ * This testspec checks if permission related data can be cleanly serialized and
+ * deserialized using the provided store.
  */
-@CPSType(id="PERMISSION_STORAGE_SERIALIZATION_TEST",base=ConqueryTestSpec.class)
-@Getter @Setter
+@CPSType(id = "PERMISSION_STORAGE_SERIALIZATION_TEST", base = ConqueryTestSpec.class)
+@Getter
+@Setter
 public class PermissionStorageSerializationTest extends ConqueryTestSpec {
+
 	private static final String STORE_SUFFIX = "SERIALIZATION_TEST";
 	@Valid
-	private Mandator [] roles = new Mandator[0];
-	@Valid @NotNull @JsonProperty("users")
-	private RequiredUser [] rUsers;
-	@Valid @NotNull
-	private ConqueryPermission [] permissions;
-	
+	private Mandator[] roles = new Mandator[0];
+	@Valid
+	@NotNull
+	@JsonProperty("users")
+	private RequiredUser[] rUsers;
+	@Valid
+	@NotNull
+	private ConqueryPermission[] permissions;
+
 	@JsonIgnore
 	private MPStore<MandatorId, Mandator> authMandator;
 	@JsonIgnore
@@ -58,7 +62,7 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	private MPStore<PermissionId, ConqueryPermission> authPermissions;
 	@JsonIgnore
 	private File directory;
-	
+
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 		Validator validator = support.getStandaloneCommand().getMaster().getValidator();
@@ -70,24 +74,25 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 		this.authUser = new MPStore<>(validator, env, StoreInfo.AUTH_USER);
 		this.authPermissions = new MPStore<>(validator, env, StoreInfo.AUTH_PERMISSIONS);
 	}
-	
+
 	/**
 	 * Serialize by filling the storage
+	 * 
 	 * @throws JSONException
 	 */
 	public void serializeData() throws JSONException {
-		for(Mandator mandator : roles) {
+		for (Mandator mandator : roles) {
 			authMandator.add(mandator.getId(), mandator);
 		}
-		for(RequiredUser rUser : rUsers) {
+		for (RequiredUser rUser : rUsers) {
 			User user = rUser.getUser();
 			authUser.add(user.getId(), user);
 		}
-		for(ConqueryPermission permission : permissions) {
+		for (ConqueryPermission permission : permissions) {
 			authPermissions.add(permission.getId(), permission);
 		}
 	}
-	
+
 	/**
 	 * Reloading the cached store forces deserialization
 	 */
@@ -99,8 +104,9 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 
 		List<User> storedUser = new ArrayList<>();
 		authUser.forEach(e -> storedUser.add(e.getValue()));
-		assertThat(storedUser).containsExactlyInAnyOrderElementsOf(Arrays.stream(rUsers).map(rU -> rU.getUser()).collect(Collectors.toList()));
-		
+		assertThat(storedUser)
+			.containsExactlyInAnyOrderElementsOf(Arrays.stream(rUsers).map(rU -> rU.getUser()).collect(Collectors.toList()));
+
 		List<ConqueryPermission> storedPermission = new ArrayList<>();
 		authPermissions.forEach(e -> storedPermission.add(e.getValue()));
 		assertThat(storedPermission).containsExactlyInAnyOrderElementsOf(Arrays.asList(permissions));
@@ -110,9 +116,9 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport support) throws Exception {
 		serializeData();
 		deserializeData();
-		
+
 		// No exceptions until here, everything is fine
 		assert true;
 	}
-	
+
 }

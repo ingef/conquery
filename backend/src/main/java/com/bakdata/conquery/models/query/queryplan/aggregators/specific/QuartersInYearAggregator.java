@@ -65,7 +65,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	public QuartersInYearAggregator doClone(CloneContext ctx) {
 		return new QuartersInYearAggregator(getColumn());
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;

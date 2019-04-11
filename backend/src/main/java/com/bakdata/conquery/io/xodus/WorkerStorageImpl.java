@@ -32,11 +32,11 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	private IdentifiableStore<CBlock> cBlocks;
 	@Getter
 	private BlockManager blockManager;
-	
+
 	public WorkerStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
 	}
-	
+
 	@Override
 	public void setBlockManager(BlockManager blockManager) {
 		this.blockManager = blockManager;
@@ -48,13 +48,10 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		this.worker = StoreInfo.WORKER.singleton(this);
 		this.blocks = StoreInfo.BLOCKS.identifiable(this);
 		this.cBlocks = StoreInfo.C_BLOCKS.identifiable(this);
-		
-		collector
-			.collect(worker)
-			.collect(blocks)
-			.collect(cBlocks);
+
+		collector.collect(worker).collect(blocks).collect(cBlocks);
 	}
-	
+
 	@Override
 	public void addCBlock(CBlock cBlock) throws JSONException {
 		cBlocks.add(cBlock);
@@ -74,18 +71,18 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void removeCBlock(CBlockId id) {
 		cBlocks.remove(id);
 	}
-	
+
 	@Override
 	public Collection<CBlock> getAllCBlocks() {
 		return cBlocks.getAll();
 	}
-	
+
 	@Override
 	public void addBlocks(List<Block> newBlocks) throws JSONException {
-		for(Block block:newBlocks) {
+		for (Block block : newBlocks) {
 			blocks.add(block);
 		}
-		if(getBlockManager()!=null) {
+		if (getBlockManager() != null) {
 			getBlockManager().addBlocks(newBlocks);
 		}
 	}
@@ -94,15 +91,15 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public Block getBlock(BlockId id) {
 		return blocks.get(id);
 	}
-	
+
 	@Override
 	public void removeBlock(BlockId id) {
 		blocks.remove(id);
-		if(getBlockManager()!=null) {
+		if (getBlockManager() != null) {
 			getBlockManager().removeBlock(id);
 		}
 	}
-	
+
 	@Override
 	public Collection<Block> getAllBlocks() {
 		return blocks.getAll();
@@ -122,12 +119,12 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	public void updateWorker(WorkerInformation worker) throws JSONException {
 		this.worker.update(worker);
 	}
-	
-	//block manager overrides
+
+	// block manager overrides
 	@Override
 	public void updateConcept(Concept<?> concept) throws JSONException {
 		concepts.update(concept);
-		if(blockManager!=null) {
+		if (blockManager != null) {
 			blockManager.removeConcept(concept.getId());
 			blockManager.addConcept(concept);
 		}
@@ -136,7 +133,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void removeConcept(ConceptId id) {
 		concepts.remove(id);
-		if(blockManager!=null) {
+		if (blockManager != null) {
 			blockManager.removeConcept(id);
 		}
 	}

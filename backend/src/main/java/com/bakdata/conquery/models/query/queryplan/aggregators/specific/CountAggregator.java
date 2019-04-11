@@ -34,7 +34,7 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 	public CountAggregator doClone(CloneContext ctx) {
 		return new CountAggregator(getColumn());
 	}
-	
+
 	@Override
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;

@@ -19,26 +19,31 @@ import com.google.common.base.Preconditions;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class Table extends Labeled<TableId> {
-	
+
 	@JsonBackReference
 	private Dataset dataset;
-	@NotNull @Valid @JsonManagedReference
+	@NotNull
+	@Valid
+	@JsonManagedReference
 	private Column primaryColumn;
-	@NotNull @Valid @JsonManagedReference
+	@NotNull
+	@Valid
+	@JsonManagedReference
 	private Column[] columns = new Column[0];
 	private Set<String> tags = new HashSet<>();
-	
+
 	public boolean matches(PPHeader header) {
-		if(!primaryColumn.matches(header.getPrimaryColumn())) {
+		if (!primaryColumn.matches(header.getPrimaryColumn())) {
 			return false;
 		}
-		if(columns.length != header.getColumns().length) {
+		if (columns.length != header.getColumns().length) {
 			return false;
 		}
-		for(int i=0;i<columns.length;i++) {
-			if(!columns[i].matches(header.getColumns()[i])) {
+		for (int i = 0; i < columns.length; i++) {
+			if (!columns[i].matches(header.getColumns()[i])) {
 				return false;
 			}
 		}
@@ -51,10 +56,6 @@ public class Table extends Labeled<TableId> {
 	}
 
 	public List<Import> findImports(WorkerStorage storage) {
-		return storage
-			.getAllImports()
-			.stream()
-			.filter(imp -> imp.getTable().equals(this.getId()))
-			.collect(Collectors.toList());
+		return storage.getAllImports().stream().filter(imp -> imp.getTable().equals(this.getId())).collect(Collectors.toList());
 	}
 }

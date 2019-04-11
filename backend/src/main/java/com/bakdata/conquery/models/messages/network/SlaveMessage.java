@@ -10,7 +10,10 @@ import lombok.Setter;
 public abstract class SlaveMessage extends NetworkMessage<NetworkMessageContext.Slave> {
 
 	public static abstract class Slow extends SlaveMessage implements SlowMessage {
-		@JsonIgnore @Getter @Setter
+
+		@JsonIgnore
+		@Getter
+		@Setter
 		private ProgressReporter progressReporter;
 	}
 }

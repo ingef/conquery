@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.function.Consumer;
 
 public class ChunkingOutputStream extends OutputStream {
+
 	private byte[] buf;
 	private int off = 0;
 	private final int size;
@@ -56,10 +57,10 @@ public class ChunkingOutputStream extends OutputStream {
 	public void close() throws IOException {
 		write();
 	}
-	
+
 	private void write() {
 		if (off > 0) {
-			if(off == size) {
+			if (off == size) {
 				consumer.accept(buf);
 				buf = null;
 			}
@@ -67,7 +68,7 @@ public class ChunkingOutputStream extends OutputStream {
 				consumer.accept(Arrays.copyOf(buf, off));
 			}
 			off = 0;
-			
+
 		}
 	}
 }

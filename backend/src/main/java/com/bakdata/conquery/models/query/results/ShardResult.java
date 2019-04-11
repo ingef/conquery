@@ -19,7 +19,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter @Slf4j
+@Getter
+@Setter
+@Slf4j
 public class ShardResult {
 
 	private ManagedQueryId queryId;
@@ -29,19 +31,20 @@ public class ShardResult {
 	private LocalDateTime finishTime;
 	@JsonIgnore
 	private ListenableFuture<List<EntityResult>> future;
-	
+
 	public synchronized void addResult(EntityResult result) {
 		results.add(result);
 	}
 
 	public synchronized void finish() {
-		if(finishTime == null) {
+		if (finishTime == null) {
 			try {
 				results = new ArrayList<>(Uninterruptibles.getUninterruptibly(future));
 				finishTime = LocalDateTime.now();
 				log.info("Finished query {} with {} results within {}", queryId, results.size(), Duration.between(startTime, finishTime));
-			} catch (ExecutionException e) {
-				log.error("Failed query "+queryId, e);
+			}
+			catch (ExecutionException e) {
+				log.error("Failed query " + queryId, e);
 			}
 		}
 	}

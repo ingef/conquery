@@ -22,7 +22,8 @@ public class IdAccessorImpl implements IdAccessor {
 	private final IdMappingAccessor accessor;
 
 	/**
-	 * The mapping from column indices in the given CSV to the original uploaded csv.
+	 * The mapping from column indices in the given CSV to the original uploaded
+	 * csv.
 	 */
 	@Getter
 	private final int[] applicationMapping;
@@ -33,9 +34,13 @@ public class IdAccessorImpl implements IdAccessor {
 	private final NamespaceStorage storage;
 
 	/**
-	 * removes all non Id Fields from a given CSV Line respective to the given formal Columns.
-	 * @param csvLine A line from the csv.
-	 * @param formatColumns The format description for the given Csv..
+	 * removes all non Id Fields from a given CSV Line respective to the given
+	 * formal Columns.
+	 * 
+	 * @param csvLine
+	 *            A line from the csv.
+	 * @param formatColumns
+	 *            The format description for the given Csv..
 	 * @return The filtered csvLine.
 	 */
 	public static String[] removeNonIdFields(String[] csvLine, List<CQExternal.FormatColumn> formatColumns) {
@@ -50,8 +55,11 @@ public class IdAccessorImpl implements IdAccessor {
 	}
 
 	/**
-	 * If not real mapping is possible we use this fallback CsvId and join the id Parts together.
-	 * @param idPart all required Parts of the id.
+	 * If not real mapping is possible we use this fallback CsvId and join the id
+	 * Parts together.
+	 * 
+	 * @param idPart
+	 *            all required Parts of the id.
 	 * @return all Parts of the concatenated by a pipe.
 	 */
 	public static CsvEntityId getFallbackCsvId(String[] idPart) {
@@ -62,7 +70,8 @@ public class IdAccessorImpl implements IdAccessor {
 	public CsvEntityId getCsvEntityId(String[] csvLine) {
 		String[] reorderedCsvLine = reorder(csvLine);
 		String[] partOfId = this.accessor.extract(reorderedCsvLine);
-		CsvEntityId csvEntityId = storage.getIdMapping()
+		CsvEntityId csvEntityId = storage
+			.getIdMapping()
 			.getExternalIdPartCsvIdMap()
 			.get(new SufficientExternalEntityId(this.accessor, partOfId));
 		if (csvEntityId != null) {
@@ -73,9 +82,13 @@ public class IdAccessorImpl implements IdAccessor {
 	}
 
 	/**
-	 * Reorder takes a line from an uploaded CSV an reorders the id columns, to match the specified format.
-	 * @param csvLine The csv line.
-	 * @return Outputs a csvLine like the one in the original uploaded id mapping CSV
+	 * Reorder takes a line from an uploaded CSV an reorders the id columns, to
+	 * match the specified format.
+	 * 
+	 * @param csvLine
+	 *            The csv line.
+	 * @return Outputs a csvLine like the one in the original uploaded id mapping
+	 *         CSV
 	 */
 	private String[] reorder(String[] csvLine) {
 		String[] reorderedCsvLine = new String[accessor.getHeader().length];

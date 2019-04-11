@@ -49,8 +49,9 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
-
-@Slf4j @Getter @Setter
+@Slf4j
+@Getter
+@Setter
 @CPSType(id = "FILTER_TEST", base = ConqueryTestSpec.class)
 public class FilterTest extends AbstractQueryEngineTest {
 
@@ -66,7 +67,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private RequiredData content;
-
 
 	@NotNull
 	@JsonProperty("connector")
@@ -93,7 +93,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		importConcepts(support);
 		support.waitUntilWorkDone();
-		
+
 		query = parseQuery(support);
 
 		importTableContents(support);
@@ -109,11 +109,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : content.getTables()) {
-			//copy csv to tmp folder
+			// copy csv to tmp folder
 			String name = rTable.getCsv().getName().substring(0, rTable.getCsv().getName().lastIndexOf('.'));
 			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
-			//create import descriptor
+			// create import descriptor
 			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);
 			ImportDescriptor desc = new ImportDescriptor();
 			desc.setInputFile(inputFile);
@@ -128,14 +128,14 @@ public class FilterTest extends AbstractQueryEngineTest {
 					input.getOutput()[i] = copyOutput(i + 1, rTable.getColumns()[i]);
 				}
 			}
-			desc.setInputs(new Input[]{input});
+			desc.setInputs(new Input[] { input });
 			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 			preprocessedFiles.add(inputFile.getPreprocessedFile());
 		}
-		//preprocess
+		// preprocess
 		support.preprocessTmp();
 
-		//import preprocessedFiles
+		// import preprocessedFiles
 		for (File file : preprocessedFiles) {
 			support.getDatasetsProcessor().addImport(support.getDataset(), file);
 		}
@@ -163,12 +163,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		((ObjectNode) rawConnector.get("filter")).put("name", "filter");
 
-		connector = parseSubTree(
-				support,
-				rawConnector,
-				VirtualConceptConnector.class,
-				conn -> conn.setConcept(concept)
-		);
+		connector = parseSubTree(support, rawConnector, VirtualConceptConnector.class, conn -> conn.setConcept(concept));
 
 		concept.setConnectors(Collections.singletonList((VirtualConceptConnector) connector));
 		support.getDatasetsProcessor().addConcept(dataset, concept);
@@ -176,7 +171,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	private IQuery parseQuery(StandaloneSupport support) throws JSONException, IOException {
 		rawFilterValue.put("filter", support.getDataset().getName() + ".concept.connector.filter");
-
 
 		FilterValue<?> result = parseSubTree(support, rawFilterValue, Jackson.MAPPER.getTypeFactory().constructType(FilterValue.class));
 
@@ -204,7 +198,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 		else {
 			conceptQuery.setRoot(cqConcept);
 		}
-
 
 		return conceptQuery;
 	}

@@ -7,8 +7,9 @@ import java.lang.annotation.Target;
 
 import com.fasterxml.jackson.annotation.JacksonAnnotationsInside;
 import com.fasterxml.jackson.databind.annotation.JsonTypeIdResolver;
+
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.TYPE})
-@JacksonAnnotationsInside @JsonTypeIdResolver(CPSTypeIdResolver.class)
-public @interface CPSBase {
-}
+@Target({ ElementType.TYPE })
+@JacksonAnnotationsInside
+@JsonTypeIdResolver(CPSTypeIdResolver.class)
+public @interface CPSBase {}

@@ -15,34 +15,45 @@ import io.dropwizard.server.ServerFactory;
 import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Getter
+@Setter
 public class ConqueryConfig extends Configuration {
-	
+
 	@Getter
 	private static ConqueryConfig instance;
-	
-	@Valid @NotNull
+
+	@Valid
+	@NotNull
 	private ClusterConfig cluster = new ClusterConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private PreprocessingConfig preprocessor = new PreprocessingConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private CSVConfig csv = new CSVConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private LocaleConfig locale = new LocaleConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private StandaloneConfig standalone = new StandaloneConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private StorageConfig storage = new StorageConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private QueryConfig queries = new QueryConfig();
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private APIConfig api = new APIConfig();
 	@NotNull
 	private String[] additionalFormats = new String[0];
-	@Valid @NotNull
+	@Valid
+	@NotNull
 	private FrontendConfig frontend = new FrontendConfig();
-	
-	@NotNull @Valid
+
+	@NotNull
+	@Valid
 	private IdMappingConfig idMapping = new NoIdMapping();
 
 	private AuthConfig authentication = new DevAuthConfig();
@@ -51,16 +62,16 @@ public class ConqueryConfig extends Configuration {
 	 */
 	private Boolean debugMode = null;
 
-	//this is needed to force start the REST backend on /api/
+	// this is needed to force start the REST backend on /api/
 	public ConqueryConfig() {
-		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
+		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
 		ConqueryConfig.instance = this;
 	}
-	
+
 	@Override
 	public void setServerFactory(ServerFactory factory) {
 		super.setServerFactory(factory);
-		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
+		((DefaultServerFactory) this.getServerFactory()).setJerseyRootPath("/api/");
 	}
 
 	public void initializeDatePatterns() {

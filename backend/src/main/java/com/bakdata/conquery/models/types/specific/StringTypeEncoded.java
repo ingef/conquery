@@ -12,10 +12,13 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@CPSType(base = CType.class, id = "STRING_ENCODED") @ToString
+@CPSType(base = CType.class, id = "STRING_ENCODED")
+@ToString
 public class StringTypeEncoded extends StringType implements IStringType {
 
-	@NonNull @Getter @ToString.Include
+	@NonNull
+	@Getter
+	@ToString.Include
 	private Encoding encoding;
 
 	public StringTypeEncoded(Encoding encoding, long lines, long nullLines) {
@@ -58,13 +61,19 @@ public class StringTypeEncoded extends StringType implements IStringType {
 	public static enum Encoding {
 		// Order is for precedence, least specific encodings go last.
 
-		Base16LowerCase(2,BaseEncoding.base16().lowerCase().omitPadding()),
-		Base16UpperCase(2,BaseEncoding.base16().upperCase().omitPadding()),
-		Base32LowerCase(8,BaseEncoding.base32().lowerCase().omitPadding()),
-		Base32UpperCase(8,BaseEncoding.base32().upperCase().omitPadding()),
-		Base32HexLowerCase(8,BaseEncoding.base32Hex().lowerCase().omitPadding()),
-		Base32HexUpperCase(8,BaseEncoding.base32Hex().upperCase().omitPadding()),
-		Base64(4, BaseEncoding.base64().omitPadding());
+		Base16LowerCase(2, BaseEncoding.base16().lowerCase().omitPadding()), Base16UpperCase(2, BaseEncoding
+			.base16()
+			.upperCase()
+			.omitPadding()), Base32LowerCase(8, BaseEncoding.base32().lowerCase().omitPadding()), Base32UpperCase(8, BaseEncoding
+				.base32()
+				.upperCase()
+				.omitPadding()), Base32HexLowerCase(8, BaseEncoding
+					.base32Hex()
+					.lowerCase()
+					.omitPadding()), Base32HexUpperCase(8, BaseEncoding
+						.base32Hex()
+						.upperCase()
+						.omitPadding()), Base64(4, BaseEncoding.base64().omitPadding());
 
 		private final int requiredLengthBase;
 		@Getter
@@ -75,8 +84,7 @@ public class StringTypeEncoded extends StringType implements IStringType {
 		}
 
 		public boolean canDecode(CharSequence chars) {
-			return getEncoding().canDecode(chars)
-				&& chars.length() % requiredLengthBase == 0;
+			return getEncoding().canDecode(chars) && chars.length() % requiredLengthBase == 0;
 		}
 
 		public byte[] decode(CharSequence chars) {
@@ -84,12 +92,9 @@ public class StringTypeEncoded extends StringType implements IStringType {
 		}
 
 	}
-	
+
 	@Override
 	public Iterator<String> iterator() {
-		return IntStream
-			.range(0, getDictionary().size())
-			.mapToObj(this::createScriptValue)
-			.iterator();
+		return IntStream.range(0, getDictionary().size()).mapToObj(this::createScriptValue).iterator();
 	}
 }

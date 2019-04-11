@@ -14,7 +14,7 @@ import lombok.ToString;
 public class ValidityDateNode extends QPChainNode {
 
 	private final Column validityDateColumn;
-	
+
 	public ValidityDateNode(Column validityDateColumn, QPNode child) {
 		super(child);
 		this.validityDateColumn = validityDateColumn;
@@ -22,17 +22,17 @@ public class ValidityDateNode extends QPChainNode {
 
 	@Override
 	public void nextEvent(Block block, int event) {
-		//if validity date is null return
-		if(validityDateColumn != null && !block.has(event, validityDateColumn)) {
+		// if validity date is null return
+		if (validityDateColumn != null && !block.has(event, validityDateColumn)) {
 			return;
 		}
 		else {
-			if(validityDateColumn == null || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
+			if (validityDateColumn == null || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
 				getChild().nextEvent(block, event);
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean isContained() {
 		return getChild().isContained();

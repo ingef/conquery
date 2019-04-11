@@ -57,18 +57,15 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		masterConfig.getStorage().setDirectory(new File(masterConfig.getStorage().getDirectory(), "master"));
 		masterConfig.getStorage().getDirectory().mkdir();
 		conquery.run(masterConfig, environment);
-		
-		//create thread pool to start multiple slaves at the same time
-		ExecutorService starterPool = Executors.newCachedThreadPool(
-				new ThreadFactoryBuilder()
-				.setNameFormat("Slave Storage Loader %d")
-				.setUncaughtExceptionHandler((t, e) -> {
-					ConqueryMDC.setLocation(t.getName());
-					log.error(t.getName()+" failed to init storage of slave", e);
-				})
-				.build());
-		
-		for(int i=0;i<config.getStandalone().getNumberOfSlaves();i++) {
+
+		// create thread pool to start multiple slaves at the same time
+		ExecutorService starterPool = Executors
+			.newCachedThreadPool(new ThreadFactoryBuilder().setNameFormat("Slave Storage Loader %d").setUncaughtExceptionHandler((t, e) -> {
+				ConqueryMDC.setLocation(t.getName());
+				log.error(t.getName() + " failed to init storage of slave", e);
+			}).build());
+
+		for (int i = 0; i < config.getStandalone().getNumberOfSlaves(); i++) {
 			final int id = i;
 			starterPool.submit(() -> {
 				ConqueryMDC.setLocation("Slave " + id);

@@ -7,9 +7,8 @@ import org.junit.jupiter.params.provider.CsvSource;
 
 public class ConqueryEscapeTest {
 
-	
 	@ParameterizedTest
-	@CsvSource(value= {
+	@CsvSource(value = {
 		"hallo,hallo",
 		"test,test",
 		"test7,test7",
@@ -20,8 +19,7 @@ public class ConqueryEscapeTest {
 		"😈,$f0$9f$98$88",
 		"aa.aa,aa$2eaa",
 		"a_a,a_a",
-		"a-a,a$2da"
-	})
+		"a-a,a$2da" })
 	public void testEscaping(String in, String expectedEscaped) {
 		String escaped1 = ConqueryEscape.escape(in);
 		assertThat(escaped1).isEqualTo(expectedEscaped);
@@ -29,7 +27,7 @@ public class ConqueryEscapeTest {
 		String escaped2 = ConqueryEscape.escape(escaped1);
 		String unescaped2 = ConqueryEscape.unescape(escaped2);
 		assertThat(unescaped2).isEqualTo(escaped1);
-		
+
 		String unescaped1 = ConqueryEscape.unescape(unescaped2);
 		assertThat(unescaped1).isEqualTo(in);
 	}

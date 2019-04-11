@@ -51,7 +51,7 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 
 	@Override
 	public void acceptEvent(Block block, int event) {
-		//Base class for event based filter nodes to reduce repetition?
+		// Base class for event based filter nodes to reduce repetition?
 		this.hit = true;
 
 	}

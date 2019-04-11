@@ -10,9 +10,10 @@ import lombok.Data;
 /**
  * This class represents a values of a SELECT filter.
  */
-@Data @AllArgsConstructor
+@Data
+@AllArgsConstructor
 public class FEValue {
-	
+
 	private final String label;
 	private final String value;
 	private Map<String, String> templateValues;
@@ -24,10 +25,6 @@ public class FEValue {
 	}
 
 	public static List<FEValue> fromLabels(Map<String, String> labels) {
-		return labels
-			.entrySet()
-			.stream()
-			.map(e->new FEValue(e.getValue(), e.getKey()))
-			.collect(Collectors.toList());
+		return labels.entrySet().stream().map(e -> new FEValue(e.getValue(), e.getKey())).collect(Collectors.toList());
 	}
 }

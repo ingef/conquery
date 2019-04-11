@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.exceptions.validators.RequiresColumnType.Requ
 import com.bakdata.conquery.models.exceptions.validators.RequiresColumnType.RequiresMacroTypeValidator;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
-
 @Target({ FIELD, TYPE_USE })
 @Retention(RetentionPolicy.RUNTIME)
 @Constraint(validatedBy = RequiresMacroTypeValidator.class)
@@ -32,9 +31,9 @@ public @interface RequiresColumnType {
 
 	String message() default "The column must be one of ";
 
-	Class<?>[] groups() default { };
+	Class<?>[] groups() default {};
 
-	Class<? extends Payload>[] payload() default { };
+	Class<? extends Payload>[] payload() default {};
 
 	MajorTypeId[] value() default {};
 
@@ -42,29 +41,31 @@ public @interface RequiresColumnType {
 	@Retention(RetentionPolicy.RUNTIME)
 	@Documented
 	@interface RequiresColumnTypeList {
+
 		RequiresColumnType[] value();
 	}
-	
+
 	public static class RequiresMacroTypeValidator implements ConstraintValidator<RequiresColumnType, Column> {
 
 		private MajorTypeId[] validTypes;
 
 		@Override
 		public void initialize(RequiresColumnType anno) {
-			this.validTypes=anno.value();
+			this.validTypes = anno.value();
 		}
 
 		@Override
 		public boolean isValid(Column value, ConstraintValidatorContext context) {
 			context.disableDefaultConstraintViolation();
-			if(value!=null && !ArrayUtils.contains(validTypes, value.getType())) {
+			if (value != null && !ArrayUtils.contains(validTypes, value.getType())) {
 				context
-					.buildConstraintViolationWithTemplate("The column "+value.getId()+" is not one of the required types "+Arrays.toString(validTypes))
+					.buildConstraintViolationWithTemplate(
+						"The column " + value.getId() + " is not one of the required types " + Arrays.toString(validTypes))
 					.addConstraintViolation();
 				return false;
 			}
 			return true;
 		}
-		
+
 	}
 }
