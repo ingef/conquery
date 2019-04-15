@@ -137,42 +137,6 @@ export const search = async (query: string) => {
   });
 };
 
-const findConcepts = (treeId, nodeId, node, query, intermediateResult) => {
-  const isNodeIncluded = doesQueryMatchNode(node, query);
-
-  let sum = isNodeIncluded ? 1 : 0;
-
-  if (node.children) {
-    for (let child of node.children) {
-      const result = findConcepts(
-        treeId,
-        child,
-        window.categoryTrees[treeId][child],
-        query,
-        intermediateResult
-      );
-
-      sum += result[child] || 0;
-    }
-  } else {
-    if (isNodeIncluded) {
-      intermediateResult[nodeId] = 1;
-
-      return intermediateResult;
-    } else {
-      return intermediateResult;
-    }
-  }
-
-  if (sum === 0) {
-    return intermediateResult;
-  } else {
-    intermediateResult[nodeId] = sum;
-
-    return intermediateResult;
-  }
-};
-
 const doesQueryMatchNode = (node, query) => {
   const lowerQuery = query.toLowerCase();
 
@@ -186,4 +150,65 @@ const doesQueryMatchNode = (node, query) => {
         .toLowerCase()
         .includes(lowerQuery))
   );
+};
+
+/*
+  This is a recursive algorithm to search through the trees
+  It counts results and stores the count in "intermediateResult".
+
+  The code might look a little bit "clumsy", but
+  - it's been optimized to _not_ use object spread, because that slowed it down
+  - it's been optimized to have a time complexity of O(n)
+
+  treeId: the root tree id
+  nodeId: the id of the concept node, because node doesn't include it itself
+  node: the current node to check for match,
+    includes all information needed, eg: label, description, additionalInfos and children
+  query: the search query
+  intermediateResult: to avoid building new objects in every iteration, we carry
+    this object through the recursion and define new properties as we go (side effects)
+*/
+const findConcepts = (
+  treeId: string,
+  nodeId: TreeNodeIdType,
+  node: NodeType,
+  query: string,
+  intermediateResult: { [TreeNodeIdType]: number }
+) => {
+  const isNodeIncluded = doesQueryMatchNode(node, query);
+
+  // Early return if there are no children
+  if (!node.children) {
+    if (isNodeIncluded) {
+      intermediateResult[nodeId] = 1;
+
+      return intermediateResult;
+    } else {
+      return intermediateResult;
+    }
+  }
+
+  // Count node as 1 already, if it matches
+  let sum = isNodeIncluded ? 1 : 0;
+
+  for (let child of node.children) {
+    const result = findConcepts(
+      treeId,
+      child,
+      window.categoryTrees[treeId][child],
+      query,
+      intermediateResult
+    );
+
+    sum += result[child] || 0;
+  }
+
+  if (sum === 0) {
+    // Leave node out from the result, if it doesn't match itself, and no child matches
+    return intermediateResult;
+  } else {
+    intermediateResult[nodeId] = sum;
+
+    return intermediateResult;
+  }
 };
