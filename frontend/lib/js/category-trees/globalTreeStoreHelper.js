@@ -121,59 +121,116 @@ export const hasConceptChildren = node => {
   return concept && concept.children && concept.children.length > 0;
 };
 
+// .reduce(
+//         (allTree, conceptKey) => {
+//           const concept = window.categoryTrees[key][conceptKey];
+//           const results = findConcepts(key, concept, query);
+
+//           // console.log("GOT RESULTS");
+
+//           return {
+//             ...allTree,
+//             ...(concept.children
+//               ? concept.children.reduce((sum, id) => sum + results[id], 0)
+//               : { [conceptKey]: doesQueryMatchNode(concept, query) }),
+//             ...results
+//           };
+//         },
+//         {}
+
 export const search = async (query: string) => {
-  const result = flatmap(Object.keys(window.categoryTrees), key =>
-    findConcepts(window.categoryTrees[key], query)
+  const result = Object.keys(window.categoryTrees).reduce(
+    (all, key) => ({
+      ...all,
+      ...findConcepts(key, key, window.categoryTrees[key][key], query)
+    }),
+    {}
   );
 
   return Promise.resolve({
-    size: result.size,
+    size: Object.keys(result).length,
     limit: 500,
     result
   });
 };
 
-const findConcepts = (concepts, query) => {
-  const matches = Object.keys(concepts)
-    .map(key => ({
-      id: key,
-      label: concepts[key].label,
-      description: concepts[key].description,
-      additionalInfos: concepts[key].additionalInfos
-    }))
-    .filter(co => {
-      return (
-        co.label.toLowerCase().includes(query.toLowerCase()) ||
-        (co.description &&
-          co.description.toLowerCase().includes(query.toLowerCase())) ||
-        (co.additionalInfos &&
-          co.additionalInfos
-            .map(({ value }) => value)
-            .join("")
-            .toLowerCase()
-            .includes(query.toLowerCase()))
-      );
-    })
-    .map(({ id }) => id);
+const findConcepts = (treeId, nodeId, node, query) => {
+  const isNodeIncluded = doesQueryMatchNode(node, query);
 
-  return [...new Set(fetchParents(concepts, matches))];
-};
+  const childrenResults = node.children
+    ? node.children.reduce(
+        (all, child) => ({
+          ...all,
+          ...findConcepts(
+            treeId,
+            child,
+            window.categoryTrees[treeId][child],
+            query
+          )
+        }),
+        {}
+      )
+    : {};
 
-const fetchParents = (concepts, matches) => {
-  for (var ma in matches) {
-    // Updates matches as a side-effect
-    visitParentOf(matches[ma], concepts, matches);
+  if (!node.children) return isNodeIncluded ? { [nodeId]: 1 } : {};
+
+  childrenResults[nodeId] = 0;
+
+  for (let child of node.children) {
+    childrenResults[nodeId] += childrenResults[child] || 0;
   }
 
-  return matches;
+  if (childrenResults[nodeId] === 0) return {};
+
+  return childrenResults;
 };
 
-const visitParentOf = (id, concepts, matches) => {
-  const concept = concepts[id];
+const doesQueryMatchNode = (node, query) => {
+  const lowerQuery = query.toLowerCase();
 
-  if (concept && concept.parent) {
-    matches.push(concept.parent);
-
-    return visitParentOf(concept.parent, concepts, matches);
-  }
+  return (
+    node.label.toLowerCase().includes(lowerQuery) ||
+    (node.description && node.description.toLowerCase().includes(lowerQuery)) ||
+    (node.additionalInfos &&
+      node.additionalInfos
+        .map(({ value }) => value)
+        .join("")
+        .toLowerCase()
+        .includes(lowerQuery))
+  );
 };
+
+// const findConcepts = (concepts, query) => {
+//   const matches = Object.keys(concepts)
+//     .map(key => ({
+//       id: key,
+//       label: concepts[key].label,
+//       description: concepts[key].description,
+//       additionalInfos: concepts[key].additionalInfos
+//     }))
+//     .filter(co => {
+//       return doesQueryMatchNode(co, query);
+//     })
+//     .map(({ id }) => id);
+
+//   return [...new Set(fetchParents(concepts, matches))];
+// };
+
+// const fetchParents = (concepts, matches) => {
+//   for (var ma in matches) {
+//     // Updates matches as a side-effect
+//     visitParentOf(matches[ma], concepts, matches);
+//   }
+
+//   return matches;
+// };
+
+// const visitParentOf = (id, concepts, matches) => {
+//   const concept = concepts[id];
+
+//   if (concept && concept.parent) {
+//     matches.push(concept.parent);
+
+//     return visitParentOf(concept.parent, concepts, matches);
+//   }
+// };

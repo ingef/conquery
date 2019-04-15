@@ -122,8 +122,8 @@ const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
     searchResult: { result, size, limit }
   } = action.payload;
 
-  const nextResult = result ? resultWithCounts(state.trees, result, query) : {};
-  // const nextResult = result;
+  // const nextResult = result ? resultWithCounts(state.trees, result, query) : {};
+  const nextResult = result;
 
   return {
     ...state,
