@@ -50,7 +50,9 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  onSearch: (datasetId, query) => dispatch(searchTrees(datasetId, query)),
+  onSearch: (datasetId, query) => {
+    if (query.length > 1) dispatch(searchTrees(datasetId, query));
+  },
   onChange: query => dispatch(changeSearchQuery(query)),
   onClearQuery: () => dispatch(clearSearchQuery()),
   onToggleAllOpen: () => dispatch(toggleAllOpen())

@@ -108,13 +108,13 @@ export const searchTrees = (datasetId: DatasetIdType, query: string) => {
 
     if (isEmpty(query)) return;
 
-    // return search(query).then(
-    return api
-      .searchConcepts(datasetId, query, SEARCH_LIMIT)
-      .then(
-        r => dispatch(searchTreesSuccess(query, r)),
-        e => dispatch(searchTreesError(query, e))
-      );
+    return search(query).then(
+      // return api
+      //   .searchConcepts(datasetId, query, SEARCH_LIMIT)
+      // .then(
+      r => dispatch(searchTreesSuccess(query, r)),
+      e => dispatch(searchTreesError(query, e))
+    );
   };
 };
 

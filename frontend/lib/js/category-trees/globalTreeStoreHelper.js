@@ -1,5 +1,5 @@
 // @flow
-import { includes } from "../common/helpers";
+import { includes, flatmap } from "../common/helpers";
 import type {
   NodeType,
   TableType,
@@ -119,4 +119,61 @@ export const hasConceptChildren = node => {
   const concept = getConceptById(node.ids);
 
   return concept && concept.children && concept.children.length > 0;
+};
+
+export const search = async (query: string) => {
+  const result = flatmap(Object.keys(window.categoryTrees), key =>
+    findConcepts(window.categoryTrees[key], query)
+  );
+
+  return Promise.resolve({
+    size: result.size,
+    limit: 500,
+    result
+  });
+};
+
+const findConcepts = (concepts, query) => {
+  const matches = Object.keys(concepts)
+    .map(key => ({
+      id: key,
+      label: concepts[key].label,
+      description: concepts[key].description,
+      additionalInfos: concepts[key].additionalInfos
+    }))
+    .filter(co => {
+      return (
+        co.label.toLowerCase().includes(query.toLowerCase()) ||
+        (co.description &&
+          co.description.toLowerCase().includes(query.toLowerCase())) ||
+        (co.additionalInfos &&
+          co.additionalInfos
+            .map(({ value }) => value)
+            .join("")
+            .toLowerCase()
+            .includes(query.toLowerCase()))
+      );
+    })
+    .map(({ id }) => id);
+
+  return [...new Set(fetchParents(concepts, matches))];
+};
+
+const fetchParents = (concepts, matches) => {
+  for (var ma in matches) {
+    // Updates matches as a side-effect
+    visitParentOf(matches[ma], concepts, matches);
+  }
+
+  return matches;
+};
+
+const visitParentOf = (id, concepts, matches) => {
+  const concept = concepts[id];
+
+  if (concept && concept.parent) {
+    matches.push(concept.parent);
+
+    return visitParentOf(concept.parent, concepts, matches);
+  }
 };

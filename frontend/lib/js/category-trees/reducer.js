@@ -63,7 +63,15 @@ const treeWithCounts = (tree, result, searchTerm) => {
   const isNodeIncluded =
     includes(tree.label.toLowerCase(), searchTerm.toLowerCase()) ||
     (tree.description &&
-      includes(tree.description.toLowerCase(), searchTerm.toLowerCase()));
+      includes(tree.description.toLowerCase(), searchTerm.toLowerCase())) ||
+    (tree.additionalInfos &&
+      includes(
+        tree.additionalInfos
+          .map(({ value }) => value)
+          .join("")
+          .toLowerCase(),
+        searchTerm.toLowerCase()
+      ));
 
   const children = tree.children
     ? tree.children.filter(key => includes(result, key))
@@ -115,6 +123,7 @@ const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
   } = action.payload;
 
   const nextResult = result ? resultWithCounts(state.trees, result, query) : {};
+  // const nextResult = result;
 
   return {
     ...state,
