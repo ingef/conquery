@@ -17,6 +17,7 @@ categoryTreeList:
   noTreesExplanation: "Probably due to a network issue. Please try to refresh."
   openAll: "Open all"
   closeAll: "Open individually"
+  searchPlaceholder: "Search concepts ..."
 
 queryRunner:
   start: "Start Query"

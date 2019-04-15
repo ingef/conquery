@@ -17,6 +17,7 @@ categoryTreeList:
   noTreesExplanation: "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden."
   openAll: "Alle aufklappen"
   closeAll: "Einzeln aufklappen"
+  searchPlaceholder: "Konzepte durchsuchen ..."
 
 queryRunner:
   start: "Anfrage starten"

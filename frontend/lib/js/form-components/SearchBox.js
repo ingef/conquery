@@ -59,6 +59,7 @@ type PropsType = {
   onClearQuery: () => void,
   options: string[],
   textAppend?: React.Node,
+  placeholder?: string,
   isMulti: boolean,
   searchResult: Object,
   datasetId: string
@@ -71,6 +72,7 @@ const SearchBox = (props: PropsType) => {
     isMulti,
     search,
     options,
+    placeholder,
     textAppend,
     onSearch,
     onChange,
@@ -87,13 +89,15 @@ const SearchBox = (props: PropsType) => {
           value={search.map(t => ({ label: t, value: t }))}
           options={options ? options.map(t => ({ label: t, value: t })) : []}
           onChange={values => onSearch(values.map(v => v.value))}
-          placeholder={T.translate("reactSelect.searchPlaceholder")}
+          placeholder={
+            placeholder || T.translate("reactSelect.searchPlaceholder")
+          }
           noOptionsMessage={() => T.translate("reactSelect.noResults")}
         />
       ) : (
         <div>
           <StyledBaseInput
-            placeholder={T.translate("search.placeholder")}
+            placeholder={placeholder || T.translate("search.placeholder")}
             value={searchResult.query || ""}
             onChange={value => {
               return isEmpty(value)

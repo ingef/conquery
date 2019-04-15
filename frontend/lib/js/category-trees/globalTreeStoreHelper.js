@@ -121,28 +121,11 @@ export const hasConceptChildren = node => {
   return concept && concept.children && concept.children.length > 0;
 };
 
-// .reduce(
-//         (allTree, conceptKey) => {
-//           const concept = window.categoryTrees[key][conceptKey];
-//           const results = findConcepts(key, concept, query);
-
-//           // console.log("GOT RESULTS");
-
-//           return {
-//             ...allTree,
-//             ...(concept.children
-//               ? concept.children.reduce((sum, id) => sum + results[id], 0)
-//               : { [conceptKey]: doesQueryMatchNode(concept, query) }),
-//             ...results
-//           };
-//         },
-//         {}
-
 export const search = async (query: string) => {
   const result = Object.keys(window.categoryTrees).reduce(
     (all, key) => ({
       ...all,
-      ...findConcepts(key, key, window.categoryTrees[key][key], query)
+      ...findConcepts(key, key, window.categoryTrees[key][key], query, {})
     }),
     {}
   );
@@ -154,35 +137,40 @@ export const search = async (query: string) => {
   });
 };
 
-const findConcepts = (treeId, nodeId, node, query) => {
+const findConcepts = (treeId, nodeId, node, query, intermediateResult) => {
   const isNodeIncluded = doesQueryMatchNode(node, query);
 
-  const childrenResults = node.children
-    ? node.children.reduce(
-        (all, child) => ({
-          ...all,
-          ...findConcepts(
-            treeId,
-            child,
-            window.categoryTrees[treeId][child],
-            query
-          )
-        }),
-        {}
-      )
-    : {};
+  let sum = isNodeIncluded ? 1 : 0;
 
-  if (!node.children) return isNodeIncluded ? { [nodeId]: 1 } : {};
+  if (node.children) {
+    for (let child of node.children) {
+      const result = findConcepts(
+        treeId,
+        child,
+        window.categoryTrees[treeId][child],
+        query,
+        intermediateResult
+      );
 
-  childrenResults[nodeId] = 0;
+      sum += result[child] || 0;
+    }
+  } else {
+    if (isNodeIncluded) {
+      intermediateResult[nodeId] = 1;
 
-  for (let child of node.children) {
-    childrenResults[nodeId] += childrenResults[child] || 0;
+      return intermediateResult;
+    } else {
+      return intermediateResult;
+    }
   }
 
-  if (childrenResults[nodeId] === 0) return {};
+  if (sum === 0) {
+    return intermediateResult;
+  } else {
+    intermediateResult[nodeId] = sum;
 
-  return childrenResults;
+    return intermediateResult;
+  }
 };
 
 const doesQueryMatchNode = (node, query) => {
@@ -199,38 +187,3 @@ const doesQueryMatchNode = (node, query) => {
         .includes(lowerQuery))
   );
 };
-
-// const findConcepts = (concepts, query) => {
-//   const matches = Object.keys(concepts)
-//     .map(key => ({
-//       id: key,
-//       label: concepts[key].label,
-//       description: concepts[key].description,
-//       additionalInfos: concepts[key].additionalInfos
-//     }))
-//     .filter(co => {
-//       return doesQueryMatchNode(co, query);
-//     })
-//     .map(({ id }) => id);
-
-//   return [...new Set(fetchParents(concepts, matches))];
-// };
-
-// const fetchParents = (concepts, matches) => {
-//   for (var ma in matches) {
-//     // Updates matches as a side-effect
-//     visitParentOf(matches[ma], concepts, matches);
-//   }
-
-//   return matches;
-// };
-
-// const visitParentOf = (id, concepts, matches) => {
-//   const concept = concepts[id];
-
-//   if (concept && concept.parent) {
-//     matches.push(concept.parent);
-
-//     return visitParentOf(concept.parent, concepts, matches);
-//   }
-// };

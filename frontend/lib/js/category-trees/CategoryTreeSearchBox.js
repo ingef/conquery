@@ -32,6 +32,7 @@ const CategoryTreeSearchBox = ({
   return (
     <SearchBox
       {...props}
+      placeholder={T.translate("categoryTreeList.searchPlaceholder")}
       textAppend={
         <StyledButton tiny onClick={onToggleAllOpen}>
           {allOpen
