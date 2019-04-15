@@ -7,7 +7,7 @@ import { type DatasetIdType } from "../dataset/reducer";
 
 import { Pane } from "../pane";
 import { CategoryTreeList, CategoryTreeSearchBox } from "../category-trees";
-import PreviousQueryEditorTab from "../previous-queries/list/PreviousQueryEditorTab";
+import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
 
 type PropsType = {
   activeTab: string,
@@ -22,7 +22,7 @@ const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {
       )}
       <CategoryTreeList />
       {activeTab === "previousQueries" && (
-        <PreviousQueryEditorTab datasetId={selectedDatasetId} />
+        <PreviousQueriesTab datasetId={selectedDatasetId} />
       )}
     </Pane>
   );

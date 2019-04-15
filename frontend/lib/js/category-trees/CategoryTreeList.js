@@ -34,6 +34,7 @@ const Root = styled("div")`
 `;
 
 type PropsType = {
+  loading: boolean,
   trees: TreesType,
   areTreesAvailable: boolean,
   activeTab: string,
@@ -55,56 +56,53 @@ class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
-    const { activeTab, search, trees, areTreesAvailable } = this.props;
+    const { activeTab, search, trees, loading, areTreesAvailable } = this.props;
 
     return (
       !search.loading && (
         <Root show={activeTab === "categoryTrees"}>
-          {areTreesAvailable ? (
-            Object.keys(trees)
-              // Only take those that don't have a parent, they must be root
-              .filter(treeId => !trees[treeId].parent)
-              .sort(sortTrees(trees))
-              .map((treeId, i) => {
-                const tree = trees[treeId];
-                const rootConcept = getConceptById(treeId);
+          {!loading && !areTreesAvailable && <EmptyConceptTreeList />}
+          {Object.keys(trees)
+            // Only take those that don't have a parent, they must be root
+            .filter(treeId => !trees[treeId].parent)
+            .sort(sortTrees(trees))
+            .map((treeId, i) => {
+              const tree = trees[treeId];
+              const rootConcept = getConceptById(treeId);
 
-                const render = isNodeInSearchResult(
-                  treeId,
-                  tree.children,
-                  search
-                );
+              const render = isNodeInSearchResult(
+                treeId,
+                tree.children,
+                search
+              );
 
-                if (!render) return null;
+              if (!render) return null;
 
-                return tree.detailsAvailable ? (
-                  <CategoryTree
-                    key={i}
-                    id={treeId}
-                    label={tree.label}
-                    tree={rootConcept}
-                    treeId={treeId}
-                    loading={!!tree.loading}
-                    error={tree.error}
-                    depth={0}
-                    search={search}
-                  />
-                ) : (
-                  <CategoryTreeFolder
-                    key={i}
-                    trees={trees}
-                    tree={tree}
-                    treeId={treeId}
-                    depth={0}
-                    active={tree.active}
-                    openInitially
-                    search={search}
-                  />
-                );
-              })
-          ) : (
-            <EmptyConceptTreeList />
-          )}
+              return tree.detailsAvailable ? (
+                <CategoryTree
+                  key={i}
+                  id={treeId}
+                  label={tree.label}
+                  tree={rootConcept}
+                  treeId={treeId}
+                  loading={!!tree.loading}
+                  error={tree.error}
+                  depth={0}
+                  search={search}
+                />
+              ) : (
+                <CategoryTreeFolder
+                  key={i}
+                  trees={trees}
+                  tree={tree}
+                  treeId={treeId}
+                  depth={0}
+                  active={tree.active}
+                  openInitially
+                  search={search}
+                />
+              );
+            })}
         </Root>
       )
     );
@@ -114,6 +112,7 @@ class CategoryTreeList extends React.Component<PropsType> {
 const mapStateToProps = (state: StateType) => {
   return {
     trees: state.categoryTrees.trees,
+    loading: state.categoryTrees.loading,
     areTreesAvailable: getAreTreesAvailable(state),
     activeTab: state.panes.left.activeTab,
     search: state.categoryTrees.search

@@ -41,7 +41,7 @@ const ClearZone = styled("div")`
 
 class SnackMessage extends React.PureComponent {
   handleClickOutside(e) {
-    this.props.resetMessage();
+    if (this.props.messageKey) this.props.resetMessage();
   }
 
   render() {

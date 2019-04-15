@@ -17,9 +17,6 @@ import { loadPreviousQueries } from "./actions";
 import { selectPreviousQueries } from "./selector";
 
 const Container = styled("div")`
-  flex-grow: 1;
-  flex-shrink: 0;
-  flex-basis: 0;
   overflow-y: auto;
   font-size: ${({ theme }) => theme.font.sm};
   padding: 0 10px 0 20px;
