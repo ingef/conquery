@@ -19,8 +19,9 @@ const Root = styled("div")`
   position: relative; // Needed to fix a drag & drop issue in Safari
   cursor: pointer;
   padding: 0 15px 0 15px;
-  margin: 2px 0;
+  margin: 1px 0;
   padding-left: ${({ depth }) => depth * 15 + "px"};
+  display: inline-block;
 `;
 
 const Text = styled("p")`

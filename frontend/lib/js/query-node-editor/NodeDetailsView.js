@@ -34,6 +34,8 @@ const NodeDetailsView = (props: PropsType) => {
     onRemoveConcept
   } = props;
 
+  const rootConcept = node.isPreviousQuery ? getConceptById(node.tree) : null;
+
   return (
     <ContentCell>
       {isExcludeTimestampsPossible && (
@@ -64,9 +66,9 @@ const NodeDetailsView = (props: PropsType) => {
           />
         </Row>
       )}
-      {!node.isPreviousQuery && (
+      {!node.isPreviousQuery && rootConcept && (
         <Row>
-          <RowHeading>{[getConceptById(node.tree).label]}</RowHeading>
+          <RowHeading>{rootConcept.label}</RowHeading>
           <div>
             <ConceptDropzone node={node} onDropConcept={onDropConcept} />
           </div>
@@ -74,7 +76,7 @@ const NodeDetailsView = (props: PropsType) => {
             {node.ids.map(conceptId => (
               <ConceptEntry
                 key={conceptId}
-                node={getConceptById(conceptId)}
+                node={rootConcept}
                 canRemoveConcepts={node.ids.length > 1}
                 onRemoveConcept={onRemoveConcept}
                 conceptId={conceptId}
