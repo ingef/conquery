@@ -39,41 +39,23 @@ const SubMessage = styled("p")`
 const Preview = styled("div")`
   border-radius: 3px;
   background-color: ${({ theme }) => theme.col.grayVeryLight};
-  width: ${({ width }) => width}px;
-  height: 20px;
-  margin: 3px 0;
-`;
-
-const Container = styled("div")`
-  padding-left: 20px;
-  display: flex;
-  flex-direction: column;
+  width: 100%;
+  height: ${({ large }) => (large ? "100px" : "70px")};
+  margin: 5px 0;
 `;
 
 export default () => (
   <Root>
     <MsgContainer>
       <Msg>
-        <Message>{T.translate("categoryTreeList.noTrees")}</Message>
+        <Message>{T.translate("previousQueries.noQueriesFound")}</Message>
         <SubMessage>
           {T.translate("categoryTreeList.noTreesExplanation")}
         </SubMessage>
       </Msg>
     </MsgContainer>
-    <Preview width={200} />
-    <Preview width={100} />
-    <Container>
-      <Preview width={250} />
-      <Preview width={150} />
-      <Preview width={300} />
-      <Container>
-        <Preview width={200} />
-        <Preview width={50} />
-      </Container>
-    </Container>
-    <Preview width={350} />
-    <Preview width={200} />
-    <Preview width={300} />
-    <Preview width={250} />
+    <Preview large />
+    <Preview />
+    <Preview large />
   </Root>
 );

@@ -6,6 +6,8 @@ import T from "i18n-react";
 
 import FaIcon from "../icon/FaIcon";
 
+import { setMessage } from "./actions";
+
 const Root = styled("div")`
   position: fixed;
   z-index: 10;
@@ -38,31 +40,19 @@ const ClearZone = styled("div")`
 `;
 
 class SnackMessage extends React.PureComponent {
-  state = {
-    show: false
-  };
-
   handleClickOutside(e) {
-    this.setState({ show: false });
+    this.props.resetMessage();
   }
 
-  componentDidUpdate(prevProps) {
-    if (
-      !!this.props.messageKey &&
-      this.props.messageKey !== prevProps.messageKey
-    ) {
-      this.setState({ show: true });
-    }
-  }
   render() {
     // Must be an empty div here for onClickOutside to connect properly
     return (
       <div>
-        {this.state.show && (
+        {this.props.messageKey && (
           <Root>
             <Relative>
-              {this.props.messageKey && T.translate(this.props.messageKey)}
-              <ClearZone onClick={() => this.setState({ show: false })}>
+              {T.translate(this.props.messageKey)}
+              <ClearZone onClick={this.props.resetMessage}>
                 <FaIcon white large icon="times" />
               </ClearZone>
             </Relative>
@@ -73,6 +63,9 @@ class SnackMessage extends React.PureComponent {
   }
 }
 
-export default connect(state => ({
-  messageKey: state.snackMessage.messageKey
-}))(onClickOutside(SnackMessage));
+export default connect(
+  state => ({
+    messageKey: state.snackMessage.messageKey
+  }),
+  dispatch => ({ resetMessage: msg => dispatch(setMessage(null)) })
+)(onClickOutside(SnackMessage));

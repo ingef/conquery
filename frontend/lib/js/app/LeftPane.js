@@ -7,11 +7,7 @@ import { type DatasetIdType } from "../dataset/reducer";
 
 import { Pane } from "../pane";
 import { CategoryTreeList, CategoryTreeSearchBox } from "../category-trees";
-import { DeletePreviousQueryModal } from "../previous-queries/delete-modal";
-import { PreviousQueriesSearchBox } from "../previous-queries/search";
-import { PreviousQueriesFilter } from "../previous-queries/filter";
-import { PreviousQueriesContainer } from "../previous-queries/list";
-import { UploadQueryResults } from "../previous-queries/upload";
+import PreviousQueryEditorTab from "../previous-queries/list/PreviousQueryEditorTab";
 
 type PropsType = {
   activeTab: string,
@@ -25,13 +21,9 @@ const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {
         <CategoryTreeSearchBox datasetId={selectedDatasetId} />
       )}
       <CategoryTreeList />
-      {activeTab === "previousQueries" && [
-        <PreviousQueriesFilter key={0} />,
-        <PreviousQueriesSearchBox key={1} isMulti />,
-        <UploadQueryResults datasetId={selectedDatasetId} key={2} />,
-        <PreviousQueriesContainer datasetId={selectedDatasetId} key={3} />,
-        <DeletePreviousQueryModal datasetId={selectedDatasetId} key={4} />
-      ]}
+      {activeTab === "previousQueries" && (
+        <PreviousQueryEditorTab datasetId={selectedDatasetId} />
+      )}
     </Pane>
   );
 };
