@@ -60,18 +60,18 @@ const initialState: StateType = {
 };
 
 const treeWithCounts = (tree, result, searchTerm) => {
+  const lowerSearchTerm = searchTerm.toLowerCase();
+
   const isNodeIncluded =
-    includes(tree.label.toLowerCase(), searchTerm.toLowerCase()) ||
+    tree.label.toLowerCase().includes(lowerSearchTerm) ||
     (tree.description &&
-      includes(tree.description.toLowerCase(), searchTerm.toLowerCase())) ||
+      tree.description.toLowerCase().includes(lowerSearchTerm)) ||
     (tree.additionalInfos &&
-      includes(
-        tree.additionalInfos
-          .map(({ value }) => value)
-          .join("")
-          .toLowerCase(),
-        searchTerm.toLowerCase()
-      ));
+      tree.additionalInfos
+        .map(({ value }) => value)
+        .join("")
+        .toLowerCase()
+        .includes(lowerSearchTerm));
 
   const children = tree.children
     ? tree.children.filter(key => includes(result, key))
