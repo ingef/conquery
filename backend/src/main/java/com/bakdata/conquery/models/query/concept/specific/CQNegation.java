@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
@@ -39,7 +40,7 @@ public class CQNegation implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<Select> select) {
+	public void collectSelects(Deque<SelectDescriptor> select) {
 		child.collectSelects(select);
 	}
 

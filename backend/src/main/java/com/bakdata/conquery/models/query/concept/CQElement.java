@@ -44,10 +44,10 @@ public interface CQElement {
 		return set;
 	}
 
-	default void collectSelects(Deque<Select> select) {}
+	default void collectSelects(Deque<SelectDescriptor> select) {}
 	
-	default List<Select> collectSelects() {
-		ArrayDeque<Select> deque = new ArrayDeque<>();
+	default List<SelectDescriptor> collectSelects() {
+		ArrayDeque<SelectDescriptor> deque = new ArrayDeque<>();
 		this.collectSelects(deque);
 		return new ArrayList<>(deque);
 	}

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
+import java.util.InputMismatchException;
 import java.util.Optional;
 
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -59,14 +60,18 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 				}
 				
 				Optional<T> result = NamespaceCollection.get(ctxt).getOptional(id);
-				
-				if(result.isPresent()) {
-					return result.get();
-				}
-				else {
+
+				if (!result.isPresent()) {
 					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+id+" of type "+type.getName());
 				}
-			} catch(Exception e) {
+
+				if(!type.isAssignableFrom(result.get().getClass())) {
+					throw new InputMismatchException(String.format("Cannot assign %s of type %s to %s ", id, result.get().getClass(), type));
+				}
+
+				return result.get();
+			}
+			catch(Exception e) {
 				log.error("Error while resolving entry "+text+" of type "+type, e);
 				throw e;
 			}

@@ -12,7 +12,7 @@ import {
   LOAD_CONFIG_SUCCESS
 } from "./actionTypes";
 
-export const startup = datasetId => loadDatasets(datasetId);
+export const startup = () => loadDatasets();
 
 export const loadConfigStart = () => ({ type: LOAD_CONFIG_START });
 export const loadConfigError = (err: any) =>

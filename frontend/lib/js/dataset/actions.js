@@ -31,7 +31,7 @@ export const loadDatasetsSuccess = (res: any) =>
   defaultSuccess(LOAD_DATASETS_SUCCESS, res);
 
 // Done at the very beginning on loading the site
-export const loadDatasets = (datasetIdFromUrl: ?DatasetIdType) => {
+export const loadDatasets = () => {
   return (dispatch: Dispatch) => {
     dispatch(loadDatasetsStart());
 
