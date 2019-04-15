@@ -53,7 +53,8 @@ const Row = styled("div")`
 `;
 
 type PropsType = {
-  search: string[],
+  // TODO: Disentangle Concept search from PreviousQuery search
+  search: string[] | Object,
   onSearch: string => void,
   onChange: () => void,
   onClearQuery: () => void,
@@ -61,16 +62,14 @@ type PropsType = {
   textAppend?: React.Node,
   placeholder?: string,
   isMulti: boolean,
-  searchResult: Object,
   datasetId: string
 };
 
 const SearchBox = (props: PropsType) => {
   const {
     datasetId,
-    searchResult,
-    isMulti,
     search,
+    isMulti,
     options,
     placeholder,
     textAppend,
@@ -98,7 +97,7 @@ const SearchBox = (props: PropsType) => {
         <div>
           <StyledBaseInput
             placeholder={placeholder || T.translate("search.placeholder")}
-            value={searchResult.query || ""}
+            value={search.query || ""}
             onChange={value => {
               return isEmpty(value)
                 ? onClearQuery()
@@ -112,26 +111,25 @@ const SearchBox = (props: PropsType) => {
               }
             }}
           />
-          {!isEmpty(searchResult.query) && (
+          {!isEmpty(search.query) && (
             <Right>
               <StyledIconButton
                 icon="search"
                 aria-hidden="true"
-                onClick={() => onSearch(datasetId, searchResult.query)}
+                onClick={() => onSearch(datasetId, search.query)}
               />
             </Right>
           )}
-          {searchResult.loading ? (
+          {search.loading ? (
             <AnimatedDots />
           ) : (
-            searchResult.result &&
-            searchResult.totalResults >= 0 && (
+            search.result &&
+            search.resultCount >= 0 && (
               <Row>
                 <TinyText>
                   {T.translate("search.resultLabel", {
-                    numResults: Object.keys(searchResult.result).length,
-                    totalResults: searchResult.totalResults,
-                    duration: (searchResult.duration / 1000.0).toFixed(2)
+                    totalResults: search.resultCount,
+                    duration: (search.duration / 1000.0).toFixed(2)
                   })}
                 </TinyText>
                 {textAppend}

@@ -121,6 +121,10 @@ export const hasConceptChildren = node => {
   return concept && concept.children && concept.children.length > 0;
 };
 
+/*
+  This is async because ... we might want to parallelize this very soon,
+  as there are up to 200k concepts that need to be searched.
+*/
 export const search = async (query: string) => {
   const result = Object.keys(window.categoryTrees).reduce(
     (all, key) => ({
@@ -130,11 +134,7 @@ export const search = async (query: string) => {
     {}
   );
 
-  return Promise.resolve({
-    size: Object.keys(result).length,
-    limit: 500,
-    result
-  });
+  return result;
 };
 
 const doesQueryMatchNode = (node, query) => {

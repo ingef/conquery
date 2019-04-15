@@ -29,8 +29,7 @@ export type SearchType = {
   query: string,
   words: ?(string[]),
   result: ?{ [TreeNodeIdType]: number },
-  limit: number,
-  totalResults: number,
+  resultCount: number,
   duration: number
 };
 
@@ -47,8 +46,7 @@ const initialSearch = {
   query: "",
   words: null,
   result: null,
-  limit: 0,
-  totalResults: 0,
+  resultCount: 0,
   duration: 0
 };
 
@@ -59,71 +57,8 @@ const initialState: StateType = {
   search: initialSearch
 };
 
-const treeWithCounts = (tree, result, searchTerm) => {
-  const lowerSearchTerm = searchTerm.toLowerCase();
-
-  const isNodeIncluded =
-    tree.label.toLowerCase().includes(lowerSearchTerm) ||
-    (tree.description &&
-      tree.description.toLowerCase().includes(lowerSearchTerm)) ||
-    (tree.additionalInfos &&
-      tree.additionalInfos
-        .map(({ value }) => value)
-        .join("")
-        .toLowerCase()
-        .includes(lowerSearchTerm));
-
-  const children = tree.children
-    ? tree.children.filter(key => includes(result, key))
-    : [];
-
-  if (children.length === 0) {
-    return {
-      [tree.id]: isNodeIncluded ? 1 : 0
-    };
-  } else {
-    const childrenWithCounts = children.reduce((all, childKey) => {
-      const child = {
-        id: childKey,
-        ...getConceptById(childKey)
-      };
-      const childResult = treeWithCounts(child, result, searchTerm);
-
-      return {
-        ...all,
-        ...childResult
-      };
-    }, {});
-
-    return {
-      ...childrenWithCounts,
-      [tree.id]: children.reduce(
-        (sum, child) => sum + childrenWithCounts[child],
-        0
-      )
-    };
-  }
-};
-
-const resultWithCounts = (trees, result: string[], searchTerm) => {
-  return Object.keys(trees)
-    .filter(key => includes(result, key))
-    .reduce((all, key) => {
-      return {
-        ...all,
-        ...treeWithCounts({ id: key, ...trees[key] }, result, searchTerm)
-      };
-    }, {});
-};
-
 const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
-  const {
-    query,
-    searchResult: { result, size, limit }
-  } = action.payload;
-
-  // const nextResult = result ? resultWithCounts(state.trees, result, query) : {};
-  const nextResult = result;
+  const { query, result } = action.payload;
 
   return {
     ...state,
@@ -132,9 +67,8 @@ const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
       loading: false,
       query,
       words: query.split(" "),
-      result: nextResult,
-      limit,
-      totalResults: size || 0, // The number of all potential matches (possiby greater than limit)
+      result: result,
+      resultCount: Object.keys(result).length, // result might be > 100k entries
       duration: Date.now() - state.search.duration
     }
   };
@@ -151,8 +85,7 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
       query: query,
       words: query ? query.split(" ") : [],
       result: {},
-      totalResults: 0,
-      limit: 0,
+      resultCount: 0,
       duration: Date.now()
     }
   };

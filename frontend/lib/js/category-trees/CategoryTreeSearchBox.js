@@ -47,7 +47,7 @@ const CategoryTreeSearchBox = ({
 const mapStateToProps = state => ({
   areTreesAvailable: getAreTreesAvailable(state),
   allOpen: state.categoryTrees.search.allOpen,
-  searchResult: state.categoryTrees.search
+  search: state.categoryTrees.search
 });
 
 const mapDispatchToProps = dispatch => ({
