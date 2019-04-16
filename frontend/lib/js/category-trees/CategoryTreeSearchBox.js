@@ -6,6 +6,8 @@ import T from "i18n-react";
 import { connect } from "react-redux";
 
 import { SearchBox } from "../form-components";
+
+import { getAreTreesAvailable } from "./selectors";
 import {
   searchTrees,
   changeSearchQuery,
@@ -19,20 +21,30 @@ const StyledButton = styled(TransparentButton)`
   margin: 3px 0 3px 5px;
 `;
 
-const CategoryTreeSearchBox = ({ allOpen, onToggleAllOpen, ...props }) => (
-  <SearchBox
-    {...props}
-    textAppend={
-      <StyledButton tiny onClick={onToggleAllOpen}>
-        {allOpen
-          ? T.translate("categoryTreeList.closeAll")
-          : T.translate("categoryTreeList.openAll")}
-      </StyledButton>
-    }
-  />
-);
+const CategoryTreeSearchBox = ({
+  allOpen,
+  onToggleAllOpen,
+  areTreesAvailable,
+  ...props
+}) => {
+  if (!areTreesAvailable) return null;
+
+  return (
+    <SearchBox
+      {...props}
+      textAppend={
+        <StyledButton tiny onClick={onToggleAllOpen}>
+          {allOpen
+            ? T.translate("categoryTreeList.closeAll")
+            : T.translate("categoryTreeList.openAll")}
+        </StyledButton>
+      }
+    />
+  );
+};
 
 const mapStateToProps = state => ({
+  areTreesAvailable: getAreTreesAvailable(state),
   allOpen: state.categoryTrees.search.allOpen,
   searchResult: state.categoryTrees.search
 });

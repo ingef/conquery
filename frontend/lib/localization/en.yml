@@ -11,9 +11,10 @@ rightPane:
   externalForms: "Forms"
 
 categoryTreeList:
-  loading: "Loading Concept: {tree}"
-  error: "Could not load Concept: {tree}."
-  noTrees: "Could not load Concepts."
+  loading: "Loading concept: {tree}"
+  error: "Could not load concept: {tree}."
+  noTrees: "Could not load concepts."
+  noTreesExplanation: "Probably due to a network issue. Please try to refresh."
   openAll: "Open all"
   closeAll: "Open individually"
 

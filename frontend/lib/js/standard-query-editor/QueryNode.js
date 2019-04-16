@@ -61,6 +61,10 @@ const PreviousQueryLabel = styled("p")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
+const StyledErrorMessage = styled(ErrorMessage)`
+  margin: 0;
+`;
+
 type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
@@ -90,8 +94,8 @@ class QueryNode extends React.Component {
     return (
       <Root
         ref={instance => connectDragSource(instance)}
-        hasActiveFilters={nodeHasActiveFilters(node)}
-        onClick={onEditClick}
+        hasActiveFilters={!node.error && nodeHasActiveFilters(node)}
+        onClick={!node.error && onEditClick}
       >
         <Node>
           {node.isPreviousQuery && (
@@ -100,7 +104,7 @@ class QueryNode extends React.Component {
             </PreviousQueryLabel>
           )}
           {node.error ? (
-            <ErrorMessage message={node.error} />
+            <StyledErrorMessage message={node.error} />
           ) : (
             <Content>
               <span>{node.label || node.id}</span>
