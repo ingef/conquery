@@ -22,7 +22,8 @@ import {
   SEARCH_TREES_ERROR,
   CHANGE_SEARCH_QUERY,
   CLEAR_SEARCH_QUERY,
-  TOGGLE_ALL_OPEN
+  TOGGLE_ALL_OPEN,
+  TOGGLE_SHOW_MISMATCHES
 } from "./actionTypes";
 
 export const clearTrees = () => ({ type: CLEAR_TREES });
@@ -117,3 +118,4 @@ export const changeSearchQuery = (query: string) => ({
 });
 
 export const toggleAllOpen = () => ({ type: TOGGLE_ALL_OPEN });
+export const toggleShowMismatches = () => ({ type: TOGGLE_SHOW_MISMATCHES });

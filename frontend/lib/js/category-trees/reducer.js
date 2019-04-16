@@ -2,8 +2,6 @@
 
 import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 
-import { includes } from "../common/helpers/commonHelper";
-
 import {
   LOAD_TREES_START,
   LOAD_TREES_SUCCESS,
@@ -17,14 +15,16 @@ import {
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
   CHANGE_SEARCH_QUERY,
-  TOGGLE_ALL_OPEN
+  TOGGLE_ALL_OPEN,
+  TOGGLE_SHOW_MISMATCHES
 } from "./actionTypes";
-import { setTree, getConceptById } from "./globalTreeStoreHelper";
+import { setTree } from "./globalTreeStoreHelper";
 
 export type TreesType = { [treeId: string]: NodeType };
 
 export type SearchType = {
   allOpen: boolean,
+  showMismatches: boolean,
   loading: boolean,
   query: string,
   words: ?(string[]),
@@ -42,6 +42,7 @@ export type StateType = {
 
 const initialSearch = {
   allOpen: false,
+  showMismatches: true,
   loading: false,
   query: "",
   words: null,
@@ -60,15 +61,22 @@ const initialState: StateType = {
 const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
   const { query, result } = action.payload;
 
+  // only create keys array once, then cache,
+  // since the result might be > 100k entries
+  const resultCount = Object.keys(result).length;
+  const AUTO_UNFOLD_AT = 250;
+
   return {
     ...state,
     search: {
       ...state.search,
+      allOpen: resultCount < AUTO_UNFOLD_AT,
+      showMismatches: resultCount >= AUTO_UNFOLD_AT,
       loading: false,
       query,
       words: query.split(" "),
       result: result,
-      resultCount: Object.keys(result).length, // result might be > 100k entries
+      resultCount,
       duration: Date.now() - state.search.duration
     }
   };
@@ -196,6 +204,15 @@ const categoryTrees = (
         search: {
           ...state.search,
           allOpen: !state.search.allOpen
+        }
+      };
+    case TOGGLE_SHOW_MISMATCHES:
+      return {
+        ...state,
+        search: {
+          ...state.search,
+          allOpen: !state.search.showMismatches ? false : state.search.allOpen,
+          showMismatches: !state.search.showMismatches
         }
       };
     default:

@@ -66,9 +66,11 @@ class CategoryTreeNode extends React.Component<PropsType> {
   render() {
     const { id, data, depth, open, search } = this.props;
 
-    // const shouldRender = isNodeInSearchResult(id, data.children, search);
+    if (!search.showMismatches) {
+      const shouldRender = isNodeInSearchResult(id, data.children, search);
 
-    // if (!shouldRender) return null;
+      if (!shouldRender) return null;
+    }
 
     const isOpen = open || search.allOpen;
 

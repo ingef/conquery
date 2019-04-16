@@ -18,6 +18,8 @@ categoryTreeList:
   openAll: "Alle aufklappen"
   closeAll: "Einzeln aufklappen"
   searchPlaceholder: "Konzepte durchsuchen ..."
+  showMismatches: "Vollständig anzeigen"
+  dontShowMismatches: "Nur Treffer zeigen"
 
 queryRunner:
   start: "Anfrage starten"
