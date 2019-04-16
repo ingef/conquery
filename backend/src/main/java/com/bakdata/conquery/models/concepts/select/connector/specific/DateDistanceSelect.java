@@ -18,18 +18,12 @@ import lombok.Setter;
 @Getter @Setter
 public class DateDistanceSelect extends SingleColumnSelect {
 
-	public DateDistanceSelect(Column column) {
-		this(column, ChronoUnit.YEARS);
-	}
-
 	@JsonCreator
-	public DateDistanceSelect(@NsIdRef Column column, ChronoUnit timeUnit) {
-		super(column);
-		this.timeUnit = timeUnit;
+	public DateDistanceSelect() {
+		super(null);
 	}
 
 	private ChronoUnit timeUnit = ChronoUnit.YEARS;
-
 
 
 	@Override
