@@ -231,7 +231,7 @@ class PreviousQuery extends React.Component {
               ) : (
                 query.own && (
                   <IconButton
-                    icon="close"
+                    icon="times"
                     tiny
                     onClick={onDeletePreviousQuery}
                   />

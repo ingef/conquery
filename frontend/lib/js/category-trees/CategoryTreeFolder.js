@@ -23,7 +23,8 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
-  search: SearchType
+  search: SearchType,
+  onLoadTree: (id: string) => void
 };
 
 const sumMatchingEntries = (children, initSum) => {
@@ -83,6 +84,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 error={tree.error}
                 depth={props.depth + 1}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             );
           } else {
@@ -98,6 +100,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 depth={props.depth + 1}
                 active={tree.active}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             ) : (
               <CategoryTreeFolder
@@ -109,6 +112,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 depth={props.depth + 1}
                 active={tree.active}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             );
           }

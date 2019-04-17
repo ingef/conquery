@@ -19,8 +19,13 @@ export const Icon = styled("i")`
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "inherit")};
 `;
 
-const FaIcon = ({ icon, className, ...restProps }) => {
-  return <Icon className={`fa fa-${icon} ${className}`} {...restProps} />;
+const FaIcon = ({ icon, regular, className, ...restProps }) => {
+  return (
+    <Icon
+      className={`${regular ? "far" : "fa"} fa-fw fa-${icon} ${className}`}
+      {...restProps}
+    />
+  );
 };
 
 export default FaIcon;

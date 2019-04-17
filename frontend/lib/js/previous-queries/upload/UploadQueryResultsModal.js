@@ -87,7 +87,7 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
             <div>
               {this.state.file ? (
                 <p>
-                  <IconButton icon="close" onClick={this._onReset.bind(this)} />
+                  <IconButton icon="times" onClick={this._onReset.bind(this)} />
                   {this.state.file.name}
                 </p>
               ) : (

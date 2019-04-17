@@ -65,14 +65,15 @@ const QueryGroupActions = (props: PropsType) => {
         </RedIconButton>
         <StyledIconButton
           active={props.dateActive}
-          icon="calendar-o"
+          regular
+          icon="calendar"
           onClick={props.onDateClick}
         >
           {T.translate("queryEditor.date")}
         </StyledIconButton>
       </div>
       <Right>
-        <IconButton noFrame tiny icon="close" onClick={props.onDeleteGroup} />
+        <IconButton noFrame tiny icon="times" onClick={props.onDeleteGroup} />
       </Right>
     </Actions>
   );

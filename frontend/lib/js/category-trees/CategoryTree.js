@@ -2,12 +2,11 @@
 
 import React from "react";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
 import T from "i18n-react";
 
-import { ErrorMessage } from "../error-message";
 import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 import FaIcon from "../icon/FaIcon";
+import IconButton from "../button/IconButton";
 
 import CategoryTreeNode from "./CategoryTreeNode";
 import { type SearchType } from "./reducer";
@@ -24,14 +23,18 @@ type PropsType = {
 };
 
 const LoadingTree = styled("p")`
-  padding-left: 14px;
+  padding-left: 26px;
   font-size: ${({ theme }) => theme.font.sm};
-  margin: 2px 0;
+  margin: 1px 0;
+  line-height: 22px;
 `;
-const StyledErrorMessage = styled(ErrorMessage)`
+const ErrorMessage = styled("p")`
+  color: ${({ theme }) => theme.col.red};
+  font-weight: 400;
   padding-left: 14px;
   font-size: ${({ theme }) => theme.font.sm};
-  margin: 2px 0;
+  margin: 1px 0;
+  line-height: 22px;
 `;
 
 const Spinner = styled("span")`
@@ -52,9 +55,14 @@ const CategoryTree = (props: PropsType) => {
     );
   else if (props.error)
     return (
-      <StyledErrorMessage
-        message={T.translate("categoryTreeList.error", { tree: props.label })}
-      />
+      <ErrorMessage>
+        <IconButton
+          red
+          icon="redo"
+          onClick={() => props.onLoadTree(props.treeId)}
+        />
+        {T.translate("categoryTreeList.error", { tree: props.label })}
+      </ErrorMessage>
     );
   else if (props.tree)
     return (

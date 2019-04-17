@@ -7,6 +7,10 @@ import ReactDOM from "react-dom";
 import { ThemeProvider } from "emotion-theming";
 import createHistory from "history/createBrowserHistory";
 
+import fontawesome from "./font-awesome/fontawesome.js";
+import regular from "./font-awesome/regular.js";
+import solid from "./font-awesome/solid.js";
+
 import "./app/actions"; //  To initialize parameterized actions
 import { makeStore } from "./store";
 import AppRoot from "./AppRoot";
@@ -19,7 +23,9 @@ import {
 
 require("es6-promise").polyfill();
 
-require("font-awesome-webpack");
+fontawesome.config = {
+  autoAddCss: false
+};
 
 // TODO: OG image required?
 // require('../../images/og.png');
