@@ -13,9 +13,13 @@ rightPane:
 categoryTreeList:
   loading: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
-  noTrees: "Konnte Konzeptbäume nicht laden."
+  noTrees: "Keine Konzeptbäume"
+  noTreesExplanation: "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden."
   openAll: "Alle aufklappen"
   closeAll: "Einzeln aufklappen"
+  searchPlaceholder: "Konzepte durchsuchen ..."
+  showMismatches: "Vollständig anzeigen"
+  dontShowMismatches: "Nur Treffer zeigen"
 
 queryRunner:
   start: "Anfrage starten"
@@ -244,4 +248,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} s)"
+  resultLabel: "{totalResults} Ergebnisse gefunden ({duration} s)"
