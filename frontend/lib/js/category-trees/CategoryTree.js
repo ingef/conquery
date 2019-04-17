@@ -46,7 +46,7 @@ const CategoryTree = (props: PropsType) => {
           <FaIcon icon="spinner" />
         </Spinner>
         <span>
-          {T.translate("categoryTreeList.loading", { tree: props.label })}
+          {T.translate("categoryTreeList.loadingTree", { tree: props.label })}
         </span>
       </LoadingTree>
     );

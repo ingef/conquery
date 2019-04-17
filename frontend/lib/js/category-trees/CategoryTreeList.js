@@ -13,6 +13,7 @@ import CategoryTreeFolder from "./CategoryTreeFolder";
 import { isNodeInSearchResult, getAreTreesAvailable } from "./selectors";
 
 import EmptyConceptTreeList from "./EmptyConceptTreeList";
+import ConceptTreesLoading from "./ConceptTreesLoading";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -61,10 +62,12 @@ class CategoryTreeList extends React.Component<PropsType> {
     return (
       !search.loading && (
         <Root show={activeTab === "categoryTrees"}>
+          {loading && <ConceptTreesLoading />}
           {!loading && !areTreesAvailable && <EmptyConceptTreeList />}
           {Object.keys(trees)
             // Only take those that don't have a parent, they must be root
-            .filter(treeId => !trees[treeId].parent)
+            // If they don't have a label, they're loading, or in any other broken state
+            .filter(treeId => !trees[treeId].parent && trees[treeId].label)
             .sort(sortTrees(trees))
             .map((treeId, i) => {
               const tree = trees[treeId];

@@ -11,7 +11,8 @@ rightPane:
   externalForms: "Formulare"
 
 categoryTreeList:
-  loading: "Lade Konzeptbaum: {tree}"
+  loading: "Lade Konzeptbäume"
+  loadingTree: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
   noTrees: "Keine Konzeptbäume"
   noTreesExplanation: "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden."
