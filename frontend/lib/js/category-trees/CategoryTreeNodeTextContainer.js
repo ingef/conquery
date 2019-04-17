@@ -46,13 +46,17 @@ const StyledFaIcon = styled(FaIcon)`
   width: 20px;
 `;
 
+const Caret = styled(FaIcon)`
+  width: 12px;
+`;
+
 const ResultsNumber = styled("span")`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   padding: 2px 4px;
-  margin-left: 5px;
+  margin-right: 5px;
   font-size: ${({ theme }) => theme.font.xs};
   border-radius: 3px;
   color: ${({ theme }) => theme.col.blueGrayDark};
@@ -114,7 +118,13 @@ class CategoryTreeNodeTextContainer extends React.Component {
       >
         <Text open={open} zero={zeroEntries}>
           {hasChildren && (
+            <Caret active icon={!!open ? "caret-down" : "caret-right"} />
+          )}
+          {hasChildren && (
             <StyledFaIcon active icon={!!open ? "folder-open" : "folder"} />
+          )}
+          {showNumber && (
+            <ResultsNumber>{search.result[node.id]}</ResultsNumber>
           )}
           <span>
             {search.words ? (
@@ -135,9 +145,6 @@ class CategoryTreeNodeTextContainer extends React.Component {
             />
           ) : (
             node.description && description
-          )}
-          {showNumber && (
-            <ResultsNumber>{search.result[node.id]}</ResultsNumber>
           )}
         </Text>
       </Root>

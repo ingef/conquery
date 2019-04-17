@@ -12,10 +12,13 @@ import {
   searchTrees,
   changeSearchQuery,
   clearSearchQuery,
-  toggleAllOpen
+  toggleAllOpen,
+  toggleShowMismatches
 } from "./actions";
 
 import TransparentButton from "../button/TransparentButton";
+
+const OPENABLE_AT = 500;
 
 const StyledButton = styled(TransparentButton)`
   margin: 3px 0 3px 5px;
@@ -23,6 +26,8 @@ const StyledButton = styled(TransparentButton)`
 
 const CategoryTreeSearchBox = ({
   allOpen,
+  showMismatches,
+  onToggleShowMismatches,
   onToggleAllOpen,
   areTreesAvailable,
   ...props
@@ -32,12 +37,22 @@ const CategoryTreeSearchBox = ({
   return (
     <SearchBox
       {...props}
+      placeholder={T.translate("categoryTreeList.searchPlaceholder")}
       textAppend={
-        <StyledButton tiny onClick={onToggleAllOpen}>
-          {allOpen
-            ? T.translate("categoryTreeList.closeAll")
-            : T.translate("categoryTreeList.openAll")}
-        </StyledButton>
+        <>
+          <StyledButton tiny onClick={onToggleShowMismatches}>
+            {showMismatches
+              ? T.translate("categoryTreeList.dontShowMismatches")
+              : T.translate("categoryTreeList.showMismatches")}
+          </StyledButton>
+          {!showMismatches && props.search.resultCount < OPENABLE_AT && (
+            <StyledButton tiny onClick={onToggleAllOpen}>
+              {allOpen
+                ? T.translate("categoryTreeList.closeAll")
+                : T.translate("categoryTreeList.openAll")}
+            </StyledButton>
+          )}
+        </>
       }
     />
   );
@@ -46,14 +61,18 @@ const CategoryTreeSearchBox = ({
 const mapStateToProps = state => ({
   areTreesAvailable: getAreTreesAvailable(state),
   allOpen: state.categoryTrees.search.allOpen,
-  searchResult: state.categoryTrees.search
+  showMismatches: state.categoryTrees.search.showMismatches,
+  search: state.categoryTrees.search
 });
 
 const mapDispatchToProps = dispatch => ({
-  onSearch: (datasetId, query) => dispatch(searchTrees(datasetId, query)),
+  onSearch: (datasetId, query) => {
+    if (query.length > 1) dispatch(searchTrees(datasetId, query));
+  },
   onChange: query => dispatch(changeSearchQuery(query)),
   onClearQuery: () => dispatch(clearSearchQuery()),
-  onToggleAllOpen: () => dispatch(toggleAllOpen())
+  onToggleAllOpen: () => dispatch(toggleAllOpen()),
+  onToggleShowMismatches: () => dispatch(toggleShowMismatches())
 });
 
 export default connect(
