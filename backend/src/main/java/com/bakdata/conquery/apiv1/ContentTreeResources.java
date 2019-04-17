@@ -149,20 +149,6 @@ public class ContentTreeResources {
 				filterValues.getValues());
 	}
 
-	@POST
-	@Path("{" + DATASET + "}/concepts/search")
-	public SearchResult search(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull ConceptSearchParam conceptSearchParam, @Context HttpServletRequest req) {
-		authorize(user, datasetId, Ability.READ);
-
-		String query = conceptSearchParam.getQuery();
-
-		if (StringUtils.isBlank(query)) {
-			throw new WebApplicationException("Too short query.", Status.BAD_REQUEST);
-		}
-
-		int limit = conceptSearchParam.getLimit();
-		return processor.search(dsUtil.getDataset(datasetId), query, limit);
-	}
 
 	@Getter
 	@Setter
