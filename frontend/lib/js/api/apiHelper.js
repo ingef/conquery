@@ -174,7 +174,6 @@ const transformExternalQueryToApi = query =>
   createConceptQuery(createExternal(query));
 
 const createExternal = (query: any) => {
-  debugger;
   return {
     type: "EXTERNAL",
     format:

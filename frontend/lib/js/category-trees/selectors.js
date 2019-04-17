@@ -21,3 +21,10 @@ export const isNodeInSearchResult = (
 
   return false;
 };
+
+export const getAreTreesAvailable = state => {
+  return (
+    state.categoryTrees.trees &&
+    Object.keys(state.categoryTrees.trees).length > 0
+  );
+};
