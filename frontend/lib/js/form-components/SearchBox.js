@@ -53,24 +53,25 @@ const Row = styled("div")`
 `;
 
 type PropsType = {
-  search: string[],
+  // TODO: Disentangle Concept search from PreviousQuery search
+  search: string[] | Object,
   onSearch: string => void,
   onChange: () => void,
   onClearQuery: () => void,
   options: string[],
   textAppend?: React.Node,
+  placeholder?: string,
   isMulti: boolean,
-  searchResult: Object,
   datasetId: string
 };
 
 const SearchBox = (props: PropsType) => {
   const {
     datasetId,
-    searchResult,
-    isMulti,
     search,
+    isMulti,
     options,
+    placeholder,
     textAppend,
     onSearch,
     onChange,
@@ -87,14 +88,16 @@ const SearchBox = (props: PropsType) => {
           value={search.map(t => ({ label: t, value: t }))}
           options={options ? options.map(t => ({ label: t, value: t })) : []}
           onChange={values => onSearch(values.map(v => v.value))}
-          placeholder={T.translate("reactSelect.searchPlaceholder")}
+          placeholder={
+            placeholder || T.translate("reactSelect.searchPlaceholder")
+          }
           noOptionsMessage={() => T.translate("reactSelect.noResults")}
         />
       ) : (
         <div>
           <StyledBaseInput
-            placeholder={T.translate("search.placeholder")}
-            value={searchResult.query || ""}
+            placeholder={placeholder || T.translate("search.placeholder")}
+            value={search.query || ""}
             onChange={value => {
               return isEmpty(value)
                 ? onClearQuery()
@@ -108,26 +111,25 @@ const SearchBox = (props: PropsType) => {
               }
             }}
           />
-          {!isEmpty(searchResult.query) && (
+          {!isEmpty(search.query) && (
             <Right>
               <StyledIconButton
                 icon="search"
                 aria-hidden="true"
-                onClick={() => onSearch(datasetId, searchResult.query)}
+                onClick={() => onSearch(datasetId, search.query)}
               />
             </Right>
           )}
-          {searchResult.loading ? (
+          {search.loading ? (
             <AnimatedDots />
           ) : (
-            searchResult.result &&
-            searchResult.totalResults >= 0 && (
+            search.result &&
+            search.resultCount >= 0 && (
               <Row>
                 <TinyText>
                   {T.translate("search.resultLabel", {
-                    numResults: Object.keys(searchResult.result).length,
-                    totalResults: searchResult.totalResults,
-                    duration: (searchResult.duration / 1000.0).toFixed(2)
+                    totalResults: search.resultCount,
+                    duration: (search.duration / 1000.0).toFixed(2)
                   })}
                 </TinyText>
                 {textAppend}
