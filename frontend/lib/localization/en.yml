@@ -17,6 +17,9 @@ categoryTreeList:
   noTreesExplanation: "Probably due to a network issue. Please try to refresh."
   openAll: "Open all"
   closeAll: "Open individually"
+  searchPlaceholder: "Search concepts ..."
+  showMismatches: "Show all"
+  dontShowMismatches: "Show hits only"
 
 queryRunner:
   start: "Start Query"
@@ -244,4 +247,4 @@ authorization:
 
 search:
   placeholder: "Search ..."
-  resultLabel: "Showing {numResults} of {totalResults} results ({duration} s)"
+  resultLabel: "{totalResults} results found ({duration} s)"
