@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.util.function.BiConsumer;
 
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
-import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.google.common.primitives.Ints;
 
 import jetbrains.exodus.ByteIterable;
@@ -41,7 +40,8 @@ public class XodusStore implements Closeable {
 				while(c.getNext()) {
 					try {
 						consumer.accept(c.getKey(), c.getValue());
-					}catch (RuntimeException e) {
+					}
+					catch (RuntimeException e) {
 						if (e.getCause() instanceof IdReferenceResolvingException) {
 							log.warn("Probably failed to read id '{}' because it is not yet present, skipping",  ((IdReferenceResolvingException) e.getCause()).getValue(),e.getCause());
 						}
