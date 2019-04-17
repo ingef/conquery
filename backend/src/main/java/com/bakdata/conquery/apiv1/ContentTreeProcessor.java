@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.WebApplicationException;
 
-import com.bakdata.conquery.apiv1.ContentTreeResources.SearchResult;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;

@@ -23,8 +23,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.bakdata.conquery.apiv1.ContentTreeProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
