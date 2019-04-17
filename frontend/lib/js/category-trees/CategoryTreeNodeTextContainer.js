@@ -46,6 +46,10 @@ const StyledFaIcon = styled(FaIcon)`
   width: 20px;
 `;
 
+const Caret = styled(FaIcon)`
+  width: 12px;
+`;
+
 const ResultsNumber = styled("span")`
   display: inline-flex;
   align-items: center;
@@ -113,6 +117,9 @@ class CategoryTreeNodeTextContainer extends React.Component {
         depth={depth}
       >
         <Text open={open} zero={zeroEntries}>
+          {hasChildren && (
+            <Caret active icon={!!open ? "caret-down" : "caret-right"} />
+          )}
           {hasChildren && (
             <StyledFaIcon active icon={!!open ? "folder-open" : "folder"} />
           )}
