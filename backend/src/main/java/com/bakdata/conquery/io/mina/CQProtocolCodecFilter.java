@@ -5,6 +5,7 @@ import java.util.Queue;
 
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.file.FileRegion;
+import org.apache.mina.core.filterchain.IoFilter;
 import org.apache.mina.core.filterchain.IoFilterAdapter;
 import org.apache.mina.core.filterchain.IoFilterChain;
 import org.apache.mina.core.future.DefaultWriteFuture;
@@ -15,10 +16,10 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.core.write.DefaultWriteRequest;
 import org.apache.mina.core.write.NothingWrittenException;
 import org.apache.mina.core.write.WriteRequest;
-import org.apache.mina.core.write.WriteRequestWrapper;
 import org.apache.mina.filter.codec.AbstractProtocolDecoderOutput;
 import org.apache.mina.filter.codec.AbstractProtocolEncoderOutput;
 import org.apache.mina.filter.codec.ProtocolCodecFactory;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
 import org.apache.mina.filter.codec.ProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderException;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
@@ -29,23 +30,27 @@ import org.apache.mina.filter.codec.RecoverableProtocolDecoderException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-//see #167  this class is a copy of the one in the mina project
-//it is used because mina on default dumps even very large hex values
+/**
+ * An {@link IoFilter} which translates binary or protocol specific data into
+ * message objects and vice versa using {@link ProtocolCodecFactory},
+ * {@link ProtocolEncoder}, or {@link ProtocolDecoder}.
+ *
+ */
 public class CQProtocolCodecFilter extends IoFilterAdapter {
 	/** A logger for this class */
-	private static final Logger LOGGER = LoggerFactory.getLogger(CQProtocolCodecFilter.class);
+	private static final Logger LOGGER = LoggerFactory.getLogger(ProtocolCodecFilter.class);
 
 	private static final Class<?>[] EMPTY_PARAMS = new Class[0];
 
 	private static final IoBuffer EMPTY_BUFFER = IoBuffer.wrap(new byte[0]);
 
-	private static final AttributeKey ENCODER = new AttributeKey(CQProtocolCodecFilter.class, "encoder");
+	private static final AttributeKey ENCODER = new AttributeKey(ProtocolCodecFilter.class, "encoder");
 
-	private static final AttributeKey DECODER = new AttributeKey(CQProtocolCodecFilter.class, "decoder");
+	private static final AttributeKey DECODER = new AttributeKey(ProtocolCodecFilter.class, "decoder");
 
-	private static final AttributeKey DECODER_OUT = new AttributeKey(CQProtocolCodecFilter.class, "decoderOut");
+	private static final AttributeKey DECODER_OUT = new AttributeKey(ProtocolCodecFilter.class, "decoderOut");
 
-	private static final AttributeKey ENCODER_OUT = new AttributeKey(CQProtocolCodecFilter.class, "encoderOut");
+	private static final AttributeKey ENCODER_OUT = new AttributeKey(ProtocolCodecFilter.class, "encoderOut");
 
 	/** The factory responsible for creating the encoder and decoder */
 	private final ProtocolCodecFactory factory;
@@ -68,7 +73,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	 * Creates a new instance of ProtocolCodecFilter, without any factory.
 	 * The encoder/decoder factory will be created as an inner class, using
 	 * the two parameters (encoder and decoder).
-	 *
+	 * 
 	 * @param encoder The class responsible for encoding the message
 	 * @param decoder The class responsible for decoding the message
 	 */
@@ -105,7 +110,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	 * The encoder/decoder factory will be created as an inner class, using
 	 * the two parameters (encoder and decoder), which are class names. Instances
 	 * for those classes will be created in this constructor.
-	 *
+	 * 
 	 * @param encoderClass The class responsible for encoding the message
 	 * @param decoderClass The class responsible for decoding the message
 	 */
@@ -204,17 +209,19 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 	 * Process the incoming message, calling the session decoder. As the incoming
 	 * buffer might contains more than one messages, we have to loop until the decoder
 	 * throws an exception.
-	 *
+	 * 
 	 *  while ( buffer not empty )
 	 *	try
 	 *	  decode ( buffer )
 	 *	catch
 	 *	  break;
-	 *
+	 * 
 	 */
 	@Override
 	public void messageReceived(NextFilter nextFilter, IoSession session, Object message) throws Exception {
-		LOGGER.trace("Processing a MESSAGE_RECEIVED for session {}", session.getId());
+		if (LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Processing a MESSAGE_RECEIVED for session {}", session.getId());
+		}
 
 		if (!(message instanceof IoBuffer)) {
 			nextFilter.messageReceived(session, message);
@@ -275,12 +282,7 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 			return;
 		}
 
-		if (writeRequest instanceof MessageWriteRequest) {
-			MessageWriteRequest wrappedRequest = (MessageWriteRequest) writeRequest;
-			nextFilter.messageSent(session, wrappedRequest.getParentRequest());
-		} else {
-			nextFilter.messageSent(session, writeRequest);
-		}
+		nextFilter.messageSent(session, writeRequest);
 	}
 
 	/**
@@ -323,15 +325,11 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 
 				// Flush only when the buffer has remaining.
 				if (!(encodedMessage instanceof IoBuffer) || ((IoBuffer) encodedMessage).hasRemaining()) {
-					SocketAddress destination = writeRequest.getDestination();
-					WriteRequest encodedWriteRequest = new EncodedWriteRequest(encodedMessage, null, destination);
+					writeRequest.setMessage(encodedMessage);
 
-					nextFilter.filterWrite(session, encodedWriteRequest);
+					nextFilter.filterWrite(session, writeRequest);
 				}
 			}
-
-			// Call the next filter
-			nextFilter.filterWrite(session, new MessageWriteRequest(writeRequest));
 		} catch (Exception e) {
 			ProtocolEncoderException pee;
 
@@ -386,22 +384,6 @@ public class CQProtocolCodecFilter extends IoFilterAdapter {
 		@Override
 		public boolean isEncoded() {
 			return true;
-		}
-	}
-
-	private static class MessageWriteRequest extends WriteRequestWrapper {
-		public MessageWriteRequest(WriteRequest writeRequest) {
-			super(writeRequest);
-		}
-
-		@Override
-		public Object getMessage() {
-			return EMPTY_BUFFER;
-		}
-
-		@Override
-		public String toString() {
-			return "MessageWriteRequest, parent : " + super.toString();
 		}
 	}
 
