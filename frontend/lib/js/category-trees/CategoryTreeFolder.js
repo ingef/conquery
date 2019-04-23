@@ -14,11 +14,6 @@ import { type SearchType } from "./reducer";
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
-const StyledCategoryTreeNodeTextContainer = styled(
-  CategoryTreeNodeTextContainer
-)`
-  display: inline-block;
-`;
 
 type PropsType = {
   depth: number,
@@ -49,7 +44,7 @@ const CategoryTreeFolder = (props: PropsType) => {
 
   return (
     <Root>
-      <StyledCategoryTreeNodeTextContainer
+      <CategoryTreeNodeTextContainer
         node={{
           id: props.treeId,
           label: props.tree.label,

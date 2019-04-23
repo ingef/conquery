@@ -11,6 +11,7 @@ import { defaultError, defaultSuccess } from "../common/actions";
 import { loadTrees } from "../category-trees/actions";
 import { loadPreviousQueries } from "../previous-queries/list/actions";
 import { loadQuery, clearQuery } from "../standard-query-editor/actions";
+import { setMessage } from "../snack-message/actions";
 
 import { type StandardQueryType } from "../standard-query-editor/types";
 
@@ -32,19 +33,23 @@ export const loadDatasetsSuccess = (res: any) =>
 
 // Done at the very beginning on loading the site
 export const loadDatasets = () => {
-  return (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch) => {
     dispatch(loadDatasetsStart());
 
-    return api.getDatasets().then(
-      datasets => {
-        dispatch(loadDatasetsSuccess(datasets));
+    try {
+      const datasets = await api.getDatasets();
 
-        const selectedDatasetId = datasets[0].id;
+      if (!datasets || datasets.length === 0 || !datasets[0].id) {
+        throw new Error("No valid dataset found");
+      }
 
-        if (selectedDatasetId) return dispatch(loadTrees(selectedDatasetId));
-      },
-      e => dispatch(loadDatasetsError(e))
-    );
+      dispatch(loadDatasetsSuccess(datasets));
+
+      return dispatch(loadTrees(datasets[0].id));
+    } catch (e) {
+      dispatch(setMessage("datasetSelector.error"));
+      dispatch(loadDatasetsError(e));
+    }
   };
 };
 

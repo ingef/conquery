@@ -4,6 +4,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.util.function.BiConsumer;
 
+import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.google.common.primitives.Ints;
 
 import jetbrains.exodus.ByteIterable;
@@ -11,7 +12,9 @@ import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class XodusStore implements Closeable {
 	private final Store store;
 	private final Environment environment;
@@ -35,7 +38,17 @@ public class XodusStore implements Closeable {
 		environment.executeInReadonlyTransaction(t -> {
 			try(Cursor c = store.openCursor(t)) {
 				while(c.getNext()) {
-					consumer.accept(c.getKey(), c.getValue());
+					try {
+						consumer.accept(c.getKey(), c.getValue());
+					}
+					catch (RuntimeException e) {
+						if (e.getCause() instanceof IdReferenceResolvingException) {
+							log.warn("Probably failed to read id '{}' because it is not yet present, skipping",  ((IdReferenceResolvingException) e.getCause()).getValue(),e.getCause());
+						}
+						else {
+							throw e;
+						}
+					}
 				}
 			}
 		});

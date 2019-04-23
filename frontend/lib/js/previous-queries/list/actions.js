@@ -3,6 +3,8 @@ import api from "../../api";
 
 import { defaultSuccess, defaultError } from "../../common/actions";
 
+import { setMessage } from "../../snack-message/actions";
+
 import {
   LOAD_PREVIOUS_QUERIES_START,
   LOAD_PREVIOUS_QUERIES_SUCCESS,
@@ -35,15 +37,18 @@ export const loadPreviousQueriesError = err =>
   defaultError(LOAD_PREVIOUS_QUERIES_ERROR, err);
 
 export const loadPreviousQueries = datasetId => {
-  return dispatch => {
+  return async dispatch => {
     dispatch(loadPreviousQueriesStart());
 
-    return api
-      .getStoredQueries(datasetId)
-      .then(
-        r => dispatch(loadPreviousQueriesSuccess(r)),
-        e => dispatch(loadPreviousQueriesError(e))
-      );
+    try {
+      const result = await api.getStoredQueries(datasetId);
+
+      return dispatch(loadPreviousQueriesSuccess(result));
+    } catch (e) {
+      dispatch(setMessage("previousQueries.error"));
+
+      return dispatch(loadPreviousQueriesError(e));
+    }
   };
 };
 

@@ -24,12 +24,12 @@ type PropsType = {
 };
 
 const LoadingTree = styled("p")`
-  padding-left: 20px;
+  padding-left: 14px;
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
 `;
 const StyledErrorMessage = styled(ErrorMessage)`
-  padding-left: 20px;
+  padding-left: 14px;
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
 `;
@@ -46,7 +46,7 @@ const CategoryTree = (props: PropsType) => {
           <FaIcon icon="spinner" />
         </Spinner>
         <span>
-          {T.translate("categoryTreeList.loading", { tree: props.label })}
+          {T.translate("categoryTreeList.loadingTree", { tree: props.label })}
         </span>
       </LoadingTree>
     );
@@ -58,14 +58,12 @@ const CategoryTree = (props: PropsType) => {
     );
   else if (props.tree)
     return (
-      <div>
-        <CategoryTreeNode
-          id={props.id}
-          data={{ ...props.tree, tree: props.treeId }}
-          depth={props.depth}
-          search={props.search}
-        />
-      </div>
+      <CategoryTreeNode
+        id={props.id}
+        data={{ ...props.tree, tree: props.treeId }}
+        depth={props.depth}
+        search={props.search}
+      />
     );
   else return null;
 };

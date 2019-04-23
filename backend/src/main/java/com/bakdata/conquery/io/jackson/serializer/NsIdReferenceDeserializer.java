@@ -62,7 +62,7 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 				Optional<T> result = NamespaceCollection.get(ctxt).getOptional(id);
 
 				if (!result.isPresent()) {
-					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+id+" of type "+type.getName());
+					throw new IdReferenceResolvingException(parser, "Could not find entry "+id+" of type "+type.getName(), text, type);
 				}
 
 				if(!type.isAssignableFrom(result.get().getClass())) {
