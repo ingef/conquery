@@ -80,7 +80,7 @@ public class JobExecutor extends Thread {
 							continue;
 						}
 
-						log.trace("{} started job {}", this.getName(), job);
+						log.trace("{} started job {} with Id {}", this.getName(), job, job.getJobId());
 						job.execute();
 						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
 						currentJob.set(null);

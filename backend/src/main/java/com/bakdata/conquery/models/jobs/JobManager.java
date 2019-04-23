@@ -56,6 +56,7 @@ public class JobManager implements Managed {
 	}
 
 	public void cancelJob(UUID jobId) {
-		slowExecutor.
+		fastExecutor.cancelJob(jobId);
+		slowExecutor.cancelJob(jobId);
 	}
 }

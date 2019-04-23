@@ -6,11 +6,14 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
 
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
+@RequiredArgsConstructor
 public class CancelJobMessage extends SlaveMessage {
 
-	@Getter @Setter
+	@Getter @Setter @NonNull
 	private UUID jobId;
 
 	@Override
