@@ -35,7 +35,9 @@ public class MetadataCollectionTest implements ProgrammaticIntegrationTest, Inte
 		
 		//ensure the metadata is collected
 		for(SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
-			slave.getJobManager().addSlowJob(new UpdateMatchingStats(slave.getWorkers()));
+			slave.getWorkers().getWorkers().forEach((id, worker) -> {
+				worker.getJobManager().addSlowJob(new UpdateMatchingStats(worker));
+			});
 		}
 		
 		conquery.waitUntilWorkDone();
