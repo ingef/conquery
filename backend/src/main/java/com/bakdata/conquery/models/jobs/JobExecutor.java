@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +31,19 @@ public class JobExecutor extends Thread {
 		}
 		jobs.add(job);
 	}
-	
+
+	public void cancelJob(UUID jobId) {
+		jobs.forEach(job -> {
+			if(job.getJobId().equals(jobId))
+				job.cancel();
+		});
+
+		final Job job = currentJob.get();
+
+		if(job != null)
+			job.cancel();
+	}
+
 	public List<Job> getJobs() {
 		List<Job> jobs = new ArrayList<>(this.jobs.size()+1);
 		Job current = currentJob.get();
@@ -61,6 +74,12 @@ public class JobExecutor extends Thread {
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
 					try {
+						if(job.isCancelled()){
+							log.trace("{} skipping cancelled job {}", this.getName(), job);
+							currentJob.set(null);
+							continue;
+						}
+
 						log.trace("{} started job {}", this.getName(), job);
 						job.execute();
 						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());

@@ -35,6 +35,7 @@ public class UpdateMatchingStats extends Job {
 		progressReporter.setMax(workers.getWorkers().values().size());
 		
 		for(Worker w:new ArrayList<>(workers.getWorkers().values())) {
+
 			ProgressReporter sub = progressReporter.subJob(1);
 			if(!w.getStorage().getAllCBlocks().isEmpty()) {
 				sub.setMax(w.getStorage().getAllCBlocks().size());
@@ -42,6 +43,12 @@ public class UpdateMatchingStats extends Job {
 				Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>();
 				
 				for(CBlock cBlock : new ArrayList<>(w.getStorage().getAllCBlocks())) {
+
+					if(isCancelled()) {
+						progressReporter.done();
+						return;
+					}
+
 					Concept<?> concept = w.getStorage().getConcept(cBlock.getConnector().getConcept());
 					Block block = w.getStorage().getBlock(cBlock.getBlock());
 					Table table = w.getStorage().getDataset().getTables().get(block.getId().getImp().getTable());
