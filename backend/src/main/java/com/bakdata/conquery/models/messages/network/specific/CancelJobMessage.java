@@ -2,19 +2,21 @@ package com.bakdata.conquery.models.messages.network.specific;
 
 import java.util.UUID;
 
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.messages.network.SlaveMessage;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-import lombok.Setter;
 
-@RequiredArgsConstructor
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator)
+@CPSType(id="CANCEL_JOB", base= NetworkMessage.class)
 public class CancelJobMessage extends SlaveMessage {
 
-	@Getter @Setter @NonNull
-	private UUID jobId;
+	@Getter
+	private final UUID jobId;
 
 	@Override
 	public void react(NetworkMessageContext.Slave context) throws Exception {
