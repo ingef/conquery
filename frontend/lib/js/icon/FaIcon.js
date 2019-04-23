@@ -1,11 +1,23 @@
 import React from "react";
+import isPropValid from "@emotion/is-prop-valid";
 import styled from "@emotion/styled";
 
-export const Icon = styled("i")`
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { library } from "@fortawesome/fontawesome-svg-core";
+import { far } from "@fortawesome/free-regular-svg-icons";
+import { fas } from "@fortawesome/free-solid-svg-icons";
+
+library.add(fas, far);
+
+const shouldForwardProp = prop =>
+  isPropValid(prop) || prop === "icon" || prop === "className";
+
+export const Icon = styled(FontAwesomeIcon, { shouldForwardProp })`
   padding-right: ${({ left }) => (left ? "10px" : "0")};
   padding-left: ${({ right }) => (right ? "10px" : "0")};
   text-align: ${({ center }) => (center ? "center" : "left")};
-  font-size: ${({ theme, large }) => (large ? theme.font.md : theme.font.sm)};
+  font-size: ${({ theme, large, tiny }) =>
+    large ? theme.font.md : tiny ? theme.font.tiny : theme.font.sm};
   color: ${({ theme, white, light, main, active }) =>
     active
       ? theme.col.blueGrayDark
@@ -17,12 +29,14 @@ export const Icon = styled("i")`
       ? theme.col.blueGrayLight
       : theme.col.black};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "inherit")};
+  width: initial !important;
 `;
 
-const FaIcon = ({ icon, regular, className, ...restProps }) => {
+const FaIcon = ({ icon, regular, className, main, ...restProps }) => {
   return (
     <Icon
-      className={`${regular ? "far" : "fa"} fa-fw fa-${icon} ${className}`}
+      className={`fa-fw ${className}`}
+      icon={regular ? ["far", icon] : icon}
       {...restProps}
     />
   );
