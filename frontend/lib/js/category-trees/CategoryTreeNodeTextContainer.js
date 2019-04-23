@@ -19,8 +19,9 @@ const Root = styled("div")`
   position: relative; // Needed to fix a drag & drop issue in Safari
   cursor: pointer;
   padding: 0 15px 0 15px;
-  margin: 2px 0;
+  margin: 1px 0;
   padding-left: ${({ depth }) => depth * 15 + "px"};
+  display: inline-block;
 `;
 
 const Text = styled("p")`
@@ -45,13 +46,17 @@ const StyledFaIcon = styled(FaIcon)`
   width: 20px;
 `;
 
+const Caret = styled(FaIcon)`
+  width: 12px;
+`;
+
 const ResultsNumber = styled("span")`
   display: inline-flex;
   align-items: center;
   justify-content: center;
   line-height: 1;
   padding: 2px 4px;
-  margin-left: 5px;
+  margin-right: 5px;
   font-size: ${({ theme }) => theme.font.xs};
   border-radius: 3px;
   color: ${({ theme }) => theme.col.blueGrayDark};
@@ -113,7 +118,13 @@ class CategoryTreeNodeTextContainer extends React.Component {
       >
         <Text open={open} zero={zeroEntries}>
           {hasChildren && (
+            <Caret active icon={!!open ? "caret-down" : "caret-right"} />
+          )}
+          {hasChildren && (
             <StyledFaIcon active icon={!!open ? "folder-open" : "folder"} />
+          )}
+          {showNumber && (
+            <ResultsNumber>{search.result[node.id]}</ResultsNumber>
           )}
           <span>
             {search.words ? (
@@ -134,9 +145,6 @@ class CategoryTreeNodeTextContainer extends React.Component {
             />
           ) : (
             node.description && description
-          )}
-          {showNumber && (
-            <ResultsNumber>{search.result[node.id]}</ResultsNumber>
           )}
         </Text>
       </Root>

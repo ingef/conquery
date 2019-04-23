@@ -173,11 +173,31 @@ const transformTimebasedQueryToApi = query => ({
 const transformExternalQueryToApi = query =>
   createConceptQuery(createExternal(query));
 
-const createExternal = (query: any) => ({
-  type: "EXTERNAL",
-  format: query.data[0],
-  values: [query.data.slice(1)]
-});
+const createExternal = (query: any) => {
+  return {
+    type: "EXTERNAL",
+    format:
+      // This is experimental still.
+      // External queries (uploaded lists) may contain three or four columns.
+      // The first two columns are IDs, which will be concatenated
+      // The other two columns are date ranges
+      // We simply assume that the data is in this format
+      // Will produce upload errors when the data has a different format
+      //
+      // Based on the possible:
+      // ID (some string)
+      // EVENT_DATE (a single day),
+      // START_DATE (a starting day),
+      // END_DATE (and end day,
+      // DATE_RANGE (two days),
+      // DATE_SET (a set of date ranges),
+      // IGNORE (ignore this column);
+      query.data[0].length >= 4
+        ? ["ID", "ID", "START_DATE", "END_DATE"]
+        : ["ID", "ID", "DATE_SET"],
+    values: query.data.slice(1)
+  };
+};
 
 // The query state already contains the query.
 // But small additions are made (properties whitelisted), empty things filtered out

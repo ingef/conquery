@@ -37,7 +37,7 @@ public class QueryToCSVRenderer {
 		}
 		List<ResultInfo> infos = query.getResultInfos();
 		return Stream.concat(
-			Stream.of(HEADER + DELIMETER + JOINER.join(infos.stream().map(ResultInfo::getName).iterator())),
+			Stream.of(HEADER + DELIMETER + JOINER.join(infos.stream().map(ResultInfo::getUniqueName).iterator())),
 			createCSVBody(cfg, infos, query)
 		);
 	}

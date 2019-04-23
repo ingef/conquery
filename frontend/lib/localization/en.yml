@@ -11,11 +11,16 @@ rightPane:
   externalForms: "Forms"
 
 categoryTreeList:
-  loading: "Loading Concept: {tree}"
-  error: "Could not load Concept: {tree}."
-  noTrees: "Could not load Concepts."
+  loading: "Loading concept trees"
+  loadingTree: "Loading concept: {tree}"
+  error: "Could not load concept: {tree}."
+  noTrees: "Could not load concepts."
+  noTreesExplanation: "Probably due to a network issue. Please try to refresh."
   openAll: "Open all"
   closeAll: "Open individually"
+  searchPlaceholder: "Search concepts ..."
+  showMismatches: "Show all"
+  dontShowMismatches: "Show hits only"
 
 queryRunner:
   start: "Start Query"
@@ -243,4 +248,4 @@ authorization:
 
 search:
   placeholder: "Search ..."
-  resultLabel: "Showing {numResults} of {totalResults} results ({duration} s)"
+  resultLabel: "{totalResults} results found ({duration} s)"

@@ -15,13 +15,20 @@ const Content = styled("div")`
   padding: 10px;
 `;
 
+const Headline = styled("h5")`
+  margin: 10px 18px 0;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
 type PropsType = {
   className?: string,
-  children?: React.Node
+  children?: React.Node,
+  headline?: string
 };
 
 export default ({ className, headline, children }: PropsType) => (
   <Root className={className}>
+    {headline && <Headline>{headline}</Headline>}
     <Content>{children}</Content>
   </Root>
 );
