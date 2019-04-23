@@ -32,6 +32,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
@@ -140,6 +141,16 @@ public class AdminUIResource {
 		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next())
 			.toCSV(managed)
 			.collect(Collectors.joining("\n"));
+	}
+
+	@POST
+	@Path("/update-matching-stats")
+	public Response updateMatchingStats(@Auth User user, IQuery query) throws JSONException {
+
+		namespaces.getNamespaces()
+			.forEach(ns -> ns.sendToAll(new UpdateMatchingStatsMessage()));
+
+		return Response.ok().build();
 	}
 
 	@GET
