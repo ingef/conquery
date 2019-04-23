@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContextImpl;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
@@ -22,7 +21,7 @@ import lombok.ToString;
 
 @CPSType(id="EXECUTE_QUERY", base=NamespacedMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)
-public class ExecuteQuery extends WorkerMessage.Slow {
+public class ExecuteQuery extends WorkerMessage {
 
 	private ManagedQuery query;
 
