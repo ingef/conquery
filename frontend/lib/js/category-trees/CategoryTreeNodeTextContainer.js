@@ -15,22 +15,27 @@ import { type AdditionalInfoHoverableNodeType } from "../tooltip/AdditionalInfoH
 import { type DraggedNodeType } from "../standard-query-editor/types";
 import { type SearchType } from "./reducer";
 
+// Root with transparent background
 const Root = styled("div")`
   position: relative; // Needed to fix a drag & drop issue in Safari
   cursor: pointer;
   padding: 0 15px 0 15px;
-  margin: 1px 0;
+  margin: 2px 0;
   padding-left: ${({ depth }) => depth * 15 + "px"};
-  display: inline-block;
+  display: flex;
 `;
 
 const Text = styled("p")`
   user-select: none;
   border-radius: ${({ theme }) => theme.borderRadius};
   margin: 0;
-  padding: 0 14px;
+  padding: 0 10px;
   line-height: 20px;
   color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.black)};
+  display: inline-flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
 
   background-color: ${({ theme, open }) =>
     open ? theme.col.grayVeryLight : "transparent"};
@@ -41,13 +46,23 @@ const Text = styled("p")`
   }
 `;
 
-const StyledFaIcon = styled(FaIcon)`
-  padding-right: 7px;
+const DashIconContainer = styled("span")`
+  width: 34px;
+  text-align: left;
+  padding-left: 14px;
+  display: inline-flex;
+`;
+
+const FolderIconContainer = styled("span")`
   width: 20px;
 `;
 
-const Caret = styled(FaIcon)`
-  width: 12px;
+const CaretIconContainer = styled("span")`
+  width: 14px;
+`;
+
+const Description = styled("span")`
+  padding-left: 3px;
 `;
 
 const ResultsNumber = styled("span")`
@@ -101,7 +116,7 @@ class CategoryTreeNodeTextContainer extends React.Component {
 
     const zeroEntries =
       !isEmpty(node.matchingEntries) && node.matchingEntries === 0;
-    const description = ` - ${node.description}`;
+    const description = `- ${node.description}`;
     const showNumber = shouldShowNumber(search, node);
     const hasChildren = !!node.children && node.children.length > 0;
 
@@ -113,15 +128,23 @@ class CategoryTreeNodeTextContainer extends React.Component {
             connectDragSource(instance);
           }
         }}
-        onClick={onTextClick}
         depth={depth}
       >
-        <Text open={open} zero={zeroEntries}>
+        <Text onClick={onTextClick} open={open} zero={zeroEntries}>
           {hasChildren && (
-            <Caret active icon={!!open ? "caret-down" : "caret-right"} />
+            <CaretIconContainer>
+              <FaIcon active icon={!!open ? "caret-down" : "caret-right"} />
+            </CaretIconContainer>
           )}
           {hasChildren && (
-            <StyledFaIcon active icon={!!open ? "folder-open" : "folder"} />
+            <FolderIconContainer>
+              <FaIcon active icon={!!open ? "folder-open" : "folder"} />
+            </FolderIconContainer>
+          )}
+          {!hasChildren && (
+            <DashIconContainer>
+              <FaIcon large active icon={"minus"} />
+            </DashIconContainer>
           )}
           {showNumber && (
             <ResultsNumber>{search.result[node.id]}</ResultsNumber>
@@ -137,15 +160,17 @@ class CategoryTreeNodeTextContainer extends React.Component {
               node.label
             )}
           </span>
-          {search.words && node.description ? (
-            <Highlighter
-              searchWords={search.words}
-              autoEscape={true}
-              textToHighlight={description}
-            />
-          ) : (
-            node.description && description
-          )}
+          <Description>
+            {search.words && node.description ? (
+              <Highlighter
+                searchWords={search.words}
+                autoEscape={true}
+                textToHighlight={description}
+              />
+            ) : (
+              node.description && description
+            )}
+          </Description>
         </Text>
       </Root>
     );

@@ -41,6 +41,7 @@ const Text = styled("p")`
 
 const StyledFaIcon = styled(FaIcon)`
   padding-right: 15px;
+  font-size: 16px;
 `;
 
 const Info = styled("div")`
@@ -79,7 +80,7 @@ const TooltipEntries = (props: PropsType) => {
   return (
     <Root className={props.className}>
       <Row>
-        <StyledFaIcon icon="bar-chart" />
+        <StyledFaIcon icon="chart-bar" />
         <Info>
           <Number zero={isZero}>
             {numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
@@ -96,7 +97,7 @@ const TooltipEntries = (props: PropsType) => {
       </Row>
       {dateRange && (
         <ConceptDateRangeTooltip>
-          <StyledFaIcon icon="calendar" />
+          <StyledFaIcon regular icon="calendar" />
           <Info>
             <Date>
               <Prefix>{T.translate("tooltip.date.from") + ":"}</Prefix>

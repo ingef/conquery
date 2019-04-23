@@ -22,7 +22,7 @@ const Root = styled(WithTooltip)`
 const InfoTooltip = ({ className, text, noIcon, place }: PropsType) => {
   return (
     <Root className={className} text={text}>
-      {!noIcon && <FaIcon icon="question-circle-o" />}
+      {!noIcon && <FaIcon regular icon="question-circle" />}
     </Root>
   );
 };

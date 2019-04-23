@@ -20,7 +20,7 @@ const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {
       {activeTab === "categoryTrees" && (
         <CategoryTreeSearchBox datasetId={selectedDatasetId} />
       )}
-      <CategoryTreeList />
+      <CategoryTreeList datasetId={selectedDatasetId} />
       {activeTab === "previousQueries" && (
         <PreviousQueriesTab datasetId={selectedDatasetId} />
       )}
