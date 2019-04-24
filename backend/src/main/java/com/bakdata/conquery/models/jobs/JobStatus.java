@@ -14,4 +14,5 @@ public class JobStatus {
 	private UUID jobId;
 	private ProgressReporter progressReporter;
 	private String label;
+	private boolean cancelled;
 }

@@ -9,30 +9,33 @@
 						${node}
 						<span class="badge badge-secondary">${jobs?size}</span>
 					</h5>
-					<hr/>
-				</div>
-				<div class="card-body" style="max-height:50vh; overflow: auto">
-					<table class="card-text">
-						<#list jobs as job>
-						<tr>
-							<td>
-								${job.label}
-							</td>
-							<td>
-								<div class="progress position-relative" style="width:400px">
-			  						<div class="progress-bar" role="progressbar" style="width: ${job.progressReporter.progress}" aria-valuenow="${job.progressReporter.progress?c}" aria-valuemin="0" aria-valuemax="1"></div>
-			  						<small class="justify-content-center d-flex position-absolute w-100"><pre>${job.progressReporter.estimate}</pre></small>
-			  					</div>
-							</td>
-                            <td>
-                                <form action="/admin/job/${job.jobId}/cancel" method="post" enctype="multipart/form-data">
-                                    <input class="btn" type="submit" value="Cancel Job"/>
-                                </form>
-                            </td>
-						</tr>
-						</#list>
-					</table>
-				</div>
+                    <div class="card-text" style="max-height:50vh; overflow: auto">
+                        <table class="table">
+                            <#list jobs as job>
+                            <tr class="${job.cancelled?then('active','')}">
+                                <td>
+                                    ${job.label}
+                                </td>
+                                <td class="w-100">
+                                    <div class="progress position-relative">
+                                        <div class="progress-bar" role="progressbar" style="width: ${job.progressReporter.progress}" aria-valuenow="${job.progressReporter.progress?c}" aria-valuemin="0" aria-valuemax="1"></div>
+                                        <small class="justify-content-center d-flex position-absolute w-100"><pre>${job.progressReporter.estimate}</pre></small>
+                                    </div>
+                                </td>
+                                <td>
+                                    <#if !job.cancelled>
+                                        <form action="/admin/job/${job.jobId}/cancel" method="post" enctype="multipart/form-data">
+                                            <input class="btn btn-warning btn-sm" type="submit" value="Cancel"/>
+                                        </form>
+                                    <#else>
+                                        <div>Cancelled</div>
+                                    </#if>
+                                </td>
+                            </tr>
+                            </#list>
+                        </table>
+                    </div>
+                </div>
 			</div>
 		</div>
 	</div>
@@ -50,7 +53,7 @@
                 <input class="btn btn-primary" type="submit"/>
             </form>
 			<script type="text/javascript">
-				setTimeout(function () { 
+				setTimeout(function () {
 					location.reload(false);
 				}, 2000);
 			</script>

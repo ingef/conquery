@@ -47,7 +47,7 @@ public class JobManager implements Managed {
 	public List<JobStatus> reportStatus() {
 		return getSlowJobs()
 			.stream()
-			.map(job->new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel()))
+			.map(job->new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
 			.collect(Collectors.toList());
 	}
 	

@@ -29,7 +29,6 @@ public class UpdateMatchingStats extends Job {
 
 	@Override
 	public void execute() throws Exception {
-
 		if (worker.getStorage().getAllCBlocks().isEmpty()) {
 			log.debug("Worker {} is empty, skipping.", worker);
 			progressReporter.done();
