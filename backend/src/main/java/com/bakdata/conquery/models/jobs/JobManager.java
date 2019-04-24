@@ -47,7 +47,7 @@ public class JobManager implements Managed {
 	public List<JobStatus> reportStatus() {
 		return getSlowJobs()
 			.stream()
-			.map(job->new JobStatus(job.getProgressReporter(), job.getLabel()))
+			.map(job->new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel()))
 			.collect(Collectors.toList());
 	}
 	
@@ -55,8 +55,7 @@ public class JobManager implements Managed {
 		return slowExecutor.isBusy();
 	}
 
-	public void cancelJob(UUID jobId) {
-		fastExecutor.cancelJob(jobId);
-		slowExecutor.cancelJob(jobId);
+	public boolean cancelJob(UUID jobId) {
+		return fastExecutor.cancelJob(jobId) || slowExecutor.cancelJob(jobId);
 	}
 }

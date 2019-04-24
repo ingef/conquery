@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -147,6 +148,7 @@ public class AdminUIResource {
 	}
 
 	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Path("/update-matching-stats")
 	public Response updateMatchingStats(@Auth User user, IQuery query) throws JSONException {
 
@@ -157,11 +159,17 @@ public class AdminUIResource {
 		return Response.ok().build();
 	}
 
-	@DELETE
-	@Path("/job/{" + JOB_ID + "}")
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Path("/job/{" + JOB_ID + "}/cancel")
 	public Response cancelJob(@PathParam(JOB_ID)UUID jobId) {
 
-		namespaces.getSlaves().forEach((addr, info) -> info.send(new CancelJobMessage(jobId)));
+		jobManager.cancelJob(jobId);
+
+		for (Map.Entry<SocketAddress, SlaveInformation> entry : namespaces.getSlaves().entrySet()) {
+			SlaveInformation info = entry.getValue();
+			info.send(new CancelJobMessage(jobId));
+		}
 
 		return Response.ok().build();
 	}

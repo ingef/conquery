@@ -32,16 +32,23 @@ public class JobExecutor extends Thread {
 		jobs.add(job);
 	}
 
-	public void cancelJob(UUID jobId) {
-		jobs.forEach(job -> {
-			if(job.getJobId().equals(jobId))
-				job.cancel();
-		});
+	public boolean cancelJob(UUID jobId) {
+		for (Job job1 : jobs) {
+			if (job1.getJobId().equals(jobId)) {
+				job1.cancel();
+
+				return true;
+			}
+		}
 
 		final Job job = currentJob.get();
 
-		if(job != null)
+		if(job != null && job.getJobId().equals(jobId)){
 			job.cancel();
+			return true;
+		}
+
+		return false;
 	}
 
 	public List<Job> getJobs() {
@@ -84,7 +91,8 @@ public class JobExecutor extends Thread {
 						job.execute();
 						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
 						currentJob.set(null);
-					} catch (Throwable e) {
+					}
+					catch (Throwable e) {
 						log.error("Fast Job "+job+" failed", e);
 						currentJob.set(null);
 					}

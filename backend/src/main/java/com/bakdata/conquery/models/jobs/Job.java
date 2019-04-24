@@ -11,8 +11,8 @@ import lombok.Setter;
 
 @RequiredArgsConstructor @Getter
 public abstract class Job {
-	@Getter
-	private final UUID jobId = UUID.randomUUID();
+
+	protected final UUID jobId = UUID.randomUUID();
 
 	@Setter
 	protected ProgressReporter progressReporter = ProgressReporter.createWaiting();

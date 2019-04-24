@@ -24,6 +24,11 @@
 			  						<small class="justify-content-center d-flex position-absolute w-100"><pre>${job.progressReporter.estimate}</pre></small>
 			  					</div>
 							</td>
+                            <td>
+                                <form action="/admin/job/${job.jobId}/cancel" method="post" enctype="multipart/form-data">
+                                    <input class="btn" type="submit" value="Cancel Job"/>
+                                </form>
+                            </td>
 						</tr>
 						</#list>
 					</table>
@@ -40,6 +45,10 @@
 				<h3>Create Demo Job</h3>
 				<input class="btn btn-primary" type="submit"/>
 			</form>
+			<form action="/admin/update-matching-stats" method="post" enctype="multipart/form-data">
+                <h3>Start Update Matching Stats Job</h3>
+                <input class="btn btn-primary" type="submit"/>
+            </form>
 			<script type="text/javascript">
 				setTimeout(function () { 
 					location.reload(false);
