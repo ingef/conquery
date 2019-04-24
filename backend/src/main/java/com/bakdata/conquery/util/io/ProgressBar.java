@@ -14,7 +14,7 @@ public class ProgressBar {
 		'▌',
 		'█'
 	};
-	private static final char RIGHT = '▏';
+	private static final char RIGHT = '▌';
 	
 	private final AtomicLong currentValue = new AtomicLong(0);
 	@Getter
