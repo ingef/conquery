@@ -64,13 +64,6 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
     });
 };
 
-export const transformElementGroupsToApi = elementGroups =>
-  elementGroups.map(elements => ({
-    matchingType: elements.matchingType,
-    type: "OR",
-    children: transformElementsToApi(elements.concepts)
-  }));
-
 export const transformElementsToApi = conceptGroup =>
   conceptGroup.map(createConcept);
 
