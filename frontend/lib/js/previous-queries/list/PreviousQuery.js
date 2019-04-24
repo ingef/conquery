@@ -19,6 +19,7 @@ import { SelectableLabel } from "../../selectable-label";
 
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
+import FaIcon from "../../icon/FaIcon";
 
 import { EditableText, EditableTags } from "../../form-components";
 
@@ -130,6 +131,10 @@ const StyledEditableTags = styled(EditableTags)`
   margin-top: 5px;
 `;
 
+const StyledFaIcon = styled(FaIcon)`
+  margin: 0 6px;
+`;
+
 type PropsType = {
   query: {
     id: number | string,
@@ -227,7 +232,7 @@ class PreviousQuery extends React.Component {
             <TopRight>
               {executedAt}
               {query.loading ? (
-                <IconButton bare icon="spinner" />
+                <StyledFaIcon icon="spinner" />
               ) : (
                 query.own && (
                   <IconButton
