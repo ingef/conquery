@@ -171,7 +171,7 @@ const transformTimebasedQueryToApi = query => ({
 });
 
 const transformExternalQueryToApi = query =>
-  createConceptQuery(createExternal(query));
+  createConceptQuery([createExternal(query)]);
 
 const createExternal = (query: any) => {
   return {
