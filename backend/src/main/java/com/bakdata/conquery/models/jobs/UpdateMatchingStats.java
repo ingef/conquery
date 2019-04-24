@@ -29,17 +29,25 @@ public class UpdateMatchingStats extends Job {
 
 	@Override
 	public void execute() throws Exception {
-
 		if (worker.getStorage().getAllCBlocks().isEmpty()) {
+			log.debug("Worker {} is empty, skipping.", worker);
 			progressReporter.done();
 			return;
 		}
+
+		log.debug("Starting to update Matching stats with {}", worker);
 
 		progressReporter.setMax(worker.getStorage().getAllCBlocks().size());
 
 		Map<ConceptElementId<?>, MatchingStats.Entry> messages = new HashMap<>();
 
 		for (CBlock cBlock : new ArrayList<>(worker.getStorage().getAllCBlocks())) {
+
+			if(isCancelled()) {
+				progressReporter.done();
+				return;
+			}
+
 			Concept<?> concept = worker.getStorage().getConcept(cBlock.getConnector().getConcept());
 			Block block = worker.getStorage().getBlock(cBlock.getBlock());
 			Table table = worker.getStorage().getDataset().getTables().get(block.getId().getImp().getTable());

@@ -21,7 +21,7 @@ import lombok.ToString;
 
 @CPSType(id="EXECUTE_QUERY", base=NamespacedMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)
-public class ExecuteQuery extends WorkerMessage.Slow {
+public class ExecuteQuery extends WorkerMessage {
 
 	private ManagedQuery query;
 
