@@ -1,6 +1,7 @@
 package com.bakdata.conquery.util.io;
 
 import java.io.PrintStream;
+import java.time.Duration;
 import java.util.concurrent.atomic.AtomicLong;
 
 import lombok.Getter;
@@ -9,20 +10,23 @@ public class ProgressBar {
 	
 	private static final int CHARACTERS = 50;
 	private static final char[] BAR_CHARACTERS = {
-		'░',
+		' ',
 		'▌',
 		'█'
 	};
+	private static final char RIGHT = '▏';
 	
 	private final AtomicLong currentValue = new AtomicLong(0);
 	@Getter
 	private final AtomicLong maxValue;
 	private final AtomicLong lastPercentage = new AtomicLong(0);
 	private final PrintStream out;
+	private final long startTime;
 	
 	public ProgressBar(long maxValue, PrintStream out) {
 		this.maxValue = new AtomicLong(maxValue);
 		this.out = out;
+		this.startTime = System.nanoTime();
 	}
 	
 	public void addCurrentValue(long add) {
@@ -57,6 +61,7 @@ public class ProgressBar {
 			remaining -= v;
 			sb.append(BAR_CHARACTERS[v]);
 		}
+		sb.append(RIGHT);
 		sb.append(' ');
 		if(last<100L) {
 			sb.append(' ');
@@ -65,7 +70,14 @@ public class ProgressBar {
 			sb.append(' ');
 		}
 		sb.append(last);
-		sb.append('%');
+		sb.append("%\test. time remaining: ");
+		sb.append(Duration
+			.ofNanos((System.nanoTime()-startTime)*(101L-last)/(last+1L))
+			.toString()
+            .substring(2)
+            .replaceAll("(\\d[HMS])(?!$)", "$1 ")
+            .toLowerCase()
+		);
 		sb.append('\r');
 		out.print(sb.toString());
 	}
