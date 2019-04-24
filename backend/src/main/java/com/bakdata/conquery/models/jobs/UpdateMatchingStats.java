@@ -31,9 +31,12 @@ public class UpdateMatchingStats extends Job {
 	public void execute() throws Exception {
 
 		if (worker.getStorage().getAllCBlocks().isEmpty()) {
+			log.debug("Worker {} is empty, skipping.", worker);
 			progressReporter.done();
 			return;
 		}
+
+		log.debug("Starting to update Matching stats with {}", worker);
 
 		progressReporter.setMax(worker.getStorage().getAllCBlocks().size());
 
