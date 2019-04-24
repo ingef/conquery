@@ -64,25 +64,20 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
     });
 };
 
-export const transformElementGroupsToApi = elementGroups =>
-  elementGroups.map(elements => ({
-    matchingType: elements.matchingType,
-    type: "OR",
-    children: transformElementsToApi(elements.concepts)
-  }));
-
 export const transformElementsToApi = conceptGroup =>
   conceptGroup.map(createConcept);
 
 const transformStandardQueryToApi = query =>
-  createConceptQuery(createQueryConcepts(query));
+  createConceptQuery(createAnd(createQueryConcepts(query)));
 
-const createConceptQuery = children => ({
+const createConceptQuery = root => ({
   type: "CONCEPT_QUERY",
-  root: {
-    type: "AND",
-    children: children
-  }
+  root
+});
+
+const createAnd = children => ({
+  type: "AND",
+  children
 });
 
 const createNegation = group => ({
@@ -147,31 +142,30 @@ const getDays = condition => {
   }
 };
 
-const transformTimebasedQueryToApi = query => ({
-  type: "CONCEPT_QUERY",
-  root: {
-    type: "AND",
-    children: query.conditions.map(condition => {
-      const days = getDays(condition);
+const transformTimebasedQueryToApi = query =>
+  createConceptQuery(
+    createAnd(
+      query.conditions.map(condition => {
+        const days = getDays(condition);
 
-      return {
-        type: condition.operator,
-        ...days,
-        preceding: {
-          sampler: condition.result0.timestamp,
-          child: createSavedQuery(condition.result0.id)
-        },
-        index: {
-          sampler: condition.result1.timestamp,
-          child: createSavedQuery(condition.result1.id)
-        }
-      };
-    })
-  }
-});
+        return {
+          type: condition.operator,
+          ...days,
+          preceding: {
+            sampler: condition.result0.timestamp,
+            child: createSavedQuery(condition.result0.id)
+          },
+          index: {
+            sampler: condition.result1.timestamp,
+            child: createSavedQuery(condition.result1.id)
+          }
+        };
+      })
+    )
+  );
 
 const transformExternalQueryToApi = query =>
-  createConceptQuery(createExternal(query));
+  createConceptQuery([createExternal(query)]);
 
 const createExternal = (query: any) => {
   return {

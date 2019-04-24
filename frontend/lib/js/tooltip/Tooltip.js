@@ -9,6 +9,7 @@ import Markdown from "react-markdown";
 import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
+import FaIcon from "../icon/FaIcon";
 import type { SearchType } from "../category-trees/reducer";
 
 import ActivateTooltip from "./ActivateTooltip";
@@ -57,7 +58,9 @@ const Tooltip = (props: PropsType) => {
 
   return (
     <div className="tooltip">
-      {toggleAdditionInfos && <i className="tooltip__tack fa fa-thumb-tack" />}
+      {toggleAdditionInfos && (
+        <FaIcon className="tooltip__tack" icon="thumbtack" />
+      )}
       <div className="tooltip__left">
         <div>
           {!label && !description && (

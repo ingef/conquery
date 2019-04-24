@@ -1,10 +1,13 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -32,6 +35,8 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
@@ -140,6 +145,33 @@ public class AdminUIResource {
 		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next())
 			.toCSV(managed)
 			.collect(Collectors.joining("\n"));
+	}
+
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Path("/update-matching-stats")
+	public Response updateMatchingStats(@Auth User user, IQuery query) throws JSONException {
+
+		namespaces
+			.getNamespaces()
+			.forEach(ns -> ns.sendToAll(new UpdateMatchingStatsMessage()));
+
+		return Response.ok().build();
+	}
+
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Path("/job/{" + JOB_ID + "}/cancel")
+	public Response cancelJob(@PathParam(JOB_ID)UUID jobId) {
+
+		jobManager.cancelJob(jobId);
+
+		for (Map.Entry<SocketAddress, SlaveInformation> entry : namespaces.getSlaves().entrySet()) {
+			SlaveInformation info = entry.getValue();
+			info.send(new CancelJobMessage(jobId));
+		}
+
+		return Response.ok().build();
 	}
 
 	@GET

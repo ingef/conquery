@@ -41,7 +41,7 @@ const DropzoneList = (props: PropsType) => {
           {props.items.map((item, i) => (
             <ListItem key={i} className={props.itemClassName}>
               <StyledIconButton
-                icon="close"
+                icon="times"
                 onClick={() => props.onDelete(i)}
               />
               {item}

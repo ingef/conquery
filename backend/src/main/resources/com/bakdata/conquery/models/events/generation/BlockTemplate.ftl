@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.events.generation;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
-import com.esotericsoftware.kryo.io.Output;
-import com.bakdata.conquery.io.kryo.KryoHelper;
+import com.bakdata.conquery.util.io.SmallOut;
+import com.bakdata.conquery.io.DeserHelper;
 
 
 import java.time.LocalDate;
@@ -58,7 +58,7 @@ public class Block_${suffix} extends Block {
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
-		try (Output output = new Output(baos)){
+		try (SmallOut output = new SmallOut(baos)){
 			writeContent(output);
 		}
 		byte[] content = baos.toByteArray();
@@ -68,7 +68,7 @@ public class Block_${suffix} extends Block {
 	}
 	
 	@Override
-	public void writeContent(Output output) throws IOException {
+	public void writeContent(SmallOut output) throws IOException {
 		output.writeInt(this.events.length, true);
 		
 		byte[] nullBitsAsBytes = Bits.asStore(nullBits.toByteArray()).toByteArray();

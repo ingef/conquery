@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.preproc;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -13,8 +14,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Collectors;
-
-import javax.validation.Validator;
+import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FileUtils;
 
@@ -23,7 +23,6 @@ import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
@@ -33,42 +32,62 @@ import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
+import com.bakdata.conquery.util.io.ProgressBar;
+import com.bakdata.conquery.util.io.SmallOut;
 import com.google.common.base.Predicates;
+import com.google.common.io.CountingInputStream;
 import com.google.common.primitives.Primitives;
 
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@RequiredArgsConstructor
+@Getter
 public class Preprocessor {
 
-	private static final long MAX_ERROR_PRINTING = 50;
+	private final ConqueryConfig config;
+	private final ImportDescriptor descriptor;
+	private final AtomicLong errorCounter = new AtomicLong(0L);
+	private long totalCsvSize;
 
-	private AtomicLong errorCounter = new AtomicLong(0L);
-
-	public List<ImportDescriptor> findInitialDescriptors(PreprocessingDirectories dirs, Validator validator) throws IOException, JSONException {
-		List<ImportDescriptor> l = new ArrayList<>();
-		File in = dirs.getDescriptions().getAbsoluteFile();
-		for(File descriptionFile:in.listFiles()) {
-			if(descriptionFile.getName().endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)) {
-				InputFile file = InputFile.fromDescriptionFile(descriptionFile, dirs);
-				try {
-					ImportDescriptor descr = file.readDescriptor(validator);
-					descr.setInputFile(file);
-					l.add(descr);
-				} catch(Exception e) {
-					log.error("Failed to process "+LogUtil.printPath(descriptionFile), e);
+	public boolean requiresProcessing() {
+		ConqueryMDC.setLocation(descriptor.toString());
+		if(descriptor.getInputFile().getPreprocessedFile().exists()) {
+			log.info("EXISTS ALREADY");
+			int currentHash = descriptor.calculateValidityHash();
+			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false)) {
+				try (InputStream is = outFile.readHeader()) {
+					PPHeader header = Jackson.BINARY_MAPPER.readValue(is, PPHeader.class);
+					if(header.getValidityHash()==currentHash) {
+						log.info("\tHASH STILL VALID");
+						return false;
+					}
+					else {
+						log.info("\tHASH OUTDATED");
+					}
 				}
 			}
+			catch(Exception e) {
+				log.warn("\tHEADER READING FAILED", e);
+			}
 		}
-		return l;
+		else {
+			log.info("DOES NOT EXIST");
+		}
+		
+		for(Input input : descriptor.getInputs()) {
+			totalCsvSize += input.getSourceFile().length();
+		}
+		
+		return true;
 	}
+	
+	public void preprocess(ProgressBar totalProgress) throws IOException, JSONException, ParsingException {
+		ConqueryMDC.setLocation(descriptor.toString());
 
-	public void preprocess(ImportDescriptor descriptor, ConqueryConfig config) throws IOException, JSONException, ParsingException {
-
-		if (checkExistingHash(descriptor)) {
-			return;
-		}
-
+		//create temporary folders and check for correct permissions
 		File tmp = ConqueryFileUtil.createTempFile(descriptor.getInputFile().getPreprocessedFile().getName(), ConqueryConstants.EXTENSION_PREPROCESSED.substring(1));
 		if(!Files.isWritable(tmp.getParentFile().toPath())) {
 			throw new IllegalArgumentException("No write permission in "+LogUtil.printPath(tmp.getParentFile()));
@@ -76,6 +95,7 @@ public class Preprocessor {
 		if(!Files.isWritable(descriptor.getInputFile().getPreprocessedFile().toPath().getParent())) {
 			throw new IllegalArgumentException("No write permission in "+LogUtil.printPath(descriptor.getInputFile().getPreprocessedFile().toPath().getParent()));
 		}
+		//delete target file if it exists
 		if(descriptor.getInputFile().getPreprocessedFile().exists()) {
 			FileUtils.forceDelete(descriptor.getInputFile().getPreprocessedFile());
 		}
@@ -85,17 +105,21 @@ public class Preprocessor {
 		Preprocessed result = new Preprocessed(config.getPreprocessor(), descriptor);
 
 		try (HCFile outFile = new HCFile(tmp, true)) {
-			try (com.esotericsoftware.kryo.io.Output out = new com.esotericsoftware.kryo.io.Output(outFile.writeContent())) {
-				result.setBlockOut(out);
-				long lineId = config.getCsv().isSkipHeader()?1:0;
-				for(int inputSource=0;inputSource<descriptor.getInputs().length;inputSource++) {
-					Input input = descriptor.getInputs()[inputSource];
-					final String name = descriptor.toString()+":"+descriptor.getTable()+"["+inputSource+"]";
-					ConqueryMDC.setLocation(name);
+			
+			long lineId = config.getCsv().isSkipHeader()?1:0;
+			for(int inputSource=0;inputSource<descriptor.getInputs().length;inputSource++) {
+				Input input = descriptor.getInputs()[inputSource];
+				final String name = descriptor.toString()+":"+descriptor.getTable()+"["+inputSource+"]";
+				ConqueryMDC.setLocation(name);
 
-					try(CSV csv = new CSV(config.getCsv(), input.getSourceFile())) {
-						Iterator<String[]> it = csv.iterateContent(log);
-
+				try(CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
+					long progress = 0;
+					try(CSV csv = new CSV(
+						config.getCsv(),
+						CSV.isGZipped(input.getSourceFile())?new GZIPInputStream(countingIn):countingIn
+					)){
+						Iterator<String[]> it = csv.iterateContent();
+	
 						while(it.hasNext()) {
 							String[] row = it.next();
 							Integer primary = getPrimary((StringType) result.getPrimaryColumn().getType(), row, lineId, inputSource, input.getPrimary());
@@ -103,8 +127,13 @@ public class Preprocessor {
 								int primaryId = result.addPrimary(primary);
 								parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
 							}
+							
+							//report progress
+							long newProgress = countingIn.getCount();
+							totalProgress.addCurrentValue(newProgress - progress);
+							progress = newProgress;
 						}
-
+	
 						if (input.checkAutoOutput()) {
 							List<AutoOutput.OutRow> outRows = input.getAutoOutput().finish();
 							for (AutoOutput.OutRow outRow : outRows) {
@@ -113,16 +142,18 @@ public class Preprocessor {
 						}
 					}
 				}
-				//find the optimal subtypes
-				log.info("finding optimal column types");
-				log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getOriginalType(), result.getPrimaryColumn().getType());
+			}
+			//find the optimal subtypes
+			log.info("finding optimal column types");
+			log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getOriginalType(), result.getPrimaryColumn().getType());
 
-				for(PPColumn c:result.getColumns()) {
-					c.findBestType();
-					log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getOriginalType(), c.getType());
-				}
+			for(PPColumn c:result.getColumns()) {
+				c.findBestType();
+				log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getOriginalType(), c.getType());
+			}
 
-				result.writeToFile();
+			try (SmallOut out = new SmallOut(outFile.writeContent())) {
+				result.writeToFile(out);
 			}
 
 			try (OutputStream out = outFile.writeHeader()) {
@@ -131,10 +162,9 @@ public class Preprocessor {
 		}
 
 
-		FileUtils.moveFile(tmp, result.getFile().getPreprocessedFile());
-
+		//if successful move the tmp file to the target location
+		FileUtils.moveFile(tmp, descriptor.getInputFile().getPreprocessedFile());
 		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
-
 	}
 
 	private void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource) {
@@ -156,11 +186,11 @@ public class Preprocessor {
 		}
 		catch (ParsingException e) {
 			long errors = errorCounter.getAndIncrement();
-			if (errors < MAX_ERROR_PRINTING) {
+			if (errors < config.getPreprocessor().getMaximumPrintedErrors()) {
 				log.warn("Failed to parse line:" + lineId + " content:" + Arrays.toString(row), e);
 			}
-			else if (errors == MAX_ERROR_PRINTING) {
-				log.warn("More erroneous lines occurred. Only the first " + MAX_ERROR_PRINTING + " were printed.");
+			else if (errors == config.getPreprocessor().getMaximumPrintedErrors()) {
+				log.warn("More erroneous lines occurred. Only the first " + config.getPreprocessor().getMaximumPrintedErrors() + " were printed.");
 			}
 
 		}
@@ -178,36 +208,14 @@ public class Preprocessor {
 			return (int)primary.get(0);
 		} catch (ParsingException e) {
 			long errors = errorCounter.getAndIncrement();
-			if(errors<MAX_ERROR_PRINTING) {
+			if(errors<config.getPreprocessor().getMaximumPrintedErrors()) {
 				log.warn("Failed to parse primary from line:"+lineId+" content:"+Arrays.toString(row), e);
 			}
-			else if(errors == MAX_ERROR_PRINTING) {
-				log.warn("More erroneous lines occurred. Only the first "+MAX_ERROR_PRINTING+" were printed.");
+			else if(errors == config.getPreprocessor().getMaximumPrintedErrors()) {
+				log.warn("More erroneous lines occurred. Only the first "+config.getPreprocessor().getMaximumPrintedErrors()+" were printed.");
 			}
 			return null;
 		}
-	}
-
-	private static boolean checkExistingHash(ImportDescriptor descriptor) throws IOException {
-		if(descriptor.getInputFile().getPreprocessedFile().exists()) {
-			log.info("EXISTS ALREADY");
-			int currentHash = descriptor.calculateValidityHash();
-			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false)) {
-				try (InputStream is = outFile.readHeader()) {
-					PPHeader header = Jackson.BINARY_MAPPER.readValue(is, PPHeader.class);
-					if(header.getValidityHash()==currentHash) {
-						log.info("HASH STILL VALID");
-						return true;
-					}
-					else {
-						log.info("HASH OUTDATED");
-					}
-				} catch(Exception e) {
-					log.warn("HEADER READING FAILED", e);
-				}
-			}
-		}
-		return false;
 	}
 
 	private static List<Object[]> generateOutput(Input input, PPColumn[] columns, String[] row, int source, long lineId) throws ParsingException {
@@ -223,17 +231,19 @@ public class Preprocessor {
 			if(result==null) {
 				throw new IllegalStateException(out+" returned null result for "+Arrays.toString(row));
 			}
-			else if(result.stream().filter(Objects::nonNull).anyMatch(Predicates.not(jType::isInstance))) {
-				throw new IllegalStateException(
-						out
-						+ " returned result with wrong types for "
-						+ Arrays.toString(row)
-						+ " "
-						+ result.stream()
-							.filter(Objects::nonNull)
-							.filter(Predicates.not(jType::isInstance))
-							.collect(Collectors.toList())
-				);
+			for(Object v:result) {
+				if(v != null && !jType.isInstance(v)) {
+					throw new IllegalStateException(
+							out
+							+ " returned result with wrong types for "
+							+ Arrays.toString(row)
+							+ " "
+							+ result.stream()
+								.filter(Objects::nonNull)
+								.filter(Predicates.not(jType::isInstance))
+								.collect(Collectors.toList())
+					);
+				}
 			}
 
 

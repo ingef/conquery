@@ -17,6 +17,8 @@ const StyledFaIcon = styled(FaIcon)`
   color: ${({ theme, active, red }) =>
     red ? theme.col.red : active ? theme.col.blueGrayDark : theme.col.black};
   font-size: ${({ theme, large }) => (large ? theme.font.lg : theme.font.sm)};
+  margin-right: ${({ hasChildren, tight }) =>
+    hasChildren ? (tight ? "5px" : "10px") : "0"};
 `;
 
 const StyledTransparentButton = styled(BasicButton)`
@@ -47,6 +49,8 @@ const IconButton = ({
   active,
   red,
   large,
+  regular,
+  tight,
   children,
   iconProps,
   ...restProps
@@ -54,12 +58,15 @@ const IconButton = ({
   <StyledTransparentButton active={active} {...restProps}>
     <StyledFaIcon
       main
+      hasChildren={!!children}
+      regular={regular}
       large={large}
       active={active}
+      tight={tight}
       red={red}
       icon={icon}
       {...iconProps}
-    />{" "}
+    />
     {children}
   </StyledTransparentButton>
 );

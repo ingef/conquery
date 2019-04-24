@@ -4,6 +4,8 @@ import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
 
+import { loadTree } from "./actions";
+
 import type { StateType } from "../app/reducers";
 
 import { getConceptById } from "./globalTreeStoreHelper";
@@ -57,7 +59,14 @@ class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
-    const { activeTab, search, trees, loading, areTreesAvailable } = this.props;
+    const {
+      activeTab,
+      search,
+      trees,
+      loading,
+      areTreesAvailable,
+      onLoadTree
+    } = this.props;
 
     return (
       !search.loading && (
@@ -92,6 +101,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                   error={tree.error}
                   depth={0}
                   search={search}
+                  onLoadTree={onLoadTree}
                 />
               ) : (
                 <CategoryTreeFolder
@@ -103,6 +113,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                   active={tree.active}
                   openInitially
                   search={search}
+                  onLoadTree={onLoadTree}
                 />
               );
             })}
@@ -112,14 +123,15 @@ class CategoryTreeList extends React.Component<PropsType> {
   }
 }
 
-const mapStateToProps = (state: StateType) => {
-  return {
+export default connect(
+  state => ({
     trees: state.categoryTrees.trees,
     loading: state.categoryTrees.loading,
     areTreesAvailable: getAreTreesAvailable(state),
     activeTab: state.panes.left.activeTab,
     search: state.categoryTrees.search
-  };
-};
-
-export default connect(mapStateToProps)(CategoryTreeList);
+  }),
+  (dispatch, ownProps) => ({
+    onLoadTree: id => dispatch(loadTree(ownProps.datasetId, id))
+  })
+)(CategoryTreeList);
