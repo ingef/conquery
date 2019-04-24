@@ -16,9 +16,7 @@ function isExternalQuery(node) {
   return (
     node.query.type === "CONCEPT_QUERY" &&
     node.query.root &&
-    node.query.root.children &&
-    node.query.root.children.length > 0 &&
-    node.query.root.children[0].type === "EXTERNAL"
+    node.query.root.type === "EXTERNAL_RESOLVED"
   );
 }
 
