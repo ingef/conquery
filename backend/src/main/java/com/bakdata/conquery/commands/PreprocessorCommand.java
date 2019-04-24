@@ -73,7 +73,7 @@ public class PreprocessorCommand extends ConfiguredCommand<ConqueryConfig> {
 		pool.awaitTermination(24, TimeUnit.HOURS);
 	}
 	
-	public List<Preprocessor> findPreprocessingJobs(ConqueryConfig config, Validator validator) throws IOException, JSONException {
+	public static List<Preprocessor> findPreprocessingJobs(ConqueryConfig config, Validator validator) throws IOException, JSONException {
 		List<Preprocessor> l = new ArrayList<>();
 		for(PreprocessingDirectories directories:config.getPreprocessor().getDirectories()) {
 			File in = directories.getDescriptions().getAbsoluteFile();
