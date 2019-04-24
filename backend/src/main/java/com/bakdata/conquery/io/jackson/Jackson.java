@@ -1,5 +1,6 @@
 package com.bakdata.conquery.io.jackson;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
@@ -19,7 +20,6 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-import com.sun.xml.bind.v2.schemagen.xmlschema.List;
 
 public class Jackson {
 	public static final ObjectMapper MAPPER;
@@ -67,6 +67,8 @@ public class Jackson {
 		objectMapper
 			.configOverride(Set.class)
 			.setSetterInfo(Value.forValueNulls(Nulls.AS_EMPTY));
+		
+		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(Object.class));
 		
 		return (T)objectMapper;
 	}
