@@ -7,18 +7,15 @@ import java.util.List;
 
 import org.apache.mina.core.buffer.IoBuffer;
 
-import com.esotericsoftware.kryo.util.IntMap.Entry;
+import com.bakdata.conquery.util.dict.SuccinctTrie.Entry;
 
 public interface ValueNode {
 
 	public ABytesNode getParent();
 	public int getValue();
 	
-	public default Entry<String> toEntry() {
-		Entry<String> e = new Entry<>();
-		e.key = this.getValue();
-		e.value = toValue();
-		return e;
+	public default Entry toEntry() {
+		return new Entry(this.getValue(), toValue());
 	}
 
 	public default byte[] toBytes() {

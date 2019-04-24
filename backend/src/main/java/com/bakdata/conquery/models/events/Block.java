@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
-import com.esotericsoftware.kryo.io.Output;
+import com.bakdata.conquery.util.io.SmallOut;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -64,7 +64,7 @@ public abstract class Block extends IdentifiableImpl<BlockId> implements JsonSer
 	}
 	
 	public abstract Map<String, Object> calculateMap(int event, Import imp);
-	public abstract void writeContent(Output output) throws IOException;
+	public abstract void writeContent(SmallOut output) throws IOException;
 
 
 }
