@@ -2,7 +2,7 @@ pull_request_rules:
   - name: automatic merge
     conditions:
       - "#approved-reviews-by>=1"
-      - "#status-failure=1"
+      - "#status-failure=0"
       - -closed
     actions:
       merge:
