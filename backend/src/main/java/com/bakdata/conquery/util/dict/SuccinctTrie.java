@@ -10,7 +10,6 @@ import java.util.List;
 import org.apache.mina.core.buffer.IoBuffer;
 
 import com.bakdata.conquery.util.BufferUtil;
-import com.esotericsoftware.kryo.util.IntMap.Entry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -20,6 +19,7 @@ import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
 import lombok.Data;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 public class SuccinctTrie implements Iterable<String> {
 
@@ -336,18 +336,21 @@ public class SuccinctTrie implements Iterable<String> {
 		return valuesBytes;
 	}
 
-	public Collection<Entry<String>> getEntries() {
+	public Collection<Entry> getEntries() {
 		int i = 0;
-		Collection<Entry<String>> entries = new ArrayList<Entry<String>>();
+		Collection<Entry> entries = new ArrayList<Entry>(getValues().size());
 
-		for (String val : getValues()) {
-			Entry<String> entry = new Entry<>();
-			entry.key = i;
-			entry.value = val;
-			entries.add(entry);
+		for(String val: getValues()) {
+			entries.add(new Entry(i, val));
 			i++;
 		}
 		return entries;
+	}
+
+	@Data @RequiredArgsConstructor
+	public static class Entry {
+		private final int key;
+		private final String value;
 	}
 
 	@Override
@@ -398,4 +401,3 @@ public class SuccinctTrie implements Iterable<String> {
 
 	}
 }
-

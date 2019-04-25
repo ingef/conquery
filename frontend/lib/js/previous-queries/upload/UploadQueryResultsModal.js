@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import T from "i18n-react";
 import ReactDropzone from "react-dropzone";
 
@@ -8,10 +9,28 @@ import { InfoTooltip } from "../../tooltip";
 
 import { Modal } from "../../modal";
 import { ErrorMessage } from "../../error-message";
+import FaIcon from "../../icon/FaIcon";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
 import UploadReport from "./UploadReport";
 import { type UploadReportType } from "./reducer";
+
+const Root = styled("div")`
+  padding: 20px 0 10px;
+  text-align: center;
+`;
+
+const Error = styled("div")`
+  font-size: $font-sm;
+`;
+
+const Success = styled("div")`
+  color: ${({ theme }) => theme.col.green};
+`;
+
+const StyledFaIcon = styled(FaIcon)`
+  font-size: 40px;
+`;
 
 type PropsType = {
   onCloseModal: Function,
@@ -25,7 +44,7 @@ type StateType = {
   file: any
 };
 
-class UploadQueryResultsModal extends React.Component {
+class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
   props: PropsType;
   state: StateType;
 
@@ -48,29 +67,27 @@ class UploadQueryResultsModal extends React.Component {
   render() {
     return (
       <Modal closeModal={this.props.onCloseModal} doneButton>
-        <div className="upload-query-results-modal">
+        <Root>
           <InfoTooltip
             text={T.translate("uploadQueryResultsModal.formatInfo.text")}
           />
-          <h3 className="upload-query-results-modal__headline">
-            {T.translate("uploadQueryResultsModal.headline")}
-          </h3>
+          <h3>{T.translate("uploadQueryResultsModal.headline")}</h3>
           {this.props.success && (
-            <div className="upload-query-results-modal__success">
+            <Success>
               <p>
-                <i className="fa fa-check-circle fa-5x" />
+                <StyledFaIcon icon="check-circle" />
               </p>
               <p>
                 {T.translate("uploadQueryResultsModal.previousQueryCreated")}
               </p>
               <UploadReport report={this.props.success} />
-            </div>
+            </Success>
           )}
           {!this.props.success && (
             <div>
               {this.state.file ? (
                 <p>
-                  <IconButton icon="close" onClick={this._onReset.bind(this)} />
+                  <IconButton icon="times" onClick={this._onReset.bind(this)} />
                   {this.state.file.name}
                 </p>
               ) : (
@@ -84,10 +101,10 @@ class UploadQueryResultsModal extends React.Component {
                 </ReactDropzone>
               )}
               {this.props.error && (
-                <div className="upload-query-results-modal__error">
+                <Error>
                   <ErrorMessage message={this.props.error.message} />
                   <UploadReport report={this.props.error} />
-                </div>
+                </Error>
               )}
               <PrimaryButton
                 disabled={!this.state.file}
@@ -98,7 +115,7 @@ class UploadQueryResultsModal extends React.Component {
               </PrimaryButton>
             </div>
           )}
-        </div>
+        </Root>
       </Modal>
     );
   }

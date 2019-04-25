@@ -7,7 +7,6 @@ import { type FieldPropsType } from "redux-form";
 import Dropzone from "react-dropzone";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
-import ReactTooltip from "react-tooltip";
 
 import { type SelectOptionsType } from "../common/types/backend";
 import { isEmpty } from "../common/helpers";
@@ -30,6 +29,8 @@ type PropsType = FieldPropsType & {
   allowDropFile?: boolean
 };
 
+const OPTIONS_LIMIT = 50;
+
 const InputMultiSelect = (props: PropsType) => {
   const allowDropFile = props.allowDropFile && !!props.onDropFile;
 
@@ -41,15 +42,14 @@ const InputMultiSelect = (props: PropsType) => {
 
     return (
       <components.MultiValueLabel {...params}>
-        <span data-tip={valueLabel}>{valueLabel}</span>
-        <ReactTooltip type="info" place="top" effect="solid" />
+        <span>{valueLabel}</span>
       </components.MultiValueLabel>
     );
   };
 
   const options =
     props.options &&
-    props.options.slice(0, 50).map(option => ({
+    props.options.slice(0, OPTIONS_LIMIT).map(option => ({
       ...option,
       label:
         option.optionValue && option.templateValues
@@ -65,7 +65,7 @@ const InputMultiSelect = (props: PropsType) => {
         !isEmpty(props.input.value) &&
         props.input.value !== props.input.defaultValue
       }
-      disabled={props.disabled}
+      disabled={!!props.disabled}
       label={
         <>
           {props.label}
@@ -73,7 +73,7 @@ const InputMultiSelect = (props: PropsType) => {
         </>
       }
     >
-      {props.input.value && props.input.value.length > 50 ? (
+      {props.input.value && props.input.value.length > OPTIONS_LIMIT ? (
         <TooManyValues
           value={props.input.value}
           onClear={() => props.input.onChange(null)}
@@ -89,13 +89,18 @@ const InputMultiSelect = (props: PropsType) => {
         >
           <ReactSelect
             creatable
+            isMulti
+            createOptionPosition="first"
             name="form-field"
             options={options}
             components={{ MultiValueLabel }}
             value={props.input.value}
             onChange={props.input.onChange}
             isDisabled={props.disabled}
-            isMulti
+            isLoading={!!props.isLoading}
+            filterOption={false}
+            classNamePrefix={"react-select"}
+            closeMenuOnSelect={false}
             placeholder={
               allowDropFile
                 ? T.translate("reactSelect.dndPlaceholder")
@@ -108,9 +113,6 @@ const InputMultiSelect = (props: PropsType) => {
                 return value;
               }
             }
-            isLoading={!!props.isLoading}
-            classNamePrefix={"react-select"}
-            closeMenuOnSelect={false}
             formatOptionLabel={({
               label,
               optionValue,
@@ -125,7 +127,6 @@ const InputMultiSelect = (props: PropsType) => {
                 label
               )
             }
-            filterOption={false}
           />
         </Dropzone>
       )}

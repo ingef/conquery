@@ -14,19 +14,21 @@ import {
   SEARCH_TREES_SUCCESS,
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
-  CHANGE_SEARCH_QUERY
+  CHANGE_SEARCH_QUERY,
+  TOGGLE_ALL_OPEN,
+  TOGGLE_SHOW_MISMATCHES
 } from "./actionTypes";
 import { setTree } from "./globalTreeStoreHelper";
 
 export type TreesType = { [treeId: string]: NodeType };
 
 export type SearchType = {
-  searching: boolean,
+  allOpen: boolean,
+  showMismatches: boolean,
   loading: boolean,
   query: string,
-  words: Array<string>,
-  result: Array<TreeNodeIdType>,
-  limit: number,
+  words: ?(string[]),
+  result: ?{ [TreeNodeIdType]: number },
   resultCount: number,
   duration: number
 };
@@ -35,43 +37,46 @@ export type StateType = {
   loading: boolean,
   version: any,
   trees: TreesType,
-  search?: SearchType
+  search: SearchType
+};
+
+const initialSearch = {
+  allOpen: false,
+  showMismatches: true,
+  loading: false,
+  query: "",
+  words: null,
+  result: null,
+  resultCount: 0,
+  duration: 0
 };
 
 const initialState: StateType = {
   loading: false,
   version: null,
   trees: {},
-  search: {
-    searching: false,
-    loading: false,
-    query: "",
-    words: [],
-    result: [],
-    limit: 0,
-    totalResults: 0,
-    duration: 0
-  }
+  search: initialSearch
 };
 
 const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
-  const {
-    query,
-    searchResult: { result, size, limit }
-  } = action.payload;
+  const { query, result } = action.payload;
 
-  const searching = query && query.length > 0;
+  // only create keys array once, then cache,
+  // since the result might be > 100k entries
+  const resultCount = Object.keys(result).length;
+  const AUTO_UNFOLD_AT = 250;
 
   return {
     ...state,
     search: {
-      searching,
+      ...state.search,
+      allOpen: resultCount < AUTO_UNFOLD_AT,
+      showMismatches: resultCount >= AUTO_UNFOLD_AT,
       loading: false,
       query,
-      words: query ? query.split(" ") : [],
-      result: result || [],
-      limit,
-      totalResults: searching ? size : 0,
+      words: query.split(" "),
+      result: result,
+      resultCount,
       duration: Date.now() - state.search.duration
     }
   };
@@ -83,13 +88,12 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
   return {
     ...state,
     search: {
-      searching: false,
+      ...state.search,
       loading: query && query.length > 0,
       query: query,
       words: query ? query.split(" ") : [],
-      result: [],
+      result: {},
       resultCount: 0,
-      limit: 0,
       duration: Date.now()
     }
   };
@@ -166,8 +170,10 @@ const categoryTrees = (
       return setTreeSuccess(state, action);
     case LOAD_TREE_ERROR:
       return setTreeError(state, action);
+
     case CLEAR_TREES:
       return initialState;
+
     case SEARCH_TREES_START:
       return setSearchTreesStart(state, action);
     case SEARCH_TREES_SUCCESS:
@@ -175,13 +181,13 @@ const categoryTrees = (
     case SEARCH_TREES_ERROR:
       return {
         ...state,
-        search: { loading: false },
+        search: { ...state.search, loading: false },
         error: action.payload.message
       };
     case CLEAR_SEARCH_QUERY:
       return {
         ...state,
-        search: { searching: false, query: "" }
+        search: initialSearch
       };
     case CHANGE_SEARCH_QUERY:
       return {
@@ -189,6 +195,24 @@ const categoryTrees = (
         search: {
           ...state.search,
           query: action.payload.query
+        }
+      };
+
+    case TOGGLE_ALL_OPEN:
+      return {
+        ...state,
+        search: {
+          ...state.search,
+          allOpen: !state.search.allOpen
+        }
+      };
+    case TOGGLE_SHOW_MISMATCHES:
+      return {
+        ...state,
+        search: {
+          ...state.search,
+          allOpen: !state.search.showMismatches ? false : state.search.allOpen,
+          showMismatches: !state.search.showMismatches
         }
       };
     default:

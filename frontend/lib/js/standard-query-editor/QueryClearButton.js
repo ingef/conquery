@@ -23,7 +23,7 @@ const QueryClearButton = (props: PropsType) => {
   return (
     props.isVisible && (
       <Root>
-        <IconButton frame onClick={props.clearQuery} icon="trash-o">
+        <IconButton frame onClick={props.clearQuery} regular icon="trash-alt">
           {T.translate("common.clear")}
         </IconButton>
       </Root>

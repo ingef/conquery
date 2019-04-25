@@ -50,7 +50,7 @@
                         "selects": ["12345678"],
                         "filters": [
                           {
-                            "id": "budget",
+                            "filter": "budget",
                             "value": {
                               "min": 10000000,
                               "max": 150000000
@@ -71,7 +71,7 @@
                         "id": "feature_films",
                         "filters": [
                           {
-                            "id": "studio",
+                            "filter": "studio",
                             "value": "universal"
                           }
                         ]
@@ -93,7 +93,7 @@
                     "id": "awards",
                     "filters": [
                       {
-                        "id": "award_type",
+                        "filter": "award_type",
                         "type": "MULTI_SELECT",
                         "value": ["won"]
                       }
@@ -109,7 +109,7 @@
                     "id": "awards",
                     "filters": [
                       {
-                        "id": "award_type",
+                        "filter": "award_type",
                         "type": "MULTI_SELECT",
                         "value": ["won"]
                       }

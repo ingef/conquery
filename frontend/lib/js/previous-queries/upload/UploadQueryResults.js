@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import T from "i18n-react";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
@@ -14,7 +15,7 @@ import { openUploadModal, closeUploadModal, uploadFile } from "./actions";
 import { type UploadReportType } from "./reducer";
 
 type PropsType = {
-  datasetId: DatasetIdType,
+  datasetId: ?DatasetIdType,
   isModalOpen: boolean,
   loading: boolean,
   success: ?UploadReportType,
@@ -24,9 +25,14 @@ type PropsType = {
   onUploadFile: Function
 };
 
+const Root = styled("div")`
+  margin-bottom: 5px;
+  padding: 0 10px 0 20px;
+`;
+
 const UploadQueryResults = (props: PropsType) => {
   return (
-    <div className="upload-query-results">
+    <Root>
       <IconButton frame icon="upload" onClick={props.onOpenModal}>
         {T.translate("uploadQueryResults.uploadResults")}
       </IconButton>
@@ -39,7 +45,7 @@ const UploadQueryResults = (props: PropsType) => {
           error={props.error}
         />
       )}
-    </div>
+    </Root>
   );
 };
 

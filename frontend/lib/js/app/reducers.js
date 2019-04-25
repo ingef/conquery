@@ -29,6 +29,7 @@ import { reducer as uploadQueryResults } from "../previous-queries/upload";
 import { reducer as deletePreviousQueryModal } from "../previous-queries/delete-modal";
 import { reducer as uploadConceptListModal } from "../upload-concept-list-modal";
 import { reducer as uploadFilterListModal } from "../upload-filter-list-modal";
+import { reducer as snackMessage } from "../snack-message";
 
 import { createQueryNodeEditorReducer } from "../query-node-editor";
 
@@ -54,7 +55,8 @@ const buildAppReducer = tabs =>
     previousQueriesSearch,
     previousQueriesFilter,
     uploadQueryResults,
-    deletePreviousQueryModal
+    deletePreviousQueryModal,
+    snackMessage
   });
 
 export default buildAppReducer;

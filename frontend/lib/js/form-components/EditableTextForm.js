@@ -20,6 +20,7 @@ const Input = styled("input")`
   height: 30px;
   font-size: ${({ theme }) => theme.font.sm};
   margin-right: 3px;
+  margin-bottom: 3px;
 `;
 
 class EditableTextForm extends React.Component {
@@ -28,6 +29,7 @@ class EditableTextForm extends React.Component {
   componentDidMount() {
     this.refs.input.focus();
     this.refs.input.value = this.props.text;
+
     if (this.props.selectTextOnMount) this.refs.input.select();
   }
 

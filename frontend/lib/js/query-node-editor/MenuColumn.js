@@ -6,7 +6,7 @@ import styled from "@emotion/styled";
 
 import { tableHasActiveFilters } from "../model/table";
 
-import TransparentHeaderButton from "../button/TransparentHeaderButton";
+import { EditableText } from "../form-components";
 import FaIcon from "../icon/FaIcon";
 
 import ResetAllFiltersButton from "./ResetAllFiltersButton";
@@ -18,6 +18,7 @@ const FixedColumn = styled("div")`
   flex-direction: column;
   min-width: 205px;
   max-width: 220px;
+  overflow: hidden;
   flex-shrink: 0;
   flex-grow: 1;
 
@@ -26,17 +27,18 @@ const FixedColumn = styled("div")`
   }
 `;
 
-const CategoryHeader = styled("div")`
-  padding-left: 10px;
-  line-height: 32px;
+const CategoryHeader = styled("p")`
+  margin: 0;
+  padding: 10px 0 5px 14px;
+  line-height: 1;
   font-size: ${({ theme }) => theme.font.xs};
   text-transform: uppercase;
-  font-weight: 700;
   color: ${({ theme }) => theme.col.black};
 `;
 
-const StyledButton = styled(TransparentHeaderButton)`
-  font-size: ${({ theme }) => theme.font.lg};
+const StyledButton = styled("div")`
+  font-size: ${({ theme }) => theme.font.md};
+  padding: 8px 15px;
   font-weight: 700;
   color: ${({ theme }) => theme.col.black};
   width: 100%;
@@ -45,18 +47,26 @@ const StyledButton = styled(TransparentHeaderButton)`
   flex-direction: row;
   align-items: center;
   line-height: 21px;
+  cursor: pointer;
 
   background-color: ${({ theme, active }) =>
     active ? theme.col.blueGrayVeryLight : "initial"};
   &:hover {
     background-color: ${({ theme, active }) =>
-      active ? theme.col.blueGrayVeryLight : "initial"};
+      active ? theme.col.blueGrayVeryLight : theme.col.grayVeryLight};
   }
 `;
 
+const NodeEditButton = styled(StyledButton)``;
+
 const StyledFaIcon = styled(FaIcon)`
-  font-size: 21px;
-  line-height: 21px;
+  font-size: ${({ theme }) => theme.font.lg};
+  line-height: ${({ theme }) => theme.font.lg};
+`;
+
+const NodeName = styled("div")`
+  padding: 10px 15px;
+  border-bottom: 1px solid #ccc;
 `;
 
 const MenuColumn = (props: PropsType) => {
@@ -65,30 +75,39 @@ const MenuColumn = (props: PropsType) => {
     editorState,
     showTables,
     onToggleTable,
-    onResetAllFilters
+    onResetAllFilters,
+    onUpdateLabel
   } = props;
 
-  const onlyOneTableIncluded = !node.isPreviousQuery
-    ? node.tables.filter(table => !table.exclude).length === 1
-    : undefined;
-  const allowToggleTables = !node.isPreviousQuery
-    ? node.tables.map(table => table.exclude || !onlyOneTableIncluded)
-    : undefined;
+  const onlyOneTableIncluded =
+    !node.isPreviousQuery &&
+    node.tables.filter(table => !table.exclude).length === 1;
 
   return (
     <FixedColumn>
-      <CategoryHeader>
-        {T.translate("queryNodeEditor.queryNode")}
-      </CategoryHeader>
-      <StyledButton
+      <NodeName>
+        {!node.isPreviousQuery && (
+          <EditableText
+            large
+            loading={false}
+            text={node.label}
+            selectTextOnMount={true}
+            editing={editorState.editingLabel}
+            onSubmit={value => {
+              onUpdateLabel(value);
+              editorState.onToggleEditLabel();
+            }}
+            onToggleEdit={editorState.onToggleEditLabel}
+          />
+        )}
+        {node.isPreviousQuery && (node.label || node.id || node.ids)}
+      </NodeName>
+      <NodeEditButton
         active={editorState.detailsViewActive}
-        onClick={e => {
-          e.preventDefault();
-          editorState.onSelectDetailsView();
-        }}
+        onClick={editorState.onSelectDetailsView}
       >
         {T.translate("queryNodeEditor.properties")}
-      </StyledButton>
+      </NodeEditButton>
       {!node.isPreviousQuery && showTables && (
         <div>
           <CategoryHeader>
@@ -109,12 +128,13 @@ const MenuColumn = (props: PropsType) => {
               >
                 <StyledFaIcon
                   left
-                  icon={table.exclude ? "square-o" : "check-square-o"}
-                  disabled={!allowToggleTables[tableIdx]}
+                  regular
+                  icon={table.exclude ? "square" : "check-square"}
+                  disabled={!table.exclude && onlyOneTableIncluded}
                   onClick={event => {
                     event.stopPropagation();
 
-                    if (allowToggleTables[tableIdx])
+                    if (table.exclude || !onlyOneTableIncluded)
                       onToggleTable(tableIdx, !table.exclude);
                   }}
                 />

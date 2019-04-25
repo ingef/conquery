@@ -64,25 +64,20 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
     });
 };
 
-export const transformElementGroupsToApi = elementGroups =>
-  elementGroups.map(elements => ({
-    matchingType: elements.matchingType,
-    type: "OR",
-    children: transformElementsToApi(elements.concepts)
-  }));
-
 export const transformElementsToApi = conceptGroup =>
   conceptGroup.map(createConcept);
 
 const transformStandardQueryToApi = query =>
-  createConceptQuery(createQueryConcepts(query));
+  createConceptQuery(createAnd(createQueryConcepts(query)));
 
-const createConceptQuery = children => ({
+const createConceptQuery = root => ({
   type: "CONCEPT_QUERY",
-  root: {
-    type: "AND",
-    children: children
-  }
+  root
+});
+
+const createAnd = children => ({
+  type: "AND",
+  children
 });
 
 const createNegation = group => ({
@@ -147,37 +142,56 @@ const getDays = condition => {
   }
 };
 
-const transformTimebasedQueryToApi = query => ({
-  type: "CONCEPT_QUERY",
-  root: {
-    type: "AND",
-    children: query.conditions.map(condition => {
-      const days = getDays(condition);
+const transformTimebasedQueryToApi = query =>
+  createConceptQuery(
+    createAnd(
+      query.conditions.map(condition => {
+        const days = getDays(condition);
 
-      return {
-        type: condition.operator,
-        ...days,
-        index: {
-          sampler: condition.result0.timestamp,
-          child: createSavedQuery(condition.result0.id)
-        },
-        preceding: {
-          sampler: condition.result1.timestamp,
-          child: createSavedQuery(condition.result1.id)
-        }
-      };
-    })
-  }
-});
+        return {
+          type: condition.operator,
+          ...days,
+          preceding: {
+            sampler: condition.result0.timestamp,
+            child: createSavedQuery(condition.result0.id)
+          },
+          index: {
+            sampler: condition.result1.timestamp,
+            child: createSavedQuery(condition.result1.id)
+          }
+        };
+      })
+    )
+  );
 
 const transformExternalQueryToApi = query =>
-  createConceptQuery(createExternal(query));
+  createConceptQuery([createExternal(query)]);
 
-const createExternal = (query: any) => ({
-  type: "EXTERNAL",
-  format: query.data[0],
-  values: [query.data.slice(1)]
-});
+const createExternal = (query: any) => {
+  return {
+    type: "EXTERNAL",
+    format:
+      // This is experimental still.
+      // External queries (uploaded lists) may contain three or four columns.
+      // The first two columns are IDs, which will be concatenated
+      // The other two columns are date ranges
+      // We simply assume that the data is in this format
+      // Will produce upload errors when the data has a different format
+      //
+      // Based on the possible:
+      // ID (some string)
+      // EVENT_DATE (a single day),
+      // START_DATE (a starting day),
+      // END_DATE (and end day,
+      // DATE_RANGE (two days),
+      // DATE_SET (a set of date ranges),
+      // IGNORE (ignore this column);
+      query.data[0].length >= 4
+        ? ["ID", "ID", "START_DATE", "END_DATE"]
+        : ["ID", "ID", "DATE_SET"],
+    values: query.data.slice(1)
+  };
+};
 
 // The query state already contains the query.
 // But small additions are made (properties whitelisted), empty things filtered out

@@ -1,0 +1,13 @@
+pull_request_rules:
+  - name: automatic merge
+    conditions:
+      - "#approved-reviews-by>=1"
+      - "#status-failure=0"
+      - -closed
+    actions:
+      merge:
+        method: merge
+  - name: delete old branches
+    conditions: []
+    actions:
+      delete_head_branch: {}

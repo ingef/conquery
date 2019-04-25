@@ -9,6 +9,7 @@ import Markdown from "react-markdown";
 import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
+import FaIcon from "../icon/FaIcon";
 import type { SearchType } from "../category-trees/reducer";
 
 import ActivateTooltip from "./ActivateTooltip";
@@ -45,17 +46,21 @@ const Tooltip = (props: PropsType) => {
     dateRange
   } = additionalInfos;
 
-  const searchHighlight = text => (
-    <Highlighter
-      searchWords={props.search.words || []}
-      autoEscape={true}
-      textToHighlight={text || ""}
-    />
-  );
+  const searchHighlight = text => {
+    return (
+      <Highlighter
+        searchWords={props.search.words || []}
+        autoEscape={true}
+        textToHighlight={text || ""}
+      />
+    );
+  };
 
   return (
     <div className="tooltip">
-      {toggleAdditionInfos && <i className="tooltip__tack fa fa-thumb-tack" />}
+      {toggleAdditionInfos && (
+        <FaIcon className="tooltip__tack" icon="thumbtack" />
+      )}
       <div className="tooltip__left">
         <div>
           {!label && !description && (
@@ -89,13 +94,11 @@ const Tooltip = (props: PropsType) => {
         dateRange={dateRange}
       />
       <StyledIconButton
-        light
+        small
         frame
         onClick={toggleDisplayTooltip}
         icon="angle-down"
-      >
-        {T.translate("tooltip.hide")}
-      </StyledIconButton>
+      />
     </div>
   );
 };

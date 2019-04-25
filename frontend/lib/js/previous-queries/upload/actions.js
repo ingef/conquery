@@ -37,16 +37,15 @@ export const uploadFileError = (error: any, payload: Object) =>
     unsuccessful: payload.unsuccessful
   });
 
-export const uploadFile = (
-  datasetId: DatasetIdType,
-  file: any,
-  version: any
-) => (dispatch: Dispatch) => {
+export const uploadFile = (datasetId: DatasetIdType, file: any) => (
+  dispatch: Dispatch
+) => {
   dispatch(uploadFileStart());
 
   Papa.parse(file, {
-    complete: function(results) {
-      return api.postQueries(datasetId, results, "external", version).then(
+    skipEmptyLines: true,
+    complete: results => {
+      return api.postQueries(datasetId, results, "external").then(
         r => {
           dispatch(uploadFileSuccess(r));
 

@@ -57,24 +57,25 @@ const QueryGroupActions = (props: PropsType) => {
     <Actions>
       <div>
         <RedIconButton
+          tight
           active={props.excludeActive}
-          large
           icon="ban"
           onClick={props.onExcludeClick}
         >
           {T.translate("queryEditor.exclude")}
         </RedIconButton>
         <StyledIconButton
+          tight
           active={props.dateActive}
-          large
-          icon="calendar-o"
+          regular
+          icon="calendar"
           onClick={props.onDateClick}
         >
           {T.translate("queryEditor.date")}
         </StyledIconButton>
       </div>
       <Right>
-        <IconButton noFrame tiny icon="close" onClick={props.onDeleteGroup} />
+        <IconButton noFrame tiny icon="times" onClick={props.onDeleteGroup} />
       </Right>
     </Actions>
   );

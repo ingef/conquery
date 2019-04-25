@@ -2,8 +2,10 @@
 
 import React from "react";
 import styled from "@emotion/styled";
-import { Startup } from "../startup";
-import { Header } from "../header";
+
+import Startup from "../startup/Startup";
+import Header from "../header/Header";
+import SnackMessage from "../snack-message/SnackMessage";
 import Content from "./Content";
 
 const Root = styled("div")`
@@ -17,6 +19,7 @@ const App = () => (
     <Startup />
     <Header />
     <Content />
+    <SnackMessage />
   </Root>
 );
 

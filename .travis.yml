@@ -5,7 +5,7 @@ os:
   - linux
 
 jdk:
-  - openjdk11
+  - openjdk12
 
 before_install: mvn initialize -P setVersion
 

@@ -22,13 +22,13 @@ const Option = styled("span")`
 
   margin-left: -1px;
 
-  &:first-child {
+  &:first-of-type {
     margin-left: 0;
     border-top-left-radius: 2px;
     border-bottom-left-radius: 2px;
   }
 
-  &:last-child {
+  &:last-of-type {
     border-top-right-radius: 2px;
     border-bottom-right-radius: 2px;
   }

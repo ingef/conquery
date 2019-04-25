@@ -455,9 +455,20 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
           : { mode: "range", value: matchingFilter.value }
         : matchingFilter;
 
+    // If value is an array, there must be (multi-select) options to get other attributes from
+    const filterModeWithMappedValue =
+      filterModeWithValue.value && filterModeWithValue.value instanceof Array
+        ? {
+            ...filterModeWithValue,
+            value: filterModeWithValue.value.map(val =>
+              filter.options.find(op => op.value === val)
+            )
+          }
+        : filterModeWithValue;
+
     return {
       ...filter,
-      ...filterModeWithValue // => this one may contain a "value" property
+      ...filterModeWithMappedValue // => this one may contain a "value" property
     };
   });
 };
@@ -643,16 +654,21 @@ const renamePreviousQuery = (state, action) => {
   });
 };
 
+function getIndicesFromSelectedOrAction(state, action) {
+  const { andIdx, orIdx } = action.payload;
+
+  if (andIdx !== null && orIdx !== null) {
+    return { andIdx, orIdx };
+  }
+
+  return selectEditedNode(state);
+}
+
 const toggleTimestamps = (state, action) => {
-  const { isExcluded } = action.payload;
-
-  const nodePosition = selectEditedNode(state);
-  if (!nodePosition) return state;
-
-  const { andIdx, orIdx } = nodePosition;
+  const { andIdx, orIdx } = getIndicesFromSelectedOrAction(state, action);
 
   return setElementProperties(state, andIdx, orIdx, {
-    excludeTimestamps: isExcluded
+    excludeTimestamps: !state[andIdx].elements[orIdx].excludeTimestamps
   });
 };
 

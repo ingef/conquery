@@ -11,9 +11,16 @@ rightPane:
   externalForms: "Formulare"
 
 categoryTreeList:
-  loading: "Lade Konzeptbaum: {tree}"
+  loading: "Lade Konzeptbäume"
+  loadingTree: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
-  noTrees: "Konnte Konzeptbäume nicht laden."
+  noTrees: "Keine Konzeptbäume"
+  noTreesExplanation: "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden."
+  openAll: "Alle aufklappen"
+  closeAll: "Einzeln aufklappen"
+  searchPlaceholder: "Konzepte durchsuchen ..."
+  showMismatches: "Vollständig anzeigen"
+  dontShowMismatches: "Nur Treffer zeigen"
 
 queryRunner:
   start: "Anfrage starten"
@@ -58,6 +65,7 @@ queryNodeEditor:
   properties: "Eigenschaften"
   resetAll: "Alle zurücksetzen"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
+  excludingTimestamps: "Von Zeitberechnung ausgeschlossen"
   description: "Beschreibung"
   noDescriptionProvided: "Keine Beschreibung verfügbar."
   selectAFilter: "Kein Filter ausgewählt."
@@ -96,8 +104,6 @@ tooltip:
     _: "gefundene Einträge"
 
   placeholder: "Weitere Informationen über einen Konzeptknoten ..."
-  hide: "Verstecken"
-  show: "Weitere Informationen anzeigen"
   date:
     daterange: "Zeitraum"
     from: "Von"
@@ -159,7 +165,7 @@ timebasedQueryEditor:
   opBeforeOrSame: "VOR ODER GLEICH"
   opDays: "TAGE VOR"
   opSame: "GLEICH"
-  opDaysOrNoEventBefore: "TAGE ODER KEIN EREIGNIS DAVOR"
+  opDaysOrNoEventBefore: "KEIN EREIGNIS IN TAGE VOR"
   timestampFirst: "ERSTER"
   timestampLast: "LETZTER"
   timestampRandom: "ZUFÄLLIG"
@@ -167,8 +173,8 @@ timebasedQueryEditor:
   condition: "Bedingung"
   timestampResultsFrom: "Nutze als Ergebnis-Zeitstempel"
   addCondition: "Bedingung hinzufügen"
-  minDaysLabel: "Min. Tage"
-  maxDaysLabel: "Max. Tage"
+  minDaysLabel: "Beginn Tage"
+  maxDaysLabel: "Ende Tage"
 
 externalForms:
   forms: "Formulare"
@@ -243,4 +249,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} Sekunden)"
+  resultLabel: "{totalResults} Ergebnisse gefunden ({duration} s)"

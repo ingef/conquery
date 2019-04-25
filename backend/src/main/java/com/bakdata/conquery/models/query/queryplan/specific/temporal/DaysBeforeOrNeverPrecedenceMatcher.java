@@ -30,7 +30,14 @@ public class DaysBeforeOrNeverPrecedenceMatcher implements PrecedenceMatcher {
 			return false;
 		}
 
-		return !preceding.isPresent() || (reference.getAsInt() - preceding.getAsInt()) >= days;
+		// never
+		if (!preceding.isPresent())
+			return true;
 
+		// days before
+		if ((reference.getAsInt() - preceding.getAsInt()) > days)
+			return true;
+
+		return false;
 	}
 }

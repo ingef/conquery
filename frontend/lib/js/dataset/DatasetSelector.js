@@ -43,18 +43,13 @@ const DatasetSelector = (props: PropsType) => {
             ? selectDataset(value.value, selectedDatasetId)
             : selectDataset(null, selectedDatasetId)
         }
-        placeholder={T.translate("reactSelect.placeholder")}
-        isDisabled={!!error}
-        options={
+        placeholder={
           error
-            ? [
-                {
-                  value: -1,
-                  label: T.translate("datasetSelector.error")
-                }
-              ]
-            : options
+            ? T.translate("datasetSelector.error")
+            : T.translate("reactSelect.placeholder")
         }
+        isDisabled={!!error}
+        options={options}
       />
     </Root>
   );

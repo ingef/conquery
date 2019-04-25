@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,7 +31,26 @@ public class JobExecutor extends Thread {
 		}
 		jobs.add(job);
 	}
-	
+
+	public boolean cancelJob(UUID jobId) {
+		for (Job job1 : jobs) {
+			if (job1.getJobId().equals(jobId)) {
+				job1.cancel();
+
+				return true;
+			}
+		}
+
+		final Job job = currentJob.get();
+
+		if(job != null && job.getJobId().equals(jobId)){
+			job.cancel();
+			return true;
+		}
+
+		return false;
+	}
+
 	public List<Job> getJobs() {
 		List<Job> jobs = new ArrayList<>(this.jobs.size()+1);
 		Job current = currentJob.get();
@@ -61,11 +81,18 @@ public class JobExecutor extends Thread {
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
 					try {
-						log.trace("{} started job {}", this.getName(), job);
+						if(job.isCancelled()){
+							log.trace("{} skipping cancelled job {}", this.getName(), job);
+							currentJob.set(null);
+							continue;
+						}
+
+						log.trace("{} started job {} with Id {}", this.getName(), job, job.getJobId());
 						job.execute();
 						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
 						currentJob.set(null);
-					} catch (Throwable e) {
+					}
+					catch (Throwable e) {
 						log.error("Fast Job "+job+" failed", e);
 						currentJob.set(null);
 					}
