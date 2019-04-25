@@ -39,4 +39,9 @@ public class ConceptSelectId extends SelectId implements NamespacedId {
 			return new ConceptSelectId(parent, parts.next());
 		}
 	}
+
+	@Override
+	public ConceptId findConcept() {
+		return concept;
+	}
 }

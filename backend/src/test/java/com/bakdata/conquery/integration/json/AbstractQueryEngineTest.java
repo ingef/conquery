@@ -47,7 +47,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 
 		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace())
-			.toCSV(new PrintSettings(false), managed)
+			.toCSV(PrintSettings.builder().build(), managed)
 			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();
