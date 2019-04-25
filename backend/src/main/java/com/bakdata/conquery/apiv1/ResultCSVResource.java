@@ -64,7 +64,10 @@ public class ResultCSVResource {
 					PrintSettings
 						.builder()
 						.prettyPrint(true)
-						.nameExtractor(sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset())
+						.nameExtractor(
+							sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset()
+								+ "_"
+								+ sd.getSelect().getId().toStringWithoutDataset())
 						.build(),
 					query);
 
