@@ -61,13 +61,6 @@ public class Jackson {
 			//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
 			.setInjectableValues(new MutableInjectableValues());
 		
-		objectMapper
-			.configOverride(List.class)
-			.setSetterInfo(Value.forValueNulls(Nulls.AS_EMPTY));
-		objectMapper
-			.configOverride(Set.class)
-			.setSetterInfo(Value.forValueNulls(Nulls.AS_EMPTY));
-		
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(Object.class));
 		
 		return (T)objectMapper;
