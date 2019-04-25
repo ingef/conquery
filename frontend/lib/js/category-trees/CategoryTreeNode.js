@@ -21,12 +21,6 @@ const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
 
-const StyledCategoryTreeNodeTextContainer = styled(
-  CategoryTreeNodeTextContainer
-)`
-  display: inline-block;
-`;
-
 // Concept data that is necessary to display tree nodes. Includes additional infos
 // for the tooltip as well as the id of the corresponding tree
 type TreeNodeData = {
@@ -72,15 +66,17 @@ class CategoryTreeNode extends React.Component<PropsType> {
   render() {
     const { id, data, depth, open, search } = this.props;
 
-    const shouldRender = isNodeInSearchResult(id, data.children, search);
+    if (!search.showMismatches) {
+      const shouldRender = isNodeInSearchResult(id, data.children, search);
 
-    if (!shouldRender) return null;
+      if (!shouldRender) return null;
+    }
 
     const isOpen = open || search.allOpen;
 
     return (
       <Root>
-        <StyledCategoryTreeNodeTextContainer
+        <CategoryTreeNodeTextContainer
           node={{
             id,
             label: data.label,
@@ -108,7 +104,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
           search={search}
         />
         {!!data.children && isOpen && (
-          <div>
+          <>
             {data.children.map((childId, i) => {
               const child = getConceptById(childId);
 
@@ -122,7 +118,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
                 />
               ) : null;
             })}
-          </div>
+          </>
         )}
       </Root>
     );

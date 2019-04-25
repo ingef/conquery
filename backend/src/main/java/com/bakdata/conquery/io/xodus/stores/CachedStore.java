@@ -6,12 +6,11 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
-import org.apache.commons.io.FileUtils;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Stopwatch;
+import com.jakewharton.byteunits.BinaryByteUnit;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -97,7 +96,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 				"\tloaded store {}\n\tentries: {}\n\tsize: {}\n\tloading time: {}",
 				this,
 				cache.values().size(),
-				FileUtils.byteCountToDisplaySize(totalSize.get()),
+				BinaryByteUnit.format(totalSize.get()),
 				timer.stop()
 		);
 	}

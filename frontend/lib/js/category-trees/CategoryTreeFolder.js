@@ -14,11 +14,6 @@ import { type SearchType } from "./reducer";
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
-const StyledCategoryTreeNodeTextContainer = styled(
-  CategoryTreeNodeTextContainer
-)`
-  display: inline-block;
-`;
 
 type PropsType = {
   depth: number,
@@ -28,7 +23,8 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
-  search: SearchType
+  search: SearchType,
+  onLoadTree: (id: string) => void
 };
 
 const sumMatchingEntries = (children, initSum) => {
@@ -49,7 +45,7 @@ const CategoryTreeFolder = (props: PropsType) => {
 
   return (
     <Root>
-      <StyledCategoryTreeNodeTextContainer
+      <CategoryTreeNodeTextContainer
         node={{
           id: props.treeId,
           label: props.tree.label,
@@ -88,6 +84,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 error={tree.error}
                 depth={props.depth + 1}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             );
           } else {
@@ -103,6 +100,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 depth={props.depth + 1}
                 active={tree.active}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             ) : (
               <CategoryTreeFolder
@@ -114,6 +112,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 depth={props.depth + 1}
                 active={tree.active}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             );
           }

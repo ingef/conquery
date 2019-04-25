@@ -14,6 +14,11 @@ const StyledContentCell = styled(ContentCell)`
   max-width: 200px;
 `;
 
+const Description = styled("div")`
+  font-size: ${({ theme }) => theme.font.sm};
+  color: ${({ theme }) => theme.col.black};
+`;
+
 const DescriptionColumn = (props: PropsType) => {
   const { node, editorState } = props;
 
@@ -22,7 +27,7 @@ const DescriptionColumn = (props: PropsType) => {
 
   return (
     <StyledContentCell headline={T.translate("queryNodeEditor.description")}>
-      <div className="query-node-editor__description">
+      <Description>
         {selectedTable &&
           editorState.selectedInput &&
           !isEmpty(
@@ -42,7 +47,7 @@ const DescriptionColumn = (props: PropsType) => {
         {editorState.selectedInput === null && (
           <span>{T.translate("queryNodeEditor.selectAFilter")}</span>
         )}
-      </div>
+      </Description>
     </StyledContentCell>
   );
 };

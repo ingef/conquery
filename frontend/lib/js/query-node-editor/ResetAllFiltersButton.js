@@ -1,18 +1,23 @@
 import React from "react";
+import styled from "@emotion/styled";
 import T from "i18n-react";
 import { nodeHasActiveFilters } from "../model/node";
+
+import IconButton from "../button/IconButton";
+
+const ResetAllFiltersButton = styled("div")`
+  text-transform: uppercase;
+  padding: 10px 2px;
+`;
 
 export default ({ node, onResetAllFilters }) => {
   if (!nodeHasActiveFilters(node)) return null;
 
   return (
-    <div className="query-node-editor__category_action">
-      <span
-        className="query-node-editor__reset-all"
-        onClick={onResetAllFilters}
-      >
-        <i className="fa fa-undo" /> {T.translate("queryNodeEditor.resetAll")}
-      </span>
-    </div>
+    <ResetAllFiltersButton>
+      <IconButton active onClick={onResetAllFilters} icon="undo">
+        {T.translate("queryNodeEditor.resetAll")}
+      </IconButton>
+    </ResetAllFiltersButton>
   );
 };

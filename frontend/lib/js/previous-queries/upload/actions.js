@@ -43,6 +43,7 @@ export const uploadFile = (datasetId: DatasetIdType, file: any) => (
   dispatch(uploadFileStart());
 
   Papa.parse(file, {
+    skipEmptyLines: true,
     complete: results => {
       return api.postQueries(datasetId, results, "external").then(
         r => {

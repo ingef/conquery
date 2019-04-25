@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.WebApplicationException;
 
-import com.bakdata.conquery.apiv1.ContentTreeResources.SearchResult;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
@@ -47,12 +46,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ContentTreeProcessor {
 
-	private ConceptSearch conceptSearch;
 	private Namespaces namespaces;
 
 	public ContentTreeProcessor(Namespaces namespaces) {
 		this.namespaces = namespaces;
-		this.conceptSearch = new ConceptSearch(namespaces.getAllDatasets());
 		FilterSearch.init(namespaces.getAllDatasets());
 	}
 
@@ -220,14 +217,6 @@ public class ContentTreeProcessor {
 			null,
 			new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues),
 			values);
-	}
-
-	public SearchResult search(Dataset dataset, String query, int limit) {
-		List<String> items = conceptSearch.findItems(dataset.getId(), query);
-		List<String> result = items.stream().limit(limit).collect(Collectors.toList());
-
-		return new SearchResult(result, result.size(), limit, items.size());
-
 	}
 
 	@Getter

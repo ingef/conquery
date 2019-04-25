@@ -3,16 +3,19 @@
 import React from "react";
 import styled from "@emotion/styled";
 import { connect } from "react-redux";
-import T from "i18n-react";
+
+import { loadTree } from "./actions";
 
 import type { StateType } from "../app/reducers";
-import { ErrorMessage } from "../error-message";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import { type TreesType, type SearchType } from "./reducer";
 import CategoryTree from "./CategoryTree";
 import CategoryTreeFolder from "./CategoryTreeFolder";
-import { isNodeInSearchResult } from "./selectors";
+import { isNodeInSearchResult, getAreTreesAvailable } from "./selectors";
+
+import EmptyConceptTreeList from "./EmptyConceptTreeList";
+import ConceptTreesLoading from "./ConceptTreesLoading";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -34,16 +37,12 @@ const Root = styled("div")`
 `;
 
 type PropsType = {
+  loading: boolean,
   trees: TreesType,
+  areTreesAvailable: boolean,
   activeTab: string,
   search?: SearchType
 };
-
-const StyledErrorMessage = styled(ErrorMessage)`
-  padding-left: 20px;
-  font-size: ${({ theme }) => theme.font.sm};
-  margin: 2px 0;
-`;
 
 const sortTrees = trees => (a, b) => {
   const aTree = trees[a];
@@ -60,70 +59,79 @@ class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
-    const { activeTab, search, trees } = this.props;
+    const {
+      activeTab,
+      search,
+      trees,
+      loading,
+      areTreesAvailable,
+      onLoadTree
+    } = this.props;
 
     return (
       !search.loading && (
         <Root show={activeTab === "categoryTrees"}>
-          {trees ? (
-            Object.keys(trees)
-              // Only take those that don't have a parent, they must be root
-              .filter(treeId => !trees[treeId].parent)
-              .sort(sortTrees(trees))
-              .map((treeId, i) => {
-                const tree = trees[treeId];
-                const rootConcept = getConceptById(treeId);
+          {loading && <ConceptTreesLoading />}
+          {!loading && !areTreesAvailable && <EmptyConceptTreeList />}
+          {Object.keys(trees)
+            // Only take those that don't have a parent, they must be root
+            // If they don't have a label, they're loading, or in any other broken state
+            .filter(treeId => !trees[treeId].parent && trees[treeId].label)
+            .sort(sortTrees(trees))
+            .map((treeId, i) => {
+              const tree = trees[treeId];
+              const rootConcept = getConceptById(treeId);
 
-                const render = isNodeInSearchResult(
-                  treeId,
-                  tree.children,
-                  search
-                );
+              const render = isNodeInSearchResult(
+                treeId,
+                tree.children,
+                search
+              );
 
-                if (!render) return null;
+              if (!render) return null;
 
-                return tree.detailsAvailable ? (
-                  <CategoryTree
-                    key={i}
-                    id={treeId}
-                    label={tree.label}
-                    tree={rootConcept}
-                    treeId={treeId}
-                    loading={!!tree.loading}
-                    error={tree.error}
-                    depth={0}
-                    search={search}
-                  />
-                ) : (
-                  <CategoryTreeFolder
-                    key={i}
-                    trees={trees}
-                    tree={tree}
-                    treeId={treeId}
-                    depth={0}
-                    active={tree.active}
-                    openInitially
-                    search={search}
-                  />
-                );
-              })
-          ) : (
-            <StyledErrorMessage
-              message={T.translate("categoryTreeList.noTrees")}
-            />
-          )}
+              return tree.detailsAvailable ? (
+                <CategoryTree
+                  key={i}
+                  id={treeId}
+                  label={tree.label}
+                  tree={rootConcept}
+                  treeId={treeId}
+                  loading={!!tree.loading}
+                  error={tree.error}
+                  depth={0}
+                  search={search}
+                  onLoadTree={onLoadTree}
+                />
+              ) : (
+                <CategoryTreeFolder
+                  key={i}
+                  trees={trees}
+                  tree={tree}
+                  treeId={treeId}
+                  depth={0}
+                  active={tree.active}
+                  openInitially
+                  search={search}
+                  onLoadTree={onLoadTree}
+                />
+              );
+            })}
         </Root>
       )
     );
   }
 }
 
-const mapStateToProps = (state: StateType) => {
-  return {
+export default connect(
+  state => ({
     trees: state.categoryTrees.trees,
+    loading: state.categoryTrees.loading,
+    areTreesAvailable: getAreTreesAvailable(state),
     activeTab: state.panes.left.activeTab,
     search: state.categoryTrees.search
-  };
-};
-
-export default connect(mapStateToProps)(CategoryTreeList);
+  }),
+  (dispatch, ownProps) => ({
+    onLoadTree: id => dispatch(loadTree(ownProps.datasetId, id))
+  })
+)(CategoryTreeList);

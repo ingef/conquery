@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.types.specific;
 
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.stream.IntStream;
 
@@ -17,6 +18,8 @@ public class StringTypeEncoded extends StringType implements IStringType {
 
 	@NonNull @Getter @ToString.Include
 	private Encoding encoding;
+	private int[] cache;
+	
 
 	public StringTypeEncoded(Encoding encoding, long lines, long nullLines) {
 		super();
@@ -33,10 +36,19 @@ public class StringTypeEncoded extends StringType implements IStringType {
 
 	@Override
 	public Integer transformFromMajorType(StringType majorType, Object from) {
-		Integer id = (Integer) from;
-		String value = majorType.createScriptValue(id);
-
-		return super.getDictionary().add(encoding.decode(value));
+		int id = (Integer) from;
+		if(cache == null) {
+			cache = new int[majorType.getDictionary().size()];
+			Arrays.fill(cache, -1);
+		}
+		
+		int result = cache[id];
+		if(result == -1) {
+			String value = majorType.createScriptValue(id);
+			result = super.getDictionary().add(encoding.decode(value));
+			cache[id] = result;
+		}
+		return result;
 	}
 
 	@Override

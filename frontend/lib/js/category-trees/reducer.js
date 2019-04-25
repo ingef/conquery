@@ -2,8 +2,6 @@
 
 import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 
-import { includes } from "../common/helpers/commonHelper";
-
 import {
   LOAD_TREES_START,
   LOAD_TREES_SUCCESS,
@@ -17,20 +15,21 @@ import {
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
   CHANGE_SEARCH_QUERY,
-  TOGGLE_ALL_OPEN
+  TOGGLE_ALL_OPEN,
+  TOGGLE_SHOW_MISMATCHES
 } from "./actionTypes";
-import { setTree, getConceptById } from "./globalTreeStoreHelper";
+import { setTree } from "./globalTreeStoreHelper";
 
 export type TreesType = { [treeId: string]: NodeType };
 
 export type SearchType = {
   allOpen: boolean,
+  showMismatches: boolean,
   loading: boolean,
   query: string,
   words: ?(string[]),
   result: ?{ [TreeNodeIdType]: number },
-  limit: number,
-  totalResults: number,
+  resultCount: number,
   duration: number
 };
 
@@ -43,12 +42,12 @@ export type StateType = {
 
 const initialSearch = {
   allOpen: false,
+  showMismatches: true,
   loading: false,
   query: "",
   words: null,
   result: null,
-  limit: 0,
-  totalResults: 0,
+  resultCount: 0,
   duration: 0
 };
 
@@ -59,73 +58,25 @@ const initialState: StateType = {
   search: initialSearch
 };
 
-const treeWithCounts = (tree, result, searchTerm) => {
-  const isNodeIncluded =
-    includes(tree.label.toLowerCase(), searchTerm.toLowerCase()) ||
-    (tree.description &&
-      includes(tree.description.toLowerCase(), searchTerm.toLowerCase()));
-
-  const children = tree.children
-    ? tree.children.filter(key => includes(result, key))
-    : [];
-
-  if (children.length === 0) {
-    return {
-      [tree.id]: isNodeIncluded ? 1 : 0
-    };
-  } else {
-    const childrenWithCounts = children.reduce((all, childKey) => {
-      const child = {
-        id: childKey,
-        ...getConceptById(childKey)
-      };
-      const childResult = treeWithCounts(child, result, searchTerm);
-
-      return {
-        ...all,
-        ...childResult
-      };
-    }, {});
-
-    return {
-      ...childrenWithCounts,
-      [tree.id]: children.reduce(
-        (sum, child) => sum + childrenWithCounts[child],
-        0
-      )
-    };
-  }
-};
-
-const resultWithCounts = (trees, result: string[], searchTerm) => {
-  return Object.keys(trees)
-    .filter(key => includes(result, key))
-    .reduce((all, key) => {
-      return {
-        ...all,
-        ...treeWithCounts({ id: key, ...trees[key] }, result, searchTerm)
-      };
-    }, {});
-};
-
 const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
-  const {
-    query,
-    searchResult: { result, size, limit }
-  } = action.payload;
+  const { query, result } = action.payload;
 
-  const nextResult = result ? resultWithCounts(state.trees, result, query) : {};
+  // only create keys array once, then cache,
+  // since the result might be > 100k entries
+  const resultCount = Object.keys(result).length;
+  const AUTO_UNFOLD_AT = 250;
 
   return {
     ...state,
     search: {
       ...state.search,
+      allOpen: resultCount < AUTO_UNFOLD_AT,
+      showMismatches: resultCount >= AUTO_UNFOLD_AT,
       loading: false,
       query,
       words: query.split(" "),
-      result: nextResult,
-      limit,
-      totalResults: size || 0, // The number of all potential matches (possiby greater than limit)
+      result: result,
+      resultCount,
       duration: Date.now() - state.search.duration
     }
   };
@@ -142,8 +93,7 @@ const setSearchTreesStart = (state: StateType, action: Object): StateType => {
       query: query,
       words: query ? query.split(" ") : [],
       result: {},
-      totalResults: 0,
-      limit: 0,
+      resultCount: 0,
       duration: Date.now()
     }
   };
@@ -254,6 +204,15 @@ const categoryTrees = (
         search: {
           ...state.search,
           allOpen: !state.search.allOpen
+        }
+      };
+    case TOGGLE_SHOW_MISMATCHES:
+      return {
+        ...state,
+        search: {
+          ...state.search,
+          allOpen: !state.search.showMismatches ? false : state.search.allOpen,
+          showMismatches: !state.search.showMismatches
         }
       };
     default:

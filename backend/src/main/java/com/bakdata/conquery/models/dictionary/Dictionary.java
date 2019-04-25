@@ -47,12 +47,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	}
 
 	public int add(byte[] bytes) {
-		int c = trie.get(bytes);
-		if (c == -1) {
-			return trie.put(bytes);
-		} else {
-			return c;
-		}
+		return trie.add(bytes);
 	}
 
 	@Override

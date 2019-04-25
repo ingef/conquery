@@ -19,8 +19,6 @@ import {
 
 require("es6-promise").polyfill();
 
-require("font-awesome-webpack");
-
 // TODO: OG image required?
 // require('../../images/og.png');
 // Required for isomophic-fetch

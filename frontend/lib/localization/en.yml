@@ -11,11 +11,16 @@ rightPane:
   externalForms: "Forms"
 
 categoryTreeList:
-  loading: "Loading Concept: {tree}"
-  error: "Could not load Concept: {tree}."
-  noTrees: "Could not load Concepts."
+  loading: "Loading concept trees"
+  loadingTree: "Loading concept: {tree}"
+  error: "Could not load concept: {tree}."
+  noTrees: "Could not load concepts."
+  noTreesExplanation: "Probably due to a network issue. Please try to refresh."
   openAll: "Open all"
   closeAll: "Open individually"
+  searchPlaceholder: "Search concepts ..."
+  showMismatches: "Show all"
+  dontShowMismatches: "Show hits only"
 
 queryRunner:
   start: "Start Query"
@@ -128,7 +133,6 @@ inputDateRange:
   today: "Today"
   dateFormat: "MM/dd/yyyy"
   tooltip:
-    daterange: "Date Range"
     possiblePattern: "y2000 => from: 01/01/2000 to: 01/31/2000 <br/> q2.2000 => from: 04/01/2000 to: 06/30/2000 <br/> m3.2000 => from: 03/01/2000 to: 03/31/2000"
 
 previousQueries:
@@ -243,4 +247,4 @@ authorization:
 
 search:
   placeholder: "Search ..."
-  resultLabel: "Showing {numResults} of {totalResults} results ({duration} s)"
+  resultLabel: "{totalResults} results found ({duration} s)"

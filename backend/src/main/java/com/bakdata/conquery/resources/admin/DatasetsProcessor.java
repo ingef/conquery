@@ -159,8 +159,7 @@ public class DatasetsProcessor {
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
 		CSV csvData = new CSV(
 			ConqueryConfig.getInstance().getCsv().withSkipHeader(false),
-			data,
-			false
+			data
 		);
 		IdMappingConfig mappingConfig = config.getIdMapping();
 		PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);

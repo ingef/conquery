@@ -10,7 +10,6 @@ import java.util.List;
 import org.apache.mina.core.buffer.IoBuffer;
 
 import com.bakdata.conquery.util.BufferUtil;
-import com.esotericsoftware.kryo.util.IntMap.Entry;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -18,9 +17,9 @@ import com.google.common.collect.AbstractIterator;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
-import it.unimi.dsi.fastutil.objects.ObjectCollection;
 import lombok.Data;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 
 public class SuccinctTrie implements Iterable<String> {
 
@@ -46,72 +45,101 @@ public class SuccinctTrie implements Iterable<String> {
 	private boolean compressed;
 
 	public SuccinctTrie() {
-		this.root = new HelpNode(null, (byte)0);
+		this.root = new HelpNode(null, (byte) 0);
 		this.root.setPositionInArray(0);
 		this.nodeCount = 2;
 		entryCount = 0;
 	}
-	
+
 	public static SuccinctTrie createUncompressed(SuccinctTrie compressedTrie) {
 		compressedTrie.checkCompressed("Constructor only works for compressed tries");
-		
+
 		SuccinctTrie trie = new SuccinctTrie();
-		for(byte [] value: compressedTrie.getValuesBytes()) {
+		for (byte[] value : compressedTrie.getValuesBytes()) {
 			trie.put(value);
 		}
 		return trie;
 	}
 
-	public int put(byte[] key) {
-		return put(key, entryCount);
+	@JsonCreator
+	public static SuccinctTrie fromSerialized(SerializedSuccinctTrie serialized) {
+		SuccinctTrie trie = new SuccinctTrie();
+		trie.nodeCount = serialized.getNodeCount();
+		trie.entryCount = serialized.getEntryCount();
+		trie.reverseLookup = serialized.getReverseLookup();
+		trie.parentIndex = serialized.getParentIndex();
+		trie.lookup = serialized.getLookup();
+		trie.keyPartArray = serialized.getKeyPartArray();
+		trie.selectZeroCache = serialized.getSelectZeroCache();
+
+		trie.root = null;
+		trie.compressed = true;
+
+		return trie;
 	}
 
-	private int put(byte[] key, int value) {
+
+	public int add(byte[] bytes) {
+		return put(bytes,entryCount,false);
+	}
+
+
+	public int put(byte[] key) {
+		return put(key, entryCount, true);
+	}
+
+	private int put(byte[] key, int value, boolean failOnDuplicate) {
 		checkUncompressed("no put allowed after compression");
 		// insert help nodes
 		int nodeIndex = 0;
 		HelpNode current = root;
 		while (nodeIndex < key.length) {
-			HelpNode next = null;
 			// check if a prefix node exists
-			next = current.children.get(key[nodeIndex]);
+			HelpNode next = current.children.get(key[nodeIndex]);
 			if (next == null) {
 				// no prefix node could be found, we add a new one
 				next = new HelpNode(current, key[nodeIndex]);
 				next.setParent(current);
 				current.addChild(next);
 				nodeCount++;
-				if(nodeCount > Integer.MAX_VALUE - 10)
-					throw new IllegalStateException("This dictionary is to large "+nodeCount);
+				if (nodeCount > Integer.MAX_VALUE - 10)
+					throw new IllegalStateException("This dictionary is to large " + nodeCount);
 			}
 			current = next;
 			nodeIndex++;
 		}
-		
+
 		// end of key, write the value into current
-		if(current.getValue() == -1) {
+		if (current.getValue() == -1) {
 			current.setValue(value);
 			entryCount++;
-			return entryCount-1;
+			return entryCount - 1;
+		}
+		else if (failOnDuplicate){
+			throw new IllegalStateException(String.format("the key {} was already part of this trie", new String(key, StandardCharsets.UTF_8)));
 		}
 		else {
-			throw new IllegalStateException(String.format("the key {} was already part of this trie", new String(key, StandardCharsets.UTF_8)));
+			return current.getValue();
 		}
 	}
 
 	public void tryCompress() {
-		if(!compressed)
+		if (!compressed)
 			compress();
 	}
-	
+
+	/*
+	 * select0(n) - returns the position of the nth 0 in the bit store.
+	 */
+
 	public void compress() {
 		checkUncompressed("compress is only allowed once");
-		
+
 		// get the nodes in left right, top down order (level order)
-		ArrayList<HelpNode> nodesInOrder = new ArrayList<HelpNode>();
-		ArrayList<HelpNode> nodesInDepth = new ArrayList<HelpNode>();
-		ArrayList<HelpNode> nodesInNextDepth = new ArrayList<HelpNode>();
-		ArrayList<HelpNode> tmp;
+		ArrayList<HelpNode> nodesInOrder = new ArrayList<HelpNode>(nodeCount);
+		int lastIndexOfLevel = 0;
+		int currentIndex = 0;
+		int nodesInNextLevel = 0;
 
 		// initialize arrays for rebuilding the data later on
 		reverseLookup = new int[entryCount];
@@ -125,10 +153,10 @@ public class SuccinctTrie implements Iterable<String> {
 
 		keyPartArray = new byte[nodeCount];
 
-		nodesInDepth.add(root);
 		nodesInOrder.add(root);
-		while (!nodesInDepth.isEmpty()) {
-			for (HelpNode node : nodesInDepth) {
+		while (currentIndex <= lastIndexOfLevel) {
+			for (; currentIndex <= lastIndexOfLevel; currentIndex++) {
+				HelpNode node = nodesInOrder.get(currentIndex);
 				node.setPositionInArray(nodeIndex);
 				if (node != root) {
 					keyPartArray[nodeIndex] = node.partialKey;
@@ -139,8 +167,8 @@ public class SuccinctTrie implements Iterable<String> {
 				}
 
 				Collection<HelpNode> children = node.children.values();
-				nodesInNextDepth.addAll(children);
 				nodesInOrder.addAll(children);
+				nodesInNextLevel += children.size();
 
 				if (node.value != -1) {
 					reverseLookup[node.value] = nodeIndex;
@@ -149,11 +177,8 @@ public class SuccinctTrie implements Iterable<String> {
 
 				nodeIndex++;
 			}
-			
-			tmp = nodesInDepth;
-			tmp.clear();
-			nodesInDepth = nodesInNextDepth;
-			nodesInNextDepth = tmp;
+			lastIndexOfLevel += nodesInNextLevel;
+			nodesInNextLevel = 0;
 		}
 
 		// write the bits
@@ -161,13 +186,13 @@ public class SuccinctTrie implements Iterable<String> {
 		int position = 2;
 		int zeroesWritten = 1;
 		selectZeroCache[1] = 1;
-		
+
 		for (HelpNode node : nodesInOrder) {
 			for (nodeIndex = 0; nodeIndex < node.children.size(); nodeIndex++) {
 				position++;
 			}
 			zeroesWritten++;
-			selectZeroCache[zeroesWritten]=position;
+			selectZeroCache[zeroesWritten] = position;
 			position++;
 		}
 
@@ -176,38 +201,33 @@ public class SuccinctTrie implements Iterable<String> {
 		compressed = true;
 	}
 
-	/*
-	 * select0(n) - returns the position of the nth 0 in the bit store.
-	 */
-
 	private int select0(int positionForZero) {
 		return selectZeroCache[positionForZero];
 	}
-	
+
 	private void checkCompressed(String errorMessage) {
 		if (!compressed) {
 			throw new IllegalStateException(errorMessage);
 		}
 	}
-	
+
 	private void checkUncompressed(String errorMessage) {
 		if (compressed) {
 			throw new IllegalStateException(errorMessage);
 		}
 	}
 
-	
 	@JsonIgnore
 	public int get(byte[] value) {
 		if (!compressed) {
 			HelpNode node = root;
 			for (byte val : value) {
 				node = findChildWithKey(node, val);
-				if(node == null) {
+				if (node == null) {
 					return -1;
 				}
 			}
-						
+
 			return node.value;
 		}
 
@@ -218,9 +238,9 @@ public class SuccinctTrie implements Iterable<String> {
 			int firstChildNode = select0(node + 1) - node;
 			// get the first child of the next node
 			int lastChild = select0(node + 1 + 1) - (node + 1);
-			
+
 			node = childIdWithKey(firstChildNode, lastChild, val);
-			
+
 			if (node == -1) {
 				// no fitting child found
 				return -1;
@@ -229,9 +249,7 @@ public class SuccinctTrie implements Iterable<String> {
 		// node has a value
 		return lookup[node];
 	}
-	
-	
-	
+
 	private HelpNode findChildWithKey(HelpNode node, byte val) {
 		return node.children.get(val);
 	}
@@ -245,17 +263,17 @@ public class SuccinctTrie implements Iterable<String> {
 		// no fitting child found
 		return -1;
 	}
-	
+
 	public boolean containsReverse(int intValue) {
 		checkCompressed("use compress before performing containsReverse on the trie");
 		return intValue < reverseLookup.length;
 	}
 
 	public void getReverse(int intValue, IoBuffer buffer) {
-		checkCompressed("use compress before performing containsReverse on the trie");
-		
-		if(intValue >= reverseLookup.length) {
-			throw new IllegalArgumentException("intValue "+intValue+" to high, no such key in the trie");
+		checkCompressed("use compress before performing getReverse on the trie");
+
+		if (intValue >= reverseLookup.length) {
+			throw new IllegalArgumentException("intValue " + intValue + " to high, no such key in the trie");
 		}
 		int nodeIndex = reverseLookup[intValue];
 		while (parentIndex[nodeIndex] != -1) {
@@ -268,10 +286,10 @@ public class SuccinctTrie implements Iterable<String> {
 		//reverse bytes
 		byte tmp;
 		int length = buffer.limit();
-		for(int i = 0; i<length/2;i++ ) {
+		for (int i = 0; i < length / 2; i++) {
 			tmp = buffer.get(i);
-			buffer.put(i, buffer.get(length-i-1));
-			buffer.put(length-i-1, tmp);
+			buffer.put(i, buffer.get(length - i - 1));
+			buffer.put(length - i - 1, tmp);
 		}
 	}
 
@@ -287,7 +305,7 @@ public class SuccinctTrie implements Iterable<String> {
 		List<String> values = new ArrayList<>();
 		IoBuffer buffer = IoBuffer.allocate(512);
 		buffer.setAutoExpand(true);
-		for(int i=0; i < entryCount; i++) {
+		for (int i = 0; i < entryCount; i++) {
 			getReverse(i, buffer);
 			values.add(BufferUtil.toUtf8String(buffer));
 			buffer.clear();
@@ -295,14 +313,14 @@ public class SuccinctTrie implements Iterable<String> {
 		buffer.free();
 		return values;
 	}
-	
+
 	public List<byte[]> getValuesBytes() {
 		List<byte[]> valuesBytes = new ArrayList<>();
 		IoBuffer buffer = IoBuffer.allocate(512);
 		buffer.setAutoExpand(true);
-		for(int i=0; i < entryCount; i++) {
+		for (int i = 0; i < entryCount; i++) {
 			getReverse(i, buffer);
-			byte[] bytes = new byte[buffer.limit()-buffer.position()];
+			byte[] bytes = new byte[buffer.limit() - buffer.position()];
 			buffer.get(bytes);
 			valuesBytes.add(bytes);
 			buffer.clear();
@@ -310,31 +328,35 @@ public class SuccinctTrie implements Iterable<String> {
 		buffer.free();
 		return valuesBytes;
 	}
-	
-	public Collection<Entry<String>> getEntries() {
+
+	public Collection<Entry> getEntries() {
 		int i = 0;
-		Collection<Entry<String>> entries = new ArrayList<Entry<String>>();
-		
+		Collection<Entry> entries = new ArrayList<Entry>(getValues().size());
+
 		for(String val: getValues()) {
-			Entry<String> entry = new Entry<>();
-			entry.key = i;
-			entry.value = val;
-			entries.add(entry);
+			entries.add(new Entry(i, val));
 			i++;
 		}
 		return entries;
 	}
-	
+
+	@Data @RequiredArgsConstructor
+	public static class Entry {
+		private final int key;
+		private final String value;
+	}
+
 	@Override
 	public Iterator<String> iterator() {
 		IoBuffer buffer = IoBuffer.allocate(512);
 		buffer.setAutoExpand(true);
 		return new AbstractIterator<String>() {
+
 			private int index = 0;
-			
+
 			@Override
 			protected String computeNext() {
-				if(index==entryCount) {
+				if (index == entryCount) {
 					buffer.free();
 					return endOfData();
 				}
@@ -351,29 +373,13 @@ public class SuccinctTrie implements Iterable<String> {
 		checkCompressed("no serialisation allowed before compressing the trie");
 		return new SerializedSuccinctTrie(nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache);
 	}
-	
-	@JsonCreator
-	public static SuccinctTrie fromSerialized(SerializedSuccinctTrie serialized) {
-		SuccinctTrie trie = new SuccinctTrie();
-		trie.nodeCount = serialized.getNodeCount();
-		trie.entryCount = serialized.getEntryCount();
-		trie.reverseLookup = serialized.getReverseLookup();
-		trie.parentIndex = serialized.getParentIndex();
-		trie.lookup = serialized.getLookup();
-		trie.keyPartArray = serialized.getKeyPartArray();
-		trie.selectZeroCache = serialized.getSelectZeroCache();
-		
-		trie.root = null;
-		trie.compressed = true;
-		
-		return trie;
-	}
-	
+
 	@Data
 	private class HelpNode {
-		private HelpNode parent;
+
 		private final Byte2ObjectMap<HelpNode> children = new Byte2ObjectOpenHashMap<>();
 		private final byte partialKey;
+		private HelpNode parent;
 		private int value = -1;
 		private int positionInArray = -1;
 
@@ -388,4 +394,3 @@ public class SuccinctTrie implements Iterable<String> {
 
 	}
 }
-

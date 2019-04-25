@@ -35,7 +35,7 @@ const DynamicInputGroup = (props: PropsType) => (
     {props.items.map((item, idx) => (
       <GroupItem key={idx}>
         {item}
-        <RemoveBtn icon="close" onClick={() => props.onRemoveClick(idx)} />
+        <RemoveBtn icon="times" onClick={() => props.onRemoveClick(idx)} />
       </GroupItem>
     ))}
     <AddBtn icon="plus" onClick={props.onAddClick} />

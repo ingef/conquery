@@ -25,7 +25,7 @@ import lombok.RequiredArgsConstructor;
 public abstract class IdMappingConfig {
 
 	public PersistentIdMap generateIdMapping(CSV csvData) throws IOException, IllegalArgumentException {
-		Iterator<String[]> csvIterator = csvData.iterateContent(null);
+		Iterator<String[]> csvIterator = csvData.iterateContent();
 
 		PersistentIdMap mapping = new PersistentIdMap(new HashMap<>(), new HashMap<>());
 

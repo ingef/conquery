@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.esotericsoftware.kryo.io.Output;
+import com.bakdata.conquery.util.io.SmallOut;
 
 import io.dropwizard.util.Size;
 import lombok.Data;
@@ -28,10 +28,9 @@ public class Preprocessed {
 	private long rows = 0;
 	private CDateRange eventRange;
 	private long writtenGroups = 0;
-	private Output blockOut;
 	private List<List<Object[]>> entries = new ArrayList<>();
 	
-	private final Output buffer = new Output((int)Size.megabytes(50).toBytes());
+	private final SmallOut buffer = new SmallOut((int)Size.megabytes(50).toBytes());
 
 	public Preprocessed(PreprocessingConfig config, ImportDescriptor descriptor) throws IOException {
 		this.file = descriptor.getInputFile();
@@ -96,7 +95,7 @@ public class Preprocessed {
 		}
 	}
 
-	private void writeRowToFile(Import imp, int entityId, List<Object[]> events) throws IOException {
+	private void writeRowToFile(SmallOut out, Import imp, int entityId, List<Object[]> events) throws IOException {
 		//transform values to their current subType
 		//we can't map the primary column since we do a lot of work which would destroy any compression anyway
 		//entityId = (Integer)primaryColumn.getType().transformFromMajorType(primaryColumn.getOriginalType(), Integer.valueOf(entityId));
@@ -111,22 +110,22 @@ public class Preprocessed {
 		
 		Block block = imp.getBlockFactory().createBlock(entityId, imp, events);
 		
-		blockOut.writeInt(entityId, true);
+		out.writeInt(entityId, true);
 		block.writeContent(buffer);
-		blockOut.writeInt(buffer.position(), true);
-		blockOut.writeBytes(buffer.getBuffer(), 0, buffer.position());
+		out.writeInt(buffer.position(), true);
+		out.writeBytes(buffer.getBuffer(), 0, buffer.position());
 		
-		buffer.clear();
+		buffer.reset();
 		writtenGroups++;
 	}
 	
-	public void writeToFile() throws IOException {
+	public void writeToFile(SmallOut out) throws IOException {
 		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 		
 		for(int entityId = 0; entityId < entries.size(); entityId++) {
 			List<Object[]> events = entries.get(entityId);
 			if(!events.isEmpty()) {
-				writeRowToFile(imp, entityId, events);
+				writeRowToFile(out, imp, entityId, events);
 			}
 		}
 	}

@@ -319,36 +319,6 @@ module.exports = function(app, port) {
     }
   );
 
-  /*
-    SEARCH
-  */
-  app.post("/api/datasets/:datasetId/concepts/search", (req, res) => {
-    setTimeout(() => {
-      res.setHeader("Content-Type", "application/json");
-
-      const { query, limit } = req.body;
-
-      const result = [];
-
-      const allConcepts = glob
-        .sync(path.join(__dirname, "./concepts/**/*.json"))
-        .map(file => {
-          const content = require(path.resolve(file));
-
-          result.push(...findConcepts(content, query));
-        });
-
-      const returnedResult = result.slice(0, limit);
-
-      // see type SearchResult
-      res.send({
-        limit,
-        result: returnedResult,
-        size: result.length
-      });
-    }, NO_DELAY);
-  });
-
   app.get("/api/config/frontend", (req, res) => {
     res.setHeader("Content-Type", "application/json");
 
@@ -360,41 +330,3 @@ module.exports = function(app, port) {
   });
 };
 
-const findConcepts = (concepts, query) => {
-  const matches = Object.keys(concepts)
-    .map(key => ({
-      id: key,
-      label: concepts[key].label,
-      description: concepts[key].description
-    }))
-    .filter(co => {
-      // The actual backend search also uses the additional infos
-      return (
-        co.label.toLowerCase().includes(query.toLowerCase()) ||
-        (co.description &&
-          co.description.toLowerCase().includes(query.toLowerCase()))
-      );
-    })
-    .map(({ id }) => id);
-
-  return [...new Set(fetchParents(concepts, matches))];
-};
-
-const fetchParents = (concepts, matches) => {
-  for (var ma in matches) {
-    // Updates matches as a side-effect
-    visitParentOf(matches[ma], concepts, matches);
-  }
-
-  return matches;
-};
-
-const visitParentOf = (id, concepts, matches) => {
-  const concept = concepts[id];
-
-  if (concept && concept.parent) {
-    matches.push(concept.parent);
-
-    return visitParentOf(concept.parent, concepts, matches);
-  }
-};

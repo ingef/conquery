@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.jobs;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import io.dropwizard.lifecycle.Managed;
@@ -46,11 +47,15 @@ public class JobManager implements Managed {
 	public List<JobStatus> reportStatus() {
 		return getSlowJobs()
 			.stream()
-			.map(job->new JobStatus(job.getProgressReporter(), job.getLabel()))
+			.map(job->new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
 			.collect(Collectors.toList());
 	}
 	
 	public boolean isSlowWorkerBusy() {
 		return slowExecutor.isBusy();
+	}
+
+	public boolean cancelJob(UUID jobId) {
+		return fastExecutor.cancelJob(jobId) || slowExecutor.cancelJob(jobId);
 	}
 }
