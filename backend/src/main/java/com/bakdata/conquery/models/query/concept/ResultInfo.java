@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.concept;
 
-import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.externalservice.ResultType;
 
 import lombok.AllArgsConstructor;
