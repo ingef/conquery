@@ -70,6 +70,6 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.STRING;
 	}
 }
