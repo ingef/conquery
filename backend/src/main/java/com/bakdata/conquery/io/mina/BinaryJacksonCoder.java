@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.mina.ChunkReader.ChunkedMessage;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
@@ -27,10 +28,13 @@ public class BinaryJacksonCoder implements CQCoder<NetworkMessage<?>> {
 
 	public BinaryJacksonCoder(NamespaceCollection namespaces, Validator validator) {
 		this.validator = validator;
-		this.writer = Jackson.BINARY_MAPPER.writerFor(NetworkMessage.class);
+		this.writer = Jackson.BINARY_MAPPER
+			.writerFor(NetworkMessage.class)
+			.withView(InternalOnly.class);
 		this.reader = namespaces
 				.injectInto(Jackson.BINARY_MAPPER.readerFor(NetworkMessage.class))
-				.without(Feature.AUTO_CLOSE_SOURCE);
+				.without(Feature.AUTO_CLOSE_SOURCE)
+				.withView(InternalOnly.class);
 	}
 
 	@Override
