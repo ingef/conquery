@@ -88,7 +88,7 @@ public class SuccinctTrie implements Iterable<String> {
 		return put(key, entryCount, true);
 	}
 
-	private int put(byte[] key, int value, boolean failOnDublicate) {
+	private int put(byte[] key, int value, boolean failOnDuplicate) {
 		checkUncompressed("no put allowed after compression");
 		// insert help nodes
 		int nodeIndex = 0;
@@ -115,7 +115,7 @@ public class SuccinctTrie implements Iterable<String> {
 			entryCount++;
 			return entryCount - 1;
 		}
-		else if (failOnDublicate){
+		else if (failOnDuplicate){
 			throw new IllegalStateException(String.format("the key {} was already part of this trie", new String(key, StandardCharsets.UTF_8)));
 		}
 		else {
@@ -136,7 +136,7 @@ public class SuccinctTrie implements Iterable<String> {
 		checkUncompressed("compress is only allowed once");
 
 		// get the nodes in left right, top down order (level order)
-		ArrayList<HelpNode> nodesInOrder = new ArrayList<HelpNode>();
+		ArrayList<HelpNode> nodesInOrder = new ArrayList<HelpNode>(nodeCount);
 		int lastIndexOfLevel = 0;
 		int currentIndex = 0;
 		int nodesInNextLevel = 0;
@@ -179,13 +179,6 @@ public class SuccinctTrie implements Iterable<String> {
 			}
 			lastIndexOfLevel += nodesInNextLevel;
 			nodesInNextLevel = 0;
-			/*
-			tmp = nodesInDepth;
-			tmp.clear();
-			nodesInDepth = nodesInNextDepth;
-			nodesInNextDepth = tmp;
-			*/
-
 		}
 
 		// write the bits
