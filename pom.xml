@@ -14,9 +14,6 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<maven.compiler.source>${java.required}</maven.compiler.source>
 		<maven.compiler.target>${java.required}</maven.compiler.target>
-		<junit.minor>4.2</junit.minor>
-		<junit.version>5.${junit.minor}</junit.version>
-		<junit.platform.version>1.${junit.minor}</junit.platform.version>
 	</properties>
 
 	<modules>
@@ -39,17 +36,11 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-params</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.junit.jupiter</groupId>
-			<artifactId>junit-jupiter-engine</artifactId>
-			<version>${junit.version}</version>
-			<scope>test</scope>
-		</dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.4.2</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
 
 	<build>
