@@ -23,8 +23,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.bakdata.conquery.apiv1.ContentTreeProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
@@ -149,20 +147,6 @@ public class ContentTreeResources {
 				filterValues.getValues());
 	}
 
-	@POST
-	@Path("{" + DATASET + "}/concepts/search")
-	public SearchResult search(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull ConceptSearchParam conceptSearchParam, @Context HttpServletRequest req) {
-		authorize(user, datasetId, Ability.READ);
-
-		String query = conceptSearchParam.getQuery();
-
-		if (StringUtils.isBlank(query)) {
-			throw new WebApplicationException("Too short query.", Status.BAD_REQUEST);
-		}
-
-		int limit = conceptSearchParam.getLimit();
-		return processor.search(dsUtil.getDataset(datasetId), query, limit);
-	}
 
 	@Getter
 	@Setter
