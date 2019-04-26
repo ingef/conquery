@@ -24,7 +24,7 @@ import lombok.Getter;
 @Getter
 public class AdminUIServlet {
 
-	private DatasetsProcessor datasetsProcessor;
+	private AdminProcessor datasetsProcessor;
 
 	public void register(MasterCommand masterCommand) {
 		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
@@ -41,7 +41,7 @@ public class AdminUIServlet {
 
 		//jerseyConfig.getSingletons().add(new UnitOfWorkResourceMethodDispatchAdapter(hibernateBundle.getSessionFactory()));
 		jerseyConfig.register(new AdminUIResource(masterCommand.getConfig(), masterCommand.getNamespaces(), masterCommand.getJobManager(), new AdminUIProcessor(masterCommand.getStorage())));
-		DatasetsResource datasets = new DatasetsResource(masterCommand.getConfig(), masterCommand.getStorage(), masterCommand.getNamespaces(), masterCommand.getJobManager(), masterCommand.getMaintenanceService());
+		AdminResource datasets = new AdminResource(masterCommand.getConfig(), masterCommand.getStorage(), masterCommand.getNamespaces(), masterCommand.getJobManager(), masterCommand.getMaintenanceService());
 		datasetsProcessor = datasets.getProcessor();
 		jerseyConfig.register(datasets);
 		jerseyConfig.register(new JobsResource(masterCommand.getJobManager()));

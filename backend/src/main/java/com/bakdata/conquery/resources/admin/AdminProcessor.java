@@ -47,7 +47,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter
 @Slf4j
 @RequiredArgsConstructor
-public class DatasetsProcessor {
+public class AdminProcessor {
 
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;

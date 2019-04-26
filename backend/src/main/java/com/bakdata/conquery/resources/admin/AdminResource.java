@@ -74,29 +74,30 @@ import lombok.extern.slf4j.Slf4j;
 @PermitAll
 @Slf4j
 @Getter
-@Path("/datasets")
+@Path("/")
 @AuthCookie
-public class DatasetsResource {
+public class AdminResource {
 
 	private final ObjectMapper mapper;
 	private final UIContext ctx;
-	private final DatasetsProcessor processor;
+	private final AdminProcessor processor;
 	private final Namespaces namespaces;
 
-	public DatasetsResource(ConqueryConfig config, MasterMetaStorage storage, Namespaces namespaces, JobManager jobManager, ScheduledExecutorService maintenanceService) {
+	public AdminResource(ConqueryConfig config, MasterMetaStorage storage, Namespaces namespaces, JobManager jobManager, ScheduledExecutorService maintenanceService) {
 		this.ctx = new UIContext(namespaces);
 		this.mapper = namespaces.injectInto(Jackson.MAPPER);
 		this.namespaces = namespaces;
-		this.processor = new DatasetsProcessor(config, storage, namespaces, jobManager, maintenanceService);
+		this.processor = new AdminProcessor(config, storage, namespaces, jobManager, maintenanceService);
 	}
 
 	@GET @Produces(MediaType.TEXT_HTML)
+	@Path("datasets")
 	public View getDatasets() {
 		return new UIView<>("datasets.html.ftl", ctx, namespaces.getAllDatasets());
 	}
 
 	@GET @Produces(MediaType.TEXT_HTML)
-	@Path("/{" + DATASET_NAME + "}")
+	@Path("datasets/{" + DATASET_NAME + "}")
 	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
 		return new FileView<>(
 			"dataset.html.ftl",
@@ -107,7 +108,7 @@ public class DatasetsResource {
 
 	
 	@GET
-	@Path("/{" + DATASET_NAME + "}/mapping")
+	@Path("datasets/{" + DATASET_NAME + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
 		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
 		if (mapping != null) {
@@ -127,17 +128,17 @@ public class DatasetsResource {
 
 	@POST
 	@Consumes(MediaType.WILDCARD)
-	@Path("/{" + DATASET_NAME + "}/mapping")
+	@Path("datasets/{" + DATASET_NAME + "}/mapping")
 	public Response addIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("data_csv") InputStream data) throws IOException, JSONException {
 		processor.setIdMapping(data, namespaces.get(datasetId));
 		return Response
-				.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
+				.seeOther(UriBuilder.fromPath("/admin/").path(AdminResource.class).path(AdminResource.class, "getDataset").build(datasetId.toString()))
 				.build();
 	}
 
 
 	@GET @Produces(MediaType.TEXT_HTML)
-	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+	@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
 	public View getTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) {
 		Namespace ns = namespaces.get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
@@ -164,7 +165,7 @@ public class DatasetsResource {
 	}
 
 	@GET @Produces(MediaType.TEXT_HTML)
-	@Path("/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
+	@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
 	public View getConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(CONCEPT_NAME) ConceptId conceptParam) {
 		Namespace ns = namespaces.get(datasetId);
 		Concept<?> concept = ns
@@ -180,15 +181,16 @@ public class DatasetsResource {
 
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Path("datasets")
 	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
 		processor.addDataset(name);
 		return Response
-			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).build())
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminResource.class).build())
 			.build();
 	}
 
 	@POST
-	@Path("/{" + DATASET_NAME + "}/tables")
+	@Path("datasets/{" + DATASET_NAME + "}/tables")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response addTable(@PathParam(DATASET_NAME) DatasetId datasetId, @FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
 		Dataset dataset = namespaces.get(datasetId).getStorage().getDataset();
@@ -200,12 +202,12 @@ public class DatasetsResource {
 			}
 		}
 		return Response
-			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsResource.class).path(DatasetsResource.class, "getDataset").build(datasetId.toString()))
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminResource.class).path(AdminResource.class, "getDataset").build(datasetId.toString()))
 			.build();
 	}
 
 	@POST
-	@Path("/{" + DATASET_NAME + "}/imports")
+	@Path("datasets/{" + DATASET_NAME + "}/imports")
 	public Response addImport(@PathParam(DATASET_NAME) DatasetId datasetId, @QueryParam("file") File file) throws IOException, JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		if (ns == null) {
@@ -222,7 +224,7 @@ public class DatasetsResource {
 	}
 
 	@DELETE
-	@Path("/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+	@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
 	public Response removeTable(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(TABLE_NAME) TableId tableParam) throws IOException, JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
@@ -235,7 +237,7 @@ public class DatasetsResource {
 	}
 
 	@POST
-	@Path("/{" + DATASET_NAME + "}/concepts")
+	@Path("datasets/{" + DATASET_NAME + "}/concepts")
 	public void addConcept(@PathParam(DATASET_NAME) DatasetId datasetId, Concept<?> concept) throws IOException, JSONException, ConfigurationException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
@@ -245,7 +247,7 @@ public class DatasetsResource {
 	}
 	
 	@POST
-	@Path("/{" + DATASET_NAME + "}/structure")
+	@Path("datasets/{" + DATASET_NAME + "}/structure")
 	public void setStructure(@PathParam(DATASET_NAME) DatasetId datasetId, @NotNull@Valid StructureNode[] structure) throws JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();
@@ -253,7 +255,7 @@ public class DatasetsResource {
 	}
 
 	@DELETE
-	@Path("/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
+	@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
 	public Response removeConcept(@PathParam(DATASET_NAME) DatasetId datasetId, @PathParam(CONCEPT_NAME) ConceptId conceptId) throws IOException, JSONException {
 		Namespace ns = ctx.getNamespaces().get(datasetId);
 		Dataset dataset = ns.getStorage().getDataset();

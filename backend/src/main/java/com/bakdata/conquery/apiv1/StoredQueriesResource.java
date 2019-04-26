@@ -17,6 +17,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -24,9 +25,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Iterators;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -71,7 +74,17 @@ public class StoredQueriesResource {
 
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-		processor.patchQuery(user, dataset, queryId, patch);
+		MasterMetaStorage storage = processor.getNamespaces().get(dataset.getId()).getStorage().getMetaStorage();
+		ManagedQuery query = storage.getQuery(queryId);
+		if (patch.has("tags")) {
+			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)), String.class);
+			processor.tagQuery(storage, user, query, newTags);
+		} else if (patch.has("label")) {
+			processor.updateQueryLabel(storage, user, query, patch.get("label").textValue());
+		} else if (patch.has("shared")) {
+			processor.shareQuery(storage, user, query, patch.get("shared").asBoolean());
+		}
+		
 		return getQueryWithSource(user, datasetId, queryId);
 	}
 
