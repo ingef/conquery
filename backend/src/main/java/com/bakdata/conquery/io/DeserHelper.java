@@ -19,7 +19,7 @@ public class DeserHelper {
 	
 	public static void writeBigDecimal(SmallOut output, BigDecimal bigDecimal) throws IOException {
 		if(bigDecimal == null) {
-			output.writeInt(0);
+			output.writeInt(0, true);
 			return;
 		}
 			
