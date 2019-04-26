@@ -88,7 +88,9 @@ public class GenerationTests {
 					event[13] = Long.valueOf(r.nextInt());
 					//event[14] = null;
 					event[15] = Long.valueOf(r.nextInt());
-					event[16] = BigDecimal.valueOf(r.nextInt(4), r.nextInt(120)-60);
+					if(r.nextBoolean()) {
+						event[16] = BigDecimal.valueOf(r.nextInt(4), r.nextInt(120)-60);
+					}
 				}
 				arrays.trimToSize();
 
