@@ -23,7 +23,7 @@ public class PersistentIdMapDeserializer extends JsonDeserializer<PersistentIdMa
 		Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap = p.readValueAs(new TypeReference<Map<CsvEntityId, ExternalEntityId>>() {});
 		Map<SufficientExternalEntityId, CsvEntityId> externalIdPartCsvIdMap = new HashMap<>();
 
-		List<ExternalIdMapFromListConverter.ExternalIdMapEntry> mapAsList = p.readValueAs(new TypeReference<ArrayList<ExternalIdMapFromListConverter.ExternalIdMapEntry>>(){});
+		List<PersistentIdMapSerializer.ExternalIdMapEntry> mapAsList = p.readValueAs(new TypeReference<ArrayList<PersistentIdMapSerializer.ExternalIdMapEntry>>(){});
 		mapAsList.forEach(externalIdMapEntry -> {
 			externalIdPartCsvIdMap.put(externalIdMapEntry.getSufficientExternalEntityId(),externalIdMapEntry.getCsvEntityId());
 		});

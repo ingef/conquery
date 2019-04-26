@@ -9,9 +9,7 @@ import org.junit.Test;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.DefaultIdMappingAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.identifiable.mapping.SufficientExternalEntityId;
 
@@ -22,11 +20,15 @@ public class IdMapSerialisationTest {
 		Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap = new HashMap<>();
 		Map<SufficientExternalEntityId, CsvEntityId> externalIdPartCsvIdMap = new HashMap<>();
 
-		csvIdToExternalIdMap.put(new CsvEntityId("test"), new ExternalEntityId(new String[] { "a", "b" }));
+		csvIdToExternalIdMap.put(new CsvEntityId("test1"), new ExternalEntityId(new String[] { "a", "b" }));
+		csvIdToExternalIdMap.put(new CsvEntityId("test2"), new ExternalEntityId(new String[] { "c", "d" }));
+		csvIdToExternalIdMap.put(new CsvEntityId("test3"), new ExternalEntityId(new String[] { "e", "f" }));
+		csvIdToExternalIdMap.put(new CsvEntityId("test4"), new ExternalEntityId(new String[] { "g", "h" }));
 
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(
-			new DefaultIdMappingAccessor(new NoIdMapping(), new int[] { 0, 1 }),
-			new String[] { "a", "b" }), new CsvEntityId("test"));
+		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "a", "b" }), new CsvEntityId("test1"));
+		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "c", "d" }), new CsvEntityId("test2"));
+		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "e", "f" }), new CsvEntityId("test3"));
+		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "g", "h" }), new CsvEntityId("test4"));
 
 		PersistentIdMap persistentIdMap = new PersistentIdMap(csvIdToExternalIdMap, externalIdPartCsvIdMap);
 

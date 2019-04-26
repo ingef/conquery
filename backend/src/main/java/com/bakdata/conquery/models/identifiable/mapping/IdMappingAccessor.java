@@ -56,7 +56,7 @@ public interface IdMappingAccessor {
 	default void collectSufficientEntityIds(PersistentIdMap mapping) {
 		for (Map.Entry<CsvEntityId, ExternalEntityId> entry : mapping.getCsvIdToExternalIdMap().entrySet()) {
 			mapping.getExternalIdPartCsvIdMap()
-				.put(new SufficientExternalEntityId(this, extract(entry.getValue().getExternalId())), entry.getKey());
+				.put(new SufficientExternalEntityId(extract(entry.getValue().getExternalId())), entry.getKey());
 		}
 	}
 }
