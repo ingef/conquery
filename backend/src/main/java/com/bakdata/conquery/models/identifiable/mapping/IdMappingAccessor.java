@@ -6,9 +6,12 @@ import java.util.Map;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.fasterxml.jackson.annotation.JsonCreator;
+
+import lombok.RequiredArgsConstructor;
+
 
 public interface IdMappingAccessor {
-
 	String[] getHeader();
 
 	/**

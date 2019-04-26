@@ -29,6 +29,7 @@ public abstract class IdMappingConfig {
 
 		PersistentIdMap mapping = new PersistentIdMap(new HashMap<>(), new HashMap<>());
 
+
 		if (!Arrays.equals(this.getHeader(), csvIterator.next(), StringUtils::compareIgnoreCase)) {
 			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
 		}
