@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
@@ -32,7 +33,10 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
@@ -43,6 +47,7 @@ import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.util.io.FileTreeReduction;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableMap;
 
@@ -90,6 +95,41 @@ public class AdminUIResource {
 		return new UIView<>("mandators.html.ftl", context, processor.getAllMandators());
 	}
 
+	@GET @Produces(MediaType.TEXT_HTML)
+	@Path("datasets")
+	public View getDatasets() {
+		return new UIView<>("datasets.html.ftl", ctx, namespaces.getAllDatasets());
+	}
+	
+	@GET
+	@Path("datasets/{" + DATASET_NAME + "}/mapping")
+	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
+		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
+		if (mapping != null) {
+			return new UIView<>(
+				"idmapping.html.ftl",
+				ctx,
+				mapping
+			);
+		} else {
+			return new UIView<>(
+				"add_idmapping.html.ftl",
+				ctx,
+				datasetId
+			);
+		}
+	}
+
+	@GET @Produces(MediaType.TEXT_HTML)
+	@Path("datasets/{" + DATASET_NAME + "}")
+	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
+		return new FileView<>(
+			"dataset.html.ftl",
+			ctx,
+			namespaces.get(dataset).getStorage().getDataset(),
+			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
+	}
+	
 	@POST
 	@Path("/mandators")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

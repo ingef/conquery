@@ -1,4 +1,4 @@
-package com.bakdata.conquery.resources.admin;
+package com.bakdata.conquery.resources.admin.rest;
 
 import java.io.File;
 import java.io.IOException;

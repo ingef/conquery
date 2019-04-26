@@ -90,23 +90,6 @@ public class AdminResource {
 		this.processor = new AdminProcessor(config, storage, namespaces, jobManager, maintenanceService);
 	}
 
-	@GET @Produces(MediaType.TEXT_HTML)
-	@Path("datasets")
-	public View getDatasets() {
-		return new UIView<>("datasets.html.ftl", ctx, namespaces.getAllDatasets());
-	}
-
-	@GET @Produces(MediaType.TEXT_HTML)
-	@Path("datasets/{" + DATASET_NAME + "}")
-	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
-		return new FileView<>(
-			"dataset.html.ftl",
-			ctx,
-			namespaces.get(dataset).getStorage().getDataset(),
-			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
-	}
-
-	
 	@GET
 	@Path("datasets/{" + DATASET_NAME + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
