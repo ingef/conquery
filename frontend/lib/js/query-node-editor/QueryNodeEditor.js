@@ -93,8 +93,13 @@ const QueryNodeEditor = (props: PropsType) => {
       ? node.tables[editorState.selectedInputTableIdx]
       : null;
 
+  function close() {
+    editorState.onReset();
+    props.onCloseModal();
+  }
+
   return (
-    <StyledEscAble onEscPressed={props.onCloseModal}>
+    <StyledEscAble onEscPressed={close}>
       <Wrapper>
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
@@ -102,13 +107,7 @@ const QueryNodeEditor = (props: PropsType) => {
           <TableView {...props} />
         )}
         {!editorState.detailsViewActive && <DescriptionColumn {...props} />}
-        <CloseButton
-          small
-          onClick={() => {
-            editorState.onReset();
-            props.onCloseModal();
-          }}
-        >
+        <CloseButton small onClick={close}>
           {T.translate("common.done")}
         </CloseButton>
       </Wrapper>

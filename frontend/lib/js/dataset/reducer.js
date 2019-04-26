@@ -19,7 +19,7 @@ export type StateType = {
   loading: boolean,
   error: ?string,
   data: DatasetType[],
-  selectedDatasetId: DatasetIdType
+  selectedDatasetId: ?DatasetIdType
 };
 
 const initialState: StateType = {

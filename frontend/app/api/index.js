@@ -1,4 +1,5 @@
 const path = require("path");
+const glob = require("glob");
 const version = require("../../package.json").version;
 
 // Taken from:
@@ -318,35 +319,6 @@ module.exports = function(app, port) {
     }
   );
 
-  /*
-    SEARCH
-  */
-  app.post("/api/datasets/:datasetId/concepts/search", (req, res) => {
-    setTimeout(() => {
-      res.setHeader("Content-Type", "application/json");
-
-      const { query, limit } = req.body;
-
-      const result = [];
-      const awards = require("./concepts/awards");
-      const movieAppearance = require("./concepts/movie_appearances");
-      const placeOfBirth = require("./concepts/place_of_birth");
-
-      result.push(...findConcepts(awards, query));
-      result.push(...findConcepts(movieAppearance, query));
-      result.push(...findConcepts(placeOfBirth, query));
-
-      const returnedResult = result.slice(0, limit);
-
-      // see type SearchResult
-      res.send({
-        limit,
-        result: returnedResult,
-        size: result.length
-      });
-    }, NO_DELAY);
-  });
-
   app.get("/api/config/frontend", (req, res) => {
     res.setHeader("Content-Type", "application/json");
 
@@ -358,34 +330,3 @@ module.exports = function(app, port) {
   });
 };
 
-const findConcepts = (concepts, query) => {
-  const matches = Object.keys(concepts)
-    .map(key => ({ id: key, label: concepts[key].label }))
-    .filter(res => res.label.toLowerCase().includes(query.toLowerCase()));
-
-  return fetchParents(concepts, matches);
-};
-
-const fetchParents = (concepts, matches) => {
-  for (var ma in matches) visit(matches[ma].id, concepts, matches);
-
-  return matches.map(r => r.id);
-};
-
-const visit = (id, concepts, matches) => {
-  for (let co in concepts) {
-    const children = concepts[co].children;
-    const parent = concepts[co].parent;
-
-    if (children !== undefined) {
-      const idx = children.indexOf(id);
-
-      if (idx >= 0) {
-        matches.push({ id: parent });
-        children.slice(idx); // remove element for next iterate
-
-        return visit(parent, concepts, matches);
-      }
-    }
-  }
-};

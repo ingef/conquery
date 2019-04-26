@@ -135,7 +135,7 @@ const TimebasedCondition = (props: PropsType) => {
   return (
     <Root>
       {props.removable && (
-        <StyledIconButton icon="close" onClick={props.onRemove} />
+        <StyledIconButton icon="times" onClick={props.onRemove} />
       )}
       <NodesContainer>
         <HorizontalLine />

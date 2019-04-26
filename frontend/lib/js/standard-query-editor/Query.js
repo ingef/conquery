@@ -19,7 +19,8 @@ import {
   dropConceptListFile,
   toggleExcludeGroup,
   expandPreviousQuery,
-  selectNodeForEditing
+  selectNodeForEditing,
+  toggleTimestamps
 } from "./actions";
 import type {
   StandardQueryType,
@@ -52,6 +53,7 @@ const Groups = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+  padding: 0 0 20px;
 `;
 
 const QueryGroupConnector = styled("p")`
@@ -73,10 +75,10 @@ const Query = (props: PropsType) => {
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
       )}
-      <Groups>
-        {!props.isEmptyQuery &&
-          // Render all query groups plus individual AND / OR dropzones
-          props.query
+      {!props.isEmptyQuery && (
+        // Render all query groups plus individual AND / OR dropzones
+        <Groups>
+          {props.query
             .map((group, andIdx) => [
               <QueryGroup
                 key={andIdx}
@@ -91,6 +93,9 @@ const Query = (props: PropsType) => {
                 onExcludeClick={() => props.toggleExcludeGroup(andIdx)}
                 onDateClick={() => props.queryGroupModalSetNode(andIdx)}
                 onLoadPreviousQuery={props.loadPreviousQuery}
+                onToggleTimestamps={orIdx =>
+                  props.toggleTimestamps(andIdx, orIdx)
+                }
               />,
               <QueryGroupConnector key={`${andIdx}.and`}>
                 {T.translate("common.and")}
@@ -106,7 +111,8 @@ const Query = (props: PropsType) => {
                 />
               </div>
             )}
-      </Groups>
+        </Groups>
+      )}
     </Container>
   );
 };
@@ -129,6 +135,8 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
   deleteGroup: (andIdx, orIdx) => dispatch(deleteGroup(andIdx, orIdx)),
   toggleExcludeGroup: andIdx => dispatch(toggleExcludeGroup(andIdx)),
+  toggleTimestamps: (andIdx, orIdx) =>
+    dispatch(toggleTimestamps(andIdx, orIdx)),
   selectNodeForEditing: (andIdx, orIdx) =>
     dispatch(selectNodeForEditing(andIdx, orIdx)),
   queryGroupModalSetNode: andIdx => dispatch(queryGroupModalSetNode(andIdx)),

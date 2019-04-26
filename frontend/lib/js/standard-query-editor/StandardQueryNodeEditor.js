@@ -61,7 +61,7 @@ const mapDispatchToProps = dispatch => ({
     dispatch(switchFilterMode(tableIdx, filterIdx, mode)),
   onResetAllFilters: (andIdx, orIdx) =>
     dispatch(resetAllFilters(andIdx, orIdx)),
-  onToggleTimestamps: isExcluded => dispatch(toggleTimestamps(isExcluded)),
+  onToggleTimestamps: () => dispatch(toggleTimestamps(null, null)),
   onLoadFilterSuggestions: (...params) =>
     dispatch(loadFilterSuggestions(...params)),
   onDropFilterValuesFile: (...params) =>

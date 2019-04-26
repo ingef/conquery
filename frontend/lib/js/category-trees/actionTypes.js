@@ -16,3 +16,6 @@ export const SEARCH_TREES_SUCCESS = "category-trees/SEARCH_TREES_SUCCESS";
 export const SEARCH_TREES_ERROR = "category-trees/SEARCH_TREES_ERROR";
 export const CHANGE_SEARCH_QUERY = "category-trees/CHANGE_SEARCH_QUERY";
 export const CLEAR_SEARCH_QUERY = "category-trees/CLEAR_SEARCH_QUERY";
+
+export const TOGGLE_ALL_OPEN = "category-trees/TOGGLE_ALL_OPEN";
+export const TOGGLE_SHOW_MISMATCHES = "category-trees/TOGGLE_SHOW_MISMATCHES";

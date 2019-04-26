@@ -99,20 +99,15 @@ export const getConcept = (
 export function postQueries(
   datasetId: DatasetIdType,
   query: Object,
-  queryType: string,
-  version: any
+  queryType: string
 ) {
   // Transform into backend-compatible format
   const body = transformQueryToApi(query, queryType);
 
-  return fetchJson(
-    apiUrl() + `/datasets/${datasetId}/queries`,
-    {
-      method: "POST",
-      body
-    },
-    queryType === "external"
-  );
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/queries`, {
+    method: "POST",
+    body
+  });
 }
 
 export function deleteQuery(datasetId: DatasetIdType, queryId: number) {
@@ -237,17 +232,3 @@ export function postFilterValuesResolve(
     }
   );
 }
-
-export const searchConcepts = (
-  datasetId: DatasetIdType,
-  query: string,
-  limit?: number
-) => {
-  return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/search`, {
-    method: "POST",
-    body: {
-      query,
-      limit
-    }
-  });
-};

@@ -1,20 +1,25 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 
 import {
   type TreeNodeIdType,
   type InfoType,
   type DateRangeType,
-  type NodeType,
-  type SearchType
+  type NodeType
 } from "../common/types/backend";
 import { type DraggedNodeType } from "../standard-query-editor/types";
+import { type SearchType } from "./reducer";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import Openable from "./Openable";
 import CategoryTreeNodeTextContainer from "./CategoryTreeNodeTextContainer";
-import { isInSearchResult } from "./selectors";
+import { isNodeInSearchResult } from "./selectors";
+
+const Root = styled("div")`
+  font-size: ${({ theme }) => theme.font.sm};
+`;
 
 // Concept data that is necessary to display tree nodes. Includes additional infos
 // for the tooltip as well as the id of the corresponding tree
@@ -60,61 +65,62 @@ class CategoryTreeNode extends React.Component<PropsType> {
 
   render() {
     const { id, data, depth, open, search } = this.props;
-    const searching = search && search.searching;
 
-    const render = searching
-      ? isInSearchResult(id, data.children, search)
-      : true;
+    if (!search.showMismatches) {
+      const shouldRender = isNodeInSearchResult(id, data.children, search);
+
+      if (!shouldRender) return null;
+    }
+
+    const isOpen = open || search.allOpen;
 
     return (
-      render && (
-        <div className="category-tree-node">
-          <CategoryTreeNodeTextContainer
-            node={{
-              id,
+      <Root>
+        <CategoryTreeNodeTextContainer
+          node={{
+            id,
+            label: data.label,
+            description: data.description,
+            matchingEntries: data.matchingEntries,
+            dateRange: data.dateRange,
+            additionalInfos: data.additionalInfos,
+            children: data.children
+          }}
+          createQueryElement={(): DraggedNodeType => {
+            const { tables, selects } = getConceptById(data.tree);
+
+            return {
+              ids: [id],
               label: data.label,
-              description: data.description,
-              matchingEntries: data.matchingEntries,
-              dateRange: data.dateRange,
-              additionalInfos: data.additionalInfos,
-              hasChildren: !!data.children && data.children.length > 0
-            }}
-            createQueryElement={(): DraggedNodeType => {
-              const { tables, selects } = getConceptById(data.tree);
+              tables,
+              selects,
+              tree: data.tree
+            };
+          }}
+          open={isOpen}
+          depth={depth}
+          active={data.active}
+          onTextClick={this._onToggleOpen.bind(this)}
+          search={search}
+        />
+        {!!data.children && isOpen && (
+          <>
+            {data.children.map((childId, i) => {
+              const child = getConceptById(childId);
 
-              return {
-                ids: [id],
-                label: data.label,
-                tables,
-                selects,
-                tree: data.tree
-              };
-            }}
-            open={open}
-            depth={depth}
-            active={data.active}
-            onTextClick={this._onToggleOpen.bind(this)}
-            search={search}
-          />
-          {!!data.children && (open || searching) && (
-            <div className="category-tree-node__children">
-              {data.children.map((childId, i) => {
-                const child = getConceptById(childId);
-
-                return child ? (
-                  <OpenableCategoryTreeNode
-                    key={i}
-                    id={childId}
-                    data={selectTreeNodeData(child, data.tree)}
-                    depth={this.props.depth + 1}
-                    search={this.props.search}
-                  />
-                ) : null;
-              })}
-            </div>
-          )}
-        </div>
-      )
+              return child ? (
+                <OpenableCategoryTreeNode
+                  key={i}
+                  id={childId}
+                  data={selectTreeNodeData(child, data.tree)}
+                  depth={this.props.depth + 1}
+                  search={this.props.search}
+                />
+              ) : null;
+            })}
+          </>
+        )}
+      </Root>
     );
   }
 }

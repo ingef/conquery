@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.events.generation;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
-import com.esotericsoftware.kryo.io.Output;
-import com.bakdata.conquery.io.kryo.KryoHelper;
+import com.bakdata.conquery.util.io.SmallOut;
+import com.bakdata.conquery.io.DeserHelper;
 
 
 import java.time.LocalDate;
@@ -58,7 +58,7 @@ public class Block_${suffix} extends Block {
 		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
-		try (Output output = new Output(baos)){
+		try (SmallOut output = new SmallOut(baos)){
 			writeContent(output);
 		}
 		byte[] content = baos.toByteArray();
@@ -68,7 +68,7 @@ public class Block_${suffix} extends Block {
 	}
 	
 	@Override
-	public void writeContent(Output output) throws IOException {
+	public void writeContent(SmallOut output) throws IOException {
 		output.writeInt(this.events.length, true);
 		
 		byte[] nullBitsAsBytes = Bits.asStore(nullBits.toByteArray()).toByteArray();
@@ -142,9 +142,8 @@ public class Block_${suffix} extends Block {
 		switch(column.getPosition()) {
 	<#list types as type>
 	<#list imp.columns as col>
-		<#if col.type.lines == col.type.nullLines>
 		<#-- there are no getters for null only columns-->
-		<#elseif col.type.typeId == type>
+		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
 			case ${col.position}:
 				return events[event].get${safeName(col.name)?cap_first}AsMajor();
 		</#if>
@@ -162,13 +161,15 @@ public class Block_${suffix} extends Block {
 		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
-			<#if col.type.typeId == "DATE">
-			case ${col.position}:
-				return dateRange.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			<#elseif col.type.typeId == "DATE_RANGE">
-			case ${col.position}:
-				return dateRange.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			</#if>
+		    <#if col.type.lines != col.type.nullLines>
+                <#if col.type.typeId == "DATE">
+                case ${col.position}:
+                    return dateRange.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                <#elseif col.type.typeId == "DATE_RANGE">
+                case ${col.position}:
+                    return dateRange.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                </#if>
+            </#if>
 		</#list>
 			default:
 				throw new IllegalArgumentException("Column "+column+" is not a date type");
@@ -182,13 +183,15 @@ public class Block_${suffix} extends Block {
 		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
-			<#if col.type.typeId == "DATE">
-				case ${col.position}:
-				return dateRanges.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			<#elseif col.type.typeId == "DATE_RANGE">
-				case ${col.position}:
-				return dateRanges.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
-			</#if>
+            <#if col.type.lines != col.type.nullLines>
+                <#if col.type.typeId == "DATE">
+                    case ${col.position}:
+                    return dateRanges.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                <#elseif col.type.typeId == "DATE_RANGE">
+                    case ${col.position}:
+                    return dateRanges.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                </#if>
+            </#if>
 		</#list>
 		default:
 		throw new IllegalArgumentException("Column "+column+" is not a date type");
@@ -202,13 +205,15 @@ public class Block_${suffix} extends Block {
 		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
-			<#if col.type.typeId == "DATE">
-			case ${col.position}:
-				return new CDateRange(events[event].get${safeName(col.name)?cap_first}(), events[event].get${safeName(col.name)?cap_first}());
-			<#elseif col.type.typeId == "DATE_RANGE">
-			case ${col.position}:
-				return events[event].get${safeName(col.name)?cap_first}();
-			</#if>
+            <#if col.type.lines != col.type.nullLines>
+                <#if col.type.typeId == "DATE">
+                case ${col.position}:
+                    return new CDateRange(events[event].get${safeName(col.name)?cap_first}(), events[event].get${safeName(col.name)?cap_first}());
+                <#elseif col.type.typeId == "DATE_RANGE">
+                case ${col.position}:
+                    return events[event].get${safeName(col.name)?cap_first}();
+                </#if>
+            </#if>
 		</#list>
 			default:
 				throw new IllegalArgumentException("Column "+column+" is not a date type");

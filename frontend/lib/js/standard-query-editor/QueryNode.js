@@ -20,17 +20,30 @@ const Root = styled("div")`
   width: 100%;
   margin: 0 auto;
   background-color: white;
-  display: inline-block;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
   padding: 7px;
   font-size: ${({ theme }) => theme.font.sm};
   cursor: pointer;
   text-align: left;
   border-radius: ${({ theme }) => theme.borderRadius};
   transition: border ${({ theme }) => theme.transitionTime};
-  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
+  border: ${({ theme, hasActiveFilters }) =>
+    hasActiveFilters
+      ? `2px solid ${theme.col.blueGrayDark}`
+      : `1px solid ${theme.col.grayMediumLight}`};
   &:hover {
-    border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+    border: ${({ theme, hasActiveFilters }) =>
+      hasActiveFilters
+        ? `2px solid ${theme.col.blueGrayDark}`
+        : `1px solid ${theme.col.blueGrayDark}`};
   }
+`;
+
+const Node = styled("div")`
+  flex-grow: 1;
+  padding-top: 2px;
 `;
 
 const Content = styled("p")`
@@ -48,10 +61,15 @@ const PreviousQueryLabel = styled("p")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
+const StyledErrorMessage = styled(ErrorMessage)`
+  margin: 0;
+`;
+
 type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
   onEditClick: Function,
+  onToggleTimestamps: Function,
   onExpandClick: Function,
   connectDragSource: Function,
   andIdx: number,
@@ -69,15 +87,36 @@ class QueryNode extends React.Component {
       connectDragSource,
       onExpandClick,
       onEditClick,
-      onDeleteNode
+      onDeleteNode,
+      onToggleTimestamps
     } = this.props;
 
     return (
-      <Root ref={instance => connectDragSource(instance)}>
+      <Root
+        ref={instance => connectDragSource(instance)}
+        hasActiveFilters={!node.error && nodeHasActiveFilters(node)}
+        onClick={!node.error && onEditClick}
+      >
+        <Node>
+          {node.isPreviousQuery && (
+            <PreviousQueryLabel>
+              {T.translate("queryEditor.previousQuery")}
+            </PreviousQueryLabel>
+          )}
+          {node.error ? (
+            <StyledErrorMessage message={node.error} />
+          ) : (
+            <Content>
+              <span>{node.label || node.id}</span>
+              {node.description && <span> - {node.description}</span>}
+            </Content>
+          )}
+        </Node>
         <QueryNodeActions
-          hasActiveFilters={nodeHasActiveFilters(node)}
+          excludeTimestamps={node.excludeTimestamps}
           onEditClick={onEditClick}
           onDeleteNode={onDeleteNode}
+          onToggleTimestamps={onToggleTimestamps}
           isExpandable={isQueryExpandable(node)}
           onExpandClick={() => {
             if (!node.query) return;
@@ -87,19 +126,6 @@ class QueryNode extends React.Component {
           previousQueryLoading={node.loading}
           error={node.error}
         />
-        {node.isPreviousQuery && (
-          <PreviousQueryLabel>
-            {T.translate("queryEditor.previousQuery")}
-          </PreviousQueryLabel>
-        )}
-        {node.error ? (
-          <ErrorMessage message={node.error} />
-        ) : (
-          <Content>
-            <span>{node.label || node.id}</span>
-            {node.description && <span> - {node.description}</span>}
-          </Content>
-        )}
       </Root>
     );
   }
@@ -159,8 +185,4 @@ const collect = (connect, monitor) => ({
   isDragging: monitor.isDragging()
 });
 
-const DraggableQueryNode = DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(
-  QueryNode
-);
-
-export default DraggableQueryNode;
+export default DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(QueryNode);

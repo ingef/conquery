@@ -19,6 +19,7 @@ import { SelectableLabel } from "../../selectable-label";
 
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
+import FaIcon from "../../icon/FaIcon";
 
 import { EditableText, EditableTags } from "../../form-components";
 
@@ -130,6 +131,10 @@ const StyledEditableTags = styled(EditableTags)`
   margin-top: 5px;
 `;
 
+const StyledFaIcon = styled(FaIcon)`
+  margin: 0 6px;
+`;
+
 type PropsType = {
   query: {
     id: number | string,
@@ -191,7 +196,7 @@ class PreviousQuery extends React.Component {
         <TopInfos>
           <div>
             {query.resultUrl ? (
-              <DownloadButton bare large url={query.resultUrl}>
+              <DownloadButton bare url={query.resultUrl}>
                 {peopleFound}
               </DownloadButton>
             ) : (
@@ -207,6 +212,7 @@ class PreviousQuery extends React.Component {
               ) : (
                 <StyledIconButton
                   icon="upload"
+                  bare
                   onClick={() => onToggleSharePreviousQuery(!query.shared)}
                 >
                   {T.translate("previousQuery.share")}
@@ -217,7 +223,6 @@ class PreviousQuery extends React.Component {
               (!query.tags || query.tags.length === 0) && (
                 <HoverButton
                   icon="plus"
-                  large
                   bare
                   onClick={onToggleEditPreviousQueryTags}
                 >
@@ -227,11 +232,11 @@ class PreviousQuery extends React.Component {
             <TopRight>
               {executedAt}
               {query.loading ? (
-                <IconButton large bare icon="spinner" />
+                <StyledFaIcon icon="spinner" />
               ) : (
                 query.own && (
                   <IconButton
-                    icon="close"
+                    icon="times"
                     tiny
                     onClick={onDeletePreviousQuery}
                   />

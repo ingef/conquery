@@ -3,11 +3,8 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import {
-  formatDate,
-  parseDate,
-  numberToThreeDigitArray
-} from "../common/helpers";
+import { formatDate, parseDate } from "../common/helpers/dateHelper";
+import { numberToThreeDigitArray } from "../common/helpers/commonHelper";
 
 import FaIcon from "../icon/FaIcon";
 
@@ -44,6 +41,7 @@ const Text = styled("p")`
 
 const StyledFaIcon = styled(FaIcon)`
   padding-right: 15px;
+  font-size: 16px;
 `;
 
 const Info = styled("div")`
@@ -76,13 +74,13 @@ const TooltipEntries = (props: PropsType) => {
 
   const isZero = props.matchingEntries === 0;
 
-  const dateFormat = T.translate("inputDateRange.dateFormat");
-  const displayDateFormat = "yyyy-MM-dd";
+  const dateFormat = "yyyy-MM-dd";
+  const displayDateFormat = T.translate("inputDateRange.dateFormat");
 
   return (
     <Root className={props.className}>
       <Row>
-        <StyledFaIcon icon="bar-chart" />
+        <StyledFaIcon icon="chart-bar" />
         <Info>
           <Number zero={isZero}>
             {numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
@@ -99,20 +97,20 @@ const TooltipEntries = (props: PropsType) => {
       </Row>
       {dateRange && (
         <ConceptDateRangeTooltip>
-          <StyledFaIcon icon="calendar" />
+          <StyledFaIcon regular icon="calendar" />
           <Info>
             <Date>
               <Prefix>{T.translate("tooltip.date.from") + ":"}</Prefix>
               {formatDate(
-                parseDate(dateRange.min, displayDateFormat),
-                dateFormat
+                parseDate(dateRange.min, dateFormat),
+                displayDateFormat
               )}
             </Date>
             <Date>
               <Prefix>{T.translate("tooltip.date.to") + ":"}</Prefix>
               {formatDate(
-                parseDate(dateRange.max, displayDateFormat),
-                dateFormat
+                parseDate(dateRange.max, dateFormat),
+                displayDateFormat
               )}
             </Date>
           </Info>

@@ -4,8 +4,6 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import { EditableText } from "../form-components";
-
 import { getConceptById } from "../category-trees/globalTreeStoreHelper";
 
 import type { PropsType } from "./QueryNodeEditor";
@@ -29,43 +27,24 @@ const RowHeading = styled("h5")`
 const NodeDetailsView = (props: PropsType) => {
   const {
     node,
-    editorState,
     onSelectSelects,
-    onUpdateLabel,
     isExcludeTimestampsPossible,
     onToggleTimestamps,
     onDropConcept,
     onRemoveConcept
   } = props;
 
+  const rootConcept = node.isPreviousQuery ? getConceptById(node.tree) : null;
+
   return (
-    <ContentCell
-      headline={
-        <>
-          {!node.isPreviousQuery && (
-            <EditableText
-              loading={false}
-              text={node.label}
-              selectTextOnMount={true}
-              editing={editorState.editingLabel}
-              onSubmit={value => {
-                onUpdateLabel(value);
-                editorState.onToggleEditLabel();
-              }}
-              onToggleEdit={editorState.onToggleEditLabel}
-            />
-          )}
-          {node.isPreviousQuery && (node.label || node.id || node.ids)}
-        </>
-      }
-    >
+    <ContentCell>
       {isExcludeTimestampsPossible && (
         <Row>
           <InputCheckbox
             label={T.translate("queryNodeEditor.excludeTimestamps")}
             input={{
               value: node.excludeTimestamps,
-              onChange: () => onToggleTimestamps(!node.excludeTimestamps)
+              onChange: () => onToggleTimestamps()
             }}
           />
         </Row>
@@ -87,9 +66,9 @@ const NodeDetailsView = (props: PropsType) => {
           />
         </Row>
       )}
-      {!node.isPreviousQuery && (
+      {!node.isPreviousQuery && rootConcept && (
         <Row>
-          <RowHeading>{[getConceptById(node.tree).label]}</RowHeading>
+          <RowHeading>{rootConcept.label}</RowHeading>
           <div>
             <ConceptDropzone node={node} onDropConcept={onDropConcept} />
           </div>
@@ -97,7 +76,7 @@ const NodeDetailsView = (props: PropsType) => {
             {node.ids.map(conceptId => (
               <ConceptEntry
                 key={conceptId}
-                node={getConceptById(conceptId)}
+                node={rootConcept}
                 canRemoveConcepts={node.ids.length > 1}
                 onRemoveConcept={onRemoveConcept}
                 conceptId={conceptId}

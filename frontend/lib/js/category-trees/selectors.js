@@ -1,37 +1,30 @@
 // @flow
 
-import difference from "lodash.difference";
-
 import { type TreeNodeIdType } from "../common/types/backend";
 import { type SearchType } from "./reducer";
 
-const isSearchResultInChildren = (children?: [], search?: SearchType) => {
-  if (!search || !search.result || !children) return false;
-  const result = search.result;
+const isChildWithinResults = (children: [], search: SearchType) => {
+  return children.some(child => search.result.hasOwnProperty(child));
+};
 
-  for (var i = 0; i < result.length; i++) {
-    const ids = result[i].split(".");
-    for (var j = 0; j < children.length; j++) {
-      const childIds = children[j].split(".");
+export const isNodeInSearchResult = (
+  id: TreeNodeIdType,
+  children?: [],
+  search: SearchType
+) => {
+  if (!search.result) return true;
 
-      if (difference(childIds, ids).length === 0) return true;
-    }
-  }
+  if (search.result.hasOwnProperty(id)) return true;
+
+  if (!!children && children.length > 0)
+    return isChildWithinResults(children, search);
+
   return false;
 };
 
-export const isInSearchResult = (
-  id: TreeNodeIdType,
-  children?: [],
-  search?: SearchType
-) => {
-  if (!search || !search.result) return false;
-  const result = search.result;
-
-  if (result.includes(id)) return true;
-
-  if (children && children.length > 0)
-    return isSearchResultInChildren(children, search);
-
-  return false;
+export const getAreTreesAvailable = state => {
+  return (
+    state.categoryTrees.trees &&
+    Object.keys(state.categoryTrees.trees).length > 0
+  );
 };

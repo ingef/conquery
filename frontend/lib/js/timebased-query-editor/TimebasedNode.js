@@ -24,13 +24,10 @@ const StyledIconButton = styled(IconButton)`
   top: 0;
   right: 0;
   z-index: 1;
-  display: none;
 `;
 
 const Root = styled("div")`
-  display: table-cell;
-  vertical-align: middle;
-  margin: 0 auto;
+  margin: 0 5px;
   width: 200px;
   font-size: ${({ theme }) => theme.font.sm};
 `;
@@ -116,21 +113,23 @@ class TimebasedNode extends React.Component {
               </p>
             </div>
           </div>
-          <button
-            className={classnames("timebased-node__index-result-btn", {
-              "timebased-node__index-result-btn--active": isIndexResult,
-              "timebased-node__index-result-btn--disabled": isIndexResultDisabled
-            })}
-            disabled={isIndexResultDisabled}
-            onClick={onSetTimebasedIndexResult}
-          >
-            {T.translate("timebasedQueryEditor.timestampResultsFrom")}
-          </button>
         </div>
       </Root>
     );
   }
 }
+
+// Button indexResult (to re-enable this soon)
+// <button
+//   className={classnames("timebased-node__index-result-btn", {
+//     "timebased-node__index-result-btn--active": isIndexResult,
+//     "timebased-node__index-result-btn--disabled": isIndexResultDisabled
+//   })}
+//   disabled={isIndexResultDisabled}
+//   onClick={onSetTimebasedIndexResult}
+// >
+//   {T.translate("timebasedQueryEditor.timestampResultsFrom")}
+// </button>
 
 /**
  * Implements the drag source contract.
