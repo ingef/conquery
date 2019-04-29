@@ -13,7 +13,7 @@ import lombok.Setter;
 @ToString @Getter @Setter
 public class FrontendConfig {
 	
-	private String version = VersionInfo.INSTANCE.getDescription();
+	private String version = VersionInfo.INSTANCE.getProjectVersion();
 	private boolean production = true;
 	@Valid @NotNull
 	private CurrencyConfig currency = new CurrencyConfig();
