@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
 
 import org.apache.shiro.authc.AuthenticationException;
@@ -26,7 +27,7 @@ import lombok.extern.slf4j.Slf4j;
  * security management is then also used for authorizations based on
  * permissions, that the handling of a request triggers.
  */
-@Slf4j
+@Slf4j @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 

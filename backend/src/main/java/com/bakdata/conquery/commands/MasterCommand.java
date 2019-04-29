@@ -37,7 +37,7 @@ import com.bakdata.conquery.models.worker.NamespaceCollection;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.ResourcesProvider;
-import com.bakdata.conquery.resources.admin.AdminUIServlet;
+import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 
@@ -56,7 +56,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private JobManager jobManager;
 	private Validator validator;
 	private ConqueryConfig config;
-	private AdminUIServlet admin;
+	private AdminServlet admin;
 	private ScheduledExecutorService maintenanceService;
 	private Namespaces namespaces = new Namespaces();
 	private Environment environment;
@@ -117,7 +117,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			}
 		}
 
-		admin = new AdminUIServlet();
+		admin = new AdminServlet();
 		admin.register(this);
 
 		ShutdownTask shutdown = new ShutdownTask();

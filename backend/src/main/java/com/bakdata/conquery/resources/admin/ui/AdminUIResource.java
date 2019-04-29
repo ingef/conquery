@@ -77,7 +77,26 @@ public class AdminUIResource {
 		this.context = new UIContext(namespaces);
 		this.processor = processor;
 	}
-
+	
+	/*@GET
+	@Path("datasets/{" + DATASET_NAME + "}/mapping")
+	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
+		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
+		if (mapping != null) {
+			return new UIView<>(
+				"idmapping.html.ftl",
+				ctx,
+				mapping
+			);
+		} else {
+			return new UIView<>(
+				"add_idmapping.html.ftl",
+				ctx,
+				datasetId
+			);
+		}
+	}
+*/
 	@GET
 	public View getIndex() {
 		return new UIView<>("index.html.ftl", context);
@@ -94,7 +113,7 @@ public class AdminUIResource {
 	public View getMandators() {
 		return new UIView<>("mandators.html.ftl", context, processor.getAllMandators());
 	}
-
+/*
 	@GET @Produces(MediaType.TEXT_HTML)
 	@Path("datasets")
 	public View getDatasets() {
@@ -120,16 +139,8 @@ public class AdminUIResource {
 		}
 	}
 
-	@GET @Produces(MediaType.TEXT_HTML)
-	@Path("datasets/{" + DATASET_NAME + "}")
-	public View getDataset(@PathParam(DATASET_NAME) DatasetId dataset) {
-		return new FileView<>(
-			"dataset.html.ftl",
-			ctx,
-			namespaces.get(dataset).getStorage().getDataset(),
-			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
-	}
 	
+	*/
 	@POST
 	@Path("/mandators")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

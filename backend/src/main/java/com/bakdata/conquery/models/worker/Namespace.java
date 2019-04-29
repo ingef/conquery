@@ -9,6 +9,9 @@ import java.util.concurrent.ScheduledExecutorService;
 import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryManager;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -110,5 +113,10 @@ public class Namespace {
 		List<WorkerInformation> l = new ArrayList<>(workers);
 		l.add(info);
 		workers = l;
+	}
+
+	@JsonIgnore
+	public Dataset getDataset() {
+		return storage.getDataset();
 	}
 }

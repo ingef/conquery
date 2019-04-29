@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth.subjects;
 
 import java.security.Principal;
+
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;

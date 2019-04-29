@@ -15,8 +15,10 @@ import com.bakdata.conquery.models.auth.AuthCookieFilter;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
+import com.bakdata.conquery.resources.admin.rest.DatasetsResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIProcessor;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
+import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.UIContext;
 
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -27,7 +29,7 @@ import io.dropwizard.views.ViewRenderer;
 import lombok.Getter;
 
 @Getter
-public class AdminUIServlet {
+public class AdminServlet {
 
 	private AdminProcessor adminProcessor;
 
@@ -64,14 +66,14 @@ public class AdminUIServlet {
 		
 		//register root resources
 		jerseyConfig.register(AdminResource.class);
+		jerseyConfig.register(DatasetsResource.class);
+		jerseyConfig.register(DatasetsUIResource.class);
 		
 		
-		//jerseyConfig.getSingletons().add(new UnitOfWorkResourceMethodDispatchAdapter(hibernateBundle.getSessionFactory()));
 		jerseyConfig.register(new AdminUIResource(masterCommand.getConfig(), masterCommand.getNamespaces(), masterCommand.getJobManager(), new AdminUIProcessor(masterCommand.getStorage())));
-		//AdminResource datasets = new AdminResource(masterCommand.getConfig(), masterCommand.getStorage(), masterCommand.getNamespaces(), masterCommand.getJobManager(), masterCommand.getMaintenanceService());
-		adminProcessor = datasets.getProcessor();
-		jerseyConfig.register(datasets);
 		jerseyConfig.register(new JobsResource(masterCommand.getJobManager()));
+		
+		//register features
 		jerseyConfig.register(new MultiPartFeature());
 		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)));
 		jerseyConfig.register(masterCommand.getAuthDynamicFeature());

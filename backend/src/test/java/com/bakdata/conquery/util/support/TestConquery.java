@@ -78,7 +78,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			log.info("Setting up dataset");
 			String name = UUID.randomUUID().toString();
 			DatasetId datasetId = new DatasetId(name);
-			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor().addDataset(name);
+			standaloneCommand.getMaster().getAdmin().getAdminProcessor().addDataset(name);
 			return createSupport(datasetId, name);
 		}
 		catch(Exception e) {
@@ -110,7 +110,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			ns.getStorage().getDataset(),
 			localTmpDir,
 			localCfg,
-			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor()
+			standaloneCommand.getMaster().getAdmin().getAdminProcessor()
 		);
 		while(ns.getWorkers().size() < ns.getNamespaces().getSlaves().size()) {
 			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);

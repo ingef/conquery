@@ -156,7 +156,7 @@ public class AdminProcessor {
 		slave.send(new AddWorker(dataset));
 	}
 
-	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
+	public void setIdMapping(Namespace namespace, InputStream data) throws JSONException, IOException {
 		CSV csvData = new CSV(
 			ConqueryConfig.getInstance().getCsv().withSkipHeader(false),
 			data
