@@ -111,7 +111,8 @@ class CategoryTreeNodeTextContainer extends React.Component {
       active,
       open,
       connectDragSource,
-      onTextClick
+      onTextClick,
+      isTreeFolder
     } = this.props;
 
     const zeroEntries =
@@ -138,7 +139,11 @@ class CategoryTreeNodeTextContainer extends React.Component {
           )}
           {hasChildren && (
             <FolderIconContainer>
-              <FaIcon active icon={!!open ? "folder-open" : "folder"} />
+              <FaIcon
+                active
+                regular={!!isTreeFolder}
+                icon={!!open ? "folder-open" : "folder"}
+              />
             </FolderIconContainer>
           )}
           {!hasChildren && (
