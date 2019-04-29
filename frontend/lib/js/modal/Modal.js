@@ -31,7 +31,10 @@ class Modal extends React.Component {
   props: PropsType;
 
   closeMaybe = (e: Object) => {
-    if (e.nativeEvent.target.className.indexOf("modal__center") !== -1)
+    if (
+      typeof e.nativeEvent.target.className === "string" && // When SVG Fa Icon is clicked
+      e.nativeEvent.target.className.indexOf("modal__center") !== -1
+    )
       this.props.closeModal();
   };
 
