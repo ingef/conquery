@@ -8,7 +8,6 @@ export { default as VerticalToggleButton } from "./VerticalToggleButton";
 export { default as SearchBox } from "./SearchBox";
 export { default as InputMultiSelect } from "./InputMultiSelect";
 export { default as Dropzone } from "./Dropzone";
-export { default as DropzoneList } from "./DropzoneList";
 export { default as DynamicInputGroup } from "./DynamicInputGroup";
 export { default as InputCheckbox } from "./InputCheckbox";
 export { default as InputRangeHeader } from "./InputRangeHeader";
