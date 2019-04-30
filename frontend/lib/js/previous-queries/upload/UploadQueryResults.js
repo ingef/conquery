@@ -12,14 +12,13 @@ import IconButton from "../../button/IconButton";
 
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
 import { openUploadModal, closeUploadModal, uploadFile } from "./actions";
-import { type UploadReportType } from "./reducer";
 
 type PropsType = {
   datasetId: ?DatasetIdType,
   isModalOpen: boolean,
   loading: boolean,
-  success: ?UploadReportType,
-  error: ?(UploadReportType & { message: string }),
+  success: ?Object,
+  error: ?Object,
   onOpenModal: Function,
   onCloseModal: Function,
   onUploadFile: Function

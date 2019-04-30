@@ -205,10 +205,11 @@ externalForms:
     edit: "Edit"
 
 uploadQueryResultsModal:
-  headline: "Upload a Query Result"
+  headline: "Upload a query result"
   dropzone: "Drop a CSV file here"
   upload: "Upload"
   uploadFailed: "Could not upload file"
+  uploadFailedSub: "Please check the file format and your network connection"
   uploadSucceeded: "File was successfully uploaded"
   previousQueryCreated: "Previous query was successfully uploaded"
   formatInfo:
@@ -234,10 +235,6 @@ uploadFilterListModal:
 conceptListDetailsModal:
   conceptTreeRoot: "Concept Tree"
   conceptCodes: "Concept Codes"
-
-uploadReport:
-  successful: "{count} rows successfully imported"
-  unsuccessful: "{count} rows ignored"
 
 uploadQueryResults:
   uploadResults: "Upload Query Result"

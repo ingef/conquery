@@ -47,4 +47,9 @@ public class MoneyTypeByte extends MinorCType<Byte, MoneyType> {
 	public Long transformToMajorType(Byte value, MoneyType majorType) {
 		return (long)value;
 	}
+	
+	@Override
+	public boolean canStoreNull() {
+		return true;
+	}
 }

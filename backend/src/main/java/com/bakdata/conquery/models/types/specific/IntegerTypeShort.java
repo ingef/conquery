@@ -47,4 +47,9 @@ public class IntegerTypeShort extends MinorCType<Short, IntegerType> {
 	public Long transformToMajorType(Short value, IntegerType majorType) {
 		return (long)value;
 	}
+	
+	@Override
+	public boolean canStoreNull() {
+		return true;
+	}
 }
