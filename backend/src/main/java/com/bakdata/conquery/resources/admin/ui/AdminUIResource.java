@@ -21,6 +21,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -147,16 +148,16 @@ public class AdminUIResource {
 			.collect(Collectors.joining("\n"));
 	}
 
-	@POST
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("/update-matching-stats")
-	public Response updateMatchingStats(@Auth User user, IQuery query) throws JSONException {
+	@POST @Path("/update-matching-stats") @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response updateMatchingStats(@Auth User user) throws JSONException {
 
 		namespaces
 			.getNamespaces()
 			.forEach(ns -> ns.sendToAll(new UpdateMatchingStatsMessage()));
 
-		return Response.ok().build();
+		return Response
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
+			.build();
 	}
 
 	@POST
@@ -171,7 +172,9 @@ public class AdminUIResource {
 			info.send(new CancelJobMessage(jobId));
 		}
 
-		return Response.ok().build();
+		return Response
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
+			.build();
 	}
 
 	@GET
