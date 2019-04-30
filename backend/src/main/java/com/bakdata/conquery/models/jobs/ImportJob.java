@@ -105,21 +105,32 @@ public class ImportJob extends Job {
 
 			//update primary dictionary
 			log.debug("\tupdating primary dictionary");
-			//see #168  this leads to a crash if the primary values are not full strings
 			Dictionary entities = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
 			this.progressReporter.report(1);
 			log.debug("\tcompute dictionary");
-			Dictionary primaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
-			primaryDict = Dictionary.copyUncompressed(primaryDict);
+			Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
+			Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
 			log.debug("\tmap values");
 			DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
-			primaryDict.compress();
-			log.debug("\t\tstoring");
-			namespace.getStorage().updateDictionary(primaryDict);
-			this.progressReporter.report(1);
-			log.debug("\t\tsending");
-			namespace.sendToAll(new UpdateDictionary(primaryDict));
-			this.progressReporter.report(1);
+			
+			//if no new ids we shouldn't recompress and store
+			if(primaryMapping.getNewIds() == null) {
+				log.debug("\t\tno new ids");
+				primaryDict = oldPrimaryDict;
+				this.progressReporter.report(2);
+			}
+			//but if there are new ids we have to
+			else {
+				
+				primaryDict.compress();
+				log.debug("\t\tstoring");
+				namespace.getStorage().updateDictionary(primaryDict);
+				this.progressReporter.report(1);
+				log.debug("\t\tsending");
+				namespace.sendToAll(new UpdateDictionary(primaryDict));
+				this.progressReporter.report(1);
+			}
+			
 			log.debug("\tsending secondary dictionaries");
 			for(PPColumn col:header.getColumns()) {
 				col.getType().storeExternalInfos(namespace.getStorage(),
