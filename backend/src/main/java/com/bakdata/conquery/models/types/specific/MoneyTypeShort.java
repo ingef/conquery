@@ -47,4 +47,9 @@ public class MoneyTypeShort extends MinorCType<Short, MoneyType> {
 	public Long transformToMajorType(Short value, MoneyType majorType) {
 		return (long)value;
 	}
+	
+	@Override
+	public boolean canStoreNull() {
+		return true;
+	}
 }
