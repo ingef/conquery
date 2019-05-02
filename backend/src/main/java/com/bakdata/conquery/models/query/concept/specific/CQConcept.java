@@ -59,7 +59,7 @@ public class CQConcept implements CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
-		ConceptElement[] concepts = resolveConcepts(ids, context.getCentralRegistry());
+		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
 
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
 
@@ -165,6 +165,7 @@ public class CQConcept implements CQElement {
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		namespacedIds.addAll(ids);
+		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
 		
 	}

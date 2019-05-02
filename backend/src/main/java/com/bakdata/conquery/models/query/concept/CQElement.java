@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
