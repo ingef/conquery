@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 import java.util.ArrayList;
 import java.util.Deque;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -17,6 +18,7 @@ import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelecti
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -158,5 +160,12 @@ public class CQConcept implements CQElement {
 		for (CQTable table : tables) {
 			table.getSelects().forEach(sel -> select.add(new SelectDescriptor(sel,this)));
 		}
+	}
+
+	@Override
+	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+		namespacedIds.addAll(ids);
+		tables.forEach(table -> namespacedIds.add(table.getId()));
+		
 	}
 }

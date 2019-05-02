@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
@@ -27,9 +29,18 @@ public interface CQElement {
 
 	default void collectRequiredQueries(Set<ManagedQueryId> requiredQueries) {}
 	
+	
 	default Set<ManagedQueryId> collectRequiredQueries() {
 		HashSet<ManagedQueryId> set = new HashSet<>();
 		this.collectRequiredQueries(set);
+		return set;
+	}
+
+	default void collectNamespacedIds(Set<NamespacedId> namespacedIds) {}
+
+	default Set<NamespacedId> collectNamespacedIds() {
+		HashSet<NamespacedId> set = new HashSet<>();
+		this.collectNamespacedIds(set);
 		return set;
 	}
 
