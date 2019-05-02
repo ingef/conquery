@@ -24,7 +24,7 @@ public class ProgressBar {
 	private final long startTime;
 	
 	public ProgressBar(long maxValue, PrintStream out) {
-		this.maxValue = new AtomicLong(maxValue);
+		this.maxValue = new AtomicLong(Math.max(1, maxValue));
 		this.out = out;
 		this.startTime = System.nanoTime();
 	}

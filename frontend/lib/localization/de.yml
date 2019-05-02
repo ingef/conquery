@@ -211,6 +211,7 @@ uploadQueryResultsModal:
   dropzone: "Lege eine CSV-Datei hier ab"
   upload: "Hochladen"
   uploadFailed: "Konnte Datei nicht hochladen"
+  uploadFailedSub: "Bitte überprüfen Sie das Format und die Netzwerkverbindung"
   uploadSucceeded: "Datei hochladen erfolgreich"
   previousQueryCreated: "Frühere Anfrage erfolgreich erstellt"
   formatInfo:
@@ -236,10 +237,6 @@ uploadFilterListModal:
 conceptListDetailsModal:
   conceptTreeRoot: "Konzeptbaum"
   conceptCodes: "Konzeptcodes"
-
-uploadReport:
-  successful: "{count} Zeilen erfolgreich importiert"
-  unsuccessful: "{count} Zeilen ignoriert"
 
 uploadQueryResults:
   uploadResults: "Lade Anfrageergebnis hoch"

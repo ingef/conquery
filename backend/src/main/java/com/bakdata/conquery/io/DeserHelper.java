@@ -14,12 +14,12 @@ public class DeserHelper {
 		if(bytes == 0) {
 			return null;
 		}
-		return new BigDecimal(new BigInteger(input.readBytes(bytes)), input.readInt());
+		return new BigDecimal(new BigInteger(input.readBytes(bytes)), input.readInt(true));
 	}
 	
 	public static void writeBigDecimal(SmallOut output, BigDecimal bigDecimal) throws IOException {
 		if(bigDecimal == null) {
-			output.writeInt(0);
+			output.writeInt(0, true);
 			return;
 		}
 			

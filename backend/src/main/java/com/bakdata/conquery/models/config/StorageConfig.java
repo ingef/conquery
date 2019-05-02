@@ -18,6 +18,7 @@ public class StorageConfig {
 	private File directory = new File("storage");
 	@ExistingFile(directory = true)
 	private File preprocessedRoot;
+	private boolean validateOnWrite = false;
 	@NotNull @Valid
 	private XodusConfig xodus = new XodusConfig();
 }

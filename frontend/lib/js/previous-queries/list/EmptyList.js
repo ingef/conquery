@@ -49,9 +49,6 @@ export default () => (
     <MsgContainer>
       <Msg>
         <Message>{T.translate("previousQueries.noQueriesFound")}</Message>
-        <SubMessage>
-          {T.translate("categoryTreeList.noTreesExplanation")}
-        </SubMessage>
       </Msg>
     </MsgContainer>
     <Preview large />
