@@ -35,7 +35,7 @@ public class QueryToCSVRenderer {
 		if (query.getStatus() != QueryStatus.DONE) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + query.getId());
 		}
-		List<ResultInfo> infos = query.getResultInfos();
+		List<ResultInfo> infos = query.getResultInfos(cfg);
 		return Stream.concat(
 			Stream.of(HEADER + DELIMETER + JOINER.join(infos.stream().map(ResultInfo::getUniqueName).iterator())),
 			createCSVBody(cfg, infos, query)

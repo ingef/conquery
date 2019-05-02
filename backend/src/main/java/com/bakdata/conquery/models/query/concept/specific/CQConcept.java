@@ -125,7 +125,7 @@ public class CQConcept implements CQElement {
 		return result;
 	}
 
-	private List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
+	private static List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 

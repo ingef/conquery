@@ -18,6 +18,8 @@ import lombok.Getter;
 public abstract class SelectId extends AId<Select> implements NamespacedId {
 
 	private final String select;
+	
+	public abstract ConceptId findConcept();
 
 	@Override
 	public void collectComponents(List<Object> components) {
