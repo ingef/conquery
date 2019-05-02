@@ -4,6 +4,8 @@ import React from "react";
 
 import type { SelectedSelectorType } from "./types";
 
+import { sortSelects } from "../model/select";
+
 import InputMultiSelect from "../form-components/InputMultiSelect";
 
 type PropsType = {
@@ -28,7 +30,7 @@ const TableSelects = ({
             .filter(({ selected }) => !!selected)
             .map(({ id, label }) => ({ value: id, label: label }))
         }}
-        options={selects.map(select => ({
+        options={sortSelects(selects).map(select => ({
           value: select.id,
           label: select.label
         }))}
