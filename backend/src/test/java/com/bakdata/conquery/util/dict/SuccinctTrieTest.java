@@ -60,6 +60,7 @@ public class SuccinctTrieTest {
 		words.add("a");
 		words.add("is");
 		words.add("ha");
+		words.add("hat");
 
 		Dictionary dict = new Dictionary();
 

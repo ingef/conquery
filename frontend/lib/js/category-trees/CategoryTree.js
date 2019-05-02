@@ -2,12 +2,11 @@
 
 import React from "react";
 import styled from "@emotion/styled";
-import { css } from "@emotion/core";
 import T from "i18n-react";
 
-import { ErrorMessage } from "../error-message";
 import type { NodeType, TreeNodeIdType } from "../common/types/backend";
 import FaIcon from "../icon/FaIcon";
+import IconButton from "../button/IconButton";
 
 import CategoryTreeNode from "./CategoryTreeNode";
 import { type SearchType } from "./reducer";
@@ -24,18 +23,26 @@ type PropsType = {
 };
 
 const LoadingTree = styled("p")`
-  padding-left: 20px;
+  padding-left: 24px;
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
+  line-height: 20px;
 `;
-const StyledErrorMessage = styled(ErrorMessage)`
-  padding-left: 20px;
+const ErrorMessage = styled("p")`
+  color: ${({ theme }) => theme.col.red};
+  font-weight: 400;
+  padding-left: 12px;
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
+  line-height: 20px;
+`;
+
+const ReloadButton = styled(IconButton)`
+  padding: 0 7px 0 12px;
 `;
 
 const Spinner = styled("span")`
-  margin-right: 5px;
+  margin-right: 6px;
 `;
 
 const CategoryTree = (props: PropsType) => {
@@ -46,26 +53,29 @@ const CategoryTree = (props: PropsType) => {
           <FaIcon icon="spinner" />
         </Spinner>
         <span>
-          {T.translate("categoryTreeList.loading", { tree: props.label })}
+          {T.translate("categoryTreeList.loadingTree", { tree: props.label })}
         </span>
       </LoadingTree>
     );
   else if (props.error)
     return (
-      <StyledErrorMessage
-        message={T.translate("categoryTreeList.error", { tree: props.label })}
-      />
+      <ErrorMessage>
+        <ReloadButton
+          red
+          icon="redo"
+          onClick={() => props.onLoadTree(props.treeId)}
+        />
+        {T.translate("categoryTreeList.error", { tree: props.label })}
+      </ErrorMessage>
     );
   else if (props.tree)
     return (
-      <div>
-        <CategoryTreeNode
-          id={props.id}
-          data={{ ...props.tree, tree: props.treeId }}
-          depth={props.depth}
-          search={props.search}
-        />
-      </div>
+      <CategoryTreeNode
+        id={props.id}
+        data={{ ...props.tree, tree: props.treeId }}
+        depth={props.depth}
+        search={props.search}
+      />
     );
   else return null;
 };

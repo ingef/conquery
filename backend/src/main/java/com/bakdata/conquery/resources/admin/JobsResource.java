@@ -37,7 +37,7 @@ public class JobsResource {
 			private final UUID id = UUID.randomUUID();
 			@Override
 			public void execute() {
-				while(!progressReporter.isDone()) {
+				while(!progressReporter.isDone() && !isCancelled()) {
 					progressReporter.report(0.01d);
 					if(progressReporter.getProgress()>=1) {
 						progressReporter.done();

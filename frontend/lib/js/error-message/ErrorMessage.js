@@ -9,7 +9,7 @@ type PropsType = {
 };
 
 const Root = styled("p")`
-  color: $col-red;
+  color: ${({ theme }) => theme.col.red};
   font-weight: 400;
 `;
 

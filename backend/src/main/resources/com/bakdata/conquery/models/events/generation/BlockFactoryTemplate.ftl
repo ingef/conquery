@@ -1,15 +1,16 @@
 package com.bakdata.conquery.models.events.generation;
 
 import java.io.InputStream;
+import java.io.IOException;
 
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
-import com.bakdata.conquery.io.kryo.KryoHelper;
+import com.bakdata.conquery.io.DeserHelper;
 import java.math.BigDecimal;
 import com.google.common.collect.Range;
 
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import com.bakdata.conquery.util.io.SmallIn;
+import com.bakdata.conquery.util.io.SmallOut;
 import java.time.LocalDate;
 
 import java.lang.Integer;
@@ -59,9 +60,9 @@ public class BlockFactory_${suffix} extends BlockFactory {
 		return block;
 	}
 	
-	public Block_${suffix} readBlock(int entity, Import imp, InputStream inputStream){
+	public Block_${suffix} readBlock(int entity, Import imp, InputStream inputStream) throws IOException {
 		Block_${suffix} block = new Block_${suffix}(entity, imp);
-		try (Input input = new Input(inputStream)){
+		try (SmallIn input = new SmallIn(inputStream)){
 			int eventLength = input.readInt(true);
 			int nullBytesLength = input.readInt(true);
 			byte [] nullBytes = input.readBytes(nullBytesLength);
@@ -77,7 +78,7 @@ public class BlockFactory_${suffix} extends BlockFactory {
 				<#if col.type.nullLines == col.type.lines>
 				//all values of ${col.name} are null
 				<#elseif col.type.requiresExternalNullStore()>		
-				if(!nullBits.getBit(${imp.nullWidth}*eventId+${col.nullPosition})) {
+				if(block.has(eventId, ${col.position})) {
 					event.set${safeName(col.name)?cap_first}(<@t.kryoDeserialization type=col.type/>);
 				}
 				<#else>

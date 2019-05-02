@@ -39,7 +39,11 @@ const ConceptEntry = AdditionalInfoHoverable(
         )}
       </ConceptContainer>
       {canRemoveConcepts && (
-        <IconButton onClick={() => onRemoveConcept(conceptId)} icon="trash-o" />
+        <IconButton
+          onClick={() => onRemoveConcept(conceptId)}
+          regular
+          icon="trash-alt"
+        />
       )}
     </Concept>
   )

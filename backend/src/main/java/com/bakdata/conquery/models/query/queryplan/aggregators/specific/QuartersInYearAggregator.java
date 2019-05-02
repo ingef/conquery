@@ -12,7 +12,9 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.esotericsoftware.kryo.util.IntMap;
+
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 /**
  * Entity is included when the the number of quarters with events is within a
@@ -20,7 +22,7 @@ import com.esotericsoftware.kryo.util.IntMap;
  */
 public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
-	private final IntMap<EnumSet<Month>> quartersInYear = new IntMap<>();
+	private final Int2ObjectMap<EnumSet<Month>> quartersInYear = new Int2ObjectOpenHashMap<>();
 
 	public QuartersInYearAggregator(Column column) {
 		super(column);

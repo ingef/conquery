@@ -31,11 +31,8 @@ export const closeUploadModal = () => ({
 export const uploadFileStart = () => ({ type: UPLOAD_FILE_START });
 export const uploadFileSuccess = (success: any) =>
   defaultSuccess(UPLOAD_FILE_SUCCESS, success);
-export const uploadFileError = (error: any, payload: Object) =>
-  defaultError(UPLOAD_FILE_ERROR, error, {
-    successful: payload.successful,
-    unsuccessful: payload.unsuccessful
-  });
+export const uploadFileError = (error: any) =>
+  defaultError(UPLOAD_FILE_ERROR, error);
 
 export const uploadFile = (datasetId: DatasetIdType, file: any) => (
   dispatch: Dispatch
@@ -43,6 +40,7 @@ export const uploadFile = (datasetId: DatasetIdType, file: any) => (
   dispatch(uploadFileStart());
 
   Papa.parse(file, {
+    skipEmptyLines: true,
     complete: results => {
       return api.postQueries(datasetId, results, "external").then(
         r => {
@@ -50,13 +48,7 @@ export const uploadFile = (datasetId: DatasetIdType, file: any) => (
 
           return dispatch(loadPreviousQueries(datasetId));
         },
-        e =>
-          dispatch(
-            uploadFileError(
-              { message: T.translate("uploadQueryResultsModal.uploadFailed") },
-              e
-            )
-          )
+        e => dispatch(uploadFileError(e))
       );
     }
   });

@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
@@ -58,7 +59,7 @@ public class CQConcept implements CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
-		ConceptElement[] concepts = resolveConcepts(ids, context.getCentralRegistry());
+		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
 
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
 
@@ -154,10 +155,10 @@ public class CQConcept implements CQElement {
 	}
 
 	@Override
-	public void collectSelects(Deque<Select> select) {
-		select.addAll(this.selects);
+	public void collectSelects(Deque<SelectDescriptor> select) {
+		selects.forEach(sel -> select.add(new SelectDescriptor(sel,this)));
 		for (CQTable table : tables) {
-			select.addAll(table.getSelects());
+			table.getSelects().forEach(sel -> select.add(new SelectDescriptor(sel,this)));
 		}
 	}
 

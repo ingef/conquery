@@ -14,11 +14,6 @@ import { type SearchType } from "./reducer";
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
 `;
-const StyledCategoryTreeNodeTextContainer = styled(
-  CategoryTreeNodeTextContainer
-)`
-  display: inline-block;
-`;
 
 type PropsType = {
   depth: number,
@@ -28,7 +23,8 @@ type PropsType = {
   active: boolean,
   open?: boolean,
   onToggleOpen?: Function,
-  search: SearchType
+  search: SearchType,
+  onLoadTree: (id: string) => void
 };
 
 const sumMatchingEntries = (children, initSum) => {
@@ -49,7 +45,7 @@ const CategoryTreeFolder = (props: PropsType) => {
 
   return (
     <Root>
-      <StyledCategoryTreeNodeTextContainer
+      <CategoryTreeNodeTextContainer
         node={{
           id: props.treeId,
           label: props.tree.label,
@@ -57,12 +53,13 @@ const CategoryTreeFolder = (props: PropsType) => {
           matchingEntries: matchingEntries,
           dateRange: props.tree.dateRange,
           additionalInfos: props.tree.additionalInfos,
-          hasChildren: !!props.tree.children && props.tree.children.length > 0
+          children: props.tree.children
         }}
         createQueryElement={() => {
           // We don't have to implement this since CategoryTreeFolders should never be
           // dragged into the editor, hence they're 'active: false' and thus not draggable
         }}
+        isTreeFolder
         open={props.open || false}
         depth={props.depth}
         active={props.active}
@@ -88,6 +85,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 error={tree.error}
                 depth={props.depth + 1}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             );
           } else {
@@ -103,6 +101,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 depth={props.depth + 1}
                 active={tree.active}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             ) : (
               <CategoryTreeFolder
@@ -114,6 +113,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 depth={props.depth + 1}
                 active={tree.active}
                 search={search}
+                onLoadTree={props.onLoadTree}
               />
             );
           }

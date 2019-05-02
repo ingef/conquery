@@ -28,8 +28,10 @@ public class ConceptNode extends QPChainNode {
 
 	@Override
 	public void nextBlock(Block block) {
-		super.nextBlock(block);
-		currentRow = entity.getCBlocks().get(table.getResolvedConnector(), block);
+		if (active) {
+			super.nextBlock(block);
+			currentRow = entity.getCBlocks().get(table.getResolvedConnector(), block);
+		}
 	}
 
 	@Override
@@ -40,7 +42,7 @@ public class ConceptNode extends QPChainNode {
 			if (currentRow.getCBlock().getMostSpecificChildren() != null
 				&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
 
-				for (ConceptElement ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
+				for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.matchesPrefix(mostSpecificChildren)) {
 						getChild().nextEvent(block, event);
 					}

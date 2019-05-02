@@ -1,14 +1,15 @@
-package com.bakdata.conquery.io.kryo;
+package com.bakdata.conquery.io;
 
+import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
+import com.bakdata.conquery.util.io.SmallIn;
+import com.bakdata.conquery.util.io.SmallOut;
 
-public class KryoHelper {
+public class DeserHelper {
 	
-	public static BigDecimal readBigDecimal(Input input) {
+	public static BigDecimal readBigDecimal(SmallIn input) throws IOException {
 		int bytes = input.readInt(true);
 		if(bytes == 0) {
 			return null;
@@ -16,7 +17,7 @@ public class KryoHelper {
 		return new BigDecimal(new BigInteger(input.readBytes(bytes)), input.readInt(true));
 	}
 	
-	public static void writeBigDecimal(Output output, BigDecimal bigDecimal) {
+	public static void writeBigDecimal(SmallOut output, BigDecimal bigDecimal) throws IOException {
 		if(bigDecimal == null) {
 			output.writeInt(0, true);
 			return;

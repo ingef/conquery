@@ -1,10 +1,13 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -18,6 +21,7 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -32,6 +36,8 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
@@ -140,6 +146,35 @@ public class AdminUIResource {
 		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next())
 			.toCSV(managed)
 			.collect(Collectors.joining("\n"));
+	}
+
+	@POST @Path("/update-matching-stats") @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response updateMatchingStats(@Auth User user) throws JSONException {
+
+		namespaces
+			.getNamespaces()
+			.forEach(ns -> ns.sendToAll(new UpdateMatchingStatsMessage()));
+
+		return Response
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
+			.build();
+	}
+
+	@POST
+	@Consumes(MediaType.MULTIPART_FORM_DATA)
+	@Path("/job/{" + JOB_ID + "}/cancel")
+	public Response cancelJob(@PathParam(JOB_ID)UUID jobId) {
+
+		jobManager.cancelJob(jobId);
+
+		for (Map.Entry<SocketAddress, SlaveInformation> entry : namespaces.getSlaves().entrySet()) {
+			SlaveInformation info = entry.getValue();
+			info.send(new CancelJobMessage(jobId));
+		}
+
+		return Response
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
+			.build();
 	}
 
 	@GET

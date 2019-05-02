@@ -15,4 +15,6 @@ public class PreprocessingConfig {
 	private PreprocessingDirectories[] directories;
 	@Min(1)
 	private int threads = Runtime.getRuntime().availableProcessors();
+	@Min(0)
+	private int maximumPrintedErrors = 10;
 }

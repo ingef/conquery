@@ -38,7 +38,7 @@ const QueryNodeActions = (props: PropsType) => {
   return (
     <Actions>
       <StyledIconButton
-        icon="close"
+        icon="times"
         onClick={e => {
           e.stopPropagation();
           props.onDeleteNode();
@@ -48,7 +48,8 @@ const QueryNodeActions = (props: PropsType) => {
         <WithTooltip text={T.translate("queryNodeEditor.excludingTimestamps")}>
           <StyledIconButton
             red
-            icon="calendar-o"
+            regular
+            icon="calendar"
             onClick={e => {
               e.stopPropagation();
               props.onToggleTimestamps();
@@ -65,7 +66,7 @@ const QueryNodeActions = (props: PropsType) => {
         <WithTooltip text={T.translate("queryEditor.expand")}>
           <StyledIconButton
             noFrame
-            icon="expand"
+            icon="expand-arrows-alt"
             onClick={e => {
               e.stopPropagation();
               props.onExpandClick();

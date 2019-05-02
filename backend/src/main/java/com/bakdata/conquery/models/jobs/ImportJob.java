@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
@@ -7,7 +9,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
-import org.apache.commons.io.FileUtils;
+import org.eclipse.jetty.util.ByteArrayOutputStream2;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -35,12 +37,14 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
 import com.bakdata.conquery.util.io.GroupingByteBuffer;
 import com.bakdata.conquery.util.io.MultiByteBuffer;
+import com.bakdata.conquery.util.io.SmallIn;
+import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-import com.esotericsoftware.kryo.KryoException;
-import com.esotericsoftware.kryo.io.Input;
-import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.io.ByteArrayDataOutput;
+import com.google.common.io.ByteStreams;
+import com.jakewharton.byteunits.BinaryByteUnit;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -67,8 +71,8 @@ public class ImportJob extends Job {
 				log.info(
 						"Reading HCFile {}:\n\theader size: {}\n\tcontent size: {}",
 						importFile,
-						FileUtils.byteCountToDisplaySize(file.getHeaderSize()),
-						FileUtils.byteCountToDisplaySize(file.getContentSize())
+						BinaryByteUnit.format(file.getHeaderSize()),
+						BinaryByteUnit.format(file.getContentSize())
 				);
 			}
 			PPHeader header;
@@ -101,21 +105,32 @@ public class ImportJob extends Job {
 
 			//update primary dictionary
 			log.debug("\tupdating primary dictionary");
-			//see #168  this leads to a crash if the primary values are not full strings
 			Dictionary entities = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
 			this.progressReporter.report(1);
 			log.debug("\tcompute dictionary");
-			Dictionary primaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
-			primaryDict = Dictionary.copyUncompressed(primaryDict);
+			Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
+			Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
 			log.debug("\tmap values");
 			DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
-			primaryDict.compress();
-			log.debug("\t\tstoring");
-			namespace.getStorage().updateDictionary(primaryDict);
-			this.progressReporter.report(1);
-			log.debug("\t\tsending");
-			namespace.sendToAll(new UpdateDictionary(primaryDict));
-			this.progressReporter.report(1);
+			
+			//if no new ids we shouldn't recompress and store
+			if(primaryMapping.getNewIds() == null) {
+				log.debug("\t\tno new ids");
+				primaryDict = oldPrimaryDict;
+				this.progressReporter.report(2);
+			}
+			//but if there are new ids we have to
+			else {
+				
+				primaryDict.compress();
+				log.debug("\t\tstoring");
+				namespace.getStorage().updateDictionary(primaryDict);
+				this.progressReporter.report(1);
+				log.debug("\t\tsending");
+				namespace.sendToAll(new UpdateDictionary(primaryDict));
+				this.progressReporter.report(1);
+			}
+			
 			log.debug("\tsending secondary dictionaries");
 			for(PPColumn col:header.getColumns()) {
 				col.getType().storeExternalInfos(namespace.getStorage(),
@@ -202,13 +217,13 @@ public class ImportJob extends Job {
 					}
 					worker.send(ib);
 				});
-					Output buffer = new Output(2048);
+					SmallOut buffer = new SmallOut(2048);
 				) {
 					ProgressReporter child = this.progressReporter.subJob(5);
 					child.setMax(primaryMapping.getNewIds().getMax() - primaryMapping.getNewIds().getMin() + 1);
 
 					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
-						buffer.clear();
+						buffer.reset();
 						Block block = factory.createBlock(entityId, allIdsImp, Collections.singletonList(new Object[0]));
 						block.writeContent(buffer);
 
@@ -237,7 +252,7 @@ public class ImportJob extends Job {
 			for (WorkerInformation wi : namespace.getWorkers()) {
 				bits.put(wi, new ImportBits(imp.getName(), imp.getId(), table));
 			}
-			try (Input in = new Input(file.readContent());
+			try (SmallIn in = new SmallIn(file.readContent());
 				MultiByteBuffer<WorkerInformation> buffer = new MultiByteBuffer<>(bits.keySet(), (worker, bytes) -> {
 					ImportBits ib = bits.put(worker, new ImportBits(imp.getName(), imp.getId(), table));
 					ib.setBytes(bytes);
@@ -269,7 +284,7 @@ public class ImportJob extends Job {
 					child.report(1);
 				}
 			}
-		} catch (KryoException | IOException e) {
+		} catch (IOException e) {
 			throw new IllegalStateException("Failed to load the file " + importFile, e);
 		}
 	}

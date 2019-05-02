@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -44,10 +43,10 @@ public interface CQElement {
 		return set;
 	}
 
-	default void collectSelects(Deque<Select> select) {}
+	default void collectSelects(Deque<SelectDescriptor> select) {}
 	
-	default List<Select> collectSelects() {
-		ArrayDeque<Select> deque = new ArrayDeque<>();
+	default List<SelectDescriptor> collectSelects() {
+		ArrayDeque<SelectDescriptor> deque = new ArrayDeque<>();
 		this.collectSelects(deque);
 		return new ArrayList<>(deque);
 	}

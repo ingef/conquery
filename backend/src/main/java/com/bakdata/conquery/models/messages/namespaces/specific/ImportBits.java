@@ -7,7 +7,6 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.io.FileUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -20,6 +19,7 @@ import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.jakewharton.byteunits.BinaryByteUnit;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
@@ -102,7 +102,7 @@ public class ImportBits extends WorkerMessage.Slow {
 			"Importing "
 			+ bits.size()
 			+ " from "
-			+ FileUtils.byteCountToDisplaySize(bytes.length)
+			+ BinaryByteUnit.format(bytes.length)
 			+ " as "
 			+ tag
 			+ " into "

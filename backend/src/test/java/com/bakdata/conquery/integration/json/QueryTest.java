@@ -100,7 +100,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			UUID queryId = new UUID(0L, id++);
 			ConqueryConfig config = ConfigCloner.clone(support.getConfig());
 			config.getCsv().setSkipHeader(false);
-			String[][] data = CSV.streamContent(config.getCsv(), queryResults.stream(), log)
+			String[][] data = CSV.streamContent(config.getCsv(), queryResults.stream())
 				.toArray(String[][]::new);
 
 			ConceptQuery q = new ConceptQuery();

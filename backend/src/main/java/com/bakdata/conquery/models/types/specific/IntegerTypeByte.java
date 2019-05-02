@@ -47,4 +47,9 @@ public class IntegerTypeByte extends MinorCType<Byte, IntegerType> {
 	public Long transformToMajorType(Byte value, IntegerType majorType) {
 		return (long)value;
 	}
+	
+	@Override
+	public boolean canStoreNull() {
+		return true;
+	}
 }

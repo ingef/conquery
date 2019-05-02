@@ -128,7 +128,8 @@ const MenuColumn = (props: PropsType) => {
               >
                 <StyledFaIcon
                   left
-                  icon={table.exclude ? "square-o" : "check-square-o"}
+                  regular
+                  icon={table.exclude ? "square" : "check-square"}
                   disabled={!table.exclude && onlyOneTableIncluded}
                   onClick={event => {
                     event.stopPropagation();

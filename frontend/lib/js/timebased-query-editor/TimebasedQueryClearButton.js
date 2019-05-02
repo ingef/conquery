@@ -24,7 +24,8 @@ const TimebasedQueryClearButton = (props: PropsType) => {
       <IconButton
         frame
         onClick={props.clearQuery}
-        icon="trash-o"
+        regular
+        icon="trash-alt"
         disabled={!props.isEnabled}
       >
         {T.translate("common.clear")}

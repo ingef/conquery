@@ -11,11 +11,16 @@ rightPane:
   externalForms: "Formulare"
 
 categoryTreeList:
-  loading: "Lade Konzeptbaum: {tree}"
+  loading: "Lade Konzeptbäume"
+  loadingTree: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
-  noTrees: "Konnte Konzeptbäume nicht laden."
+  noTrees: "Keine Konzeptbäume"
+  noTreesExplanation: "Wahrscheinlich ist beim Laden etwas schiefgelaufen. Bitte erneut laden."
   openAll: "Alle aufklappen"
   closeAll: "Einzeln aufklappen"
+  searchPlaceholder: "Konzepte durchsuchen ..."
+  showMismatches: "Vollständig anzeigen"
+  dontShowMismatches: "Nur Treffer zeigen"
 
 queryRunner:
   start: "Anfrage starten"
@@ -206,6 +211,7 @@ uploadQueryResultsModal:
   dropzone: "Lege eine CSV-Datei hier ab"
   upload: "Hochladen"
   uploadFailed: "Konnte Datei nicht hochladen"
+  uploadFailedSub: "Bitte überprüfen Sie das Format und die Netzwerkverbindung"
   uploadSucceeded: "Datei hochladen erfolgreich"
   previousQueryCreated: "Frühere Anfrage erfolgreich erstellt"
   formatInfo:
@@ -232,10 +238,6 @@ conceptListDetailsModal:
   conceptTreeRoot: "Konzeptbaum"
   conceptCodes: "Konzeptcodes"
 
-uploadReport:
-  successful: "{count} Zeilen erfolgreich importiert"
-  unsuccessful: "{count} Zeilen ignoriert"
-
 uploadQueryResults:
   uploadResults: "Lade Anfrageergebnis hoch"
 
@@ -244,4 +246,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "Zeige {numResults} von {totalResults} Ergebnissen ({duration} s)"
+  resultLabel: "{totalResults} Ergebnisse gefunden ({duration} s)"
