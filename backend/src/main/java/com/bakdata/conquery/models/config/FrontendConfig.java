@@ -14,11 +14,8 @@ import lombok.Setter;
 public class FrontendConfig {
 	
 	private String version = VersionInfo.INSTANCE.getProjectVersion();
-	private boolean production = true;
 	@Valid @NotNull
 	private CurrencyConfig currency = new CurrencyConfig();
-	@Valid @NotNull
-	private SearchConfig search = new SearchConfig();
 	
 	@Data
 	private static class CurrencyConfig {
@@ -27,10 +24,5 @@ public class FrontendConfig {
 		private String thousandSeparator = ".";
 		private String decimalSeparator = ",";
 		private int decimalScale = 2;
-	}
-	
-	@Data
-	private static class SearchConfig {
-		private int limit = 50;
 	}
 }
