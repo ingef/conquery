@@ -19,7 +19,7 @@ import lombok.Setter;
 public class ConqueryConfig extends Configuration {
 	
 	@Getter
-	private static ConqueryConfig instance;
+	private static ConqueryConfig instance = new ConqueryConfig();
 	
 	@Valid @NotNull
 	private ClusterConfig cluster = new ClusterConfig();

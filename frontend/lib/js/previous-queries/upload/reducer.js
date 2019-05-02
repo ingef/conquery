@@ -8,16 +8,11 @@ import {
   UPLOAD_FILE_ERROR
 } from "./actionTypes";
 
-export type UploadReportType = {
-  successful: number,
-  unsuccessful: number
-};
-
 type StateType = {
   isModalOpen: boolean,
   isLoading: boolean,
-  success: ?UploadReportType,
-  error: ?(UploadReportType & { message: string })
+  success: ?Object,
+  error: ?Object
 };
 
 const initialState = {

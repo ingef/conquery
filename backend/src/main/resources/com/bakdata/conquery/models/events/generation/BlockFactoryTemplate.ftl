@@ -78,7 +78,7 @@ public class BlockFactory_${suffix} extends BlockFactory {
 				<#if col.type.nullLines == col.type.lines>
 				//all values of ${col.name} are null
 				<#elseif col.type.requiresExternalNullStore()>		
-				if(!nullBits.getBit(${imp.nullWidth}*eventId+${col.nullPosition})) {
+				if(block.has(eventId, ${col.position})) {
 					event.set${safeName(col.name)?cap_first}(<@t.kryoDeserialization type=col.type/>);
 				}
 				<#else>

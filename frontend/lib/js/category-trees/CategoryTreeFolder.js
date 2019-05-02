@@ -53,12 +53,13 @@ const CategoryTreeFolder = (props: PropsType) => {
           matchingEntries: matchingEntries,
           dateRange: props.tree.dateRange,
           additionalInfos: props.tree.additionalInfos,
-          hasChildren: !!props.tree.children && props.tree.children.length > 0
+          children: props.tree.children
         }}
         createQueryElement={() => {
           // We don't have to implement this since CategoryTreeFolders should never be
           // dragged into the editor, hence they're 'active: false' and thus not draggable
         }}
+        isTreeFolder
         open={props.open || false}
         depth={props.depth}
         active={props.active}

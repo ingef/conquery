@@ -12,32 +12,61 @@ import { ErrorMessage } from "../../error-message";
 import FaIcon from "../../icon/FaIcon";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
-import UploadReport from "./UploadReport";
-import { type UploadReportType } from "./reducer";
 
 const Root = styled("div")`
   padding: 20px 0 10px;
   text-align: center;
 `;
 
+const Row = styled("div")`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 15px;
+`;
+
+const Headline = styled("h3")`
+  font-size: ${({ theme }) => theme.font.lg};
+  margin: 0;
+`;
+
 const Error = styled("div")`
-  font-size: $font-sm;
+  margin: 20px 0;
+`;
+
+const ErrorMessageMain = styled(ErrorMessage)`
+  margin: 0;
+`;
+const ErrorMessageSub = styled(ErrorMessage)`
+  font-size: ${({ theme }) => theme.font.sm};
+  margin: 0;
 `;
 
 const Success = styled("div")`
-  color: ${({ theme }) => theme.col.green};
+  margin: 25px 0;
 `;
 
 const StyledFaIcon = styled(FaIcon)`
   font-size: 40px;
+  display: block;
+  margin: 0 auto 10px;
+  color: ${({ theme }) => theme.col.green};
+`;
+
+const SuccessMsg = styled("p")`
+  margin: 0;
+`;
+
+const StyledIconButton = styled(IconButton)`
+  margin-left: 10px;
 `;
 
 type PropsType = {
   onCloseModal: Function,
   onUploadFile: Function,
   loading: boolean,
-  success: ?UploadReportType,
-  error: ?(UploadReportType & { message: string })
+  success: ?Object,
+  error: ?Object
 };
 
 type StateType = {
@@ -46,53 +75,53 @@ type StateType = {
 
 class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
   props: PropsType;
-  state: StateType;
+  state: StateType = {
+    file: null
+  };
 
-  constructor(props: PropsType) {
-    super(props);
-
-    (this: any).state = {
-      file: null
-    };
-  }
-
-  _onDrop(acceptedFiles: any) {
+  onDrop = (acceptedFiles: any) => {
     this.setState({ file: acceptedFiles[0] });
-  }
+  };
 
-  _onReset() {
+  onReset = () => {
     this.setState({ file: null });
-  }
+  };
 
   render() {
     return (
       <Modal closeModal={this.props.onCloseModal} doneButton>
         <Root>
-          <InfoTooltip
-            text={T.translate("uploadQueryResultsModal.formatInfo.text")}
-          />
-          <h3>{T.translate("uploadQueryResultsModal.headline")}</h3>
+          <Row>
+            <Headline>
+              {T.translate("uploadQueryResultsModal.headline")}
+            </Headline>
+            <InfoTooltip
+              text={T.translate("uploadQueryResultsModal.formatInfo.text")}
+            />
+          </Row>
           {this.props.success && (
             <Success>
-              <p>
-                <StyledFaIcon icon="check-circle" />
-              </p>
-              <p>
+              <StyledFaIcon icon="check-circle" />
+              <SuccessMsg>
                 {T.translate("uploadQueryResultsModal.previousQueryCreated")}
-              </p>
-              <UploadReport report={this.props.success} />
+              </SuccessMsg>
             </Success>
           )}
           {!this.props.success && (
             <div>
               {this.state.file ? (
                 <p>
-                  <IconButton icon="times" onClick={this._onReset.bind(this)} />
                   {this.state.file.name}
+                  <StyledIconButton
+                    frame
+                    regular
+                    icon="trash-alt"
+                    onClick={this.onReset}
+                  />
                 </p>
               ) : (
                 <ReactDropzone
-                  onDrop={this._onDrop.bind(this)}
+                  onDrop={this.onDrop}
                   className="upload-query-results-modal__dropzone"
                   activeClassName="upload-query-results-modal__dropzone--accepting"
                   rejectClassName="upload-query-results-modal__dropzone--rejecting"
@@ -102,15 +131,23 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
               )}
               {this.props.error && (
                 <Error>
-                  <ErrorMessage message={this.props.error.message} />
-                  <UploadReport report={this.props.error} />
+                  <ErrorMessage
+                    message={T.translate(
+                      "uploadQueryResultsModal.uploadFailed"
+                    )}
+                  />
+                  <ErrorMessageSub
+                    message={T.translate(
+                      "uploadQueryResultsModal.uploadFailedSub"
+                    )}
+                  />
                 </Error>
               )}
               <PrimaryButton
-                disabled={!this.state.file}
+                disabled={!this.state.file || this.props.loading}
                 onClick={() => this.props.onUploadFile(this.state.file)}
               >
-                {this.props.loading && <i className="fa fa-spinner" />}{" "}
+                {this.props.loading && <FaIcon white icon="spinner" />}{" "}
                 {T.translate("uploadQueryResultsModal.upload")}
               </PrimaryButton>
             </div>
