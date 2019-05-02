@@ -222,7 +222,7 @@ class PreviousQuery extends React.Component {
               !query.editingTags &&
               (!query.tags || query.tags.length === 0) && (
                 <HoverButton
-                  icon="plus"
+                  icon="tags"
                   bare
                   onClick={onToggleEditPreviousQueryTags}
                 >

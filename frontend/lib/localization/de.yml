@@ -135,7 +135,7 @@ inputDateRange:
   today: "Heute"
   dateFormat: "dd.MM.yyyy"
   tooltip:
-    possiblePattern: "y2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
+    possiblePattern: "j2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
 
 previousQueries:
   loading: "Lade Anfragen"
