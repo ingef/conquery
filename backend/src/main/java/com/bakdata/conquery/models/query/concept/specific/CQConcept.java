@@ -164,6 +164,7 @@ public class CQConcept implements CQElement {
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		namespacedIds.addAll(ids);
+		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
 		
 	}
