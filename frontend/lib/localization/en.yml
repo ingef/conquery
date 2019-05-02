@@ -147,6 +147,8 @@ previousQuery:
   addTag: "Add Tag"
   share: "Share"
   shared: "Shared"
+  delete: "Delete"
+  downloadResults: "Download results"
   loadError: "Could not load query"
   renameError: "Could not rename query"
   retagError: "Could not save tags"

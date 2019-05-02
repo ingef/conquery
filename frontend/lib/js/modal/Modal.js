@@ -47,18 +47,18 @@ class Modal extends React.Component {
       >
         <div className="modal__center">
           <div className="modal__content">
-            {this.props.doneButton ? (
-              <StyledTransparentButton
-                small
-                onClick={this.props.closeModal}
-                tabIndex={this.props.tabIndex || 0}
-              >
-                {T.translate("common.done")}
-              </StyledTransparentButton>
-            ) : (
-              <StyledIconButton icon="close" onClick={this.props.closeModal} />
-            )}
-            {this.props.children}
+            <>
+              {this.props.doneButton && (
+                <StyledTransparentButton
+                  small
+                  onClick={this.props.closeModal}
+                  tabIndex={this.props.tabIndex || 0}
+                >
+                  {T.translate("common.done")}
+                </StyledTransparentButton>
+              )}
+              {this.props.children}
+            </>
           </div>
         </div>
       </EscAble>
