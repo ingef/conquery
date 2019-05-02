@@ -33,7 +33,7 @@ public class QueryToCSVRenderer {
 	
 	public Stream<String> toCSV(PrintSettings cfg, ManagedQuery query) {
 		if (query.getStatus() != QueryStatus.DONE) {
-			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query" + query.getId());
+			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + query.getId());
 		}
 		List<ResultInfo> infos = query.getResultInfos(cfg);
 		return Stream.concat(
