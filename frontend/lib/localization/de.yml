@@ -113,12 +113,12 @@ tooltip:
 
 reactSelect:
   placeholder: "Auswählen ..."
-  tagPlaceholder: "Tag ..."
+  tagPlaceholder: "Schlagwort ..."
   searchPlaceholder: "Suchen ..."
   dndPlaceholder: "Auswählen oder Datei hochladen ..."
   backspaceToRemove: "Backspace zum Entfernen drücken"
   noResults: "Keine Werte gefunden"
-  createTag: "Tag erstellen: {label}"
+  createTag: "Schlagwort erstellen: {label}"
   searchFor: "Suchen nach: {label}"
   clearAll: "Alle entfernen"
   clearValue: "Wert entfernen"
@@ -146,14 +146,14 @@ previousQueries:
   noQueriesFound: "Keine Anfragen gefunden"
 
 previousQuery:
-  addTag: "Tag hinzufügen"
+  addTag: "Schlagwort hinzufügen"
   share: "Freigeben"
   shared: "Freigegeben"
   delete: "Löschen"
   downloadResults: "Ergebnisse herunterladen"
   loadError: "Konnte Anfrage nicht laden"
   renameError: "Konnte Anfrage nicht umbenennen"
-  retagError: "Konnte Tags nicht speichern"
+  retagError: "Konnte Schlagwörter nicht speichern"
   shareError: "Konnte Anfrage nicht freigeben"
   deleteError: "Konnte Anfrage nicht löschen"
 
