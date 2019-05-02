@@ -16,7 +16,6 @@ public class SelectResultInfo extends ResultInfo {
 	}
 	
 	public SelectResultInfo withName(@NonNull String name) {
-	    if (name == null) throw new java.lang.NullPointerException("name");
 		return this.getName() == name ? this : new SelectResultInfo(name, this.getType(), this.getSameNameOcurrences(), this.getPostfix(), this.getSelect());
 	}
 }
