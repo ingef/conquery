@@ -107,7 +107,7 @@ class TimebasedNode extends React.Component {
               {toggleButton}
             </div>
             <div className="timebased-node__description">
-              <StyledIconButton icon="close" onClick={onRemove} />
+              <StyledIconButton icon="times" onClick={onRemove} />
               <p className="timebased-node__description__text">
                 {node.label || node.id}
               </p>

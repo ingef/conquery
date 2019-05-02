@@ -149,6 +149,8 @@ previousQuery:
   addTag: "Tag hinzufügen"
   share: "Freigeben"
   shared: "Freigegeben"
+  delete: "Löschen"
+  downloadResults: "Ergebnisse herunterladen"
   loadError: "Konnte Anfrage nicht laden"
   renameError: "Konnte Anfrage nicht umbenennen"
   retagError: "Konnte Tags nicht speichern"

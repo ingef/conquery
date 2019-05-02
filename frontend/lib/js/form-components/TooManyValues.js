@@ -21,7 +21,7 @@ export default ({ value, onClear }) => (
       {T.translate("queryNodeEditor.tooManyValues", { count: value.length })}
     </Text>
     <IconButton
-      icon="close"
+      icon="times"
       title={T.translate("common.clearValue")}
       aria-label={T.translate("common.clearValue")}
       onClick={onClear}

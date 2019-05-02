@@ -20,6 +20,7 @@ import { SelectableLabel } from "../../selectable-label";
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
 import FaIcon from "../../icon/FaIcon";
+import WithTooltip from "../../tooltip/WithTooltip";
 
 import { EditableText, EditableTags } from "../../form-components";
 
@@ -59,13 +60,6 @@ function collect(connect, monitor) {
   };
 }
 
-const StyledIconButton = styled(IconButton)`
-  margin-left: 10px;
-`;
-const HoverButton = styled(StyledIconButton)`
-  display: none;
-`;
-
 const Root = styled("div")`
   margin: 0;
   padding: 5px 10px;
@@ -73,6 +67,7 @@ const Root = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};
   background-color: ${({ theme }) => theme.col.bg};
+  box-shadow: 0 0 2px 0 rgba(0, 0, 0, 0.2);
 
   border-left: ${({ theme, own, system }) =>
     own
@@ -91,17 +86,16 @@ const Root = styled("div")`
     border-top-color: ${({ theme }) => theme.col.blueGray};
     border-right-color: ${({ theme }) => theme.col.blueGray};
     border-bottom-color: ${({ theme }) => theme.col.blueGray};
-
-    ${HoverButton} {
-      display: inline-block;
-    }
   }
 `;
 
-const TopInfos = styled("div")`
+const Gray = styled("div")`
   color: ${({ theme }) => theme.col.gray};
-  margin: 0;
 `;
+const TopInfos = styled(Gray)`
+  line-height: 24px;
+`;
+
 const TopRight = styled("div")`
   float: right;
 `;
@@ -123,16 +117,18 @@ const MiddleRow = styled("div")`
   display: flex;
   width: 100%;
   justify-content: space-between;
+  line-height: 24px;
 `;
 const StyledErrorMessage = styled(ErrorMessage)`
   margin: 0;
 `;
-const StyledEditableTags = styled(EditableTags)`
-  margin-top: 5px;
-`;
 
 const StyledFaIcon = styled(FaIcon)`
   margin: 0 6px;
+`;
+
+const StyledWithTooltip = styled(WithTooltip)`
+  margin-left: 10px;
 `;
 
 type PropsType = {
@@ -178,7 +174,8 @@ class PreviousQuery extends React.Component {
     )}`;
     const dateLocale = getDateLocale();
     const executedAt = formatDistance(parseISO(query.createdAt), new Date(), {
-      locale: dateLocale
+      locale: dateLocale,
+      addSuffix: true
     });
     const label = query.label || query.id.toString();
     const mayEditQuery = query.own || query.shared;
@@ -196,50 +193,54 @@ class PreviousQuery extends React.Component {
         <TopInfos>
           <div>
             {query.resultUrl ? (
-              <DownloadButton bare url={query.resultUrl}>
-                {peopleFound}
-              </DownloadButton>
+              <WithTooltip text={T.translate("previousQuery.downloadResults")}>
+                <DownloadButton tight bare url={query.resultUrl}>
+                  {peopleFound}
+                </DownloadButton>
+              </WithTooltip>
             ) : (
               peopleFound
             )}
-            {query.own &&
-              (query.shared ? (
-                <SharedIndicator
-                  onClick={() => onToggleSharePreviousQuery(!query.shared)}
-                >
-                  {T.translate("previousQuery.shared")}
-                </SharedIndicator>
-              ) : (
-                <StyledIconButton
-                  icon="upload"
-                  bare
-                  onClick={() => onToggleSharePreviousQuery(!query.shared)}
-                >
-                  {T.translate("previousQuery.share")}
-                </StyledIconButton>
-              ))}
-            {mayEditQuery &&
-              !query.editingTags &&
-              (!query.tags || query.tags.length === 0) && (
-                <HoverButton
-                  icon="tags"
-                  bare
-                  onClick={onToggleEditPreviousQueryTags}
-                >
-                  {T.translate("previousQuery.addTag")}
-                </HoverButton>
-              )}
+            {query.own && query.shared && (
+              <SharedIndicator
+                onClick={() => onToggleSharePreviousQuery(!query.shared)}
+              >
+                {T.translate("previousQuery.shared")}
+              </SharedIndicator>
+            )}
             <TopRight>
               {executedAt}
+              {mayEditQuery &&
+                !query.editingTags &&
+                (!query.tags || query.tags.length === 0) && (
+                  <StyledWithTooltip text={T.translate("previousQuery.addTag")}>
+                    <IconButton
+                      icon="tags"
+                      bare
+                      onClick={onToggleEditPreviousQueryTags}
+                    />
+                  </StyledWithTooltip>
+                )}
+              {query.own && !query.shared && (
+                <StyledWithTooltip text={T.translate("previousQuery.share")}>
+                  <IconButton
+                    icon="upload"
+                    bare
+                    onClick={() => onToggleSharePreviousQuery(!query.shared)}
+                  />
+                </StyledWithTooltip>
+              )}
               {query.loading ? (
                 <StyledFaIcon icon="spinner" />
               ) : (
                 query.own && (
-                  <IconButton
-                    icon="times"
-                    tiny
-                    onClick={onDeletePreviousQuery}
-                  />
+                  <StyledWithTooltip text={T.translate("previousQuery.delete")}>
+                    <IconButton
+                      icon="times"
+                      bare
+                      onClick={onDeletePreviousQuery}
+                    />
+                  </StyledWithTooltip>
                 )
               )}
             </TopRight>
@@ -258,10 +259,10 @@ class PreviousQuery extends React.Component {
           ) : (
             <StyledSelectableLabel label={label} />
           )}
-          <TopInfos>{query.ownerName}</TopInfos>
+          <Gray>{query.ownerName}</Gray>
         </MiddleRow>
         {mayEditQuery ? (
-          <StyledEditableTags
+          <EditableTags
             tags={query.tags}
             editing={!!query.editingTags}
             loading={!!query.loading}
