@@ -33,6 +33,14 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	protected abstract ResourceFile getExpectedCsv();
 
+	@JsonIgnore
+	private static final PrintSettings PRINT_SETTINGS = PrintSettings
+		.builder()
+		.prettyPrint(true)
+		.nameExtractor(
+			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
+		.build();
+
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
@@ -46,15 +54,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 
 		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace())
-			.toCSV(
-				PrintSettings
-					.builder()
-					.nameExtractor(
-						sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset()
-							+ "_"
-							+ sd.getSelect().getId().toStringWithoutDataset())
-					.build(),
-				managed)
+			.toCSV(PRINT_SETTINGS, managed)
 			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();

@@ -47,6 +47,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultCSVResource {
 
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(ResultCSVResource.class, "getAsCSV");
+	private static final PrintSettings PRINT_SETTINGS = PrintSettings
+		.builder()
+		.prettyPrint(true)
+		.nameExtractor(
+			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
+		.build();
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
 
@@ -59,17 +65,7 @@ public class ResultCSVResource {
 
 		try {
 			ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, queryId);
-			Stream<String> csv = new QueryToCSVRenderer(query.getNamespace())
-				.toCSV(
-					PrintSettings
-						.builder()
-						.prettyPrint(true)
-						.nameExtractor(
-							sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset()
-								+ "_"
-								+ sd.getSelect().getId().toStringWithoutDataset())
-						.build(),
-					query);
+			Stream<String> csv = new QueryToCSVRenderer(query.getNamespace()).toCSV(PRINT_SETTINGS, query);
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
