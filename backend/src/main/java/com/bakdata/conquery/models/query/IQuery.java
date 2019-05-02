@@ -5,7 +5,6 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.concept.ResultInfo;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -26,5 +25,5 @@ public interface IQuery {
 		return set;
 	}
 
-	List<ResultInfo> collectResultInfos();
+	List<ResultInfo> collectResultInfos(PrintSettings config);
 }
