@@ -20,7 +20,9 @@ categoryTreeList:
   closeAll: "Open individually"
   searchPlaceholder: "Search concepts ..."
   showMismatches: "Show all"
-  dontShowMismatches: "Show hits only"
+  showMatchesOnly: "Show matches only"
+  showingMatchesOnly: "Showing only matches"
+  showingMismatches: "Showing full trees"
 
 queryRunner:
   start: "Start Query"
@@ -244,4 +246,4 @@ authorization:
 
 search:
   placeholder: "Search ..."
-  resultLabel: "{totalResults} results found ({duration} s)"
+  resultLabel: "{totalResults} results ({duration} s)"

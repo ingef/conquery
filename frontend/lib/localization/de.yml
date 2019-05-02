@@ -20,7 +20,9 @@ categoryTreeList:
   closeAll: "Einzeln aufklappen"
   searchPlaceholder: "Konzepte durchsuchen ..."
   showMismatches: "Vollständig anzeigen"
-  dontShowMismatches: "Nur Treffer zeigen"
+  showMatchesOnly: "Nur Treffer anzeigen"
+  showingMatchesOnly: "Zeige nur Treffer"
+  showingMismatches: "Zeige vollständig"
 
 queryRunner:
   start: "Anfrage starten"
@@ -246,4 +248,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "{totalResults} Ergebnisse gefunden ({duration} s)"
+  resultLabel: "{totalResults} Ergebnisse ({duration} s)"

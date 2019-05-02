@@ -64,7 +64,7 @@ const setSearchTreesSuccess = (state: StateType, action: Object): StateType => {
   // only create keys array once, then cache,
   // since the result might be > 100k entries
   const resultCount = Object.keys(result).length;
-  const AUTO_UNFOLD_AT = 250;
+  const AUTO_UNFOLD_AT = 300;
 
   return {
     ...state,
@@ -195,15 +195,6 @@ const categoryTrees = (
         search: {
           ...state.search,
           query: action.payload.query
-        }
-      };
-
-    case TOGGLE_ALL_OPEN:
-      return {
-        ...state,
-        search: {
-          ...state.search,
-          allOpen: !state.search.allOpen
         }
       };
     case TOGGLE_SHOW_MISMATCHES:
