@@ -211,7 +211,7 @@ externalForms:
     edit: "Bearbeiten"
 
 uploadQueryResultsModal:
-  headline: "Lade ein Anfrageergebnis hoch"
+  headline: "Anfrageergebnis hochladen"
   dropzone: "Lege eine CSV-Datei hier ab"
   upload: "Hochladen"
   uploadFailed: "Konnte Datei nicht hochladen"
@@ -225,14 +225,14 @@ uploadConceptListModal:
   headline: "Konzeptliste hochladen"
   label: "Name der Liste"
   selectConceptRootNode: "Konzeptbaum-Wurzel auswählen"
-  insertNode: "Einfügen"
+  insertNode: "Jetzt einfügen"
   result: "Ergebnis"
   resolvedCodes:
-    1: "Ein Wert konnte aufgelöst werden."
-    _: "{context} Werte konnten aufgelöst werden."
+    1: "1 Wert aufgelöst."
+    _: "{context} Werte aufgelöst."
   unknownCodes:
-    1: "Folgender Wert konnte nicht aufgelöst werden:"
-    _: "Folgende {context} Werte konnten nicht aufgelöst werden:"
+    1: "1 Wert <strong>nicht</strong> aufgelöst"
+    _: "{context} Werte <strong>nicht</strong> aufgelöst"
   error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
 
 uploadFilterListModal:

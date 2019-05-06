@@ -10,7 +10,7 @@ import Labeled from "./Labeled";
 
 type PropsType = FieldPropsType & {
   label: string,
-  inputType: string,
+  inputType?: string,
   valueType?: string,
   className?: string,
   placeholder?: string,
@@ -32,7 +32,7 @@ const InputText = (props: PropsType) => {
       tinyLabel={props.tinyLabel}
     >
       <BaseInput
-        inputType={props.inputType}
+        inputType={props.inputType || "text"}
         valueType={props.valueType}
         placeholder={props.placeholder}
         value={props.input.value || ""}

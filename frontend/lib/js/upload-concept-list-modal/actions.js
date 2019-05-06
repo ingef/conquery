@@ -66,12 +66,11 @@ export const uploadConceptListModalClose = () => ({
 export const uploadConceptListModalAccept = (
   label,
   rootConcepts,
-  resolvedConcepts,
-  selectedConceptRootNode
+  resolvedConcepts
 ) => {
   return {
     type: UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
-    payload: { label, rootConcepts, resolvedConcepts, selectedConceptRootNode }
+    payload: { label, rootConcepts, resolvedConcepts }
   };
 };
 
