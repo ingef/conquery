@@ -36,7 +36,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	@JsonIgnore
 	private static final PrintSettings PRINT_SETTINGS = PrintSettings
 		.builder()
-		.prettyPrint(true)
+		.prettyPrint(false)
 		.nameExtractor(
 			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
 		.build();
