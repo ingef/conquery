@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
@@ -44,5 +45,10 @@ public class CQReusedQuery implements CQElement {
 	public CQElement resolve(QueryResolveContext context) {
 		resolvedQuery = Objects.requireNonNull(context.getStorage().getQuery(query)).getQuery();
 		return this;
+	}
+
+	@Override
+	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+		namespacedIds.add(query);
 	}
 }

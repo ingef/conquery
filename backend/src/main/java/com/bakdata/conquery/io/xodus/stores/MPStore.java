@@ -10,6 +10,7 @@ import javax.validation.Validator;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -55,7 +56,9 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 		if(!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element "+value+" is not of the required type "+valueType);
 		}
-		ValidatorHelper.failOnError(log, validator.validate(value), "encoding "+value.getClass().getSimpleName()+" "+Objects.toString(value));
+		if(ConqueryConfig.getInstance().getStorage().isValidateOnWrite()) {
+			ValidatorHelper.failOnError(log, validator.validate(value), "encoding "+value.getClass().getSimpleName()+" "+Objects.toString(value));
+		}
 		
 		store.add(writeKey(key), writeValue(value));
 	}
@@ -81,7 +84,9 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 		if(!valueType.isInstance(value)) {
 			throw new IllegalStateException("The element "+value+" is not of the required type "+valueType);
 		}
-		ValidatorHelper.failOnError(log, validator.validate(value), "encoding "+value.getClass().getSimpleName()+" "+Objects.toString(value));
+		if(ConqueryConfig.getInstance().getStorage().isValidateOnWrite()) {
+			ValidatorHelper.failOnError(log, validator.validate(value), "encoding "+value.getClass().getSimpleName()+" "+Objects.toString(value));
+		}
 		
 		store.update(writeKey(key), writeValue(value));
 	}

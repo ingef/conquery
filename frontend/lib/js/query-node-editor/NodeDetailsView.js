@@ -5,15 +5,16 @@ import styled from "@emotion/styled";
 import T from "i18n-react";
 
 import { getConceptById } from "../category-trees/globalTreeStoreHelper";
+import { sortSelects } from "../model/select";
+
+import InputMultiSelect from "../form-components/InputMultiSelect";
+import InputCheckbox from "../form-components/InputCheckbox";
 
 import type { PropsType } from "./QueryNodeEditor";
 
 import ConceptEntry from "./ConceptEntry";
 import ConceptDropzone from "./ConceptDropzone";
 import ContentCell from "./ContentCell";
-
-import InputMultiSelect from "../form-components/InputMultiSelect";
-import InputCheckbox from "../form-components/InputCheckbox";
 
 const Row = styled("div")`
   margin-bottom: 10px;
@@ -59,7 +60,7 @@ const NodeDetailsView = (props: PropsType) => {
                 .filter(({ selected }) => !!selected)
                 .map(({ id, label }) => ({ value: id, label: label }))
             }}
-            options={node.selects.map(select => ({
+            options={sortSelects(node.selects).map(select => ({
               value: select.id,
               label: select.label
             }))}

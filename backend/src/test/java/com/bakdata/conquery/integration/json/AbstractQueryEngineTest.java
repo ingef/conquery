@@ -33,6 +33,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 	protected abstract ResourceFile getExpectedCsv();
 
+	@JsonIgnore
+	private static final PrintSettings PRINT_SETTINGS = PrintSettings
+		.builder()
+		.prettyPrint(false)
+		.nameExtractor(
+			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
+		.build();
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
@@ -47,29 +54,19 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 
 		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace())
-			.toCSV(new PrintSettings(false), managed)
+			.toCSV(PRINT_SETTINGS, managed)
 			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();
 
 		List<String> expected = In.stream(expectedCsv.stream()).readLines();
 
-
-		assertThat(actual)
-			.as("Results for %s are not as expected.", this)
-			.containsExactlyInAnyOrderElementsOf(expected);
-		//check that getLastResultCount returns the correct size
-		if(managed.fetchContainedEntityResult().noneMatch(MultilineContainedEntityResult.class::isInstance)) {
-			assertThat(managed.getLastResultCount())
-				.as("Result count for %s is not as expected.", this)
-				.isEqualTo(expected.size()-1);
+		assertThat(actual).as("Results for %s are not as expected.", this).containsExactlyInAnyOrderElementsOf(expected);
+		// check that getLastResultCount returns the correct size
+		if (managed.fetchContainedEntityResult().noneMatch(MultilineContainedEntityResult.class::isInstance)) {
+			assertThat(managed.getLastResultCount()).as("Result count for %s is not as expected.", this).isEqualTo(expected.size() - 1);
 		}
 
-		log.info(
-				"INTEGRATION TEST SUCCESSFUL {} {} on {} rows",
-				getClass().getSimpleName(),
-				this,
-				expected.size()
-		);
+		log.info("INTEGRATION TEST SUCCESSFUL {} {} on {} rows", getClass().getSimpleName(), this, expected.size());
 	}
 }

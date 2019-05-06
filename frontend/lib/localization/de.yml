@@ -20,7 +20,9 @@ categoryTreeList:
   closeAll: "Einzeln aufklappen"
   searchPlaceholder: "Konzepte durchsuchen ..."
   showMismatches: "Vollständig anzeigen"
-  dontShowMismatches: "Nur Treffer zeigen"
+  showMatchesOnly: "Nur Treffer anzeigen"
+  showingMatchesOnly: "Zeige nur Treffer"
+  showingMismatches: "Zeige vollständig"
 
 queryRunner:
   start: "Anfrage starten"
@@ -111,12 +113,12 @@ tooltip:
 
 reactSelect:
   placeholder: "Auswählen ..."
-  tagPlaceholder: "Tag ..."
+  tagPlaceholder: "Schlagwort ..."
   searchPlaceholder: "Suchen ..."
   dndPlaceholder: "Auswählen oder Datei hochladen ..."
   backspaceToRemove: "Backspace zum Entfernen drücken"
   noResults: "Keine Werte gefunden"
-  createTag: "Tag erstellen: {label}"
+  createTag: "Schlagwort erstellen: {label}"
   searchFor: "Suchen nach: {label}"
   clearAll: "Alle entfernen"
   clearValue: "Wert entfernen"
@@ -135,7 +137,7 @@ inputDateRange:
   today: "Heute"
   dateFormat: "dd.MM.yyyy"
   tooltip:
-    possiblePattern: "y2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
+    possiblePattern: "j2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
 
 previousQueries:
   loading: "Lade Anfragen"
@@ -144,12 +146,14 @@ previousQueries:
   noQueriesFound: "Keine Anfragen gefunden"
 
 previousQuery:
-  addTag: "Tag hinzufügen"
+  addTag: "Schlagwort hinzufügen"
   share: "Freigeben"
   shared: "Freigegeben"
+  delete: "Löschen"
+  downloadResults: "Ergebnisse herunterladen"
   loadError: "Konnte Anfrage nicht laden"
   renameError: "Konnte Anfrage nicht umbenennen"
-  retagError: "Konnte Tags nicht speichern"
+  retagError: "Konnte Schlagwörter nicht speichern"
   shareError: "Konnte Anfrage nicht freigeben"
   deleteError: "Konnte Anfrage nicht löschen"
 
@@ -211,6 +215,7 @@ uploadQueryResultsModal:
   dropzone: "Lege eine CSV-Datei hier ab"
   upload: "Hochladen"
   uploadFailed: "Konnte Datei nicht hochladen"
+  uploadFailedSub: "Bitte überprüfen Sie das Format und die Netzwerkverbindung"
   uploadSucceeded: "Datei hochladen erfolgreich"
   previousQueryCreated: "Frühere Anfrage erfolgreich erstellt"
   formatInfo:
@@ -237,10 +242,6 @@ conceptListDetailsModal:
   conceptTreeRoot: "Konzeptbaum"
   conceptCodes: "Konzeptcodes"
 
-uploadReport:
-  successful: "{count} Zeilen erfolgreich importiert"
-  unsuccessful: "{count} Zeilen ignoriert"
-
 uploadQueryResults:
   uploadResults: "Lade Anfrageergebnis hoch"
 
@@ -249,4 +250,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "{totalResults} Ergebnisse gefunden ({duration} s)"
+  resultLabel: "{totalResults} Ergebnisse ({duration} s)"

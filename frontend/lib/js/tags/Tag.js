@@ -13,11 +13,12 @@ type PropsType = {
 
 const Root = styled("p")`
   display: inline-block;
-  padding: 2px 4px;
+  padding: 4px 4px;
   margin: 0 3px 3px 0;
   font-size: ${({ theme }) => theme.font.xs};
+  line-height: ${({ theme }) => theme.font.xs};
   border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
+  border: 1px solid ${({ theme }) => theme.col.grayMediumLight};
 
   ${({ isClickable, theme }) =>
     isClickable &&
@@ -25,15 +26,17 @@ const Root = styled("p")`
       cursor: pointer;
 
       &:hover {
-        border-color: ${theme.col.blueGrayDark};
+        border-color: ${theme.col.gray};
       }
     `};
 
   ${({ isSelected, theme }) =>
     isSelected &&
     css`
-      background-color: ${theme.col.grayVeryLight};
-      border-color: ${theme.col.blueGrayDark};
+      background-color: ${theme.col.blueGrayLight};
+      color: white;
+      font-weight: 700;
+      border-color: ${theme.col.blueGrayLight};
     `};
 `;
 

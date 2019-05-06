@@ -1,11 +1,13 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Deque;
+import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -39,5 +41,10 @@ public class CQNegation implements CQElement {
 	@Override
 	public void collectSelects(Deque<SelectDescriptor> select) {
 		child.collectSelects(select);
+	}
+
+	@Override
+	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+		child.collectNamespacedIds(namespacedIds);
 	}
 }

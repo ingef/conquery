@@ -1,17 +1,17 @@
-<#macro nullValue type><#stop "can't store null"/></#macro>
+<#macro nullValue type>
+	<#import "/com/bakdata/conquery/models/events/generation/types/IntegerTypeInteger.ftl" as copy/>
+	<@copy.nullValue type=type/>
+</#macro>
 <#macro kryoSerialization type>
-	<#if type.minValue gte 0>
-		output.writeInt(<#nested/>, true)
-	<#else>
-		output.writeInt(<#nested/>, false)
-	</#if>
+	<#import "/com/bakdata/conquery/models/events/generation/types/IntegerTypeInteger.ftl" as copy/>
+	<@copy.kryoSerialization type=type><#nested/></@copy.kryoSerialization>
 </#macro>
 <#macro kryoDeserialization type>
-	<#if type.minValue gte 0>
-		input.readInt(true)
-	<#else>
-		input.readInt(false)
-	</#if>
+	<#import "/com/bakdata/conquery/models/events/generation/types/IntegerTypeInteger.ftl" as copy/>
+	<@copy.kryoDeserialization type=type/>
 </#macro>
-<#macro nullCheck type><#stop "Tried to generate a null check that is not generateable"/></#macro>
+<#macro nullCheck type>
+	<#import "/com/bakdata/conquery/models/events/generation/types/IntegerTypeInteger.ftl" as copy/>
+	<@copy.nullCheck type=type><#nested/></@copy.nullCheck>
+</#macro>
 <#macro majorTypeTransformation type>(long)<#nested></#macro>

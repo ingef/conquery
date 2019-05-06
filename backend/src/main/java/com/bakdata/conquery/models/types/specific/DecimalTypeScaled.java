@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.types.specific;
 
 import java.math.BigDecimal;
 import java.math.BigInteger;
-import java.math.RoundingMode;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.CType;
@@ -51,7 +50,7 @@ public class DecimalTypeScaled<NUMBER, SUB extends CType<NUMBER, IntegerType>> e
 
 	@Override
 	public boolean canStoreNull() {
-		return false;
+		return subType.canStoreNull();
 	}
 
 	public static BigInteger unscale(int scale, BigDecimal value) {
