@@ -30,6 +30,7 @@ const HeadlinePart = styled("span")`
 const ResetAll = styled(IconButton)`
   color: ${({ theme }) => theme.col.blueGrayDark};
   font-weight: 700;
+  margin-left: 20px;
 `;
 
 type PropsType = {
@@ -75,11 +76,11 @@ const QueryGroupModal = (props: PropsType) => {
           )}
         </Headline>
         <InputDateRange
-          label={
+          label={T.translate("queryGroupModal.explanation")}
+          labelSuffix={
             <>
-              {T.translate("queryGroupModal.explanation")}
               {hasActiveDate && (
-                <ResetAll onClick={props.onResetAllDates} icon="undo">
+                <ResetAll bare onClick={props.onResetAllDates} icon="undo">
                   {T.translate("queryNodeEditor.resetAll")}
                 </ResetAll>
               )}

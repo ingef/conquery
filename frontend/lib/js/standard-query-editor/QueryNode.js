@@ -46,12 +46,20 @@ const Node = styled("div")`
   padding-top: 2px;
 `;
 
-const Content = styled("p")`
+const Label = styled("p")`
   margin: 0;
-  line-height: 1.2;
   word-break: break-word;
+  line-height: 1.2;
   font-size: ${({ theme }) => theme.font.md};
 `;
+const Description = styled("p")`
+  margin: 3px 0 0;
+  word-break: break-word;
+  line-height: 1.2;
+  text-transform: uppercase;
+  font-size: ${({ theme }) => theme.font.xs};
+`;
+
 const PreviousQueryLabel = styled("p")`
   margin: 0 0 3px;
   line-height: 1.2;
@@ -106,10 +114,12 @@ class QueryNode extends React.Component {
           {node.error ? (
             <StyledErrorMessage message={node.error} />
           ) : (
-            <Content>
-              <span>{node.label || node.id}</span>
-              {node.description && <span> - {node.description}</span>}
-            </Content>
+            <>
+              <Label>{node.label || node.id}</Label>
+              {node.description && (
+                <Description>{node.description}</Description>
+              )}
+            </>
           )}
         </Node>
         <QueryNodeActions
@@ -170,6 +180,7 @@ const nodeSource = {
       return {
         ...draggedNode,
         ids: node.ids,
+        description: node.description,
         tree: node.tree,
         tables: node.tables,
         selects: node.selects
