@@ -223,14 +223,14 @@ uploadConceptListModal:
   headline: "Upload concepts"
   label: "Name of the Concept"
   selectConceptRootNode: "Choose a Concept Tree root"
-  insertNode: "Insert"
+  insertNode: "Insert now"
   result: "Result"
   resolvedCodes:
-    1: "One value could be resolved."
-    _: "{context} values could be resolved."
+    1: "1 value resolved."
+    _: "{context} values resolved."
   unknownCodes:
-    1: "The following value could not be resolved:"
-    _: "The following {context} values could not be resolved:"
+    1: "1 value <strong>not</strong> resolved"
+    _: "{context} values <strong>not</strong> resolved"
   error: "An error occurred when resolving the values."
 
 uploadFilterListModal:

@@ -692,8 +692,7 @@ const loadFilterSuggestionsError = (state, action) =>
 const createQueryNodeFromConceptListUploadResult = (
   label,
   rootConcepts,
-  resolvedConcepts,
-  selectedConceptRootNode
+  resolvedConcepts
 ): DraggedNodeType => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
     resolvedConcepts,
@@ -712,18 +711,12 @@ const createQueryNodeFromConceptListUploadResult = (
 };
 
 const insertUploadedConceptList = (state, action) => {
-  const {
-    label,
-    rootConcepts,
-    resolvedConcepts,
-    selectedConceptRootNode
-  } = action.payload;
+  const { label, rootConcepts, resolvedConcepts } = action.payload;
 
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
     rootConcepts,
-    resolvedConcepts,
-    selectedConceptRootNode
+    resolvedConcepts
   );
 
   // TODO: Re-enable soon
