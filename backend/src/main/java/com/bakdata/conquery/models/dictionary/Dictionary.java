@@ -42,7 +42,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	}
 
 	public synchronized int add(String element) {
-		byte[] bytes = element.getBytes();
+		byte[] bytes = element.getBytes(StandardCharsets.UTF_8);
 		return add(bytes);
 	}
 

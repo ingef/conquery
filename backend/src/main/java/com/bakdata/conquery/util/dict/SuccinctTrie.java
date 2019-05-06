@@ -15,6 +15,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.AbstractIterator;
 
+import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
 import lombok.Data;
@@ -136,10 +137,28 @@ public class SuccinctTrie implements Iterable<String> {
 		checkUncompressed("compress is only allowed once");
 
 		// get the nodes in left right, top down order (level order)
-		ArrayList<HelpNode> nodesInOrder = new ArrayList<HelpNode>(nodeCount);
-		int lastIndexOfLevel = 0;
-		int currentIndex = 0;
-		int nodesInNextLevel = 0;
+		List<HelpNode> nodesInOrder = createNodesInOrder();
+
+		// write the bits
+		selectZeroCache = new int[nodeCount + 1];
+		int position = 2;
+		int zeroesWritten = 1;
+		selectZeroCache[1] = 1;
+
+		for (HelpNode node : nodesInOrder) {
+			position+=node.children.size();
+			zeroesWritten++;
+			selectZeroCache[zeroesWritten] = position;
+			position++;
+		}
+
+		// free the helpTrie for GC
+		root = null;
+		compressed = true;
+	}
+
+	private List<HelpNode> createNodesInOrder() {
+		ArrayList<HelpNode> nodesInOrder = new ArrayList<HelpNode>(nodeCount-1);
 
 		// initialize arrays for rebuilding the data later on
 		reverseLookup = new int[entryCount];
@@ -149,56 +168,29 @@ public class SuccinctTrie implements Iterable<String> {
 		lookup = new int[nodeCount];
 		Arrays.fill(lookup, -1);
 
-		int nodeIndex = 0;
 
 		keyPartArray = new byte[nodeCount];
 
 		nodesInOrder.add(root);
-		while (currentIndex <= lastIndexOfLevel) {
-			for (; currentIndex <= lastIndexOfLevel; currentIndex++) {
-				HelpNode node = nodesInOrder.get(currentIndex);
-				node.setPositionInArray(nodeIndex);
-				if (node != root) {
-					keyPartArray[nodeIndex] = node.partialKey;
-				}
-
-				if (node.parent != null) {
-					parentIndex[nodeIndex] = node.parent.getPositionInArray();
-				}
-
-				Collection<HelpNode> children = node.children.values();
-				nodesInOrder.addAll(children);
-				nodesInNextLevel += children.size();
-
-				if (node.value != -1) {
-					reverseLookup[node.value] = nodeIndex;
-					lookup[nodeIndex] = node.value;
-				}
-
-				nodeIndex++;
+		for (int index=0; index < nodeCount-1; index++) {
+			HelpNode node = nodesInOrder.get(index);
+			node.setPositionInArray(index);
+			if (node != root) {
+				keyPartArray[index] = node.getPartialKey();
 			}
-			lastIndexOfLevel += nodesInNextLevel;
-			nodesInNextLevel = 0;
-		}
 
-		// write the bits
-		selectZeroCache = new int[nodeCount + 1];
-		int position = 2;
-		int zeroesWritten = 1;
-		selectZeroCache[1] = 1;
-
-		for (HelpNode node : nodesInOrder) {
-			for (nodeIndex = 0; nodeIndex < node.children.size(); nodeIndex++) {
-				position++;
+			if (node.getParent() != null) {
+				parentIndex[index] = node.getParent().getPositionInArray();
 			}
-			zeroesWritten++;
-			selectZeroCache[zeroesWritten] = position;
-			position++;
-		}
 
-		// free the helpTrie for GC
-		root = null;
-		compressed = true;
+			node.getChildren().values().forEach(nodesInOrder::add);
+
+			if (node.getValue() != -1) {
+				reverseLookup[node.getValue()] = index;
+				lookup[index] = node.getValue();
+			}
+		}
+		return nodesInOrder;
 	}
 
 	private int select0(int positionForZero) {
@@ -377,7 +369,7 @@ public class SuccinctTrie implements Iterable<String> {
 	@Data
 	private class HelpNode {
 
-		private final Byte2ObjectMap<HelpNode> children = new Byte2ObjectOpenHashMap<>();
+		private final Byte2ObjectMap<HelpNode> children = new Byte2ObjectArrayMap<>();
 		private final byte partialKey;
 		private HelpNode parent;
 		private int value = -1;
