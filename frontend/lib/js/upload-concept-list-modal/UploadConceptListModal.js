@@ -55,7 +55,8 @@ const Msg = styled("p")`
 `;
 
 const StyledInputText = styled(InputText)`
-  margin-bottom: 10px;
+  display: block;
+  margin-bottom: 15px;
 `;
 
 const BigIcon = styled(FaIcon)`
