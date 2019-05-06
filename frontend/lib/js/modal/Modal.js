@@ -1,26 +1,27 @@
 // @flow
 
-import React from "react";
+import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import IconButton from "../button/IconButton";
 import TransparentButton from "../button/TransparentButton";
 
 import EscAble from "../common/components/EscAble";
 
 type PropsType = {
-  children?: Element[],
+  children?: React.Node,
+  headline?: React.Node,
   closeModal: Function,
   doneButton: boolean,
   tabIndex: number
 };
 
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  top: 12px;
-  right: 15px;
+const Headline = styled("h3")`
+  margin-top: 20px;
+  font-size: ${({ theme }) => theme.font.md};
+  color: ${({ theme }) => theme.col.blueGrayDark};
 `;
+
 const StyledTransparentButton = styled(TransparentButton)`
   position: absolute;
   top: 12px;
@@ -56,6 +57,9 @@ class Modal extends React.Component {
                 >
                   {T.translate("common.done")}
                 </StyledTransparentButton>
+              )}
+              {this.props.headline && (
+                <Headline>{this.props.headline}</Headline>
               )}
               {this.props.children}
             </>

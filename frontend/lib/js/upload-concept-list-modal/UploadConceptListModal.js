@@ -43,15 +43,15 @@ type PropsType = {
 };
 
 const Root = styled("div")`
-  padding: 20px 0 10px;
+  padding: 0 0 10px;
 `;
 
 const Section = styled("div")`
-  margin: 15px 0;
+  padding: 10px 20px;
 `;
 
 const Msg = styled("p")`
-  margin: 0 0 5px;
+  margin: 10px 0 5px;
 `;
 
 const StyledInputText = styled(InputText)`
@@ -100,9 +100,12 @@ const UploadConceptListModal = (props: PropsType) => {
   const hasResolvedItems = resolvedItemsCount > 0;
 
   return (
-    <Modal closeModal={onCloseModal} doneButton>
+    <Modal
+      closeModal={onCloseModal}
+      doneButton
+      headline={T.translate("uploadConceptListModal.headline")}
+    >
       <Root>
-        <h3>{T.translate("uploadConceptListModal.headline")}</h3>
         <StyledInputText
           label={T.translate("uploadConceptListModal.label")}
           fullWidth
@@ -141,22 +144,20 @@ const UploadConceptListModal = (props: PropsType) => {
           {resolved && (
             <>
               {hasResolvedItems && (
-                <>
-                  <Msg>
-                    <SuccessIcon icon="check-circle" />
-                    {T.translate("uploadConceptListModal.resolvedCodes", {
-                      context: resolvedItemsCount
-                    })}
-                    <StyledPrimaryButton
-                      onClick={() => onAccept(label, resolved.resolvedConcepts)}
-                    >
-                      {T.translate("uploadConceptListModal.insertNode")}
-                    </StyledPrimaryButton>
-                  </Msg>
-                </>
+                <Msg>
+                  <SuccessIcon icon="check-circle" />
+                  {T.translate("uploadConceptListModal.resolvedCodes", {
+                    context: resolvedItemsCount
+                  })}
+                  <StyledPrimaryButton
+                    onClick={() => onAccept(label, resolved.resolvedConcepts)}
+                  >
+                    {T.translate("uploadConceptListModal.insertNode")}
+                  </StyledPrimaryButton>
+                </Msg>
               )}
               {hasUnresolvedItems && (
-                <Section>
+                <>
                   <Msg>
                     <ErrorIcon icon="exclamation-circle" />
                     <span
@@ -175,7 +176,7 @@ const UploadConceptListModal = (props: PropsType) => {
                     fullWidth
                     items={resolved.unknownConcepts}
                   />
-                </Section>
+                </>
               )}
             </>
           )}

@@ -209,7 +209,7 @@ externalForms:
     edit: "Edit"
 
 uploadQueryResultsModal:
-  headline: "Upload a query result"
+  headline: "Upload query result"
   dropzone: "Drop a CSV file here"
   upload: "Upload"
   uploadFailed: "Could not upload file"

@@ -18,25 +18,10 @@ const Root = styled("div")`
   text-align: center;
 `;
 
-const Row = styled("div")`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 0 15px;
-`;
-
-const Headline = styled("h3")`
-  font-size: ${({ theme }) => theme.font.lg};
-  margin: 0;
-`;
-
 const Error = styled("div")`
   margin: 20px 0;
 `;
 
-const ErrorMessageMain = styled(ErrorMessage)`
-  margin: 0;
-`;
 const ErrorMessageSub = styled(ErrorMessage)`
   font-size: ${({ theme }) => theme.font.sm};
   margin: 0;
@@ -89,16 +74,19 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
 
   render() {
     return (
-      <Modal closeModal={this.props.onCloseModal} doneButton>
-        <Root>
-          <Row>
-            <Headline>
-              {T.translate("uploadQueryResultsModal.headline")}
-            </Headline>
+      <Modal
+        closeModal={this.props.onCloseModal}
+        doneButton
+        headline={
+          <>
+            {T.translate("uploadQueryResultsModal.headline")}
             <InfoTooltip
               text={T.translate("uploadQueryResultsModal.formatInfo.text")}
             />
-          </Row>
+          </>
+        }
+      >
+        <Root>
           {this.props.success && (
             <Success>
               <StyledFaIcon icon="check-circle" />

@@ -211,7 +211,7 @@ externalForms:
     edit: "Bearbeiten"
 
 uploadQueryResultsModal:
-  headline: "Lade ein Anfrageergebnis hoch"
+  headline: "Anfrageergebnis hochladen"
   dropzone: "Lege eine CSV-Datei hier ab"
   upload: "Hochladen"
   uploadFailed: "Konnte Datei nicht hochladen"
