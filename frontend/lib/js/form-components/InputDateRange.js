@@ -40,6 +40,7 @@ const StyledLabeled = styled(Labeled)`
 
 type PropsType = FieldPropsType & {
   label?: React.Node,
+  labelSuffix?: React.Node,
   className?: string,
   inline?: boolean,
   center?: boolean
@@ -93,6 +94,7 @@ const InputDateRange = (props: PropsType) => {
     inline,
     center,
     label,
+    labelSuffix,
     input: { value }
   } = props;
 
@@ -110,6 +112,7 @@ const InputDateRange = (props: PropsType) => {
           <InfoTooltip
             text={T.translate("inputDateRange.tooltip.possiblePattern")}
           />
+          {labelSuffix && labelSuffix}
         </StyledLabel>
       )}
       <Pickers inline={inline} center={center}>

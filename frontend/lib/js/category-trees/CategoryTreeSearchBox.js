@@ -12,23 +12,24 @@ import {
   searchTrees,
   changeSearchQuery,
   clearSearchQuery,
-  toggleAllOpen,
   toggleShowMismatches
 } from "./actions";
 
 import TransparentButton from "../button/TransparentButton";
 
-const OPENABLE_AT = 500;
+const Displaying = styled("span")`
+  font-size: ${({ theme }) => theme.font.xs};
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.col.gray};
+`;
 
 const StyledButton = styled(TransparentButton)`
   margin: 3px 0 3px 5px;
 `;
 
 const CategoryTreeSearchBox = ({
-  allOpen,
   showMismatches,
   onToggleShowMismatches,
-  onToggleAllOpen,
   areTreesAvailable,
   ...props
 }) => {
@@ -39,20 +40,18 @@ const CategoryTreeSearchBox = ({
       {...props}
       placeholder={T.translate("categoryTreeList.searchPlaceholder")}
       textAppend={
-        <>
+        <div>
+          <Displaying>
+            {showMismatches
+              ? T.translate("categoryTreeList.showingMismatches")
+              : T.translate("categoryTreeList.showingMatchesOnly")}
+          </Displaying>
           <StyledButton tiny onClick={onToggleShowMismatches}>
             {showMismatches
-              ? T.translate("categoryTreeList.dontShowMismatches")
+              ? T.translate("categoryTreeList.showMatchesOnly")
               : T.translate("categoryTreeList.showMismatches")}
           </StyledButton>
-          {!showMismatches && props.search.resultCount < OPENABLE_AT && (
-            <StyledButton tiny onClick={onToggleAllOpen}>
-              {allOpen
-                ? T.translate("categoryTreeList.closeAll")
-                : T.translate("categoryTreeList.openAll")}
-            </StyledButton>
-          )}
-        </>
+        </div>
       }
     />
   );
@@ -60,7 +59,6 @@ const CategoryTreeSearchBox = ({
 
 const mapStateToProps = state => ({
   areTreesAvailable: getAreTreesAvailable(state),
-  allOpen: state.categoryTrees.search.allOpen,
   showMismatches: state.categoryTrees.search.showMismatches,
   search: state.categoryTrees.search
 });
@@ -71,7 +69,6 @@ const mapDispatchToProps = dispatch => ({
   },
   onChange: query => dispatch(changeSearchQuery(query)),
   onClearQuery: () => dispatch(clearSearchQuery()),
-  onToggleAllOpen: () => dispatch(toggleAllOpen()),
   onToggleShowMismatches: () => dispatch(toggleShowMismatches())
 });
 

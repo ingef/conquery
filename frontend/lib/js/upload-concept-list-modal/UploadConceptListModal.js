@@ -1,16 +1,17 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
 import T from "i18n-react";
-import classnames from "classnames";
 
 import Modal from "../modal/Modal";
 import InputSelect from "../form-components/InputSelect";
 import InputText from "../form-components/InputText";
 import ScrollableList from "../scrollable-list/ScrollableList";
 import PrimaryButton from "../button/PrimaryButton";
+import FaIcon from "../icon/FaIcon";
 
 import type { StateType } from "../app/reducers";
 import type { DatasetIdType } from "../dataset/reducer";
@@ -41,6 +42,40 @@ type PropsType = {
   onSelectConceptRootNode: Function
 };
 
+const Root = styled("div")`
+  padding: 0 0 10px;
+`;
+
+const Section = styled("div")`
+  padding: 10px 20px;
+`;
+
+const Msg = styled("p")`
+  margin: 10px 0 5px;
+`;
+
+const StyledInputText = styled(InputText)`
+  display: block;
+  margin-bottom: 15px;
+`;
+
+const BigIcon = styled(FaIcon)`
+  font-size: 20px;
+  margin-right: 10px;
+`;
+const ErrorIcon = styled(BigIcon)`
+  color: ${({ theme }) => theme.col.red};
+`;
+const SuccessIcon = styled(BigIcon)`
+  color: ${({ theme }) => theme.col.green};
+`;
+const CenteredIcon = styled(FaIcon)`
+  text-align: center;
+`;
+const StyledPrimaryButton = styled(PrimaryButton)`
+  margin-left: 15px;
+`;
+
 const UploadConceptListModal = (props: PropsType) => {
   if (!props.isModalOpen) return null;
 
@@ -66,10 +101,13 @@ const UploadConceptListModal = (props: PropsType) => {
   const hasResolvedItems = resolvedItemsCount > 0;
 
   return (
-    <Modal closeModal={onCloseModal} doneButton>
-      <div className="upload-concept-list-modal">
-        <h3>{T.translate("uploadConceptListModal.headline")}</h3>
-        <InputText
+    <Modal
+      closeModal={onCloseModal}
+      doneButton
+      headline={T.translate("uploadConceptListModal.headline")}
+    >
+      <Root>
+        <StyledInputText
           label={T.translate("uploadConceptListModal.label")}
           fullWidth
           input={{
@@ -77,107 +115,74 @@ const UploadConceptListModal = (props: PropsType) => {
             onChange: onUpdateLabel
           }}
         />
-        <div className="upload-concept-list-modal__section">
-          <label className="input">
-            <span className="input-label">
-              {T.translate("uploadConceptListModal.selectConceptRootNode")}
-            </span>
-            <InputSelect
-              input={{
-                value: selectedConceptRootNode,
-                onChange: value =>
-                  onSelectConceptRootNode(
-                    selectedDatasetId,
-                    value,
-                    conceptCodesFromFile
-                  )
-              }}
-              options={availableConceptRootNodes.map(x => ({
-                value: x.key,
-                label: x.value.label
-              }))}
-              selectProps={{
-                isSearchable: true
-              }}
-            />
-          </label>
-        </div>
-        {error && (
-          <div className="upload-concept-list-modal__status upload-concept-list-modal__section">
-            <p className="upload-concept-list-modal__error">
-              <i className="fa fa-exclamation-circle fa-2x" />
+        <InputSelect
+          label={T.translate("uploadConceptListModal.selectConceptRootNode")}
+          input={{
+            value: selectedConceptRootNode,
+            onChange: value =>
+              onSelectConceptRootNode(
+                selectedDatasetId,
+                value,
+                conceptCodesFromFile
+              )
+          }}
+          options={availableConceptRootNodes.map(x => ({
+            value: x.key,
+            label: x.value.label
+          }))}
+          selectProps={{
+            isSearchable: true
+          }}
+        />
+        <Section>
+          {error && (
+            <p>
+              <ErrorIcon icon="exclamation-circle" />
+              {T.translate("uploadConceptListModal.error")}
             </p>
-            <p>{T.translate("uploadConceptListModal.error")}</p>
-          </div>
-        )}
-        {loading && (
-          <div
-            className={classnames(
-              "upload-concept-list-modal__status",
-              "upload-concept-list-modal__section",
-              "upload-concept-list-modal__loading"
-            )}
-          >
-            <i className="fa fa-spinner fa-2x" />
-          </div>
-        )}
-        {resolved && (
-          <div className="upload-concept-list-modal__status upload-concept-list-modal__section">
-            {hasResolvedItems && !hasUnresolvedItems && (
-              <p className="upload-concept-list-modal__success">
-                <i className="fa fa-check-circle fa-2x" />
-              </p>
-            )}
-            {hasResolvedItems && hasUnresolvedItems && (
-              <p className="upload-concept-list-modal__info">
-                <i className="fa fa-info-circle fa-2x" />
-              </p>
-            )}
-            {!hasResolvedItems && hasUnresolvedItems && (
-              <p className="upload-concept-list-modal__error">
-                <i className="fa fa-exclamation-circle fa-2x" />
-              </p>
-            )}
-            {hasResolvedItems && (
-              <p>
-                {T.translate("uploadConceptListModal.resolvedCodes", {
-                  context: resolvedItemsCount
-                })}
-              </p>
-            )}
-            {hasUnresolvedItems && (
-              <div>
-                <p>
-                  {T.translate("uploadConceptListModal.unknownCodes", {
-                    context: resolved.unknownConcepts.length
+          )}
+          {loading && <CenteredIcon icon="spinner" />}
+          {resolved && (
+            <>
+              {hasResolvedItems && (
+                <Msg>
+                  <SuccessIcon icon="check-circle" />
+                  {T.translate("uploadConceptListModal.resolvedCodes", {
+                    context: resolvedItemsCount
                   })}
-                </p>
-                <div className="upload-concept-list-modal__section">
+                  <StyledPrimaryButton
+                    onClick={() => onAccept(label, resolved.resolvedConcepts)}
+                  >
+                    {T.translate("uploadConceptListModal.insertNode")}
+                  </StyledPrimaryButton>
+                </Msg>
+              )}
+              {hasUnresolvedItems && (
+                <>
+                  <Msg>
+                    <ErrorIcon icon="exclamation-circle" />
+                    <span
+                      dangerouslySetInnerHTML={{
+                        __html: T.translate(
+                          "uploadConceptListModal.unknownCodes",
+                          {
+                            context: resolved.unknownConcepts.length
+                          }
+                        )
+                      }}
+                    />
+                  </Msg>
                   <ScrollableList
                     maxVisibleItems={3}
                     fullWidth
                     items={resolved.unknownConcepts}
                   />
-                </div>
-              </div>
-            )}
-          </div>
-        )}
-        <div className="upload-concept-list-modal__accept">
-          <PrimaryButton
-            disabled={!hasResolvedItems}
-            onClick={() =>
-              onAccept(
-                label,
-                resolved.resolvedConcepts,
-                selectedConceptRootNode
-              )
-            }
-          >
-            {T.translate("uploadConceptListModal.insertNode")}
-          </PrimaryButton>
-        </div>
-      </div>
+                </>
+              )}
+            </>
+          )}
+        </Section>
+      </Root>
     </Modal>
   );
 };
@@ -240,13 +245,8 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...stateProps,
   ...dispatchProps,
   ...ownProps,
-  onAccept: (filename, resolvedConcepts, selectedConceptRootNode) =>
-    dispatchProps.onAccept(
-      filename,
-      stateProps.rootConcepts,
-      resolvedConcepts,
-      selectedConceptRootNode
-    )
+  onAccept: (filename, resolvedConcepts) =>
+    dispatchProps.onAccept(filename, stateProps.rootConcepts, resolvedConcepts)
 });
 
 export default connect(

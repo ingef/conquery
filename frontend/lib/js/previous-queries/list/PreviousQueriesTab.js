@@ -34,12 +34,8 @@ class PreviousQueryEditorTab extends React.Component {
 
     return (
       <>
-        {hasQueries && (
-          <>
-            <PreviousQueriesFilter />
-            <PreviousQueriesSearchBox isMulti />
-          </>
-        )}
+        <PreviousQueriesFilter />
+        <PreviousQueriesSearchBox isMulti />
         <UploadQueryResults datasetId={datasetId} />
         <Container>
           {loading && <PreviousQueriesLoading />}

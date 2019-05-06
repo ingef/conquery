@@ -1,5 +1,5 @@
 # Conquery
-*fast & efficient Analysis*
+*fast & efficient analysis*
 
 [![Last Release](https://img.shields.io/github/release-date/bakdata/conquery.svg?logo=github)](https://github.com/bakdata/conquery/releases/latest)
 [![Build Status](https://img.shields.io/travis/bakdata/conquery/develop.svg?logo=travis)](https://travis-ci.org/bakdata/conquery)
@@ -8,13 +8,13 @@
 ![Code Size](https://img.shields.io/github/languages/code-size/bakdata/conquery.svg)
 [![License](https://img.shields.io/github/license/bakdata/conquery.svg)](https://github.com/bakdata/conquery/blob/develop/LICENSE)
 
-![conquery Screenshot](images/screenshot.png)
+![conquery Screenshot](images/screenshot-v2.png)
 
-Conquery provides a powerful web-based platform to compose and execute queries against large event-like data sets.
+Conquery is a powerful web-based tool to compose and execute queries against large event-like data sets.
 
 Event data sets typically associate events with a certain subject (i.e. a person or a physical object). One common use case for the data is to identify groups of similar subjects based on the assumption that they share similar events in a given time frame.
 
-As a result, Conquery provides a powerful mechanism to group and classify event types in a hierarchical *concept tree* structure. Elements of this tree represent a group of similar subjects and can be intuitively selected and arranged to run queries against the data set.
+Conquery supplies a powerful interface to group event types in a hierarchical *concept tree* structure. Elements of this tree represent a group of similar subjects. Those subjects can be composed into a powerful query that runs against the data set.
 
 ## Starting the demo
 
@@ -30,8 +30,10 @@ yarn start
 
 ## Acknowledgements
 
-This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com). Special thanks go to [Kai Rollmann](https://kairollmann.de/) for a great job directing frontend and design in the first half year of the project.
+This platform was created by [InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH](http://www.ingef.de/) in cooperation with [bakdata GmbH](http://www.bakdata.com) and [Kai Rollmann](https://kairollmann.de/).
 
 [<img alt="InGef – Institut für angewandte Gesundheitsforschung Berlin GmbH" src="images/ingef_logo.svg" height=50 align="top">](http://www.ingef.de/)
 &emsp;
 [<img alt="bakdata GmbH" src="images/bakdata_logo.svg" height=37 align="top">](http://www.bakdata.com)
+&emsp;
+[<img alt="Rollmann Software" src="images/rollmann_software_logo.png" height=41 align="top">](https://kairollmann.de)

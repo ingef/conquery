@@ -8,12 +8,18 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.NumberParsing;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import lombok.Getter;
 
 @CPSType(base=CType.class, id="MONEY")
 public class MoneyType extends CType<Long, MoneyType> {
 
 	private long maxValue = Long.MIN_VALUE;
 	private long minValue = Long.MAX_VALUE;
+	@JsonIgnore @Getter(lazy = true)
+	private final BigDecimal moneyFactor = BigDecimal.valueOf(10)
+		.pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits());
 	
 	public MoneyType() {
 		super(MajorTypeId.MONEY, long.class);
@@ -23,7 +29,7 @@ public class MoneyType extends CType<Long, MoneyType> {
 	protected Long parseValue(String value) throws ParsingException {
 		return NumberParsing
 			.parseMoney(value)
-			.multiply(BigDecimal.valueOf(10).pow(ConqueryConfig.getInstance().getLocale().getCurrency().getDefaultFractionDigits()))
+			.multiply(getMoneyFactor())
 			.longValueExact();
 	}
 	
@@ -39,17 +45,22 @@ public class MoneyType extends CType<Long, MoneyType> {
 
 	@Override
 	public CType<? extends Number, MoneyType> bestSubType() {
-		if(maxValue <= Byte.MAX_VALUE && minValue >= Byte.MIN_VALUE) {
+		if(maxValue+1 <= Byte.MAX_VALUE && minValue >= Byte.MIN_VALUE) {
 			return new MoneyTypeByte(getLines(), getNullLines(), (byte)maxValue, (byte)minValue);
 		}
-		if(maxValue <= Short.MAX_VALUE && minValue >= Short.MIN_VALUE) {
+		if(maxValue+1 <= Short.MAX_VALUE && minValue >= Short.MIN_VALUE) {
 			return new MoneyTypeShort(getLines(), getNullLines(), (short)maxValue, (short)minValue);
 		}
-		if(maxValue <= Integer.MAX_VALUE && minValue >= Integer.MIN_VALUE) {
+		if(maxValue+1 <= Integer.MAX_VALUE && minValue >= Integer.MIN_VALUE) {
 			return new MoneyTypeInteger(getLines(), getNullLines(), (int)maxValue, (int)minValue);
 		}
 		else {
 			return this;
 		}
+	}
+	
+	@Override
+	public boolean canStoreNull() {
+		return true;
 	}
 }

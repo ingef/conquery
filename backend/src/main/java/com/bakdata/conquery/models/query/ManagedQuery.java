@@ -15,7 +15,6 @@ import javax.validation.constraints.NotNull;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
@@ -140,7 +139,7 @@ public class ManagedQuery extends IdentifiableImpl<ManagedQueryId> {
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos() {
-		return query.collectResultInfos();
+	public List<ResultInfo> getResultInfos(PrintSettings config) {
+		return query.collectResultInfos(config);
 	}
 }

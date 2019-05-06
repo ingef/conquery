@@ -39,4 +39,9 @@ public class ConnectorSelectId extends SelectId implements NamespacedId {
 			return new ConnectorSelectId(parent, parts.next());
 		}
 	}
+
+	@Override
+	public ConceptId findConcept() {
+		return connector.getConcept();
+	}
 }
