@@ -108,6 +108,7 @@ const filterItem = (
   else
     return {
       ids: item.ids,
+      description: item.description,
       tables: withDefaultValues(item.tables),
       selects: withDefaultValues(item.selects),
       tree: item.tree,
