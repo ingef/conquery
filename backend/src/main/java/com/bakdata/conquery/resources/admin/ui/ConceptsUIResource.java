@@ -1,9 +1,7 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-
-import java.util.Map;
-import java.util.Optional;
 
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
@@ -18,13 +16,11 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
-import com.bakdata.conquery.util.io.FileTreeReduction;
 
 import io.dropwizard.views.View;
 import lombok.Getter;
@@ -35,17 +31,19 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll @AuthCookie
 @Getter @Setter @Slf4j
-@Path("datasets/{" + DATASET_NAME + "}")
-public class DatasetsUIResource {
+@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
+public class ConceptsUIResource {
 	
 	private AdminProcessor processor;
 	private Namespace namespace;
+	private Concept<?> concept;
 	
 	@Inject
-	public DatasetsUIResource(
+	public ConceptsUIResource(
 		//@Auth User user,
 		AdminProcessor processor,
-		@PathParam(DATASET_NAME) DatasetId datasetId
+		@PathParam(DATASET_NAME) DatasetId datasetId,
+		@PathParam(CONCEPT_NAME) ConceptId conceptId
 	) {
 		this.processor = processor;
 		this.namespace = processor.getNamespaces().get(datasetId);
@@ -53,34 +51,18 @@ public class DatasetsUIResource {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}
 		//authorize(user, datasetId, Ability.READ);
-	}
-	
-	@GET
-	public View getDataset() {
-		return new FileView<>(
-			"dataset.html.ftl",
-			processor.getUIContext(),
-			namespace.getDataset(),
-			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp")
-		);
-	}
-	
-	@GET
-	@Path("mapping")
-	public View getIdMapping() {
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
-			return new UIView<>(
-				"idmapping.html.ftl",
-				processor.getUIContext(),
-				mapping.getCsvIdToExternalIdMap()
-			);
-		} else {
-			return new UIView<>(
-				"add_idmapping.html.ftl",
-				processor.getUIContext(),
-				namespace.getDataset().getId()
-			);
+		this.concept = namespace.getStorage().getConcept(conceptId);
+		if(this.concept == null) {
+			throw new WebApplicationException("Could not find concept "+conceptId, Status.NOT_FOUND);
 		}
+	}
+	
+	@GET
+	public View getConcept() {
+		return new UIView<>(
+			"concept.html.ftl",
+			processor.getUIContext(),
+			concept
+		);
 	}
 }

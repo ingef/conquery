@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
@@ -13,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
+import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
@@ -22,22 +22,18 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
@@ -45,102 +41,48 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.util.io.FileTreeReduction;
-import com.fasterxml.jackson.databind.ObjectMapper;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
-import lombok.extern.slf4j.Slf4j;
+import lombok.RequiredArgsConstructor;
 
 @Produces(MediaType.TEXT_HTML)
 //@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
 @Path("/")
 @AuthCookie
+@RequiredArgsConstructor(onConstructor_=@Inject)
 public class AdminUIResource {
 
-	private final ConqueryConfig config;
-	private final Namespaces namespaces;
-	private final JobManager jobManager;
-	private final ObjectMapper mapper;
-	private final UIContext context;
-	private final AdminUIProcessor processor;
+	private final AdminProcessor processor;
 
-	public AdminUIResource(ConqueryConfig config, Namespaces namespaces, JobManager jobManager, AdminUIProcessor processor) {
-		this.config = config;
-		this.namespaces = namespaces;
-		this.jobManager = jobManager;
-		this.mapper = namespaces.injectInto(Jackson.MAPPER);
-		this.context = new UIContext(namespaces);
-		this.processor = processor;
-	}
-	
-	/*@GET
-	@Path("datasets/{" + DATASET_NAME + "}/mapping")
-	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
-		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
-		if (mapping != null) {
-			return new UIView<>(
-				"idmapping.html.ftl",
-				ctx,
-				mapping
-			);
-		} else {
-			return new UIView<>(
-				"add_idmapping.html.ftl",
-				ctx,
-				datasetId
-			);
-		}
-	}
-*/
 	@GET
 	public View getIndex() {
-		return new UIView<>("index.html.ftl", context);
+		return new UIView<>("index.html.ftl", processor.getUIContext());
 	}
 
 	@GET
 	@Path("query")
 	public View getQuery() {
-		return new UIView<>("query.html.ftl", context);
+		return new UIView<>("query.html.ftl", processor.getUIContext());
 	}
 
 	@GET
 	@Path("/mandators")
 	public View getMandators() {
-		return new UIView<>("mandators.html.ftl", context, processor.getAllMandators());
-	}
-/*
-	@GET @Produces(MediaType.TEXT_HTML)
-	@Path("datasets")
-	public View getDatasets() {
-		return new UIView<>("datasets.html.ftl", ctx, namespaces.getAllDatasets());
-	}
-	
-	@GET
-	@Path("datasets/{" + DATASET_NAME + "}/mapping")
-	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
-		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
-		if (mapping != null) {
-			return new UIView<>(
-				"idmapping.html.ftl",
-				ctx,
-				mapping
-			);
-		} else {
-			return new UIView<>(
-				"add_idmapping.html.ftl",
-				ctx,
-				datasetId
-			);
-		}
+		return new UIView<>("mandators.html.ftl", processor.getUIContext(), processor.getAllMandators());
 	}
 
-	
-	*/
+	@GET
+	@Path("datasets")
+	public View getDatasets() {
+		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getNamespaces().getAllDatasets());
+	}
+
 	@POST
 	@Path("/mandators")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -158,7 +100,7 @@ public class AdminUIResource {
 	 */
 	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
 	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
-		return new UIView<>("mandator.html.ftl", context, processor.getMandatorContent(mandatorId));
+		return new UIView<>("mandator.html.ftl", processor.getUIContext(), processor.getMandatorContent(mandatorId));
 	}
 	
 	@POST
@@ -184,7 +126,7 @@ public class AdminUIResource {
 	@POST
 	@Path("/query")
 	public String query(@Auth User user, IQuery query) throws JSONException {
-		ManagedQuery managed = namespaces.getNamespaces().iterator().next().getQueryManager().createQuery(query, user);
+		ManagedQuery managed = processor.getNamespaces().getNamespaces().iterator().next().getQueryManager().createQuery(query, user);
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
@@ -192,7 +134,7 @@ public class AdminUIResource {
 			throw new IllegalStateException("Query failed");
 		}
 
-		return new QueryToCSVRenderer(namespaces.getNamespaces().iterator().next())
+		return new QueryToCSVRenderer(processor.getNamespaces().getNamespaces().iterator().next())
 			.toCSV(managed)
 			.collect(Collectors.joining("\n"));
 	}
@@ -202,7 +144,7 @@ public class AdminUIResource {
 	@Path("/update-matching-stats")
 	public Response updateMatchingStats(@Auth User user, IQuery query) throws JSONException {
 
-		namespaces
+		processor.getNamespaces()
 			.getNamespaces()
 			.forEach(ns -> ns.sendToAll(new UpdateMatchingStatsMessage()));
 
@@ -211,12 +153,12 @@ public class AdminUIResource {
 
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("/job/{" + JOB_ID + "}/cancel")
+	@Path("/jobs/{" + JOB_ID + "}/cancel")
 	public Response cancelJob(@PathParam(JOB_ID)UUID jobId) {
 
-		jobManager.cancelJob(jobId);
+		processor.getJobManager().cancelJob(jobId);
 
-		for (Map.Entry<SocketAddress, SlaveInformation> entry : namespaces.getSlaves().entrySet()) {
+		for (Map.Entry<SocketAddress, SlaveInformation> entry : processor.getNamespaces().getSlaves().entrySet()) {
 			SlaveInformation info = entry.getValue();
 			info.send(new CancelJobMessage(jobId));
 		}
@@ -229,9 +171,9 @@ public class AdminUIResource {
 	public View getJobs() {
 		Map<String, List<JobStatus>> status = ImmutableMap
 			.<String, List<JobStatus>>builder()
-			.put("Master", jobManager.reportStatus())
+			.put("Master", processor.getJobManager().reportStatus())
 			.putAll(
-				namespaces
+				processor.getNamespaces()
 					.getSlaves()
 					.values()
 					.stream()
@@ -241,6 +183,32 @@ public class AdminUIResource {
 					))
 			)
 			.build();
-		return new UIView<>("jobs.html.ftl", context, status);
+		return new UIView<>("jobs.html.ftl", processor.getUIContext(), status);
+	}
+	
+	@POST @Path("/jobs") @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response addDemoJob() {
+		processor.getJobManager().addSlowJob(new Job() {
+			private final UUID id = UUID.randomUUID();
+			@Override
+			public void execute() {
+				while(!progressReporter.isDone() && !isCancelled()) {
+					progressReporter.report(0.01d);
+					if(progressReporter.getProgress()>=1) {
+						progressReporter.done();
+					}
+					Uninterruptibles.sleepUninterruptibly((int)(Math.random()*200), TimeUnit.SECONDS);
+				}
+			}
+
+			@Override
+			public String getLabel() {
+				return "Demo "+id;
+			}
+		});
+		
+		return Response
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
+			.build();
 	}
 }

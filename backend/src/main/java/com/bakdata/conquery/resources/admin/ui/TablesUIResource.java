@@ -1,9 +1,11 @@
 package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
+import java.util.List;
 import java.util.Map;
-import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
@@ -18,10 +20,12 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.io.FileTreeReduction;
@@ -35,17 +39,19 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll @AuthCookie
 @Getter @Setter @Slf4j
-@Path("datasets/{" + DATASET_NAME + "}")
-public class DatasetsUIResource {
+@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+public class TablesUIResource {
 	
 	private AdminProcessor processor;
 	private Namespace namespace;
+	private Table table;
 	
 	@Inject
-	public DatasetsUIResource(
+	public TablesUIResource(
 		//@Auth User user,
 		AdminProcessor processor,
-		@PathParam(DATASET_NAME) DatasetId datasetId
+		@PathParam(DATASET_NAME) DatasetId datasetId,
+		@PathParam(TABLE_NAME) TableId tableId
 	) {
 		this.processor = processor;
 		this.namespace = processor.getNamespaces().get(datasetId);
@@ -53,34 +59,27 @@ public class DatasetsUIResource {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}
 		//authorize(user, datasetId, Ability.READ);
+		this.table = namespace.getStorage().getDataset().getTables().getOptional(tableId)
+			.orElseThrow(() -> new WebApplicationException("Could not find table "+tableId, Status.NOT_FOUND));
 	}
 	
 	@GET
-	public View getDataset() {
-		return new FileView<>(
-			"dataset.html.ftl",
+	public View getTable() {
+		List<Import> imports = namespace
+			.getStorage()
+			.getAllImports()
+			.stream()
+			.filter(imp -> imp.getTable().equals(table.getId()))
+			.collect(Collectors.toList());
+
+		return new UIView<>(
+			"table.html.ftl",
 			processor.getUIContext(),
-			namespace.getDataset(),
-			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp")
+			new TableStatistics(
+				table,
+				imports.stream().mapToLong(Import::getNumberOfBlocks).sum(),
+				imports.stream().mapToLong(Import::getNumberOfEntries).sum()
+			)
 		);
-	}
-	
-	@GET
-	@Path("mapping")
-	public View getIdMapping() {
-		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
-			return new UIView<>(
-				"idmapping.html.ftl",
-				processor.getUIContext(),
-				mapping.getCsvIdToExternalIdMap()
-			);
-		} else {
-			return new UIView<>(
-				"add_idmapping.html.ftl",
-				processor.getUIContext(),
-				namespace.getDataset().getId()
-			);
-		}
 	}
 }

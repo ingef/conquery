@@ -12,13 +12,16 @@ import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthCookieFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.rest.DatasetsResource;
-import com.bakdata.conquery.resources.admin.ui.AdminUIProcessor;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
+import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
+import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UIContext;
 
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -59,7 +62,6 @@ public class AdminServlet {
 		jerseyConfig.register(new AbstractBinder() {
 			@Override
 			protected void configure() {
-				bind(new UIContext(masterCommand.getNamespaces())).to(UIContext.class);
 				bind(adminProcessor).to(AdminProcessor.class);
 			}
 		});
@@ -67,11 +69,10 @@ public class AdminServlet {
 		//register root resources
 		jerseyConfig.register(AdminResource.class);
 		jerseyConfig.register(DatasetsResource.class);
-		jerseyConfig.register(DatasetsUIResource.class);
-		
-		
-		jerseyConfig.register(new AdminUIResource(masterCommand.getConfig(), masterCommand.getNamespaces(), masterCommand.getJobManager(), new AdminUIProcessor(masterCommand.getStorage())));
-		jerseyConfig.register(new JobsResource(masterCommand.getJobManager()));
+		jerseyConfig.register(AdminUIResource.class);
+		jerseyConfig.register(DatasetsUIResource.class);		
+		jerseyConfig.register(TablesUIResource.class);
+		jerseyConfig.register(ConceptsUIResource.class);
 		
 		//register features
 		jerseyConfig.register(new MultiPartFeature());

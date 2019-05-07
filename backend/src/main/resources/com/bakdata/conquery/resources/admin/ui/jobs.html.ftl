@@ -24,7 +24,7 @@
                                 </td>
                                 <td>
                                     <#if !job.cancelled>
-                                        <form action="/admin/job/${job.jobId}/cancel" method="post" enctype="multipart/form-data">
+                                        <form action="/admin/jobs/${job.jobId}/cancel" method="post" enctype="multipart/form-data">
                                             <input class="btn btn-warning btn-sm" type="submit" value="Cancel"/>
                                         </form>
                                     <#else>
