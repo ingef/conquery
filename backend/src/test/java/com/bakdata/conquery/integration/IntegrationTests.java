@@ -2,13 +2,11 @@ package com.bakdata.conquery.integration;
 
 import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
@@ -17,27 +15,20 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
-import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
-import org.slf4j.LoggerFactory;
 
 import com.bakdata.conquery.TestTags;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.fasterxml.jackson.databind.JsonNode;
 
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import io.github.classgraph.Resource;
 import lombok.extern.slf4j.Slf4j;
 
@@ -69,10 +60,14 @@ public class IntegrationTests {
 			return Collections.emptyList();
 		}
 		else {
-			return tree.reduce().getChildren().values()
-				.stream()
-				.map(this::collectTests)
-				.collect(Collectors.toList());
+			final ResourceTree reduced = tree.reduce();
+
+			if (reduced.getChildren().isEmpty()) {
+				return Collections.singletonList(collectTests(reduced));
+			}
+			else {
+				return reduced.getChildren().values().stream().map(this::collectTests).collect(Collectors.toList());
+			}
 		}
 	}
 	
@@ -103,18 +98,18 @@ public class IntegrationTests {
 			);
 	}
 
-	private DynamicContainer collectTests(ResourceTree currentDir) {
-		List<DynamicNode> list = new ArrayList<>();
-		
-		for(ResourceTree child : currentDir.getChildren().values()) {
-			if(!child.getChildren().isEmpty()) {
-				list.add(collectTests(child));
-			}
-			else if(child.getValue() != null) {
-				list.add(readTest(child.getValue(), child.getName()));
-			}
+	private DynamicNode collectTests(ResourceTree currentDir) {
+
+		if(currentDir.getValue() != null) {
+			return readTest(currentDir.getValue(), currentDir.getName());
 		}
-		
+
+		List<DynamicNode> list = new ArrayList<>();
+
+		for(ResourceTree child : currentDir.getChildren().values()) {
+			list.add(collectTests(child));
+		}
+
 		list.sort(Comparator.comparing(DynamicNode::getDisplayName));
 		
 		return dynamicContainer(
