@@ -45,7 +45,7 @@ public class GenerationTests {
 				Random r = new Random(7);
 				ArrayList<Object[]> arrays = new ArrayList<>();
 				for(int i = 0;i<numberOfValues;i++) {
-					Object[] event = new Object[16];
+					Object[] event = new Object[17];
 					arrays.add(event);
 
 					if(r.nextBoolean()) {
@@ -88,6 +88,9 @@ public class GenerationTests {
 					event[13] = Long.valueOf(r.nextInt());
 					//event[14] = null;
 					event[15] = Long.valueOf(r.nextInt());
+					if(r.nextBoolean()) {
+						event[16] = BigDecimal.valueOf(r.nextInt(4), r.nextInt(120)-60);
+					}
 				}
 				arrays.trimToSize();
 
@@ -116,7 +119,8 @@ public class GenerationTests {
 				column(imp, 12, MajorTypeId.INTEGER.createType()),
 				column(imp, 13, MajorTypeId.INTEGER.createType()),
 				column(imp, 14, MajorTypeId.INTEGER.createType()),
-				column(imp, 15, MajorTypeId.INTEGER.createType())
+				column(imp, 15, MajorTypeId.INTEGER.createType()),
+				column(imp, 16, MajorTypeId.DECIMAL.createType())
 		});
 
 
@@ -195,10 +199,6 @@ public class GenerationTests {
 		registry.register(block.getImp());
 
 		SerializationTestUtil.testSerialization(block, Block.class, registry);
-
-		for(ImportColumn col : block.getImp().getColumns()) {
-			SerializationTestUtil.testSerialization(col.getType(), CType.class, Dictionary.class);
-		}
 	}
 
 	private ImportColumn column(Import imp, int pos, CType<?, ?> valueType) {

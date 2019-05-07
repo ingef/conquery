@@ -101,7 +101,7 @@ public class Block_${suffix} extends Block {
 		return has(event, column.getPosition());
 	}
 	
-	private boolean has(int event, int columnPosition) {
+	public boolean has(int event, int columnPosition) {
 		switch(columnPosition) {
 	<#list imp.columns as col>
 	<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>

@@ -2,10 +2,9 @@
 
 import { combineReducers } from "redux";
 
-import {
-  reducer as categoryTrees,
+import categoryTrees, {
   type StateType as CategoryTreesStateType
-} from "../category-trees";
+} from "../category-trees/reducer";
 
 import {
   reducer as datasets,
@@ -17,6 +16,10 @@ import {
   type StateType as TooltipStateType
 } from "../tooltip";
 
+import uploadConceptListModal, {
+  type StateType as UploadConceptListModalStateType
+} from "../upload-concept-list-modal/reducer";
+
 import { type StateType as PanesStateType } from "../pane";
 
 import { reducer as startup } from "../startup";
@@ -27,7 +30,6 @@ import { reducer as previousQueriesSearch } from "../previous-queries/search";
 import { reducer as previousQueriesFilter } from "../previous-queries/filter";
 import { reducer as uploadQueryResults } from "../previous-queries/upload";
 import { reducer as deletePreviousQueryModal } from "../previous-queries/delete-modal";
-import { reducer as uploadConceptListModal } from "../upload-concept-list-modal";
 import { reducer as uploadFilterListModal } from "../upload-filter-list-modal";
 import { reducer as snackMessage } from "../snack-message";
 
@@ -37,7 +39,8 @@ export type StateType = {
   categoryTrees: CategoryTreesStateType,
   datasets: DatasetsStateType,
   tooltip: TooltipStateType,
-  panes: PanesStateType
+  panes: PanesStateType,
+  uploadConceptListModal: UploadConceptListModalStateType
 };
 
 const buildAppReducer = tabs =>

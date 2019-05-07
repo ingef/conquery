@@ -139,16 +139,16 @@ public class AdminUIResource {
 			.collect(Collectors.joining("\n"));
 	}
 
-	@POST
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	@Path("/update-matching-stats")
-	public Response updateMatchingStats(@Auth User user, IQuery query) throws JSONException {
+	@POST @Path("/update-matching-stats") @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public Response updateMatchingStats(@Auth User user) throws JSONException {
 
 		processor.getNamespaces()
 			.getNamespaces()
 			.forEach(ns -> ns.sendToAll(new UpdateMatchingStatsMessage()));
 
-		return Response.ok().build();
+		return Response
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
+			.build();
 	}
 
 	@POST
@@ -163,7 +163,9 @@ public class AdminUIResource {
 			info.send(new CancelJobMessage(jobId));
 		}
 
-		return Response.ok().build();
+		return Response
+			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
+			.build();
 	}
 
 	@GET

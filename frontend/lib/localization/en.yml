@@ -20,7 +20,9 @@ categoryTreeList:
   closeAll: "Open individually"
   searchPlaceholder: "Search concepts ..."
   showMismatches: "Show all"
-  dontShowMismatches: "Show hits only"
+  showMatchesOnly: "Show matches only"
+  showingMatchesOnly: "Showing only matches"
+  showingMismatches: "Showing full trees"
 
 queryRunner:
   start: "Start Query"
@@ -136,15 +138,17 @@ inputDateRange:
     possiblePattern: "y2000 => from: 01/01/2000 to: 01/31/2000 <br/> q2.2000 => from: 04/01/2000 to: 06/30/2000 <br/> m3.2000 => from: 03/01/2000 to: 03/31/2000"
 
 previousQueries:
-  loading: "Loading Queries"
-  error: "Could not load Queries"
+  loading: "Loading queries"
+  error: "Could not load queries"
   results: "results"
-  noQueriesFound: "No Queries found"
+  noQueriesFound: "No queries found"
 
 previousQuery:
   addTag: "Add Tag"
   share: "Share"
   shared: "Shared"
+  delete: "Delete"
+  downloadResults: "Download results"
   loadError: "Could not load query"
   renameError: "Could not rename query"
   retagError: "Could not save tags"
@@ -205,10 +209,11 @@ externalForms:
     edit: "Edit"
 
 uploadQueryResultsModal:
-  headline: "Upload a Query Result"
+  headline: "Upload query result"
   dropzone: "Drop a CSV file here"
   upload: "Upload"
   uploadFailed: "Could not upload file"
+  uploadFailedSub: "Please check the file format and your network connection"
   uploadSucceeded: "File was successfully uploaded"
   previousQueryCreated: "Previous query was successfully uploaded"
   formatInfo:
@@ -218,14 +223,14 @@ uploadConceptListModal:
   headline: "Upload concepts"
   label: "Name of the Concept"
   selectConceptRootNode: "Choose a Concept Tree root"
-  insertNode: "Insert"
+  insertNode: "Insert now"
   result: "Result"
   resolvedCodes:
-    1: "One value could be resolved."
-    _: "{context} values could be resolved."
+    1: "1 value resolved."
+    _: "{context} values resolved."
   unknownCodes:
-    1: "The following value could not be resolved:"
-    _: "The following {context} values could not be resolved:"
+    1: "1 value <strong>not</strong> resolved"
+    _: "{context} values <strong>not</strong> resolved"
   error: "An error occurred when resolving the values."
 
 uploadFilterListModal:
@@ -235,10 +240,6 @@ conceptListDetailsModal:
   conceptTreeRoot: "Concept Tree"
   conceptCodes: "Concept Codes"
 
-uploadReport:
-  successful: "{count} rows successfully imported"
-  unsuccessful: "{count} rows ignored"
-
 uploadQueryResults:
   uploadResults: "Upload Query Result"
 
@@ -247,4 +248,4 @@ authorization:
 
 search:
   placeholder: "Search ..."
-  resultLabel: "{totalResults} results found ({duration} s)"
+  resultLabel: "{totalResults} results ({duration} s)"

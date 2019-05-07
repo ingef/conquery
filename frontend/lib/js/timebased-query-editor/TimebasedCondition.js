@@ -31,7 +31,7 @@ const StyledIconButton = styled(IconButton)`
 
 const Root = styled("div")`
   position: relative;
-  padding: 30px 5px 10px;
+  padding: 30px 10px 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.12);
   border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid ${({ theme }) => theme.col.grayLight};

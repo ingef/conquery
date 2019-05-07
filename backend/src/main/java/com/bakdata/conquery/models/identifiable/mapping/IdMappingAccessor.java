@@ -7,8 +7,8 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 
-public interface IdMappingAccessor {
 
+public interface IdMappingAccessor {
 	String[] getHeader();
 
 	/**
@@ -53,7 +53,7 @@ public interface IdMappingAccessor {
 	default void collectSufficientEntityIds(PersistentIdMap mapping) {
 		for (Map.Entry<CsvEntityId, ExternalEntityId> entry : mapping.getCsvIdToExternalIdMap().entrySet()) {
 			mapping.getExternalIdPartCsvIdMap()
-				.put(new SufficientExternalEntityId(this, extract(entry.getValue().getExternalId())), entry.getKey());
+				.put(new SufficientExternalEntityId(extract(entry.getValue().getExternalId())), entry.getKey());
 		}
 	}
 }

@@ -8,7 +8,6 @@ import lombok.experimental.Wither;
 
 @AllArgsConstructor @Getter @Wither
 public class ResultInfo {
-
 	private final String name;
 	private final ResultType type;
 	/**

@@ -5,8 +5,7 @@ import React, { Component } from "react";
 type PropsType = {
   children: any,
   className: ?string,
-  onEscPressed: () => void,
-  onClick: () => void
+  onEscPressed: () => void
 };
 
 export default class EscAble extends Component<PropsType> {
@@ -35,10 +34,6 @@ export default class EscAble extends Component<PropsType> {
   };
 
   render() {
-    return (
-      <div onClick={this.props.onClick} className={this.props.className}>
-        {this.props.children}
-      </div>
-    );
+    return <div className={this.props.className}>{this.props.children}</div>;
   }
 }

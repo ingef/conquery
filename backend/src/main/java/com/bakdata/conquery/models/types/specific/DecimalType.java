@@ -13,8 +13,8 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 @CPSType(base=CType.class, id="DECIMAL")
 public class DecimalType extends CType<BigDecimal, DecimalType> {
 
-	private int maxScale = Integer.MIN_VALUE;
-	private BigDecimal maxAbs;
+	private transient int maxScale = Integer.MIN_VALUE;
+	private transient BigDecimal maxAbs;
 	
 	public DecimalType() {
 		super(MajorTypeId.DECIMAL, BigDecimal.class);
