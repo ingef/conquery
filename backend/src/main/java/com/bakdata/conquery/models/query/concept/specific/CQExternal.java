@@ -59,6 +59,7 @@ public class CQExternal implements CQElement {
 		Optional<DateFormat> dateFormat = format.stream()
 			.map(FormatColumn::getDateFormat)
 			.filter(Objects::nonNull)
+			.distinct()
 			.collect(MoreCollectors.toOptional());
 		int[] dateIndices = format.stream().filter(fc -> fc.getDateFormat() != null).mapToInt(format::indexOf).toArray();
 
