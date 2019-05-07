@@ -49,9 +49,14 @@ queryEditor:
   loadingPreviousQuery: "Loading Query Details"
 
 dropzone:
-  dragElementPlease: "Drag a concept or a query into this area"
-  dragElementPleaseShort: "Add an element"
+  dragElementPlease: "Add an element"
   dragQuery: "Add a query"
+  explanation: "You'll create a query in this area"
+  drop: "Drop"
+  aConcept: "a concept"
+  aQuery: "a previous query"
+  aConceptList: "a concept list"
+  intoThisArea: "into this area"
 
 datasetSelector:
   pleaseChoose: "Choose a data set"

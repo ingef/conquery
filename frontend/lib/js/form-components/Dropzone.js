@@ -1,56 +1,66 @@
 import React from "react";
+import styled from "@emotion/styled";
 import { DropTarget } from "react-dnd";
-import classnames from "classnames";
 
-// Decorates a Component with a Dropzone
-// Then, the component is replaced with a Dropzone until "containsItem" is true
-const Dropzone = (Component, acceptedDropTypes, onDrop) => {
-  const dropzoneTarget = { drop: onDrop };
+const Root = styled("div")`
+  border: 3px
+    ${({ theme, over }) =>
+      over ? `solid ${theme.col.black}` : `dashed ${theme.col.gray}`};
+  border-radius: ${({ theme }) => theme.borderRadius};
+  padding: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  color: ${({ theme, over }) => (over ? theme.col.black : theme.col.gray)};
+`;
 
-  const collect = (connect, monitor) => ({
-    connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver()
-  });
+type PropsType = {
+  className?: string,
+  children?: string,
+  connectDropTarget: Function,
+  isOver: boolean,
+  dropzoneText: string,
+  hasItem: boolean
+};
 
-  type PropsType = {
-    className?: string,
-    connectDropTarget: Function,
-    isOver: boolean,
-    dropzoneText: string,
-    containsItem: boolean
-  };
+const collect = (connect, monitor) => ({
+  connectDropTarget: connect.dropTarget(),
+  isOver: monitor.isOver()
+});
 
-  class Zone extends React.Component {
-    props: PropsType;
+class Zone extends React.Component {
+  props: PropsType;
 
-    render() {
-      const {
-        className,
-        isOver,
-        connectDropTarget,
-        dropzoneText,
-        containsItem
-      } = this.props;
+  render() {
+    const { children, className, isOver, connectDropTarget } = this.props;
 
-      if (containsItem) return Component;
-
-      return connectDropTarget(
-        <div
-          className={classnames(
-            "dropzone",
-            {
-              "dropzone--over": isOver
-            },
-            className
-          )}
-        >
-          <p className="dropzone__text">{dropzoneText}</p>
-        </div>
-      );
-    }
+    return (
+      <Root
+        ref={instance => connectDropTarget(instance)}
+        over={isOver}
+        className={className}
+      >
+        {children}
+      </Root>
+    );
   }
+}
 
-  return DropTarget(acceptedDropTypes, dropzoneTarget, collect)(Zone);
+const Dropzone = ({
+  children,
+  className,
+  acceptedDropTypes,
+  onDrop,
+  target
+}) => {
+  const dropzoneTarget = { drop: onDrop, ...target };
+
+  const FinalZone = DropTarget(acceptedDropTypes, dropzoneTarget, collect)(
+    Zone
+  );
+
+  return <FinalZone className={className} children={children} />;
 };
 
 export default Dropzone;

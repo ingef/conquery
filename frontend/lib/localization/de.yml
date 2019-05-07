@@ -51,9 +51,14 @@ queryEditor:
   loadingPreviousQuery: "Lade Anfragedetails"
 
 dropzone:
-  dragElementPlease: "Ziehe ein Konzept oder eine Anfrage in diesen Bereich"
-  dragElementPleaseShort: "Füge ein Element hinzu"
+  dragElementPlease: "Füge ein Element hinzu"
   dragQuery: "Füge eine Anfrage hinzu"
+  explanation: "In diesem Bereich erstellst Du eine Anfrage"
+  drop: "Ziehe"
+  aConcept: "ein Konzept"
+  aQuery: "eine Anfrage"
+  aConceptList: "eine Konzeptliste"
+  intoThisArea: "in diesen Bereich"
 
 datasetSelector:
   pleaseChoose: "Datenbank auswählen"
