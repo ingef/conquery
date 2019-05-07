@@ -33,13 +33,20 @@ class Zone extends React.Component {
   props: PropsType;
 
   render() {
-    const { children, className, isOver, connectDropTarget } = this.props;
+    const {
+      children,
+      className,
+      onClick,
+      isOver,
+      connectDropTarget
+    } = this.props;
 
     return (
       <Root
         ref={instance => connectDropTarget(instance)}
         over={isOver}
         className={className}
+        onClick={onClick}
       >
         {children}
       </Root>
@@ -47,20 +54,14 @@ class Zone extends React.Component {
   }
 }
 
-const Dropzone = ({
-  children,
-  className,
-  acceptedDropTypes,
-  onDrop,
-  target
-}) => {
+const Dropzone = ({ acceptedDropTypes, onDrop, target, ...restProps }) => {
   const dropzoneTarget = { drop: onDrop, ...target };
 
   const FinalZone = DropTarget(acceptedDropTypes, dropzoneTarget, collect)(
     Zone
   );
 
-  return <FinalZone className={className} children={children} />;
+  return <FinalZone {...restProps} />;
 };
 
 export default Dropzone;

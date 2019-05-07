@@ -1,10 +1,10 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import T from "i18n-react";
 import { components } from "react-select";
 import { type FieldPropsType } from "redux-form";
-import Dropzone from "react-dropzone";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
 
@@ -12,6 +12,7 @@ import { type SelectOptionsType } from "../common/types/backend";
 import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
+import Dropzone from "./Dropzone";
 import TooManyValues from "./TooManyValues";
 import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
@@ -28,6 +29,12 @@ type PropsType = FieldPropsType & {
   isOver: boolean,
   allowDropFile?: boolean
 };
+
+const StyledDropzone = styled(Dropzone)`
+  position: relative;
+  display: block;
+  max-width: 300px;
+`;
 
 const OPTIONS_LIMIT = 50;
 
@@ -79,9 +86,8 @@ const InputMultiSelect = (props: PropsType) => {
           onClear={() => props.input.onChange(null)}
         />
       ) : (
-        <Dropzone
+        <StyledDropzone
           disableClick
-          style={{ position: "relative", display: "block", maxWidth: "300px" }}
           activeClassName={allowDropFile ? "dropzone--over" : ""}
           className={allowDropFile ? "dropzone" : ""}
           onDrop={files => props.onDropFile(files[0])}
@@ -128,7 +134,7 @@ const InputMultiSelect = (props: PropsType) => {
               )
             }
           />
-        </Dropzone>
+        </StyledDropzone>
       )}
     </Labeled>
   );

@@ -48,7 +48,6 @@
     "react-dnd-multi-backend": "^3.1.11",
     "react-dnd-touch-backend": "^0.8.1",
     "react-dom": "^16.8.1",
-    "react-dropzone": "^4.2.8",
     "react-hot-loader": "^4.6.5",
     "react-list": "^0.8.0",
     "react-onclickoutside": "^6.7.1",

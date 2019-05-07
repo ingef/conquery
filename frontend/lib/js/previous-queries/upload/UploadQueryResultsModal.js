@@ -3,9 +3,11 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import ReactDropzone from "react-dropzone";
+import { NativeTypes } from "react-dnd-html5-backend";
 
 import { InfoTooltip } from "../../tooltip";
+
+import Dropzone from "../../form-components/Dropzone";
 
 import { Modal } from "../../modal";
 import { ErrorMessage } from "../../error-message";
@@ -14,7 +16,6 @@ import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
 
 const Root = styled("div")`
-  padding: 20px 0 10px;
   text-align: center;
 `;
 
@@ -46,6 +47,17 @@ const StyledIconButton = styled(IconButton)`
   margin-left: 10px;
 `;
 
+const StyledDropzone = styled(Dropzone)`
+  padding: 40px;
+  width: 100%;
+  margin: 0 0 20px;
+  cursor: pointer;
+`;
+
+const FileInput = styled("input")`
+  display: none;
+`;
+
 type PropsType = {
   onCloseModal: Function,
   onUploadFile: Function,
@@ -58,14 +70,34 @@ type StateType = {
   file: any
 };
 
+const DROP_TYPES = [NativeTypes.FILE];
+
 class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
   props: PropsType;
   state: StateType = {
     file: null
   };
 
-  onDrop = (acceptedFiles: any) => {
-    this.setState({ file: acceptedFiles[0] });
+  constructor(props) {
+    super(props);
+
+    this.fileInputRef = React.createRef();
+  }
+
+  onDrop = (_, monitor) => {
+    const item = monitor.getItem();
+
+    if (item.files) {
+      this.setState({ file: item.files[0] });
+    }
+  };
+
+  onSelectFile = file => {
+    this.setState({ file: this.fileInputRef.current.files[0] });
+  };
+
+  onOpenFileDialog = () => {
+    this.fileInputRef.current.click();
   };
 
   onReset = () => {
@@ -108,14 +140,18 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
                   />
                 </p>
               ) : (
-                <ReactDropzone
+                <StyledDropzone
+                  acceptedDropTypes={DROP_TYPES}
                   onDrop={this.onDrop}
-                  className="upload-query-results-modal__dropzone"
-                  activeClassName="upload-query-results-modal__dropzone--accepting"
-                  rejectClassName="upload-query-results-modal__dropzone--rejecting"
+                  onClick={this.onOpenFileDialog}
                 >
+                  <FileInput
+                    ref={this.fileInputRef}
+                    type="file"
+                    onChange={this.onSelectFile}
+                  />
                   {T.translate("uploadQueryResultsModal.dropzone")}
-                </ReactDropzone>
+                </StyledDropzone>
               )}
               {this.props.error && (
                 <Error>
