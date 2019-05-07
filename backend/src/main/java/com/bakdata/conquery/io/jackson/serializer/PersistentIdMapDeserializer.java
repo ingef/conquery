@@ -17,8 +17,8 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 
 public class PersistentIdMapDeserializer extends JsonDeserializer<PersistentIdMap> {
 
-	private static final TypeReference arrayOfMapEntryType = new TypeReference<ArrayList<PersistentIdMapSerializer.ExternalIdMapEntry>>() { };
-	private static final TypeReference mapOfCsvToExternalIdType = new TypeReference<Map<CsvEntityId, ExternalEntityId>>() { };
+	private static final TypeReference arrayOfMapEntryType = new TypeReference<ArrayList<PersistentIdMapSerializer.ExternalIdMapEntry>>() {};
+	private static final TypeReference mapOfCsvToExternalIdType = new TypeReference<Map<CsvEntityId, ExternalEntityId>>() {};
 
 	@Override
 	public PersistentIdMap deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
