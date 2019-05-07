@@ -15,7 +15,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.jupiter.api.DynamicContainer;
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Tag;
@@ -99,20 +98,18 @@ public class IntegrationTests {
 			);
 	}
 
-	private DynamicContainer collectTests(ResourceTree currentDir) {
-		List<DynamicNode> list = new ArrayList<>();
+	private DynamicNode collectTests(ResourceTree currentDir) {
 
 		if(currentDir.getValue() != null) {
-			list.add(readTest(currentDir.getValue(), currentDir.getName()));
+			return readTest(currentDir.getValue(), currentDir.getName());
 		}
-		else {
-			for(ResourceTree child : currentDir.getChildren().values()) {
-				if(!child.getChildren().isEmpty()) {
-					list.add(collectTests(child));
-				}
-			}
+
+		List<DynamicNode> list = new ArrayList<>();
+
+		for(ResourceTree child : currentDir.getChildren().values()) {
+			list.add(collectTests(child));
 		}
-				
+
 		list.sort(Comparator.comparing(DynamicNode::getDisplayName));
 		
 		return dynamicContainer(
