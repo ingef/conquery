@@ -35,7 +35,7 @@ const NodeDetailsView = (props: PropsType) => {
     onRemoveConcept
   } = props;
 
-  const rootConcept = node.isPreviousQuery ? getConceptById(node.tree) : null;
+  const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
 
   return (
     <ContentCell>
