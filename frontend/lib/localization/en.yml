@@ -39,7 +39,7 @@ queryRunner:
   downloadResults: "CSV"
 
 queryEditor:
-  couldNotExpandNode: "Could not find node"
+  couldNotExpandNode: "Concept not found"
   couldNotInsertConceptList: "Could not insert the Concept List"
   edit: "Edit"
   exclude: "Exclude"
@@ -79,6 +79,7 @@ queryNodeEditor:
   tooManyValues: "{count} values selected"
   filters: "Filters"
   selects: "More values"
+  nodeNotFound: "Concept not found"
 
 queryGroupModal:
   explanation: "Set time frame"

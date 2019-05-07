@@ -39,7 +39,7 @@ queryRunner:
   downloadResults: "CSV"
 
 queryEditor:
-  couldNotExpandNode: "Knoten nicht gefunden"
+  couldNotExpandNode: "Konzept nicht gefunden"
   couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
   edit: "Bearbeiten"
   exclude: "Nicht"
@@ -81,6 +81,7 @@ queryNodeEditor:
   tooManyValues: "{count} Werte ausgewählt"
   filters: "Filter"
   selects: "Zusatzwerte"
+  nodeNotFound: "Konzept nicht gefunden"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
@@ -110,7 +111,7 @@ tooltip:
     1: "gefundener Eintrag"
     _: "gefundene Einträge"
 
-  placeholder: "Weitere Informationen über einen Konzeptknoten ..."
+  placeholder: "Weitere Informationen über ein Konzept ..."
   date:
     daterange: "Zeitraum"
     from: "Von"

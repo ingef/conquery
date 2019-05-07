@@ -16,7 +16,12 @@ const Root = styled("div")`
   align-items: center;
   justify-content: center;
   width: 100%;
-  color: ${({ theme, isOver }) => (isOver ? theme.col.black : theme.col.gray)};
+  color: ${({ theme, isOver, canDrop }) =>
+    isOver && !canDrop
+      ? theme.col.red
+      : isOver
+      ? theme.col.black
+      : theme.col.gray};
 `;
 
 type InnerZonePropsType = {
