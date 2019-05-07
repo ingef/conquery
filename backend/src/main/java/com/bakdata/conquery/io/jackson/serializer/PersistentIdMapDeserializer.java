@@ -20,12 +20,16 @@ public class PersistentIdMapDeserializer extends JsonDeserializer<PersistentIdMa
 	@Override
 	public PersistentIdMap deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 
-		Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap = p.readValueAs(new TypeReference<Map<CsvEntityId, ExternalEntityId>>() {});
+		Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap = p.readValueAs(new TypeReference<Map<CsvEntityId, ExternalEntityId>>() {
+
+		});
 		Map<SufficientExternalEntityId, CsvEntityId> externalIdPartCsvIdMap = new HashMap<>();
 
-		List<PersistentIdMapSerializer.ExternalIdMapEntry> mapAsList = p.readValueAs(new TypeReference<ArrayList<PersistentIdMapSerializer.ExternalIdMapEntry>>(){});
+		List<PersistentIdMapSerializer.ExternalIdMapEntry> mapAsList = p.readValueAs(new TypeReference<ArrayList<PersistentIdMapSerializer.ExternalIdMapEntry>>() {
+
+		});
 		mapAsList.forEach(externalIdMapEntry -> {
-			externalIdPartCsvIdMap.put(externalIdMapEntry.getSufficientExternalEntityId(),externalIdMapEntry.getCsvEntityId());
+			externalIdPartCsvIdMap.put(externalIdMapEntry.getSufficientExternalEntityId(), externalIdMapEntry.getCsvEntityId());
 		});
 
 		return new PersistentIdMap(csvIdToExternalIdMap, externalIdPartCsvIdMap);
