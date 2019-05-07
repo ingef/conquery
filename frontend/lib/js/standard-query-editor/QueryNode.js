@@ -116,7 +116,7 @@ class QueryNode extends React.Component {
           ) : (
             <>
               <Label>{node.label || node.id}</Label>
-              {node.description && (
+              {node.description && (!node.ids || node.ids.length === 1) && (
                 <Description>{node.description}</Description>
               )}
             </>
