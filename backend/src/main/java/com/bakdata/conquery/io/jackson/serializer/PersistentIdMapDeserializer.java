@@ -17,17 +17,16 @@ import com.fasterxml.jackson.databind.JsonDeserializer;
 
 public class PersistentIdMapDeserializer extends JsonDeserializer<PersistentIdMap> {
 
+	private static final TypeReference arrayOfMapEntryType = new TypeReference<ArrayList<PersistentIdMapSerializer.ExternalIdMapEntry>>() { };
+	private static final TypeReference mapOfCsvToExternalIdType = new TypeReference<Map<CsvEntityId, ExternalEntityId>>() { };
+
 	@Override
 	public PersistentIdMap deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
 
-		Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap = p.readValueAs(new TypeReference<Map<CsvEntityId, ExternalEntityId>>() {
-
-		});
+		Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap = p.readValueAs(mapOfCsvToExternalIdType);
 		Map<SufficientExternalEntityId, CsvEntityId> externalIdPartCsvIdMap = new HashMap<>();
 
-		List<PersistentIdMapSerializer.ExternalIdMapEntry> mapAsList = p.readValueAs(new TypeReference<ArrayList<PersistentIdMapSerializer.ExternalIdMapEntry>>() {
-
-		});
+		List<PersistentIdMapSerializer.ExternalIdMapEntry> mapAsList = p.readValueAs(arrayOfMapEntryType);
 		mapAsList.forEach(externalIdMapEntry -> {
 			externalIdPartCsvIdMap.put(externalIdMapEntry.getSufficientExternalEntityId(), externalIdMapEntry.getCsvEntityId());
 		});
