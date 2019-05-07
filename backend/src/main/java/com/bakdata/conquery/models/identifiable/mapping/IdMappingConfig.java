@@ -29,6 +29,7 @@ public abstract class IdMappingConfig {
 
 		PersistentIdMap mapping = new PersistentIdMap(new HashMap<>(), new HashMap<>());
 
+
 		if (!Arrays.equals(this.getHeader(), csvIterator.next(), StringUtils::compareIgnoreCase)) {
 			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
 		}
@@ -63,12 +64,13 @@ public abstract class IdMappingConfig {
 
 	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace) {
 		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
-		if (mapping != null){
-			return mapping.getCsvIdToExternalIdMap().get(csvEntityId);
+		if (mapping != null) {
+			ExternalEntityId externalEntityId = mapping.getCsvIdToExternalIdMap().get(csvEntityId);
+			if (externalEntityId != null) {
+				return externalEntityId;
+			}
 		}
-		else {
-			return ExternalEntityId.from(csvEntityId);
-		}
+		return ExternalEntityId.from(csvEntityId);
 	}
 
 	@NonNull

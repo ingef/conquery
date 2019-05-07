@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -50,8 +49,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -106,15 +104,15 @@ public class DatasetsResource {
 	}
 
 	
-	@GET
+	@GET @Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
-		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
+		PersistentIdMap mapping = namespaces.get(datasetId).getStorage().getIdMapping();
 		if (mapping != null) {
 			return new UIView<>(
 				"idmapping.html.ftl",
 				ctx,
-				mapping
+				mapping.getCsvIdToExternalIdMap()
 			);
 		} else {
 			return new UIView<>(
