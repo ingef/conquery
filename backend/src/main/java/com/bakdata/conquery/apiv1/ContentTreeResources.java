@@ -39,6 +39,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
+import com.google.common.collect.MoreCollectors;
 
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
@@ -83,7 +84,7 @@ public class ContentTreeResources {
 		// return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 		// }
 		Dataset dataset = dsUtil.getDataset(datasetId);
-		Map<ConceptElementId<?>, FENode> result = processor.getNode(dataset, id);
+		Map<ConceptElementId<?>, FENode> result = processor.getNode(dataset.getConcepts().stream().filter(c->c.getId().equals(id)).collect(MoreCollectors.onlyElement()));
 
 		if (result == null) {
 			throw new WebApplicationException("There is not concept with the id " + id + " in the dataset " + dataset, Status.NOT_FOUND);
