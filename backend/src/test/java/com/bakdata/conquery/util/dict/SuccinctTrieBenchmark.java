@@ -44,8 +44,7 @@ public class SuccinctTrieBenchmark {
 		);
 	}
 
-	@ParameterizedTest(name = "{0}") @MethodSource("data")
-	@Disabled
+	//@ParameterizedTest(name = "{0}") @MethodSource("data")
 	public void test(String name, SuccinctTrie trie, List<byte[]> data) throws IOException {
 		data.forEach(trie::add);
 		trie.compress();
