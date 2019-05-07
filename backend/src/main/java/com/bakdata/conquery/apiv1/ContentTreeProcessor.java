@@ -5,17 +5,23 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.WebApplicationException;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.concepts.filters.Filter;
@@ -35,6 +41,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.zigurs.karlis.utils.search.QuickSearch;
 
 import lombok.AllArgsConstructor;
@@ -47,7 +57,16 @@ import lombok.extern.slf4j.Slf4j;
 public class ContentTreeProcessor {
 
 	private Namespaces namespaces;
-
+	private LoadingCache<Concept<?>, FEList> nodeCache = CacheBuilder.newBuilder()
+		.softValues()
+		.expireAfterWrite(10, TimeUnit.MINUTES)
+		.build(new CacheLoader<Concept<?>, FEList>() {
+			@Override
+			public FEList load(Concept<?> concept) throws Exception {
+				return FrontEndConceptBuilder.createTreeMap(concept);
+			};
+		});
+		
 	public ContentTreeProcessor(Namespaces namespaces) {
 		this.namespaces = namespaces;
 		FilterSearch.init(namespaces.getAllDatasets());
@@ -78,11 +97,15 @@ public class ContentTreeProcessor {
 		return result;
 	}
 
-	public Map<ConceptElementId<?>, FENode> getNode(Dataset dataset, IId id) {
-		Map<ConceptId, Map<ConceptElementId<?>, FENode>> ctRoots = FrontEndConceptBuilder.createTreeMap(dataset.getConcepts());
-		return ctRoots.get(id);
+	public FEList getNode(Concept<?> concept) {
+		try {
+			return nodeCache.get(concept);
+		}
+		catch (ExecutionException e) {
+			throw new RuntimeException("failed to create frontend node for "+concept, e);
+		}
 	}
-
+	
 	public List<IdLabel> getDatasets(User user) {
 		return namespaces
 			.getAllDatasets()
