@@ -14,6 +14,7 @@ import javax.ws.rs.WebApplicationException;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
@@ -56,12 +57,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ContentTreeProcessor {
 
 	private Namespaces namespaces;
-	private LoadingCache<Concept<?>, Map<ConceptElementId<?>, FENode>> nodeCache = CacheBuilder.newBuilder()
+	private LoadingCache<Concept<?>, FEList> nodeCache = CacheBuilder.newBuilder()
 		.softValues()
 		.expireAfterWrite(10, TimeUnit.MINUTES)
-		.build(new CacheLoader<Concept<?>, Map<ConceptElementId<?>, FENode>>() {
+		.build(new CacheLoader<Concept<?>, FEList>() {
 			@Override
-			public Map<ConceptElementId<?>,FENode> load(Concept<?> concept) throws Exception {
+			public FEList load(Concept<?> concept) throws Exception {
 				return FrontEndConceptBuilder.createTreeMap(concept);
 			};
 		});
@@ -96,7 +97,7 @@ public class ContentTreeProcessor {
 		return result;
 	}
 
-	public Map<ConceptElementId<?>, FENode> getNode(Concept<?> concept) {
+	public FEList getNode(Concept<?> concept) {
 		try {
 			return nodeCache.get(concept);
 		}
