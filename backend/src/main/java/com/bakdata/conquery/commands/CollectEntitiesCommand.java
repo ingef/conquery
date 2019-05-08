@@ -26,7 +26,6 @@ import com.bakdata.conquery.models.types.specific.StringType;
 import com.bakdata.conquery.util.DebugMode;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
-import com.bakdata.conquery.util.io.ProgressBar;
 import com.fasterxml.jackson.core.JsonParser;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
@@ -58,14 +57,12 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 		
 		Collection<EntityExtractor> jobs = findPreprocessedJobs(config);
 		
-		ProgressBar totalProgress = new ProgressBar(jobs.size(), System.out);
 
 		for(EntityExtractor job:jobs) {
 			pool.submit(() -> {
 				ConqueryMDC.setLocation(LogUtil.printPath(job.getFile()));
 				try {
 					job.execute();
-					totalProgress.addCurrentValue(1L);
 					log.info("Merged {}", LogUtil.printPath(job.getFile()));
 				}
 				catch(Exception e) {
@@ -79,9 +76,9 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 		
 		log.info("finished collecting ids, writing...");
 		for(Entry<File, Set<String>> e : entities.entrySet()) {
-			log.info("Writing {}", e.getKey());
+			log.info("{} entities into {}", e.getValue().size(), e.getKey());
 			Out
-				.file(new File(e.getKey(), "entities.csv"))
+				.file(e.getKey())
 				.withUTF8()
 				.writeLines(e.getValue().stream().sorted().distinct().iterator());
 		}
@@ -105,9 +102,9 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 		return l;
 	}
 	
-	@RequiredArgsConstructor 
+	@RequiredArgsConstructor @Getter 
 	public class EntityExtractor implements Executable {
-		@Getter
+		
 		private final File file;
 		
 		@Override
@@ -122,10 +119,16 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 					log.debug("\tparsing dictionaries");
 					header.getPrimaryColumn().getType().readHeader(in);
 					Dictionary dict = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
-					Set<String> list = entities.computeIfAbsent(file.getParentFile(), f->Sets.newConcurrentHashSet());
-					dict.forEach(list::add);
+					
+					add(dict, new File(file.getParentFile(), "all_entities.csv"));
+					add(dict, new File(file.getParentFile(), file.getName()+".entities.csv"));
 				}
 			}
+		}
+
+		private void add(Dictionary dict, File file) {
+			Set<String> list = entities.computeIfAbsent(file, f->Sets.newConcurrentHashSet());
+			dict.forEach(list::add);
 		}
 		
 	}
