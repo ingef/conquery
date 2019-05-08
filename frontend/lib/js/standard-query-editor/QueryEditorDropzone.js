@@ -112,7 +112,7 @@ const QueryEditorDropzone = ({
         <TextInitial>
           <h2>{T.translate("dropzone.explanation")}</h2>
           <Row>
-            <ArrowRight regular icon="arrow-alt-circle-right" />
+            <ArrowRight icon="arrow-right" />
             <div>
               <p>{T.translate("dropzone.drop")}</p>
               <ul>

@@ -13,8 +13,8 @@ const styles = {
     ...provided,
     fontSize: "14px",
     borderRadius: "3px",
+    boxShadow: "none",
     backgroundColor: "white",
-    boxShadow: "transparent",
     borderColor: "#aaa",
     ":hover": {
       borderColor: "#aaa"

@@ -2,7 +2,6 @@
 
 import React from "react";
 import styled from "@emotion/styled";
-import { NativeTypes } from "react-dnd-html5-backend";
 import T from "i18n-react";
 import { components } from "react-select";
 import { type FieldPropsType } from "redux-form";
@@ -13,7 +12,7 @@ import { type SelectOptionsType } from "../common/types/backend";
 import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
-import Dropzone from "./Dropzone";
+import InputMultiSelectDropzone from "./InputMultiSelectDropzone";
 import TooManyValues from "./TooManyValues";
 import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
@@ -31,10 +30,8 @@ type PropsType = FieldPropsType & {
   onDropFile?: Function
 };
 
-const StyledDropzone = styled(Dropzone)`
-  position: relative;
+const StyledInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
-  max-width: 300px;
 `;
 
 const OPTIONS_LIMIT = 50;
@@ -79,7 +76,6 @@ const InputMultiSelect = (props: PropsType) => {
       options={options}
       components={{ MultiValueLabel }}
       value={props.input.value}
-      onChange={props.input.onChange}
       isDisabled={props.disabled}
       isLoading={!!props.isLoading}
       filterOption={false}
@@ -91,6 +87,7 @@ const InputMultiSelect = (props: PropsType) => {
           : T.translate("reactSelect.placeholder")
       }
       noOptionsMessage={() => T.translate("reactSelect.noResults")}
+      onChange={props.input.onChange}
       onInputChange={
         props.onInputChange ||
         function(value) {
@@ -127,21 +124,12 @@ const InputMultiSelect = (props: PropsType) => {
           onClear={() => props.input.onChange(null)}
         />
       )}
-      {!hasTooManyValues && allowDropFile && (
-        <StyledDropzone
-          acceptedDropTypes={NativeTypes.FILE}
-          onDrop={(x, monitor) => {
-            const item = monitor.getItem();
-
-            if (item && props.onDropFile) {
-              props.onDropFile(item.files[0]);
-            }
-          }}
-        >
-          {Select}
-        </StyledDropzone>
-      )}
       {!hasTooManyValues && !allowDropFile && Select}
+      {!hasTooManyValues && allowDropFile && (
+        <StyledInputMultiSelectDropzone onDropFile={props.onDropFile}>
+          {Select}
+        </StyledInputMultiSelectDropzone>
+      )}
     </Labeled>
   );
 };

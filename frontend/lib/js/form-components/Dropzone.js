@@ -33,7 +33,7 @@ type InnerZonePropsType = {
   hasItem: boolean
 };
 
-const InnerZone = ({
+export const InnerZone = ({
   children,
   className,
   onClick,

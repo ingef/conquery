@@ -67,9 +67,9 @@ const TableFilters = (props: PropsType) => {
               return (
                 <InputMultiSelect
                   input={{
-                    onChange: value => props.onSetFilterValue(filterIdx, value),
+                    value: filter.value,
                     defaultValue: filter.defaultValue,
-                    value: filter.value
+                    onChange: value => props.onSetFilterValue(filterIdx, value)
                   }}
                   label={filter.label}
                   options={filter.options}

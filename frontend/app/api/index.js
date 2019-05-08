@@ -271,7 +271,7 @@ module.exports = function(app, port) {
         const { concepts } = req.body;
 
         res.send({
-          unknownConcepts: concepts.slice(0, 1),
+          unknownConcepts: concepts.slice(5),
           resolvedConcepts: concepts.slice(1)
         });
       }, LONG_DELAY);
