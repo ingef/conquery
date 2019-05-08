@@ -35,19 +35,33 @@ import io.dropwizard.setup.Bootstrap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import net.sourceforge.argparse4j.impl.Arguments;
 import net.sourceforge.argparse4j.inf.Namespace;
+import net.sourceforge.argparse4j.inf.Subparser;
 
 @Slf4j
 public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 
 	private ConcurrentMap<File, Set<String>> entities = new ConcurrentHashMap<>();
+	private boolean verbose = false;
 	
 	public CollectEntitiesCommand() {
 		super("collectEntities", "Collect all entities from the given preprocessing directories.");
 	}
+	
+	@Override
+	public void configure(Subparser subparser) {
+		subparser
+			.addArgument("-verbose")
+			.help("creates not only a file for all entities but for eqach cqpp")
+			.action(Arguments.storeTrue());
+		super.configure(subparser);
+	}
 
 	@Override
 	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig config) throws Exception {
+		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
+
 		if(config.getDebugMode() != null) {
 			DebugMode.setActive(config.getDebugMode());
 		}
@@ -121,7 +135,9 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 					Dictionary dict = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
 					
 					add(dict, new File(file.getParentFile(), "all_entities.csv"));
-					add(dict, new File(file.getParentFile(), file.getName()+".entities.csv"));
+					if(verbose) {
+						add(dict, new File(file.getParentFile(), file.getName()+".entities.csv"));
+					}
 				}
 			}
 		}
