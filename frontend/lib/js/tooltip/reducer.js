@@ -14,6 +14,7 @@ type InfoType = {
 export type AdditionalInfosType = {
   label: ?string,
   description: ?string,
+  isFolder: boolean,
   matchingEntries: ?number,
   dateRange: ?Object,
   infos: ?(InfoType[])
@@ -31,6 +32,7 @@ const initialState = {
   additionalInfos: {
     label: null,
     description: null,
+    isFolder: false,
     matchingEntries: null,
     dateRange: null,
     infos: null
@@ -48,6 +50,7 @@ const setAdditionalInfos = (state, action) => {
     additionalInfos: (action.payload && action.payload.additionalInfos) || {
       label: null,
       description: null,
+      isFolder: false,
       matchingEntries: null,
       dateRange: null,
       infos: null

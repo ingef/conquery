@@ -53,33 +53,47 @@ const Content = styled("div")`
   padding: 10px 20px;
   width: 100%;
   height: 100%;
-  overflow: auto;
+  overflow-y: auto;
+  overflow-x: hidden;
 `;
 const Head = styled("div")`
-  padding: 10px;
+  padding: 10px 20px;
   background-color: white;
-  border-radius: ${({ theme }) => theme.borderRadius};
-  border: 1px solid ${({ theme }) => theme.col.gray};
-  margin: 10px 0 15px;
+  margin: 20px -20px;
 `;
 
 const StyledFaIcon = styled(FaIcon)`
-  margin-right: 12px;
+  margin-top: 1px;
+`;
+const TackIcon = styled(StyledFaIcon)`
+  margin-left: 5px;
+`;
+const TypeIcon = styled(StyledFaIcon)`
+  margin-right: 10px;
+  color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 const PinnedLabel = styled("p")`
   display: flex;
   flex-direction: row;
-  align-items: center;
+  align-items: flex-start;
   margin: 0;
   line-height: 1.2;
   font-size: ${({ theme }) => theme.font.sm};
 `;
-
+const Label = styled("span")`
+  flex-grow: 1;
+`;
 const Description = styled("p")`
   margin: 5px 0 2px;
   font-size: ${({ theme }) => theme.font.xs};
   line-height: 1;
   text-transform: uppercase;
+`;
+
+const Infos = styled("div")`
+  height: 100%;
+  width: 100%;
+  overflow-x: auto;
 `;
 
 const PieceOfInfo = styled("div")`
@@ -88,10 +102,16 @@ const PieceOfInfo = styled("div")`
   /* Markdown */
   font-size: ${({ theme }) => theme.font.xs};
 
+  p {
+    line-height: 1.3;
+    margin: 5px 0;
+  }
+
   table {
     border-collapse: collapse;
   }
-  td {
+  td,
+  th {
     border: 1px solid ${({ theme }) => theme.col.gray};
     padding: 5px;
   }
@@ -124,6 +144,7 @@ const Tooltip = (props: PropsType) => {
   const {
     label,
     description,
+    isFolder,
     infos,
     matchingEntries,
     dateRange
@@ -150,21 +171,24 @@ const Tooltip = (props: PropsType) => {
         {label && (
           <Head>
             <PinnedLabel>
-              {toggleAdditionalInfos && <StyledFaIcon icon="thumbtack" />}
-              {searchHighlight(label)}
+              <TypeIcon icon={isFolder ? "folder" : "minus"} />
+              <Label>{searchHighlight(label)}</Label>
+              {toggleAdditionalInfos && <TackIcon icon="thumbtack" />}
             </PinnedLabel>
             {description && (
               <Description>{searchHighlight(description)}</Description>
             )}
           </Head>
         )}
-        {infos &&
-          infos.map((info, i) => (
-            <PieceOfInfo key={info.key}>
-              <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
-              <Markdown source={info.value} escapeHtml={true} />
-            </PieceOfInfo>
-          ))}
+        <Infos>
+          {infos &&
+            infos.map((info, i) => (
+              <PieceOfInfo key={info.key}>
+                <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
+                <Markdown source={info.value} escapeHtml={true} />
+              </PieceOfInfo>
+            ))}
+        </Infos>
       </Content>
     </Root>
   );

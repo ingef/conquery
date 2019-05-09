@@ -24,7 +24,7 @@ const Row = styled("div")`
 
 const Date = styled("p")`
   margin: 0;
-  padding-right: 6px;
+  padding-right: 8px;
   font-size: ${({ theme }) => theme.font.sm};
   letter-spacing: 1px;
   font-weight: 700;
@@ -65,7 +65,15 @@ const Number = styled("p")`
 `;
 
 const Digits = styled("span")`
-  padding-right: 2px;
+  &:after {
+    color: ${({ theme }) => theme.col.gray};
+    content: ".";
+  }
+  &:last-of-type {
+    &:after {
+      content: "";
+    }
+  }
 `;
 
 const Suffix = styled("span")`
@@ -109,27 +117,29 @@ const TooltipEntries = (props: PropsType) => {
           </Text>
         </Info>
       </Row>
-      {dateRange && (
-        <ConceptDateRangeTooltip>
-          <CalIcon regular icon="calendar" />
-          <Info>
-            <Date>
-              {formatDate(
-                parseDate(dateRange.min, dateFormat),
-                displayDateFormat
-              )}
-              <Suffix>{`${T.translate("tooltip.date.from")}`}</Suffix>
-            </Date>
-            <Date>
-              {formatDate(
-                parseDate(dateRange.max, dateFormat),
-                displayDateFormat
-              )}
-              <Suffix>{`${T.translate("tooltip.date.to")}`}</Suffix>
-            </Date>
-          </Info>
-        </ConceptDateRangeTooltip>
-      )}
+      <ConceptDateRangeTooltip>
+        <CalIcon regular icon="calendar" />
+        <Info>
+          <Date>
+            {dateRange && dateRange.min
+              ? formatDate(
+                  parseDate(dateRange.min, dateFormat),
+                  displayDateFormat
+                )
+              : "- - - - - - - -"}
+            <Suffix>{`${T.translate("tooltip.date.from")}`}</Suffix>
+          </Date>
+          <Date>
+            {dateRange && dateRange.max
+              ? formatDate(
+                  parseDate(dateRange.max, dateFormat),
+                  displayDateFormat
+                )
+              : "- - - - - - - -"}
+            <Suffix>{`${T.translate("tooltip.date.to")}`}</Suffix>
+          </Date>
+        </Info>
+      </ConceptDateRangeTooltip>
     </Root>
   );
 };
