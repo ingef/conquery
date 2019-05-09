@@ -64,7 +64,7 @@ public class IdAccessorImpl implements IdAccessor {
 		String[] partOfId = this.accessor.extract(reorderedCsvLine);
 		CsvEntityId csvEntityId = storage.getIdMapping()
 			.getExternalIdPartCsvIdMap()
-			.get(new SufficientExternalEntityId(this.accessor, partOfId));
+			.get(new SufficientExternalEntityId(partOfId));
 		if (csvEntityId != null) {
 			return csvEntityId;
 		}

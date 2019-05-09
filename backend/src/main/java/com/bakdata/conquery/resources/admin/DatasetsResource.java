@@ -8,7 +8,6 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -50,8 +49,9 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
+import com.bakdata.conquery.models.jobs.ImportIdsJob;
+import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -106,15 +106,15 @@ public class DatasetsResource {
 	}
 
 	
-	@GET
+	@GET @Produces(MediaType.TEXT_HTML)
 	@Path("/{" + DATASET_NAME + "}/mapping")
 	public View getIdMapping(@PathParam(DATASET_NAME) DatasetId datasetId) {
-		Map<CsvEntityId, ExternalEntityId> mapping = namespaces.get(datasetId).getStorage().getIdMapping().getCsvIdToExternalIdMap();
+		PersistentIdMap mapping = namespaces.get(datasetId).getStorage().getIdMapping();
 		if (mapping != null) {
 			return new UIView<>(
 				"idmapping.html.ftl",
 				ctx,
-				mapping
+				mapping.getCsvIdToExternalIdMap()
 			);
 		} else {
 			return new UIView<>(
@@ -218,6 +218,23 @@ public class DatasetsResource {
 		}
 
 		processor.addImport(ns.getStorage().getDataset(), selectedFile);
+		return Response.ok().build();
+	}
+	
+	@POST
+	@Path("/{" + DATASET_NAME + "}/ids")
+	public Response addIds(@PathParam(DATASET_NAME) DatasetId datasetId, @QueryParam("file") File file) throws IOException, JSONException {
+		Namespace ns = ctx.getNamespaces().get(datasetId);
+		if (ns == null) {
+			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
+		}
+
+		File selectedFile = new File(processor.getConfig().getStorage().getPreprocessedRoot(), file.toString());
+		if (!selectedFile.exists()) {
+			throw new WebApplicationException("Could not find file " + selectedFile, Status.NOT_FOUND);
+		}
+
+		processor.getJobManager().addSlowJob(new ImportIdsJob(namespaces.get(datasetId), selectedFile));
 		return Response.ok().build();
 	}
 

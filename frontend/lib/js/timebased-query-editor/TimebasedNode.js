@@ -4,7 +4,6 @@ import React from "react";
 import { findDOMNode } from "react-dom";
 import T from "i18n-react";
 import styled from "@emotion/styled";
-import classnames from "classnames";
 import { DragSource } from "react-dnd";
 
 import VerticalToggleButton, {
@@ -107,7 +106,7 @@ class TimebasedNode extends React.Component {
               {toggleButton}
             </div>
             <div className="timebased-node__description">
-              <StyledIconButton icon="close" onClick={onRemove} />
+              <StyledIconButton icon="times" onClick={onRemove} />
               <p className="timebased-node__description__text">
                 {node.label || node.id}
               </p>

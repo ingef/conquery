@@ -20,7 +20,9 @@ categoryTreeList:
   closeAll: "Open individually"
   searchPlaceholder: "Search concepts ..."
   showMismatches: "Show all"
-  dontShowMismatches: "Show hits only"
+  showMatchesOnly: "Show matches only"
+  showingMatchesOnly: "Showing only matches"
+  showingMismatches: "Showing full trees"
 
 queryRunner:
   start: "Start Query"
@@ -37,7 +39,7 @@ queryRunner:
   downloadResults: "CSV"
 
 queryEditor:
-  couldNotExpandNode: "Could not find node"
+  couldNotExpandNode: "Concept not found"
   couldNotInsertConceptList: "Could not insert the Concept List"
   edit: "Edit"
   exclude: "Exclude"
@@ -47,9 +49,14 @@ queryEditor:
   loadingPreviousQuery: "Loading Query Details"
 
 dropzone:
-  dragElementPlease: "Drag a concept or a query into this area"
-  dragElementPleaseShort: "Add an element"
+  dragElementPlease: "Add an element"
   dragQuery: "Add a query"
+  explanation: "You'll create a query in this area"
+  drop: "Drop"
+  aConcept: "a concept"
+  aQuery: "a previous query"
+  aConceptList: "a concept list"
+  intoThisArea: "into this area"
 
 datasetSelector:
   pleaseChoose: "Choose a data set"
@@ -72,6 +79,7 @@ queryNodeEditor:
   tooManyValues: "{count} values selected"
   filters: "Filters"
   selects: "More values"
+  nodeNotFound: "Concept not found"
 
 queryGroupModal:
   explanation: "Set time frame"
@@ -145,6 +153,8 @@ previousQuery:
   addTag: "Add Tag"
   share: "Share"
   shared: "Shared"
+  delete: "Delete"
+  downloadResults: "Download results"
   loadError: "Could not load query"
   renameError: "Could not rename query"
   retagError: "Could not save tags"
@@ -205,7 +215,7 @@ externalForms:
     edit: "Edit"
 
 uploadQueryResultsModal:
-  headline: "Upload a query result"
+  headline: "Upload query result"
   dropzone: "Drop a CSV file here"
   upload: "Upload"
   uploadFailed: "Could not upload file"
@@ -219,14 +229,14 @@ uploadConceptListModal:
   headline: "Upload concepts"
   label: "Name of the Concept"
   selectConceptRootNode: "Choose a Concept Tree root"
-  insertNode: "Insert"
+  insertNode: "Insert now"
   result: "Result"
   resolvedCodes:
-    1: "One value could be resolved."
-    _: "{context} values could be resolved."
+    1: "1 value resolved."
+    _: "{context} values resolved."
   unknownCodes:
-    1: "The following value could not be resolved:"
-    _: "The following {context} values could not be resolved:"
+    1: "1 value <strong>not</strong> resolved"
+    _: "{context} values <strong>not</strong> resolved"
   error: "An error occurred when resolving the values."
 
 uploadFilterListModal:
@@ -244,4 +254,4 @@ authorization:
 
 search:
   placeholder: "Search ..."
-  resultLabel: "{totalResults} results found ({duration} s)"
+  resultLabel: "{totalResults} results ({duration} s)"

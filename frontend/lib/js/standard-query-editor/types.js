@@ -116,6 +116,7 @@ export type ConceptQueryNodeType = {
   tree: TreeNodeIdType,
 
   label: string,
+  description?: string,
   excludeTimestamps?: boolean,
   loading?: boolean,
   error?: string,

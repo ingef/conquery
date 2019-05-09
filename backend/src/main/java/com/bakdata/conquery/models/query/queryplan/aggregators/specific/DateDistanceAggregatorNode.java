@@ -53,6 +53,6 @@ public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 
 	@Override
 	public ResultType getResultType() {
-		return ResultType.NUMERIC;
+		return ResultType.INTEGER;
 	}
 }

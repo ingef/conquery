@@ -1,17 +1,33 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import { connect } from "react-redux";
-import classnames from "classnames";
 import T from "i18n-react";
-import { DropTarget } from "react-dnd";
 
 import { PREVIOUS_QUERY, TIMEBASED_NODE } from "../common/constants/dndTypes";
+import Dropzone from "../form-components/Dropzone";
 
 import { removeTimebasedNode } from "./actions";
 
-const dropzoneTarget = {
-  drop(props, monitor) {
+type PropsType = {
+  onDropNode: () => void,
+  onRemoveTimebasedNode: () => void
+};
+
+const StyledDropzone = styled(Dropzone)`
+  width: 150px;
+  text-align: center;
+  background-color: ${({ theme }) => theme.col.bg};
+`;
+
+const DROP_TYPES = [PREVIOUS_QUERY, TIMEBASED_NODE];
+
+const TimebasedQueryEditorDropzone = ({
+  onRemoveTimebasedNode,
+  onDropNode
+}: PropsType) => {
+  const onDrop = (props, monitor) => {
     const item = monitor.getItem();
 
     const { moved } = item;
@@ -19,54 +35,24 @@ const dropzoneTarget = {
     if (moved) {
       const { conditionIdx, resultIdx } = item;
 
-      props.onRemoveTimebasedNode(conditionIdx, resultIdx, moved);
-      props.onDropNode(item.node, moved);
+      onRemoveTimebasedNode(conditionIdx, resultIdx, moved);
+      onDropNode(item.node, moved);
     } else {
-      props.onDropNode(item, false);
+      onDropNode(item, false);
     }
-  }
-};
-
-function collect(connect, monitor) {
-  return {
-    connectDropTarget: connect.dropTarget(),
-    isOver: monitor.isOver()
   };
-}
 
-type PropsType = {
-  isOver: boolean,
-  onDropNode: () => void,
-  connectDropTarget: () => void,
-  onRemoveTimebasedNode: () => void
-};
-
-const TimebasedQueryEditorDropzone = (props: PropsType) => {
-  return props.connectDropTarget(
-    <div className="timebased-query-editor-dropzone">
-      <div
-        className={classnames("dropzone", {
-          "dropzone--over": props.isOver
-        })}
-      >
-        <p className="dropzone__text">{T.translate("dropzone.dragQuery")}</p>
-      </div>
-    </div>
+  return (
+    <StyledDropzone acceptedDropTypes={DROP_TYPES} onDrop={onDrop}>
+      {T.translate("dropzone.dragQuery")}
+    </StyledDropzone>
   );
 };
 
-TimebasedQueryEditorDropzone.propTypes = {};
-
-const mapDispatchToProps = dispatch => ({
-  onRemoveTimebasedNode: (conditionIdx, resultIdx, moved) =>
-    dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved))
-});
-
 export default connect(
   () => ({}),
-  mapDispatchToProps
-)(
-  DropTarget([PREVIOUS_QUERY, TIMEBASED_NODE], dropzoneTarget, collect)(
-    TimebasedQueryEditorDropzone
-  )
-);
+  dispatch => ({
+    onRemoveTimebasedNode: (conditionIdx, resultIdx, moved) =>
+      dispatch(removeTimebasedNode(conditionIdx, resultIdx, moved))
+  })
+)(TimebasedQueryEditorDropzone);

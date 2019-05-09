@@ -4,7 +4,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import { QueryEditorDropzone } from "./QueryEditorDropzone";
+import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryNode from "./QueryNode";
 import QueryGroupActions from "./QueryGroupActions";
 import type { QueryGroupType } from "./types";

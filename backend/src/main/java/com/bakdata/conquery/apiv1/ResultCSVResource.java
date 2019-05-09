@@ -31,6 +31,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
@@ -46,6 +47,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultCSVResource {
 
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(ResultCSVResource.class, "getAsCSV");
+	private static final PrintSettings PRINT_SETTINGS = PrintSettings
+		.builder()
+		.prettyPrint(true)
+		.nameExtractor(
+			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
+		.build();
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
 
@@ -58,30 +65,33 @@ public class ResultCSVResource {
 
 		try {
 			ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, queryId);
-			Stream<String> csv =  new QueryToCSVRenderer(query.getNamespace()).toCSV(query);
-	
+			Stream<String> csv = new QueryToCSVRenderer(query.getNamespace()).toCSV(PRINT_SETTINGS, query);
+
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
+
 				@Override
 				public void write(OutputStream os) throws WebApplicationException {
 					try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
-						Iterator<String> it =  csv.iterator();
+						Iterator<String> it = csv.iterator();
 						while (it.hasNext()) {
 							writer.write(it.next());
 							writer.write(config.getCsv().getLineSeparator());
 						}
 						writer.flush();
-					} catch (EofException e) {
+					}
+					catch (EofException e) {
 						log.info("User canceled download of {}", queryId);
-					} catch (Exception e) {
+					}
+					catch (Exception e) {
 						throw new WebApplicationException("Failed to load result " + queryId, e);
 					}
 				}
 			};
-	
+
 			return Response.ok(out).build();
 		}
-		catch(NoSuchElementException e) {
+		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
 		}
 	}

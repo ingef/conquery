@@ -108,6 +108,7 @@ const filterItem = (
   else
     return {
       ids: item.ids,
+      description: item.description,
       tables: withDefaultValues(item.tables),
       selects: withDefaultValues(item.selects),
       tree: item.tree,
@@ -692,8 +693,7 @@ const loadFilterSuggestionsError = (state, action) =>
 const createQueryNodeFromConceptListUploadResult = (
   label,
   rootConcepts,
-  resolvedConcepts,
-  selectedConceptRootNode
+  resolvedConcepts
 ): DraggedNodeType => {
   const lookupResult = getConceptsByIdsWithTablesAndSelects(
     resolvedConcepts,
@@ -712,18 +712,12 @@ const createQueryNodeFromConceptListUploadResult = (
 };
 
 const insertUploadedConceptList = (state, action) => {
-  const {
-    label,
-    rootConcepts,
-    resolvedConcepts,
-    selectedConceptRootNode
-  } = action.payload;
+  const { label, rootConcepts, resolvedConcepts } = action.payload;
 
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
     rootConcepts,
-    resolvedConcepts,
-    selectedConceptRootNode
+    resolvedConcepts
   );
 
   // TODO: Re-enable soon

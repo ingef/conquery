@@ -13,6 +13,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -53,13 +54,14 @@ public class ConceptQuery implements IQuery {
 	}
 
 	@Override
-	public List<ResultInfo> collectResultInfos() {
-
-		List<SelectDescriptor> selects = this.collectSelects();
-		List<ResultInfo> header = new ArrayList<>(selects.size() + 1);
-
+	public List<ResultInfo> collectResultInfos(PrintSettings config) {
+		List<ResultInfo> header = new ArrayList<>();
 		header.add(ConqueryConstants.DATES_INFO);
-
+		return collectResultInfos(this.collectSelects(), header, config);
+	}
+	
+	
+	public static List<ResultInfo> collectResultInfos(List<SelectDescriptor> selects, List<ResultInfo> header, PrintSettings config) {
 		HashMap<String, Integer> ocurrences = new HashMap<>();
 		/*
 		 * Column name is constructed from the most specific concept id the CQConcept
@@ -67,12 +69,10 @@ public class ConceptQuery implements IQuery {
 		 */
 		for (SelectDescriptor selectDescriptor : selects) {
 			Select select = selectDescriptor.getSelect();
-			String columnName = selectDescriptor.getCqConcept().getIds().get(0).toStringWithoutDataset()
-				+ "_"
-				+ select.getId().toStringWithoutDataset();
+			String columnName = config.getNameExtractor().apply(selectDescriptor);
 			Integer occurence = ocurrences.computeIfAbsent(columnName, str -> Integer.valueOf(0));
 
-			header.add(new ResultInfo(columnName, select.getResultType(), occurence, occurence.intValue()));
+			header.add(new SelectResultInfo(columnName, select.getResultType(), occurence, occurence.intValue(), select));
 		}
 		return header;
 	}

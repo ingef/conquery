@@ -19,9 +19,12 @@ import lombok.ToString;
 public class ResourceTree {
 	@ToString.Include
 	private final String name;
+	@ToString.Exclude
 	private final ResourceTree parent;
 	@Setter
 	private Resource value;
+
+	@ToString.Exclude
 	private Map<String, ResourceTree> children = new HashMap<>();
 
 	public void addAll(Iterable<Resource> resources) {
@@ -54,11 +57,11 @@ public class ResourceTree {
 	}
 
 	public ResourceTree reduce() {
-		if(children.size() > 1) {
-			return this;
+		if (children.size() == 1) {
+			return children.values().iterator().next().reduce();
 		}
 		else {
-			return children.values().iterator().next().reduce();
+			return this;
 		}
 	}
 }

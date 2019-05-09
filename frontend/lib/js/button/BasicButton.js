@@ -3,7 +3,7 @@ import styled from "@emotion/styled";
 
 const BasicButton = styled("button")`
   cursor: pointer;
-  font-weight: ${({ active }) => (active ? 700 : 400)};
+  font-weight: ${({ active }) => (active ? "700" : "400")};
   padding: ${({ small, tiny, bare }) =>
     bare ? "0" : tiny ? "4px 6px" : small ? "6px 10px" : "8px 15px"};
   font-size: ${({ theme, small, tiny }) =>

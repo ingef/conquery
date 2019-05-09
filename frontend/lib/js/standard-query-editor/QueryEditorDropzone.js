@@ -1,10 +1,13 @@
 // @flow
 
 import React from "react";
-import classnames from "classnames";
+import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 import T from "i18n-react";
-import { DropTarget, type ConnectDropTarget } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
+
+import Dropzone from "../form-components/Dropzone";
+import FaIcon from "../icon/FaIcon";
 
 import { dndTypes } from "../common/constants";
 import type { QueryIdType } from "../common/types/backend";
@@ -13,73 +16,118 @@ import type { DraggedNodeType, DraggedQueryType } from "./types";
 type DraggedFileType = Object;
 
 type PropsType = {
-  isInitial: ?boolean,
-  isAnd: ?boolean,
+  isInitial?: boolean,
+  isAnd?: boolean,
   onDropNode: (DraggedNodeType | DraggedQueryType) => void,
   onDropFile: DraggedFileType => void,
-  onLoadPreviousQuery: QueryIdType => void,
-
-  connectDropTarget: ConnectDropTarget,
-  isOver: boolean
+  onLoadPreviousQuery: QueryIdType => void
 };
 
-const dropzoneTarget = {
-  drop(props, monitor) {
+const DROP_TYPES = [
+  dndTypes.CATEGORY_TREE_NODE,
+  dndTypes.QUERY_NODE,
+  dndTypes.PREVIOUS_QUERY,
+  NativeTypes.FILE
+];
+
+const StyledDropzone = styled(Dropzone)`
+  ${({ isInitial }) =>
+    isInitial &&
+    css`
+      height: 100%;
+    `};
+
+  ${({ isAnd }) =>
+    isAnd &&
+    css`
+      height: 100px;
+      white-space: nowrap;
+      margin-top: 70px;
+      width: initial;
+    `};
+`;
+
+const Text = styled("p")`
+  margin: 0;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+const TextInitial = styled("div")`
+  width: 100%;
+  font-size: ${({ theme }) => theme.font.lg};
+  padding: 30px;
+  font-weight: 400;
+
+  p {
+    margin: 0;
+  }
+  ul {
+    margin: 0;
+    padding: 0 22px;
+  }
+  h2 {
+    font-size: ${({ theme }) => theme.font.huge};
+    line-height: 1.3;
+    margin: 0 0 20px;
+  }
+`;
+
+const ArrowRight = styled(FaIcon)`
+  font-size: 140px;
+  margin-right: 30px;
+  color: ${({ theme }) => theme.col.grayLight};
+`;
+const Row = styled("div")`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+`;
+
+const QueryEditorDropzone = ({
+  isAnd,
+  isInitial,
+  onLoadPreviousQuery,
+  onDropFile,
+  onDropNode
+}: PropsType) => {
+  const onDrop = (props, monitor) => {
     const item = monitor.getItem();
 
     if (item.files) {
-      props.onDropFile(item.files[0]);
+      onDropFile(item.files[0]);
     } else {
-      props.onDropNode(item);
+      onDropNode(item);
 
-      if (item.isPreviousQuery) props.onLoadPreviousQuery(item.id);
+      if (item.isPreviousQuery) onLoadPreviousQuery(item.id);
     }
-  }
-};
+  };
 
-const collect = (connect, monitor) => ({
-  connectDropTarget: connect.dropTarget(),
-  isOver: monitor.isOver()
-});
-
-// When instantiating the QueryEditorDropzone, flow doesn't recognize that
-// connectDropTarget and isOver are being injected by react-dnd :(
-const InnerQueryEditorDropzone = ({
-  isOver,
-  isAnd,
-  isInitial,
-  connectDropTarget
-}: PropsType) => {
   return (
-    <div
-      ref={instance => connectDropTarget(instance)}
-      className={classnames("query-editor-dropzone", {
-        "query-editor-dropzone--initial": isInitial,
-        "query-editor-dropzone--and": isAnd
-      })}
+    <StyledDropzone
+      isAnd={isAnd}
+      isInitial={isInitial}
+      acceptedDropTypes={DROP_TYPES}
+      onDrop={onDrop}
     >
-      <div
-        className={classnames("dropzone", {
-          "dropzone--over": isOver
-        })}
-      >
-        <p className="dropzone__text">
-          {isInitial
-            ? T.translate("dropzone.dragElementPlease")
-            : T.translate("dropzone.dragElementPleaseShort")}
-        </p>
-      </div>
-    </div>
+      {isInitial && (
+        <TextInitial>
+          <h2>{T.translate("dropzone.explanation")}</h2>
+          <Row>
+            <ArrowRight icon="arrow-right" />
+            <div>
+              <p>{T.translate("dropzone.drop")}</p>
+              <ul>
+                <li>{T.translate("dropzone.aConcept")}</li>
+                <li>{T.translate("dropzone.aQuery")}</li>
+                <li>{T.translate("dropzone.aConceptList")}</li>
+              </ul>
+              <p>{T.translate("dropzone.intoThisArea")}</p>
+            </div>
+          </Row>
+        </TextInitial>
+      )}
+      {!isInitial && <Text>{T.translate("dropzone.dragElementPlease")}</Text>}
+    </StyledDropzone>
   );
 };
 
-export const QueryEditorDropzone = DropTarget(
-  [
-    dndTypes.CATEGORY_TREE_NODE,
-    dndTypes.QUERY_NODE,
-    dndTypes.PREVIOUS_QUERY,
-    NativeTypes.FILE
-  ],
-  dropzoneTarget,
-  collect
-)(InnerQueryEditorDropzone);
+export default QueryEditorDropzone;

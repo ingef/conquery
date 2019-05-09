@@ -2,54 +2,51 @@
 package com.bakdata.conquery.util.dict;
 
 import java.io.IOException;
-import java.time.Duration;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.dictionary.Dictionary;
+import org.apache.commons.lang3.ArrayUtils;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
+
 import com.github.powerlibraries.io.In;
-import com.google.common.base.Stopwatch;
 
-import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j @UtilityClass
+@Slf4j
 public class SuccinctTrieBenchmark {
-	public static Stream<String> data() throws IOException {
-		return In.resource(SuccinctTrieBenchmark.class, "SuccinctTrieTest.data").streamLines();
+
+	public static List<Arguments> data() throws IOException {
+		List<byte[]> list = In.resource(SuccinctTrieBenchmark.class, "SuccinctTrieTest.data").streamLines().map(v->v.getBytes(StandardCharsets.UTF_8)).collect(Collectors.toList());
+		int size = list.size();
+		for(int i=0;i<60;i++) {
+			for(int j=0;j<size;j++) {
+				list.add(ArrayUtils.add(list.get(j), (byte)i));
+			}
+		}
+		
+		return Arrays.<Arguments>asList(
+			
+			Arguments.of(
+				"succinct",
+				new SuccinctTrie(),
+				list
+			)/*,
+			Arguments.of(
+				"ternarytree",
+				new SuccinctTrie2(),
+				list
+			)*/
+		);
 	}
 
-	public static void main(String[] args) throws IOException{
-		
-		//better way to do this?
-		Duration putUncrompressedTime = Duration.ofMillis(0L);
-		Duration compressTime = Duration.ofMillis(0L);
-		Duration getIdTime = Duration.ofMillis(0L);
-		Duration getElementTime = Duration.ofMillis(0L);
-
-		
-		for (int i = 0; i< 100; i++) {
-			Dictionary dict = new Dictionary();
-			Stopwatch stopwatch = Stopwatch.createStarted();
-	
-			data().forEach(dict::add);
-			stopwatch.reset().start();
-			
-			dict.compress();
-	
-			log.info("time taken for compress: " + stopwatch.elapsed());
-	
-			stopwatch.reset().start();
-	
-			data().forEach(dict::getId);
-	
-			log.info("time taken for getId: " + stopwatch.elapsed());
-			stopwatch.reset().start();
-	
-			IntStream.range(0, dict.size()).forEach(dict::getElement);
-	
-			log.info("time taken for getElement: " + stopwatch.elapsed());
-			stopwatch.stop();
-		}
+	//@ParameterizedTest(name = "{0}") @MethodSource("data")
+	public void test(String name, SuccinctTrie trie, List<byte[]> data) throws IOException {
+		data.forEach(trie::add);
+		trie.compress();
 	}
 }

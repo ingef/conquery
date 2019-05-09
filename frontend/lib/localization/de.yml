@@ -20,7 +20,9 @@ categoryTreeList:
   closeAll: "Einzeln aufklappen"
   searchPlaceholder: "Konzepte durchsuchen ..."
   showMismatches: "Vollständig anzeigen"
-  dontShowMismatches: "Nur Treffer zeigen"
+  showMatchesOnly: "Nur Treffer anzeigen"
+  showingMatchesOnly: "Zeige nur Treffer"
+  showingMismatches: "Zeige vollständig"
 
 queryRunner:
   start: "Anfrage starten"
@@ -37,7 +39,7 @@ queryRunner:
   downloadResults: "CSV"
 
 queryEditor:
-  couldNotExpandNode: "Knoten nicht gefunden"
+  couldNotExpandNode: "Konzept nicht gefunden"
   couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
   edit: "Bearbeiten"
   exclude: "Nicht"
@@ -49,9 +51,14 @@ queryEditor:
   loadingPreviousQuery: "Lade Anfragedetails"
 
 dropzone:
-  dragElementPlease: "Ziehe ein Konzept oder eine Anfrage in diesen Bereich"
-  dragElementPleaseShort: "Füge ein Element hinzu"
+  dragElementPlease: "Füge ein Element hinzu"
   dragQuery: "Füge eine Anfrage hinzu"
+  explanation: "In diesem Bereich erstellst Du eine Anfrage"
+  drop: "Ziehe"
+  aConcept: "ein Konzept"
+  aQuery: "eine Anfrage"
+  aConceptList: "eine Konzeptliste"
+  intoThisArea: "in diesen Bereich"
 
 datasetSelector:
   pleaseChoose: "Datenbank auswählen"
@@ -74,6 +81,7 @@ queryNodeEditor:
   tooManyValues: "{count} Werte ausgewählt"
   filters: "Filter"
   selects: "Zusatzwerte"
+  nodeNotFound: "Konzept nicht gefunden"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
@@ -103,7 +111,7 @@ tooltip:
     1: "gefundener Eintrag"
     _: "gefundene Einträge"
 
-  placeholder: "Weitere Informationen über einen Konzeptknoten ..."
+  placeholder: "Weitere Informationen über ein Konzept ..."
   date:
     daterange: "Zeitraum"
     from: "Von"
@@ -111,12 +119,12 @@ tooltip:
 
 reactSelect:
   placeholder: "Auswählen ..."
-  tagPlaceholder: "Tag ..."
+  tagPlaceholder: "Schlagwort ..."
   searchPlaceholder: "Suchen ..."
   dndPlaceholder: "Auswählen oder Datei hochladen ..."
   backspaceToRemove: "Backspace zum Entfernen drücken"
   noResults: "Keine Werte gefunden"
-  createTag: "Tag erstellen: {label}"
+  createTag: "Schlagwort erstellen: {label}"
   searchFor: "Suchen nach: {label}"
   clearAll: "Alle entfernen"
   clearValue: "Wert entfernen"
@@ -135,7 +143,7 @@ inputDateRange:
   today: "Heute"
   dateFormat: "dd.MM.yyyy"
   tooltip:
-    possiblePattern: "y2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
+    possiblePattern: "j2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
 
 previousQueries:
   loading: "Lade Anfragen"
@@ -144,12 +152,14 @@ previousQueries:
   noQueriesFound: "Keine Anfragen gefunden"
 
 previousQuery:
-  addTag: "Tag hinzufügen"
+  addTag: "Schlagwort hinzufügen"
   share: "Freigeben"
   shared: "Freigegeben"
+  delete: "Löschen"
+  downloadResults: "Ergebnisse herunterladen"
   loadError: "Konnte Anfrage nicht laden"
   renameError: "Konnte Anfrage nicht umbenennen"
-  retagError: "Konnte Tags nicht speichern"
+  retagError: "Konnte Schlagwörter nicht speichern"
   shareError: "Konnte Anfrage nicht freigeben"
   deleteError: "Konnte Anfrage nicht löschen"
 
@@ -207,7 +217,7 @@ externalForms:
     edit: "Bearbeiten"
 
 uploadQueryResultsModal:
-  headline: "Lade ein Anfrageergebnis hoch"
+  headline: "Anfrageergebnis hochladen"
   dropzone: "Lege eine CSV-Datei hier ab"
   upload: "Hochladen"
   uploadFailed: "Konnte Datei nicht hochladen"
@@ -221,14 +231,14 @@ uploadConceptListModal:
   headline: "Konzeptliste hochladen"
   label: "Name der Liste"
   selectConceptRootNode: "Konzeptbaum-Wurzel auswählen"
-  insertNode: "Einfügen"
+  insertNode: "Jetzt einfügen"
   result: "Ergebnis"
   resolvedCodes:
-    1: "Ein Wert konnte aufgelöst werden."
-    _: "{context} Werte konnten aufgelöst werden."
+    1: "1 Wert aufgelöst."
+    _: "{context} Werte aufgelöst."
   unknownCodes:
-    1: "Folgender Wert konnte nicht aufgelöst werden:"
-    _: "Folgende {context} Werte konnten nicht aufgelöst werden:"
+    1: "1 Wert <strong>nicht</strong> aufgelöst"
+    _: "{context} Werte <strong>nicht</strong> aufgelöst"
   error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
 
 uploadFilterListModal:
@@ -246,4 +256,4 @@ authorization:
 
 search:
   placeholder: "Suchen ..."
-  resultLabel: "{totalResults} Ergebnisse gefunden ({duration} s)"
+  resultLabel: "{totalResults} Ergebnisse ({duration} s)"

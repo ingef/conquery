@@ -22,6 +22,8 @@ const Right = styled("div")`
 const StyledIconButton = styled(IconButton)`
   margin-right: 5px;
   padding: 0 3px;
+
+  text-decoration: ${({ active }) => (active ? "underline" : "initial")};
 `;
 
 const activeStyle = ({ theme, active }) =>
@@ -39,8 +41,8 @@ const RedIconButton = styled(IconButton)`
   ${activeStyle};
 
   &:hover {
-    ${activeStyle}
     opacity: 0.7;
+    ${activeStyle}
   }
 `;
 

@@ -7,6 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Stopwatch;
@@ -18,7 +19,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor @Slf4j
 public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private final static ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
+	private static final  ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
 	
 	private final ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;
@@ -86,10 +87,25 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 		
 		store.forEach(entry -> {
-			totalSize.addAndGet(entry.getByteSize());
-			cache.put(entry.getKey(), entry.getValue());
-			if(bar != null) {
-				bar.addCurrentValue(1);
+			try {
+				totalSize.addAndGet(entry.getByteSize());
+				cache.put(entry.getKey(), entry.getValue());
+			}
+			catch (RuntimeException e) {
+				if (e.getCause() != null && e.getCause() instanceof IdReferenceResolvingException) {
+					log.warn("Probably failed to read id '{}' because it is not yet present, skipping",
+						((IdReferenceResolvingException) e.getCause()).getValue(),
+						e
+					);
+				}
+				else {
+					throw  e;
+				}
+			}
+			finally {
+				if (bar != null) {
+					bar.addCurrentValue(1);
+				}
 			}
 		});
 		log.info(
