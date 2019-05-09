@@ -14,34 +14,42 @@ type PropsType = {
   dateRange?: ?Object
 };
 
+const Root = styled("div")``;
 const Row = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
-`;
-const Root = styled(Row)`
-  padding-left: 20px;
+  margin-bottom: 10px;
 `;
 
 const Date = styled("p")`
   margin: 0;
   padding-right: 6px;
   font-size: ${({ theme }) => theme.font.sm};
+  letter-spacing: 1px;
+  font-weight: 700;
 `;
 
-const ConceptDateRangeTooltip = styled(Row)`
-  margin: 0 40px 0 25px;
-`;
+const ConceptDateRangeTooltip = styled(Row)``;
 
 const Text = styled("p")`
   margin: 0 0 5px;
   font-size: ${({ theme }) => theme.font.xs};
-  color: ${({ theme, zero }) => (zero ? theme.col.red : "inherit")};
+  color: ${({ theme, zero }) => (zero ? theme.col.red : theme.col.gray)};
+  text-transform: uppercase;
+  font-weight: 400;
 `;
 
 const StyledFaIcon = styled(FaIcon)`
+  font-size: 38px;
+  color: ${({ theme }) => theme.col.grayMediumLight};
+`;
+
+const StatsIcon = styled(StyledFaIcon)`
   padding-right: 15px;
-  font-size: 16px;
+`;
+const CalIcon = styled(StyledFaIcon)`
+  padding-right: 20px;
 `;
 
 const Info = styled("div")`
@@ -50,17 +58,23 @@ const Info = styled("div")`
 
 const Number = styled("p")`
   margin: 0;
-  font-size: ${({ theme }) => theme.font.md};
+  font-size: ${({ theme }) => theme.font.lg};
   color: ${({ theme, zero }) => (zero ? theme.col.red : "inherit")};
+  font-weight: 700;
+  line-height: 1;
 `;
 
 const Digits = styled("span")`
   padding-right: 2px;
 `;
 
-const Prefix = styled("span")`
-  display: inline-block;
-  width: 40px;
+const Suffix = styled("span")`
+  color: ${({ theme }) => theme.col.gray};
+  letter-spacing: 0;
+  font-weight: 400;
+  text-transform: uppercase;
+  font-size: ${({ theme }) => theme.font.xs};
+  margin-left: 5px;
 `;
 
 const TooltipEntries = (props: PropsType) => {
@@ -80,7 +94,7 @@ const TooltipEntries = (props: PropsType) => {
   return (
     <Root className={props.className}>
       <Row>
-        <StyledFaIcon icon="chart-bar" />
+        <StatsIcon icon="chart-bar" />
         <Info>
           <Number zero={isZero}>
             {numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
@@ -97,21 +111,21 @@ const TooltipEntries = (props: PropsType) => {
       </Row>
       {dateRange && (
         <ConceptDateRangeTooltip>
-          <StyledFaIcon regular icon="calendar" />
+          <CalIcon regular icon="calendar" />
           <Info>
             <Date>
-              <Prefix>{T.translate("tooltip.date.from") + ":"}</Prefix>
               {formatDate(
                 parseDate(dateRange.min, dateFormat),
                 displayDateFormat
               )}
+              <Suffix>{`${T.translate("tooltip.date.from")}`}</Suffix>
             </Date>
             <Date>
-              <Prefix>{T.translate("tooltip.date.to") + ":"}</Prefix>
               {formatDate(
                 parseDate(dateRange.max, dateFormat),
                 displayDateFormat
               )}
+              <Suffix>{`${T.translate("tooltip.date.to")}`}</Suffix>
             </Date>
           </Info>
         </ConceptDateRangeTooltip>

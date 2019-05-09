@@ -21,13 +21,13 @@ export type AdditionalInfosType = {
 
 export type StateType = {
   displayTooltip: boolean,
-  toggleAdditionInfos: boolean,
+  toggleAdditionalInfos: boolean,
   additionalInfos: AdditionalInfosType
 };
 
 const initialState = {
   displayTooltip: true,
-  toggleAdditionInfos: false,
+  toggleAdditionalInfos: false,
   additionalInfos: {
     label: null,
     description: null,
@@ -38,7 +38,7 @@ const initialState = {
 };
 
 const setAdditionalInfos = (state, action) => {
-  if (state.toggleAdditionInfos)
+  if (state.toggleAdditionalInfos)
     return {
       ...state
     };
@@ -65,7 +65,7 @@ const tooltip = (
     case TOGGLE_ADDITIONAL_INFOS:
       return {
         ...state,
-        toggleAdditionInfos: !state.toggleAdditionInfos
+        toggleAdditionalInfos: !state.toggleAdditionalInfos
       };
     case TOGGLE_DISPLAY_TOOLTIP:
       return {
