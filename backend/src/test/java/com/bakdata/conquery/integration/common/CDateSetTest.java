@@ -10,8 +10,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 public class CDateSetTest {
 

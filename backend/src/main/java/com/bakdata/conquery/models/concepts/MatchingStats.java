@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.concepts;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;

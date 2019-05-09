@@ -11,9 +11,9 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;

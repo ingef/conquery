@@ -2,8 +2,8 @@ package com.bakdata.conquery.models.query.queryplan.specific.temporal;
 
 import java.util.OptionalInt;
 
-import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 /**
  * Tests if the preceding date is any day before the reference date.

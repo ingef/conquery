@@ -9,6 +9,8 @@ import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAdjuster;
 import java.time.temporal.TemporalAdjusters;
 
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+
 import lombok.experimental.UtilityClass;
 @UtilityClass
 public final class QuarterUtils {

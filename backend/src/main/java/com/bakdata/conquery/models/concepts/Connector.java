@@ -12,7 +12,7 @@ import javax.validation.constraints.NotNull;
 import org.apache.commons.lang3.NotImplementedException;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
