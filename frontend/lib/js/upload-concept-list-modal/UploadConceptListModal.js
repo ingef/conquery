@@ -23,25 +23,6 @@ import {
   acceptAndCloseUploadConceptListModal
 } from "./actions";
 
-type PropsType = {
-  loading: boolean,
-  isModalOpen: boolean,
-  label: String,
-  availableConceptRootNodes: Object[],
-  selectedConceptRootNode: Object,
-  selectedDatasetId: DatasetIdType,
-  conceptCodesFromFile: Array<string>,
-  resolved: Object,
-  resolvedItemsCount: number,
-  unresolvedItemsCount: number,
-  error: Object,
-
-  onCloseModal: Function,
-  onAccept: Function,
-  onUpdateLabel: Function,
-  onSelectConceptRootNode: Function
-};
-
 const Root = styled("div")`
   padding: 0 0 10px;
 `;
@@ -75,6 +56,25 @@ const CenteredIcon = styled(FaIcon)`
 const StyledPrimaryButton = styled(PrimaryButton)`
   margin-left: 15px;
 `;
+
+type PropsType = {
+  loading: boolean,
+  isModalOpen: boolean,
+  label: String,
+  availableConceptRootNodes: Object[],
+  selectedConceptRootNode: Object,
+  selectedDatasetId: DatasetIdType,
+  conceptCodesFromFile: Array<string>,
+  resolved: Object,
+  resolvedItemsCount: number,
+  unresolvedItemsCount: number,
+  error: Object,
+
+  onCloseModal: Function,
+  onAccept: Function,
+  onUpdateLabel: Function,
+  onSelectConceptRootNode: Function
+};
 
 const UploadConceptListModal = (props: PropsType) => {
   if (!props.isModalOpen) return null;
@@ -166,7 +166,7 @@ const UploadConceptListModal = (props: PropsType) => {
                         __html: T.translate(
                           "uploadConceptListModal.unknownCodes",
                           {
-                            context: resolved.unknownConcepts.length
+                            context: unresolvedItemsCount
                           }
                         )
                       }}
