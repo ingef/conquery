@@ -121,8 +121,9 @@ public class ImportJob extends Job {
 			}
 			//but if there are new ids we have to
 			else {
-				
+				log.debug("\t\tnew ids {}, recompressing", primaryMapping.getNewIds());
 				primaryDict.compress();
+				log.debug("\t\texample of new id: {}", primaryDict.getElement(primaryMapping.getNewIds().getMin()));
 				log.debug("\t\tstoring");
 				namespace.getStorage().updateDictionary(primaryDict);
 				this.progressReporter.report(1);

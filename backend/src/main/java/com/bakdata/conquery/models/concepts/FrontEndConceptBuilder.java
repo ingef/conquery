@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.concepts;
 
 import java.util.Arrays;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -10,6 +9,7 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
+import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FESelect;
@@ -25,8 +25,6 @@ import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 
@@ -215,19 +213,14 @@ public class FrontEndConceptBuilder {
 					.build();
 	}
 
-	public static Map<ConceptId, Map<ConceptElementId<?>, FENode>> createTreeMap(List<Concept<?>> concepts) {
-		Map<ConceptId, Map<ConceptElementId<?>, FENode>> rootedMap = new LinkedHashMap<>();
-
-		for (Concept<?> c : concepts) {
-			Map<ConceptElementId<?>, FENode> map = new LinkedHashMap<>();
-			rootedMap.put(c.getId(), map);
-			fillTreeMap(c, map);
-		}
-		return rootedMap;
+	public static FEList createTreeMap(Concept<?> concept) {
+		FEList map = new FEList();
+		fillTreeMap(concept, map);
+		return map;
 	}
 
-	private static void fillTreeMap(ConceptElement<?> ce, Map<ConceptElementId<?>, FENode> map) {
-		map.put(ce.getId(), createCTNode(ce));
+	private static void fillTreeMap(ConceptElement<?> ce, FEList map) {
+		map.add(ce.getId(), createCTNode(ce));
 		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode<?>) ce).getChildren() != null) {
 			for (ConceptTreeChild c : ((ConceptTreeNode<?>) ce).getChildren()) {
 				fillTreeMap(c, map);
