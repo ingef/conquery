@@ -17,6 +17,7 @@ import ConceptDropzone from "./ConceptDropzone";
 import ContentCell from "./ContentCell";
 
 const Row = styled("div")`
+  max-width: 300px;
   margin-bottom: 10px;
 `;
 
@@ -35,7 +36,7 @@ const NodeDetailsView = (props: PropsType) => {
     onRemoveConcept
   } = props;
 
-  const rootConcept = node.isPreviousQuery ? getConceptById(node.tree) : null;
+  const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
 
   return (
     <ContentCell>
@@ -78,9 +79,9 @@ const NodeDetailsView = (props: PropsType) => {
               <ConceptEntry
                 key={conceptId}
                 node={rootConcept}
+                conceptId={conceptId}
                 canRemoveConcepts={node.ids.length > 1}
                 onRemoveConcept={onRemoveConcept}
-                conceptId={conceptId}
               />
             ))}
           </div>

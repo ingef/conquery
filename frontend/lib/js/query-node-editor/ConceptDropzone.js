@@ -1,52 +1,53 @@
+// @flow
+
 import React from "react";
-import classnames from "classnames";
+import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import { DropTarget } from "react-dnd";
-import { dndTypes } from "../common/constants";
+import { CATEGORY_TREE_NODE } from "../common/constants/dndTypes";
+import Dropzone from "../form-components/Dropzone";
+import { type QueryNodeType } from "../standard-query-editor/types";
 
-const dropzoneTarget = {
-  drop(props, monitor) {
-    const item = monitor.getItem();
+const StyledDropzone = styled(Dropzone)`
+  width: 100%;
+`;
 
-    props.onDropConcept(item);
-  },
+const DROP_TYPES = [CATEGORY_TREE_NODE];
 
-  canDrop({ node }, monitor) {
-    const item = monitor.getItem();
-    // The dragged item should contain exactly one id
-    // since it was dragged from the tree
-    const conceptId = item.ids[0];
-
-    return item.tree === node.tree && !node.ids.some(id => id === conceptId);
-  }
+type PropsType = {
+  node: QueryNodeType,
+  onDropConcept: QueryNodeType => void
 };
 
-const collect = (connect, monitor) => ({
-  connectDropTarget: connect.dropTarget(),
-  isOver: monitor.isOver(),
-  canDrop: monitor.canDrop()
-});
+const ConceptDropzone = ({ node, onDropConcept }: PropsType) => {
+  const dropzoneTarget = {
+    // Usually, "drop" is specified here as well, but our Dropzone implementation splits that
 
-const ConceptDropzone = DropTarget(
-  dndTypes.CATEGORY_TREE_NODE,
-  dropzoneTarget,
-  collect
-)(props =>
-  props.connectDropTarget(
-    <div className="query-editor-dropzone">
-      <div
-        className={classnames("dropzone", {
-          "dropzone--over": props.isOver && props.canDrop,
-          "dropzone--disallowed": props.isOver && !props.canDrop
-        })}
-      >
-        <p className="dropzone__text">
-          {T.translate("queryNodeEditor.dropConcept")}
-        </p>
-      </div>
-    </div>
-  )
-);
+    canDrop(_, monitor) {
+      const item = monitor.getItem();
+      // The dragged item should contain exactly one id
+      // since it was dragged from the tree
+      const conceptId = item.ids[0];
+
+      return item.tree === node.tree && !node.ids.some(id => id === conceptId);
+    }
+  };
+
+  const onDrop = (_, monitor) => {
+    const item = monitor.getItem();
+
+    onDropConcept(item);
+  };
+
+  return (
+    <StyledDropzone
+      acceptedDropTypes={DROP_TYPES}
+      onDrop={onDrop}
+      target={dropzoneTarget}
+    >
+      {T.translate("queryNodeEditor.dropConcept")}
+    </StyledDropzone>
+  );
+};
 
 export default ConceptDropzone;

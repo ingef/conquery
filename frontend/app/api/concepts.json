@@ -87,7 +87,17 @@
               "id": "production_country",
               "label": "Production Country",
               "type": "BIG_MULTI_SELECT",
-              "allowDropFile": true
+              "allowDropFile": true,
+              "options": [
+                {
+                  "value": "GER",
+                  "label": "Germany"
+                },
+                {
+                  "value": "USA",
+                  "label": "United States (USA)"
+                }
+              ]
             },
             {
               "id": "budget",

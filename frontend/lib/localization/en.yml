@@ -39,7 +39,7 @@ queryRunner:
   downloadResults: "CSV"
 
 queryEditor:
-  couldNotExpandNode: "Could not find node"
+  couldNotExpandNode: "Concept not found"
   couldNotInsertConceptList: "Could not insert the Concept List"
   edit: "Edit"
   exclude: "Exclude"
@@ -49,9 +49,14 @@ queryEditor:
   loadingPreviousQuery: "Loading Query Details"
 
 dropzone:
-  dragElementPlease: "Drag a concept or a query into this area"
-  dragElementPleaseShort: "Add an element"
+  dragElementPlease: "Add an element"
   dragQuery: "Add a query"
+  explanation: "You'll create a query in this area"
+  drop: "Drop"
+  aConcept: "a concept"
+  aQuery: "a previous query"
+  aConceptList: "a concept list"
+  intoThisArea: "into this area"
 
 datasetSelector:
   pleaseChoose: "Choose a data set"
@@ -74,6 +79,7 @@ queryNodeEditor:
   tooManyValues: "{count} values selected"
   filters: "Filters"
   selects: "More values"
+  nodeNotFound: "Concept not found"
 
 queryGroupModal:
   explanation: "Set time frame"
