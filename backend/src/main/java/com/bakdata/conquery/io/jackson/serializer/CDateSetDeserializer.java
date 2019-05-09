@@ -2,8 +2,8 @@ package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
 
-import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
@@ -25,7 +25,7 @@ public class CDateSetDeserializer extends StdDeserializer<CDateSet> {
 			
 			CDateSet set = CDateSet.create();
 			for(int i=0; i<ints.length; i+=2) {
-				set.add(new CDateRange(ints[i], ints[i+1]));
+				set.add(CDateRange.of(ints[i], ints[i+1]));
 			}
 			return set;
 		}
