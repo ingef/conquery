@@ -98,6 +98,10 @@ export type DraggedNodeType = {
   label: string,
   excludeTimestamps?: boolean,
 
+  additionalInfos: Object,
+  matchingEntries: number,
+  dateRange: Object,
+
   moved?: boolean,
   andIdx?: number,
   orIdx?: number, // These two only exist if moved === true

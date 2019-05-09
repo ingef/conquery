@@ -29,6 +29,7 @@ const Root = styled("div")`
   width: 100%;
   height: 100%;
   padding: 50px 0 10px;
+  position: relative;
   display: flex;
   flex-direction: column;
   background-color: ${({ theme }) => theme.col.bgAlt};
@@ -52,7 +53,7 @@ const Header = styled("h2")`
 const Content = styled("div")`
   padding: 10px 20px;
   width: 100%;
-  height: 100%;
+  flex-grow: 1;
   overflow-y: auto;
   overflow-x: hidden;
 `;
@@ -91,7 +92,6 @@ const Description = styled("p")`
 `;
 
 const Infos = styled("div")`
-  height: 100%;
   width: 100%;
   overflow-x: auto;
 `;
@@ -126,11 +126,11 @@ const InfoHeadline = styled("h4")`
 
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  top: 0;
-  right: 20px;
-  border-top: 0;
-  border-top-left-radius: 0;
+  top: 58px;
+  right: 0;
+  border-right: 0;
   border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 `;
 
 const Tooltip = (props: PropsType) => {
@@ -162,6 +162,12 @@ const Tooltip = (props: PropsType) => {
 
   return (
     <Root>
+      <StyledIconButton
+        small
+        frame
+        onClick={toggleDisplayTooltip}
+        icon="angle-left"
+      />
       <Header>{T.translate("tooltip.headline")}</Header>
       <Content>
         <TooltipEntries
@@ -193,12 +199,6 @@ const Tooltip = (props: PropsType) => {
     </Root>
   );
 };
-// <StyledIconButton
-//   small
-//   frame
-//   onClick={toggleDisplayTooltip}
-//   icon="angle-down"
-// />
 
 const mapStateToProps = state => {
   return {

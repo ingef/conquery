@@ -118,6 +118,10 @@ const filterItem = (
       loading: item.loading,
       error: item.error,
 
+      additionalInfos: item.additionalInfos,
+      matchingEntries: item.matchingEntries,
+      dateRange: item.dateRange,
+
       isPreviousQuery: item.isPreviousQuery
     };
 };

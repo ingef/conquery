@@ -1,6 +1,11 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
+
+const Root = styled("div")`
+  cursor: pointer;
+`;
 
 type PropsType = {
   className?: string,
@@ -14,13 +19,13 @@ const HoverableBase = (Component: any) =>
 
     render() {
       return (
-        <div
+        <Root
           className={this.props.className}
           onMouseEnter={this.props.onDisplayAdditionalInfos}
           onClick={this.props.onToggleAdditionalInfos}
         >
           <Component {...this.props} />
-        </div>
+        </Root>
       );
     }
   };
