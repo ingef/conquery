@@ -3,6 +3,8 @@ package com.bakdata.conquery.util;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import lombok.NonNull;
 
 
@@ -46,7 +48,7 @@ public class ConqueryEscape {
 				encode(bytes[i], baos);
 			}
 		}
-		return new String(baos.toByteArray(), StandardCharsets.UTF_8);
+		return new String(baos.toByteArray(), StandardCharsets.US_ASCII);
 	}
 	
 	public static String unescape(@NonNull String word) {
@@ -54,7 +56,10 @@ public class ConqueryEscape {
 			return word;
 		}
 		
-		byte[] bytes = word.getBytes(StandardCharsets.UTF_8);
+		byte[] bytes = word.getBytes(StandardCharsets.US_ASCII);
+		if(!ArrayUtils.contains(bytes, ESCAPER)) {
+			return word;
+		}
 		
 		ByteArrayOutputStream out = new ByteArrayOutputStream(bytes.length);
 		
