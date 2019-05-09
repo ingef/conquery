@@ -12,6 +12,7 @@ import HoverableBase from "./HoverableBase";
 export type AdditionalInfoHoverableNodeType = {
   label: string,
   description: string,
+  children?: Array<string>,
   matchingEntries: number,
   dateRange: DateRangeType,
   additionalInfos: Array<InfoType>
@@ -21,9 +22,10 @@ export type AdditionalInfoHoverableNodeType = {
 const additionalInfos = (node: AdditionalInfoHoverableNodeType) => ({
   label: node.label,
   description: node.description,
+  isFolder: !!node.children && node.children.length > 0,
   matchingEntries: node.matchingEntries,
   dateRange: node.dateRange,
-  additionalInfos: node.additionalInfos
+  infos: node.additionalInfos
 });
 
 // Decorates a component with a hoverable node.

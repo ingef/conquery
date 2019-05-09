@@ -50,24 +50,23 @@ const Content = ({ displayTooltip }: PropsType) => {
   return (
     <Root>
       <SplitPane
-        split="horizontal"
-        primary="second"
+        split="vertical"
         allowResize={displayTooltip}
-        minSize={displayTooltip ? 80 : 30}
-        maxSize={-400}
-        defaultSize={displayTooltip ? "10%" : 30}
+        minSize={displayTooltip ? 200 : 30}
+        maxSize={600}
+        defaultSize={displayTooltip ? "18%" : 30}
         className={!displayTooltip ? "SplitPane--tooltip-fixed" : ""}
       >
+        {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
         <SplitPane
           split="vertical"
           minSize={350}
           maxSize={-420}
-          defaultSize="50%"
+          defaultSize="39%"
         >
           <LeftPane />
           <RightPane />
         </SplitPane>
-        {displayTooltip ? <Tooltip /> : <ActivateTooltip />}
       </SplitPane>
       <Preview generator={generatePreview} />
     </Root>

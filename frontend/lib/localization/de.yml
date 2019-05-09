@@ -108,10 +108,10 @@ common:
 
 tooltip:
   entriesFound:
-    1: "gefundener Eintrag"
-    _: "gefundene Einträge"
+    1: "Eintrag"
+    _: "Einträge"
 
-  placeholder: "Weitere Informationen über ein Konzept ..."
+  headline: "Info"
   date:
     daterange: "Zeitraum"
     from: "Von"

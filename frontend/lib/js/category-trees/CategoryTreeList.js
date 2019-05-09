@@ -22,7 +22,7 @@ const Root = styled("div")`
   flex-shrink: 0;
   flex-basis: 0;
   overflow-y: auto;
-  padding: 0 10px 0 20px;
+  padding: 0 10px 0;
   white-space: nowrap;
 
   // Only hide the category trees when the tab is not selected
