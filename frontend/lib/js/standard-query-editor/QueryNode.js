@@ -6,6 +6,7 @@ import styled from "@emotion/styled";
 import T from "i18n-react";
 import { DragSource, type ConnectDragSource } from "react-dnd";
 
+import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 import { dndTypes } from "../common/constants";
 import { ErrorMessage } from "../error-message";
 import { nodeHasActiveFilters } from "../model/node";
@@ -165,6 +166,10 @@ const nodeSource = {
       label: node.label,
       excludeTimestamps: node.excludeTimestamps,
 
+      additionalInfos: node.additionalInfos,
+      matchingEntries: node.matchingEntries,
+      dateRange: node.dateRange,
+
       loading: node.loading,
       error: node.error
     };
@@ -196,4 +201,6 @@ const collect = (connect, monitor) => ({
   isDragging: monitor.isDragging()
 });
 
-export default DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(QueryNode);
+export default AdditionalInfoHoverable(
+  DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(QueryNode)
+);

@@ -5,8 +5,8 @@ import java.time.temporal.ChronoField;
 import java.time.temporal.IsoFields;
 import java.time.temporal.TemporalAdjuster;
 
-import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.QuarterUtils;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.externalservice.ResultType;

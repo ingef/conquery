@@ -48,7 +48,7 @@ public interface IId<TYPE> {
 		}
 		
 		default ID createId(List<String> parts) {
-			parts = ImmutableList.copyOf(Lists.transform(parts,String::intern));
+			parts = Lists.transform(parts,String::intern);
 			PeekingIterator<String> it = Iterators.peekingIterator(parts.iterator());
 			return checkNoRemaining(parse(it), it, parts);
 		}

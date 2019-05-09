@@ -4,8 +4,6 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import { getConceptById } from "../category-trees/globalTreeStoreHelper";
-
 import { AdditionalInfoHoverable } from "../tooltip";
 import IconButton from "../button/IconButton";
 
@@ -40,19 +38,17 @@ const NotFound = styled(ConceptEntryHeadline)`
 
 const ConceptEntry = AdditionalInfoHoverable(
   ({ node, conceptId, canRemoveConcepts, onRemoveConcept }) => {
-    const concept = getConceptById(conceptId);
-
     return (
       <Concept>
         <ConceptContainer>
-          {!concept ? (
+          {!node ? (
             <NotFound>{T.translate("queryNodeEditor.nodeNotFound")}</NotFound>
           ) : (
             <>
-              <ConceptEntryHeadline>{concept.label}</ConceptEntryHeadline>
-              {concept.description && (
+              <ConceptEntryHeadline>{node.label}</ConceptEntryHeadline>
+              {node.description && (
                 <ConceptEntryDescription>
-                  {concept.description}
+                  {node.description}
                 </ConceptEntryDescription>
               )}
             </>

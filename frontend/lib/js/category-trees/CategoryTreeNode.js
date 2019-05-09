@@ -81,9 +81,11 @@ class CategoryTreeNode extends React.Component<PropsType> {
             id,
             label: data.label,
             description: data.description,
+
+            additionalInfos: data.additionalInfos,
             matchingEntries: data.matchingEntries,
             dateRange: data.dateRange,
-            additionalInfos: data.additionalInfos,
+
             children: data.children
           }}
           createQueryElement={(): DraggedNodeType => {
@@ -98,6 +100,11 @@ class CategoryTreeNode extends React.Component<PropsType> {
               label: data.label,
               tables,
               selects,
+
+              additionalInfos: data.additionalInfos,
+              matchingEntries: data.matchingEntries,
+              dateRange: data.dateRange,
+
               tree: data.tree
             };
           }}

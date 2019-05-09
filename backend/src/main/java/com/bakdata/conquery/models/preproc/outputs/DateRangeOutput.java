@@ -7,7 +7,7 @@ import java.util.List;
 import javax.validation.constraints.Min;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.CType;

@@ -11,25 +11,30 @@ type PropsType = {
   toggleDisplayTooltip: () => void
 };
 
+const Root = styled("div")`
+  position: relative;
+  height: 100%;
+`;
+
 const StyledIconButton = styled(IconButton)`
   position: absolute;
-  top: 0;
-  right: 20px;
-  border-top: 0;
-  border-top-left-radius: 0;
+  top: 58px;
+  right: 0;
+  border-right: 0;
   border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
 `;
 
 const ActivateTooltip = (props: PropsType) => {
   return (
-    <div className="tooltip tooltip--activate">
+    <Root>
       <StyledIconButton
         small
         frame
-        icon="angle-up"
+        icon="angle-right"
         onClick={props.toggleDisplayTooltip}
       />
-    </div>
+    </Root>
   );
 };
 

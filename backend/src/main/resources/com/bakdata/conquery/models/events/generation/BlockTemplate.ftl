@@ -13,7 +13,7 @@ import java.io.IOException;
 import java.lang.Integer;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.common.Range;
 
 import com.google.common.collect.ImmutableMap;
@@ -208,7 +208,7 @@ public class Block_${suffix} extends Block {
             <#if col.type.lines != col.type.nullLines>
                 <#if col.type.typeId == "DATE">
                 case ${col.position}:
-                    return new CDateRange(events[event].get${safeName(col.name)?cap_first}(), events[event].get${safeName(col.name)?cap_first}());
+                    return CDateRange.exactly(events[event].get${safeName(col.name)?cap_first}());
                 <#elseif col.type.typeId == "DATE_RANGE">
                 case ${col.position}:
                     return events[event].get${safeName(col.name)?cap_first}();
