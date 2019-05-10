@@ -6,9 +6,8 @@ import lombok.NoArgsConstructor;
 import lombok.experimental.Wither;
 
 @Wither
-@EqualsAndHashCode
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
-public class CDateRangeOpen implements CDateRange {
+public class CDateRangeOpen extends CDateRange {
 	public static final CDateRange INSTANCE = new CDateRangeOpen();
 
 	@Override

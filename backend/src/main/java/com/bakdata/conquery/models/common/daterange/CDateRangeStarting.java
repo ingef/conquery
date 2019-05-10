@@ -6,9 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Wither;
 
 @Wither
-@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class CDateRangeStarting implements CDateRange {
+public class CDateRangeStarting extends CDateRange {
 
 	private final int min;
 	
