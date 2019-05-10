@@ -256,12 +256,11 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 			return false;
 		}
 
-		return
-				other.contains(this.getMinValue())
-				|| other.contains(this.getMaxValue())
-
-				|| this.contains(other.getMinValue())
-				|| this.contains(other.getMaxValue());
+		return !(
+			this.getMinValue() > other.getMaxValue()
+			||
+			this.getMaxValue() < other.getMinValue()
+		);
 	}
 
 	public boolean isConnected(CDateRange other) {

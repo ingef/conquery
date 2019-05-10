@@ -29,4 +29,13 @@ public class CDateRangeEnding extends CDateRange {
 	public int getMinValue() {
 		return Integer.MIN_VALUE;
 	}
+	
+	@Override
+	public boolean intersects(CDateRange other) {
+		if (other == null) {
+			return false;
+		}
+
+		return this.getMaxValue() >= other.getMinValue();
+	}
 }
