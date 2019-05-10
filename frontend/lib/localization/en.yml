@@ -105,11 +105,11 @@ common:
   clearValue: "Clear value"
 
 tooltip:
+  headline: "Info"
+  placeholder: "More information on a concept ..."
   entriesFound:
     1: "entry"
     _: "entries"
-
-  headline: "Info"
   date:
     daterange: "Date range"
     from: "From"

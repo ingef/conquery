@@ -86,12 +86,6 @@ const Suffix = styled("span")`
 `;
 
 const TooltipEntries = (props: PropsType) => {
-  if (
-    typeof props.matchingEntries === "undefined" ||
-    props.matchingEntries === null
-  )
-    return null;
-
   const { matchingEntries, dateRange } = props;
 
   const isZero = props.matchingEntries === 0;
@@ -105,14 +99,18 @@ const TooltipEntries = (props: PropsType) => {
         <StatsIcon icon="chart-bar" />
         <Info>
           <Number zero={isZero}>
-            {numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
-              <Digits key={i}>{threeDigits}</Digits>
-            ))}
+            {matchingEntries || isZero ? (
+              numberToThreeDigitArray(matchingEntries).map((threeDigits, i) => (
+                <Digits key={i}>{threeDigits}</Digits>
+              ))
+            ) : (
+              <Digits>-</Digits>
+            )}
           </Number>
           <Text zero={isZero}>
             {T.translate(
               "tooltip.entriesFound",
-              { context: matchingEntries } // For pluralization
+              { context: matchingEntries || 2 } // For pluralization
             )}
           </Text>
         </Info>

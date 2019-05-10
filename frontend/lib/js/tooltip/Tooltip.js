@@ -13,17 +13,12 @@ import FaIcon from "../icon/FaIcon";
 import type { SearchType } from "../category-trees/reducer";
 
 import ActivateTooltip from "./ActivateTooltip";
-import { toggleDisplayTooltip } from "./actions";
+import {
+  toggleDisplayTooltip as toggleTooltip,
+  toggleAdditionalInfos as toggleInfos
+} from "./actions";
 import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
-
-type PropsType = {
-  additionalInfos: AdditionalInfosType,
-  displayTooltip: boolean,
-  toggleAdditionalInfos: boolean,
-  toggleDisplayTooltip: Function,
-  search: SearchType
-};
 
 const Root = styled("div")`
   width: 100%;
@@ -65,13 +60,14 @@ const Head = styled("div")`
 
 const StyledFaIcon = styled(FaIcon)`
   margin-top: 1px;
+  color: ${({ theme }) => theme.col.blueGrayDark};
 `;
-const TackIcon = styled(StyledFaIcon)`
+const TackIconButton = styled(IconButton)`
+  display: inline-flex; // To remove some height that seemed to be added
   margin-left: 5px;
 `;
 const TypeIcon = styled(StyledFaIcon)`
   margin-right: 10px;
-  color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 const PinnedLabel = styled("p")`
   display: flex;
@@ -133,14 +129,25 @@ const StyledIconButton = styled(IconButton)`
   border-bottom-right-radius: 0;
 `;
 
+type PropsType = {
+  additionalInfos: AdditionalInfosType,
+  displayTooltip: boolean,
+  toggleAdditionalInfos: boolean,
+  onToggleDisplayTooltip: Function,
+  onToggleAdditionalInfos: Function,
+  search: SearchType
+};
+
 const Tooltip = (props: PropsType) => {
   if (!props.displayTooltip) return <ActivateTooltip />;
 
   const {
     additionalInfos,
-    toggleDisplayTooltip,
-    toggleAdditionalInfos
+    toggleAdditionalInfos,
+    onToggleDisplayTooltip,
+    onToggleAdditionalInfos
   } = props;
+
   const {
     label,
     description,
@@ -165,7 +172,7 @@ const Tooltip = (props: PropsType) => {
       <StyledIconButton
         small
         frame
-        onClick={toggleDisplayTooltip}
+        onClick={onToggleDisplayTooltip}
         icon="angle-left"
       />
       <Header>{T.translate("tooltip.headline")}</Header>
@@ -174,18 +181,27 @@ const Tooltip = (props: PropsType) => {
           matchingEntries={matchingEntries}
           dateRange={dateRange}
         />
-        {label && (
-          <Head>
-            <PinnedLabel>
-              <TypeIcon icon={isFolder ? "folder" : "minus"} />
-              <Label>{searchHighlight(label)}</Label>
-              {toggleAdditionalInfos && <TackIcon icon="thumbtack" />}
-            </PinnedLabel>
-            {description && (
-              <Description>{searchHighlight(description)}</Description>
+        <Head>
+          <PinnedLabel>
+            <TypeIcon icon={isFolder ? "folder" : "minus"} />
+            <Label>
+              {label
+                ? searchHighlight(label)
+                : T.translate("tooltip.placeholder")}
+            </Label>
+            {toggleAdditionalInfos && (
+              <TackIconButton
+                bare
+                active
+                onClick={onToggleAdditionalInfos}
+                icon="thumbtack"
+              />
             )}
-          </Head>
-        )}
+          </PinnedLabel>
+          {description && (
+            <Description>{searchHighlight(description)}</Description>
+          )}
+        </Head>
         <Infos>
           {infos &&
             infos.map((info, i) => (
@@ -210,7 +226,8 @@ const mapStateToProps = state => {
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  toggleDisplayTooltip: () => dispatch(toggleDisplayTooltip())
+  onToggleDisplayTooltip: () => dispatch(toggleTooltip()),
+  onToggleAdditionalInfos: () => dispatch(toggleInfos())
 });
 
 export default connect(
