@@ -72,9 +72,9 @@ public class ConqueryConfig extends Configuration {
 	private static ImmutableClassToInstanceMap<PluginConfig> preparePluginMap(List<PluginConfig> configs) {
 		Builder<PluginConfig> builder = ImmutableClassToInstanceMap.<PluginConfig>builder();
 		for(PluginConfig config : configs) {
-			builder.put(config.getClass(), config);
+			builder.put((Class<PluginConfig>)config.getClass(), config);
 		}
-		 return builder.build();
+		return builder.build();
 	}
 	
 	@Override
@@ -85,5 +85,9 @@ public class ConqueryConfig extends Configuration {
 
 	public void initializeDatePatterns() {
 		DateFormats.initialize(additionalFormats);
+	}
+	
+	public PluginConfig getPluggedConfig(Class<PluginConfig> type) {
+		return pluggedInstances.getInstance(type);
 	}
 }
