@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -12,6 +13,7 @@ import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.models.preproc.DateFormats;
+import com.google.common.collect.MoreCollectors;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
@@ -73,11 +75,10 @@ public class ConqueryConfig extends Configuration {
 		DateFormats.initialize(additionalFormats);
 	}
 	
-	public PluginConfig getPluggedConfig(Class<? extends PluginConfig> type) {
-		List<PluginConfig> filtered = pluggedConfigs.stream().filter(c -> c.getClass().equals(type)).collect(Collectors.toList());
-		if(filtered.size() != 1) {
-			throw new IllegalStateException("No config of type " + type + " found.");
-		}
-		return filtered.get(0);
+	public <T extends PluginConfig> T getPluggedConfig(Class<T> type) {
+		Optional<PluginConfig> filtered = pluggedConfigs.stream()
+			.filter(c -> type.isAssignableFrom(c.getClass()))
+			.collect(MoreCollectors.toOptional());
+		return (T) filtered.get();
 	}
 }
