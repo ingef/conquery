@@ -100,10 +100,12 @@ class QueryNode extends React.Component {
       onToggleTimestamps
     } = this.props;
 
+    const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
+
     return (
       <Root
         ref={instance => connectDragSource(instance)}
-        hasActiveFilters={!node.error && nodeHasActiveFilters(node)}
+        hasActiveFilters={hasActiveFilters}
         onClick={!node.error && onEditClick}
       >
         <Node>

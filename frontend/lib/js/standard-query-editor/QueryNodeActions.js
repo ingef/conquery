@@ -9,7 +9,6 @@ import FaIcon from "../icon/FaIcon";
 
 type PropsType = {
   excludeTimestamps?: boolean,
-  hasActiveFilters?: boolean,
   isExpandable?: boolean,
   hasDetails?: boolean,
   previousQueryLoading?: boolean,
