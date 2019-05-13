@@ -21,7 +21,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
 
-public interface CDateRange extends IRange<LocalDate, CDateRange> {
+import lombok.EqualsAndHashCode;
+
+@EqualsAndHashCode(onlyExplicitlyIncluded = true)
+public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	/**
 	 * Create a Range containing only the supplied date. The value needs to be a valid CDate.
@@ -137,16 +140,18 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	}
 
 	@Override
-	public default LocalDate getMax() {
+	public LocalDate getMax() {
 		return getMaxValue() == Integer.MAX_VALUE ? null : CDate.toLocalDate(getMaxValue());
 	}
 
-	public int getMaxValue();
+	@EqualsAndHashCode.Include
+	public abstract int getMaxValue();
 
-	public int getMinValue();
+	@EqualsAndHashCode.Include
+	public abstract int getMinValue();
 
 	@Override
-	public default LocalDate getMin() {
+	public LocalDate getMin() {
 		return getMinValue() == Integer.MIN_VALUE ? null : CDate.toLocalDate(getMinValue());
 	}
 
@@ -159,7 +164,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 		return of(values[0], values[1]);
 	}
 
-	public default CDateRange intersection(CDateRange other) {
+	public CDateRange intersection(CDateRange other) {
 		if (!intersects(other)) {
 			throw new IllegalArgumentException("Ranges do not intersect.");
 		}
@@ -168,28 +173,28 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	}
 
 	@JsonValue
-	public default int[] asArray() {
+	public int[] asArray() {
 		return new int[] { getMinValue(), getMaxValue() };
 	}
 
-	public default Range<Integer> asIntegerRange() {
+	public Range<Integer> asIntegerRange() {
 		return Range.of(getMinValue(), getMaxValue());
 	}
 
 	@Override
-	public default boolean contains(LocalDate value) {
+	public boolean contains(LocalDate value) {
 		return contains(CDate.ofLocalDate(value));
 	}
 
 	@Override
-	public default boolean contains(CDateRange other) {
+	public boolean contains(CDateRange other) {
 		return contains(other.getMinValue()) && contains(other.getMaxValue());
 	}
 
-	public boolean contains(int rep);
+	public abstract boolean contains(int rep);
 
 	@Override
-	public default CDateRange span(CDateRange other) {
+	public CDateRange span(CDateRange other) {
 		return of(Math.min(getMinValue(), other.getMinValue()), Math.max(getMaxValue(), other.getMaxValue()));
 	}
 
@@ -206,60 +211,59 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	}
 
 	@Override
-	public default boolean isOpen() {
+	public boolean isOpen() {
 		return getMinValue() == Integer.MIN_VALUE || getMaxValue() == Integer.MAX_VALUE;
 	}
 
 	@Override
-	public default boolean isAll() {
+	public boolean isAll() {
 		return getMinValue() == Integer.MIN_VALUE && getMaxValue() == Integer.MAX_VALUE;
 	}
 
 	@Override
-	public default boolean isAtMost() {
+	public boolean isAtMost() {
 		return getMinValue() == Integer.MIN_VALUE && getMaxValue() != Integer.MAX_VALUE;
 	}
 
 	@Override
-	public default boolean isAtLeast() {
+	public boolean isAtLeast() {
 		return getMinValue() != Integer.MIN_VALUE && getMaxValue() == Integer.MAX_VALUE;
 	}
 
 	@Override
-	public default boolean isExactly() {
+	public boolean isExactly() {
 		return getMinValue() == getMaxValue();
 	}
 
 	@JsonIgnore
-	public default long getDurationInDays() {
+	public long getDurationInDays() {
 		return getDuration(ChronoUnit.DAYS);
 	}
 
 	@JsonIgnore
-	public default long getNumberOfDays() {
+	public long getNumberOfDays() {
 		return getDurationInDays() + 1;
 	}
 
 	@JsonIgnore
-	public default long getDuration(ChronoUnit unit) {
+	public long getDuration(ChronoUnit unit) {
 		return unit.between(getMin(), getMax());
 	}
 
 	@Override
-	public default boolean intersects(CDateRange other) {
+	public boolean intersects(CDateRange other) {
 		if (other == null) {
 			return false;
 		}
 
-		return
-				other.contains(this.getMinValue())
-				|| other.contains(this.getMaxValue())
-
-				|| this.contains(other.getMinValue())
-				|| this.contains(other.getMaxValue());
+		return !(
+			this.getMinValue() > other.getMaxValue()
+			||
+			this.getMaxValue() < other.getMinValue()
+		);
 	}
 
-	public default boolean isConnected(CDateRange other) {
+	public boolean isConnected(CDateRange other) {
 		if (other == null) {
 			return false;
 		}
@@ -271,7 +275,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 				|| this.getMaxValue() == other.getMinValue() - 1;
 	}
 
-	public default boolean encloses(CDateRange other) {
+	public boolean encloses(CDateRange other) {
 		if (other == null) {
 			return false;
 		}
@@ -281,7 +285,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 				&& getMinValue() <= other.getMinValue();
 	}
 
-	public default Stream<LocalDate> stream(TemporalUnit unit) {
+	public Stream<LocalDate> stream(TemporalUnit unit) {
 		return Stream.iterate(getMin(), value -> value.plus(1, unit)).limit(1 + unit.between(getMin(), getMax()));
 	}
 
@@ -289,7 +293,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	 * Tests if the Range has an upper bound.
 	 * @return {@code true} if the Range has an upper bound
 	 */
-	public default boolean hasUpperBound() {
+	public boolean hasUpperBound() {
 		return getMaxValue() != Integer.MAX_VALUE;
 	}
 
@@ -297,7 +301,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	 * Tests if the Range has a lower bound.
 	 * @return {@code true} if the Range has a lower bound
 	 */
-	public default boolean hasLowerBound() {
+	public boolean hasLowerBound() {
 		return getMinValue() != Integer.MIN_VALUE;
 	}
 
@@ -305,7 +309,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	 * Creates a new {@link Range} that is an equivalent representation of {@code this}.
 	 * @return
 	 */
-	public default Range<LocalDate> toSimpleRange() {
+	public Range<LocalDate> toSimpleRange() {
 		return new Range<>(getMin(), getMax());
 	}
 
@@ -314,7 +318,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	 *
 	 * @return The years as date ranges, from the first date in range to the last in ascending order.
 	 */
-	public default List<CDateRange> getCoveredYears() {
+	public List<CDateRange> getCoveredYears() {
 		int startYear = this.getMin().getYear();
 		int endYear = this.getMax().getYear();
 
@@ -346,7 +350,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	 * @return The quarters as date ranges, from the first date in range to the
 	 *         last in ascending order.
 	 */
-	public default List<CDateRange> getCoveredQuarters() {
+	public List<CDateRange> getCoveredQuarters() {
 		List<CDateRange> ranges = new ArrayList<>();
 		
 		// First quarter begins with this range
@@ -373,7 +377,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	 * @return The days as date ranges, from the first date in range to the
 	 *         last in ascending order.
 	 */
-	public default List<CDateRange> getCoveredDays() {
+	public List<CDateRange> getCoveredDays() {
 
 		List<CDateRange> ranges = new ArrayList<>();
 		for(int i = this.getMinValue(); i <= this.getMaxValue(); i++) {

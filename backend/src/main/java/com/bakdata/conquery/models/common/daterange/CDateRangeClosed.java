@@ -2,12 +2,10 @@ package com.bakdata.conquery.models.common.daterange;
 
 import com.bakdata.conquery.models.common.CDate;
 
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Wither;
 
 @Wither
-@EqualsAndHashCode
-public class CDateRangeClosed implements CDateRange {
+public class CDateRangeClosed extends CDateRange {
 
 	private final int min;
 	private final int max;
@@ -21,7 +19,7 @@ public class CDateRangeClosed implements CDateRange {
 				String.format("Min(%s) is not less than max(%s)", CDate.toLocalDate(min), CDate.toLocalDate(max)));
 		}
 		
-		if (min == Integer.MIN_VALUE || max == Integer.MAX_VALUE) {
+		if (min == Integer.MIN_VALUE || max == Integer.MAX_VALUE || min==max) {
 			throw new IllegalArgumentException(
 				String.format("%s is not a valid closed range", this.toString()));
 		}

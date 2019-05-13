@@ -2,13 +2,11 @@ package com.bakdata.conquery.models.common.daterange;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Wither;
 
 @Wither
-@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class CDateRangeExactly implements CDateRange {
+public class CDateRangeExactly extends CDateRange {
 
 	private final int value;
 	

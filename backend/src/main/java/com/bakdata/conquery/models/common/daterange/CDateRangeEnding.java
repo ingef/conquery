@@ -2,13 +2,11 @@ package com.bakdata.conquery.models.common.daterange;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
 import lombok.experimental.Wither;
 
 @Wither
-@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class CDateRangeEnding implements CDateRange {
+public class CDateRangeEnding extends CDateRange {
 
 	private final int max;
 	
@@ -30,5 +28,14 @@ public class CDateRangeEnding implements CDateRange {
 	@Override
 	public int getMinValue() {
 		return Integer.MIN_VALUE;
+	}
+	
+	@Override
+	public boolean intersects(CDateRange other) {
+		if (other == null) {
+			return false;
+		}
+
+		return this.getMaxValue() >= other.getMinValue();
 	}
 }

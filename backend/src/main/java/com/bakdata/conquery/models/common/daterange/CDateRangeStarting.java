@@ -6,9 +6,8 @@ import lombok.EqualsAndHashCode;
 import lombok.experimental.Wither;
 
 @Wither
-@EqualsAndHashCode
 @AllArgsConstructor(access = AccessLevel.PACKAGE)
-public class CDateRangeStarting implements CDateRange {
+public class CDateRangeStarting extends CDateRange {
 
 	private final int min;
 	
@@ -30,5 +29,14 @@ public class CDateRangeStarting implements CDateRange {
 	@Override
 	public int getMinValue() {
 		return min;
+	}
+	
+	@Override
+	public boolean intersects(CDateRange other) {
+		if (other == null) {
+			return false;
+		}
+
+		return this.getMinValue() <= other.getMaxValue();
 	}
 }
