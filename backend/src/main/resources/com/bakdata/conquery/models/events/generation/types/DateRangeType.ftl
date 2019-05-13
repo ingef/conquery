@@ -8,6 +8,6 @@
 	}
 }
 </#macro>
-<#macro kryoDeserialization type>input.readBoolean()?null:new CDateRange(input.readInt(true), input.readInt(true))</#macro>
+<#macro kryoDeserialization type>input.readBoolean()?null:CDateRange.of(input.readInt(true), input.readInt(true))</#macro>
 <#macro nullCheck type><#nested/> == null</#macro>
 <#macro majorTypeTransformation type><#nested></#macro>

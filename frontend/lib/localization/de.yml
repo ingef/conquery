@@ -107,11 +107,11 @@ common:
   clearValue: "Wert entfernen"
 
 tooltip:
+  headline: "Info"
+  placeholder: "Weitere Informationen zu Konzepten ..."
   entriesFound:
-    1: "gefundener Eintrag"
-    _: "gefundene Einträge"
-
-  placeholder: "Weitere Informationen über ein Konzept ..."
+    1: "Eintrag"
+    _: "Einträge"
   date:
     daterange: "Zeitraum"
     from: "Von"

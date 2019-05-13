@@ -5,8 +5,8 @@ import java.util.OptionalInt;
 import java.util.Random;
 
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.CDateRange;
 import com.bakdata.conquery.models.common.CDateSet;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 /**
  * A class implementing several sampling schemes for {@link CDateSet}.

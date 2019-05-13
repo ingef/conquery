@@ -14,7 +14,7 @@ import com.bakdata.conquery.util.io.SmallOut;
 import java.time.LocalDate;
 
 import java.lang.Integer;
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 import java.util.List;
 

@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.preproc;
 
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

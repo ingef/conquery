@@ -13,34 +13,145 @@ import FaIcon from "../icon/FaIcon";
 import type { SearchType } from "../category-trees/reducer";
 
 import ActivateTooltip from "./ActivateTooltip";
-import { toggleDisplayTooltip } from "./actions";
+import {
+  toggleDisplayTooltip as toggleTooltip,
+  toggleAdditionalInfos as toggleInfos
+} from "./actions";
 import type { AdditionalInfosType } from "./reducer";
 import TooltipEntries from "./TooltipEntries";
+
+const Root = styled("div")`
+  width: 100%;
+  height: 100%;
+  padding: 50px 0 10px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  background-color: ${({ theme }) => theme.col.bgAlt};
+`;
+
+const Header = styled("h2")`
+  background-color: white;
+  height: 47px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid #ccc;
+  margin: 0 0 5px;
+  padding: 0 20px;
+  font-size: ${({ theme }) => theme.font.sm};
+  letter-spacing: 1px;
+  line-height: 38px;
+  text-transform: uppercase;
+  color: ${({ theme }) => theme.col.blueGrayDark};
+`;
+const Content = styled("div")`
+  padding: 10px 20px;
+  width: 100%;
+  flex-grow: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+`;
+const Head = styled("div")`
+  padding: 10px 20px;
+  background-color: white;
+  margin: 20px -20px;
+`;
+
+const StyledFaIcon = styled(FaIcon)`
+  margin-top: 1px;
+  color: ${({ theme }) => theme.col.blueGrayDark};
+`;
+const TackIconButton = styled(IconButton)`
+  display: inline-flex; // To remove some height that seemed to be added
+  margin-left: 5px;
+`;
+const TypeIcon = styled(StyledFaIcon)`
+  margin-right: 10px;
+`;
+const PinnedLabel = styled("p")`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin: 0;
+  line-height: 1.2;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+const Label = styled("span")`
+  flex-grow: 1;
+`;
+const Description = styled("p")`
+  margin: 5px 0 2px;
+  font-size: ${({ theme }) => theme.font.xs};
+  line-height: 1;
+  text-transform: uppercase;
+`;
+
+const Infos = styled("div")`
+  width: 100%;
+  overflow-x: auto;
+`;
+
+const PieceOfInfo = styled("div")`
+  margin-bottom: 15px;
+
+  /* Markdown */
+  font-size: ${({ theme }) => theme.font.xs};
+
+  p {
+    line-height: 1.3;
+    margin: 5px 0;
+  }
+
+  table {
+    border-collapse: collapse;
+  }
+  td,
+  th {
+    border: 1px solid ${({ theme }) => theme.col.gray};
+    padding: 5px;
+  }
+`;
+
+const InfoHeadline = styled("h4")`
+  margin: 0;
+  font-size: ${({ theme }) => theme.font.xs};
+  font-weight: 700;
+  line-height: 1.3;
+`;
+
+const StyledIconButton = styled(IconButton)`
+  position: absolute;
+  top: 58px;
+  right: 0;
+  border-right: 0;
+  border-top-right-radius: 0;
+  border-bottom-right-radius: 0;
+`;
 
 type PropsType = {
   additionalInfos: AdditionalInfosType,
   displayTooltip: boolean,
-  toggleAdditionInfos: boolean,
-  toggleDisplayTooltip: Function,
+  toggleAdditionalInfos: boolean,
+  onToggleDisplayTooltip: Function,
+  onToggleAdditionalInfos: Function,
   search: SearchType
 };
-
-const StyledIconButton = styled(IconButton)`
-  position: absolute;
-  top: 0;
-  right: 20px;
-  border-top: 0;
-  border-top-left-radius: 0;
-  border-top-right-radius: 0;
-`;
 
 const Tooltip = (props: PropsType) => {
   if (!props.displayTooltip) return <ActivateTooltip />;
 
-  const { additionalInfos, toggleDisplayTooltip, toggleAdditionInfos } = props;
+  const {
+    additionalInfos,
+    toggleAdditionalInfos,
+    onToggleDisplayTooltip,
+    onToggleAdditionalInfos
+  } = props;
+
   const {
     label,
     description,
+    isFolder,
     infos,
     matchingEntries,
     dateRange
@@ -57,49 +168,51 @@ const Tooltip = (props: PropsType) => {
   };
 
   return (
-    <div className="tooltip">
-      {toggleAdditionInfos && (
-        <FaIcon className="tooltip__tack" icon="thumbtack" />
-      )}
-      <div className="tooltip__left">
-        <div>
-          {!label && !description && (
-            <p className="tooltip__placeholder">
-              {T.translate("tooltip.placeholder")}
-            </p>
-          )}
-          <h3 className="tooltip__headline">
-            {searchHighlight(label)}{" "}
-            {description && <span> - {searchHighlight(description)}</span>}
-          </h3>
-          {infos &&
-            infos.map((info, i) => (
-              <div className="tooltip-info" key={i}>
-                <h3 className="tooltip-info__key">
-                  {searchHighlight(info.key)}
-                </h3>
-                <Markdown
-                  className="tooltip-info__value"
-                  source={info.value}
-                  escapeHtml={true}
-                  renderers={{ text: searchHighlight }}
-                />
-              </div>
-            ))}
-        </div>
-      </div>
-      <TooltipEntries
-        className="tooltip__right"
-        matchingEntries={matchingEntries}
-        dateRange={dateRange}
-      />
+    <Root>
       <StyledIconButton
         small
         frame
-        onClick={toggleDisplayTooltip}
-        icon="angle-down"
+        onClick={onToggleDisplayTooltip}
+        icon="angle-left"
       />
-    </div>
+      <Header>{T.translate("tooltip.headline")}</Header>
+      <Content>
+        <TooltipEntries
+          matchingEntries={matchingEntries}
+          dateRange={dateRange}
+        />
+        <Head>
+          <PinnedLabel>
+            <TypeIcon icon={isFolder ? "folder" : "minus"} />
+            <Label>
+              {label
+                ? searchHighlight(label)
+                : T.translate("tooltip.placeholder")}
+            </Label>
+            {toggleAdditionalInfos && (
+              <TackIconButton
+                bare
+                active
+                onClick={onToggleAdditionalInfos}
+                icon="thumbtack"
+              />
+            )}
+          </PinnedLabel>
+          {description && (
+            <Description>{searchHighlight(description)}</Description>
+          )}
+        </Head>
+        <Infos>
+          {infos &&
+            infos.map((info, i) => (
+              <PieceOfInfo key={info.key}>
+                <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
+                <Markdown source={info.value} escapeHtml={true} />
+              </PieceOfInfo>
+            ))}
+        </Infos>
+      </Content>
+    </Root>
   );
 };
 
@@ -107,13 +220,14 @@ const mapStateToProps = state => {
   return {
     additionalInfos: state.tooltip.additionalInfos,
     displayTooltip: state.tooltip.displayTooltip,
-    toggleAdditionInfos: state.tooltip.toggleAdditionInfos,
+    toggleAdditionalInfos: state.tooltip.toggleAdditionalInfos,
     search: state.categoryTrees.search
   };
 };
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  toggleDisplayTooltip: () => dispatch(toggleDisplayTooltip())
+  onToggleDisplayTooltip: () => dispatch(toggleTooltip()),
+  onToggleAdditionalInfos: () => dispatch(toggleInfos())
 });
 
 export default connect(

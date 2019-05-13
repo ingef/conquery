@@ -78,7 +78,7 @@ const NodeDetailsView = (props: PropsType) => {
             {node.ids.map(conceptId => (
               <ConceptEntry
                 key={conceptId}
-                node={rootConcept}
+                node={getConceptById(conceptId)}
                 conceptId={conceptId}
                 canRemoveConcepts={node.ids.length > 1}
                 onRemoveConcept={onRemoveConcept}
