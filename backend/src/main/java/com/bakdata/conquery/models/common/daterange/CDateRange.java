@@ -29,7 +29,7 @@ public interface CDateRange extends IRange<LocalDate, CDateRange> {
 	 * @return
 	 */
 	public static CDateRange exactly(int value) {
-		return new CDateRangeClosed(value, value);
+		return new CDateRangeExactly(value);
 	}
 
 	/**
