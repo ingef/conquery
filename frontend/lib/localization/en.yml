@@ -187,7 +187,8 @@ timebasedQueryEditor:
 externalForms:
   forms: "Forms"
   formValidation:
-    isRequired: "is required"
+    mustBePositiveNumber: "Must be a positive number"
+    isRequired: "Required"
     invalidDateRange: "End date is smaller than start date"
 
   common:
