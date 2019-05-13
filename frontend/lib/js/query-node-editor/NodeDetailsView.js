@@ -68,7 +68,7 @@ const NodeDetailsView = (props: PropsType) => {
           />
         </Row>
       )}
-      {!node.isPreviousQuery && rootConcept && (
+      {!node.isPreviousQuery && rootConcept && rootConcept.children && (
         <Row>
           <RowHeading>{rootConcept.label}</RowHeading>
           <div>
