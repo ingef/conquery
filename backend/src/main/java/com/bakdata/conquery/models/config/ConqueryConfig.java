@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -11,10 +12,6 @@ import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.models.preproc.DateFormats;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.ImmutableClassToInstanceMap;
-import com.google.common.collect.ImmutableClassToInstanceMap.Builder;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
@@ -55,8 +52,6 @@ public class ConqueryConfig extends Configuration {
 	private AuthConfig authentication = new DevAuthConfig();
 	
 	private List<PluginConfig> pluggedConfigs = new ArrayList<>();
-	@JsonIgnore
-	private ClassToInstanceMap<PluginConfig> pluggedInstances;
 	/**
 	 * null means here that we try to deduce from an attached agent
 	 */
@@ -65,16 +60,7 @@ public class ConqueryConfig extends Configuration {
 	//this is needed to force start the REST backend on /api/
 	public ConqueryConfig() {
 		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
-		pluggedInstances = preparePluginMap(pluggedConfigs);
 		ConqueryConfig.instance = this;
-	}
-	
-	private static ImmutableClassToInstanceMap<PluginConfig> preparePluginMap(List<PluginConfig> configs) {
-		Builder<PluginConfig> builder = ImmutableClassToInstanceMap.<PluginConfig>builder();
-		for(PluginConfig config : configs) {
-			builder.put((Class<PluginConfig>)config.getClass(), config);
-		}
-		return builder.build();
 	}
 	
 	@Override
@@ -88,6 +74,10 @@ public class ConqueryConfig extends Configuration {
 	}
 	
 	public PluginConfig getPluggedConfig(Class<? extends PluginConfig> type) {
-		return pluggedInstances.getInstance(type);
+		List<PluginConfig> filtered = pluggedConfigs.stream().filter(c -> c.getClass().equals(type)).collect(Collectors.toList());
+		if(filtered.size() != 1) {
+			throw new IllegalStateException("No config of type " + type + " found.");
+		}
+		return filtered.get(0);
 	}
 }
