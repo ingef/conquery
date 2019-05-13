@@ -4,5 +4,4 @@ import com.bakdata.conquery.io.cps.CPSBase;
 
 @CPSBase
 public interface PluginConfig {
-	PluginConfig getInstance();
 }
