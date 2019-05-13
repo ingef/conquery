@@ -70,7 +70,9 @@ public class ConceptQuery implements IQuery {
 		for (SelectDescriptor selectDescriptor : selects) {
 			Select select = selectDescriptor.getSelect();
 			String columnName = config.getNameExtractor().apply(selectDescriptor);
-			Integer occurence = ocurrences.computeIfAbsent(columnName, str -> Integer.valueOf(0));
+			// Start at -1. It is incremented in the next step, so we don't need special handling
+			Integer occurence = ocurrences.computeIfAbsent(columnName, str -> Integer.valueOf(-1));
+			occurence++;
 
 			header.add(new SelectResultInfo(columnName, select.getResultType(), occurence, occurence.intValue(), select));
 		}
