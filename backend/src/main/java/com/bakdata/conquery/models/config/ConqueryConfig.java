@@ -87,7 +87,7 @@ public class ConqueryConfig extends Configuration {
 		DateFormats.initialize(additionalFormats);
 	}
 	
-	public PluginConfig getPluggedConfig(Class<PluginConfig> type) {
+	public PluginConfig getPluggedConfig(Class<? extends PluginConfig> type) {
 		return pluggedInstances.getInstance(type);
 	}
 }
