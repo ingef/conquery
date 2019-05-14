@@ -66,13 +66,16 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		connector = new NioSocketConnector();
 		jobManager = new JobManager(label);
-		environment.lifecycle().manage(jobManager);
-		environment.lifecycle().manage(this);
-		
-		scheduler = environment
-			.lifecycle()
-			.scheduledExecutorService("Scheduled Messages")
-			.build();
+		synchronized (environment) {
+			environment.lifecycle().manage(jobManager);
+			environment.lifecycle().manage(this);
+			validator = environment.getValidator();
+			
+			scheduler = environment
+				.lifecycle()
+				.scheduledExecutorService("Scheduled Messages")
+				.build();
+		}
 		
 		scheduler.scheduleAtFixedRate(
 			() -> {
@@ -85,7 +88,6 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 
 		this.config = config;
-		validator = environment.getValidator();
 		
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles()) {

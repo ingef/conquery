@@ -23,11 +23,6 @@ public class BlockDeserializer extends JsonDeserializer<Block> {
 	private final static SerializedString FIELD_CONTENT = new SerializedString("content");
 	private final static Executor EXECUTORS = Executors.newCachedThreadPool(); 
 
-	
-	public BlockDeserializer() {
-		System.out.println("a");
-	}
-	
 	@Override
 	public Block deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 		if (!p.nextFieldName(FIELD_IMPORT)) {
