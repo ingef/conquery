@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.config;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.google.common.primitives.Ints;
 
 import io.dropwizard.util.Duration;
@@ -42,7 +45,8 @@ public class XodusConfig {
 	private Boolean	envTxnDowngradeAfterFlush;
 	private Integer	envMaxParallelTxns;
 	private Integer	envMaxParallelReadonlyTxns;
-	private Duration envMonitorTxnsTimeout;
+	@NotNull @Valid
+	private Duration envMonitorTxnsTimeout = Duration.minutes(10);
 	private Integer	envMonitorTxnsCheckFreq;
 	private Boolean	envGatherStatistics;
 	private Integer	treeMaxPageSize;
