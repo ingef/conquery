@@ -45,7 +45,7 @@ public class XodusStore implements Closeable {
 				consumer.accept(lastKey.get(), c.getValue());
 			}
 		});
-		while(true) {
+		while(lastKey.get()!=null) {
 			environment.executeInReadonlyTransaction(t -> {
 				try(Cursor c = store.openCursor(t)) {
 					c.getSearchKey(lastKey.get());
