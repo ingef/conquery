@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus.stores;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
 import com.google.common.primitives.Ints;
@@ -34,13 +35,28 @@ public class XodusStore implements Closeable {
 	}
 
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
+		AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
 		environment.executeInReadonlyTransaction(t -> {
 			try(Cursor c = store.openCursor(t)) {
-				while(c.getNext()) {
-					consumer.accept(c.getKey(), c.getValue());
+				if(!c.getNext()) {
+					return;
 				}
+				lastKey.set(c.getKey());
+				consumer.accept(lastKey.get(), c.getValue());
 			}
 		});
+		while(true) {
+			environment.executeInReadonlyTransaction(t -> {
+				try(Cursor c = store.openCursor(t)) {
+					c.getSearchKey(lastKey.get());
+					if(!c.getNext()) {
+						return;
+					}
+					lastKey.set(c.getKey());
+					consumer.accept(lastKey.get(), c.getValue());
+				}
+			});
+		}
 	}
 
 	public void update(ByteIterable key, ByteIterable value) {
