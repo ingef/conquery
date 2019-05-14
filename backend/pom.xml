@@ -218,10 +218,5 @@
 			<artifactId>byteunits</artifactId>
 			<version>0.9.1</version>
 		</dependency>
-		<dependency>
-			<groupId>net.sf.jsignature.io-tools</groupId>
-			<artifactId>easystream</artifactId>
-			<version>1.2.15</version>
-		</dependency>
 	</dependencies>
 </project>
