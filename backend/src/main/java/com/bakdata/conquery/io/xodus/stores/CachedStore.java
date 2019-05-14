@@ -11,7 +11,6 @@ import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Stopwatch;
-import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 
 import lombok.RequiredArgsConstructor;
