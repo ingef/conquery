@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Objects;
 import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
@@ -30,7 +31,7 @@ public class ConceptNode extends QPChainNode {
 	public void nextBlock(Block block) {
 		if (active) {
 			super.nextBlock(block);
-			currentRow = entity.getCBlocks().get(table.getResolvedConnector(), block);
+			currentRow = Objects.requireNonNull(entity.getCBlocks().get(table.getResolvedConnector(), block));
 		}
 	}
 

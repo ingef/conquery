@@ -6,7 +6,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.NullSubject;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.google.common.collect.PeekingIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 
 import lombok.EqualsAndHashCode;
 
@@ -27,7 +27,7 @@ public class NullSubjectId extends PermissionOwnerId<NullSubject> {
 		INSTANCE;
 		
 		@Override
-		public NullSubjectId parse(PeekingIterator<String> parts) {
+		public NullSubjectId parseInternally(IdIterator parts) {
 			throw new UnsupportedOperationException("This type of Id is not intented to be serialized or deserialized");
 		}
 	}

@@ -4,9 +4,9 @@ import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -28,8 +28,9 @@ public class WorkerId extends AId<WorkerInformation> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public WorkerId parse(PeekingIterator<String> parts) {
-			return new WorkerId(DatasetId.Parser.INSTANCE.parse(parts), parts.next());
+		public WorkerId parseInternally(IdIterator parts) {
+			String name = parts.next();
+			return new WorkerId(DatasetId.Parser.INSTANCE.parse(parts), name);
 		}
 	}
 }
