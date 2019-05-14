@@ -37,6 +37,8 @@ public class SuccinctTrieTest {
 	@Test
 	public void replicationTest() throws IOException {
 		Dictionary dict = new Dictionary();
+		dict.setDataset(new DatasetId("dataset"));
+		dict.setName("dict");
 
 		data().forEach(dict::add);
 
