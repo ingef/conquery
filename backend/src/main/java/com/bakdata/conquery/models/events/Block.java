@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.BlockDeserializer;
@@ -13,9 +12,8 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
 import com.bakdata.conquery.util.io.SmallOut;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -28,18 +26,13 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @AllArgsConstructor @NoArgsConstructor @JsonDeserialize(using = BlockDeserializer.class)
-public abstract class Block extends IdentifiableImpl<BlockId> implements JsonSerializable{
+public abstract class Block implements JsonSerializable{
 
-	@Min(0) @Setter @Getter
-	private int entity;
 	@NotNull @NsIdRef @Getter
 	private Import imp;
+	@JsonBackReference @Getter @Setter
+	private BucketBlock bucketBlock;
 	
-	@Override
-	public BlockId createId() {
-		return new BlockId(imp.getId(), entity);
-	}
-
 	public abstract int size();
 	
 	public abstract boolean has(int event, Column column);

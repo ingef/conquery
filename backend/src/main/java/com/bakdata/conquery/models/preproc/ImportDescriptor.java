@@ -58,13 +58,13 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 	
 	public int calculateValidityHash() {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder()
-				.append(this.getInputFile().getDescriptionFile().length());
+			.append(this.getInputFile().getDescriptionFile().length())
+			.append(17);
 		
 		for(Input input:this.getInputs()) {
 			validityHashBuilder
 				.append(input.getSourceFile().length());
 		}
-		validityHashBuilder.append(16);
 		return validityHashBuilder.toHashCode();
 	}
 

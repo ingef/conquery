@@ -12,6 +12,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.BucketBlock;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -45,13 +46,7 @@ public class ImportBits extends WorkerMessage.Slow {
 	@Nonnull @NotNull
 	private TableId table;
 	
-	@JsonIgnore
-	private transient IntSet addedEntities = new IntOpenHashSet();
-	
 	public void addBits(Bit bit) {
-		if(!addedEntities.add(bit.getId())) {
-			throw new IllegalStateException("There already was a bit for entity "+bit.getId());
-		}
 		bits.add(bit);
 	}
 
@@ -65,26 +60,13 @@ public class ImportBits extends WorkerMessage.Slow {
 		
 		BlockFactory factory = imp.getBlockFactory();
 		
-		List<Block> newBlocks = new ArrayList<>();
+		List<BucketBlock> newBuckets = new ArrayList<>();
 		
 		getProgressReporter().setMax(bits.size());
 		for(Bit bit:bits) {
 			try(ByteArrayInputStream input = new ByteArrayInputStream(bytes, bytePos, bit.getSize())) {
 				
-				/*
-				List<Object[]> events = new ArrayList<>(bit.getNumberOfEntries());
-				
-				for(int e=0;e<bit.getNumberOfEntries();e++) {
-					input.readBytes(nullBytes);
-					
-					Object[] row = new Object[t.getColumns().length];
-					for(int i=0;i<row.length;i++) {
-						if(nulls.getBit(i))
-							row[i] = imp.getColumns()[i].getType().kryoRead(kryo, input);
-					}
-					events.add(row);
-				}*/
-				newBlocks.add(factory.readBlock(bit.getId(), imp, input));
+				newBuckets.add(BucketBlock.read(factory, bit.getBucketNumber(), imp, input));.readBlock(bit.getId(), imp, input));
 				if(input.available() > 0) {
 					throw new IllegalStateException("After reading the bit "+bit+" there are still "+input.available()+" bytes remaining in its content");
 				}
@@ -93,7 +75,7 @@ public class ImportBits extends WorkerMessage.Slow {
 			}
 			getProgressReporter().report(1);
 		}
-		context.getStorage().addBlocks(newBlocks);
+		context.getStorage().addBuckets(newBuckets);
 	}
 	
 	@Override
@@ -111,7 +93,7 @@ public class ImportBits extends WorkerMessage.Slow {
 
 	@AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString
 	public static class Bit {
-		private int id;
+		private int bucketNumber;
 		private int size;
 	}
 }

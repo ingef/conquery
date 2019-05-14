@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.events.generation.BlockFactory;
+import com.bakdata.conquery.models.events.generation.BucketFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
@@ -123,7 +123,7 @@ public class ImportIdsJob extends Job {
 
 			//import the new ids into the all ids table
 			if (primaryMapping.getNewIds() != null) {
-				BlockFactory factory = allIdsImp.getBlockFactory();
+				BucketFactory factory = allIdsImp.getBlockFactory();
 				final Map<WorkerInformation, ImportBits> allIdsBits = new ConcurrentHashMap<>();
 				for (WorkerInformation wi : namespace.getWorkers()) {
 					allIdsBits.put(wi, new ImportBits(allIdsImp.getName(), allIdsImp.getId(), allIdsImp.getTable()));

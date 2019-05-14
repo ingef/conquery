@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.CBlock;
-import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
@@ -34,8 +34,8 @@ public class Entity {
 		}
 	}
 
-	public void removeBlock(BlockId id) {
-		blocks.values().removeIf(b->b.getId().equals(id));
+	public void removeBucket(BucketId id) {
+		blocks.values().removeIf(b->b.getBucket().getId().equals(id));
 	}
 
 	public void removeCBlock(Connector connector, Block block) {

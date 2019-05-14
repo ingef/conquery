@@ -40,6 +40,7 @@ import com.bakdata.conquery.util.io.MultiByteBuffer;
 import com.bakdata.conquery.util.io.SmallIn;
 import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.io.ByteArrayDataOutput;
@@ -75,28 +76,7 @@ public class ImportJob extends Job {
 						BinaryByteUnit.format(file.getContentSize())
 				);
 			}
-			PPHeader header;
-			try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
-				header = headerReader.readValue(in);
-
-				log.info("Importing {} into {}", header.getName(), table);
-				Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
-				if (!tab.matches(header)) {
-					throw new IllegalArgumentException("The given header " + header + " does not match the table structure of " + table);
-				}
-
-				log.debug("\tparsing dictionaries");
-				header.getPrimaryColumn().getType().readHeader(in);
-				for (PPColumn col : header.getColumns()) {
-					col.getType().readHeader(in);
-				}
-
-				header.getPrimaryColumn().getType().init(namespace.getStorage().getDataset().getId());
-				for (PPColumn col : header.getColumns()) {
-					col.getType().init(namespace.getStorage().getDataset().getId());
-				}
-			}
-
+			PPHeader header = readHeader(file);
 
 			//see #161  match to table check if it exists and columns are of the right type
 
@@ -104,74 +84,24 @@ public class ImportJob extends Job {
 			namespace.checkConnections();
 
 			//update primary dictionary
-			log.debug("\tupdating primary dictionary");
-			Dictionary entities = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
-			this.progressReporter.report(1);
-			log.debug("\tcompute dictionary");
-			Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
-			Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
-			log.debug("\tmap values");
-			DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
-			
-			//if no new ids we shouldn't recompress and store
-			if(primaryMapping.getNewIds() == null) {
-				log.debug("\t\tno new ids");
-				primaryDict = oldPrimaryDict;
-				this.progressReporter.report(2);
-			}
-			//but if there are new ids we have to
-			else {
-				log.debug("\t\tnew ids {}, recompressing", primaryMapping.getNewIds());
-				primaryDict.compress();
-				log.debug("\t\texample of new id: {}", primaryDict.getElement(primaryMapping.getNewIds().getMin()));
-				log.debug("\t\tstoring");
-				namespace.getStorage().updateDictionary(primaryDict);
-				this.progressReporter.report(1);
-				log.debug("\t\tsending");
-				namespace.sendToAll(new UpdateDictionary(primaryDict));
-				this.progressReporter.report(1);
-			}
-			
-			log.debug("\tsending secondary dictionaries");
-			for(PPColumn col:header.getColumns()) {
-				col.getType().storeExternalInfos(namespace.getStorage(),
-					(Consumer<Dictionary>)(dict -> {
-						try {
-							namespace.getStorage().addDictionary(dict);
-							namespace.sendToAll(new UpdateDictionary(dict));
-						} catch(Exception e) {
-							throw new RuntimeException("Failed to store dictionary "+dict, e);
-						}
-					})
-				);
-			}
+			DictionaryMapping primaryMapping = createPrimaryMapping(header);
 			this.progressReporter.report(1);
 
 			//partition the new IDs between the slaves
 			log.debug("\tpartition new IDs");
-			IntSet newBuckets = new IntOpenHashSet();
-			for (int newId : RangeUtil.iterate(primaryMapping.getNewIds())) {
-				if (namespace.getResponsibleWorker(newId) == null) {
-					newBuckets.add(Entity.getBucket(newId, namespace.getEntityBucketSize()));
-				}
-			}
-			for (int bucket : newBuckets) {
+			for (int bucket : primaryMapping.getNewBuckets()) {
 				namespace.addResponsibility(bucket);
 			}
-
 			for (WorkerInformation w : namespace.getWorkers()) {
 				w.send(new UpdateWorkerBucket(w));
 			}
-
 			namespace.updateWorkerMap();
-			//namespace.getStorage().updateupdateMeta(namespace);
 
 			//update the allIdsTable
 			log.info("\tupdating id information");
 			Import allIdsImp = new Import();
 			allIdsImp.setName(new ImportId(table, header.getName()).toString());
 			allIdsImp.setTable(new TableId(namespace.getStorage().getDataset().getId(), ConqueryConstants.ALL_IDS_TABLE));
-			allIdsImp.setNumberOfBlocks(header.getGroups());
 			allIdsImp.setNumberOfEntries(header.getGroups());
 			allIdsImp.setColumns(new ImportColumn[0]);
 			namespace.getStorage().updateImport(allIdsImp);
@@ -184,7 +114,6 @@ public class ImportJob extends Job {
 			Import imp = new Import();
 			imp.setName(header.getName());
 			imp.setTable(table);
-			imp.setNumberOfBlocks(header.getGroups());
 			imp.setNumberOfEntries(header.getRows());
 			imp.setColumns(new ImportColumn[header.getColumns().length]);
 			for (int i = 0; i < header.getColumns().length; i++) {
@@ -287,6 +216,76 @@ public class ImportJob extends Job {
 			}
 		} catch (IOException e) {
 			throw new IllegalStateException("Failed to load the file " + importFile, e);
+		}
+	}
+	
+	private DictionaryMapping createPrimaryMapping(PPHeader header) throws JSONException {
+		log.debug("\tupdating primary dictionary");
+		Dictionary entities = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
+		this.progressReporter.report(1);
+		log.debug("\tcompute dictionary");
+		Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
+		Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
+		log.debug("\tmap values");
+		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict, namespace);
+		
+		//if no new ids we shouldn't recompress and store
+		if(primaryMapping.getNewIds() == null) {
+			log.debug("\t\tno new ids");
+			primaryDict = oldPrimaryDict;
+			this.progressReporter.report(2);
+		}
+		//but if there are new ids we have to
+		else {
+			log.debug("\t\tnew ids {}, recompressing", primaryMapping.getNewIds());
+			primaryDict.compress();
+			log.debug("\t\texample of new id: {}", primaryDict.getElement(primaryMapping.getNewIds().getMin()));
+			log.debug("\t\tstoring");
+			namespace.getStorage().updateDictionary(primaryDict);
+			this.progressReporter.report(1);
+			log.debug("\t\tsending");
+			namespace.sendToAll(new UpdateDictionary(primaryDict));
+			this.progressReporter.report(1);
+		}
+		
+		log.debug("\tsending secondary dictionaries");
+		for(PPColumn col:header.getColumns()) {
+			col.getType().storeExternalInfos(namespace.getStorage(),
+				(Consumer<Dictionary>)(dict -> {
+					try {
+						namespace.getStorage().addDictionary(dict);
+						namespace.sendToAll(new UpdateDictionary(dict));
+					} catch(Exception e) {
+						throw new RuntimeException("Failed to store dictionary "+dict, e);
+					}
+				})
+			);
+		}
+		return primaryMapping;
+	}
+
+	private PPHeader readHeader(HCFile file) throws JsonParseException, IOException {
+		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
+			PPHeader header = headerReader.readValue(in);
+
+			log.info("Importing {} into {}", header.getName(), table);
+			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
+			if (!tab.matches(header)) {
+				throw new IllegalArgumentException("The given header " + header + " does not match the table structure of " + table);
+			}
+
+			log.debug("\tparsing dictionaries");
+			header.getPrimaryColumn().getType().readHeader(in);
+			for (PPColumn col : header.getColumns()) {
+				col.getType().readHeader(in);
+			}
+
+			header.getPrimaryColumn().getType().init(namespace.getStorage().getDataset().getId());
+			for (PPColumn col : header.getColumns()) {
+				col.getType().init(namespace.getStorage().getDataset().getId());
+			}
+			
+			return header;
 		}
 	}
 
