@@ -74,16 +74,7 @@ public class FrontEndConceptBuilder {
 				.matchingEntries(matchingStats.countEvents())
 				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.detailsAvailable(Boolean.TRUE)
-				.codeListResolvable(
-					c instanceof TreeConcept
-					|| (
-							c instanceof VirtualConcept
-							&& ((VirtualConcept)c).getConnectors()
-								.stream()
-								.map(VirtualConceptConnector::getFilter)
-								.anyMatch(AbstractSelectFilter.class::isInstance)
-					)
-				)
+				.codeListResolvable(c instanceof TreeConcept)
 				.parent(structureParent)
 				.selects(c
 					.getSelects()
