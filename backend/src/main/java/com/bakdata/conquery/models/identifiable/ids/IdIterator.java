@@ -46,4 +46,8 @@ public class IdIterator {
 		index -= n;
 		return result;
 	}
+
+	public void internNext() {
+		data.set(index-1, data.get(index-1).intern());
+	}
 }

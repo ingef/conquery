@@ -70,6 +70,7 @@ public interface IId<TYPE> {
 			List<String> input = parts.getRemaining();
 			ID result = (ID) INTERNED_IDS.get(input);
 			if(result == null) {
+				parts.internNext();
 				result = parseInternally(parts);
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
 				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(input), result);
@@ -87,7 +88,6 @@ public interface IId<TYPE> {
 		ID parseInternally(IdIterator parts);
 		
 		default ID createId(List<String> parts) {
-			parts.replaceAll(String::intern);
 			IdIterator it = new IdIterator(parts);
 			return checkNoRemaining(parseInternally(it), it, parts);
 		}
