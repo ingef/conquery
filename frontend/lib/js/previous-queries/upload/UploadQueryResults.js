@@ -26,7 +26,7 @@ type PropsType = {
 
 const Root = styled("div")`
   margin-bottom: 5px;
-  padding: 0 10px 0 20px;
+  padding: 0 10px;
 `;
 
 const UploadQueryResults = (props: PropsType) => {

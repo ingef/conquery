@@ -8,6 +8,7 @@ import IconButton from "../button/IconButton";
 const ResetAllFiltersButton = styled("div")`
   text-transform: uppercase;
   padding: 10px 2px;
+  white-space: nowrap;
 `;
 
 export default ({ node, onResetAllFilters }) => {
@@ -16,7 +17,7 @@ export default ({ node, onResetAllFilters }) => {
   return (
     <ResetAllFiltersButton>
       <IconButton active onClick={onResetAllFilters} icon="undo">
-        {T.translate("queryNodeEditor.resetAll")}
+        {T.translate("queryNodeEditor.resetSettings")}
       </IconButton>
     </ResetAllFiltersButton>
   );

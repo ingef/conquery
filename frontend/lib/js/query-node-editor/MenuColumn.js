@@ -39,6 +39,7 @@ const CategoryHeader = styled("p")`
 const StyledButton = styled("div")`
   font-size: ${({ theme }) => theme.font.md};
   padding: 8px 15px;
+  margin-top: 3px;
   font-weight: 700;
   color: ${({ theme }) => theme.col.black};
   width: 100%;
@@ -48,16 +49,15 @@ const StyledButton = styled("div")`
   align-items: center;
   line-height: 21px;
   cursor: pointer;
+  transition: background-color 0.1s;
 
   background-color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayVeryLight : "initial"};
+    active ? theme.col.blueGrayVeryLight : theme.col.grayVeryLight};
   &:hover {
     background-color: ${({ theme, active }) =>
-      active ? theme.col.blueGrayVeryLight : theme.col.grayVeryLight};
+      active ? theme.col.blueGrayVeryLight : theme.col.grayLight};
   }
 `;
-
-const NodeEditButton = styled(StyledButton)``;
 
 const StyledFaIcon = styled(FaIcon)`
   font-size: ${({ theme }) => theme.font.lg};
@@ -102,12 +102,12 @@ const MenuColumn = (props: PropsType) => {
         )}
         {node.isPreviousQuery && (node.label || node.id || node.ids)}
       </NodeName>
-      <NodeEditButton
+      <StyledButton
         active={editorState.detailsViewActive}
         onClick={editorState.onSelectDetailsView}
       >
         {T.translate("queryNodeEditor.properties")}
-      </NodeEditButton>
+      </StyledButton>
       {!node.isPreviousQuery && showTables && (
         <div>
           <CategoryHeader>

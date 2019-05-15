@@ -70,7 +70,8 @@ queryNodeEditor:
   conceptNodes: "Konzeptknoten"
   conceptNodeTables: "Anfragetabellen"
   properties: "Eigenschaften"
-  resetAll: "Alle zurücksetzen"
+  reset: "Zurücksetzen"
+  resetSettings: "Änderungen zurücksetzen"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
   excludingTimestamps: "Von Zeitberechnung ausgeschlossen"
   description: "Beschreibung"
@@ -189,7 +190,8 @@ timebasedQueryEditor:
 externalForms:
   forms: "Formulare"
   formValidation:
-    isRequired: "ist erforderlich"
+    mustBePositiveNumber: "Muss positive Zahl sein"
+    isRequired: "Erforderlich"
     invalidDateRange: "Enddatum liegt vor Startdatum"
 
   common:
@@ -217,13 +219,12 @@ externalForms:
     edit: "Bearbeiten"
 
 uploadQueryResultsModal:
-  headline: "Anfrageergebnis hochladen"
+  headline: "Ergebnisliste hochladen"
   dropzone: "Lege eine CSV-Datei hier ab"
   upload: "Hochladen"
   uploadFailed: "Konnte Datei nicht hochladen"
   uploadFailedSub: "Bitte überprüfen Sie das Format und die Netzwerkverbindung"
-  uploadSucceeded: "Datei hochladen erfolgreich"
-  previousQueryCreated: "Frühere Anfrage erfolgreich erstellt"
+  uploadSucceeded: "Ergebnisliste hochladen erfolgreich"
   formatInfo:
     text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
 
