@@ -212,7 +212,7 @@ public class Block_${suffix} extends Block {
                     return CDateRange.exactly(events[event].get${safeName(col.name)?cap_first}());
                 <#elseif col.type.typeId == "DATE_RANGE">
                 case ${col.position}:
-                    return events[event].get${safeName(col.name)?cap_first}();
+                    return events[event].get${safeName(col.name)?cap_first}AsMajor();
                 </#if>
             </#if>
 		</#list>
