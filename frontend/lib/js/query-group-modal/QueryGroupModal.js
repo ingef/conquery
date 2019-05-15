@@ -81,7 +81,7 @@ const QueryGroupModal = (props: PropsType) => {
             <>
               {hasActiveDate && (
                 <ResetAll bare onClick={props.onResetAllDates} icon="undo">
-                  {T.translate("queryNodeEditor.resetAll")}
+                  {T.translate("queryNodeEditor.reset")}
                 </ResetAll>
               )}
             </>

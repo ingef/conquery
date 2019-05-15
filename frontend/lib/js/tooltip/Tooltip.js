@@ -27,7 +27,7 @@ const Root = styled("div")`
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: ${({ theme }) =>
+  background: ${({ theme }) =>
     `linear-gradient(135deg, ${theme.col.bgAlt}, ${theme.col.bg});`};
 `;
 

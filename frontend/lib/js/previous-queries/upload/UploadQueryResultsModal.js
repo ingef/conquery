@@ -123,7 +123,7 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
             <Success>
               <StyledFaIcon icon="check-circle" />
               <SuccessMsg>
-                {T.translate("uploadQueryResultsModal.previousQueryCreated")}
+                {T.translate("uploadQueryResultsModal.uploadSucceeded")}
               </SuccessMsg>
             </Success>
           )}
