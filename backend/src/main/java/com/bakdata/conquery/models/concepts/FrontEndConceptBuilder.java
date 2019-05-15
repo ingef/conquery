@@ -15,13 +15,11 @@ import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -49,7 +47,7 @@ public class FrontEndConceptBuilder {
 		}
 		//add the structure tree
 		for(StructureNode sn : storage.getStructure()) {
-			roots.put(sn.getId(), createStructureNode(sn));
+			roots.put(sn.getId(), createStructureNode(sn, storage));
 		}
 		root.setConcepts(roots);
 		return root;
@@ -105,7 +103,7 @@ public class FrontEndConceptBuilder {
 		return n;
 	}
 
-	private static FENode createStructureNode(StructureNode cn) {
+	private static FENode createStructureNode(StructureNode cn, NamespaceStorage storage) {
 		return FENode.builder()
 			.active(false)
 			.description(cn.getDescription())
@@ -120,6 +118,7 @@ public class FrontEndConceptBuilder {
 						.map(IdentifiableImpl::getId)
 						.toArray(IId[]::new),
 					cn.getContainedRoots().stream()
+						.filter(id->storage.getConcept(id)!=null)
 						.toArray(IId[]::new)
 				)
 			)
