@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -37,9 +37,10 @@ public class ConceptId extends ConceptElementId<Concept<?>> implements Namespace
 		INSTANCE;
 		
 		@Override
-		public ConceptId parse(PeekingIterator<String> parts) {
+		public ConceptId parseInternally(IdIterator parts) {
+			String name = parts.next();
 			DatasetId parent = DatasetId.Parser.INSTANCE.parse(parts);
-			return new ConceptId(parent, parts.next());
+			return new ConceptId(parent, name);
 		}
 	}
 }

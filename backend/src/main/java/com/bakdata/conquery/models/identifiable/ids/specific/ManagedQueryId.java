@@ -5,9 +5,9 @@ import java.util.UUID;
 
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -29,8 +29,9 @@ public class ManagedQueryId extends AId<ManagedQuery> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public ManagedQueryId parse(PeekingIterator<String> parts) {
-			return new ManagedQueryId(DatasetId.Parser.INSTANCE.parse(parts), UUID.fromString(parts.next()));
+		public ManagedQueryId parseInternally(IdIterator parts) {
+			UUID query = UUID.fromString(parts.next());
+			return new ManagedQueryId(DatasetId.Parser.INSTANCE.parse(parts), query);
 		}
 	}
 }

@@ -5,8 +5,8 @@ import java.util.List;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,9 +33,10 @@ public class FilterId extends AId<Filter<?>> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public FilterId parse(PeekingIterator<String> parts) {
+		public FilterId parseInternally(IdIterator parts) {
+			String filter = parts.next();
 			ConnectorId parent = ConnectorId.Parser.INSTANCE.parse(parts);
-			return new FilterId(parent, parts.next());
+			return new FilterId(parent, filter);
 		}
 	}
 }
