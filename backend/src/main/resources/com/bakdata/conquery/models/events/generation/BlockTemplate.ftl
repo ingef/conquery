@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.io.IOException;
 
 import java.lang.Integer;
+import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;

@@ -12,6 +12,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.CDate;
+import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.Range;
@@ -389,5 +390,10 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	@JsonCreator
 	public static CDateRange parse(String value) throws ParsingException {
 		return DateRangeType.parseISORange(value);
+	}
+
+	public boolean isSingleQuarter() {
+		int quarterStart = CDate.ofLocalDate(QuarterUtils.getFirstDayOfQuarter(getMinValue()));
+		return getMinValue() == quarterStart && getMaxValue() == CQuarter.getLastDay(quarterStart);
 	}
 }

@@ -9,15 +9,11 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.ConfigCloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListenableFutureTask;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 import io.dropwizard.setup.Bootstrap;
