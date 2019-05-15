@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.types.specific.BooleanType;
 import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
 import com.bakdata.conquery.models.types.specific.DateType;
 import com.bakdata.conquery.models.types.specific.DecimalType;
 import com.bakdata.conquery.models.types.specific.DecimalTypeScaled;
@@ -57,7 +58,8 @@ public class SerializationTest {
 			new IntegerType(),
 			new MoneyType(),
 			new IntegerTypeInteger(),
-			new DateRangeType()
+			new DateRangeType(),
+			new DateRangeTypeQuarter()
 		);
 	}
 	
