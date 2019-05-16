@@ -240,7 +240,7 @@ public class AdminProcessor {
 	/**
 	 * Handles creation of permissions.
 	 * @param permission The permission to create.
-	 * @throws JSONException is thrown upon procession JSONs.
+	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void createPermission(ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.addPermission(getOwnerFromPermission(permission, storage), permission, storage);
@@ -249,7 +249,7 @@ public class AdminProcessor {
 	/**
 	 * Handles deletion of permissions.
 	 * @param permission The permission to delete.
-	 * @throws JSONException is thrown upon procession JSONs.
+	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void deletePermission(ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
@@ -268,7 +268,7 @@ public class AdminProcessor {
 		}
 		PermissionOwner<?> owner =  ownerId.getOwner(storage);
 		if(owner == null) {
-			throw new IllegalArgumentException("The provided ownerId belongs to know subject.");
+			throw new IllegalArgumentException("The provided ownerId belongs to no subject.");
 		}
 		return owner;
 	}
