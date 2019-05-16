@@ -96,7 +96,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	public void compress() {
 		//check if another type of StringMap would be smaller
 		if(trie instanceof SuccinctTrie) {
-			float trieSize = 13*((SuccinctTrie) trie).getNodeCount();
+			float trieSize = 13*((SuccinctTrie) trie).getNodeCount() + 4*trie.size();
 			//size of two collections and string object overhead
 			float mapSize = size()*(48f+8f/Hash.DEFAULT_LOAD_FACTOR)
 				//number of string bytes

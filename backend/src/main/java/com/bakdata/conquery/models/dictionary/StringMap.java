@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.dictionary;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -31,6 +32,7 @@ public interface StringMap extends Iterable<String> {
 		}
 	}
 
+	@JsonIgnore
 	boolean isCompressed();
 
 	default void checkUncompressed(String errorMessage) {
