@@ -68,6 +68,7 @@ public class SuccinctTrie implements StringMap {
 		trie.lookup = serialized.getLookup();
 		trie.keyPartArray = serialized.getKeyPartArray();
 		trie.selectZeroCache = serialized.getSelectZeroCache();
+		trie.totalBytesStored = serialized.getTotalBytesStored();
 
 		trie.root = null;
 		trie.compressed = true;
@@ -345,7 +346,7 @@ public class SuccinctTrie implements StringMap {
 	@JsonValue
 	public SerializedSuccinctTrie toSerialized() {
 		checkCompressed("no serialisation allowed before compressing the trie");
-		return new SerializedSuccinctTrie(nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache);
+		return new SerializedSuccinctTrie(nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache, totalBytesStored);
 	}
 
 	@Data

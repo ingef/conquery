@@ -14,4 +14,5 @@ public class SerializedSuccinctTrie {
 	private int[] lookup;
 	private byte[] keyPartArray;
 	private int[] selectZeroCache;
+	private long totalBytesStored;
 }
