@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.ConqueryEscape;
 import com.bakdata.conquery.util.ResourceUtil;
 
 import io.dropwizard.auth.Auth;
@@ -51,7 +52,9 @@ public class ResultCSVResource {
 		.builder()
 		.prettyPrint(true)
 		.nameExtractor(
-			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
+			sd -> ConqueryEscape.unescape(sd.getCqConcept().getIds().get(0).toStringWithoutDataset())
+				+ "_"
+				+ ConqueryEscape.unescape(sd.getSelect().getId().toStringWithoutDataset()))
 		.build();
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
