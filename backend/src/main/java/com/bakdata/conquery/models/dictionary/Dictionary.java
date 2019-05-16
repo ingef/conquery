@@ -4,26 +4,27 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.List;
 
-import org.apache.mina.core.buffer.IoBuffer;
-
 import com.bakdata.conquery.models.identifiable.NamedImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.util.BufferUtil;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
+import com.jakewharton.byteunits.BinaryByteUnit;
+import com.jakewharton.byteunits.ByteUnit;
 
+import it.unimi.dsi.fastutil.Hash;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-@NoArgsConstructor
+@NoArgsConstructor @Slf4j
 public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<String> {
 
 	@Getter @Setter
 	private DatasetId dataset;
 	@Getter @Setter
-	private SuccinctTrie trie = new SuccinctTrie();
+	private StringMap trie = new SuccinctTrie();
 
 	public Dictionary(DictionaryId dictionaryId) {
 		this.setName(dictionaryId.getDictionary());
@@ -32,7 +33,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 
 	public static Dictionary copyUncompressed(Dictionary compressedDictionary) {
 		Dictionary dict = new Dictionary(compressedDictionary.getId());
-		dict.trie = SuccinctTrie.createUncompressed(compressedDictionary.trie);
+		dict.trie = compressedDictionary.getTrie().uncompress();
 		return dict;
 	}
 	
@@ -42,8 +43,7 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	}
 
 	public synchronized int add(String element) {
-		byte[] bytes = element.getBytes(StandardCharsets.UTF_8);
-		return add(bytes);
+		return trie.add(element);
 	}
 
 	public int add(byte[] bytes) {
@@ -67,22 +67,11 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	}
 
 	public synchronized String getElement(int id) {
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		trie.getReverse(id, buffer);
-		String str = BufferUtil.toUtf8String(buffer);
-		buffer.free();
-		return str;
+		return trie.getElement(id);
 	}
 
 	public synchronized byte[] getElementBytes(int id) {
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		trie.getReverse(id, buffer);
-		byte[] out = new byte[buffer.limit()-buffer.position()];
-		buffer.get(out);
-		buffer.free();
-		return out;
+		return trie.getElementBytes(id);
 	}
 
 	@Override
@@ -105,16 +94,39 @@ public class Dictionary extends NamedImpl<DictionaryId> implements Iterable<Stri
 	}
 
 	public void compress() {
+		//check if another type of StringMap would be smaller
+		if(trie instanceof SuccinctTrie) {
+			float trieSize = 13*((SuccinctTrie) trie).getNodeCount() + 4*trie.size();
+			//size of two collections and string object overhead
+			float mapSize = size()*(48f+8f/Hash.DEFAULT_LOAD_FACTOR)
+				//number of string bytes
+				+ ((SuccinctTrie) trie).getTotalBytesStored();
+
+			if(mapSize < trieSize) {
+				log.debug(
+					"Using MapDictionary(est. {}) instead of Trie(est. {}) for {}",
+					BinaryByteUnit.format((long)mapSize),
+					BinaryByteUnit.format((long)trieSize),
+					getId()
+				);
+				trie.compress();
+				MapDictionary map = new MapDictionary();
+				for(String v : trie) {
+					map.add(v);
+				}
+				trie = map;
+			}
+		}
 		trie.compress();
 	}
 	
 	public void tryCompress() {
-		trie.tryCompress();
+		if(!trie.isCompressed()) {
+			this.compress();
+		}
 	}
 
 	public List<String> values() {
 		return trie.getValues();
 	}
-
-	
 }

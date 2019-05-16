@@ -9,6 +9,8 @@ import java.util.List;
 
 import org.apache.mina.core.buffer.IoBuffer;
 
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.dictionary.StringMap;
 import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -17,16 +19,19 @@ import com.google.common.collect.AbstractIterator;
 
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectArrayMap;
 import it.unimi.dsi.fastutil.bytes.Byte2ObjectMap;
-import it.unimi.dsi.fastutil.bytes.Byte2ObjectOpenHashMap;
 import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-public class SuccinctTrie implements Iterable<String> {
+@CPSType(id="SUCCINCT_TRIE", base=StringMap.class)
+public class SuccinctTrie implements StringMap {
 
+	@Getter
 	private int nodeCount;
 	@Getter
 	private int entryCount;
+	@Getter
+	private long totalBytesStored;
 	// Reverse lookup can be performed with an int array, because the values are
 	// consecutive increasing
 	private int[] reverseLookup;
@@ -43,6 +48,7 @@ public class SuccinctTrie implements Iterable<String> {
 
 	// indicates whether compress() has been performed and if the trie is ready to
 	// query
+	@Getter
 	private boolean compressed;
 
 	public SuccinctTrie() {
@@ -50,16 +56,6 @@ public class SuccinctTrie implements Iterable<String> {
 		this.root.setPositionInArray(0);
 		this.nodeCount = 2;
 		entryCount = 0;
-	}
-
-	public static SuccinctTrie createUncompressed(SuccinctTrie compressedTrie) {
-		compressedTrie.checkCompressed("Constructor only works for compressed tries");
-
-		SuccinctTrie trie = new SuccinctTrie();
-		for (byte[] value : compressedTrie.getValuesBytes()) {
-			trie.put(value);
-		}
-		return trie;
 	}
 
 	@JsonCreator
@@ -72,6 +68,7 @@ public class SuccinctTrie implements Iterable<String> {
 		trie.lookup = serialized.getLookup();
 		trie.keyPartArray = serialized.getKeyPartArray();
 		trie.selectZeroCache = serialized.getSelectZeroCache();
+		trie.totalBytesStored = serialized.getTotalBytesStored();
 
 		trie.root = null;
 		trie.compressed = true;
@@ -79,11 +76,10 @@ public class SuccinctTrie implements Iterable<String> {
 		return trie;
 	}
 
-
+	@Override
 	public int add(byte[] bytes) {
 		return put(bytes,entryCount,false);
 	}
-
 
 	public int put(byte[] key) {
 		return put(key, entryCount, true);
@@ -113,8 +109,8 @@ public class SuccinctTrie implements Iterable<String> {
 		// end of key, write the value into current
 		if (current.getValue() == -1) {
 			current.setValue(value);
-			entryCount++;
-			return entryCount - 1;
+			totalBytesStored += key.length;
+			return entryCount++;
 		}
 		else if (failOnDuplicate){
 			throw new IllegalStateException(String.format("the key {} was already part of this trie", new String(key, StandardCharsets.UTF_8)));
@@ -124,15 +120,11 @@ public class SuccinctTrie implements Iterable<String> {
 		}
 	}
 
-	public void tryCompress() {
-		if (!compressed)
-			compress();
-	}
-
 	/*
 	 * select0(n) - returns the position of the nth 0 in the bit store.
 	 */
 
+	@Override
 	public void compress() {
 		checkUncompressed("compress is only allowed once");
 
@@ -197,18 +189,7 @@ public class SuccinctTrie implements Iterable<String> {
 		return selectZeroCache[positionForZero];
 	}
 
-	private void checkCompressed(String errorMessage) {
-		if (!compressed) {
-			throw new IllegalStateException(errorMessage);
-		}
-	}
-
-	private void checkUncompressed(String errorMessage) {
-		if (compressed) {
-			throw new IllegalStateException(errorMessage);
-		}
-	}
-
+	@Override
 	@JsonIgnore
 	public int get(byte[] value) {
 		if (!compressed) {
@@ -285,6 +266,7 @@ public class SuccinctTrie implements Iterable<String> {
 		}
 	}
 
+	@Override
 	public int size() {
 		return entryCount;
 	}
@@ -293,6 +275,7 @@ public class SuccinctTrie implements Iterable<String> {
 		return entryCount == 0;
 	}
 
+	@Override
 	public List<String> getValues() {
 		List<String> values = new ArrayList<>();
 		IoBuffer buffer = IoBuffer.allocate(512);
@@ -363,7 +346,7 @@ public class SuccinctTrie implements Iterable<String> {
 	@JsonValue
 	public SerializedSuccinctTrie toSerialized() {
 		checkCompressed("no serialisation allowed before compressing the trie");
-		return new SerializedSuccinctTrie(nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache);
+		return new SerializedSuccinctTrie(nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache, totalBytesStored);
 	}
 
 	@Data
@@ -384,5 +367,43 @@ public class SuccinctTrie implements Iterable<String> {
 			this.children.put(child.partialKey, child);
 		}
 
+	}
+
+	@Override
+	public SuccinctTrie uncompress() {
+		checkCompressed("Constructor only works for compressed tries");
+
+		SuccinctTrie trie = new SuccinctTrie();
+		for (byte[] value : getValuesBytes()) {
+			trie.put(value);
+		}
+		return trie;
+	}
+
+	@Override
+	public String getElement(int id) {
+		IoBuffer buffer = IoBuffer.allocate(512);
+		buffer.setAutoExpand(true);
+		getReverse(id, buffer);
+		String str = BufferUtil.toUtf8String(buffer);
+		buffer.free();
+		return str;
+	}
+
+	@Override
+	public byte[] getElementBytes(int id) {
+		IoBuffer buffer = IoBuffer.allocate(512);
+		buffer.setAutoExpand(true);
+		getReverse(id, buffer);
+		byte[] out = new byte[buffer.limit()-buffer.position()];
+		buffer.get(out);
+		buffer.free();
+		return out;
+	}
+
+	@Override
+	public int add(String element) {
+		byte[] bytes = element.getBytes(StandardCharsets.UTF_8);
+		return add(bytes);
 	}
 }
