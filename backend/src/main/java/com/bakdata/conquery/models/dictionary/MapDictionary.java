@@ -6,14 +6,12 @@ import java.util.Iterator;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonValue;
 
-import it.unimi.dsi.fastutil.objects.Object2IntAVLTreeMap;
-import it.unimi.dsi.fastutil.objects.Object2IntMap;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
-import jersey.repackaged.com.google.common.collect.Iterators;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter
@@ -22,12 +20,24 @@ import lombok.Setter;
 public class MapDictionary implements StringMap {
 
 	private Object2IntOpenHashMap<String> value2Id;
+	@Getter(onMethod_ = @JsonValue)
 	private List<String> id2Value;
 	
 	public MapDictionary() {
 		value2Id = new Object2IntOpenHashMap<>();
 		value2Id.defaultReturnValue(-1);
 		id2Value = new ArrayList<>();
+	}
+	
+	@JsonCreator
+	public MapDictionary(List<String> id2Value) {
+		this.id2Value = id2Value;
+		value2Id = new Object2IntOpenHashMap<>();
+		value2Id.defaultReturnValue(-1);
+		
+		for(int i=0;i<id2Value.size();i++) {
+			value2Id.put(id2Value.get(i), i);
+		}
 	}
 
 	@Override
