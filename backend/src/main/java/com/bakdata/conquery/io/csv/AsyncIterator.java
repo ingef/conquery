@@ -39,6 +39,7 @@ public class AsyncIterator<T> extends AbstractIterator<T> {
 				}
 			}
 		};
+		thread.setDaemon(true);
 		thread.start();
 	}
 
