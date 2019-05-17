@@ -132,4 +132,9 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public String toString() {
 		return "cached "+store.toString();
 	}
+
+	@Override
+	public Collection<KEY> getAllKeys() {
+		return cache.keySet();
+	}
 }

@@ -4,6 +4,7 @@ import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.xodus.stores.BigStore;
 import com.bakdata.conquery.io.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
+import com.bakdata.conquery.io.xodus.stores.IdentifiableCachedStore;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.MPStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -94,8 +95,8 @@ public enum StoreInfo implements IStoreInfo {
 		);
 	}
 	
-	public <T extends Identifiable<?>> IdentifiableStore<T> weakBig(NamespacedStorage storage) {
-		return new IdentifiableStore<>(
+	public <T extends Identifiable<?>> IdentifiableCachedStore<T> weakBig(NamespacedStorage storage) {
+		return new IdentifiableCachedStore<>(
 			storage.getCentralRegistry(),
 			new WeakCachedStore<>(
 				new BigStore<>(storage.getValidator(), storage.getEnvironment(), this)

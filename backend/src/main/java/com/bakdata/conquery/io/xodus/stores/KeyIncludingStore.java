@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 
 public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 
-	private final Store<KEY, VALUE> store;
+	protected final Store<KEY, VALUE> store;
 	
 	public KeyIncludingStore(Store<KEY, VALUE> store) {
 		this.store = store;
@@ -59,6 +59,10 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 	
 	public Collection<VALUE> getAll() {
 		return store.getAll();
+	}
+	
+	public Collection<KEY> getAllKeys() {
+		return store.getAllKeys();
 	}
 	
 	@Override
