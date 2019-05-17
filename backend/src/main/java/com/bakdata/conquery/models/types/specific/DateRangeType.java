@@ -8,13 +8,19 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.util.PackedUnsigned1616;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@CPSType(base=CType.class, id="DATE_RANGE")
+import lombok.Getter;
+import lombok.Setter;
+
+@CPSType(base=CType.class, id="DATE_RANGE") @Getter @Setter
 public class DateRangeType extends CType<CDateRange, DateRangeType> {
 
 	@JsonIgnore
 	private transient boolean onlyQuarters = true;
+	private int maxValue = Integer.MIN_VALUE;
+	private int minValue = Integer.MAX_VALUE;
 	
 	public DateRangeType() {
 		super(MajorTypeId.DATE_RANGE, CDateRange.class);
@@ -47,6 +53,12 @@ public class DateRangeType extends CType<CDateRange, DateRangeType> {
 		if(!v.isSingleQuarter()) {
 			onlyQuarters = false;
 		}
+		if(v.getMaxValue() > maxValue) {
+			maxValue = v.getMaxValue();
+		}
+		if(v.getMinValue() < minValue) {
+			minValue = v.getMinValue();
+		}
 	}
 
 	@Override
@@ -55,6 +67,14 @@ public class DateRangeType extends CType<CDateRange, DateRangeType> {
 			DateRangeTypeQuarter subType = new DateRangeTypeQuarter();
 			subType.setLines(this.getLines());
 			subType.setNullLines(this.getNullLines());
+			return subType;
+		}
+		if(maxValue - minValue <PackedUnsigned1616.MAX_VALUE) {
+			DateRangeTypePacked subType = new DateRangeTypePacked();
+			subType.setLines(this.getLines());
+			subType.setNullLines(this.getNullLines());
+			subType.setMinValue(minValue);
+			subType.setMaxValue(maxValue);
 			return subType;
 		}
 		return this;
@@ -67,5 +87,10 @@ public class DateRangeType extends CType<CDateRange, DateRangeType> {
 		}
 
 		return value;
+	}
+	
+	@Override
+	public boolean canStoreNull() {
+		return true;
 	}
 }
