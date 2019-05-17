@@ -100,6 +100,7 @@ jobs:
         api_key: $GITHUB_OAUTH_TOKEN
         tag_name: $TRAVIS_TAG
         target_commitish: $TRAVIS_COMMIT
+        file_glob: true
         file:
           - backend/target/backend-*.jar
           - executable/target/executable-*.jar
