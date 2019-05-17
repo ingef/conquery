@@ -6,12 +6,8 @@ import com.bakdata.conquery.util.functions.ThrowingConsumer;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
-@Accessors(fluent=true) @Setter
 public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 
-	private ThrowingConsumer<VALUE> onAdd;
-	private ThrowingConsumer<VALUE> onRemove;
-	
 	public SingletonStore(Store<Boolean, VALUE> store, Injectable... injectables) {
 		super(store);
 		for(Injectable injectable : injectables) {
@@ -40,27 +36,5 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	
 	public synchronized void remove() {
 		super.remove(Boolean.TRUE);
-	}
-
-	@Override
-	protected void removed(VALUE value) {
-		try {
-			if(value != null && onRemove != null) {
-				onRemove.accept(value);
-			}
-		} catch(Exception e) {
-			throw new RuntimeException("Failed to remove "+value, e);
-		}
-	}
-
-	@Override
-	protected void added(VALUE value) {
-		try {
-			if(value != null && onAdd != null) {
-				onAdd.accept(value);
-			}
-		} catch(Exception e) {
-			throw new RuntimeException("Failed to add "+value, e);
-		}
 	}
 }
