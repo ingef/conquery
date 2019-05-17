@@ -138,8 +138,13 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Collection<VALUE> getAll() {
-		List<VALUE> l = new ArrayList<>();
-		metaStore.forEach(e -> l.add(createValue(e.getKey(), e.getValue())));
+		throw new UnsupportedOperationException();
+	}
+	
+	@Override
+	public Collection<KEY> getAllKeys() {
+		List<KEY> l = new ArrayList<>();
+		metaStore.forEach(e -> l.add(e.getKey()));
 		return l;
 	}
 	

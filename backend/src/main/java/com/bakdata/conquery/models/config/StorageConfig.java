@@ -14,7 +14,6 @@ import lombok.ToString;
 
 @Getter @Setter @ToString
 public class StorageConfig {
-
 	@ExistingFile(directory = true)
 	private File directory = new File("storage");
 	@ExistingFile(directory = true)
