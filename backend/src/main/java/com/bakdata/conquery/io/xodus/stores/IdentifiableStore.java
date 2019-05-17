@@ -7,12 +7,16 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+@Accessors(fluent=true) @Setter @Getter
 public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludingStore<IId<VALUE>, VALUE> {
 
 	private final CentralRegistry centralRegistry;
+	protected ThrowingConsumer<VALUE> onAdd;
+	protected ThrowingConsumer<VALUE> onRemove;
 	
 	public IdentifiableStore(CentralRegistry centralRegistry, Store<IId<VALUE>, VALUE> store) {
 		this(centralRegistry, store, new SingletonNamespaceCollection(centralRegistry));

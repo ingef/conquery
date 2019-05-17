@@ -3,11 +3,16 @@ package com.bakdata.conquery.io.xodus.stores;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
+import lombok.Getter;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+@Accessors(fluent=true) @Setter @Getter
 public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 
+	protected ThrowingConsumer<VALUE> onAdd;
+	protected ThrowingConsumer<VALUE> onRemove;
+	
 	public SingletonStore(Store<Boolean, VALUE> store, Injectable... injectables) {
 		super(store);
 		for(Injectable injectable : injectables) {
@@ -36,5 +41,25 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	
 	public synchronized void remove() {
 		super.remove(Boolean.TRUE);
+	}
+	
+	protected void removed(VALUE value) {
+		try {
+			if(value != null && onRemove != null) {
+				onRemove.accept(value);
+			}
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to remove "+value, e);
+		}
+	}
+
+	protected void added(VALUE value) {
+		try {
+			if(value != null && onAdd != null) {
+				onAdd.accept(value);
+			}
+		} catch(Exception e) {
+			throw new RuntimeException("Failed to add "+value, e);
+		}
 	}
 }

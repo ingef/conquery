@@ -6,18 +6,10 @@ import java.util.Collection;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.util.functions.ThrowingConsumer;
 
-import lombok.Getter;
-import lombok.Setter;
-import lombok.experimental.Accessors;
-
-@Accessors(fluent=true) @Setter @Getter
 public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 
 	private final Store<KEY, VALUE> store;
-	protected ThrowingConsumer<VALUE> onAdd;
-	protected ThrowingConsumer<VALUE> onRemove;
 	
 	public KeyIncludingStore(Store<KEY, VALUE> store) {
 		this.store = store;
@@ -74,23 +66,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 		return store.toString();
 	}
 	
-	protected void removed(VALUE value) {
-		try {
-			if(value != null && onRemove != null) {
-				onRemove.accept(value);
-			}
-		} catch(Exception e) {
-			throw new RuntimeException("Failed to remove "+value, e);
-		}
-	}
+	protected abstract void removed(VALUE value);
 
-	protected void added(VALUE value) {
-		try {
-			if(value != null && onAdd != null) {
-				onAdd.accept(value);
-			}
-		} catch(Exception e) {
-			throw new RuntimeException("Failed to add "+value, e);
-		}
-	}
+	protected abstract void added(VALUE value);
 }
