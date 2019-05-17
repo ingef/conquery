@@ -157,13 +157,14 @@ public class DatasetsProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		CSV csvData = new CSV(
+		try(CSV csvData = new CSV(
 			ConqueryConfig.getInstance().getCsv().withSkipHeader(false),
 			data
-		);
-		IdMappingConfig mappingConfig = config.getIdMapping();
-		PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
-		namespace.getStorage().updateIdMapping(mapping);
+		)) {
+			IdMappingConfig mappingConfig = config.getIdMapping();
+			PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
+			namespace.getStorage().updateIdMapping(mapping);
+		}
 	}
 
 	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {
