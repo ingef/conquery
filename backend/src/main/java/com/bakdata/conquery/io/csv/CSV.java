@@ -7,7 +7,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Spliterator;
 import java.util.Spliterators;
 import java.util.stream.Stream;
@@ -25,6 +26,7 @@ public class CSV implements Closeable {
 	private final CsvParserSettings settings;
 	private final CSVConfig config;
 	private BufferedReader reader;
+	private List<AsyncIterator<String[]>> iterators = new ArrayList<>();
 
 	public CSV(CSVConfig config, File file) throws IOException {
 		this(
@@ -77,8 +79,8 @@ public class CSV implements Closeable {
 		.onClose(csv::closeUnchecked);
 	}
 
-	public Iterator<String[]> iterateContent() throws IOException {
-		Iterator<String[]> it = new AsyncIterator<>(
+	public AsyncIterator<String[]> iterateContent() throws IOException {
+		AsyncIterator<String[]> it = new AsyncIterator<>(
 			new CsvParser(settings)
 				.iterate(reader)
 				.iterator()
@@ -88,6 +90,7 @@ public class CSV implements Closeable {
 		if(config.isSkipHeader() && it.hasNext()) {
 			it.next();
 		}
+		iterators.add(it);
 		
 		return it;
 	}
@@ -95,11 +98,22 @@ public class CSV implements Closeable {
 	@Override
 	public void close() throws IOException {
 		reader.close();
+		for(AsyncIterator<?> it:iterators) {
+			it.close();
+		}
 	}
 
 	private void closeUnchecked() {
 		try {
 			reader.close();
+		}
+		catch(Exception e) {
+			throw new RuntimeException(e);
+		}
+		try {
+			for(AsyncIterator<?> it:iterators) {
+				it.close();
+			}
 		}
 		catch(Exception e) {
 			throw new RuntimeException(e);
