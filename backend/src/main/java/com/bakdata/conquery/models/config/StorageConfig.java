@@ -7,6 +7,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 
+import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -21,4 +22,7 @@ public class StorageConfig {
 	private boolean validateOnWrite = false;
 	@NotNull @Valid
 	private XodusConfig xodus = new XodusConfig();
+	private boolean useWeakDictionaryCaching = true;
+	@NotNull
+	private Duration weakCacheDuration = Duration.hours(48);
 }

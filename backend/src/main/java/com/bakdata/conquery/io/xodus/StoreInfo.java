@@ -7,6 +7,7 @@ import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.MPStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
+import com.bakdata.conquery.io.xodus.stores.WeakCachedStore;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -88,6 +89,15 @@ public enum StoreInfo implements IStoreInfo {
 		return new IdentifiableStore<>(
 			storage.getCentralRegistry(),
 			new CachedStore<>(
+				new BigStore<>(storage.getValidator(), storage.getEnvironment(), this)
+			)
+		);
+	}
+	
+	public <T extends Identifiable<?>> IdentifiableStore<T> weakBig(NamespacedStorage storage) {
+		return new IdentifiableStore<>(
+			storage.getCentralRegistry(),
+			new WeakCachedStore<>(
 				new BigStore<>(storage.getValidator(), storage.getEnvironment(), this)
 			)
 		);
