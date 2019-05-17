@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.xodus.stores;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -18,17 +19,17 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor @Slf4j
 public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private LoadingCache<KEY, VALUE> cache = CacheBuilder.newBuilder()
+	private LoadingCache<KEY, Optional<VALUE>> cache = CacheBuilder.newBuilder()
 		.weakValues()
 		.expireAfterAccess(
 			ConqueryConfig.getInstance().getStorage().getWeakCacheDuration().getQuantity(),
 			ConqueryConfig.getInstance().getStorage().getWeakCacheDuration().getUnit()
 		)
-		.build(new CacheLoader<KEY, VALUE>() {
+		.build(new CacheLoader<KEY, Optional<VALUE>>() {
 			@Override
-			public VALUE load(KEY key) throws Exception {
+			public Optional<VALUE> load(KEY key) throws Exception {
 				log.debug("Needing to load entry "+key+" in "+this);
-				return store.get(key);
+				return Optional.ofNullable(store.get(key));
 			}
 		});
 
@@ -41,11 +42,11 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
 		try {
-			VALUE old = cache.get(key);
-			if(old!=null) {
+			Optional<VALUE> old = cache.get(key);
+			if(old.isPresent()) {
 				throw new IllegalStateException("The id "+key+" is alread part of this store");
 			}
-			cache.put(key, value);
+			cache.put(key, Optional.of(value));
 			store.add(key, value);
 		}
 		catch(ExecutionException e) {
@@ -56,7 +57,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public VALUE get(KEY key) {
 		try {
-			return cache.get(key);
+			return cache.get(key).orElse(null);
 		}
 		catch (ExecutionException e) {
 			throw new RuntimeException("Failed to load entry for key "+key, e);
@@ -70,7 +71,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void update(KEY key, VALUE value) throws JSONException {
-		cache.put(key, value);
+		cache.put(key, Optional.of(value));
 		store.update(key, value);
 	}
 
