@@ -14,6 +14,7 @@ import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -65,7 +66,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				}
 				centralRegistry.remove(ds);
 			});
-		this.dictionaries =	StoreInfo.DICTIONARIES.big(this);
+		if(ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
+			this.dictionaries =	StoreInfo.DICTIONARIES.weakBig(this);
+		}
+		else {
+			this.dictionaries =	StoreInfo.DICTIONARIES.big(this);
+		}
 		
 		this.concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(this)
 			.onAdd(concept -> {

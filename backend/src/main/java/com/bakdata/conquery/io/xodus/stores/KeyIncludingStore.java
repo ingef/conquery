@@ -66,6 +66,7 @@ public abstract class KeyIncludingStore <KEY, VALUE> implements Closeable {
 		return store.toString();
 	}
 	
-	protected abstract void removed(VALUE old);
+	protected abstract void removed(VALUE value);
+
 	protected abstract void added(VALUE value);
 }

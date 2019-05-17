@@ -93,6 +93,9 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public VALUE get(KEY key) {
 		BigStoreMeta meta = metaStore.get(key);
+		if(meta == null) {
+			return null;
+		}
 		return createValue(key, meta);
 	}
 
@@ -135,7 +138,9 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public Collection<VALUE> getAll() {
-		throw new UnsupportedOperationException();
+		List<VALUE> l = new ArrayList<>();
+		metaStore.forEach(e -> l.add(createValue(e.getKey(), e.getValue())));
+		return l;
 	}
 	
 	private Collection<UUID> writeValue(VALUE value) {

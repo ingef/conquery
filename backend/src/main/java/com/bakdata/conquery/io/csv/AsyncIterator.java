@@ -41,6 +41,7 @@ public class AsyncIterator<T> extends AbstractIterator<T> implements Closeable {
 				}
 			}
 		};
+		thread.setDaemon(true);
 		thread.start();
 	}
 
