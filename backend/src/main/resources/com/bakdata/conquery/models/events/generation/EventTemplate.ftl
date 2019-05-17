@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.generation;
 
 import java.lang.Integer;
+import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import java.time.LocalDate;
 import com.google.common.primitives.Ints;

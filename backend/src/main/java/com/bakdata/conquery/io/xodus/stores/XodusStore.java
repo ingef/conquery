@@ -2,8 +2,12 @@ package com.bakdata.conquery.io.xodus.stores;
 
 import java.io.Closeable;
 import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.BiConsumer;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.google.common.primitives.Ints;
 
 import jetbrains.exodus.ByteIterable;
@@ -17,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 public class XodusStore implements Closeable {
 	private final Store store;
 	private final Environment environment;
+	private final long timeout = ConqueryConfig.getInstance().getStorage().getXodus().getEnvMonitorTxnsTimeout().toNanoseconds()/2;
 	
 	public XodusStore(Environment env, IStoreInfo storeId) {
 		this.environment = env;
@@ -34,13 +39,29 @@ public class XodusStore implements Closeable {
 	}
 
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
-		environment.executeInReadonlyTransaction(t -> {
-			try(Cursor c = store.openCursor(t)) {
-				while(c.getNext()) {
-					consumer.accept(c.getKey(), c.getValue());
+		AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
+		AtomicBoolean done = new AtomicBoolean(false);
+		while(!done.get()) {
+			environment.executeInReadonlyTransaction(t -> {
+				try(Cursor c = store.openCursor(t)) {
+					//try to load everything in the same transaction
+					//but keep within half of the timeout time
+					long start = System.nanoTime();
+					//search where we left of
+					if(lastKey.get() != null) {
+						c.getSearchKey(lastKey.get());
+					}
+					while(System.nanoTime()-start < timeout) {
+						if(!c.getNext()) {
+							done.set(true);
+							return;
+						}
+						lastKey.set(c.getKey());
+						consumer.accept(lastKey.get(), c.getValue());
+					}
 				}
-			}
-		});
+			});
+		}
 	}
 
 	public void update(ByteIterable key, ByteIterable value) {

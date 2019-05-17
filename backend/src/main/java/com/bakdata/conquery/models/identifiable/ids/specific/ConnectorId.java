@@ -5,8 +5,8 @@ import java.util.List;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -33,9 +33,10 @@ public class ConnectorId extends AId<Connector> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public ConnectorId parse(PeekingIterator<String> parts) {
+		public ConnectorId parseInternally(IdIterator parts) {
+			String connector = parts.next();
 			ConceptId parent = ConceptId.Parser.INSTANCE.parse(parts);
-			return new ConnectorId(parent, parts.next());
+			return new ConnectorId(parent, connector);
 		}
 	}
 }

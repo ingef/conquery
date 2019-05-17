@@ -16,7 +16,7 @@ public abstract class IdentifiableImpl<ID extends IId<? extends IdentifiableImpl
 	@JsonIgnore @Override
 	public ID getId() {
 		if(cachedId == null) {
-			cachedId = createId();
+			cachedId = IId.intern(createId());
 		}
 		return cachedId;
 	}

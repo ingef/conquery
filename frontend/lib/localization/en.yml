@@ -68,7 +68,8 @@ queryNodeEditor:
   conceptNodes: "Concept Nodes"
   conceptNodeTables: "Input Tables"
   properties: "Properties"
-  resetAll: "Reset all"
+  reset: "Reset"
+  resetSettings: "Reset all settings"
   excludeTimestamps: "Exclude from time calculation"
   excludingTimestamps: "Excluded from time calculation"
   description: "Description"
@@ -187,7 +188,8 @@ timebasedQueryEditor:
 externalForms:
   forms: "Forms"
   formValidation:
-    isRequired: "is required"
+    mustBePositiveNumber: "Must be a positive number"
+    isRequired: "Required"
     invalidDateRange: "End date is smaller than start date"
 
   common:
@@ -215,13 +217,12 @@ externalForms:
     edit: "Edit"
 
 uploadQueryResultsModal:
-  headline: "Upload query result"
+  headline: "Upload result list"
   dropzone: "Drop a CSV file here"
   upload: "Upload"
   uploadFailed: "Could not upload file"
   uploadFailedSub: "Please check the file format and your network connection"
-  uploadSucceeded: "File was successfully uploaded"
-  previousQueryCreated: "Previous query was successfully uploaded"
+  uploadSucceeded: "Result list was successfully uploaded"
   formatInfo:
     text: "File should contain one result per row with comma-separated values"
 

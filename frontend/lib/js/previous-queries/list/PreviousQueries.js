@@ -15,7 +15,7 @@ const Root = styled("div")`
   flex: 1;
   overflow-y: auto;
   font-size: ${({ theme }) => theme.font.sm};
-  padding: 0 10px 0 20px;
+  padding: 0 10px;
 `;
 const Container = styled("div")`
   margin: 4px 0;

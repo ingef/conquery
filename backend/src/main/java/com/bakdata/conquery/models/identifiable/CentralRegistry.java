@@ -17,7 +17,7 @@ public class CentralRegistry implements Injectable {
 	
 	private final IdMap map = new IdMap<>();
 	
-	public void register(Identifiable<?> ident) {
+	public synchronized void register(Identifiable<?> ident) {
 		map.add(ident);
 	}
 	
@@ -29,7 +29,7 @@ public class CentralRegistry implements Injectable {
 		return map.getOptional(name);
 	}
 
-	public void remove(IId<?> id) {
+	public synchronized void remove(IId<?> id) {
 		map.remove(id);
 	}
 	

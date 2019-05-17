@@ -2,6 +2,8 @@
 
 import type { TableWithFilterValueType } from "../standard-query-editor/types";
 
+import { MULTI_SELECT, BIG_MULTI_SELECT } from "../form-components/filterTypes";
+
 import { isEmpty } from "../common/helpers";
 
 import { objectHasSelectedSelects } from "./select";
@@ -26,11 +28,22 @@ export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
       : null;
 
     const filters = table.filters
-      ? table.filters.map(filter => ({
-          ...filter,
-          value: filter.defaultValue,
-          formattedValue: undefined
-        }))
+      ? table.filters.map(filter => {
+          switch (filter.type) {
+            case MULTI_SELECT:
+            case BIG_MULTI_SELECT:
+              return {
+                ...filter,
+                value: filter.defaultValue || []
+              };
+            default:
+              return {
+                ...filter,
+                value: filter.defaultValue || null,
+                formattedValue: undefined
+              };
+          }
+        })
       : null;
 
     return {

@@ -27,7 +27,8 @@ const Root = styled("div")`
   position: relative;
   display: flex;
   flex-direction: column;
-  background-color: ${({ theme }) => theme.col.bgAlt};
+  background: ${({ theme }) =>
+    `linear-gradient(135deg, ${theme.col.bgAlt}, ${theme.col.bg});`};
 `;
 
 const Header = styled("h2")`
@@ -56,6 +57,7 @@ const Head = styled("div")`
   padding: 10px 20px;
   background-color: white;
   margin: 20px -20px;
+  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
 `;
 
 const StyledFaIcon = styled(FaIcon)`

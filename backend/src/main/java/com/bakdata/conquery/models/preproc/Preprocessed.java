@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.datasets.Import;

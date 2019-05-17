@@ -8,10 +8,14 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @CPSType(base=CType.class, id="DATE_RANGE")
 public class DateRangeType extends CType<CDateRange, DateRangeType> {
 
+	@JsonIgnore
+	private transient boolean onlyQuarters = true;
+	
 	public DateRangeType() {
 		super(MajorTypeId.DATE_RANGE, CDateRange.class);
 	}
@@ -37,7 +41,25 @@ public class DateRangeType extends CType<CDateRange, DateRangeType> {
 				formats.parseToLocalDate(parts[1])
 		);
 	}
+	
+	@Override
+	protected void registerValue(CDateRange v) {
+		if(!v.isSingleQuarter()) {
+			onlyQuarters = false;
+		}
+	}
 
+	@Override
+	public CType<?, DateRangeType> bestSubType() {
+		if(onlyQuarters) {
+			DateRangeTypeQuarter subType = new DateRangeTypeQuarter();
+			subType.setLines(this.getLines());
+			subType.setNullLines(this.getNullLines());
+			return subType;
+		}
+		return this;
+	}
+	
 	@Override
 	public Object createPrintValue(CDateRange value) {
 		if (value == null) {

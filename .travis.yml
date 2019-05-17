@@ -101,8 +101,8 @@ jobs:
         tag_name: $TRAVIS_TAG
         target_commitish: $TRAVIS_COMMIT
         file:
-          - backend/target/backend-$TAG_VERSION.jar
-          - executable/target/executable-$TAG_VERSION.jar
+          - backend/target/backend-*.jar
+          - executable/target/executable-*.jar
         skip_cleanup: true
         draft: false
         prerelease: true

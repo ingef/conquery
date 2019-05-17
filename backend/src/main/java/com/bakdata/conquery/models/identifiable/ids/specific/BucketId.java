@@ -2,18 +2,19 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.events.BucketBlock;
+import org.eclipse.jetty.io.ByteBufferPool.Bucket;
+
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class BucketId extends AId<BucketBlock> implements NamespacedId {
+public class BucketId extends AId<Bucket> implements NamespacedId {
 
 	private final ImportId imp;
 	private final int bucket;
@@ -33,9 +34,10 @@ public class BucketId extends AId<BucketBlock> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public BucketId parse(PeekingIterator<String> parts) {
+		public BucketId parseInternally(IdIterator parts) {
+			int bucket = Integer.parseInt(parts.next());
 			ImportId parent = ImportId.Parser.INSTANCE.parse(parts);
-			return new BucketId(parent, Integer.parseInt(parts.next()));
+			return new BucketId(parent, bucket);
 		}
 	}
 }
