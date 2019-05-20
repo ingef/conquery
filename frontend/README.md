@@ -37,7 +37,7 @@ PORT=8000 yarn run start-production
 
 **Requirements**
 
-- `node` 8 (LTS)
+- `node` 10 (LTS)
 - `yarn`
 
 **Install**
