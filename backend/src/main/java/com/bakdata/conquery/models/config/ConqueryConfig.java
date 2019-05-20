@@ -53,7 +53,7 @@ public class ConqueryConfig extends Configuration {
 
 	private AuthConfig authentication = new DevAuthConfig();
 	
-	private List<PluginConfig> pluggedConfigs = new ArrayList<>();
+	private List<PluginConfig> plugins = new ArrayList<>();
 	/**
 	 * null means here that we try to deduce from an attached agent
 	 */
@@ -75,10 +75,10 @@ public class ConqueryConfig extends Configuration {
 		DateFormats.initialize(additionalFormats);
 	}
 	
-	public <T extends PluginConfig> T getPluggedConfig(Class<T> type) {
-		Optional<PluginConfig> filtered = pluggedConfigs.stream()
+	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
+		return (T) plugins.stream()
 			.filter(c -> type.isAssignableFrom(c.getClass()))
-			.collect(MoreCollectors.toOptional());
-		return (T) filtered.get();
+			.collect(MoreCollectors.toOptional())
+			.get();
 	}
 }
