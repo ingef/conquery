@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 
 import T from "i18n-react";
 import { type FieldPropsType } from "redux-form";
@@ -28,8 +29,12 @@ const Pickers = styled("div")`
 `;
 
 const StyledLabel = styled(Label)`
-  font-size: ${({ theme }) => theme.font.md};
-  margin-bottom: 10px;
+  ${({ theme, large }) =>
+    large &&
+    css`
+      font-size: ${theme.font.md};
+      margin: 20px 0 10px;
+    `}
 `;
 
 const StyledLabeled = styled(Labeled)`
@@ -44,6 +49,7 @@ type PropsType = FieldPropsType & {
   labelSuffix?: React.Node,
   className?: string,
   inline?: boolean,
+  large?: boolean,
   center?: boolean
 };
 
@@ -92,6 +98,7 @@ const InputDateRange = (props: PropsType) => {
   };
 
   const {
+    large,
     inline,
     center,
     label,
@@ -108,7 +115,7 @@ const InputDateRange = (props: PropsType) => {
   return (
     <Root center={center}>
       {label && (
-        <StyledLabel>
+        <StyledLabel large={large}>
           {label}
           <InfoTooltip
             text={T.translate("inputDateRange.tooltip.possiblePattern")}

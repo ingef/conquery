@@ -76,6 +76,8 @@ const QueryGroupModal = (props: PropsType) => {
           )}
         </Headline>
         <InputDateRange
+          large
+          inline
           label={T.translate("queryGroupModal.explanation")}
           labelSuffix={
             <>
@@ -86,7 +88,6 @@ const QueryGroupModal = (props: PropsType) => {
               )}
             </>
           }
-          inline
           input={{
             onChange: onSetDate,
             value: dateRange
