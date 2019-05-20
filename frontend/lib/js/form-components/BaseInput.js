@@ -20,7 +20,7 @@ const Input = styled("input")`
   min-width: 170px;
   padding: 8px 30px 8px 10px;
   font-size: ${({ theme }) => theme.font.sm};
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
 const ClearZone = styled(IconButton)`

@@ -37,7 +37,7 @@ const SubMessage = styled("p")`
 `;
 
 const Preview = styled("div")`
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   background-color: ${({ theme }) => theme.col.grayVeryLight};
   width: ${({ width }) => width}px;
   height: 20px;

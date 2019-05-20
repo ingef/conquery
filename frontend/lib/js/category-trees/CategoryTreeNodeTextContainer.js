@@ -73,7 +73,7 @@ const ResultsNumber = styled("span")`
   padding: 2px 4px;
   margin-right: 5px;
   font-size: ${({ theme }) => theme.font.xs};
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   color: ${({ theme }) => theme.col.blueGrayDark};
   font-weight: 700;
 `;
