@@ -13,20 +13,20 @@ import { MONEY_RANGE } from "./filterTypes";
 
 const Root = styled("div")`
   position: relative;
+  display: inline-block;
 `;
 
 const Input = styled("input")`
   min-width: 170px;
-  padding-right: 30px;
+  padding: 8px 30px 8px 10px;
   font-size: ${({ theme }) => theme.font.sm};
-  padding: 8px 10px;
   border-radius: 3px;
 `;
 
 const ClearZone = styled(IconButton)`
   position: absolute;
   top: 0;
-  right: 5px;
+  right: 10px;
   cursor: pointer;
   height: 36px;
   display: flex;
@@ -102,6 +102,7 @@ const BaseInput = (props: PropsType) => {
       )}
       {!isEmpty(props.value) && (
         <ClearZone
+          tiny
           icon="times"
           tabIndex="-1"
           title={T.translate("common.clearValue")}
