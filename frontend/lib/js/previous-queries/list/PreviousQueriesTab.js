@@ -19,7 +19,7 @@ import { selectPreviousQueries } from "./selector";
 const Container = styled("div")`
   overflow-y: auto;
   font-size: ${({ theme }) => theme.font.sm};
-  padding: 0 10px 0 20px;
+  padding: 0 10px;
 `;
 
 class PreviousQueryEditorTab extends React.Component {

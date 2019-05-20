@@ -70,6 +70,7 @@ const InputMultiSelect = (props: PropsType) => {
   const Select = (
     <ReactSelect
       creatable
+      highlightChanged
       isMulti
       createOptionPosition="first"
       name="form-field"

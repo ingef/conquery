@@ -7,6 +7,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -28,7 +29,7 @@ public class CQReusedQuery implements CQElement {
 
 	@Getter @NotNull @Valid
 	private final ManagedQueryId query;
-	@Getter
+	@Getter @InternalOnly
 	private IQuery resolvedQuery;
 
 	@Override

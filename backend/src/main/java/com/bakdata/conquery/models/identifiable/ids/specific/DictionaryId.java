@@ -7,8 +7,8 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -32,8 +32,9 @@ public class DictionaryId extends AId<Dictionary> implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public DictionaryId parse(PeekingIterator<String> parts) {
-			return new DictionaryId(DatasetId.Parser.INSTANCE.parse(parts), parts.next());
+		public DictionaryId parseInternally(IdIterator parts) {
+			String dict = parts.next();
+			return new DictionaryId(DatasetId.Parser.INSTANCE.parse(parts), dict);
 		}
 	}
 }

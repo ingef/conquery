@@ -1,7 +1,10 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
 import java.io.IOException;
-import java.io.OutputStream;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Block;
@@ -12,14 +15,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
-import com.gc.iotools.stream.base.ExecutionModel;
-import com.gc.iotools.stream.is.InputStreamFromOutputStream;
 
 public class BlockDeserializer extends JsonDeserializer<Block> {
 
 	private final static SerializedString FIELD_IMPORT = new SerializedString("import");
 	private final static SerializedString FIELD_ENTITY = new SerializedString("entity");
 	private final static SerializedString FIELD_CONTENT = new SerializedString("content");
+	private final static Executor EXECUTORS = Executors.newCachedThreadPool(); 
 
 	@Override
 	public Block deserialize(JsonParser p, DeserializationContext ctxt) throws IOException, JsonProcessingException {
@@ -38,14 +40,17 @@ public class BlockDeserializer extends JsonDeserializer<Block> {
 		}
 		p.nextValue();
 
-		try (InputStreamFromOutputStream<Void> isos = new InputStreamFromOutputStream<Void>(ExecutionModel.STATIC_THREAD_POOL) {
-			@Override
-			public Void produce(final OutputStream dataSink) throws Exception {
-				p.readBinaryValue(dataSink);
-				return null;
-			}
-		}) {
-			return imp.getBlockFactory().readBlock(entity, imp, isos);
+		try(PipedOutputStream out = new PipedOutputStream();
+		PipedInputStream in = new PipedInputStream(out);) {
+			EXECUTORS.execute(()->{
+				try {
+				p.readBinaryValue(out);
+				out.close();
+				} catch(Exception e) {
+					throw new RuntimeException(e);
+				}
+			});
+			return imp.getBlockFactory().readBlock(entity, imp, in);
 		}
 	}
 }

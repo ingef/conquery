@@ -11,6 +11,7 @@ import java.time.LocalDate;
 import java.io.IOException;
 
 import java.lang.Integer;
+import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -211,7 +212,7 @@ public class Block_${suffix} extends Block {
                     return CDateRange.exactly(events[event].get${safeName(col.name)?cap_first}());
                 <#elseif col.type.typeId == "DATE_RANGE">
                 case ${col.position}:
-                    return events[event].get${safeName(col.name)?cap_first}();
+                    return events[event].get${safeName(col.name)?cap_first}AsMajor();
                 </#if>
             </#if>
 		</#list>

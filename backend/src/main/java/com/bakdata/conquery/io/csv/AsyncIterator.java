@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.csv;
 
+import java.io.Closeable;
+import java.io.IOException;
 import java.util.Iterator;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
@@ -9,7 +11,7 @@ import com.google.common.collect.AbstractIterator;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class AsyncIterator<T> extends AbstractIterator<T> {
+public class AsyncIterator<T> extends AbstractIterator<T> implements Closeable {
 
 	private final Iterator<T> iterator;
 	private final BlockingQueue<Object> queue = new ArrayBlockingQueue<>(100);
@@ -39,6 +41,7 @@ public class AsyncIterator<T> extends AbstractIterator<T> {
 				}
 			}
 		};
+		thread.setDaemon(true);
 		thread.start();
 	}
 
@@ -56,5 +59,10 @@ public class AsyncIterator<T> extends AbstractIterator<T> {
 		catch(InterruptedException e) {
 			throw new RuntimeException("Interrupted in CSV Parsing Thread", e);
 		}
+	}
+
+	@Override
+	public void close() throws IOException {
+		thread.stop();
 	}
 }

@@ -3,9 +3,9 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.collect.PeekingIterator;
 
 public abstract class ConceptElementId<T extends ConceptElement<?>> extends AId<T> implements NamespacedId {
 
@@ -18,12 +18,15 @@ public abstract class ConceptElementId<T extends ConceptElement<?>> extends AId<
 		INSTANCE;
 		
 		@Override
-		public ConceptElementId<?> parse(PeekingIterator<String> parts) {
-			ConceptElementId<?> result = ConceptId.Parser.INSTANCE.parse(parts);
-			while(parts.hasNext()) {
-				result = new ConceptTreeChildId(result, parts.next());
+		public ConceptElementId<?> parseInternally(IdIterator parts) {
+			if(parts.remaining() == 2) {
+				return ConceptId.Parser.INSTANCE.parse(parts);
 			}
-			return result;
+			else {
+				String childName = parts.next();
+				ConceptElementId<?> parent = ConceptElementId.Parser.INSTANCE.parse(parts);
+				return new ConceptTreeChildId(parent, childName);
+			}
 		}
 	}
 }
