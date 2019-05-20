@@ -146,7 +146,7 @@ public class Block_${suffix} extends Block {
 		<#-- there are no getters for null only columns-->
 		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
 			case ${col.position}:
-				return events[event].get${safeName(col.name)?cap_first}AsMajor();
+				return events[event].get${safeName(col.name)?cap_first}();
 		</#if>
 	</#list>
 	</#list>
