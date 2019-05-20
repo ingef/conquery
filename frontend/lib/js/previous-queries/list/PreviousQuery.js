@@ -334,10 +334,8 @@ const mapProps = (stateProps, dispatchProps, ownProps) => ({
     dispatchProps.onToggleEditPreviousQueryTags(ownProps.query.id)
 });
 
-export default DragSource(dndTypes.PREVIOUS_QUERY, nodeSource, collect)(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps,
-    mapProps
-  )(PreviousQuery)
-);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+  mapProps
+)(DragSource(dndTypes.PREVIOUS_QUERY, nodeSource, collect)(PreviousQuery));
