@@ -60,10 +60,11 @@ const BaseInput = (props: PropsType) => {
   const handleKeyPress = event => {
     if (!pattern) return;
 
-    var regex = new RegExp(pattern);
-    var key = String.fromCharCode(
+    const regex = new RegExp(pattern);
+    const key = String.fromCharCode(
       !event.charCode ? event.which : event.charCode
     );
+
     if (!regex.test(key)) {
       event.preventDefault();
       return false;

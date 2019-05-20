@@ -16,6 +16,7 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 
 import Label from "./Label";
 import Labeled from "./Labeled";
+import BaseInput from "./BaseInput";
 
 const Root = styled("div")`
   text-align: ${({ center }) => (center ? "center" : "left")};
@@ -117,25 +118,23 @@ const InputDateRange = (props: PropsType) => {
       )}
       <Pickers inline={inline} center={center}>
         <StyledLabeled label={T.translate("inputDateRange.from")}>
-          <input
-            tabIndex={1}
+          <BaseInput
+            inputType="text"
             value={min}
             placeholder={displayDateFormat.toUpperCase()}
-            onChange={event =>
-              onChangeRaw("min", event.target.value, displayDateFormat)
-            }
+            onChange={value => onChangeRaw("min", value, displayDateFormat)}
             onBlur={e => applyDate("min", e.target.value, displayDateFormat)}
+            inputProps={{ tabIndex: 1 }}
           />
         </StyledLabeled>
         <StyledLabeled label={T.translate("inputDateRange.to")}>
-          <input
-            tabIndex={2}
+          <BaseInput
+            inputType="text"
             value={max}
             placeholder={displayDateFormat.toUpperCase()}
-            onChange={event =>
-              onChangeRaw("max", event.target.value, displayDateFormat)
-            }
+            onChange={value => onChangeRaw("max", value, displayDateFormat)}
             onBlur={e => applyDate("max", e.target.value, displayDateFormat)}
+            inputProps={{ tabIndex: 2 }}
           />
         </StyledLabeled>
       </Pickers>
