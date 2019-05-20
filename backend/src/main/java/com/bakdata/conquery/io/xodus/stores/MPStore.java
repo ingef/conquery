@@ -158,4 +158,9 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 	public String toString() {
 		return storeInfo.getXodusName()+"("+storeInfo.getValueType().getSimpleName()+")";
 	}
+
+	@Override
+	public Collection<KEY> getAllKeys() {
+		throw new UnsupportedOperationException();
+	}
 }

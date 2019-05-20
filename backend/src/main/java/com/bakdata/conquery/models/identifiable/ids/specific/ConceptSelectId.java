@@ -3,8 +3,8 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -34,9 +34,10 @@ public class ConceptSelectId extends SelectId implements NamespacedId {
 		INSTANCE;
 		
 		@Override
-		public ConceptSelectId parse(PeekingIterator<String> parts) {
+		public ConceptSelectId parseInternally(IdIterator parts) {
+			String name = parts.next();
 			ConceptId parent = ConceptId.Parser.INSTANCE.parse(parts);
-			return new ConceptSelectId(parent, parts.next());
+			return new ConceptSelectId(parent, name);
 		}
 	}
 

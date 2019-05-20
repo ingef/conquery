@@ -5,8 +5,8 @@ import java.util.List;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -30,13 +30,12 @@ public abstract class SelectId extends AId<Select> implements NamespacedId {
 		INSTANCE;
 
 		@Override
-		public SelectId parse(PeekingIterator<String> parts) {
-			ConnectorId parent = ConnectorId.Parser.INSTANCE.parse(parts);
-			if (!parts.hasNext()) {
-				return new ConceptSelectId(parent.getConcept(), parent.getConnector());
+		public SelectId parseInternally(IdIterator parts) {
+			if (parts.remaining() == 3) {
+				return ConceptSelectId.Parser.INSTANCE.parse(parts);
 			}
 			else {
-				return new ConnectorSelectId(parent, parts.next());
+				return ConnectorSelectId.Parser.INSTANCE.parse(parts);
 			}
 		}
 	}

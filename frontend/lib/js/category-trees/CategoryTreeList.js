@@ -44,17 +44,6 @@ type PropsType = {
   search?: SearchType
 };
 
-const sortTrees = trees => (a, b) => {
-  const aTree = trees[a];
-  const bTree = trees[b];
-
-  if (!!aTree.children === !!bTree.children) {
-    return aTree.label.localeCompare(bTree.label);
-  }
-
-  return !!aTree.children ? -1 : 1;
-};
-
 class CategoryTreeList extends React.Component<PropsType> {
   props: PropsType;
 
@@ -77,7 +66,6 @@ class CategoryTreeList extends React.Component<PropsType> {
             // Only take those that don't have a parent, they must be root
             // If they don't have a label, they're loading, or in any other broken state
             .filter(treeId => !trees[treeId].parent && trees[treeId].label)
-            .sort(sortTrees(trees))
             .map((treeId, i) => {
               const tree = trees[treeId];
               const rootConcept = getConceptById(treeId);

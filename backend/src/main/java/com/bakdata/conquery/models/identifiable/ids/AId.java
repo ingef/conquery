@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -32,4 +33,14 @@ public abstract class AId<TYPE> implements IId<TYPE> {
 	}
 
 	public abstract void collectComponents(List<Object> components);
+	
+	@Override
+	public List<String> collectComponents() {
+		List<Object> components = getComponents();
+		String[] result = new String[components.size()];
+		for(int i=0;i<result.length;i++) {
+			result[i] = ConqueryEscape.escape(Objects.toString(components.get(i)));
+		}
+		return Arrays.asList(result);
+	}
 }
