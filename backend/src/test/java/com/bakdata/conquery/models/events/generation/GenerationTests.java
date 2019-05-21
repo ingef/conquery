@@ -55,7 +55,7 @@ public class GenerationTests {
 						event[0] = (CDate.ofLocalDate(LocalDate.now()));
 					}
 					if(r.nextBoolean()) {
-						event[1] = Integer.toHexString(r.nextInt());
+						event[1] = Long.toHexString(r.nextLong());
 					}
 					if(r.nextBoolean()) {
 						event[2] = Integer.valueOf(r.nextInt()).toString();
