@@ -56,7 +56,7 @@ public class MapDictionary implements StringMap {
 	}
 
 	@Override
-	public int add(String value) {
+	public synchronized int add(String value) {
 		checkUncompressed("Do not add values after compression");
 		int id = value2Id.getInt(value);
 		if(id == -1) {

@@ -41,7 +41,7 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 		nValues++;
 
 		if (random.nextInt(nValues) == 0) {
-			value = block.getAsObject(event, getColumn());
+			value = block.getRaw(event, getColumn());
 			this.block = block;
 		}
 	}

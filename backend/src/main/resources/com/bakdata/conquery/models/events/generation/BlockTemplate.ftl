@@ -139,7 +139,7 @@ public class Block_${suffix} extends Block {
 	</#list>
 	
 	@Override
-	public Object getAsObject(int event, Column column) {
+	public Object getRaw(int event, Column column) {
 		switch(column.getPosition()) {
 	<#list types as type>
 	<#list imp.columns as col>
@@ -147,6 +147,23 @@ public class Block_${suffix} extends Block {
 		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
 			case ${col.position}:
 				return events[event].get${safeName(col.name)?cap_first}();
+		</#if>
+	</#list>
+	</#list>
+			default:
+				throw new IllegalArgumentException("Column "+column+" is not valid");
+		}
+	}
+	
+	@Override
+	public Object getAsObject(int event, Column column) {
+		switch(column.getPosition()) {
+	<#list types as type>
+	<#list imp.columns as col>
+		<#-- there are no getters for null only columns-->
+		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
+			case ${col.position}:
+				return events[event].get${safeName(col.name)?cap_first}AsMajor();
 		</#if>
 	</#list>
 	</#list>
