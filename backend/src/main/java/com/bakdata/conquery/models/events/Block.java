@@ -52,6 +52,7 @@ public abstract class Block extends IdentifiableImpl<BlockId> implements JsonSer
 	public abstract long getMoney(int event, Column column);
 	public abstract int getDate(int event, Column column);
 	public abstract CDateRange getDateRange(int event, Column column);
+	public abstract Object getRaw(int event, Column column);
 	public abstract Object getAsObject(int event, Column column);
 
 	public abstract boolean eventIsContainedIn(int event, Column column, CDateRange dateRange);
