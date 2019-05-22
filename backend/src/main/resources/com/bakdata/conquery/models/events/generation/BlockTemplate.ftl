@@ -32,6 +32,28 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.util.Map;
+import java.io.InputStream;
+import java.io.IOException;
+
+import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.events.generation.BlockFactory;
+import com.bakdata.conquery.io.DeserHelper;
+import java.math.BigDecimal;
+
+import com.bakdata.conquery.util.io.SmallIn;
+import com.bakdata.conquery.util.io.SmallOut;
+import java.time.LocalDate;
+
+import java.lang.Integer;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+
+import java.util.List;
+
+import com.tomgibara.bits.BitStore;
+import com.tomgibara.bits.Bits;
+import com.bakdata.conquery.util.PackedUnsigned1616;
+import com.bakdata.conquery.models.common.CQuarter;
+import com.google.common.primitives.Ints;
 
 public class Block_${suffix} extends Block {
 
