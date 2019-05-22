@@ -33,8 +33,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Decision;
+import com.bakdata.conquery.models.types.parser.Parser;
+import com.bakdata.conquery.models.types.parser.specific.StringParser;
 import com.bakdata.conquery.models.types.specific.IStringType;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -103,50 +106,53 @@ public class GenerationTests {
 	}
 
 	public Block generateBlock(List<Object[]> arrays) throws IOException {
-		Import imp = new Import();
-		imp.setTable(new TableId(new DatasetId("test_dataset"), "table"));
-		imp.setName("import");
-		imp.setColumns(new ImportColumn[] {
-				column(imp, 0, MajorTypeId.DATE.createType()),
-				column(imp, 1, MajorTypeId.STRING.createType()),
-				column(imp, 2, MajorTypeId.STRING.createType()),
-				column(imp, 3, MajorTypeId.STRING.createType()),
-				column(imp, 4, MajorTypeId.INTEGER.createType()),
-				column(imp, 5, MajorTypeId.STRING.createType()),
-				column(imp, 6, MajorTypeId.STRING.createType()),
-				column(imp, 7, MajorTypeId.INTEGER.createType()),
-				column(imp, 8, MajorTypeId.INTEGER.createType()),
-				column(imp, 9, MajorTypeId.STRING.createType()),
-				column(imp, 10, MajorTypeId.DECIMAL.createType()),
-				column(imp, 11, MajorTypeId.INTEGER.createType()),
-				column(imp, 12, MajorTypeId.INTEGER.createType()),
-				column(imp, 13, MajorTypeId.INTEGER.createType()),
-				column(imp, 14, MajorTypeId.INTEGER.createType()),
-				column(imp, 15, MajorTypeId.INTEGER.createType()),
-				column(imp, 16, MajorTypeId.DECIMAL.createType())
-		});
+		Parser[] parser = new Parser[] {
+			MajorTypeId.DATE.createParser(),
+			MajorTypeId.STRING.createParser(),
+			MajorTypeId.STRING.createParser(),
+			MajorTypeId.STRING.createParser(),
+			MajorTypeId.INTEGER.createParser(),
+			MajorTypeId.STRING.createParser(),
+			MajorTypeId.STRING.createParser(),
+			MajorTypeId.INTEGER.createParser(),
+			MajorTypeId.INTEGER.createParser(),
+			MajorTypeId.STRING.createParser(),
+			MajorTypeId.DECIMAL.createParser(),
+			MajorTypeId.INTEGER.createParser(),
+			MajorTypeId.INTEGER.createParser(),
+			MajorTypeId.INTEGER.createParser(),
+			MajorTypeId.INTEGER.createParser(),
+			MajorTypeId.INTEGER.createParser(),
+			MajorTypeId.DECIMAL.createParser()
+		};
 
 
 		for(Object[] event:arrays) {
-			for(int i=0;i<imp.getColumns().length;i++) {
+			for(int i=0;i<parser.length;i++) {
 				try {
-					imp.getColumns()[i].getType().addLine(event[i]);
-
-					if(imp.getColumns()[i].getType() instanceof StringType && event[i] != null) {
-						event[i] = imp.getColumns()[i].getType().parse((String)event[i]);
+					//only parse strings, this test otherwise already creates parsed values
+					if(parser[i] instanceof StringParser && event[i] != null) {
+						event[i] = parser[i].parse((String)event[i]);
 					}
-
+					parser[i].addLine(event[i]);
 				} catch(Exception e) {
 					throw new IllegalArgumentException("Column "+i, e);
 				}
 			}
 		}
+		
+		Import imp = new Import();
+		imp.setTable(new TableId(new DatasetId("test_dataset"), "table"));
+		imp.setName("import");
+		imp.setColumns(IntStream.range(0, parser.length)
+			.mapToObj(i->column(imp,i))
+			.toArray(ImportColumn[]::new)
+		);
 
-		CType[] originalTypes = new CType[imp.getColumns().length];
-		for(int i=0;i<imp.getColumns().length;i++) {
-			originalTypes[i] = imp.getColumns()[i].getType();
-			imp.getColumns()[i].setType(imp.getColumns()[i].getType().bestSubType());
-			log.info("{}: {} mapped to {}", imp.getColumns()[i], originalTypes[i], imp.getColumns()[i].getType());
+		Decision[] decisions = Arrays.stream(parser).map(Parser::findBestType).toArray(Decision[]::new);
+		for(int i=0;i<parser.length;i++) {
+			imp.getColumns()[i].setType(decisions[i].getType());
+			log.info("{}: {} mapped to {}", imp.getColumns()[i], parser[i], imp.getColumns()[i].getType());
 		}
 		
 		List<Object[]> result = new ArrayList<>(arrays.size());
@@ -154,7 +160,7 @@ public class GenerationTests {
 			Object[] line = Arrays.copyOf(event, event.length);
 			for(int i=0;i<imp.getColumns().length;i++) {
 				if(event[i] != null) {
-					line[i] = imp.getColumns()[i].getType().transformFromMajorType(originalTypes[i], event[i]);
+					line[i] = decisions[i].getTransformer().transform(event[i]);
 				}
 			}
 			result.add(line);
@@ -187,16 +193,22 @@ public class GenerationTests {
 						.as(message)
 						.isFalse();
 				}
-				else if(orig instanceof BigDecimal) {
-					assertThat((BigDecimal)block.getAsObject(i, fake))
-						.as(message)
-						.usingComparator(BigDecimal::compareTo)
-						.isEqualTo(orig);
-				}
 				else {
-					assertThat(block.getAsObject(i, fake))
-						.as(message)
-						.isEqualTo(orig);
+					assertThat(block.has(i, fake))
+						.as(message+" is not null")
+						.isTrue();
+					
+					if(orig instanceof BigDecimal) {
+						assertThat((BigDecimal)block.getAsObject(i, fake))
+							.as(message)
+							.usingComparator(BigDecimal::compareTo)
+							.isEqualTo(orig);
+					}
+					else {
+						assertThat(block.getAsObject(i, fake))
+							.as(message)
+							.isEqualTo(orig);
+					}
 				}
 				
 			}
@@ -208,12 +220,11 @@ public class GenerationTests {
 		SerializationTestUtil.testSerialization(block, Block.class, registry);
 	}
 
-	private ImportColumn column(Import imp, int pos, CType<?, ?> valueType) {
+	private ImportColumn column(Import imp, int pos) {
 		ImportColumn col = new ImportColumn();
 		col.setName(String.format("@column%02d", pos));
 		col.setParent(imp);
 		col.setPosition(pos);
-		col.setType(valueType);
 		return col;
 	}
 }

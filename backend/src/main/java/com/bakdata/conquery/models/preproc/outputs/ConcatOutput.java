@@ -10,6 +10,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,7 @@ public class ConcatOutput extends Output {
 	private int[] inputColumns;
 	
 	@Override
-	public List<Object> createOutput(CType<?,?> type, String[] row, int source, long sourceLine) throws ParsingException {
+	public List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException {
 		StringBuilder result = new StringBuilder();
 		for(int c:inputColumns) {
 			result.append(escape(row[c])).append(DELIMETER);

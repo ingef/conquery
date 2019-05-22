@@ -6,6 +6,7 @@ import java.util.stream.IntStream;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.CType;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.io.BaseEncoding;
 
 import lombok.Getter;
@@ -14,19 +15,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
 @CPSType(base = CType.class, id = "STRING_ENCODED") @ToString
-public class StringTypeEncoded extends StringType implements IStringType {
+public class StringTypeEncoded extends StringTypeVarInt implements IStringType {
 
 	@NonNull @Getter @ToString.Include
 	private Encoding encoding;
-	private int[] cache;
 	
-
-	public StringTypeEncoded(Encoding encoding, long lines, long nullLines) {
-		super();
-
+	@JsonCreator
+	public StringTypeEncoded(VarIntType numberType, Encoding encoding) {
+		super(numberType);
 		this.encoding = encoding;
-		this.setLines(lines);
-		this.setNullLines(nullLines);
 	}
 
 	@Override
@@ -35,35 +32,8 @@ public class StringTypeEncoded extends StringType implements IStringType {
 	}
 
 	@Override
-	public Integer transformFromMajorType(StringType majorType, Object from) {
-		int id = (Integer) from;
-		if(cache == null) {
-			cache = new int[majorType.getDictionary().size()];
-			Arrays.fill(cache, -1);
-		}
-		
-		int result = cache[id];
-		if(result == -1) {
-			String value = majorType.createScriptValue(id);
-			result = super.getDictionary().add(encoding.decode(value));
-			cache[id] = result;
-		}
-		return result;
-	}
-
-	@Override
 	public int getStringId(String string) {
 		return super.getDictionary().getId(encoding.decode(string));
-	}
-
-	@Override
-	public CType<?, StringType> bestSubType() {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public Integer parse(String v) {
-		throw new UnsupportedOperationException();
 	}
 
 	@RequiredArgsConstructor

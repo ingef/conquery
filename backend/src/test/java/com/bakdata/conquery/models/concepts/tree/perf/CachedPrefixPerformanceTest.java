@@ -4,7 +4,8 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
+import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.util.CalculatedValue;
 import lombok.extern.slf4j.Slf4j;
 
@@ -61,7 +62,7 @@ public class CachedPrefixPerformanceTest extends AbstractSearchPerformanceTest<I
 		TreeChildPrefixIndex.putIndexInto(newConcept);
 		TreeChildPrefixIndex.putIndexInto(referenceConcept);
 
-		StringType type = new StringType();
+		StringTypeVarInt type = new StringTypeVarInt(new VarIntTypeInt(-1, +1));
 		type.setDictionary(dict);
 		newConcept.initializeIdCache(type, importId);
 		

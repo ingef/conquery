@@ -6,6 +6,7 @@ import java.util.List;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -16,7 +17,7 @@ public class LineOutput extends Output {
 	private static final long serialVersionUID = 1L;
 	
 	@Override
-	public List<Object> createOutput(CType type, String[] row, int source, long sourceLine) {
+	public List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) {
 		return Collections.singletonList(sourceLine);
 	}
 

@@ -31,7 +31,8 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBuck
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.PPHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
@@ -105,7 +106,7 @@ public class ImportJob extends Job {
 
 			//update primary dictionary
 			log.debug("\tupdating primary dictionary");
-			Dictionary entities = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
+			Dictionary entities = ((StringTypeVarInt) header.getPrimaryColumn().getType()).getDictionary();
 			this.progressReporter.report(1);
 			log.debug("\tcompute dictionary");
 			Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));

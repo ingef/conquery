@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
@@ -368,7 +369,7 @@ public class CDateSet {
 			.results()
 			.map(mr -> {
 				try {
-					return DateRangeType.parseISORange(mr.group(2));
+					return DateRangeParser.parseISORange(mr.group(2));
 				}
 				catch(Exception e) {
 					throw new RuntimeException(e);

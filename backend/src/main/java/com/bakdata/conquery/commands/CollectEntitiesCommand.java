@@ -22,7 +22,7 @@ import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.PPHeader;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
 import com.bakdata.conquery.util.DebugMode;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
@@ -132,7 +132,7 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 
 					log.debug("\tparsing dictionaries");
 					header.getPrimaryColumn().getType().readHeader(in);
-					Dictionary dict = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
+					Dictionary dict = ((StringTypeVarInt) header.getPrimaryColumn().getType()).getDictionary();
 					
 					add(dict, new File(file.getParentFile(), "all_entities.csv"));
 					if(verbose) {

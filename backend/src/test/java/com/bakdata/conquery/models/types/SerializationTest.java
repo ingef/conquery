@@ -16,27 +16,24 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.types.specific.BooleanType;
-import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.types.specific.BooleanTypeBoolean;
+import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
-import com.bakdata.conquery.models.types.specific.DateType;
-import com.bakdata.conquery.models.types.specific.DateTypeByte;
-import com.bakdata.conquery.models.types.specific.DateTypeShort;
-import com.bakdata.conquery.models.types.specific.DecimalType;
+import com.bakdata.conquery.models.types.specific.DateTypeVarInt;
+import com.bakdata.conquery.models.types.specific.DecimalTypeBigDecimal;
 import com.bakdata.conquery.models.types.specific.DecimalTypeScaled;
-import com.bakdata.conquery.models.types.specific.IntegerType;
-import com.bakdata.conquery.models.types.specific.IntegerTypeByte;
-import com.bakdata.conquery.models.types.specific.IntegerTypeInteger;
-import com.bakdata.conquery.models.types.specific.IntegerTypeShort;
-import com.bakdata.conquery.models.types.specific.MoneyType;
-import com.bakdata.conquery.models.types.specific.MoneyTypeByte;
-import com.bakdata.conquery.models.types.specific.MoneyTypeInteger;
-import com.bakdata.conquery.models.types.specific.MoneyTypeShort;
-import com.bakdata.conquery.models.types.specific.RealType;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.specific.IntegerTypeLong;
+import com.bakdata.conquery.models.types.specific.IntegerTypeVarInt;
+import com.bakdata.conquery.models.types.specific.MoneyTypeLong;
+import com.bakdata.conquery.models.types.specific.MoneyTypeVarInt;
+import com.bakdata.conquery.models.types.specific.RealTypeDouble;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
+import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
+import com.bakdata.conquery.models.types.specific.VarIntTypeByte;
+import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
+import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -46,26 +43,24 @@ public class SerializationTest {
 	@SuppressWarnings("rawtypes")
 	public static List<CType<?,?>> createCTypes() {
 		return Arrays.asList(
-			new DecimalTypeScaled(13, 2, 2, new IntegerTypeInteger()),
-			new MoneyTypeShort(),
-			new IntegerTypeShort(),
-			new IntegerTypeByte(),
-			new MoneyTypeInteger(),
-			new DecimalType(),
-			new StringTypeEncoded(Encoding.Base16LowerCase, 13,2),
-			new BooleanType(),
-			new MoneyTypeByte(),
-			new RealType(),
-			new DateType(),
-			new StringType(),
-			new IntegerType(),
-			new MoneyType(),
-			new IntegerTypeInteger(),
-			new DateRangeType(),
+			new DecimalTypeScaled(13, new IntegerTypeLong(-1,1)),
+			new IntegerTypeVarInt(new VarIntTypeInt(-1, +1)),
+			new MoneyTypeLong(),
+			new DecimalTypeBigDecimal(),
+			new StringTypeEncoded(new VarIntTypeInt(-1, +1),Encoding.Base16LowerCase),
+			new BooleanTypeBoolean(),
+			new MoneyTypeVarInt(new VarIntTypeInt(-1, +1)),
+			new RealTypeDouble(),
+			new DateTypeVarInt(new VarIntTypeInt(-1, +1)),
+			new StringTypeVarInt(new VarIntTypeInt(-1, +1)),
+			new IntegerTypeLong(-1,+1),
+			new DateRangeTypeDateRange(),
 			new DateRangeTypeQuarter(),
 			new DateRangeTypePacked(),
-			new DateTypeByte(),
-			new DateTypeShort()
+			new DateTypeVarInt(new VarIntTypeInt(-1, +1)),
+			new VarIntTypeInt(-1, +1),
+			new VarIntTypeByte((byte)-1, (byte)+1),
+			new VarIntTypeShort((short)-1, (short)+1)
 		);
 	}
 	

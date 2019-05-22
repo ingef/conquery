@@ -28,7 +28,9 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.parser.Parser;
+import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
 import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
@@ -122,7 +124,7 @@ public class Preprocessor {
 	
 						while(it.hasNext()) {
 							String[] row = it.next();
-							Integer primary = getPrimary((StringType) result.getPrimaryColumn().getType(), row, lineId, inputSource, input.getPrimary());
+							Integer primary = getPrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
 							if(primary != null) {
 								int primaryId = result.addPrimary(primary);
 								parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
@@ -145,11 +147,12 @@ public class Preprocessor {
 			}
 			//find the optimal subtypes
 			log.info("finding optimal column types");
-			log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getOriginalType(), result.getPrimaryColumn().getType());
-
+			log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getParser(), result.getPrimaryColumn().getType());
+			
+			result.getPrimaryColumn().setType(((StringParser)result.getPrimaryColumn().getParser()).createSimpleType());
 			for(PPColumn c:result.getColumns()) {
 				c.findBestType();
-				log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getOriginalType(), c.getType());
+				log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
 			}
 
 			try (SmallOut out = new SmallOut(outFile.writeContent())) {
@@ -199,7 +202,7 @@ public class Preprocessor {
 		}
 	}
 
-	private Integer getPrimary(StringType primaryType, String[] row, long lineId, int source, Output primaryOutput) {
+	private Integer getPrimary(StringParser primaryType, String[] row, long lineId, int source, Output primaryOutput) {
 		try {
 			List<Object> primary = primaryOutput.createOutput(primaryType, row, source, lineId);
 			if(primary.size()!=1 || !(primary.get(0) instanceof Integer)) {
@@ -223,27 +226,12 @@ public class Preprocessor {
 		int oid = 0;
 		for(int c = 0; c<input.getOutput().length; c++) {
 			Output out = input.getOutput()[c];
-			CType<?,?> type = columns[c].getType();
-			Class<?> jType = Primitives.wrap(type.getPrimitiveType());
+			Parser<?> parser = columns[c].getParser();
 
 			List<Object> result;
-			result = out.createOutput(type, row, source, lineId);
+			result = out.createOutput(parser, row, source, lineId);
 			if(result==null) {
 				throw new IllegalStateException(out+" returned null result for "+Arrays.toString(row));
-			}
-			for(Object v:result) {
-				if(v != null && !jType.isInstance(v)) {
-					throw new IllegalStateException(
-							out
-							+ " returned result with wrong types for "
-							+ Arrays.toString(row)
-							+ " "
-							+ result.stream()
-								.filter(Objects::nonNull)
-								.filter(Predicates.not(jType::isInstance))
-								.collect(Collectors.toList())
-					);
-				}
 			}
 
 

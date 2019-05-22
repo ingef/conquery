@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 import com.jakewharton.byteunits.BinaryByteUnit;
-import com.jakewharton.byteunits.ByteUnit;
 
 import it.unimi.dsi.fastutil.Hash;
 import lombok.AllArgsConstructor;
