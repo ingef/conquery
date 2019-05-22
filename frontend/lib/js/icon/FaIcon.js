@@ -29,6 +29,7 @@ export const Icon = styled(FontAwesomeIcon, { shouldForwardProp })`
       ? theme.col.blueGrayLight
       : theme.col.black};
   cursor: ${({ disabled }) => (disabled ? "not-allowed" : "inherit")};
+  width: auto !important; // For IE11
   width: initial !important;
 `;
 
