@@ -21,6 +21,9 @@ import java.util.List;
 
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.bits.Bits;
+import com.bakdata.conquery.util.PackedUnsigned1616;
+import com.bakdata.conquery.models.common.CQuarter;
+import com.google.common.primitives.Ints;
 
 public class BlockFactory_${suffix} extends BlockFactory {
 
