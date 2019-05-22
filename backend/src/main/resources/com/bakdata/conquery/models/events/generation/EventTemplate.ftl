@@ -24,7 +24,7 @@ public class Event_${suffix} {
 		return ${safeName(column.name)};
 	}
 	
-	public ${column.type.typeId.createType().primitiveType.name} get${safeName(column.name)?cap_first}AsMajor() {
+	public ${column.type.typeId.primitiveType.name} get${safeName(column.name)?cap_first}AsMajor() {
 		return <@t.majorTypeTransformation type=column.type>${safeName(column.name)}</@t.majorTypeTransformation>;
 	}
 	

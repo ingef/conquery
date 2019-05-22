@@ -45,7 +45,7 @@ public class BlockFactory_${suffix} extends BlockFactory {
 			else{
 				${col.type.primitiveType.name} value;
 				<#if t.unboxValue??>
-				value = <@t.unboxValue>events.get(event)[${col_index}]</@t.unboxValue>;
+				value = <@t.unboxValue col.type>events.get(event)[${col_index}]</@t.unboxValue>;
 				<#else>
 				value = (${col.type.primitiveType.name}) events.get(event)[${col_index}];
 				</#if>

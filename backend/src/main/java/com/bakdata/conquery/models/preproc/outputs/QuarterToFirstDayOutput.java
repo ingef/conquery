@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 
 import lombok.Data;
 
@@ -25,7 +26,7 @@ public class QuarterToFirstDayOutput extends Output {
 	private int quarterColumn;
 
 	@Override
-	public List<Object> createOutput(CType<?, ?> type, String[] row, int source, long sourceLine) {
+	public List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) {
 		if (row[yearColumn] == null || row[quarterColumn] == null) {
 			return NULL;
 		} else {

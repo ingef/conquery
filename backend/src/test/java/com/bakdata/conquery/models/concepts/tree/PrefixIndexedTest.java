@@ -11,7 +11,8 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
+import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -99,7 +100,7 @@ public class PrefixIndexedTest {
 
 
 		TreeChildPrefixIndex.putIndexInto(indexedConcept);
-		StringType type = new StringType();
+		StringTypeVarInt type = new StringTypeVarInt(new VarIntTypeInt(-1, +1));
 		type.setDictionary(dict);
 		indexedConcept.initializeIdCache(type, importId);
 

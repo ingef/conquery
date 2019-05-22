@@ -25,7 +25,8 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.MoreCollectors;
 
@@ -133,7 +134,7 @@ public class CQExternal implements CQElement {
 		DATE_RANGE {
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(DateRangeType.parseISORange(row[dateIndices[0]])));
+				return CDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[dateIndices[0]])));
 			}
 		},
 		DATE_SET {

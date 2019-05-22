@@ -16,4 +16,4 @@
 <#macro nullCheck type><#stop "can't store null"/></#macro>
 <#macro majorTypeTransformation type>CDateRange.of(PackedUnsigned1616.getLeft(<#nested>)+${type.minValue?c}, PackedUnsigned1616.getRight(<#nested>)+${type.minValue?c})</#macro>
 
-<#macro unboxValue> ((Integer)<#nested>).intValue() </#macro>
+<#macro unboxValue type> ((Integer)<#nested>).intValue() </#macro>

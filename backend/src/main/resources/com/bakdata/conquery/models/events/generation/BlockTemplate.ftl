@@ -124,7 +124,7 @@ public class Block_${suffix} extends Block {
 	
 	<#list types as type>
 	@Override
-	public ${type.createType().primitiveType.name} get${type.label}(int event, Column column) {
+	public ${type.primitiveType.name} get${type.label}(int event, Column column) {
 		switch(column.getPosition()) {
 	<#list imp.columns as col>
 		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
@@ -244,12 +244,11 @@ public class Block_${suffix} extends Block {
 
 		<#list imp.columns as col>
 			<#if col.type.lines == col.type.nullLines>
-			//ImmutableMap does not allow for null values: builder.put("${safeJavaString(col.name)}", null)
+			//"${safeJavaString(col.name)}" is always null
 			<#else>
 			if(has(event, ${col_index})) {
 				builder.put("${safeJavaString(col.name)}", imp.getColumns()[${col_index}].getType().createScriptValue(events[event].get${safeName(col.name)?cap_first}()));
 			}
-
 			</#if>
 		</#list>
 		return builder.build();
