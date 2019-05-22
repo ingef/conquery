@@ -20,6 +20,9 @@ stages:
 
 jobs:
   include:
+    # ------------------------------
+    # Test stage
+    # ------------------------------
     - stage: Tests
       name: "Frontend Tests"
       install: skip
@@ -82,7 +85,9 @@ jobs:
         - mvn -B -V -T 1C install -DskipTests
       script: mvn -B test -Dgroups="INTEGRATION_JSON"
 
-    #Deploy
+    # ------------------------------
+    # Deploy / Release stages
+    # ------------------------------
     - stage: Heroku Dev
       before_install: mvn initialize -P setVersion
       install:
