@@ -72,6 +72,12 @@ public class StringParser extends Parser<Integer> {
 
 		return simpleDict(subDecision);
 	}
+	
+	public CType<Integer, Number> createSimpleType() {
+		Decision<Integer, Number, VarIntType> subDecision = subType.findBestType();
+		dictionary.tryCompress();
+		return simpleDict(subDecision).getType();
+	}
 
 	private Decision<Integer, Number, ? extends CType<Integer, Number>> simpleDict(Decision<Integer, Number, VarIntType> subDecision) {
 		StringTypeVarInt type = new StringTypeVarInt(subDecision.getType());

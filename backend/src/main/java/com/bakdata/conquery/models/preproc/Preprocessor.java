@@ -148,7 +148,8 @@ public class Preprocessor {
 			//find the optimal subtypes
 			log.info("finding optimal column types");
 			log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getParser(), result.getPrimaryColumn().getType());
-
+			
+			result.getPrimaryColumn().setType(((StringParser)result.getPrimaryColumn().getParser()).createSimpleType());
 			for(PPColumn c:result.getColumns()) {
 				c.findBestType();
 				log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());

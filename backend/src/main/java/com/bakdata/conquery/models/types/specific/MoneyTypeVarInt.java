@@ -15,7 +15,7 @@ public class MoneyTypeVarInt extends CTypeVarInt<Long> {
 
 	@JsonCreator
 	public MoneyTypeVarInt(VarIntType numberType) {
-		super(MajorTypeId.INTEGER, numberType);
+		super(MajorTypeId.MONEY, numberType);
 	}
 	
 	@Override

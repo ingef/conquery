@@ -14,6 +14,9 @@ import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Transformer;
+import com.bakdata.conquery.models.types.parser.specific.DateParser;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.types.parser.specific.StringParser;
 import com.bakdata.conquery.util.io.SmallOut;
 
 import io.dropwizard.util.Size;
@@ -46,7 +49,7 @@ public class Preprocessed {
 		primaryColumn = new PPColumn(input.getPrimary().getColumnDescription().getName());
 		primaryColumn.setParser(input.getPrimary().getColumnDescription().getType().createParser());
 		
-		if(primaryColumn.getType().getTypeId()!=MajorTypeId.STRING) {
+		if(!(primaryColumn.getParser() instanceof StringParser)) {
 			throw new IllegalStateException("The primary column must be an ENTITY_ID or STRING column");
 		}
 		for(int i=0;i<input.getWidth();i++) {
@@ -73,15 +76,11 @@ public class Preprocessed {
 		rows++;
 		for(int i=0;i<columns.length;i++) {
 			if(outRow[i] != null) {
-				switch(columns[i].getType().getTypeId()) {
-					case DATE:
-						extendEventRange(CDateRange.exactly((Integer)outRow[i]));
-						break;
-					case DATE_RANGE:
-						extendEventRange((CDateRange)outRow[i]);
-						break;
-					default:
-						break;
+				if(columns[i].getParser() instanceof DateParser) {
+					extendEventRange(CDateRange.exactly((Integer)outRow[i]));
+				}
+				else if(columns[i].getParser() instanceof DateRangeParser) {
+					extendEventRange((CDateRange)outRow[i]);
 				}
 			}
 		}
