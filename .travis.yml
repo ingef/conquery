@@ -13,9 +13,9 @@ stages:
     if: branch = develop AND type = push
   - name: Heroku Master
     if: branch = master AND type = push
-  - name: "Prerelease"
+  - name: Prerelease
     if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
-  - name: "Release"
+  - name: Release
     if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
 
 jobs:
@@ -96,7 +96,7 @@ jobs:
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       script: bash frontend/scripts/deploy-heroku-docker.sh conquery
 
-    - stage: "Prerelease"
+    - stage: Prerelease
       install: mvn -B -V -T 1C package -DskipTests
       script: skip
       deploy:
@@ -114,7 +114,7 @@ jobs:
         on:
           all_branches: true
 
-    - stage: "Release"
+    - stage: Release
       install: mvn -B -V -T 1C package -DskipTests
       script: skip
       deploy:
