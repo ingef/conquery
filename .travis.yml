@@ -12,15 +12,14 @@ before_install: mvn initialize -P setVersion
 jobs:
   include:
     - stage: "Tests"
-      
-    #test frontend
-      name: "Frontend Tests"
+      #test frontend
+    - name: "Frontend Tests"
       install: skip
       script:
         - mvn -B -V install -N
         - mvn -B -V install -pl frontend-resources
         - mvn -B -V install -pl backend -DskipTests
-        - mvn -B -V package -pl executable 
+        - mvn -B -V package -pl executable
 
     #build backend and run all non-integration tests
     - name: "Unit Tests"
@@ -68,27 +67,22 @@ jobs:
         - cd backend
         - mvn -B -V -T 1C install -DskipTests
       script: mvn -B test -Dgroups="INTEGRATION_JSON"
-  
 
     #Deploy
-    - stage: "Deploy Develop to Heroku"
+    - stage: "Deploy develop to Heroku"
       if: branch = develop AND type = push
       before_install: mvn initialize -P setVersion
-      install: 
+      install:
         - mvn -B -V -T 1C install -DskipTests
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
 
-    - stage: "Deploy Master to Heroku"
+    - stage: "Deploy master to Heroku"
       if: branch = master AND type = push
-      install: 
+      install:
         - mvn -B -V -T 1C install -DskipTests
         - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
       script: bash frontend/scripts/deploy-heroku-docker.sh conquery
-
-
-
-
 
     - stage: "Releases"
       name: "Prerelease"
