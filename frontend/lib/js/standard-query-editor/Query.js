@@ -138,8 +138,8 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   selectNodeForEditing: (andIdx, orIdx) =>
     dispatch(selectNodeForEditing(andIdx, orIdx)),
   queryGroupModalSetNode: andIdx => dispatch(queryGroupModalSetNode(andIdx)),
-  expandPreviousQuery: (rootConcepts, query) =>
-    dispatch(expandPreviousQuery(rootConcepts, query)),
+  expandPreviousQuery: (datasetId, rootConcepts, queryId) =>
+    dispatch(expandPreviousQuery(datasetId, rootConcepts, queryId)),
   loadPreviousQuery: (datasetId, queryId) =>
     dispatch(loadPreviousQuery(datasetId, queryId))
 });
@@ -150,8 +150,12 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...ownProps,
   loadPreviousQuery: queryId =>
     dispatchProps.loadPreviousQuery(ownProps.selectedDatasetId, queryId),
-  expandPreviousQuery: query =>
-    dispatchProps.expandPreviousQuery(stateProps.rootConcepts, query)
+  expandPreviousQuery: queryId =>
+    dispatchProps.expandPreviousQuery(
+      ownProps.selectedDatasetId,
+      stateProps.rootConcepts,
+      queryId
+    )
 });
 
 export default connect(

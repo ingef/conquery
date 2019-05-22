@@ -3,11 +3,14 @@
 import { type Dispatch } from "redux-thunk";
 
 import api from "../api";
+import { flatmap } from "../common/helpers/commonHelper";
 import { type DateRangeType } from "../common/types/backend";
 import { getFileRows } from "../common/helpers/fileHelper";
+
+import { defaultSuccess, defaultError } from "../common/actions";
 import { resolveFilterValues } from "../upload-filter-list-modal/actions";
 import { uploadConceptListModalOpen } from "../upload-concept-list-modal/actions";
-import { defaultSuccess, defaultError } from "../common/actions";
+import { loadPreviousQuery } from "../previous-queries/list/actions";
 
 import type { DraggedNodeType, DraggedQueryType } from "./types";
 import {
@@ -76,10 +79,45 @@ export const loadQuery = query => ({
 
 export const clearQuery = () => ({ type: CLEAR_QUERY });
 
-export const expandPreviousQuery = (rootConcepts, query) => ({
-  type: EXPAND_PREVIOUS_QUERY,
-  payload: { rootConcepts, query }
-});
+const findPreviousQueryIds = (node, queries = []) => {
+  switch (node.type) {
+    case "SAVED_QUERY":
+      return [...queries, node.query];
+    case "NEGATION":
+    case "DATE_RESTRICTION":
+      return findPreviousQueryIds(node.child, queries);
+    case "AND":
+    case "OR":
+      return [
+        ...queries,
+        ...flatmap(node.children, child => findPreviousQueryIds(child, []))
+      ];
+    default:
+      return queries;
+  }
+};
+
+/*
+  1) Expands previous query in the editor
+  2) Triggers a load for all nested queries
+*/
+export const expandPreviousQuery = (datasetId, rootConcepts, query) => {
+  if (!query.root || query.root.type !== "AND") {
+    throw new Error("Cant expand query, because root is not AND");
+  }
+
+  const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+
+  return [
+    {
+      type: EXPAND_PREVIOUS_QUERY,
+      payload: { rootConcepts, query }
+    },
+    ...nestedPreviousQueryIds.map(queryId =>
+      loadPreviousQuery(datasetId, queryId)
+    )
+  ];
+};
 
 export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
   type: SELECT_NODE_FOR_EDITING,
