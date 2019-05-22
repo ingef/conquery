@@ -32,13 +32,8 @@
                 "type": "OR",
                 "children": [
                   {
-                    "id": 25602,
-                    "type": "SAVED_QUERY",
-                    "label": "Example query",
-                    "createdAt": "2016-12-02T14:19:09Z",
-                    "status": "DONE",
-                    "numberOfResults": 2465,
-                    "resultUrl": "/api/results/1234-123123123-123123-1231.csv"
+                    "query": "25602",
+                    "type": "SAVED_QUERY"
                   },
                   {
                     "ids": ["action_movies"],

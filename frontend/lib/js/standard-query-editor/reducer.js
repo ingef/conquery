@@ -530,7 +530,6 @@ const expandNode = (rootConcepts, node) => {
       return {
         ...node,
         id: node.query,
-        query: node.resolvedQuery,
         isPreviousQuery: true
       };
     case "DATE_RESTRICTION":
@@ -573,15 +572,8 @@ const expandNode = (rootConcepts, node) => {
 // a) merge elements with concept data from category trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (
-  state,
-  action: { payload: { groups: QueryGroupType[] } }
-) => {
+const expandPreviousQuery = (state, action) => {
   const { rootConcepts, query } = action.payload;
-
-  if (!query.root || query.root.type !== "AND") {
-    throw new Error("Cant expand query, because root is not AND");
-  }
 
   return query.root.children.map(child => expandNode(rootConcepts, child));
 };
