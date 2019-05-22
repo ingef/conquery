@@ -1,3 +1,4 @@
+<#import "/com/bakdata/conquery/models/events/generation/Helper.ftl" as f/>
 package com.bakdata.conquery.models.events.generation;
 
 import com.bakdata.conquery.models.events.Block;
@@ -24,7 +25,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import java.time.LocalDate;
 
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.bits.Bits;
@@ -32,23 +32,50 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.SerializerProvider;
 
 import java.util.Map;
-import java.math.BigDecimal;
 
 public class Block_${suffix} extends Block {
 
 	private BitStore nullBits;
-	private Event_${suffix}[] events;
+	private int size;
+	<#list imp.columns as column>
+	<#if column.type.lines != column.type.nullLines>
+	private ${column.type.primitiveType.name}[] <@f.field column/>;
+	</#if>
+	</#list>
 	
 	public Block_${suffix}(int entity, Import imp) {
 		super(entity, imp);
 	}
 	
-	public void setNullBits(BitStore nullBits){
-		this.nullBits = nullBits;
+	public void setSize(int size) {
+		this.size = size;
+		<#list imp.columns as column>
+		<#if column.type.lines != column.type.nullLines>
+		<@f.field column/> = new ${column.type.primitiveType.name}[size];
+		</#if>
+		</#list>
 	}
 	
-	public void setEvents(Event_${suffix}[] events){
-		this.events = events;
+	/* getter and setter for the fields */
+	<#list imp.columns as column>
+	<#if column.type.lines != column.type.nullLines>
+	<#import "/com/bakdata/conquery/models/events/generation/types/${column.type.class.simpleName}.ftl" as t/>
+	public ${column.type.primitiveType.name} <@f.get column/>(int event) {
+		return <@f.field column/>[event];
+	}
+	
+	public ${column.type.typeId.primitiveType.name} <@f.getMajor column/>(int event) {
+		return <@t.majorTypeTransformation type=column.type><@f.field column/>[event]</@t.majorTypeTransformation>;
+	}
+	
+	public void <@f.set column/>(int event, ${column.type.primitiveType.name} value) {
+		this.<@f.field column/>[event] = value;
+	}
+	</#if>
+	</#list>
+	
+	public void setNullBits(BitStore nullBits){
+		this.nullBits = nullBits;
 	}
 	
 	@Override
@@ -70,23 +97,23 @@ public class Block_${suffix} extends Block {
 	
 	@Override
 	public void writeContent(SmallOut output) throws IOException {
-		output.writeInt(this.events.length, true);
+		output.writeInt(this.size, true);
 		
 		byte[] nullBitsAsBytes = Bits.asStore(nullBits.toByteArray()).toByteArray();
 		output.writeInt(nullBitsAsBytes.length, true);
 		output.write(nullBitsAsBytes);
 		
-		for (int event = 0; event < events.length; event++) {					
+		for (int event = 0; event < size; event++) {					
 		<#list imp.columns as column>
 			<#import "/com/bakdata/conquery/models/events/generation/types/${column.type.class.simpleName}.ftl" as t/>
 			<#if column.type.lines == column.type.nullLines>
 			<#--no values, column is all null-->
 			<#elseif column.type.requiresExternalNullStore()>
 			if(this.has(event, ${column_index})) {
-				<@t.kryoSerialization type=column.type>events[event].get${safeName(column.name)?cap_first}()</@t.kryoSerialization>;
+				<@t.kryoSerialization type=column.type><@f.get column/>(event)</@t.kryoSerialization>;
 			}
 			<#else>
-			<@t.kryoSerialization type=column.type>events[event].get${safeName(column.name)?cap_first}()</@t.kryoSerialization>;
+			<@t.kryoSerialization type=column.type><@f.get column/>(event)</@t.kryoSerialization>;
 			</#if>
 		</#list>
 		}
@@ -94,7 +121,7 @@ public class Block_${suffix} extends Block {
 	
 	@Override
 	public int size() {
-		return events.length;
+		return size;
 	}
 	
 	@Override
@@ -112,7 +139,7 @@ public class Block_${suffix} extends Block {
 		<#elseif col.type.nullLines == col.type.lines >
 				return false;
 		<#elseif !col.type.requiresExternalNullStore()>
-				return !(<@t.nullCheck type=col.type>events[event].get${safeName(col.name)?cap_first}()</@t.nullCheck>);
+				return !(<@t.nullCheck type=col.type><@f.get col/>(event)</@t.nullCheck>);
 		<#else>
 				return !nullBits.getBit(${imp.nullWidth}*event+${col.nullPosition});
 		</#if>
@@ -129,7 +156,7 @@ public class Block_${suffix} extends Block {
 	<#list imp.columns as col>
 		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
 			case ${col.position}:
-				return events[event].get${safeName(col.name)?cap_first}AsMajor();
+				return <@f.getMajor col/>(event);
 		</#if>
 	</#list>
 			default:
@@ -146,7 +173,7 @@ public class Block_${suffix} extends Block {
 		<#-- there are no getters for null only columns-->
 		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
 			case ${col.position}:
-				return events[event].get${safeName(col.name)?cap_first}();
+				return <@f.get col/>(event);
 		</#if>
 	</#list>
 	</#list>
@@ -163,7 +190,7 @@ public class Block_${suffix} extends Block {
 		<#-- there are no getters for null only columns-->
 		<#if col.type.typeId == type && col.type.nullLines != col.type.lines>
 			case ${col.position}:
-				return events[event].get${safeName(col.name)?cap_first}AsMajor();
+				return <@f.getMajor col/>(event);
 		</#if>
 	</#list>
 	</#list>
@@ -182,10 +209,10 @@ public class Block_${suffix} extends Block {
 		    <#if col.type.lines != col.type.nullLines>
                 <#if col.type.typeId == "DATE">
                 case ${col.position}:
-                    return dateRange.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                    return dateRange.contains(<@f.getMajor col/>(event));
                 <#elseif col.type.typeId == "DATE_RANGE">
                 case ${col.position}:
-                    return dateRange.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                    return dateRange.intersects(<@f.getMajor col/>(event));
                 </#if>
             </#if>
 		</#list>
@@ -204,10 +231,10 @@ public class Block_${suffix} extends Block {
             <#if col.type.lines != col.type.nullLines>
                 <#if col.type.typeId == "DATE">
                     case ${col.position}:
-                    return dateRanges.contains(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                    return dateRanges.contains(<@f.getMajor col/>(event));
                 <#elseif col.type.typeId == "DATE_RANGE">
                     case ${col.position}:
-                    return dateRanges.intersects(events[event].get${safeName(col.name)?cap_first}AsMajor());
+                    return dateRanges.intersects(<@f.getMajor col/>(event));
                 </#if>
             </#if>
 		</#list>
@@ -226,10 +253,10 @@ public class Block_${suffix} extends Block {
             <#if col.type.lines != col.type.nullLines>
                 <#if col.type.typeId == "DATE">
                 case ${col.position}:
-                    return CDateRange.exactly(events[event].get${safeName(col.name)?cap_first}());
+                    return CDateRange.exactly(<@f.get col/>(event));
                 <#elseif col.type.typeId == "DATE_RANGE">
                 case ${col.position}:
-                    return events[event].get${safeName(col.name)?cap_first}AsMajor();
+                    return <@f.getMajor col/>(event);
                 </#if>
             </#if>
 		</#list>
@@ -247,7 +274,10 @@ public class Block_${suffix} extends Block {
 			//"${safeJavaString(col.name)}" is always null
 			<#else>
 			if(has(event, ${col_index})) {
-				builder.put("${safeJavaString(col.name)}", imp.getColumns()[${col_index}].getType().createScriptValue(events[event].get${safeName(col.name)?cap_first}()));
+				builder.put(
+					"${safeJavaString(col.name)}",
+					imp.getColumns()[${col_index}].getType().createScriptValue(<@f.get col/>(event))
+				);
 			}
 			</#if>
 		</#list>
