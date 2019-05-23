@@ -10,6 +10,9 @@ import javax.ws.rs.core.NewCookie;
 
 import org.eclipse.jetty.http.HttpHeader;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 public class AuthCookieFilter implements ContainerResponseFilter {
 	
 	private static final String ACCESS_TOKEN = "access_token";
@@ -17,15 +20,17 @@ public class AuthCookieFilter implements ContainerResponseFilter {
 	@Override
 	public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
 		Cookie cookie = request.getCookies().get(ACCESS_TOKEN);
-		String value = null;
-		if(cookie != null) {
-			value = cookie.getValue();
-		}
-		if(cookie == null || value == null || value.isEmpty()) {
-				response.getHeaders().add(
-						HttpHeader.SET_COOKIE.toString(),
-						new NewCookie(ACCESS_TOKEN, request.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN))
-				);
+		String token = request.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
+		
+		// Set cookie only if a token is present
+		if(token != null && !token.isEmpty()) {
+			if(cookie != null) {
+				log.info("Overwriting {} cookie", ACCESS_TOKEN);
+			}
+			response.getHeaders().add(
+					HttpHeader.SET_COOKIE.toString(),
+					new NewCookie(ACCESS_TOKEN, token)
+			);
 		}
 	}
 }
