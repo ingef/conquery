@@ -1,4 +1,7 @@
 #!/bin/bash
+
+set -e
+
 APP_NAME=$1
 cd ${TRAVIS_BUILD_DIR}/frontend/
 echo "$HEROKU_TOKEN" | docker login -u _ registry.heroku.com --password-stdin
