@@ -22,11 +22,15 @@ public class AuthCookieFilter implements ContainerResponseFilter {
 	@Override
 	public void filter(ContainerRequestContext request, ContainerResponseContext response) throws IOException {
 		Cookie cookie = request.getCookies().get(ACCESS_TOKEN);
-		
-		if(cookie == null)		
-			response.getHeaders().add(
-					HttpHeader.SET_COOKIE.toString(),
-					new NewCookie(ACCESS_TOKEN, request.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN))
-			);
+		String value = null;
+		if(cookie != null) {
+			value = cookie.getValue();
+		}
+		if(cookie == null || value == null || value.isEmpty()) {
+				response.getHeaders().add(
+						HttpHeader.SET_COOKIE.toString(),
+						new NewCookie(ACCESS_TOKEN, request.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN))
+				);
+		}
 	}
 }
