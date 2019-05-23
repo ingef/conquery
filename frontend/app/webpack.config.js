@@ -24,7 +24,7 @@ module.exports = ["en", "de"].map(lang => ({
   output: {
     path: path.join(__dirname, "dist"),
     filename: `[name].${lang}.js`,
-    publicPath: "/"
+    publicPath: ifProduction("/app/static/", "/")
   },
   optimization: {
     minimizer: removeEmpty([
@@ -52,7 +52,7 @@ module.exports = ["en", "de"].map(lang => ({
       template: path.join(__dirname, "src/index.tpl.html"),
       inject: "body",
       filename: `index.${lang}.html`,
-      publicPath: "/"
+      publicPath: ifProduction("/app/static/", "/")
     })
   ]),
   module: {

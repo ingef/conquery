@@ -4,7 +4,7 @@
 [![Last Release](https://img.shields.io/github/release-date/bakdata/conquery.svg?logo=github)](https://github.com/bakdata/conquery/releases/latest)
 [![Build Status](https://img.shields.io/travis/bakdata/conquery/develop.svg?logo=travis)](https://travis-ci.org/bakdata/conquery)
 [![CodeFactor](https://www.codefactor.io/repository/github/bakdata/conquery/badge/develop)](https://www.codefactor.io/repository/github/bakdata/conquery)
-[![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev&svg=1)](https://conquery-dev.herokuapp.com/)
+[![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev&svg=1)](https://conquery-dev.herokuapp.com/app/static)
 ![Code Size](https://img.shields.io/github/languages/code-size/bakdata/conquery.svg)
 [![License](https://img.shields.io/github/license/bakdata/conquery.svg)](https://github.com/bakdata/conquery/blob/develop/LICENSE)
 
