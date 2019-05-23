@@ -41,7 +41,10 @@ const QueryResults = (props: PropsType) => {
       </Text>
       {isDownload && (
         <StyledDownloadButton frame primary url={props.resultUrl}>
-          {T.translate("queryRunner.downloadResults")}
+          {props.resultUrl
+            .split(".")
+            .reverse()[0]
+            .toUpperCase()}
         </StyledDownloadButton>
       )}
     </Root>
