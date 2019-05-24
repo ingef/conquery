@@ -60,7 +60,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				configuration.initializeDatePatterns();
+				configuration.initialize();
 			}
 
 			@Override

@@ -12,8 +12,6 @@ import java.util.function.Predicate;
 
 import javax.validation.Validator;
 
-import org.apache.commons.io.FileUtils;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
@@ -21,34 +19,27 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.Preprocessor;
-import com.bakdata.conquery.util.DebugMode;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.jakewharton.byteunits.BinaryByteUnit;
 
-import io.dropwizard.cli.ConfiguredCommand;
-import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.inf.Namespace;
 
 @Slf4j
-public class PreprocessorCommand extends ConfiguredCommand<ConqueryConfig> {
+public class PreprocessorCommand extends ConqueryCommand {
 
 	public PreprocessorCommand() {
 		super("preprocess", "Preprocesses all the files in the given input directories. This has to be done only if the model or the files changed.");
 	}
 
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig config) throws Exception {
-		if(config.getDebugMode() != null) {
-			DebugMode.setActive(config.getDebugMode());
-		}
-		config.initializeDatePatterns();
-		
+	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
 		
-		Collection<Preprocessor> jobs = findPreprocessingJobs(config, bootstrap.getValidatorFactory().getValidator());
+		Collection<Preprocessor> jobs = findPreprocessingJobs(config, environment.getValidator());
 		jobs.removeIf(Predicate.not(Preprocessor::requiresProcessing));
 		
 		long totalSize = jobs.stream().mapToLong(Preprocessor::getTotalCsvSize).sum();

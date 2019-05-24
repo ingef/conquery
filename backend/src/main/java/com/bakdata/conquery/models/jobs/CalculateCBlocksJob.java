@@ -107,7 +107,7 @@ public class CalculateCBlocksJob extends Job {
 					int valueIndex = block.getString(event, connector.getColumn());
 					final int finalEvent = event;
 					final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
-							() -> block.calculateMap(finalEvent, info.getImp())
+						() -> block.calculateMap(finalEvent, info.getImp())
 					);
 
 					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);

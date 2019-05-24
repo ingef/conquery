@@ -43,9 +43,6 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 		
 		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
 		try {
-			if(configuration.getDebugMode() != null) {
-				DebugMode.setActive(configuration.getDebugMode());
-			}
 			run(environment, namespace, configuration);
 			environment.lifecycle().attach(lifeCycle);
 			lifeCycle.start();

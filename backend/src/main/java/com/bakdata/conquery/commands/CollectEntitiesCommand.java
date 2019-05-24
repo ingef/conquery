@@ -23,15 +23,13 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.PPHeader;
 import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
-import com.bakdata.conquery.util.DebugMode;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.fasterxml.jackson.core.JsonParser;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
 
-import io.dropwizard.cli.ConfiguredCommand;
-import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +38,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 @Slf4j
-public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
+public class CollectEntitiesCommand extends ConqueryCommand {
 
 	private ConcurrentMap<File, Set<String>> entities = new ConcurrentHashMap<>();
 	private boolean verbose = false;
@@ -59,14 +57,9 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 	}
 
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig config) throws Exception {
+	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
 
-		if(config.getDebugMode() != null) {
-			DebugMode.setActive(config.getDebugMode());
-		}
-		config.initializeDatePatterns();
-		
 		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
 		
 		Collection<EntityExtractor> jobs = findPreprocessedJobs(config);
