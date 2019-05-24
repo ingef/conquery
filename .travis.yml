@@ -9,10 +9,6 @@ before_install: mvn initialize -P setVersion
 
 stages:
   - name: Tests
-  - name: Heroku Dev
-    if: branch = develop AND type = push
-  - name: Heroku Master
-    if: branch = master AND type = push
   - name: Prerelease
     if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
   - name: Release
@@ -86,20 +82,8 @@ jobs:
       script: mvn -B test -Dgroups="INTEGRATION_JSON"
 
     # ------------------------------
-    # Deploy / Release stages
+    # Release stages
     # ------------------------------
-    - stage: Heroku Dev
-      before_install: mvn initialize -P setVersion
-      install:
-        - mvn -B -V -T 1C install -DskipTests
-        - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
-      script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
-
-    - stage: Heroku Master
-      install:
-        - mvn -B -V -T 1C install -DskipTests
-        - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
-      script: bash frontend/scripts/deploy-heroku-docker.sh conquery
 
     - stage: Prerelease
       install: mvn -B -V -T 1C package -DskipTests
