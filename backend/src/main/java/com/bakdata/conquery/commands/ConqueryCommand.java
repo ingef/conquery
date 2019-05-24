@@ -58,7 +58,6 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 					}
 				}
 			});
-			Uninterruptibles.sleepUninterruptibly(Long.MAX_VALUE, TimeUnit.DAYS);
 		}
 		catch(Throwable t) {
 			log.error("Uncaught Exception in "+getName(), t);
