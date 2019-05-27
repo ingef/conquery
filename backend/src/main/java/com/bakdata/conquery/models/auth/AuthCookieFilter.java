@@ -25,7 +25,7 @@ public class AuthCookieFilter implements ContainerResponseFilter {
 		// Set cookie only if a token is present
 		if(token != null && !token.isEmpty()) {
 			if(cookie != null) {
-				log.info("Overwriting {} cookie", ACCESS_TOKEN);
+				log.debug("Overwriting {} cookie", ACCESS_TOKEN);
 			}
 			response.getHeaders().add(
 					HttpHeader.SET_COOKIE.toString(),
