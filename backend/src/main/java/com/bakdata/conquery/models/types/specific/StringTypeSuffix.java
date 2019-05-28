@@ -12,7 +12,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter
-@CPSType(base = CType.class, id = "STRING_SUFFIX") @ToString
+@CPSType(base = CType.class, id = "STRING_SUFFIX")
 public class StringTypeSuffix<SUB extends CType<Integer,Number>&IStringType> extends AChainedStringType<SUB> {
 
 	@NonNull
@@ -58,5 +58,10 @@ public class StringTypeSuffix<SUB extends CType<Integer,Number>&IStringType> ext
 				return subIt.next()+suffix;
 			}
 		};
+	}
+
+	@Override
+	public String toString() {
+		return "StringTypeSuffix[suffix=" + suffix + ", subType=" + subType + "]";
 	}
 }

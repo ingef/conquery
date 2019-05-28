@@ -32,6 +32,8 @@ import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.PPHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
+import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
@@ -105,7 +107,7 @@ public class ImportJob extends Job {
 
 			//update primary dictionary
 			log.debug("\tupdating primary dictionary");
-			IStringType primary = (IStringType) header.getPrimaryColumn().getType();
+			Dictionary entities = ((StringTypeEncoded<StringTypeDictionary>)header.getPrimaryColumn().getType()).getSubType().getDictionary();
 			this.progressReporter.report(1);
 			log.debug("\tcompute dictionary");
 			Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
@@ -121,8 +123,7 @@ public class ImportJob extends Job {
 			}
 			//but if there are new ids we have to
 			else {
-				log.debug("\t\tnew ids {}, recompressing", primaryMapping.getNewIds());
-				primaryDict.compress();
+				log.debug("\t\tnew ids {}", primaryMapping.getNewIds());
 				log.debug("\t\texample of new id: {}", primaryDict.getElement(primaryMapping.getNewIds().getMin()));
 				log.debug("\t\tstoring");
 				namespace.getStorage().updateDictionary(primaryDict);

@@ -15,7 +15,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter
-@CPSType(base = CType.class, id = "STRING_ENCODED") @ToString
+@CPSType(base = CType.class, id = "STRING_ENCODED")
 public class StringTypeEncoded<SUB extends CType<Integer,Number>&IBytesType> extends AChainedByteType<SUB> implements IStringType {
 
 	@NonNull
@@ -101,5 +101,10 @@ public class StringTypeEncoded<SUB extends CType<Integer,Number>&IBytesType> ext
 				return encoding.encode(subIt.next());
 			}
 		};
+	}
+	
+	@Override
+	public String toString() {
+		return "StringTypeEncoded[encoding=" + encoding + ", subType=" + subType + "]";
 	}
 }

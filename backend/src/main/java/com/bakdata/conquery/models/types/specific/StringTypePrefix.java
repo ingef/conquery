@@ -12,7 +12,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter
-@CPSType(base = CType.class, id = "STRING_PREFIX") @ToString
+@CPSType(base = CType.class, id = "STRING_PREFIX")
 public class StringTypePrefix<SUB extends CType<Integer,Number>&IStringType> extends AChainedStringType<SUB> {
 
 	@NonNull
@@ -58,5 +58,10 @@ public class StringTypePrefix<SUB extends CType<Integer,Number>&IStringType> ext
 				return prefix+subIt.next();
 			}
 		};
+	}
+	
+	@Override
+	public String toString() {
+		return "StringTypePrefix[prefix=" + prefix + ", subType=" + subType + "]";
 	}
 }

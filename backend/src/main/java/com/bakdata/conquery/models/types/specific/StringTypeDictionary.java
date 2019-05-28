@@ -31,7 +31,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter
-@CPSType(base = CType.class, id = "STRING_DICTIONARY") @ToString
+@CPSType(base = CType.class, id = "STRING_DICTIONARY")
 public class StringTypeDictionary extends CTypeVarInt<Integer> implements IBytesType {
 
 	@NotNull @Nonnull
@@ -62,7 +62,7 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> implements IBytes
 	
 	@Override
 	public byte[] getElement(Number value) {
-		return getElement(numberType.createScriptValue(value));
+		return getElement(numberType.toInt(value));
 	}
 	
 	@Override
@@ -100,5 +100,10 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> implements IBytes
 	@Override
 	public Iterator<byte[]> iterator() {
 		return Iterators.transform(dictionary.iterator(), DictionaryEntry::getValue);
+	}
+	
+	@Override
+	public String toString() {
+		return "StringTypeDictionary[dictionary=" + dictionary + ", numberType=" + numberType + "]";
 	}
 }

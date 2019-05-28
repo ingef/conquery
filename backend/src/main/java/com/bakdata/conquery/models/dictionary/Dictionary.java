@@ -42,4 +42,12 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Iter
 	public String toString() {
 		return this.getClass().getSimpleName()+"[size=" + size() + "]";
 	}
+
+	public static MapDictionary copyUncompressed(Dictionary dict) {
+		MapDictionary newDict = new MapDictionary();
+		for(DictionaryEntry e:dict) {
+			newDict.add(e.getValue());
+		}
+		return newDict;
+	}
 }
