@@ -36,7 +36,6 @@ queryRunner:
   resultCount: "{count} Ergebnisse"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
-  downloadResults: "CSV"
 
 queryEditor:
   couldNotExpandNode: "Konzept nicht gefunden"
