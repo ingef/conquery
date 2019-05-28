@@ -39,8 +39,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 	
 	public Decision<MAJOR_JAVA_TYPE, ?, ? extends CType<MAJOR_JAVA_TYPE, ?>> findBestType() {
 		Decision<MAJOR_JAVA_TYPE, ?, ? extends CType<MAJOR_JAVA_TYPE, ?>> dec = decideType();
-		dec.getType().setLines(lines);
-		dec.getType().setNullLines(nullLines);
+		setLineCounts(dec.getType());
 		return dec;
 	}
 	
@@ -58,5 +57,10 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 	@Override
 	public String toString() {
 		return this.getClass().getSimpleName();
+	}
+	
+	public void setLineCounts(CType<?, ?> type) {
+		type.setLines(lines);
+		type.setNullLines(nullLines);
 	}
 }

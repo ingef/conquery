@@ -28,11 +28,10 @@ import com.fasterxml.jackson.core.JsonParser;
 import jersey.repackaged.com.google.common.collect.Iterators;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter @Setter
 @CPSType(base = CType.class, id = "STRING_DICTIONARY")
-public class StringTypeDictionary extends CTypeVarInt<Integer> implements IBytesType {
+public class StringTypeDictionary extends CTypeVarInt<Integer> {
 
 	@NotNull @Nonnull
 	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
@@ -55,12 +54,10 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> implements IBytes
 		return getElement(value);
 	}
 	
-	@Override
 	public byte[] getElement(int value) {
 		return dictionary.getElement(value);
 	}
 	
-	@Override
 	public byte[] getElement(Number value) {
 		return getElement(numberType.toInt(value));
 	}
@@ -87,17 +84,14 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> implements IBytes
 		dictionary = Objects.requireNonNull(storage.getDictionary(dictionaryId));
 	}
 	
-	@Override
 	public int size() {
 		return dictionary.size();
 	}
 	
-	@Override
 	public int getId(byte[] value) {
 		return dictionary.getId(value);
 	}
 
-	@Override
 	public Iterator<byte[]> iterator() {
 		return Iterators.transform(dictionary.iterator(), DictionaryEntry::getValue);
 	}

@@ -45,7 +45,7 @@ public class PrefixIndexedTest {
 	private static TreeConcept indexedConcept;
 	private static TreeConcept oldConcept;
 	private static ImportId importId;
-	private static StringTypeEncoded<StringTypeDictionary> type;
+	private static StringTypeEncoded type;
 	
 
 	public static Stream<Arguments> getTestKeys() {
@@ -107,7 +107,7 @@ public class PrefixIndexedTest {
 
 
 		TreeChildPrefixIndex.putIndexInto(indexedConcept);
-		type = new StringTypeEncoded<>(new StringTypeDictionary(new VarIntTypeInt(-1, +1)), Encoding.UTF8);
+		type = new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)), Encoding.UTF8);
 		type.getSubType().setDictionary(dict);
 		indexedConcept.initializeIdCache(type, importId);
 

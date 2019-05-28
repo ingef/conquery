@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.Transformer;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
@@ -74,6 +75,7 @@ public class StringParser extends Parser<Integer> {
 			else {
 				type = new StringTypeSingleton(strings.keySet().iterator().next());
 			}
+			setLineCounts(type);
 			return new Decision<Integer, Boolean, StringTypeSingleton>(
 				new Transformer<Integer, Boolean>() {
 					@Override
@@ -108,12 +110,14 @@ public class StringParser extends Parser<Integer> {
 		log.debug("Chosen encoding is {}", encoding);
 		
 		//create base type
-		CType<Integer, Number> result = createBaseType(encoding);
+		AStringType<Number> result = createBaseType(encoding);
 		if(!StringUtils.isEmpty(prefix)) {
-			result = new StringTypePrefix(result, prefix);
+			result = new StringTypePrefix<>(result, prefix);
+			setLineCounts(result);
 		}
 		if(!StringUtils.isEmpty(suffix)) {
-			result = new StringTypeSuffix(result, suffix);
+			result = new StringTypeSuffix<>(result, suffix);
+			setLineCounts(result);
 		}
 		return new Decision<>(
 			subDecision.getTransformer(),
@@ -121,7 +125,7 @@ public class StringParser extends Parser<Integer> {
 		);
 	}
 
-	public StringTypeEncoded<StringTypeDictionary> createBaseType(Encoding encoding) {
+	public StringTypeEncoded createBaseType(Encoding encoding) {
 		StringTypeDictionary type = new StringTypeDictionary(subType.decideType().getType());
 		SuccinctTrie trie = new SuccinctTrie();
 		for(String v: strings.keySet()) {
@@ -151,7 +155,10 @@ public class StringParser extends Parser<Integer> {
 			type.setDictionary(map);
 		}
 		type.setDictionaryId(dictionaryId);
-		return new StringTypeEncoded<StringTypeDictionary>(type, encoding);
+		setLineCounts(type);
+		StringTypeEncoded result = new StringTypeEncoded(type, encoding);
+		setLineCounts(result);
+		return result;
 	}
 	
 	private Encoding findEncoding() {

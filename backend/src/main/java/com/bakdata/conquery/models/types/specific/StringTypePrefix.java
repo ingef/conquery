@@ -9,11 +9,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter @Setter
 @CPSType(base = CType.class, id = "STRING_PREFIX")
-public class StringTypePrefix<SUB extends CType<Integer,Number>&IStringType> extends AChainedStringType<SUB> {
+public class StringTypePrefix<SUB extends AStringType<Number>> extends AChainedStringType<SUB> {
 
 	@NonNull
 	private String prefix;

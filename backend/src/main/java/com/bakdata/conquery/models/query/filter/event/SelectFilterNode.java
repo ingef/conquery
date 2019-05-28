@@ -4,7 +4,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,7 +21,7 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	@Override
 	public void nextBlock(Block block) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((IStringType) getColumn().getTypeFor(block)).getId(filterValue);
+		selectedId = ((AStringType) getColumn().getTypeFor(block)).getId(filterValue);
 	}
 
 	@Override

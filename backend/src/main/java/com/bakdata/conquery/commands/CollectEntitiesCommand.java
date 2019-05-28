@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.PPHeader;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.fasterxml.jackson.core.JsonParser;
@@ -124,7 +124,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 
 					log.debug("\tparsing dictionaries");
 					header.getPrimaryColumn().getType().readHeader(in);
-					IStringType primType = (IStringType) header.getPrimaryColumn().getType();
+					AStringType<Number> primType = (AStringType<Number>) header.getPrimaryColumn().getType();
 					
 					add(primType, new File(file.getParentFile(), "all_entities.csv"));
 					if(verbose) {
@@ -134,7 +134,7 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 			}
 		}
 
-		private void add(IStringType primType, File file) {
+		private void add(AStringType<Number> primType, File file) {
 			Set<String> list = entities.computeIfAbsent(file, f->Sets.newConcurrentHashSet());
 			primType.forEach(list::add);
 		}

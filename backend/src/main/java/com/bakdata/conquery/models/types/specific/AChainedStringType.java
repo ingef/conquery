@@ -9,8 +9,6 @@ import javax.annotation.Nonnull;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.core.JsonParser;
 
 import lombok.Getter;
@@ -19,13 +17,13 @@ import lombok.ToString;
 
 @Getter @Setter
 @ToString
-public abstract class AChainedStringType<SUB extends CType<Integer,Number>&IStringType> extends CType<Integer,Number> implements IStringType {
+public abstract class AChainedStringType<SUB extends AStringType<Number>> extends AStringType<Number> {
 
 	@Nonnull
 	protected SUB subType;
 	
 	public AChainedStringType(SUB subType) {
-		super(MajorTypeId.STRING, int.class);
+		super(subType.getPrimitiveType());
 		this.subType = subType;
 	}
 	

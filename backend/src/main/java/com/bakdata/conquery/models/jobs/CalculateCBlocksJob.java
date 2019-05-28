@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 
 import lombok.Getter;
@@ -86,7 +86,7 @@ public class CalculateCBlocksJob extends Job {
 
 	private void calculateCBlock(CBlock cBlock, ConceptTreeConnector connector, CalculationInformation info) {
 
-		IStringType stringType = (IStringType) info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
+		AStringType stringType = (AStringType) info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
 
 		final TreeConcept treeConcept = connector.getConcept();
 

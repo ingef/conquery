@@ -27,7 +27,7 @@ public class CachedPrefixPerformanceTest extends AbstractSearchPerformanceTest<I
 	private SuccinctTrie dict;
 	private ConceptTreeCache cache;
 	private List<Integer> ids;
-	private StringTypeEncoded<StringTypeDictionary> type;
+	private StringTypeEncoded type;
 
 	@Override
 	public int[] getIterations(){
@@ -69,7 +69,7 @@ public class CachedPrefixPerformanceTest extends AbstractSearchPerformanceTest<I
 		TreeChildPrefixIndex.putIndexInto(newConcept);
 		TreeChildPrefixIndex.putIndexInto(referenceConcept);
 
-		type = new StringTypeEncoded<>(new StringTypeDictionary(new VarIntTypeInt(-1, +1)), Encoding.UTF8);
+		type = new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)), Encoding.UTF8);
 		type.getSubType().setDictionary(dict);
 		newConcept.initializeIdCache(type, importId);
 		

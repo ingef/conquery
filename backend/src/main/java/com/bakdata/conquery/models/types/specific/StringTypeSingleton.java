@@ -5,7 +5,6 @@ import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import jersey.repackaged.com.google.common.collect.Iterators;
@@ -14,13 +13,13 @@ import lombok.Setter;
 
 @Getter @Setter
 @CPSType(base = CType.class, id = "STRING_VARINT")
-public class StringTypeSingleton extends CType<Integer, Boolean> implements IStringType {
+public class StringTypeSingleton extends AStringType<Boolean> {
 
 	private final String singleValue;
 
 	@JsonCreator
 	public StringTypeSingleton(String singleValue) {
-		super(MajorTypeId.STRING, boolean.class);
+		super(boolean.class);
 		this.singleValue = singleValue;
 	}
 
