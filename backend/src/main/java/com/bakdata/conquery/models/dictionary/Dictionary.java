@@ -44,7 +44,7 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Iter
 	}
 
 	public static MapDictionary copyUncompressed(Dictionary dict) {
-		MapDictionary newDict = new MapDictionary();
+		MapDictionary newDict = new MapDictionary(dict.getId());
 		for(DictionaryEntry e:dict) {
 			newDict.add(e.getValue());
 		}
