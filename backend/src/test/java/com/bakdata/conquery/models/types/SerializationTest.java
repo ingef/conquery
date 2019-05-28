@@ -28,9 +28,12 @@ import com.bakdata.conquery.models.types.specific.IntegerTypeVarInt;
 import com.bakdata.conquery.models.types.specific.MoneyTypeLong;
 import com.bakdata.conquery.models.types.specific.MoneyTypeVarInt;
 import com.bakdata.conquery.models.types.specific.RealTypeDouble;
+import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
+import com.bakdata.conquery.models.types.specific.StringTypePrefix;
+import com.bakdata.conquery.models.types.specific.StringTypeSingleton;
+import com.bakdata.conquery.models.types.specific.StringTypeSuffix;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
-import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
 import com.bakdata.conquery.models.types.specific.VarIntTypeByte;
 import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
@@ -47,12 +50,15 @@ public class SerializationTest {
 			new IntegerTypeVarInt(new VarIntTypeInt(-1, +1)),
 			new MoneyTypeLong(),
 			new DecimalTypeBigDecimal(),
-			new StringTypeEncoded(new VarIntTypeInt(-1, +1),Encoding.Base16LowerCase),
 			new BooleanTypeBoolean(),
 			new MoneyTypeVarInt(new VarIntTypeInt(-1, +1)),
 			new RealTypeDouble(),
 			new DateTypeVarInt(new VarIntTypeInt(-1, +1)),
-			new StringTypeVarInt(new VarIntTypeInt(-1, +1)),
+			new StringTypeDictionary(new VarIntTypeInt(-1, +1)),
+			new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)),Encoding.Base16LowerCase),
+			new StringTypePrefix<>(new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)),Encoding.Base16LowerCase), "a"),
+			new StringTypeSuffix<>(new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)),Encoding.Base16LowerCase), "a"),
+			new StringTypeSingleton("a"),
 			new IntegerTypeLong(-1,+1),
 			new DateRangeTypeDateRange(),
 			new DateRangeTypeQuarter(),

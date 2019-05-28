@@ -8,7 +8,6 @@ import java.util.Optional;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.xodus.stores.IdentifiableCachedStore;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -22,6 +21,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -151,8 +152,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public Dictionary getPrimaryDictionary() {
-		return dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()));
+	public DirectDictionary getPrimaryDictionary() {
+		return new DirectDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())));
 	}
 
 	@Override
@@ -169,8 +170,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Dictionary computeDictionary(DictionaryId id) throws JSONException {
 		Dictionary e = getDictionary(id);
 		if (e == null) {
-			e = new Dictionary(id);
-			e.compress();
+			e = new MapDictionary(id);
 			updateDictionary(e);
 		}
 		return e;

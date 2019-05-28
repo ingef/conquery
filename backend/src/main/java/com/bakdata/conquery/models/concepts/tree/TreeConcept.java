@@ -24,7 +24,7 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
@@ -188,7 +188,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			.map(ConceptTreeChild.class::cast);
 	}*/
 
-	public void initializeIdCache(IStringType type, ImportId importId) {
+	public void initializeIdCache(AStringType type, ImportId importId) {
 		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type));
 	}
 
