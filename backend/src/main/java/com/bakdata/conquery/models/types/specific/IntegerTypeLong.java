@@ -25,4 +25,9 @@ public class IntegerTypeLong extends CType<Long, Long> {
 	public boolean canStoreNull() {
 		return true;
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return Long.SIZE;
+	}
 }

@@ -50,4 +50,7 @@ public abstract class Dictionary extends NamedImpl<DictionaryId> implements Iter
 		}
 		return newDict;
 	}
+
+	public abstract long estimateMemoryConsumption();
+
 }

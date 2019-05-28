@@ -61,4 +61,19 @@ public abstract class AChainedStringType<SUB extends AStringType<Number>> extend
 	public int size() {
 		return subType.size();
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return subType.estimateMemoryBitWidth();
+	}
+	
+	@Override
+	public long estimateMemoryConsumption() {
+		return subType.estimateMemoryConsumption();
+	}
+	
+	@Override
+	public long estimateTypeSize() {
+		return subType.estimateTypeSize();
+	}
 }

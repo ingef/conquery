@@ -12,7 +12,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-@CPSType(base = CType.class, id = "STRING_VARINT")
+@CPSType(base = CType.class, id = "STRING_SINGLETON")
 public class StringTypeSingleton extends AStringType<Boolean> {
 
 	private final String singleValue;
@@ -61,5 +61,10 @@ public class StringTypeSingleton extends AStringType<Boolean> {
 		else {
 			return Iterators.singletonIterator(singleValue);
 		}
+	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return Byte.SIZE;
 	}
 }

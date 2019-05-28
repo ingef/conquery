@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -25,6 +26,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.StringParser;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
@@ -34,6 +36,7 @@ import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.bakdata.conquery.util.io.SmallOut;
 import com.google.common.io.CountingInputStream;
+import com.jakewharton.byteunits.BinaryByteUnit;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -142,12 +145,32 @@ public class Preprocessor {
 			}
 			//find the optimal subtypes
 			log.info("finding optimal column types");
-			log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getParser(), result.getPrimaryColumn().getType());
+			log.info("\t{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getParser(), result.getPrimaryColumn().getType());
 			
 			result.getPrimaryColumn().setType(((StringParser)result.getPrimaryColumn().getParser()).createBaseType(Encoding.UTF8));
 			for(PPColumn c:result.getColumns()) {
 				c.findBestType();
-				log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
+				log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
+			}
+			//estimate memory weight
+			log.info("estimated total memory consumption: {} + n*{}", 
+				BinaryByteUnit.format(
+					Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateMemoryConsumption).sum()
+					+ result.getPrimaryColumn().getType().estimateMemoryConsumption()
+				),
+				BinaryByteUnit.format(
+					Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateTypeSize).sum()
+					+ result.getPrimaryColumn().getType().estimateTypeSize()
+				)
+			);
+			for(PPColumn c:ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
+				long typeConsumption = c.getType().estimateTypeSize();
+				log.info("\t{}.{}: {}{}",
+					result.getName(),
+					c.getName(),
+					BinaryByteUnit.format(c.getType().estimateMemoryConsumption()),
+					typeConsumption==0?"":(" + n*"+BinaryByteUnit.format(typeConsumption))
+				);
 			}
 
 			try (SmallOut out = new SmallOut(outFile.writeContent())) {

@@ -28,7 +28,6 @@ import com.bakdata.conquery.util.dict.SuccinctTrie;
 import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
 
-import it.unimi.dsi.fastutil.Hash;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
@@ -131,11 +130,8 @@ public class StringParser extends Parser<Integer> {
 		for(String v: strings.keySet()) {
 			trie.add(encoding.decode(v));
 		}
-		float trieSize = 13*trie.getNodeCount() + 4*trie.size();
-		//size of two collections and string object overhead
-		float mapSize = trie.size()*(48f+8f/Hash.DEFAULT_LOAD_FACTOR)
-			//number of string bytes
-			+ trie.getTotalBytesStored();
+		long trieSize = trie.estimateMemoryConsumption();
+		long mapSize = MapDictionary.estimateMemoryConsumption(trie.size(), trie.getTotalBytesStored());
 
 		if(trieSize < mapSize) {
 			trie.compress();

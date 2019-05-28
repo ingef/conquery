@@ -17,4 +17,9 @@ public class DecimalTypeBigDecimal extends CType<BigDecimal, BigDecimal> {
 	public boolean canStoreNull() {
 		return true;
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return 500;
+	}
 }

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.types;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.RoundingMode;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -11,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
+import com.google.common.math.LongMath;
 import com.google.common.primitives.Primitives;
 
 import lombok.Getter;
@@ -57,5 +59,22 @@ public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHo
 	@JsonIgnore
 	public Class<?> getBoxedType(){
 		return Primitives.wrap(getPrimitiveType());
+	}
+	
+	public long estimateMemoryConsumption() {
+		long width = estimateMemoryBitWidth();
+		if(!canStoreNull()) {
+			width++;
+		}
+		return LongMath.divide(
+			(lines-nullLines) * width + nullLines * Math.min(Long.SIZE, width),
+			8, RoundingMode.CEILING
+		); 
+	}
+
+	public abstract long estimateMemoryBitWidth();
+	
+	public long estimateTypeSize() {
+		return 0;
 	}
 }

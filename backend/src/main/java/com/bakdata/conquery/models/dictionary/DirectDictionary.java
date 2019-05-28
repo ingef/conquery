@@ -49,4 +49,8 @@ public class DirectDictionary extends AStringType<Integer> {
 		return false;
 	}
 
+	@Override
+	public long estimateMemoryBitWidth() {
+		return Integer.SIZE;
+	}
 }

@@ -153,4 +153,19 @@ public class StringTypeEncoded extends AStringType<Number> {
 	public String toString() {
 		return "StringTypeEncoded[encoding=" + encoding + ", subType=" + subType + "]";
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return subType.estimateMemoryBitWidth();
+	}
+	
+	@Override
+	public long estimateMemoryConsumption() {
+		return subType.estimateMemoryConsumption();
+	}
+	
+	@Override
+	public long estimateTypeSize() {
+		return subType.estimateTypeSize();
+	}
 }

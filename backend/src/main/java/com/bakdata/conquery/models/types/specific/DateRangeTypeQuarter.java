@@ -24,4 +24,9 @@ public class DateRangeTypeQuarter extends CType<CDateRange, Integer> {
 	public boolean canStoreNull() {
 		return false;
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return Integer.SIZE;
+	}
 }
