@@ -17,7 +17,8 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -389,7 +390,7 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 	
 	@JsonCreator
 	public static CDateRange parse(String value) throws ParsingException {
-		return DateRangeType.parseISORange(value);
+		return DateRangeParser.parseISORange(value);
 	}
 
 	public boolean isSingleQuarter() {

@@ -27,7 +27,6 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -56,7 +55,6 @@ import lombok.extern.slf4j.Slf4j;
 @PermitAll
 @Slf4j
 @Path("/")
-@AuthCookie
 public class AdminUIResource {
 
 	private final ConqueryConfig config;

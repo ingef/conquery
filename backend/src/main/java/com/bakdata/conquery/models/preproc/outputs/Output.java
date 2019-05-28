@@ -9,8 +9,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
-import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -29,7 +29,7 @@ public abstract class Output implements Serializable {
 	private String name;
 	private boolean required = false;
 
-	public abstract List<Object> createOutput(CType<?,?> type, String[] row, int source, long sourceLine) throws ParsingException;
+	public abstract List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException;
 
 	@JsonIgnore
 	public abstract MajorTypeId getResultType();

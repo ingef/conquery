@@ -25,7 +25,7 @@ const Container = styled("div")`
   width: 20px;
   height: 20px;
   border: 2px solid ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   box-sizing: content-box;
 `;
 

@@ -28,7 +28,7 @@ const StyledTransparentButton = styled(BasicButton)`
   opacity: 0.8;
   transition: opacity ${({ theme }) => theme.transitionTime};
 
-  border-radius: 2px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   border: ${({ theme, frame }) =>
     frame ? "1px solid " + theme.col.gray : "none"};
 

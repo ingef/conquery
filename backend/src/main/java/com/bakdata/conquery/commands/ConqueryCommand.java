@@ -43,9 +43,6 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 		
 		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
 		try {
-			if(configuration.getDebugMode() != null) {
-				DebugMode.setActive(configuration.getDebugMode());
-			}
 			run(environment, namespace, configuration);
 			environment.lifecycle().attach(lifeCycle);
 			lifeCycle.start();
@@ -61,7 +58,6 @@ public abstract class ConqueryCommand extends ConfiguredCommand<ConqueryConfig> 
 					}
 				}
 			});
-			Uninterruptibles.sleepUninterruptibly(Long.MAX_VALUE, TimeUnit.DAYS);
 		}
 		catch(Throwable t) {
 			log.error("Uncaught Exception in "+getName(), t);

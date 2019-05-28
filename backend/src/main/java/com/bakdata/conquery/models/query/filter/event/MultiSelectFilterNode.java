@@ -4,7 +4,7 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 
 /**
  * Entity is included when the number of values for a specified column are within a given range.
@@ -21,11 +21,11 @@ public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 
 	@Override
 	public void nextBlock(Block block) {
-		IStringType type = (IStringType) getColumn().getTypeFor(block);
+		AStringType type = (AStringType) getColumn().getTypeFor(block);
 
 		for (int index = 0; index < filterValue.length; index++) {
 			String select = filterValue[index];
-			Integer parsed = type.getStringId(select);
+			int parsed = type.getId(select);
 			selectedValues[index] = parsed;
 		}
 	}

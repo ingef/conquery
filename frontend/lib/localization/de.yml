@@ -36,7 +36,6 @@ queryRunner:
   resultCount: "{count} Ergebnisse"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
-  downloadResults: "CSV"
 
 queryEditor:
   couldNotExpandNode: "Konzept nicht gefunden"
@@ -229,7 +228,7 @@ uploadQueryResultsModal:
     text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
 
 uploadConceptListModal:
-  headline: "Konzeptliste hochladen"
+  headline: "Konzepte aus Liste einfügen"
   label: "Name der Liste"
   selectConceptRootNode: "Konzeptbaum-Wurzel auswählen"
   insertNode: "Jetzt einfügen"
@@ -243,7 +242,7 @@ uploadConceptListModal:
   error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
 
 uploadFilterListModal:
-  headline: "Filter-Werte hochladen"
+  headline: "Filter-Werte aus Liste einfügen"
 
 conceptListDetailsModal:
   conceptTreeRoot: "Konzeptbaum"

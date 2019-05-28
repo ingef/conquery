@@ -2,6 +2,7 @@
 
 import React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 import { findDOMNode } from "react-dom";
 import { DragSource } from "react-dnd";
 import Highlighter from "react-highlight-words";
@@ -46,26 +47,36 @@ const Text = styled("p")`
   }
 `;
 
+const noShrink = css`
+  display: inline-block;
+  flex-shrink: 0;
+`;
+
 const DashIconContainer = styled("span")`
+  flex-shrink: 0;
   width: 34px;
   text-align: left;
   padding-left: 14px;
-  display: inline-flex;
+  ${noShrink};
 `;
 
 const FolderIconContainer = styled("span")`
   width: 20px;
+  ${noShrink};
 `;
 
 const CaretIconContainer = styled("span")`
   width: 14px;
+  ${noShrink};
 `;
 
 const Description = styled("span")`
   padding-left: 3px;
+  ${noShrink};
 `;
 
 const ResultsNumber = styled("span")`
+  flex-shrink: 0;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -73,7 +84,7 @@ const ResultsNumber = styled("span")`
   padding: 2px 4px;
   margin-right: 5px;
   font-size: ${({ theme }) => theme.font.xs};
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   color: ${({ theme }) => theme.col.blueGrayDark};
   font-weight: 700;
 `;

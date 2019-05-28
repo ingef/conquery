@@ -2,6 +2,7 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -201,7 +202,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void stop() throws Exception {
-		for(Worker w : workers.getWorkers().values()) {
+		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
 				w.close();
 			} catch(Exception e) {

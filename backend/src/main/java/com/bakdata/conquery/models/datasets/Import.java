@@ -77,7 +77,6 @@ public class Import extends NamedImpl<ImportId> {
 			try(ClassGenerator gen = ClassGenerator.create()) {
 				String suffix = ConqueryEscape.escape(this.getId().toString().replace('.', '_'));
 				
-				eventSource = applyTemplate("EventTemplate.ftl", suffix);
 				blockSource = applyTemplate("BlockTemplate.ftl", suffix);
 				factorySource = applyTemplate("BlockFactoryTemplate.ftl", suffix);
 				
@@ -85,10 +84,6 @@ public class Import extends NamedImpl<ImportId> {
 					log.debug("Generated classes for {}:\n{}\n{}\n{}", this, eventSource, blockSource, factorySource);
 				}
 				
-				gen.addForCompile(
-					"com.bakdata.conquery.models.events.generation.Event_"+suffix,
-					eventSource
-				);
 				gen.addForCompile(
 					"com.bakdata.conquery.models.events.generation.Block_"+suffix,
 					blockSource

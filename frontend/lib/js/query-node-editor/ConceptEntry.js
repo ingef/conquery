@@ -11,7 +11,7 @@ const Concept = styled("div")`
   background-color: white;
   border: 1px solid ${({ theme }) => theme.col.gray};
   padding: 5px 15px;
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   display: flex;
   flex-direction: row;
   align-items: center;

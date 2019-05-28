@@ -42,7 +42,7 @@ public class SerializationTestUtil {
 	
 	public static <T> void testSerialization(T value, Class<? extends T> type, Class<?>... ignored) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 		Validator validator = Validators.newValidator();
-		ValidatorHelper.failOnError(log, validator.validate(value));
+		ValidatorHelper.failOnError(log, validator.validate(value), value.toString());
 		T copy = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsBytes(value), type);
 		ValidatorHelper.failOnError(log, validator.validate(copy));
 		ObjectAssert<T> ass = assertThat(copy)
@@ -53,7 +53,7 @@ public class SerializationTestUtil {
 
 
 		copy = Jackson.BINARY_MAPPER.readValue(Jackson.BINARY_MAPPER.writeValueAsBytes(value), type);
-		ValidatorHelper.failOnError(log, validator.validate(copy));
+		ValidatorHelper.failOnError(log, validator.validate(copy), value.toString());
 		ass = assertThat(copy)
 			.as("Unequal only after BINARY copy.");
 		for(Class<?> ig:ignored)
@@ -63,14 +63,14 @@ public class SerializationTestUtil {
 	
 	public static <T> void testSerialization(T value, Class<T> type, CentralRegistry registry) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 		Validator validator = Validators.newValidator();
-		ValidatorHelper.failOnError(log, validator.validate(value));
+		ValidatorHelper.failOnError(log, validator.validate(value), value.toString());
 		T copy = new SingletonNamespaceCollection(registry).injectInto(Jackson.MAPPER).readValue(Jackson.MAPPER.writeValueAsBytes(value), type);
 		ValidatorHelper.failOnError(log, validator.validate(copy));
 		assertThat(copy)
 			.as("Unequal after JSON copy.")
 			.isEqualToComparingFieldByFieldRecursively(value);
 		copy = new SingletonNamespaceCollection(registry).injectInto(Jackson.BINARY_MAPPER).readValue(Jackson.BINARY_MAPPER.writeValueAsBytes(value), type);
-		ValidatorHelper.failOnError(log, validator.validate(copy));
+		ValidatorHelper.failOnError(log, validator.validate(copy), value.toString());
 		assertThat(copy)
 			.as("Unequal only after BINARY copy.")
 			.isEqualToComparingFieldByFieldRecursively(value);

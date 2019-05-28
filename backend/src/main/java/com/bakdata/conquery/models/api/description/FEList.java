@@ -20,7 +20,7 @@ import lombok.Getter;
 public class FEList implements JsonSerializable {
 
 	private final List<Pair<ConceptElementId<?>, FENode>> content = new ArrayList<>();
-	@Getter
+	@Getter(lazy = true)
 	private final EntityTag cacheId = new EntityTag(Integer.toString(content.hashCode()));
 	
 

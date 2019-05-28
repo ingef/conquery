@@ -20,7 +20,7 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	@Override
 	public void aggregateEvent(Block block, int event) {
 		if (block.has(event, getColumn())) {
-			entries.add((VALUE) getColumn().getTypeFor(block).createPrintValue(block.getAsObject(event, getColumn())));
+			entries.add((VALUE) getColumn().getTypeFor(block).createPrintValue(block.getRaw(event, getColumn())));
 		}
 	}
 

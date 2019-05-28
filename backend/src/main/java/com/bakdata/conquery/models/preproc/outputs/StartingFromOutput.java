@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -25,7 +26,7 @@ public class StartingFromOutput extends Output {
 	private int inputColumn = -1;
 	
 	@Override
-	public List<Object> createOutput(CType type, String[] row, int source, long sourceLine) throws ParsingException {
+	public List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException {
 		if(row[inputColumn]==null) {
 			return NULL;
 		}

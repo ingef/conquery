@@ -6,7 +6,7 @@ import BasicButton from "./BasicButton";
 const TransparentButton = styled(BasicButton)`
   color: ${({ theme, light }) => (light ? theme.col.gray : theme.col.black)};
   background-color: transparent;
-  border-radius: 2px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   border: 1px solid
     ${({ theme, light }) => (light ? theme.col.grayLight : theme.col.gray)};
 

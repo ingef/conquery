@@ -17,7 +17,6 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
-import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -157,13 +156,14 @@ public class DatasetsProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		CSV csvData = new CSV(
+		try(CSV csvData = new CSV(
 			ConqueryConfig.getInstance().getCsv().withSkipHeader(false),
 			data
-		);
-		IdMappingConfig mappingConfig = config.getIdMapping();
-		PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
-		namespace.getStorage().updateIdMapping(mapping);
+		)) {
+			IdMappingConfig mappingConfig = config.getIdMapping();
+			PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
+			namespace.getStorage().updateIdMapping(mapping);
+		}
 	}
 
 	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {

@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.config;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
@@ -8,6 +13,8 @@ import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.models.preproc.DateFormats;
+import com.bakdata.conquery.util.DebugMode;
+import com.google.common.collect.MoreCollectors;
 
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
@@ -46,6 +53,8 @@ public class ConqueryConfig extends Configuration {
 	private IdMappingConfig idMapping = new NoIdMapping();
 
 	private AuthConfig authentication = new DevAuthConfig();
+	
+	private List<PluginConfig> plugins = new ArrayList<>();
 	/**
 	 * null means here that we try to deduce from an attached agent
 	 */
@@ -63,7 +72,17 @@ public class ConqueryConfig extends Configuration {
 		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
 	}
 
-	public void initializeDatePatterns() {
+	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
+		return (T) plugins.stream()
+			.filter(c -> type.isAssignableFrom(c.getClass()))
+			.collect(MoreCollectors.toOptional())
+			.get();
+	}
+
+	public void initialize() {
+		if(debugMode != null) {
+			DebugMode.setActive(debugMode);
+		}
 		DateFormats.initialize(additionalFormats);
 	}
 }

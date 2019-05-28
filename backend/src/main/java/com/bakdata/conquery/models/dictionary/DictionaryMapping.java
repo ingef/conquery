@@ -44,7 +44,7 @@ public class DictionaryMapping {
 		source2TargetMap = new int[sourceDictionary.size()];
 
 		for (int id = 0; id < sourceDictionary.size(); id++) {
-			byte[] value = sourceDictionary.getElementBytes(id);
+			byte[] value = sourceDictionary.getElement(id);
 			int targetId = targetDictionary.getId(value);
 			//if id was unknown until now
 			if (targetId == -1L) {

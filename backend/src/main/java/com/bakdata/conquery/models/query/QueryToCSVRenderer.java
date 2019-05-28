@@ -8,6 +8,7 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.concept.ResultInfo;
@@ -52,7 +53,7 @@ public class QueryToCSVRenderer {
 	}
 
 	private String createId(ContainedEntityResult cer) {
-		Dictionary dict = namespace.getStorage().getPrimaryDictionary();
+		DirectDictionary dict = namespace.getStorage().getPrimaryDictionary();
 		return JOINER.join(
 			ID_MAPPING
 				.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace)

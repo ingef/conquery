@@ -1,7 +1,11 @@
 package com.bakdata.conquery.models.preproc;
 
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.parser.Decision;
+import com.bakdata.conquery.models.types.parser.Parser;
+import com.bakdata.conquery.models.types.parser.Transformer;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Data;
@@ -13,17 +17,16 @@ import lombok.RequiredArgsConstructor;
 public class PPColumn {
 	@NonNull
 	private String name;
-	@SuppressWarnings("rawtypes") @NonNull
+	@SuppressWarnings("rawtypes") @NotNull
 	private CType type;
-	@JsonIgnore @SuppressWarnings("rawtypes")
-	private transient CType originalType = null;
-
-	public PPColumn(Output output) {
-		this(output.getName(), output.getResultType().createType());
-	}
+	@SuppressWarnings("rawtypes") @JsonIgnore
+	private transient Transformer transformer = null;
+	@SuppressWarnings("rawtypes") @JsonIgnore
+	private transient Parser parser = null;
 
 	public void findBestType() {
-		originalType = type;
-		type = type.bestSubType();
+		Decision typeDecision = parser.findBestType();
+		type = typeDecision.getType();
+		transformer = typeDecision.getTransformer();
 	}
 }

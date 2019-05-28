@@ -11,12 +11,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.stream.Collectors;
 import java.util.zip.GZIPInputStream;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -28,15 +27,16 @@ import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.parser.Parser;
+import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.bakdata.conquery.util.io.SmallOut;
-import com.google.common.base.Predicates;
 import com.google.common.io.CountingInputStream;
-import com.google.common.primitives.Primitives;
+import com.jakewharton.byteunits.BinaryByteUnit;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -122,7 +122,7 @@ public class Preprocessor {
 	
 						while(it.hasNext()) {
 							String[] row = it.next();
-							Integer primary = getPrimary((StringType) result.getPrimaryColumn().getType(), row, lineId, inputSource, input.getPrimary());
+							Integer primary = getPrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
 							if(primary != null) {
 								int primaryId = result.addPrimary(primary);
 								parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
@@ -132,6 +132,7 @@ public class Preprocessor {
 							long newProgress = countingIn.getCount();
 							totalProgress.addCurrentValue(newProgress - progress);
 							progress = newProgress;
+							lineId++;
 						}
 	
 						if (input.checkAutoOutput()) {
@@ -145,11 +146,32 @@ public class Preprocessor {
 			}
 			//find the optimal subtypes
 			log.info("finding optimal column types");
-			log.info("{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getOriginalType(), result.getPrimaryColumn().getType());
-
+			log.info("\t{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getParser(), result.getPrimaryColumn().getType());
+			
+			result.getPrimaryColumn().setType(((StringParser)result.getPrimaryColumn().getParser()).createBaseType(Encoding.UTF8));
 			for(PPColumn c:result.getColumns()) {
 				c.findBestType();
-				log.info("{}.{}: {} -> {}", result.getName(), c.getName(), c.getOriginalType(), c.getType());
+				log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
+			}
+			//estimate memory weight
+			log.info("estimated total memory consumption: {} + n*{}", 
+				BinaryByteUnit.format(
+					Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateMemoryConsumption).sum()
+					+ result.getPrimaryColumn().getType().estimateMemoryConsumption()
+				),
+				BinaryByteUnit.format(
+					Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateTypeSize).sum()
+					+ result.getPrimaryColumn().getType().estimateTypeSize()
+				)
+			);
+			for(PPColumn c:ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
+				long typeConsumption = c.getType().estimateTypeSize();
+				log.info("\t{}.{}: {}{}",
+					result.getName(),
+					c.getName(),
+					BinaryByteUnit.format(c.getType().estimateMemoryConsumption()),
+					typeConsumption==0?"":(" + n*"+BinaryByteUnit.format(typeConsumption))
+				);
 			}
 
 			try (SmallOut out = new SmallOut(outFile.writeContent())) {
@@ -199,7 +221,7 @@ public class Preprocessor {
 		}
 	}
 
-	private Integer getPrimary(StringType primaryType, String[] row, long lineId, int source, Output primaryOutput) {
+	private Integer getPrimary(StringParser primaryType, String[] row, long lineId, int source, Output primaryOutput) {
 		try {
 			List<Object> primary = primaryOutput.createOutput(primaryType, row, source, lineId);
 			if(primary.size()!=1 || !(primary.get(0) instanceof Integer)) {
@@ -223,27 +245,12 @@ public class Preprocessor {
 		int oid = 0;
 		for(int c = 0; c<input.getOutput().length; c++) {
 			Output out = input.getOutput()[c];
-			CType<?,?> type = columns[c].getType();
-			Class<?> jType = Primitives.wrap(type.getPrimitiveType());
+			Parser<?> parser = columns[c].getParser();
 
 			List<Object> result;
-			result = out.createOutput(type, row, source, lineId);
+			result = out.createOutput(parser, row, source, lineId);
 			if(result==null) {
 				throw new IllegalStateException(out+" returned null result for "+Arrays.toString(row));
-			}
-			for(Object v:result) {
-				if(v != null && !jType.isInstance(v)) {
-					throw new IllegalStateException(
-							out
-							+ " returned result with wrong types for "
-							+ Arrays.toString(row)
-							+ " "
-							+ result.stream()
-								.filter(Objects::nonNull)
-								.filter(Predicates.not(jType::isInstance))
-								.collect(Collectors.toList())
-					);
-				}
 			}
 
 
