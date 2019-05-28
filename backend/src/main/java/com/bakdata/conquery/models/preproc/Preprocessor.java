@@ -132,6 +132,7 @@ public class Preprocessor {
 							long newProgress = countingIn.getCount();
 							totalProgress.addCurrentValue(newProgress - progress);
 							progress = newProgress;
+							lineId++;
 						}
 	
 						if (input.checkAutoOutput()) {
