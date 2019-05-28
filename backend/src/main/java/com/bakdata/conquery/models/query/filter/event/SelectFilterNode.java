@@ -21,7 +21,7 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	@Override
 	public void nextBlock(Block block) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((IStringType) getColumn().getTypeFor(block)).getStringId(filterValue);
+		selectedId = ((IStringType) getColumn().getTypeFor(block)).getId(filterValue);
 	}
 
 	@Override

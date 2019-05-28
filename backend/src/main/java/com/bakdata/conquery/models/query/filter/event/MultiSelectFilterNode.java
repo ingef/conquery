@@ -25,7 +25,7 @@ public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 
 		for (int index = 0; index < filterValue.length; index++) {
 			String select = filterValue[index];
-			Integer parsed = type.getStringId(select);
+			int parsed = type.getId(select);
 			selectedValues[index] = parsed;
 		}
 	}

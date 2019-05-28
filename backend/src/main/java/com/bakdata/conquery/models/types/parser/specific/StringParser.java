@@ -1,10 +1,14 @@
 package com.bakdata.conquery.models.types.parser.specific;
 
-import java.util.Arrays;
 import java.util.EnumSet;
+import java.util.LinkedHashMap;
+import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.UUID;
 
-import com.bakdata.conquery.models.dictionary.Dictionary;
+import org.apache.commons.lang3.StringUtils;
+
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -12,22 +16,42 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.Transformer;
-import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
+import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
+import com.bakdata.conquery.models.types.specific.StringTypePrefix;
+import com.bakdata.conquery.models.types.specific.StringTypeSingleton;
+import com.bakdata.conquery.models.types.specific.StringTypeSuffix;
 import com.bakdata.conquery.models.types.specific.VarIntType;
+import com.bakdata.conquery.util.dict.SuccinctTrie;
+import com.google.common.base.Strings;
+import com.jakewharton.byteunits.BinaryByteUnit;
 
+import it.unimi.dsi.fastutil.Hash;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class StringParser extends Parser<Integer> {
 
 	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
 	private VarIntParser subType = new VarIntParser(); 
-	private Dictionary dictionary = new Dictionary(dictionaryId);
+	private LinkedHashMap<String, Integer> strings = new LinkedHashMap<>();
+	private String prefix = null;
+	private String suffix = null;
 	
 	@Override
 	protected Integer parseValue(String value) throws ParsingException {
-		return dictionary.add(value);
+		return strings.computeIfAbsent(value, v-> {
+			//new values
+
+			//set longest common prefix and suffix
+			prefix = Strings.commonPrefix(v, Objects.requireNonNullElse(prefix, v));
+			suffix = Strings.commonSuffix(v, Objects.requireNonNullElse(suffix, v));
+
+			//return next id
+			return strings.size();
+		});
 	}
 	
 	@Override
@@ -36,82 +60,111 @@ public class StringParser extends Parser<Integer> {
 		return subType.addLine(v);
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Override
-	protected Decision<Integer, Number, ? extends CType<Integer, Number>> decideType() {
+	protected Decision<Integer, ?, ? extends CType<Integer, ?>> decideType() {
 		Decision<Integer, Number, VarIntType> subDecision = subType.findBestType();
-		dictionary.tryCompress();
-		if(dictionary.size() == 0) {
-			return simpleDict(subDecision);
-		}
-		EnumSet<StringTypeEncoded.Encoding> bases = EnumSet.allOf(StringTypeEncoded.Encoding.class);
 
-		for (String value : dictionary) {
-			bases.removeIf(encoding -> !encoding.canDecode(value));
-			if(bases.isEmpty())
-				return simpleDict(subDecision);
-		}
-
-		if (!bases.isEmpty()) {
-			Encoding encoding = bases.stream()
-				.min(StringTypeEncoded.Encoding::compareTo)
-				.orElseThrow(() -> new IllegalStateException("Bases not empty, but no valid minimum."));
-			
-			Dictionary newDictionary = new Dictionary(dictionaryId);
-			StringTypeEncoded type = new StringTypeEncoded(
-				subDecision.getType(),
-				encoding
-			);
-			type.setDictionary(newDictionary);
-			type.setDictionaryId(dictionaryId);
-			
-			return new Decision<>(
-				new EncodedTransformer(dictionary, newDictionary, encoding, subDecision),
+		//check if a singleton type is enough
+		if(strings.size() <= 1) {
+			StringTypeSingleton type;
+			if(strings.isEmpty()) {
+				type = new StringTypeSingleton(null);
+			}
+			else {
+				type = new StringTypeSingleton(strings.keySet().iterator().next());
+			}
+			return new Decision<Integer, Boolean, StringTypeSingleton>(
+				new Transformer<Integer, Boolean>() {
+					@Override
+					public Boolean transform(@NonNull Integer value) {
+						return Boolean.TRUE;
+					}
+				},
 				type
 			);
 		}
-
-		return simpleDict(subDecision);
-	}
-	
-	public CType<Integer, Number> createSimpleType() {
-		Decision<Integer, Number, VarIntType> subDecision = subType.findBestType();
-		dictionary.tryCompress();
-		return simpleDict(subDecision).getType();
-	}
-
-	private Decision<Integer, Number, ? extends CType<Integer, Number>> simpleDict(Decision<Integer, Number, VarIntType> subDecision) {
-		StringTypeVarInt type = new StringTypeVarInt(subDecision.getType());
-		type.setDictionary(dictionary);
-		type.setDictionaryId(dictionaryId);
-		return new Decision<>(subDecision.getTransformer(), type);
-	}
-	
-	private static class EncodedTransformer extends Transformer<Integer, Number> {
-		private final int[] cache;
-		private final Dictionary dictionary;
-		private final Encoding encoding;
-		private final Decision<Integer, Number, VarIntType> subDecision;
-		private Dictionary newDictionary;
 		
-		public EncodedTransformer(Dictionary dictionary, Dictionary newDictionary, Encoding encoding, Decision<Integer, Number, VarIntType> subDecision) {
-			this.dictionary = dictionary;
-			this.newDictionary = newDictionary;
-			this.encoding = encoding;
-			this.subDecision = subDecision;
-			cache = new int[dictionary.size()];
-			Arrays.fill(cache, -1);
+		//remove prefix and suffix
+		if(!StringUtils.isEmpty(prefix) || !StringUtils.isEmpty(suffix)) {
+			log.debug("Reduced strings by the '{}' prefix and '{}' suffix", prefix, suffix);
+			LinkedHashMap<String, Integer> oldStrings = strings;
+			strings = new LinkedHashMap<>(oldStrings.size());
+			for(Entry<String, Integer> e : oldStrings.entrySet()) {
+				strings.put(
+					e.getKey().substring(
+						prefix.length(),
+						e.getKey().length()-suffix.length()
+					), 
+					e.getValue()
+				);
+			
+			}
+		}
+		
+
+		//check if encoding
+		Encoding encoding = findEncoding();
+		log.debug("Chosen encoding is {}", encoding);
+		
+		//create base type
+		CType<Integer, Number> result = createBaseType(encoding);
+		if(!StringUtils.isEmpty(prefix)) {
+			result = new StringTypePrefix(result, prefix);
+		}
+		if(!StringUtils.isEmpty(suffix)) {
+			result = new StringTypeSuffix(result, suffix);
+		}
+		return new Decision<>(
+			subDecision.getTransformer(),
+			result
+		);
+	}
+
+	public StringTypeEncoded<StringTypeDictionary> createBaseType(Encoding encoding) {
+		StringTypeDictionary type = new StringTypeDictionary(subType.decideType().getType());
+		SuccinctTrie trie = new SuccinctTrie();
+		for(String v: strings.keySet()) {
+			trie.add(encoding.decode(v));
+		}
+		float trieSize = 13*trie.getNodeCount() + 4*trie.size();
+		//size of two collections and string object overhead
+		float mapSize = trie.size()*(48f+8f/Hash.DEFAULT_LOAD_FACTOR)
+			//number of string bytes
+			+ trie.getTotalBytesStored();
+
+		if(trieSize < mapSize) {
+			trie.compress();
+			type.setDictionary(trie);
+		}
+		else {
+			log.debug(
+				"Using MapDictionary(est. {}) instead of Trie(est. {}) for {}",
+				BinaryByteUnit.format((long)mapSize),
+				BinaryByteUnit.format((long)trieSize),
+				dictionaryId
+			);
+			MapDictionary map = new MapDictionary();
+			for(String v : strings.keySet()) {
+				map.add(encoding.decode(v));
+			}
+			type.setDictionary(map);
+		}
+		type.setDictionaryId(dictionaryId);
+		return new StringTypeEncoded<StringTypeDictionary>(type, encoding);
+	}
+	
+	private Encoding findEncoding() {
+		EnumSet<Encoding> bases = EnumSet.allOf(Encoding.class);
+		for (String value : strings.keySet()) {
+			bases.removeIf(encoding -> !encoding.canDecode(value));
+			if(bases.size()==1) {
+				return bases.iterator().next();
+			}
 		}
 
-		@Override
-		public Number transform(@NonNull Integer from) {
-			int id = (Integer) from;
-			int result = cache[id];
-			if(result == -1) {
-				String value = dictionary.getElement(id);
-				result = newDictionary.add(encoding.decode(value));
-				cache[id] = result;
-			}
-			return subDecision.getTransformer().transform(result);
-		}
+		return bases.stream()
+			.min(Encoding::compareTo)
+			.orElseThrow(() -> new IllegalStateException("No valid encoding."));
 	}
 }

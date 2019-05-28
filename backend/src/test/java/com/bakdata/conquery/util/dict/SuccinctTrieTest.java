@@ -16,6 +16,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -36,15 +37,16 @@ public class SuccinctTrieTest {
 
 	@Test
 	public void replicationTest() throws IOException {
-		Dictionary dict = new Dictionary();
+		SuccinctTrie dict = new SuccinctTrie();
+		DirectDictionary direct = new DirectDictionary(dict);
 		dict.setDataset(new DatasetId("dataset"));
 		dict.setName("dict");
 
-		data().forEach(dict::add);
+		data().forEach(direct::add);
 
 		dict.compress();
 
-		Dictionary replicatedDict = Dictionary.copyUncompressed(dict);
+		SuccinctTrie replicatedDict = SuccinctTrie.fromSerialized(dict.toSerialized());
 		replicatedDict.compress();
 		
 		assertThat(IntStream.range(0, dict.size())).allSatisfy(id -> {
@@ -64,11 +66,12 @@ public class SuccinctTrieTest {
 		words.add("ha");
 		words.add("hat");
 
-		Dictionary dict = new Dictionary();
+		SuccinctTrie dict = new SuccinctTrie();
+		DirectDictionary direct = new DirectDictionary(dict);
 
 		int distinctValues = 0;
 		for (String entry : words) {
-			int id = dict.add(entry);
+			int id = direct.add(entry);
 			if (id > distinctValues) {
 				distinctValues++;
 			}
@@ -80,19 +83,20 @@ public class SuccinctTrieTest {
 		assertThat(dict.getElement(1)).isEqualTo("it");
 		assertThat(dict.getElement(2)).isEqualTo("is");
 		assertThat(dict.getElement(3)).isEqualTo("a");
-		assertThat(dict.getId("is")).isEqualTo(2);
-		assertThat(dict.getId("ha")).isEqualTo(4);
-		assertThat(dict.getId("h")).isEqualTo(-1);
+		assertThat(direct.getId("is")).isEqualTo(2);
+		assertThat(direct.getId("ha")).isEqualTo(4);
+		assertThat(direct.getId("h")).isEqualTo(-1);
 	}
 
 	@Test
 	public void serializationTest()
 			throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
 
-		Dictionary dict = new Dictionary();
+		SuccinctTrie dict = new SuccinctTrie();
+		DirectDictionary direct = new DirectDictionary(dict);
 		dict.setDataset(new DatasetId("test"));
 		dict.setName("testDict");
-		data().forEach(dict::add);
+		data().forEach(direct::add);
 
 		dict.compress();
 		SerializationTestUtil.testSerialization(dict, Dictionary.class);
@@ -101,11 +105,12 @@ public class SuccinctTrieTest {
 	public static long[] getSeeds() {
 		return new long[] {0L, 7L};
 	}
-
+	
 	@ParameterizedTest(name="seed: {0}")
 	@MethodSource("getSeeds")
 	public void valid(long seed) {
-		final Dictionary dict = new Dictionary();
+		final SuccinctTrie dict = new SuccinctTrie();
+		DirectDictionary direct = new DirectDictionary(dict);
 		final BiMap<String, Integer> reference = HashBiMap.create();
 
 		AtomicInteger count = new AtomicInteger(0);
@@ -129,7 +134,7 @@ public class SuccinctTrieTest {
 		log.info("trie compressed");
 		//assert key value lookup
 		assertThat(reference.entrySet().stream()).allSatisfy(entry -> {
-			assertThat(dict.getId(entry.getKey()))
+			assertThat(direct.getId(entry.getKey()))
 				.isEqualTo(entry.getValue());
 		});
 		
@@ -137,7 +142,7 @@ public class SuccinctTrieTest {
 
 		//assert reverse lookup
 		assertThat(reference.inverse().entrySet().stream()).allSatisfy(entry -> {
-			assertThat(dict.getElementBytes(entry.getKey()))
+			assertThat(direct.getElement(entry.getKey()))
 				.isEqualTo(entry.getValue().getBytes());
 		});
 		log.info("reverse lookup done");

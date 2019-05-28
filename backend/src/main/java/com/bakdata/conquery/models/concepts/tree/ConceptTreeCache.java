@@ -44,7 +44,7 @@ public class ConceptTreeCache {
 
 		misses++;
 
-		String scriptValue = type.createScriptValue(id);
+		String scriptValue = type.getElement(id);
 		final ConceptTreeChild child = treeConcept.findMostSpecificChild(scriptValue, rowMap);
 
 		if(!rowMap.isCalculated()) {

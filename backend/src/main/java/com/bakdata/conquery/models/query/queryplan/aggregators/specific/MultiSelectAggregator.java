@@ -29,7 +29,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 		IStringType type = (IStringType) getColumn().getTypeFor(block);
 
 		for (int index = 0; index < selection.length; index++) {
-			selectedValues[index] = type.getStringId(selection[index]);
+			selectedValues[index] = type.getId(selection[index]);
 		}
 	}
 

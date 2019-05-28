@@ -23,7 +23,7 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void nextBlock(Block block) {
-		selectedId = ((IStringType) getColumn().getTypeFor(block)).getStringId(selected);
+		selectedId = ((IStringType) getColumn().getTypeFor(block)).getId(selected);
 	}
 
 	@Override

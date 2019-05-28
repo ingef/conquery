@@ -64,7 +64,7 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 			validityHashBuilder
 				.append(input.getSourceFile().length());
 		}
-		validityHashBuilder.append(17);
+		validityHashBuilder.append(18);
 		return validityHashBuilder.toHashCode();
 	}
 

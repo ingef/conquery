@@ -28,9 +28,9 @@ import com.bakdata.conquery.models.types.specific.IntegerTypeVarInt;
 import com.bakdata.conquery.models.types.specific.MoneyTypeLong;
 import com.bakdata.conquery.models.types.specific.MoneyTypeVarInt;
 import com.bakdata.conquery.models.types.specific.RealTypeDouble;
+import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
-import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
 import com.bakdata.conquery.models.types.specific.VarIntTypeByte;
 import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 import com.bakdata.conquery.models.types.specific.VarIntTypeShort;
@@ -52,7 +52,7 @@ public class SerializationTest {
 			new MoneyTypeVarInt(new VarIntTypeInt(-1, +1)),
 			new RealTypeDouble(),
 			new DateTypeVarInt(new VarIntTypeInt(-1, +1)),
-			new StringTypeVarInt(new VarIntTypeInt(-1, +1)),
+			new StringTypeDictionary(new VarIntTypeInt(-1, +1)),
 			new IntegerTypeLong(-1,+1),
 			new DateRangeTypeDateRange(),
 			new DateRangeTypeQuarter(),

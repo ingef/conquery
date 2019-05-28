@@ -6,6 +6,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -18,7 +19,7 @@ public interface NamespacedStorage extends ConqueryStorage {
 	void updateDictionary(Dictionary dict) throws JSONException;
 	void removeDictionary(DictionaryId id);
 	Dictionary computeDictionary(DictionaryId id) throws JSONException;
-	Dictionary getPrimaryDictionary();
+	DirectDictionary getPrimaryDictionary();
 	
 	void addImport(Import imp) throws JSONException;
 	Import getImport(ImportId id);
