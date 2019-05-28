@@ -100,4 +100,9 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	public String toString() {
 		return "StringTypeDictionary[dictionary=" + dictionary + ", numberType=" + numberType + "]";
 	}
+	
+	@Override
+	public long estimateTypeSize() {
+		return dictionary.estimateMemoryConsumption();
+	}
 }

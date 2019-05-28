@@ -22,4 +22,9 @@ public class VarIntTypeShort extends VarIntType {
 	public int toInt(Number value) {
 		return value.shortValue();
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return Short.SIZE;
+	}
 }

@@ -384,4 +384,9 @@ public class SuccinctTrie extends Dictionary {
 		buffer.free();
 		return out;
 	}
+
+	@Override
+	public long estimateMemoryConsumption() {
+		return 13*getNodeCount() + 4*size();
+	}
 }

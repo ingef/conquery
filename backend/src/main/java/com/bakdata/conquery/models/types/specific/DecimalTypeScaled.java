@@ -48,4 +48,9 @@ public class DecimalTypeScaled extends CType<BigDecimal, Number> {
 	public String toString() {
 		return "DecimalTypeScaled[numberType=" + subType + "]";
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return subType.estimateMemoryBitWidth();
+	}
 }

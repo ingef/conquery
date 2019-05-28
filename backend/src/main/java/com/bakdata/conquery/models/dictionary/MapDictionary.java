@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.dictionary;
 
+import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
@@ -11,8 +12,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonValue;
+import com.google.common.math.DoubleMath;
 
+import it.unimi.dsi.fastutil.Hash;
 import it.unimi.dsi.fastutil.bytes.ByteArrayList;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import lombok.AllArgsConstructor;
@@ -118,5 +120,23 @@ public class MapDictionary extends Dictionary {
 				return it.hasNext();
 			}
 		};
+	}
+	
+	public static long estimateMemoryConsumption(long entries, long totalBytes) {
+		return DoubleMath.roundToLong(
+			//size of two collections and string object overhead
+			entries*(48f+8f/Hash.DEFAULT_LOAD_FACTOR)
+			//number of string bytes
+			+ totalBytes,
+			RoundingMode.CEILING
+		);
+	}
+
+	@Override
+	public long estimateMemoryConsumption() {
+		return MapDictionary.estimateMemoryConsumption(
+			id2Value.size(),
+			id2Value.stream().mapToLong(ByteArrayList::size).sum()
+		);
 	}
 }

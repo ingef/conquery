@@ -15,4 +15,9 @@ public class BooleanTypeBoolean extends CType<Boolean, Boolean> {
 	public boolean canStoreNull() {
 		return false;
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return Byte.SIZE;
+	}
 }
