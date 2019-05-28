@@ -41,6 +41,8 @@ public class MapDictionary extends Dictionary {
 		this.id2Value = new ArrayList<>(id2Value.length);
 		value2Id = new Object2IntOpenHashMap<>();
 		value2Id.defaultReturnValue(-1);
+		this.setName(name);
+		this.setDataset(datasetId);
 		
 		for(int i=0;i<id2Value.length;i++) {
 			ByteArrayList v = new ByteArrayList(id2Value[i]);

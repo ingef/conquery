@@ -37,4 +37,8 @@ public class DirectDictionary implements IStringType {
 		return Iterators.transform(dict.iterator(), v->new String(v.getValue(), StandardCharsets.UTF_8));
 	}
 
+	public int put(String value) {
+		return dict.put(value.getBytes(StandardCharsets.UTF_8));
+	}
+
 }

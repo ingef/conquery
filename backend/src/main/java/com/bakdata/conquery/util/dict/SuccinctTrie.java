@@ -61,6 +61,8 @@ public class SuccinctTrie extends Dictionary {
 	@JsonCreator
 	public static SuccinctTrie fromSerialized(SerializedSuccinctTrie serialized) {
 		SuccinctTrie trie = new SuccinctTrie();
+		trie.setName(serialized.getName());
+		trie.setDataset(serialized.getDataset());
 		trie.nodeCount = serialized.getNodeCount();
 		trie.entryCount = serialized.getEntryCount();
 		trie.reverseLookup = serialized.getReverseLookup();
@@ -339,7 +341,7 @@ public class SuccinctTrie extends Dictionary {
 	@JsonValue
 	public SerializedSuccinctTrie toSerialized() {
 		checkCompressed("no serialisation allowed before compressing the trie");
-		return new SerializedSuccinctTrie(nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache, totalBytesStored);
+		return new SerializedSuccinctTrie(getName(), getDataset(), nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache, totalBytesStored);
 	}
 
 	@Data

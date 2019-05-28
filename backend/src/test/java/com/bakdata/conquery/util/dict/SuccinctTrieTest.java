@@ -42,12 +42,11 @@ public class SuccinctTrieTest {
 		dict.setDataset(new DatasetId("dataset"));
 		dict.setName("dict");
 
-		data().forEach(direct::add);
+		data().forEach(direct::put);
 
 		dict.compress();
 
 		SuccinctTrie replicatedDict = SuccinctTrie.fromSerialized(dict.toSerialized());
-		replicatedDict.compress();
 		
 		assertThat(IntStream.range(0, dict.size())).allSatisfy(id -> {
 			assertThat(replicatedDict.getElement(id)).isEqualTo(dict.getElement(id));
@@ -71,7 +70,7 @@ public class SuccinctTrieTest {
 
 		int distinctValues = 0;
 		for (String entry : words) {
-			int id = direct.add(entry);
+			int id = direct.put(entry);
 			if (id > distinctValues) {
 				distinctValues++;
 			}
@@ -79,10 +78,10 @@ public class SuccinctTrieTest {
 
 		dict.compress();
 		
-		assertThat(dict.getElement(0)).isEqualTo("hat");
-		assertThat(dict.getElement(1)).isEqualTo("it");
-		assertThat(dict.getElement(2)).isEqualTo("is");
-		assertThat(dict.getElement(3)).isEqualTo("a");
+		assertThat(direct.getElement(0)).isEqualTo("hat");
+		assertThat(direct.getElement(1)).isEqualTo("it");
+		assertThat(direct.getElement(2)).isEqualTo("is");
+		assertThat(direct.getElement(3)).isEqualTo("a");
 		assertThat(direct.getId("is")).isEqualTo(2);
 		assertThat(direct.getId("ha")).isEqualTo(4);
 		assertThat(direct.getId("h")).isEqualTo(-1);
@@ -96,7 +95,7 @@ public class SuccinctTrieTest {
 		DirectDictionary direct = new DirectDictionary(dict);
 		dict.setDataset(new DatasetId("test"));
 		dict.setName("testDict");
-		data().forEach(direct::add);
+		data().forEach(direct::put);
 
 		dict.compress();
 		SerializationTestUtil.testSerialization(dict, Dictionary.class);
@@ -142,7 +141,7 @@ public class SuccinctTrieTest {
 
 		//assert reverse lookup
 		assertThat(reference.inverse().entrySet().stream()).allSatisfy(entry -> {
-			assertThat(direct.getElement(entry.getKey()))
+			assertThat(dict.getElement(entry.getKey()))
 				.isEqualTo(entry.getValue().getBytes());
 		});
 		log.info("reverse lookup done");
