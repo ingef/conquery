@@ -60,7 +60,7 @@ public class ImportBits extends WorkerMessage.Slow {
 		
 		BlockFactory factory = imp.getBlockFactory();
 		
-		List<BucketBlock> newBuckets = new ArrayList<>();
+		List<Bucket> newBuckets = new ArrayList<>();
 		
 		getProgressReporter().setMax(bits.size());
 		for(Bit bit:bits) {

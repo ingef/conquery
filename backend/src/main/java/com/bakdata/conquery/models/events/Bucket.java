@@ -14,7 +14,7 @@ import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter @ToString
-public class BucketBlock extends IdentifiableImpl<BucketId> {
+public class Bucket extends IdentifiableImpl<BucketId> {
 
 	@Min(0)
 	private int bucket;

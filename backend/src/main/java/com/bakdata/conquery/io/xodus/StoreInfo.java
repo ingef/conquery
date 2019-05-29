@@ -93,12 +93,11 @@ public enum StoreInfo implements IStoreInfo {
 			)
 		);
 	}
-<<<<<<< HEAD
 
 	@Override
 	public String getXodusName() {
 		return name();
-=======
+	}
 	
 	public <T extends Identifiable<?>> IdentifiableCachedStore<T> weakBig(NamespacedStorage storage) {
 		return new IdentifiableCachedStore<>(
@@ -107,6 +106,5 @@ public enum StoreInfo implements IStoreInfo {
 				new BigStore<>(storage.getValidator(), storage.getEnvironment(), this)
 			)
 		);
->>>>>>> develop
 	}
 }

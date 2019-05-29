@@ -11,7 +11,7 @@ import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.events.BucketBlock;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
 
 	private SingletonStore<WorkerInformation> worker;
-	private IdentifiableStore<BucketBlock> blocks;
+	private IdentifiableStore<Bucket> blocks;
 	private IdentifiableStore<CBlock> cBlocks;
 	@Getter
 	private BlockManager blockManager;
@@ -81,8 +81,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 	
 	@Override
-	public void addBuckets(List<BucketBlock> newBuckets) throws JSONException {
-		for(BucketBlock block:newBuckets) {
+	public void addBuckets(List<Bucket> newBuckets) throws JSONException {
+		for(Bucket block:newBuckets) {
 			blocks.add(block);
 		}
 		if(getBlockManager()!=null) {
@@ -91,7 +91,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 
 	@Override
-	public BucketBlock getBucket(BucketId id) {
+	public Bucket getBucket(BucketId id) {
 		return blocks.get(id);
 	}
 	
@@ -104,7 +104,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 	
 	@Override
-	public Collection<BucketBlock> getAllBuckets() {
+	public Collection<Bucket> getAllBuckets() {
 		return blocks.getAll();
 	}
 

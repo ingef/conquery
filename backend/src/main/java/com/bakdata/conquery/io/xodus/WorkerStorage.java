@@ -7,7 +7,7 @@ import java.util.List;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.events.BucketBlock;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -24,10 +24,10 @@ public interface WorkerStorage extends NamespacedStorage {
 	void setWorker(WorkerInformation worker) throws JSONException;
 	void updateWorker(WorkerInformation worker) throws JSONException;
 	
-	void addBuckets(List<BucketBlock> newBlocks) throws JSONException;
-	BucketBlock getBucket(BucketId id);
+	void addBuckets(List<Bucket> newBlocks) throws JSONException;
+	Bucket getBucket(BucketId id);
 	void removeBucket(BucketId id);
-	Collection<BucketBlock> getAllBuckets();
+	Collection<Bucket> getAllBuckets();
 	
 	void addCBlock(CBlock cBlock) throws JSONException;
 	CBlock getCBlock(CBlockId id);

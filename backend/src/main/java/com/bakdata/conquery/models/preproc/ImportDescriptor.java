@@ -59,20 +59,12 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 	public int calculateValidityHash() {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder()
 			.append(this.getInputFile().getDescriptionFile().length())
-			.append(17);
+			.append(20);
 		
 		for(Input input:this.getInputs()) {
 			validityHashBuilder
 				.append(input.getSourceFile().length());
 		}
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
-		validityHashBuilder.append(17);
->>>>>>> develop
-=======
-		validityHashBuilder.append(20);
->>>>>>> develop
 		return validityHashBuilder.toHashCode();
 	}
 

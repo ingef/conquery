@@ -31,7 +31,7 @@ public abstract class Block implements JsonSerializable{
 	@NotNull @NsIdRef @Getter
 	private Import imp;
 	@JsonBackReference @Getter @Setter
-	private BucketBlock bucketBlock;
+	private Bucket bucket;
 	
 	public abstract int size();
 	

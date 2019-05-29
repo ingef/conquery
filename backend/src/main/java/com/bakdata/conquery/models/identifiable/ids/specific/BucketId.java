@@ -2,8 +2,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import org.eclipse.jetty.io.ByteBufferPool.Bucket;
-
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;

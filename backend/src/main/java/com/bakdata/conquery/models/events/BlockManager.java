@@ -33,7 +33,7 @@ public class BlockManager {
 	private final WorkerStorage storage;
 	private final Worker worker;
 	private final IdMap<ConceptId, Concept<?>> concepts = new IdMap<>();
-	private final IdMap<BucketId, BucketBlock> bucketBlocks = new IdMap<>();
+	private final IdMap<BucketId, Bucket> buckets = new IdMap<>();
 	private final IdMap<CBlockId, CBlock> cBlocks = new IdMap<>();
 	@Getter
 	private final Int2ObjectMap<Entity> entities = new Int2ObjectAVLTreeMap<>();
@@ -78,7 +78,7 @@ public class BlockManager {
 			}
 		}
 		
-		for(BucketBlock bucket : buckets) {
+		for(Bucket bucket : buckets) {
 			entities
 				.computeIfAbsent(bucket.getEntity(), Entity::new)
 				.addBlock(storage.getCentralRegistry().resolve(bucket.getImp().getTable()), bucket);
@@ -110,8 +110,8 @@ public class BlockManager {
 			);
 	}
 	
-	public void addBuckets(List<BucketBlock> newBuckets) {
-		for(BucketBlock bucket:newBuckets) {
+	public void addBuckets(List<Bucket> newBuckets) {
+		for(Bucket bucket:newBuckets) {
 			buckets.add(bucket);
 			entities
 				.computeIfAbsent(bucket.getEntity(), Entity::new)
@@ -123,7 +123,7 @@ public class BlockManager {
 			for(Connector con:c.getConnectors()) {
 				try(Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
-					for(BucketBlock bucket:newBuckets) {
+					for(Bucket bucket:newBuckets) {
 						Import imp = bucket.getImp();
 						if(con.getTable().getId().equals(bucket.getImp().getTable())) {
 							CBlockId cBlockId = new CBlockId(

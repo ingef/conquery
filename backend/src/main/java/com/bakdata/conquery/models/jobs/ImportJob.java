@@ -1,15 +1,11 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-
-import org.eclipse.jetty.util.ByteArrayOutputStream2;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -30,9 +26,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.PPHeader;
-import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.types.specific.AStringType;
-import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -45,12 +38,8 @@ import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.jakewharton.byteunits.BinaryByteUnit;
 
-import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -86,50 +75,7 @@ public class ImportJob extends Job {
 			namespace.checkConnections();
 
 			//update primary dictionary
-<<<<<<< HEAD
 			DictionaryMapping primaryMapping = createPrimaryMapping(header);
-=======
-			log.debug("\tupdating primary dictionary");
-			Dictionary entities = ((StringTypeEncoded)header.getPrimaryColumn().getType()).getSubType().getDictionary();
-			this.progressReporter.report(1);
-			log.debug("\tcompute dictionary");
-			Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
-			Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
-			log.debug("\tmap values");
-			DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
-			
-			//if no new ids we shouldn't recompress and store
-			if(primaryMapping.getNewIds() == null) {
-				log.debug("\t\tno new ids");
-				primaryDict = oldPrimaryDict;
-				this.progressReporter.report(2);
-			}
-			//but if there are new ids we have to
-			else {
-				log.debug("\t\tnew ids {}", primaryMapping.getNewIds());
-				log.debug("\t\texample of new id: {}", primaryDict.getElement(primaryMapping.getNewIds().getMin()));
-				log.debug("\t\tstoring");
-				namespace.getStorage().updateDictionary(primaryDict);
-				this.progressReporter.report(1);
-				log.debug("\t\tsending");
-				namespace.sendToAll(new UpdateDictionary(primaryDict));
-				this.progressReporter.report(1);
-			}
-			
-			log.debug("\tsending secondary dictionaries");
-			for(PPColumn col:header.getColumns()) {
-				col.getType().storeExternalInfos(namespace.getStorage(),
-					(Consumer<Dictionary>)(dict -> {
-						try {
-							namespace.getStorage().addDictionary(dict);
-							namespace.sendToAll(new UpdateDictionary(dict));
-						} catch(Exception e) {
-							throw new RuntimeException("Failed to store dictionary "+dict, e);
-						}
-					})
-				);
-			}
->>>>>>> develop
 			this.progressReporter.report(1);
 
 			//partition the new IDs between the slaves
@@ -266,7 +212,7 @@ public class ImportJob extends Job {
 	
 	private DictionaryMapping createPrimaryMapping(PPHeader header) throws JSONException {
 		log.debug("\tupdating primary dictionary");
-		Dictionary entities = ((StringType) header.getPrimaryColumn().getType()).getDictionary();
+		Dictionary entities = ((StringTypeEncoded)header.getPrimaryColumn().getType()).getSubType().getDictionary();
 		this.progressReporter.report(1);
 		log.debug("\tcompute dictionary");
 		Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
@@ -282,8 +228,7 @@ public class ImportJob extends Job {
 		}
 		//but if there are new ids we have to
 		else {
-			log.debug("\t\tnew ids {}, recompressing", primaryMapping.getNewIds());
-			primaryDict.compress();
+			log.debug("\t\tnew ids {}", primaryMapping.getNewIds());
 			log.debug("\t\texample of new id: {}", primaryDict.getElement(primaryMapping.getNewIds().getMin()));
 			log.debug("\t\tstoring");
 			namespace.getStorage().updateDictionary(primaryDict);

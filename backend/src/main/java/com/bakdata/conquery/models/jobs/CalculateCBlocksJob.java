@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.BlockManager;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
@@ -130,11 +131,11 @@ public class CalculateCBlocksJob extends Job {
 
 		//see #175  metrics candidate
 		log.trace(
-				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-				cache.getHits(),
-				cache.getMisses(),
-				(double) cache.getHits() / cache.getMisses(),
-				(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+			"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+			cache.getHits(),
+			cache.getMisses(),
+			(double) cache.getHits() / cache.getMisses(),
+			(double) cache.getHits() / (cache.getHits() + cache.getMisses())
 		);
 	}
 
@@ -146,7 +147,7 @@ public class CalculateCBlocksJob extends Job {
 	private static class CalculationInformation {
 		private final Table table;
 		private final Import imp;
-		private final Block block;
+		private final Bucket bucket;
 		private final CBlockId cBlockId;
 	}
 }
