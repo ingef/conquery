@@ -1,0 +1,46 @@
+{
+  "type": "FILTER_TEST",
+  "label": "DIFFSUM_MONEY Test",
+  "expectedCsv": "tests/filter/DIFFSUM_MONEY/expected_SUM_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/DIFFSUM_MONEY/content_SUM_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "plus",
+          "type": "REAL"
+        },
+        {
+          "name": "minus",
+          "type": "REAL"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "column": "table.plus",
+      "subtractColumn": "table.minus",
+      "type": "SUM"
+    }
+  },
+  "filterValue": {
+    "type": "REAL_RANGE",
+    "value": {
+      "min": 100,
+      "max": 200
+    }
+  }
+}
