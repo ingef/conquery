@@ -1,0 +1,41 @@
+{
+  "type": "FILTER_TEST",
+  "label": "COUNT_QUARTERS_EMPTY_VALUES_ZERO Test",
+  "expectedCsv": "tests/filter/COUNT_QUARTERS_EMPTY_VALUES/expected_COUNT_QUARTERS_ZERO_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/COUNT_QUARTERS_EMPTY_VALUES/content_COUNT_QUARTERS_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "behandlungsdatum",
+          "type": "DATE"
+        },
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "column": "table.behandlungsdatum",
+      "type": "COUNT_QUARTERS"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 0,
+      "max": 0
+    }
+  }
+}

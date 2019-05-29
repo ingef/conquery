@@ -1,0 +1,41 @@
+{
+  "type": "FILTER_TEST",
+  "label": "COUNT_QUARTERS_NO_DATE_RANGE Test",
+  "expectedCsv": "tests/filter/COUNT_QUARTERS2/expected_COUNT_QUARTERS_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/COUNT_QUARTERS2/content_COUNT_QUARTERS_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "entlassungsdatum",
+          "type": "DATE"
+        },
+        {
+          "name": "aufnahmedatum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.aufnahmedatum"
+    },
+    "filter": {
+      "column": "table.entlassungsdatum",
+      "type": "COUNT_QUARTERS"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 2,
+      "max": 3
+    }
+  }
+}
