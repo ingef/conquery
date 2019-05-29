@@ -1,0 +1,43 @@
+{
+  "type": "FILTER_TEST",
+  "label": "COUNT_EMPTY Test",
+  "expectedCsv": "tests/filter/COUNT_EMPTY/expected_COUNT_Filter.csv",
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "type": "COUNT",
+      "description": "Test count_filter",
+      "column": "table.nr",
+      "distinct": "false"
+    }
+  },
+  "filterValue": {
+    "type": "INTEGER_RANGE",
+    "value": {
+      "min": 1,
+      "max": 1
+    }
+  },
+  "content": {
+    "tables": {
+      "csv": "tests/filter/COUNT_EMPTY/content_COUNT_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "nr",
+          "type": "STRING"
+        },
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        }
+      ]
+    }
+  }
+}	
