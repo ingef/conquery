@@ -32,7 +32,9 @@ public class IdMapSerialisationTest {
 
 		PersistentIdMap persistentIdMap = new PersistentIdMap(csvIdToExternalIdMap, externalIdPartCsvIdMap);
 
-		SerializationTestUtil.testSerialization(persistentIdMap, PersistentIdMap.class);
+		SerializationTestUtil
+			.forType(PersistentIdMap.class)
+			.test(persistentIdMap);
 	}
 
 }

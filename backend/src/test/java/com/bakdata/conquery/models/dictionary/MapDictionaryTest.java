@@ -27,7 +27,9 @@ class MapDictionaryTest {
 		assertThat(json)
 			.startsWith("{\"type\":\"MAP_DICTIONARY\",\"name\":\"dictionary\",\"id2Value\":[")
 			.endsWith("],\"dataset\":\"dataset\"}");
-		SerializationTestUtil.testSerialization(map, MapDictionary.class);
+		SerializationTestUtil
+			.forType(MapDictionary.class)
+			.test(map);
 	}
 
 }
