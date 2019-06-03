@@ -26,7 +26,6 @@ public class DebugClassGenerator extends ClassGenerator {
 	private File tmp;
 	private final URLClassLoader classLoader;
 	private final List<File> files = new ArrayList<>();
-	private final List<JavaFileObject> mFiles = new ArrayList<>();
 	private final List<String> generated = new ArrayList<>();
 
 
@@ -38,7 +37,7 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public void addTask(String fullClassName, String content) throws IOException {
+	public synchronized void addTask(String fullClassName, String content) throws IOException {
 		String[] parts = StringUtils.split(fullClassName, '.');
 		String className = parts[parts.length - 1];
 		File dir = tmp;
@@ -53,12 +52,12 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public Class<?> getClassByName(String fullClassName) throws ClassNotFoundException {
+	public synchronized Class<?> getClassByName(String fullClassName) throws ClassNotFoundException {
 		return Class.forName(fullClassName, true, classLoader);
 	}
 
 	@Override
-	public void compile() throws IOException, URISyntaxException {
+	public synchronized void compile() throws IOException, URISyntaxException {
 		try (StandardJavaFileManager fileManager = getCompiler().getStandardFileManager(null, null, null)) {
 			Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
 			StringWriter output = new StringWriter();
@@ -71,7 +70,7 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public void close() throws IOException {
+	public synchronized void close() throws IOException {
 		// load classes to memory before closing
 		for (String cl : generated) {
 			try {
