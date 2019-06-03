@@ -3,76 +3,81 @@ package com.bakdata.conquery.io.jackson.serializer;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
 
 import javax.validation.Validator;
 
 import org.assertj.core.api.ObjectAssert;
 
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JavaType;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.ObjectReader;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import io.dropwizard.jersey.validation.Validators;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 
+@RequiredArgsConstructor
+@Accessors(chain = true, fluent = true)
 @Slf4j
-public class SerializationTestUtil {
-
-	public static <T> void testSerialization(T value, TypeReference<T> typeReference) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
-		Validator validator = Validators.newValidator();
+public class SerializationTestUtil<T> {
+	
+	private final JavaType type;
+	private final Validator validator = Validators.newValidator();
+	@Setter
+	private List<Class<?>> ignoreClasses = Collections.emptyList();
+	@Setter
+	private CentralRegistry registry;
+	
+	public static <T> SerializationTestUtil<T> forType(TypeReference<T> type) {
+		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
+	}
+	
+	public static <T> SerializationTestUtil<T> forType(Class<? extends T> type) {
+		return new SerializationTestUtil<>(Jackson.MAPPER.getTypeFactory().constructType(type));
+	}
+	
+	public void test(T value) throws JSONException, IOException {
+		test(
+			value,
+			Jackson.MAPPER
+		);
+		test(
+			value,
+			Jackson.BINARY_MAPPER
+		);
+		
+	}
+	
+	private void test(T value, ObjectMapper mapper) throws JSONException, IOException {
+		if(registry != null) {
+			mapper = new SingletonNamespaceCollection(registry).injectInto(mapper);
+		}
+		ObjectWriter writer = mapper.writerFor(type).withView(InternalOnly.class);
+		ObjectReader reader = mapper.readerFor(type).withView(InternalOnly.class);
+		
+		
 		ValidatorHelper.failOnError(log, validator.validate(value));
-		byte[] src = Jackson.MAPPER.writeValueAsBytes(value);
-		T copy = Jackson.MAPPER.readValue(src, typeReference);
+		byte[] src = writer.writeValueAsBytes(value);
+		T copy = reader.readValue(src);
 		ValidatorHelper.failOnError(log, validator.validate(copy));
-		assertThat(copy)
-			.as("Unequal after JSON copy.")
-			.isEqualToComparingFieldByFieldRecursively(value);
-		copy = Jackson.BINARY_MAPPER.readValue(Jackson.BINARY_MAPPER.writeValueAsBytes(value), typeReference);
-		ValidatorHelper.failOnError(log, validator.validate(copy));
-		assertThat(copy)
-			.as("Unequal only after BINARY copy.")
-			.isEqualToComparingFieldByFieldRecursively(value);
-	}
-	
-	public static <T> void testSerialization(T value, Class<? extends T> type, Class<?>... ignored) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
-		Validator validator = Validators.newValidator();
-		ValidatorHelper.failOnError(log, validator.validate(value), value.toString());
-		T copy = Jackson.MAPPER.readValue(Jackson.MAPPER.writeValueAsBytes(value), type);
-		ValidatorHelper.failOnError(log, validator.validate(copy));
+		
 		ObjectAssert<T> ass = assertThat(copy)
-			.as("Unequal after JSON copy.");
-		for(Class<?> ig:ignored)
+			.as("Unequal after copy.");
+		for(Class<?> ig:ignoreClasses)
 			ass.usingComparatorForType((a,b)->0, ig);
+		
 		ass.isEqualToComparingFieldByFieldRecursively(value);
-
-
-		copy = Jackson.BINARY_MAPPER.readValue(Jackson.BINARY_MAPPER.writeValueAsBytes(value), type);
-		ValidatorHelper.failOnError(log, validator.validate(copy), value.toString());
-		ass = assertThat(copy)
-			.as("Unequal only after BINARY copy.");
-		for(Class<?> ig:ignored)
-			ass.usingComparatorForType((a,b)->0, ig);
-		ass.isEqualToComparingFieldByFieldRecursively(value);
-	}
-	
-	public static <T> void testSerialization(T value, Class<T> type, CentralRegistry registry) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
-		Validator validator = Validators.newValidator();
-		ValidatorHelper.failOnError(log, validator.validate(value), value.toString());
-		T copy = new SingletonNamespaceCollection(registry).injectInto(Jackson.MAPPER).readValue(Jackson.MAPPER.writeValueAsBytes(value), type);
-		ValidatorHelper.failOnError(log, validator.validate(copy));
-		assertThat(copy)
-			.as("Unequal after JSON copy.")
-			.isEqualToComparingFieldByFieldRecursively(value);
-		copy = new SingletonNamespaceCollection(registry).injectInto(Jackson.BINARY_MAPPER).readValue(Jackson.BINARY_MAPPER.writeValueAsBytes(value), type);
-		ValidatorHelper.failOnError(log, validator.validate(copy), value.toString());
-		assertThat(copy)
-			.as("Unequal only after BINARY copy.")
-			.isEqualToComparingFieldByFieldRecursively(value);
 	}
 }

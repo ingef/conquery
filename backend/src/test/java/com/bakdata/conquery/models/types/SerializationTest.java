@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.specific.BooleanTypeBoolean;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
@@ -85,6 +86,9 @@ public class SerializationTest {
 
 	@ParameterizedTest @MethodSource("createCTypes")
 	public void testSerialization(CType<?,?> type) throws JsonParseException, JsonMappingException, JsonProcessingException, IOException, JSONException {
-		SerializationTestUtil.testSerialization(type, CType.class, Dictionary.class);
+		SerializationTestUtil
+			.forType(CType.class)
+			.ignoreClasses(Arrays.asList(Dictionary.class))
+			.test(type);
 	}
 }

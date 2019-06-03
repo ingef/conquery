@@ -45,7 +45,8 @@ public class RangeSerializerTest {
 
 	@ParameterizedTest @MethodSource("data")
 	public void test(Range<Integer> range) throws IOException, JSONException {
-		SerializationTestUtil.testSerialization(range, new TypeReference<Range<Integer>>() {
-		});
+		SerializationTestUtil
+			.forType(new TypeReference<Range<Integer>>() {})
+			.test(range);
 	}
 }
