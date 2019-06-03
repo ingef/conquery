@@ -1,23 +1,8 @@
 // @flow
 
-import React from "react";
-
-import { type TabPropsType } from "../pane";
 import { createQueryRunnerReducer } from "../query-runner";
-
 import { default as queryReducer } from "./reducer";
-
-import { QueryEditor } from "./QueryEditor";
-import { StandardQueryRunner } from "./StandardQueryRunner";
-import { QueryClearButton } from "./QueryClearButton";
-
-const StandardQueryEditor = (props: TabPropsType) => (
-  <>
-    <QueryClearButton />
-    <QueryEditor selectedDatasetId={props.selectedDatasetId} />
-    <StandardQueryRunner datasetId={props.selectedDatasetId} />
-  </>
-);
+import StandardQueryEditorTab from "./StandardQueryEditorTab";
 
 const queryRunnerReducer = createQueryRunnerReducer("standard");
 
@@ -26,12 +11,12 @@ const standardQueryEditorTabDescription = {
   label: "rightPane.queryEditor"
 };
 
-export const StandardQueryEditorTab = {
+export default {
   description: standardQueryEditorTabDescription,
   reducer: (state = standardQueryEditorTabDescription, action) => ({
     ...state,
     query: queryReducer(state.query, action),
     queryRunner: queryRunnerReducer(state.queryRunner, action)
   }),
-  component: StandardQueryEditor
+  component: StandardQueryEditorTab
 };
