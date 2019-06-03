@@ -12,13 +12,13 @@ import lombok.Setter;
 
 @Getter @Setter
 @CPSType(base = CType.class, id = "STRING_SUFFIX")
-public class StringTypeSuffix<SUB extends AStringType<Number>> extends AChainedStringType<SUB> {
+public class StringTypeSuffix extends AChainedStringType {
 
 	@NonNull
 	private String suffix;
 	
 	@JsonCreator
-	public StringTypeSuffix(SUB subType, String suffix) {
+	public StringTypeSuffix(AStringType<Number> subType, String suffix) {
 		super(subType);
 		this.suffix = suffix;
 	}
