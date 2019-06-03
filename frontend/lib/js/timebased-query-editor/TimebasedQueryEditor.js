@@ -98,7 +98,7 @@ const TimebasedQueryEditor = (props: PropsType) => {
 };
 
 const mapStateToProps = state => ({
-  query: state.panes.right.tabs.timebasedQueryEditor.timebasedQuery
+  query: state.timebasedQueryEditor.timebasedQuery
 });
 
 const mapDispatchToProps = dispatch => ({
