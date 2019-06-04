@@ -78,17 +78,27 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		return new ManagedExecutionId(dataset, queryId);
 	}
 
+	protected void fail() {
+		synchronized (execution) {
+			state = ExecutionState.FAILED;
+			finishTime = LocalDateTime.now();
+			execution.countDown();
+		}
+	}
+	
 	protected void finish() {
-		finishTime = LocalDateTime.now();
-		state = ExecutionState.DONE;
-		execution.countDown();
-		try {
-			namespace.getStorage().getMetaStorage().updateExecution(this);
+		synchronized (execution) {
+			finishTime = LocalDateTime.now();
+			this.state = ExecutionState.DONE;
+			execution.countDown();
+			try {
+				namespace.getStorage().getMetaStorage().updateExecution(this);
+			}
+			catch (JSONException e) {
+				log.error("Failed to store {} after finishing: {}", this.getClass().getSimpleName(), e, this);
+			}
 		}
-		catch (JSONException e) {
-			log.error("Failed to store {} after finishing: {}", this.getClass().getSimpleName(), e, this);
-		}
-		log.info("Finished {} {} within {}", queryId, this.getClass().getSimpleName(), Duration.between(startTime, finishTime));
+		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), Duration.between(startTime, finishTime));
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
