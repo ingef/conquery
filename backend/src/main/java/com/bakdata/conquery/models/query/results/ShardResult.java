@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 
 import com.bakdata.conquery.io.mina.MessageSender;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
 import com.bakdata.conquery.models.query.IQuery;
@@ -22,7 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 @Getter @Setter @Slf4j
 public class ShardResult {
 
-	private ManagedQueryId queryId;
+	private ManagedExecutionId queryId;
 	private IQuery query;
 	private List<EntityResult> results = new ArrayList<>();
 	private LocalDateTime startTime = LocalDateTime.now();

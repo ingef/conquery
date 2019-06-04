@@ -30,6 +30,7 @@ public interface IId<TYPE> {
 			return id;
 		}
 		else {
+			checkConflict(id, old);
 			return old;
 		}
 	}
@@ -58,6 +59,7 @@ public interface IId<TYPE> {
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
 				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(parts), result);
 				if(secondResult != null) {
+					checkConflict(result, secondResult);
 					return secondResult;
 				}
 			}
@@ -75,6 +77,7 @@ public interface IId<TYPE> {
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
 				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(input), result);
 				if(secondResult != null) {
+					checkConflict(result, secondResult);
 					return secondResult;
 				}
 				else {
@@ -84,7 +87,7 @@ public interface IId<TYPE> {
 			parts.consumeAll();
 			return result;
 		}
-
+		
 		ID parseInternally(IdIterator parts);
 		
 		default ID createId(List<String> parts) {
@@ -154,5 +157,11 @@ public interface IId<TYPE> {
 	
 	static <T extends IId<?>> Parser<T> createParser(Class<T> idClass) {
 		return (Parser<T>)idClass.getDeclaredClasses()[0].getEnumConstants()[0];
+	}
+	
+	static void checkConflict(IId<?> id, IId<?> cached) {
+		if(!cached.equals(id)) {
+			throw new IllegalStateException("The cached id '"+cached+"'("+cached.getClass().getSimpleName()+") conflicted with a new entry of "+id.getClass().getSimpleName());
+		}
 	}
 }
