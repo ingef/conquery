@@ -22,8 +22,9 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,7 +47,7 @@ public class StoredQueriesResource {
 	}
 
 	@GET
-	public List<SQStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
+	public List<ExecutionStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
 		authorize(user, datasetId, Ability.READ);
 
 		return processor.getAllQueries(dsUtil.getDataset(datasetId), req).stream()
@@ -56,7 +57,7 @@ public class StoredQueriesResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public SQStatus getQueryWithSource(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId) {
+	public ExecutionStatus getQueryWithSource(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
 		Dataset dataset = dsUtil.getDataset(datasetId);
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
@@ -66,7 +67,7 @@ public class StoredQueriesResource {
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public SQStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, JsonNode patch) throws JSONException {
+	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, JsonNode patch) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 
 		Dataset dataset = dsUtil.getDataset(datasetId);
@@ -77,7 +78,7 @@ public class StoredQueriesResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public void deleteQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId) {
+	public void deleteQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
 
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.DELETE);

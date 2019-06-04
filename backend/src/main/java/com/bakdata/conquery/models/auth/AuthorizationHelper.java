@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 
 /**
  * Helper for easier and cleaner authorization.
@@ -47,7 +47,7 @@ public class AuthorizationHelper {
 	 * @param query The id of the object that needs to be checked.
 	 * @param ability The kind of ability that is checked.
 	 */
-	public static void authorize(User user, ManagedQueryId query, Ability ability) {
+	public static void authorize(User user, ManagedExecutionId query, Ability ability) {
 		authorize(user, query, EnumSet.of(ability));
 	}
 	
@@ -57,7 +57,7 @@ public class AuthorizationHelper {
 	 * @param query The id of the object that needs to be checked.
 	 * @param ability The kind of ability that is checked.
 	 */
-	public static void authorize(User user, ManagedQueryId query, EnumSet<Ability> abilities) {
+	public static void authorize(User user, ManagedExecutionId query, EnumSet<Ability> abilities) {
 		user.checkPermission(new QueryPermission(user.getId(), abilities, query));
 	}
 	

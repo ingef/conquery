@@ -31,6 +31,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
@@ -38,9 +40,7 @@ import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
@@ -106,10 +106,10 @@ public class QueryTest extends AbstractQueryEngineTest {
 			ConceptQuery q = new ConceptQuery();
 			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 			
-			ManagedQuery managed = support.getNamespace().getQueryManager().createQuery(q, queryId, DevAuthConfig.USER);
+			ManagedExecution managed = support.getNamespace().getQueryManager().createQuery(q, queryId, DevAuthConfig.USER);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
-			if (managed.getStatus() == QueryStatus.FAILED) {
+			if (managed.getState() == ExecutionState.FAILED) {
 				fail("Query failed");
 			}
 		}

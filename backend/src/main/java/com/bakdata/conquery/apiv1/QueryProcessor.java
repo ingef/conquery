@@ -8,6 +8,8 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -21,7 +23,7 @@ public class QueryProcessor {
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
 
-	public SQStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
+	public ExecutionStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());
 		
 		ManagedQuery mq = namespace.getQueryManager().createQuery(query, user);
@@ -30,16 +32,16 @@ public class QueryProcessor {
 		user.addPermission(storage, new QueryPermission(null, AbilitySets.QUERY_CREATOR, mq.getId()));
 		mq.awaitDone(10, TimeUnit.SECONDS);
 		
-		return SQStatus.buildFromQuery(storage, mq, urlb);
+		return mq.buildStatus(urlb);
 	}
 
-	public SQStatus getStatus(Dataset dataset, ManagedQuery query, URLBuilder urlb) {
+	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution query, URLBuilder urlb) {
 		query.awaitDone(10, TimeUnit.SECONDS);
 		
-		return SQStatus.buildFromQuery(storage, query, urlb);
+		return query.buildStatus(urlb);
 	}
 
-	public SQStatus cancel(Dataset dataset, ManagedQuery query, URLBuilder urlb) {
+	public ExecutionStatus cancel(Dataset dataset, ManagedExecution query, URLBuilder urlb) {
 		
 		return null;
 	}

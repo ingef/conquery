@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 
 public class SerializationTests {
@@ -58,7 +58,7 @@ public class SerializationTests {
 	
 	@Test
 	public void queryPermission() throws IOException, JSONException{
-		QueryPermission permission = new QueryPermission(new UserId("user"), Ability.READ.asSet(), new ManagedQueryId(new DatasetId("dataset"), UUID.randomUUID()));
+		QueryPermission permission = new QueryPermission(new UserId("user"), Ability.READ.asSet(), new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()));
 
 		SerializationTestUtil
 			.forType(QueryPermission.class)
