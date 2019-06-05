@@ -24,7 +24,7 @@ public interface WorkerStorage extends NamespacedStorage {
 	void setWorker(WorkerInformation worker) throws JSONException;
 	void updateWorker(WorkerInformation worker) throws JSONException;
 	
-	void addBuckets(List<Bucket> newBlocks) throws JSONException;
+	void addBucket(Bucket bucket) throws JSONException;
 	Bucket getBucket(BucketId id);
 	void removeBucket(BucketId id);
 	Collection<Bucket> getAllBuckets();

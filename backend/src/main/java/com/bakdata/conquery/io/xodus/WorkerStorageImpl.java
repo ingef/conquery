@@ -81,12 +81,10 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 	
 	@Override
-	public void addBuckets(List<Bucket> newBuckets) throws JSONException {
-		for(Bucket block:newBuckets) {
-			blocks.add(block);
-		}
+	public void addBucket(Bucket bucket) throws JSONException {
+		blocks.add(bucket);
 		if(getBlockManager()!=null) {
-			getBlockManager().addBuckets(newBuckets);
+			getBlockManager().addBucket(bucket);
 		}
 	}
 

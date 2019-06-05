@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -43,8 +44,8 @@ public class CalculateCBlocksJob extends Job {
 		return "Calculate "+infos.size()+" CBlocks for "+connector.getId();
 	}
 	
-	public void addCBlock(Import imp, Block block, CBlockId cBlockId) {
-		infos.add(new CalculationInformation(table, imp, block, cBlockId));
+	public void addCBlock(Import imp, Bucket bucket, CBlockId cBlockId) {
+		infos.add(new CalculationInformation(table, imp, bucket, cBlockId));
 	}
 	
 	@Override
@@ -77,7 +78,7 @@ public class CalculateCBlocksJob extends Job {
 	
 	private CBlock createCBlock(Connector connector, CalculationInformation info) {
 		return new CBlock(
-			info.getBlock().getId(),
+			info.getBucket().getId(),
 			connector.getId()
 		);
 	}
@@ -97,35 +98,41 @@ public class CalculateCBlocksJob extends Job {
 
 		treeConcept.initializeIdCache(stringType, importId);
 
-		cBlock.setMostSpecificChildren(new ArrayList<>(info.getBlock().size()));
-		Block block = info.getBlock();
+		cBlock.setMostSpecificChildren(new ArrayList<>(
+			Arrays.stream(info.getBucket().getBlocks())
+				.mapToInt(Block::size)
+				.sum()
+		));
+		
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
-
-		for(int event = 0; event < block.size(); event++) {
-			try {
-				if(block.has(event, connector.getColumn())) {
-					int valueIndex = block.getString(event, connector.getColumn());
-					final int finalEvent = event;
-					final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
-						() -> block.calculateMap(finalEvent, info.getImp())
-					);
-
-					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
-
-					if (child != null) {
-						cBlock.getMostSpecificChildren().add(child.getPrefix());
+		
+		for(Block block:info.getBucket().getBlocks()) {
+			for(int event = 0; event < block.size(); event++) {
+				try {
+					if(block.has(event, connector.getColumn())) {
+						int valueIndex = block.getString(event, connector.getColumn());
+						final int finalEvent = event;
+						final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
+							() -> block.calculateMap(finalEvent, info.getImp())
+						);
+	
+						ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
+	
+						if (child != null) {
+							cBlock.getMostSpecificChildren().add(child.getPrefix());
+						}
+						else {
+							//see #174  improve handling by copying the relevant things from the old project
+							cBlock.getMostSpecificChildren().add(null);
+						}
 					}
 					else {
-						//see #174  improve handling by copying the relevant things from the old project
 						cBlock.getMostSpecificChildren().add(null);
 					}
+				} catch (ConceptConfigurationException ex) {
+					log.error("Failed to resolve event "+block+"-"+event+" against concept "+connector, ex);
 				}
-				else {
-					cBlock.getMostSpecificChildren().add(null);
-				}
-			} catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event "+block+"-"+event+" against concept "+connector, ex);
 			}
 		}
 
