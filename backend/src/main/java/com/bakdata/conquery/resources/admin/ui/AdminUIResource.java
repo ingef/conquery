@@ -100,6 +100,13 @@ public class AdminUIResource {
 		return Response.ok().build();
 	}
 	
+	@DELETE
+	@Path("/mandators/{"+ MANDATOR_NAME +"}")
+	public Response deleteMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) throws JSONException {
+		processor.deleteMandator(mandatorId);
+		return Response.ok().build();
+	}
+	
 	/**
 	 * End point for retrieving information about a specific mandator.
 	 * @param mandatorId Unique id of the mandator.
