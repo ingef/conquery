@@ -17,11 +17,11 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.Identifiable;
-import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -40,24 +40,23 @@ import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor @Getter
 public enum StoreInfo implements IStoreInfo {
-	DATASET			("DATASET", 		Dataset.class,				Boolean.class),
-	ID_MAPPING		("ID_MAPPING", 		PersistentIdMap.class,		Boolean.class),
-	NAMESPACES		("NAMESPACES", 		Namespaces.class,			Boolean.class),
-	SLAVE			("NETWORK_SLAVE", 	SlaveInformation.class,		Boolean.class),
-	DICTIONARIES	("DICTIONARIES", 	Dictionary.class,			DictionaryId.class),
-	IMPORTS			("IMPORTS", 		Import.class,				ImportId.class),
-	CONCEPTS		("CONCEPTS", 		Concept.class,				ConceptId.class),
-	BLOCKS			("BLOCKS", 			Block.class,				BlockId.class),
-	C_BLOCKS		("C_BLOCKS", 		CBlock.class,				CBlockId.class),
-	WORKER			("WORKER",			WorkerInformation.class,	Boolean.class),
-	EXECUTIONS		("EXECUTIONS", 		ManagedExecution.class,		ManagedExecutionId.class),
-	AUTH_PERMISSIONS("AUTH_PERMISSIONS",ConqueryPermission.class,	PermissionId.class),
-	AUTH_MANDATOR	("AUTH_MANDATOR", 	Mandator.class,				MandatorId.class),
-	AUTH_USER		("AUTH_USER", 		User.class,					UserId.class),
-	STRUCTURE		("STRUCTURE", 		StructureNode[].class,		Boolean.class),
+	DATASET			(Dataset.class,				Boolean.class),
+	ID_MAPPING		(PersistentIdMap.class,		Boolean.class),
+	NAMESPACES		(Namespaces.class,			Boolean.class),
+	SLAVE			(SlaveInformation.class,		Boolean.class),
+	DICTIONARIES	(Dictionary.class,			DictionaryId.class),
+	IMPORTS			(Import.class,				ImportId.class),
+	CONCEPTS		(Concept.class,				ConceptId.class),
+	BUCKETS			(Bucket.class,				BucketId.class),
+	C_BLOCKS		(CBlock.class,				CBlockId.class),
+	WORKER			(WorkerInformation.class,	Boolean.class),
+	EXECUTIONS		(ManagedExecution.class,		ManagedExecutionId.class),
+	AUTH_PERMISSIONS(ConqueryPermission.class,	PermissionId.class),
+	AUTH_MANDATOR	(Mandator.class,				MandatorId.class),
+	AUTH_USER		(User.class,					UserId.class),
+	STRUCTURE		(StructureNode[].class,		Boolean.class),
 	;
 	
-	private final String xodusName;
 	private final Class<?> valueType;
 	private final Class<?> keyType;
 	
@@ -93,6 +92,11 @@ public enum StoreInfo implements IStoreInfo {
 				new BigStore<>(storage.getValidator(), storage.getEnvironment(), this)
 			)
 		);
+	}
+
+	@Override
+	public String getXodusName() {
+		return name();
 	}
 	
 	public <T extends Identifiable<?>> IdentifiableCachedStore<T> weakBig(NamespacedStorage storage) {

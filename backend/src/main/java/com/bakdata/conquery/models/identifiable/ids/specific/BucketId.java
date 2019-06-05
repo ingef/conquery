@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -13,10 +13,10 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class BlockId extends AId<Block> implements NamespacedId {
+public class BucketId extends AId<Bucket> implements NamespacedId {
 
 	private final ImportId imp;
-	private final int entity;
+	private final int bucket;
 	
 	@Override
 	public DatasetId getDataset() {
@@ -26,17 +26,17 @@ public class BlockId extends AId<Block> implements NamespacedId {
 	@Override
 	public void collectComponents(List<Object> components) {
 		imp.collectComponents(components);
-		components.add(entity);
+		components.add(bucket);
 	}
 	
-	public static enum Parser implements IId.Parser<BlockId> {
+	public static enum Parser implements IId.Parser<BucketId> {
 		INSTANCE;
 		
 		@Override
-		public BlockId parseInternally(IdIterator parts) {
-			int entity = Integer.parseInt(parts.next());
+		public BucketId parseInternally(IdIterator parts) {
+			int bucket = Integer.parseInt(parts.next());
 			ImportId parent = ImportId.Parser.INSTANCE.parse(parts);
-			return new BlockId(parent, entity);
+			return new BucketId(parent, bucket);
 		}
 	}
 }
