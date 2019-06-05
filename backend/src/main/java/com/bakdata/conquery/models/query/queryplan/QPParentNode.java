@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -10,13 +12,18 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ListMultimap;
 
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter
+@RequiredArgsConstructor(access = AccessLevel.PROTECTED)
 public abstract class QPParentNode extends QPNode {
 
 	private final List<QPNode> children;
@@ -83,5 +90,17 @@ public abstract class QPParentNode extends QPNode {
 	@Override
 	public String toString() {
 		return super.toString()+"[children = "+children+"]";
+	}
+	
+	protected Pair<List<QPNode>, ListMultimap<TableId, QPNode>> createClonedFields(CloneContext ctx) {
+		List<QPNode> clones = new ArrayList<>(getChildren());
+		clones.replaceAll(qp -> ctx.clone(qp));
+
+		ArrayListMultimap<TableId, QPNode> cloneMap = ArrayListMultimap.create(childMap);
+		
+		for(Entry<TableId, QPNode> e : cloneMap.entries()) {
+			e.setValue(ctx.clone(e.getValue()));
+		}
+		return Pair.of(clones, cloneMap);
 	}
 }
