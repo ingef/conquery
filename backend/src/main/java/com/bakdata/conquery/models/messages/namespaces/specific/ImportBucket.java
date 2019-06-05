@@ -18,22 +18,24 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.worker.Worker;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.jakewharton.byteunits.BinaryByteUnit;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
 import it.unimi.dsi.fastutil.ints.IntList;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @CPSType(id="IMPORT_BIT", base=NamespacedMessage.class)
-@RequiredArgsConstructor @Getter @Setter
+@RequiredArgsConstructor(onConstructor_ = @JsonCreator) @Getter @Setter
 public class ImportBucket extends WorkerMessage.Slow {
 	
 	@Nonnull @NotNull
 	private final BucketId bucket;
 	@NotEmpty
-	private IntList includedEntities = new IntArrayList();
+	private IntArrayList includedEntities = new IntArrayList();
 	@NotNull
 	private byte[][] bytes;
 	
@@ -56,7 +58,9 @@ public class ImportBucket extends WorkerMessage.Slow {
 			int entity = includedEntities.getInt(index);
 			
 			try(ByteArrayInputStream input = new ByteArrayInputStream(bytes[index])) {
-				bucket.getBlocks()[bucket.getPosition(entity)] = factory.readBlock(entity, imp, input);
+				Block block = factory.readBlock(imp, input);
+				block.setBucket(bucket);
+				bucket.getBlocks()[bucket.getPosition(entity)] = block;
 				if(input.available() > 0) {
 					throw new IllegalStateException("After reading the block of "+entity+" there are still "+input.available()+" bytes remaining in its content");
 				}

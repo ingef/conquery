@@ -4,10 +4,6 @@ import java.io.IOException;
 import java.math.BigDecimal;
 import java.util.Map;
 
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.io.jackson.serializer.BlockDeserializer;
-import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -17,19 +13,15 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
-@AllArgsConstructor @NoArgsConstructor @JsonDeserialize(using = BlockDeserializer.class)
+@NoArgsConstructor 
 public abstract class Block implements JsonSerializable{
 
-	@NotNull @NsIdRef @Getter
-	private Import imp;
 	@JsonBackReference @Getter @Setter
 	private Bucket bucket;
 	

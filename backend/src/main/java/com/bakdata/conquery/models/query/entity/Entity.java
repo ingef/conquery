@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query.entity;
 
+import java.util.List;
+
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
@@ -15,9 +17,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
-@RequiredArgsConstructor @Getter @ToString(of="id")
+@RequiredArgsConstructor @ToString(of="id")
 public class Entity {
-
+	@Getter
 	private final int id;
 	private final ListMultimap<Table, Bucket> buckets = ArrayListMultimap.create();
 	private final HashBasedTable<ConnectorId, BucketId, EntityRow> cBlocks = HashBasedTable.create();
@@ -44,5 +46,13 @@ public class Entity {
 
 	public static int getBucket(int entityId, int entityBucketSize) {
 		return entityId / entityBucketSize;
+	}
+
+	public EntityRow getCBlock(ConnectorId connector, BucketId bucket) {
+		return cBlocks.get(connector, bucket);
+	}
+
+	public List<Bucket> getBucket(Table table) {
+		return buckets.get(table);
 	}
 }

@@ -135,7 +135,7 @@ public class ImportIdsJob extends Job {
 
 					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
 						buffer.reset();
-						Block block = factory.createBlock(entityId, allIdsImp, Collections.singletonList(new Object[0]));
+						Block block = factory.createBlock(allIdsImp, Collections.singletonList(new Object[0]));
 						block.writeContent(buffer);
 
 						//copy content into ImportBucket

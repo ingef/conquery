@@ -34,7 +34,7 @@ public class QueryPart implements Callable<EntityResult> {
 
 			for(Table currentTable : requiredTables) {
 				queryPlan.nextTable(ctx, currentTable);
-				for(Bucket bucket : entity.getBuckets().get(currentTable)) {
+				for(Bucket bucket : entity.getBucket(currentTable)) {
 					Block block = bucket.getBlockFor(entity.getId());
 					if(block != null) {
 						queryPlan.nextBlock(block);
