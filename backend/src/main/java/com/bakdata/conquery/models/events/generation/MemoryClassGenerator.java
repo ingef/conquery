@@ -8,23 +8,19 @@ import java.util.Arrays;
 import java.util.List;
 
 import javax.tools.JavaCompiler.CompilationTask;
+import javax.tools.JavaCompiler;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
+import javax.tools.StandardJavaFileManager;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class MemoryClassGenerator extends ClassGenerator {
 
-	private final JavaFileManager fileManager;
-	private final MemClassLoader classLoader;
+	private final MemClassLoader classLoader = new MemClassLoader();
 	private final List<JavaFileObject> files = new ArrayList<>();
 	private final List<String> generated = new ArrayList<>();
-
-	public MemoryClassGenerator() throws IOException {
-		classLoader = new MemClassLoader();
-		fileManager = new MemJavaFileManager(compiler, classLoader);
-	}
 
 	@Override
 	public Class<?> getClassByName(String fullClassName) throws ClassNotFoundException {
@@ -32,28 +28,15 @@ public class MemoryClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public void compile() throws IOException, URISyntaxException {
-		try (JavaFileManager fileManager = new MemJavaFileManager(compiler, classLoader)) {
+	protected void doCompile(JavaCompiler compiler, StandardJavaFileManager fileManager) throws IOException, URISyntaxException {
+		try (JavaFileManager myFM = new MemJavaFileManager(compiler, classLoader)) {
 			StringWriter output = new StringWriter();
-			CompilationTask task = compiler.getTask(output, fileManager, null, Arrays.asList("-g:none"), null, files);
+			CompilationTask task = compiler.getTask(output, myFM, null, Arrays.asList("-g:none"), null, files);
 			
 			if (!task.call()) {
 				throw new IllegalStateException("Failed to compile: "+output);
 			}
 		}
-	}
-
-	@Override
-	public void close() throws IOException {
-		// load classes to memory before closing
-		for (String cl : generated) {
-			try {
-				getClassByName(cl);
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
-			}
-		}
-		fileManager.close();
 	}
 
 	@Override

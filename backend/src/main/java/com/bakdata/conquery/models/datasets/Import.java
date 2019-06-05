@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Map;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -75,7 +76,8 @@ public class Import extends NamedImpl<ImportId> {
 			String eventSource = null;
 			String blockSource = null;
 			String factorySource = null;
-			try(ClassGenerator gen = ClassGenerator.create()) {
+			try {
+				ClassGenerator gen = ClassGenerator.create();
 				String suffix = ConqueryEscape.escape(this.getId().toString().replace('.', '_'));
 				
 				blockSource = applyTemplate("BlockTemplate.ftl", suffix);
@@ -89,15 +91,15 @@ public class Import extends NamedImpl<ImportId> {
 					"com.bakdata.conquery.models.events.generation.Block_"+suffix,
 					blockSource
 				);
+				String blockFactoryName = "com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix;
 				gen.addForCompile(
-					"com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix,
+					blockFactoryName,
 					factorySource
 				);
 				
-				gen.compile();
+				Map<String, Class<?>> result = gen.compile();
 				
-				blockFactory = (BlockFactory) gen
-					.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix)
+				blockFactory = (BlockFactory) result.get(blockFactoryName)
 					.getConstructor()
 					.newInstance();
 			} catch (Exception e) {

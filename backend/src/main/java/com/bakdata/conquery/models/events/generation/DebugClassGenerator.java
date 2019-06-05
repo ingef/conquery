@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
@@ -37,7 +38,7 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public synchronized void addTask(String fullClassName, String content) throws IOException {
+	protected synchronized void addTask(String fullClassName, String content) throws IOException {
 		String[] parts = StringUtils.split(fullClassName, '.');
 		String className = parts[parts.length - 1];
 		File dir = tmp;
@@ -57,28 +58,13 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public synchronized void compile() throws IOException, URISyntaxException {
-		try (StandardJavaFileManager fileManager = getCompiler().getStandardFileManager(null, null, null)) {
-			Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
-			StringWriter output = new StringWriter();
-			CompilationTask task = getCompiler().getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
-			
-			if (!task.call()) {
-				throw new IllegalStateException("Failed to compile: "+output);
-			}
+	protected void doCompile(JavaCompiler compiler, StandardJavaFileManager fileManager) throws IOException, URISyntaxException {
+		Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
+		StringWriter output = new StringWriter();
+		CompilationTask task = compiler.getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
+		
+		if (!task.call()) {
+			throw new IllegalStateException("Failed to compile: "+output);
 		}
-	}
-
-	@Override
-	public synchronized void close() throws IOException {
-		// load classes to memory before closing
-		for (String cl : generated) {
-			try {
-				getClassByName(cl);
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
-			}
-		}
-		fileManager.close();
 	}
 }
