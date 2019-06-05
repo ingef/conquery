@@ -1,7 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.util.concurrent.TimeUnit;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -30,14 +28,10 @@ public class QueryProcessor {
 		
 		// Set abilities for submitted query
 		user.addPermission(storage, new QueryPermission(null, AbilitySets.QUERY_CREATOR, mq.getId()));
-		mq.awaitDone(10, TimeUnit.SECONDS);
-		
-		return mq.buildStatus(urlb);
+		return getStatus(dataset, mq, urlb);
 	}
 
 	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution query, URLBuilder urlb) {
-		query.awaitDone(10, TimeUnit.SECONDS);
-		
 		return query.buildStatus(urlb);
 	}
 

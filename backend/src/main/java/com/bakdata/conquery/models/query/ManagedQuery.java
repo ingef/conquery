@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -67,11 +66,7 @@ public class ManagedQuery extends ManagedExecution {
 	public void addResult(ShardResult result) {
 		for (EntityResult er : result.getResults()) {
 			if (er.isFailed() && state == ExecutionState.RUNNING) {
-				synchronized (execution) {
-					state = ExecutionState.FAILED;
-					finishTime = LocalDateTime.now();
-					execution.countDown();
-				}
+				fail();
 				FailedEntityResult failed = er.asFailed();
 				log.error("Failed query {} at least for the entity {} with:\n{}", queryId, failed.getEntityId(), failed.getExceptionStackTrace());
 			}
