@@ -29,7 +29,12 @@ public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
+		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
+			reference = null;
+		}
+		else {
+			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
+		}
 	}
 
 	@Override
@@ -44,6 +49,14 @@ public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void aggregateEvent(Block block, int event) {
+		if(reference == null) {
+			return;
+		}
+
+		if(!block.has(event, getColumn())) {
+			return;
+		}
+
 		LocalDate date = CDate.toLocalDate(block.getDate(event, getColumn()));
 
 		final long between = unit.between(date, reference);
