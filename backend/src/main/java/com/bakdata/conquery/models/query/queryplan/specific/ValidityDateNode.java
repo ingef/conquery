@@ -22,11 +22,6 @@ public class ValidityDateNode extends QPChainNode {
 	}
 	
 	@Override
-	protected void init() {
-		noRestriction = context.getDateRestriction().isAll();
-	}
-
-	@Override
 	public void nextEvent(Block block, int event) {
 		//if table without validity columns we continue always
 		if(validityDateColumn == null) {
@@ -57,5 +52,6 @@ public class ValidityDateNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
+		noRestriction = ctx.getDateRestriction().isAll();
 	}
 }
