@@ -27,6 +27,7 @@ public class DebugClassGenerator extends ClassGenerator {
 	private final URLClassLoader classLoader;
 	private final List<File> files = new ArrayList<>();
 	private final List<String> generated = new ArrayList<>();
+	private final StandardJavaFileManager fileManager;
 
 
 	public DebugClassGenerator() throws IOException {
@@ -34,6 +35,7 @@ public class DebugClassGenerator extends ClassGenerator {
 		tmp = new File("codeGenDebug");
 		classLoader = new URLClassLoader(new URL[] { tmp.toURI().toURL() }, Thread.currentThread().getContextClassLoader());
 		log.debug("Generating Java classes in {}", tmp.getAbsolutePath());
+		fileManager = compiler.getStandardFileManager(null, null, null);
 	}
 
 	@Override
@@ -58,27 +60,18 @@ public class DebugClassGenerator extends ClassGenerator {
 
 	@Override
 	public synchronized void compile() throws IOException, URISyntaxException {
-		try (StandardJavaFileManager fileManager = getCompiler().getStandardFileManager(null, null, null)) {
-			Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
-			StringWriter output = new StringWriter();
-			CompilationTask task = getCompiler().getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
-			
-			if (!task.call()) {
-				throw new IllegalStateException("Failed to compile: "+output);
-			}
+		Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
+		StringWriter output = new StringWriter();
+		CompilationTask task = getCompiler().getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
+		
+		if (!task.call()) {
+			throw new IllegalStateException("Failed to compile: "+output);
 		}
 	}
 
 	@Override
 	public synchronized void close() throws IOException {
-		// load classes to memory before closing
-		for (String cl : generated) {
-			try {
-				getClassByName(cl);
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
-			}
-		}
+		super.close();
 		fileManager.close();
 	}
 }
