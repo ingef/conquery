@@ -14,22 +14,28 @@ import lombok.ToString;
 public class ValidityDateNode extends QPChainNode {
 
 	private final Column validityDateColumn;
+	private transient boolean noRestriction;
 	
 	public ValidityDateNode(Column validityDateColumn, QPNode child) {
 		super(child);
 		this.validityDateColumn = validityDateColumn;
 	}
-
+	
 	@Override
 	public void nextEvent(Block block, int event) {
-		//if validity date is null return
-		if(validityDateColumn != null && !block.has(event, validityDateColumn)) {
+		//if table without validity columns we continue always
+		if(validityDateColumn == null) {
+			getChild().nextEvent(block, event);
+		}
+
+		//if event has null validityDate cancel
+		if(!block.has(event, validityDateColumn)) {
 			return;
 		}
-		else {
-			if(validityDateColumn == null || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
-				getChild().nextEvent(block, event);
-			}
+
+		//no dateRestriction or event is in date restriction
+		if(noRestriction || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
+			getChild().nextEvent(block, event);
 		}
 	}
 	
@@ -46,5 +52,6 @@ public class ValidityDateNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
+		noRestriction = ctx.getDateRestriction().isAll();
 	}
 }
