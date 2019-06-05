@@ -5,7 +5,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -23,7 +23,7 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public void nextBlock(Block block) {
-		selectedId = ((IStringType) getColumn().getTypeFor(block)).getStringId(selected);
+		selectedId = ((AStringType) getColumn().getTypeFor(block)).getId(selected);
 	}
 
 	@Override

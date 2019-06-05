@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.concepts.tree;
 import java.util.Map;
 
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.tomgibara.bits.BitStore;
@@ -22,13 +22,13 @@ public class ConceptTreeCache {
 	private final TreeConcept treeConcept;
 
 	@JsonIgnore
-	private final IStringType type;
+	private final AStringType type;
 	@JsonIgnore
 	private final BitStore cached;
 	@JsonIgnore
 	private final ConceptTreeChild[] values;
 
-	public ConceptTreeCache(TreeConcept treeConcept, IStringType type) {
+	public ConceptTreeCache(TreeConcept treeConcept, AStringType type) {
 		this.type = type;
 		this.treeConcept = treeConcept;
 		
@@ -44,7 +44,7 @@ public class ConceptTreeCache {
 
 		misses++;
 
-		String scriptValue = type.createScriptValue(id);
+		String scriptValue = type.getElement(id);
 		final ConceptTreeChild child = treeConcept.findMostSpecificChild(scriptValue, rowMap);
 
 		if(!rowMap.isCalculated()) {

@@ -22,4 +22,9 @@ public class VarIntTypeByte extends VarIntType {
 	public int toInt(Number value) {
 		return value.byteValue();
 	}
+
+	@Override
+	public long estimateMemoryBitWidth() {
+		return Byte.SIZE;
+	}
 }

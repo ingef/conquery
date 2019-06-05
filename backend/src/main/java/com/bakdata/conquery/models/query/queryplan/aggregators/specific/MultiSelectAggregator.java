@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 
 
 public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, Integer>> {
@@ -26,10 +26,10 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 
 	@Override
 	public void nextBlock(Block block) {
-		IStringType type = (IStringType) getColumn().getTypeFor(block);
+		AStringType type = (AStringType) getColumn().getTypeFor(block);
 
 		for (int index = 0; index < selection.length; index++) {
-			selectedValues[index] = type.getStringId(selection[index]);
+			selectedValues[index] = type.getId(selection[index]);
 		}
 	}
 

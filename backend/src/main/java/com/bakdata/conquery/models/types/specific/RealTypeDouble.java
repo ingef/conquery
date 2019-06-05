@@ -15,4 +15,9 @@ public class RealTypeDouble extends CType<Double, Double> {
 	public boolean canStoreNull() {
 		return false;
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return Double.SIZE;
+	}
 }

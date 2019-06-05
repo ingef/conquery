@@ -18,20 +18,17 @@ import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
 import com.bakdata.conquery.models.preproc.PPHeader;
-import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
-import com.bakdata.conquery.util.DebugMode;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.fasterxml.jackson.core.JsonParser;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
 
-import io.dropwizard.cli.ConfiguredCommand;
-import io.dropwizard.setup.Bootstrap;
+import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +37,7 @@ import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
 
 @Slf4j
-public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
+public class CollectEntitiesCommand extends ConqueryCommand {
 
 	private ConcurrentMap<File, Set<String>> entities = new ConcurrentHashMap<>();
 	private boolean verbose = false;
@@ -59,14 +56,9 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 	}
 
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig config) throws Exception {
+	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		verbose = Boolean.TRUE.equals(namespace.getBoolean("-verbose"));
 
-		if(config.getDebugMode() != null) {
-			DebugMode.setActive(config.getDebugMode());
-		}
-		config.initializeDatePatterns();
-		
 		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
 		
 		Collection<EntityExtractor> jobs = findPreprocessedJobs(config);
@@ -132,19 +124,19 @@ public class CollectEntitiesCommand extends ConfiguredCommand<ConqueryConfig> {
 
 					log.debug("\tparsing dictionaries");
 					header.getPrimaryColumn().getType().readHeader(in);
-					Dictionary dict = ((StringTypeVarInt) header.getPrimaryColumn().getType()).getDictionary();
+					AStringType<Number> primType = (AStringType<Number>) header.getPrimaryColumn().getType();
 					
-					add(dict, new File(file.getParentFile(), "all_entities.csv"));
+					add(primType, new File(file.getParentFile(), "all_entities.csv"));
 					if(verbose) {
-						add(dict, new File(file.getParentFile(), file.getName()+".entities.csv"));
+						add(primType, new File(file.getParentFile(), file.getName()+".entities.csv"));
 					}
 				}
 			}
 		}
 
-		private void add(Dictionary dict, File file) {
+		private void add(AStringType<Number> primType, File file) {
 			Set<String> list = entities.computeIfAbsent(file, f->Sets.newConcurrentHashSet());
-			dict.forEach(list::add);
+			primType.forEach(list::add);
 		}
 		
 	}

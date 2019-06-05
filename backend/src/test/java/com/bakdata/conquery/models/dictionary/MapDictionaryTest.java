@@ -9,20 +9,27 @@ import org.junit.jupiter.api.Test;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 
 
 class MapDictionaryTest {
 
 	@Test
 	void testSerializationAsList() throws IOException, JSONException {
-		MapDictionary map =  new MapDictionary();
-		map.add("a");
-		map.add("b");
-		map.add("c");
+		MapDictionary map =  new MapDictionary(new DictionaryId(new DatasetId("dataset"), "dictionary"));
+		DirectDictionary direct = new DirectDictionary(map);
+		direct.add("a");
+		direct.add("b");
+		direct.add("c");
 		
 		String json = Jackson.MAPPER.writeValueAsString(map);
-		assertThat(json).isEqualTo("[\"MAP_DICTIONARY\",[\"a\",\"b\",\"c\"]]");
-		SerializationTestUtil.testSerialization(map, MapDictionary.class);
+		assertThat(json)
+			.startsWith("{\"type\":\"MAP_DICTIONARY\",\"name\":\"dictionary\",\"id2Value\":[")
+			.endsWith("],\"dataset\":\"dataset\"}");
+		SerializationTestUtil
+			.forType(MapDictionary.class)
+			.test(map);
 	}
 
 }

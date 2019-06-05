@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.models.preproc.DateFormats;
+import com.bakdata.conquery.util.DebugMode;
 import com.google.common.collect.MoreCollectors;
 
 import io.dropwizard.Configuration;
@@ -71,14 +72,17 @@ public class ConqueryConfig extends Configuration {
 		((DefaultServerFactory)this.getServerFactory()).setJerseyRootPath("/api/");
 	}
 
-	public void initializeDatePatterns() {
-		DateFormats.initialize(additionalFormats);
-	}
-	
 	public <T extends PluginConfig> T getPluginConfig(Class<T> type) {
 		return (T) plugins.stream()
 			.filter(c -> type.isAssignableFrom(c.getClass()))
 			.collect(MoreCollectors.toOptional())
 			.get();
+	}
+
+	public void initialize() {
+		if(debugMode != null) {
+			DebugMode.setActive(debugMode);
+		}
+		DateFormats.initialize(additionalFormats);
 	}
 }

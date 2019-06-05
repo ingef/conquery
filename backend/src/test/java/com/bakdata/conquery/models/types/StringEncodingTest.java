@@ -3,25 +3,17 @@ package com.bakdata.conquery.models.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.specific.StringTypeVarInt;
-import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.specific.StringParser;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
-import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
 
 import lombok.extern.slf4j.Slf4j;
 

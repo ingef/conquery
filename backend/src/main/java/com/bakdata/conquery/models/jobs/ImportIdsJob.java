@@ -13,6 +13,8 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -64,9 +66,9 @@ public class ImportIdsJob extends Job {
 
 			//update primary dictionary
 			log.debug("\tupdating primary dictionary");
-			Dictionary entities = new Dictionary();
-			ids.forEach(entities::add);
-			entities.compress();
+			Dictionary entities = new MapDictionary();
+			DirectDictionary direct = new DirectDictionary(entities);
+			ids.forEach(direct::add);
 			
 			log.debug("\tcompute dictionary");
 			Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
@@ -81,8 +83,7 @@ public class ImportIdsJob extends Job {
 			}
 			//but if there are new ids we have to
 			else {
-				log.debug("\t\tnew ids {}, recompressing", primaryMapping.getNewIds());
-				primaryDict.compress();
+				log.debug("\t\tnew ids {}", primaryMapping.getNewIds());
 				log.debug("\t\texample of new id: {}", primaryDict.getElement(primaryMapping.getNewIds().getMin()));
 				log.debug("\t\tstoring");
 				namespace.getStorage().updateDictionary(primaryDict);

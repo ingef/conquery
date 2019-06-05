@@ -27,12 +27,12 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.JobStatus;
@@ -40,7 +40,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingSt
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
@@ -56,7 +55,6 @@ import lombok.extern.slf4j.Slf4j;
 @PermitAll
 @Slf4j
 @Path("/")
-@AuthCookie
 public class AdminUIResource {
 
 	private final ConqueryConfig config;
@@ -139,7 +137,7 @@ public class AdminUIResource {
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
-		if (managed.getStatus() == QueryStatus.FAILED) {
+		if (managed.getState() == ExecutionState.FAILED) {
 			throw new IllegalStateException("Query failed");
 		}
 

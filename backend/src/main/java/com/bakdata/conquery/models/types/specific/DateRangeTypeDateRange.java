@@ -28,4 +28,9 @@ public class DateRangeTypeDateRange extends CType<CDateRange, CDateRange> {
 	public boolean canStoreNull() {
 		return true;
 	}
+	
+	@Override
+	public long estimateMemoryBitWidth() {
+		return 128+Long.SIZE;
+	}
 }
