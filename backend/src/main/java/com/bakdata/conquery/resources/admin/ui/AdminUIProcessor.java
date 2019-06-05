@@ -36,7 +36,7 @@ public class AdminUIProcessor {
 	}
 
 	/**
-	 * Deletes the mandator, that is identified by the id
+	 * Deletes the mandator, that is identified by the id.
 	 * @param mandatorId The id belonging to the mandator
 	 */
 	public void deleteMandator(MandatorId mandatorId) {
