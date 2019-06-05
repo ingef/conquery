@@ -1,8 +1,8 @@
 // @flow
 
 import conquery from "../../../lib/js";
-import { StandardQueryEditorTab } from "../../../lib/js/standard-query-editor";
-import { TimebasedQueryEditorTab } from "../../../lib/js/timebased-query-editor";
+import StandardQueryEditorTab from "../../../lib/js/standard-query-editor";
+import TimebasedQueryEditorTab from "../../../lib/js/timebased-query-editor";
 
 import theme from "../styles/theme";
 

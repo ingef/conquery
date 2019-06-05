@@ -32,7 +32,7 @@ const QueryClearButton = (props: PropsType) => {
 };
 
 const mapStateToProps = state => ({
-  isVisible: state.panes.right.tabs.queryEditor.query.length !== 0
+  isVisible: state.queryEditor.query.length !== 0
 });
 
 const mapDispatchToProps = dispatch => ({
