@@ -35,6 +35,15 @@ public class AdminUIProcessor {
 		storage.addMandator(mandator);
 	}
 
+	/**
+	 * Deletes the mandator, that is identified by the id
+	 * @param mandatorId The id belonging to the mandator
+	 */
+	public void deleteMandator(MandatorId mandatorId) {
+		log.info("Deleting mandator: {}", mandatorId);
+		storage.removeMandator(mandatorId);
+	}
+
 	public List<Mandator> getAllMandators() {
 		return new ArrayList<>(storage.getAllMandators());
 	}
