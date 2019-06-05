@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -98,8 +99,8 @@ public abstract class QPParentNode extends QPNode {
 
 		ArrayListMultimap<TableId, QPNode> cloneMap = ArrayListMultimap.create(childMap);
 		
-		for(Entry<TableId, QPNode> e : cloneMap.entries()) {
-			e.setValue(ctx.clone(e.getValue()));
+		for(Entry<TableId, Collection<QPNode>> e : cloneMap.asMap().entrySet()) {
+			((List<QPNode>)e.getValue()).replaceAll(v->ctx.clone(v));
 		}
 		return Pair.of(clones, cloneMap);
 	}
