@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.tools.JavaCompiler;
-import javax.tools.JavaFileManager;
 import javax.tools.ToolProvider;
 
 import com.bakdata.conquery.util.DebugMode;
@@ -17,7 +16,6 @@ import lombok.Getter;
 public abstract class ClassGenerator implements Closeable {
 	@Getter
 	protected final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
-	protected JavaFileManager fileManager;
 	private final List<String> generated = new ArrayList<>();
 
 
@@ -30,10 +28,6 @@ public abstract class ClassGenerator implements Closeable {
 		}
 	}
 	
-	public ClassGenerator() {
-		this.fileManager = compiler.getStandardFileManager(null, null, null);
-	}
-
 	public void addForCompile(String fullClassName, String content) throws IOException, ClassNotFoundException {
 		generated.add(fullClassName);
 		addTask(fullClassName, content);
@@ -55,6 +49,5 @@ public abstract class ClassGenerator implements Closeable {
 				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
 			}
 		}
-		fileManager.close();
 	}
 }

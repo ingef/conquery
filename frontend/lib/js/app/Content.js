@@ -46,7 +46,7 @@ type PropsType = {
   displayTooltip: boolean
 };
 
-const Content = ({ displayTooltip }: PropsType) => {
+const Content = ({ displayTooltip, rightTabs }: PropsType) => {
   return (
     <Root>
       <SplitPane
@@ -65,7 +65,7 @@ const Content = ({ displayTooltip }: PropsType) => {
           defaultSize="39%"
         >
           <LeftPane />
-          <RightPane />
+          <RightPane tabs={rightTabs} />
         </SplitPane>
       </SplitPane>
       <Preview generator={generatePreview} />

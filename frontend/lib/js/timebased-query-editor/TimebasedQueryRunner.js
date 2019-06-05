@@ -10,27 +10,21 @@ const { startTimebasedQuery, stopTimebasedQuery } = actions;
 function isButtonEnabled(state, ownProps) {
   return !!(
     ownProps.datasetId !== null &&
-    !state.panes.right.tabs.timebasedQueryEditor.timebasedQueryRunner.startQuery
-      .loading &&
-    !state.panes.right.tabs.timebasedQueryEditor.timebasedQueryRunner.stopQuery
-      .loading &&
-    allConditionsFilled(
-      state.panes.right.tabs.timebasedQueryEditor.timebasedQuery
-    )
+    !state.timebasedQueryEditor.timebasedQueryRunner.startQuery.loading &&
+    !state.timebasedQueryEditor.timebasedQueryRunner.stopQuery.loading &&
+    allConditionsFilled(state.timebasedQueryEditor.timebasedQuery)
   );
 }
 
 const mapStateToProps = (state, ownProps) => ({
-  queryRunner: state.panes.right.tabs.timebasedQueryEditor.timebasedQueryRunner,
+  queryRunner: state.timebasedQueryEditor.timebasedQueryRunner,
   isButtonEnabled: isButtonEnabled(state, ownProps),
-  isQueryRunning: !!state.panes.right.tabs.timebasedQueryEditor
-    .timebasedQueryRunner.runningQuery,
+  isQueryRunning: !!state.timebasedQueryEditor.timebasedQueryRunner
+    .runningQuery,
   // Following ones only needed in dispatch functions
-  queryId:
-    state.panes.right.tabs.timebasedQueryEditor.timebasedQueryRunner
-      .runningQuery,
+  queryId: state.timebasedQueryEditor.timebasedQueryRunner.runningQuery,
   version: state.categoryTrees.version,
-  query: state.panes.right.tabs.timebasedQueryEditor.timebasedQuery
+  query: state.timebasedQueryEditor.timebasedQuery
 });
 
 const mapDispatchToProps = dispatch => ({

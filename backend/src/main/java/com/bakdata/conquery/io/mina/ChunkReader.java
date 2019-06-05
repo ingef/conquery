@@ -144,7 +144,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 
 		@Override
 		public String toString() {
-			return "ChunkedMessage [id=" + id + ", buffers=" + buffers.stream().map(b->b.limit()+":"+b.getHexDump(15)).collect(Collectors.toList()) + "]";
+			return "ChunkedMessage [id=" + id + ", buffers=" + buffers.stream().map(b->b.limit()).collect(Collectors.toList()) + "]";
 		}
 	}
 	

@@ -17,20 +17,20 @@ import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -50,7 +50,7 @@ public enum StoreInfo implements IStoreInfo {
 	BUCKETS			(Bucket.class,				BucketId.class),
 	C_BLOCKS		(CBlock.class,				CBlockId.class),
 	WORKER			(WorkerInformation.class,	Boolean.class),
-	QUERIES			(ManagedQuery.class,			ManagedQueryId.class),
+	EXECUTIONS		(ManagedExecution.class,		ManagedExecutionId.class),
 	AUTH_PERMISSIONS(ConqueryPermission.class,	PermissionId.class),
 	AUTH_MANDATOR	(Mandator.class,				MandatorId.class),
 	AUTH_USER		(User.class,					UserId.class),

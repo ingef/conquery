@@ -21,7 +21,6 @@ public class ApiV1 implements ResourcesProvider {
 
 		environment.register(master.getAuthDynamicFeature());
 		environment.register(new ContentTreeResources(namespaces));
-		environment.register(new ImportResource(namespaces));
 		environment.register(new QueryResource(namespaces, master.getStorage()));
 		environment.register(new ResultCSVResource(namespaces, master.getConfig()));
 		environment.register(new StoredQueriesResource(namespaces));

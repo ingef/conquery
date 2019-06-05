@@ -211,7 +211,10 @@ public class GenerationTests {
 		CentralRegistry registry = new CentralRegistry();
 		registry.register(block.getImp());
 
-		SerializationTestUtil.testSerialization(block, Block.class, registry);
+		SerializationTestUtil
+			.forType(Block.class)
+			.registry(registry)
+			.test(block);
 	}
 
 	private ImportColumn column(Import imp, int pos) {
