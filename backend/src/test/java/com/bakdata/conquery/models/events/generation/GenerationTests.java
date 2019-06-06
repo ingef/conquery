@@ -24,7 +24,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -100,7 +99,7 @@ public class GenerationTests {
 			);
 	}
 
-	public Bucket generateBucket(List<Object[]> arrays) throws IOException {
+	public Block generateBlock(List<Object[]> arrays) throws IOException {
 		Parser[] parser = new Parser[] {
 			MajorTypeId.DATE.createParser(),
 			MajorTypeId.STRING.createParser(),
@@ -164,29 +163,24 @@ public class GenerationTests {
 			imp.getColumns()[i].getType().writeHeader(new NullOutputStream());
 		}
 
-		Block block = imp.getBlockFactory().createBlock(
+		return imp.getBlockFactory().createBlock(
+			0,
 			imp,
 			result
 		);
-		Bucket bucket = new Bucket();
-		bucket.setBlocks(new Block[] {block});
-		bucket.setImp(imp);
-		block.setBucket(bucket);
-		return bucket;
 	}
 
 	@ParameterizedTest(name="{0}")
 	@MethodSource("createRandomContent")
 	public void testSerialization(int numberOfValues, List<Object[]> arrays) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, NoSuchMethodException, SecurityException, JSONException {
-		Bucket bucket = generateBucket(arrays);
-		Block block = bucket.getBlocks()[0];
+		Block block = generateBlock(arrays);
 		for(int i=0;i<arrays.size();i++) {
 			for(int c=0;c<arrays.get(i).length;c++) {
 				Column fake = new Column();
 				fake.setPosition(c);
 				
 				Object orig = arrays.get(i)[c];
-				String message = "checking "+c+" "+block.getBucket().getImp().getColumns()[c].getType()+":"+i+" = "+orig;
+				String message = "checking "+c+" "+block.getImp().getColumns()[c].getType()+":"+i+" = "+orig;
 				
 				if(orig == null) {
 					assertThat(block.has(i, fake))
@@ -212,15 +206,15 @@ public class GenerationTests {
 				}
 				
 			}
-			block.calculateMap(i, block.getBucket().getImp());
+			block.calculateMap(i, block.getImp());
 		}
 		CentralRegistry registry = new CentralRegistry();
-		registry.register(block.getBucket().getImp());
+		registry.register(block.getImp());
 
 		SerializationTestUtil
-			.forType(Bucket.class)
+			.forType(Block.class)
 			.registry(registry)
-			.test(bucket);
+			.test(block);
 	}
 
 	private ImportColumn column(Import imp, int pos) {

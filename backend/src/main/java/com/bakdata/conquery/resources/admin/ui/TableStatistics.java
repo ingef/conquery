@@ -9,5 +9,6 @@ import lombok.RequiredArgsConstructor;
 public class TableStatistics {
 		
 	private final Table table;
+	private final long numberOfBlocks;
 	private final long numberOfEntries;
 }

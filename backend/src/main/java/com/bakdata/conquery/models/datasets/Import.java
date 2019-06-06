@@ -43,6 +43,7 @@ public class Import extends NamedImpl<ImportId> {
 	private TableId table;
 	@JsonManagedReference @NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
+	private long numberOfBlocks;
 	private long numberOfEntries;
 	@JsonIgnore
 	private transient BlockFactory blockFactory;

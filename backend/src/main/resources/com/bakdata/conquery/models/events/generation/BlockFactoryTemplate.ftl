@@ -27,9 +27,9 @@ import com.google.common.primitives.Ints;
 
 public class BlockFactory_${suffix} extends BlockFactory {
 
-	public Block_${suffix} createBlock(Import imp, List<Object[]> events) {
+	public Block_${suffix} createBlock(int entity, Import imp, List<Object[]> events) {
 		BitStore nullBits = Bits.store(${imp.nullWidth}*events.size());
-		Block_${suffix} block = new Block_${suffix}();
+		Block_${suffix} block = new Block_${suffix}(entity,imp);
 		block.setSize(events.size());
 		for(int event = 0; event < events.size(); event++){
 			<#list imp.columns as col>
@@ -61,14 +61,14 @@ public class BlockFactory_${suffix} extends BlockFactory {
 		return block;
 	}
 	
-	public Block_${suffix} readBlock(Import imp, InputStream inputStream) throws IOException {
+	public Block_${suffix} readBlock(int entity, Import imp, InputStream inputStream) throws IOException {
 		try (SmallIn input = new SmallIn(inputStream)){
 			int eventLength = input.readInt(true);
 			int nullBytesLength = input.readInt(true);
 			byte [] nullBytes = input.readBytes(nullBytesLength);
 			
 			BitStore nullBits = Bits.asStore(nullBytes, 0, eventLength*${imp.nullWidth});
-			Block_${suffix} block = new Block_${suffix}();
+			Block_${suffix} block = new Block_${suffix}(entity,imp);
 			block.setNullBits(nullBits);
 			block.setSize(eventLength);
 			for (int eventId = 0; eventId < eventLength; eventId++) {

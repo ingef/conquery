@@ -65,6 +65,10 @@ public class Block_${suffix} extends Block {
 	</#if>
 	</#list>
 	
+	public Block_${suffix}(int entity, Import imp) {
+		super(entity, imp);
+	}
+	
 	public void setSize(int size) {
 		this.size = size;
 		<#list imp.columns as column>
@@ -97,7 +101,11 @@ public class Block_${suffix} extends Block {
 	}
 	
 	@Override
-	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {		
+	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {
+		gen.writeStartObject();
+		gen.writeStringField("import","${imp.id}");
+		gen.writeNumberField("entity",getEntity());
+		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
 		
 		try (SmallOut output = new SmallOut(baos)){
@@ -105,7 +113,8 @@ public class Block_${suffix} extends Block {
 		}
 		byte[] content = baos.toByteArray();
 		
-		gen.writeBinary(content);
+		gen.writeBinaryField("content",content);
+		gen.writeEndObject();
 	}
 	
 	@Override

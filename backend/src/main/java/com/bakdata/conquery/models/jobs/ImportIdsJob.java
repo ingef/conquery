@@ -2,13 +2,13 @@ package com.bakdata.conquery.models.jobs;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.dictionary.Dictionary;
@@ -18,10 +18,9 @@ import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
-import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
+import com.bakdata.conquery.models.messages.namespaces.specific.ImportBits;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.preproc.PPHeader;
@@ -29,13 +28,12 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
+import com.bakdata.conquery.util.io.GroupingByteBuffer;
+import com.bakdata.conquery.util.io.MultiByteBuffer;
 import com.bakdata.conquery.util.io.SmallOut;
-import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.github.powerlibraries.io.In;
 
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +74,7 @@ public class ImportIdsJob extends Job {
 			Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
 			Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
 			log.debug("\tmap values");
-			DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict, namespace);
+			DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
 			
 			//if no new ids we shouldn't recompress and store
 			if(primaryMapping.getNewIds() == null) {
@@ -117,66 +115,57 @@ public class ImportIdsJob extends Job {
 			Import allIdsImp = new Import();
 			allIdsImp.setName(importFile.toString());
 			allIdsImp.setTable(new TableId(namespace.getStorage().getDataset().getId(), ConqueryConstants.ALL_IDS_TABLE));
+			allIdsImp.setNumberOfBlocks(ids.size());
 			allIdsImp.setNumberOfEntries(ids.size());
 			allIdsImp.setColumns(new ImportColumn[0]);
 			namespace.getStorage().updateImport(allIdsImp);
 			namespace.sendToAll(new AddImport(allIdsImp));
 
-			int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
 
 			//import the new ids into the all ids table
 			if (primaryMapping.getNewIds() != null) {
 				BlockFactory factory = allIdsImp.getBlockFactory();
-				Int2ObjectMap<ImportBucket> allIdsBuckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
-				Int2ObjectMap<List<byte[]>> allIdsBytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
-				try (SmallOut buffer = new SmallOut(2048)) {
-					ProgressReporter child = this.progressReporter.subJob(5);
-					child.setMax(primaryMapping.getNewIds().getMax() - primaryMapping.getNewIds().getMin() + 1);
+				final Map<WorkerInformation, ImportBits> allIdsBits = new ConcurrentHashMap<>();
+				for (WorkerInformation wi : namespace.getWorkers()) {
+					allIdsBits.put(wi, new ImportBits(allIdsImp.getName(), allIdsImp.getId(), allIdsImp.getTable()));
+				}
+				try (MultiByteBuffer<WorkerInformation> allIdsBuffer = new MultiByteBuffer<>(namespace.getWorkers(), (worker, bytes) -> {
+					ImportBits ib = allIdsBits.put(worker, new ImportBits(allIdsImp.getName(), allIdsImp.getId(), allIdsImp.getTable()));
+					ib.setBytes(bytes);
+					try {
+						worker.getConnectedSlave().waitForFreeJobqueue();
+					} catch (InterruptedException e) {
+						log.error("Interrupted while waiting for worker " + worker + " to have free space in queue", e);
+					}
+					worker.send(ib);
+				});
+					SmallOut buffer = new SmallOut(2048);
+				) {
 
 					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
 						buffer.reset();
-						Block block = factory.createBlock(allIdsImp, Collections.singletonList(new Object[0]));
+						Block block = factory.createBlock(entityId, allIdsImp, Collections.singletonList(new Object[0]));
 						block.writeContent(buffer);
 
-						//copy content into ImportBucket
+
+						//copy content into ImportBits
 						int size = buffer.position();
-						int bucket = Entity.getBucket(entityId, bucketSize);
-						
-						allIdsBuckets
-							.computeIfAbsent(bucket, b->new ImportBucket(new BucketId(allIdsImp.getId(), b)))
-							.getIncludedEntities()
-							.add(entityId);
-						
-						allIdsBytes
-							.computeIfAbsent(bucket, i->new ArrayList<>())
-							.add(buffer.toBytes());
-						
-						child.report(1);
+						WorkerInformation responsibleWorker = namespace.getResponsibleWorker(entityId);
+						if (responsibleWorker == null) {
+							throw new IllegalStateException("No responsible worker for " + entityId);
+						}
+
+						GroupingByteBuffer responsibleAllIdsBuffer = allIdsBuffer.get(responsibleWorker);
+						responsibleAllIdsBuffer.ensureCapacity(size);
+						allIdsBits.get(responsibleWorker).addBits(new ImportBits.Bit(entityId, size));
+						System.arraycopy(buffer.getBuffer(), 0, responsibleAllIdsBuffer.internalArray(), responsibleAllIdsBuffer.offset(), size);
+						responsibleAllIdsBuffer.advance(size);
+
 					}
 				}
-				sendBuckets(primaryMapping, allIdsBuckets, allIdsBytes);
 			}
 		} catch (IOException e) {
 			throw new IllegalStateException("Failed to load the file " + importFile, e);
-		}
-	}
-	
-	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
-		for(int bucketNumber : primaryMapping.getUsedBuckets()) {
-			ImportBucket bucket = buckets.get(bucketNumber);
-			List<byte[]> buffers = bytes.get(bucketNumber);
-			bucket.setBytes(buffers.toArray(new byte[0][]));
-			
-			WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
-			if (responsibleWorker == null) {
-				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
-			}
-			try {
-				responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
-			} catch (InterruptedException e) {
-				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
-			}
-			responsibleWorker.send(bucket);
 		}
 	}
 

@@ -113,7 +113,7 @@ public class Preprocessed {
 			transformer.finishTransform();
 		}
 		
-		Block block = imp.getBlockFactory().createBlock(imp, events);
+		Block block = imp.getBlockFactory().createBlock(entityId, imp, events);
 		
 		out.writeInt(entityId, true);
 		block.writeContent(buffer);

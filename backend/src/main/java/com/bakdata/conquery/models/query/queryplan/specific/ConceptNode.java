@@ -31,7 +31,7 @@ public class ConceptNode extends QPChainNode {
 	public void nextBlock(Block block) {
 		if (active) {
 			super.nextBlock(block);
-			currentRow = Objects.requireNonNull(entity.getCBlock(table.getResolvedConnector().getId(), block.getBucket().getId()));
+			currentRow = Objects.requireNonNull(entity.getCBlocks().get(table.getResolvedConnector(), block));
 		}
 	}
 

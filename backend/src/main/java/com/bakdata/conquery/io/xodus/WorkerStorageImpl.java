@@ -11,11 +11,11 @@ import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -28,7 +28,7 @@ import lombok.extern.slf4j.Slf4j;
 public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerStorage {
 
 	private SingletonStore<WorkerInformation> worker;
-	private IdentifiableStore<Bucket> blocks;
+	private IdentifiableStore<Block> blocks;
 	private IdentifiableStore<CBlock> cBlocks;
 	@Getter
 	private BlockManager blockManager;
@@ -46,7 +46,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
 		this.worker = StoreInfo.WORKER.singleton(this);
-		this.blocks = StoreInfo.BUCKETS.identifiable(this);
+		this.blocks = StoreInfo.BLOCKS.identifiable(this);
 		this.cBlocks = StoreInfo.C_BLOCKS.identifiable(this);
 		
 		collector
@@ -81,28 +81,30 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	}
 	
 	@Override
-	public void addBucket(Bucket bucket) throws JSONException {
-		blocks.add(bucket);
+	public void addBlocks(List<Block> newBlocks) throws JSONException {
+		for(Block block:newBlocks) {
+			blocks.add(block);
+		}
 		if(getBlockManager()!=null) {
-			getBlockManager().addBucket(bucket);
+			getBlockManager().addBlocks(newBlocks);
 		}
 	}
 
 	@Override
-	public Bucket getBucket(BucketId id) {
+	public Block getBlock(BlockId id) {
 		return blocks.get(id);
 	}
 	
 	@Override
-	public void removeBucket(BucketId id) {
+	public void removeBlock(BlockId id) {
 		blocks.remove(id);
 		if(getBlockManager()!=null) {
-			getBlockManager().removeBucket(id);
+			getBlockManager().removeBlock(id);
 		}
 	}
 	
 	@Override
-	public Collection<Bucket> getAllBuckets() {
+	public Collection<Block> getAllBlocks() {
 		return blocks.getAll();
 	}
 
