@@ -43,7 +43,7 @@ public class MetadataCollectionTest implements ProgrammaticIntegrationTest, Inte
 		conquery.waitUntilWorkDone();
 		
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-		
+
 		//check the number of matched events
 		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(4);
 		assertThat(concept.getChildren()).allSatisfy(c -> {

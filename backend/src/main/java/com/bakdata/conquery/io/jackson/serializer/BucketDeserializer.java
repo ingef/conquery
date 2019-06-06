@@ -50,17 +50,22 @@ public class BucketDeserializer extends JsonDeserializer<Bucket> {
 			ctxt.handleUnexpectedToken(Bucket.class, p.currentToken(), p, "expected array start");
 		}
 		while(p.nextToken() != JsonToken.END_ARRAY) {
-			try(PipedOutputStream out = new PipedOutputStream();
-			PipedInputStream in = new PipedInputStream(out);) {
-				EXECUTORS.execute(()->{
-					try {
-					p.readBinaryValue(out);
-					out.close();
-					} catch(Exception e) {
-						throw new RuntimeException(e);
-					}
-				});
-				blocks.add(imp.getBlockFactory().readBlock(imp, in));
+			if(p.currentToken() == JsonToken.VALUE_NULL) {
+				blocks.add(null);
+			}
+			else {
+				try(PipedOutputStream out = new PipedOutputStream();
+				PipedInputStream in = new PipedInputStream(out);) {
+					EXECUTORS.execute(()->{
+						try {
+						p.readBinaryValue(out);
+						out.close();
+						} catch(Exception e) {
+							throw new RuntimeException(e);
+						}
+					});
+					blocks.add(imp.getBlockFactory().readBlock(imp, in));
+				}
 			}
 		}
 		
@@ -69,7 +74,9 @@ public class BucketDeserializer extends JsonDeserializer<Bucket> {
 		bucket.setBucket(bucketNumber);
 		bucket.setImp(imp);
 		for(Block block:bucket.getBlocks()) {
-			block.setBucket(bucket);
+			if(block != null) {
+				block.setBucket(bucket);
+			}
 		}
 		return bucket;
 	}

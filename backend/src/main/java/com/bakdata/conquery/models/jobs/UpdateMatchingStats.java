@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.models.concepts.Concept;
@@ -54,23 +56,30 @@ public class UpdateMatchingStats extends Job {
 				Bucket bucket = worker.getStorage().getBucket(cBlock.getBucket());
 				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
 				
-				for(Block block : bucket.getBlocks()) {
-					for (int event = 0; event < block.size(); event++) {
-						if (concept instanceof TreeConcept) {
-							int[] localIds = cBlock.getMostSpecificChildren().get(event);
-							if (localIds != null) {
-								ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
-	
-								while (e != null) {
-									messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())
-										.addEvent(table, block, cBlock, event);
-									e = e.getParent();
+				for (int bId = 0; bId < bucket.getBlocks().length; bId++) {
+					Block block = bucket.getBlocks()[bId];
+					if(block != null) {
+						
+						for (int event = 0; event < block.size(); event++) {
+							if (concept instanceof TreeConcept) {
+								List<int[]> specificChildren = cBlock.getMostSpecificChildren().get(bId);
+								if(specificChildren != null) {
+									int[] localIds = specificChildren.get(event);
+									if (localIds != null) {
+										ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
+			
+										while (e != null) {
+											messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())
+												.addEvent(table, block, cBlock, event);
+											e = e.getParent();
+										}
+									}
 								}
 							}
-						}
-						else {
-							messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
-								.addEvent(table, block, cBlock, event);
+							else {
+								messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
+									.addEvent(table, block, cBlock, event);
+							}
 						}
 					}
 				}
