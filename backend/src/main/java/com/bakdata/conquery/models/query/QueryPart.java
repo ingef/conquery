@@ -5,6 +5,7 @@ import java.util.concurrent.Callable;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
@@ -33,10 +34,13 @@ public class QueryPart implements Callable<EntityResult> {
 
 			for(Table currentTable : requiredTables) {
 				queryPlan.nextTable(ctx, currentTable);
-				for(Block block : entity.getBlocks().get(currentTable)) {
-					queryPlan.nextBlock(block);
-					for(int event = block.size()-1; event >= 0 ; event--) {
-						queryPlan.nextEvent(block, event);
+				for(Bucket bucket : entity.getBucket(currentTable)) {
+					Block block = bucket.getBlockFor(entity.getId());
+					if(block != null) {
+						queryPlan.nextBlock(block);
+						for(int event = block.size()-1; event >= 0 ; event--) {
+							queryPlan.nextEvent(block, event);
+						}
 					}
 				}
 			}

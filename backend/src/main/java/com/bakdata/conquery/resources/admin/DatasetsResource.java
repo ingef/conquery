@@ -152,7 +152,6 @@ public class DatasetsResource {
 			ctx,
 			new TableStatistics(
 				table,
-				imports.stream().mapToLong(Import::getNumberOfBlocks).sum(),
 				imports.stream().mapToLong(Import::getNumberOfEntries).sum()
 			)
 		);
