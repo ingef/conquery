@@ -50,7 +50,7 @@ public class StandaloneSupport implements Closeable {
 				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
 				for (SlaveCommand slave : standaloneCommand.getSlaves())
 					busy |= slave.getJobManager().isSlowWorkerBusy();
-				Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
+				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
 			} while(busy);
 		}
 		log.info("all jobs finished");
