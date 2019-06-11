@@ -8,6 +8,8 @@ import { isEmpty } from "../common/helpers";
 import BaseInput from "./BaseInput";
 import Labeled from "./Labeled";
 
+import type { CurrencyConfigType } from "../common/types/backend";
+
 type PropsType = FieldPropsType & {
   label: string,
   inputType?: string,
@@ -16,6 +18,7 @@ type PropsType = FieldPropsType & {
   placeholder?: string,
   tinyLabel?: boolean,
   inputProps?: Object,
+  currencyConfig?: CurrencyConfigType,
   fullWidth?: boolean
 };
 
@@ -35,9 +38,9 @@ const InputText = (props: PropsType) => {
         inputType={props.inputType || "text"}
         valueType={props.valueType}
         placeholder={props.placeholder}
-        value={props.input.value || ""}
-        formattedValue={props.input.formattedValue || ""}
+        value={props.input.value}
         onChange={props.input.onChange}
+        currencyConfig={props.currencyConfig}
         inputProps={props.inputProps}
       />
     </Labeled>

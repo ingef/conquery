@@ -19,10 +19,9 @@ import {
   BIG_MULTI_SELECT
 } from "../form-components/filterTypes";
 
-import type {
-  FilterWithValueType,
-  CurrencyType
-} from "../standard-query-editor/types";
+import type { FilterWithValueType } from "../standard-query-editor/types";
+
+import type { CurrencyConfigType } from "../common/types/backend";
 
 type PropsType = {
   filters: ?(FilterWithValueType[]),
@@ -34,7 +33,7 @@ type PropsType = {
   onShowDescription: Function,
   suggestions: ?Object,
   onDropFilterValuesFile: Function,
-  currencyConfig: CurrencyType
+  currencyConfig: CurrencyConfigType
 };
 
 const Row = styled("div")`
@@ -161,10 +160,8 @@ const TableFilters = (props: PropsType) => {
                   inputType="text"
                   valueType={MONEY_RANGE}
                   input={{
-                    value: filter.value || "",
-                    formattedValue: filter.formattedValue,
-                    onChange: (value, formattedValue) =>
-                      props.onSetFilterValue(filterIdx, value, formattedValue)
+                    value: filter.value,
+                    onChange: value => props.onSetFilterValue(filterIdx, value)
                   }}
                   unit={filter.unit}
                   label={filter.label}
