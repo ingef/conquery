@@ -228,15 +228,15 @@ public class Block_${suffix} extends Block {
 		}
 		switch(column.getPosition()) {
 		<#list imp.columns as col>
-		    <#if col.type.lines != col.type.nullLines>
+			<#if col.type.lines != col.type.nullLines>
                 <#if col.type.typeId == "DATE">
                 case ${col.position}:
                     return dateRange.contains(<@f.getMajor col/>(event));
                 <#elseif col.type.typeId == "DATE_RANGE">
                 case ${col.position}:
-                    return dateRange.intersects(<@f.getMajor col/>(event));
-                </#if>
-            </#if>
+					return dateRange.intersects(<@f.getMajor col/>(event));
+				</#if>
+			</#if>
 		</#list>
 			default:
 				throw new IllegalArgumentException("Column "+column+" is not a date type");

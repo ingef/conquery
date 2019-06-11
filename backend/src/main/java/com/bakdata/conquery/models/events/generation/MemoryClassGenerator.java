@@ -45,14 +45,7 @@ public class MemoryClassGenerator extends ClassGenerator {
 
 	@Override
 	public void close() throws IOException {
-		// load classes to memory before closing
-		for (String cl : generated) {
-			try {
-				getClassByName(cl);
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
-			}
-		}
+		super.close();
 		fileManager.close();
 	}
 

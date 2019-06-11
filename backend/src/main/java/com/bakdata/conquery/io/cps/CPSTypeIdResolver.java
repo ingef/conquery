@@ -131,13 +131,13 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 		}
 	}
 	
-	public static Set<Class<?>> listImplementations(Class<?> base) {
+	public static <T> Set<Class<? extends T>> listImplementations(Class<T> base) {
 		CPSMap map = globalMap.get(base);
 		if(map == null) {
 			throw new NoSuchElementException("there are no implementations for "+base);
 		}
 		else {
-			return map.getClasses();
+			return (Set<Class<? extends T>>)(Set)map.getClasses();
 		}
 	}
 	

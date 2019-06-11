@@ -14,11 +14,11 @@ const Root = styled("div")`
   position: relative;
 `;
 
-const App = () => (
+const App = props => (
   <Root>
     <Startup />
     <Header />
-    <Content />
+    <Content {...props} />
     <SnackMessage />
   </Root>
 );
