@@ -46,36 +46,7 @@ jobs:
 
     #build and test only INTEGRATION_JSONs
     - stage: Tests
-      name: "Integration Tests: Authentication Tests"
-      env:
-        - CONQUERY_TEST_DIRECTORY=tests/auth
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
-
-    - stage: Tests
-      name: "Integration Tests: Filter Tests"
-      env:
-        - CONQUERY_TEST_DIRECTORY=tests/filter
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
-
-    - stage: Tests
-      name: "Integration Tests: Query Tests"
-      env:
-        - CONQUERY_TEST_DIRECTORY=tests/query
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
-
-    - stage: Tests
-      name: "Integration Tests: Aggregator Tests"
-      env:
-        - CONQUERY_TEST_DIRECTORY=tests/aggregator
+      name: "Integration Tests"
       install:
         - cd backend
         - mvn -B -V -T 1C install -DskipTests
