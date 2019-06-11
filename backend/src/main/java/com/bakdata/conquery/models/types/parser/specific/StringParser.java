@@ -111,11 +111,11 @@ public class StringParser extends Parser<Integer> {
 		//create base type
 		AStringType<Number> result = createBaseType(encoding);
 		if(!StringUtils.isEmpty(prefix)) {
-			result = new StringTypePrefix<>(result, prefix);
+			result = new StringTypePrefix(result, prefix);
 			setLineCounts(result);
 		}
 		if(!StringUtils.isEmpty(suffix)) {
-			result = new StringTypeSuffix<>(result, suffix);
+			result = new StringTypeSuffix(result, suffix);
 			setLineCounts(result);
 		}
 		return new Decision<>(

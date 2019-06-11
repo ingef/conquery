@@ -3,6 +3,8 @@ package com.bakdata.conquery.commands;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.validation.Validator;
@@ -61,6 +63,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Namespaces namespaces = new Namespaces();
 	private Environment environment;
 	private AuthDynamicFeature authDynamicFeature;
+	private List<ResourcesProvider> providers = new ArrayList<>();
 
 	public void run(ConqueryConfig config, Environment environment) throws IOException, JSONException {
 		//inject namespaces into the objectmapper
@@ -109,9 +112,11 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(storage, config.getAuthentication());
 
 		log.info("Registering ResourcesProvider");
-		for (Class<?> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
+		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
 			try {
-				((ResourcesProvider) resourceProvider.getConstructor().newInstance()).registerResources(this);
+				ResourcesProvider provider = resourceProvider.getConstructor().newInstance();
+				provider.registerResources(this);
+				providers .add(provider);
 			} catch (Exception e) {
 				log.error("Failed to register Resource {}", e);
 			}
@@ -191,6 +196,14 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 				namespace.getStorage().close();
 			} catch (Exception e) {
 				log.error(namespace + " could not be closed", e);
+			}
+
+		}
+		for (ResourcesProvider provider : providers) {
+			try {
+				provider.close();
+			} catch (Exception e) {
+				log.error(provider + " could not be closed", e);
 			}
 
 		}

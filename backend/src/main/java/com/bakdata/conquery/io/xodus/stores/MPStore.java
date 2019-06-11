@@ -8,6 +8,7 @@ import java.util.function.Consumer;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jackson.JacksonUtil;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -40,10 +41,18 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 		store = new XodusStore(env, storeInfo);
 		this.validator = validator;
 		this.valueType = (Class<VALUE>)storeInfo.getValueType();
-		this.valueWriter = Jackson.BINARY_MAPPER.writerFor(valueType);
-		this.valueReader = Jackson.BINARY_MAPPER.readerFor(valueType);
-		this.keyWriter = Jackson.BINARY_MAPPER.writerFor(storeInfo.getKeyType());
-		this.keyReader = Jackson.BINARY_MAPPER.readerFor(storeInfo.getKeyType());
+		this.valueWriter = Jackson.BINARY_MAPPER
+			.writerFor(valueType)
+			.withView(InternalOnly.class);
+		this.valueReader = Jackson.BINARY_MAPPER
+			.readerFor(valueType)
+			.withView(InternalOnly.class);
+		this.keyWriter = Jackson.BINARY_MAPPER
+			.writerFor(storeInfo.getKeyType())
+			.withView(InternalOnly.class);
+		this.keyReader = Jackson.BINARY_MAPPER
+			.readerFor(storeInfo.getKeyType())
+			.withView(InternalOnly.class);
 	}
 
 	@Override

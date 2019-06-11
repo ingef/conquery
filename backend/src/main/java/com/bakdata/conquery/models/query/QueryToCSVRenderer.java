@@ -9,6 +9,8 @@ import org.apache.commons.lang3.tuple.Pair;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.query.concept.ResultInfo;
@@ -33,7 +35,7 @@ public class QueryToCSVRenderer {
 	}
 	
 	public Stream<String> toCSV(PrintSettings cfg, ManagedQuery query) {
-		if (query.getStatus() != QueryStatus.DONE) {
+		if (query.getState() != ExecutionState.DONE) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + query.getId());
 		}
 		List<ResultInfo> infos = query.getResultInfos(cfg);

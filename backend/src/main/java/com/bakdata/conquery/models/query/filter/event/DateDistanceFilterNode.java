@@ -28,7 +28,12 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		reference = CDate.toLocalDate(ctx.getDateRestriction().getMinValue());
+		if(ctx.getDateRestriction().isAll() || ctx.getDateRestriction().isEmpty()){
+			reference = null;
+		}
+		else {
+			reference = CDate.toLocalDate(ctx.getDateRestriction().getMaxValue());
+		}
 	}
 
 	@Override
@@ -39,6 +44,10 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 	@Override
 	public boolean checkEvent(Block block, int event) {
 		if (!block.has(event, getColumn())) {
+			return false;
+		}
+
+		if (reference == null) {
 			return false;
 		}
 

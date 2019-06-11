@@ -17,12 +17,12 @@ import lombok.ToString;
 
 @Getter @Setter
 @ToString
-public abstract class AChainedStringType<SUB extends AStringType<Number>> extends AStringType<Number> {
+public abstract class AChainedStringType extends AStringType<Number> {
 
 	@Nonnull
-	protected SUB subType;
+	protected AStringType<Number> subType;
 	
-	public AChainedStringType(SUB subType) {
+	public AChainedStringType(AStringType<Number> subType) {
 		super(subType.getPrimitiveType());
 		this.subType = subType;
 	}
