@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.generation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -10,6 +11,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
@@ -33,6 +39,8 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -173,6 +181,22 @@ public class GenerationTests {
 		bucket.setImp(imp);
 		block.setBucket(bucket);
 		return bucket;
+	}
+	
+	@ParameterizedTest(name="{0}")
+	@MethodSource("createRandomContent")
+	public void testParallelSerialization(int numberOfValues, List<Object[]> arrays) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, NoSuchMethodException, SecurityException, JSONException, InterruptedException {
+		ExecutorService pool = Executors.newFixedThreadPool(100);
+		List<Future<?>> futures = new ArrayList<>();
+		for(int i=0;i<30;i++) {
+			List<Object[]> l = arrays.stream().map(v->Arrays.copyOf(v, v.length)).collect(Collectors.toList());
+			futures.add(pool.submit(()->generateBlock(l)));
+		}
+		pool.shutdown();
+		for(Future<?> f:futures) {
+			assertThatCode(()->f.get()).doesNotThrowAnyException();
+		}
+		pool.awaitTermination(1, TimeUnit.HOURS);
 	}
 
 	@ParameterizedTest(name="{0}")

@@ -3,16 +3,19 @@ package com.bakdata.conquery.models.events.generation;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
+import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,12 +25,13 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DebugClassGenerator extends ClassGenerator {
+	
+	private static final JavaCompiler COMPILER = ToolProvider.getSystemJavaCompiler();
 
 	private File tmp;
 	private final URLClassLoader classLoader;
 	private final List<File> files = new ArrayList<>();
 	private final List<String> generated = new ArrayList<>();
-	private final StandardJavaFileManager fileManager;
 
 
 	public DebugClassGenerator() throws IOException {
@@ -35,7 +39,6 @@ public class DebugClassGenerator extends ClassGenerator {
 		tmp = new File("codeGenDebug");
 		classLoader = new URLClassLoader(new URL[] { tmp.toURI().toURL() }, Thread.currentThread().getContextClassLoader());
 		log.debug("Generating Java classes in {}", tmp.getAbsolutePath());
-		fileManager = compiler.getStandardFileManager(null, null, null);
 	}
 
 	@Override
@@ -59,19 +62,17 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public synchronized void compile() throws IOException, URISyntaxException {
-		Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
-		StringWriter output = new StringWriter();
-		CompilationTask task = getCompiler().getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
-		
-		if (!task.call()) {
-			throw new IllegalStateException("Failed to compile: "+output);
+	public void doCompile() throws IOException {
+		synchronized (COMPILER) {
+			try (StandardJavaFileManager fileManager = COMPILER.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8)) {
+				Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
+				StringWriter output = new StringWriter();
+				CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
+				
+				if (!task.call()) {
+					throw new IllegalStateException("Failed to compile: "+output);
+				}
+			}
 		}
-	}
-
-	@Override
-	public synchronized void close() throws IOException {
-		super.close();
-		fileManager.close();
 	}
 }

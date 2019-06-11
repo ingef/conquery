@@ -6,16 +6,9 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.tools.JavaCompiler;
-import javax.tools.ToolProvider;
-
 import com.bakdata.conquery.util.DebugMode;
 
-import lombok.Getter;
-
 public abstract class ClassGenerator implements Closeable {
-	@Getter
-	protected final JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
 	private final List<String> generated = new ArrayList<>();
 
 
@@ -37,7 +30,18 @@ public abstract class ClassGenerator implements Closeable {
 
 	public abstract Class<?> getClassByName(String fullClassName) throws ClassNotFoundException;
 
-	public abstract void compile() throws IOException, URISyntaxException;
+	public void compile() throws IOException, URISyntaxException {
+		try {
+			doCompile();
+		} catch(Exception e) {
+			//so that when we close the closing does not try to load any classes
+			//which would mask the exceptions
+			generated.clear();
+			throw e;
+		}
+	}
+
+	protected abstract void doCompile() throws IOException, URISyntaxException;
 
 	@Override
 	public void close() throws IOException {

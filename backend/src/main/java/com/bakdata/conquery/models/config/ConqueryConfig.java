@@ -2,8 +2,7 @@ package com.bakdata.conquery.models.config;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.NoSuchElementException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -76,7 +75,7 @@ public class ConqueryConfig extends Configuration {
 		return (T) plugins.stream()
 			.filter(c -> type.isAssignableFrom(c.getClass()))
 			.collect(MoreCollectors.toOptional())
-			.get();
+			.orElseThrow(()-> new NoSuchElementException("No plugin config of type "+type.getClass().getSimpleName()+" configured"));
 	}
 
 	public void initialize() {

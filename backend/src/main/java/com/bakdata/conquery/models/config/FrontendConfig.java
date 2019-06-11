@@ -19,7 +19,6 @@ public class FrontendConfig {
 	
 	@Data
 	private static class CurrencyConfig {
-		private int factor = 1;
 		private String prefix = "€";
 		private String thousandSeparator = ".";
 		private String decimalSeparator = ",";

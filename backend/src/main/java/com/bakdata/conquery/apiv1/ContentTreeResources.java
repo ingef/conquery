@@ -7,7 +7,6 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.TABLE;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -26,11 +25,8 @@ import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.bakdata.conquery.apiv1.ContentTreeProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.models.api.description.FEList;
-import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.auth.permissions.Ability;

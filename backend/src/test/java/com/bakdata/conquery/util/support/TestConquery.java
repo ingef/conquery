@@ -113,7 +113,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			standaloneCommand.getMaster().getAdmin().getDatasetsProcessor()
 		);
 		while(ns.getWorkers().size() < ns.getNamespaces().getSlaves().size()) {
-			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+			Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
 		}
 		support.waitUntilWorkDone();
 		openSupports.add(support);
