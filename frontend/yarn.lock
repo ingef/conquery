@@ -4310,11 +4310,6 @@ hosted-git-info@^2.1.4:
   version "2.6.0"
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.6.0.tgz#23235b29ab230c576aab0d4f13fc046b0b038222"
 
-hotkeys-js@^3.6.2:
-  version "3.6.10"
-  resolved "https://registry.yarnpkg.com/hotkeys-js/-/hotkeys-js-3.6.10.tgz#e72b6764bed97b089edf588be78e666e1d7cf654"
-  integrity sha512-LDylgBefAxH/jtz42PQCaDabSmT/F6YCO2lP5ZS+vFbMfxsnBuhTtEMb3XMa1qaGSNoSmtxbfBl3usm7rgSpdg==
-
 hsl-regex@^1.0.0:
   version "1.0.0"
   resolved "https://registry.yarnpkg.com/hsl-regex/-/hsl-regex-1.0.0.tgz#d49330c789ed819e276a4c0d272dffa30b18fe6e"
@@ -7484,13 +7479,6 @@ react-highlight-words@^0.11.0:
   dependencies:
     highlight-words-core "^1.2.0"
     prop-types "^15.5.8"
-
-react-hot-keys@^1.3.1:
-  version "1.3.1"
-  resolved "https://registry.yarnpkg.com/react-hot-keys/-/react-hot-keys-1.3.1.tgz#14a5ee29b38264790adfc84bde73e1d21fa5ae31"
-  integrity sha512-Ino7daWt2lhUBo7Wr3ATr8dVrc1yyp9uPgR87lHrgV9poYDjh0y7BA3ClvkokcIyFoKIEcs3RQMHxuIAcjuQNg==
-  dependencies:
-    hotkeys-js "^3.6.2"
 
 react-hot-loader@^4.6.5:
   version "4.6.5"
