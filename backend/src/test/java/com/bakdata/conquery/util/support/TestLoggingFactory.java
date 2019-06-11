@@ -1,5 +1,27 @@
 package com.bakdata.conquery.util.support;
 
+import static java.util.Objects.requireNonNull;
+
+import java.io.PrintStream;
+import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.TimeZone;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.management.InstanceAlreadyExistsException;
+import javax.management.MBeanRegistrationException;
+import javax.management.MBeanServer;
+import javax.management.MalformedObjectNameException;
+import javax.management.NotCompliantMBeanException;
+import javax.management.ObjectName;
+
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.logback.InstrumentedAppender;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
+
 import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.Level;
 import ch.qos.logback.classic.Logger;
@@ -11,24 +33,8 @@ import ch.qos.logback.core.Appender;
 import ch.qos.logback.core.ConsoleAppender;
 import ch.qos.logback.core.encoder.LayoutWrappingEncoder;
 import ch.qos.logback.core.util.StatusPrinter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.logback.InstrumentedAppender;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
-import com.fasterxml.jackson.annotation.JsonTypeName;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.TextNode;
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.MoreObjects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Lists;
-import io.dropwizard.jackson.Jackson;
-import io.dropwizard.logging.AppenderFactory;
 import io.dropwizard.logging.ConsoleAppenderFactory;
 import io.dropwizard.logging.DropwizardLayout;
-import io.dropwizard.logging.LoggerConfiguration;
 import io.dropwizard.logging.LoggingFactory;
 import io.dropwizard.logging.LoggingUtil;
 import io.dropwizard.logging.async.AsyncAppenderFactory;
@@ -37,29 +43,6 @@ import io.dropwizard.logging.filter.LevelFilterFactory;
 import io.dropwizard.logging.filter.ThresholdLevelFilterFactory;
 import io.dropwizard.logging.layout.DropwizardLayoutFactory;
 import io.dropwizard.logging.layout.LayoutFactory;
-
-import javax.annotation.Nullable;
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.MalformedObjectNameException;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.lang3.tuple.Pair;
-
-import java.io.PrintStream;
-import java.lang.management.ManagementFactory;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-import java.util.TimeZone;
-import java.util.concurrent.locks.ReentrantLock;
-
-import static java.util.Objects.requireNonNull;
 
 public class TestLoggingFactory implements LoggingFactory {
 

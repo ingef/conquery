@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ExistsAggregator;
 import com.fasterxml.jackson.annotation.JsonIgnore;

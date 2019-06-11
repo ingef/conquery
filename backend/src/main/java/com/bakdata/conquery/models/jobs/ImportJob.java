@@ -1,15 +1,11 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.io.ByteArrayOutputStream;
-import java.io.DataInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-
-import org.eclipse.jetty.util.ByteArrayOutputStream2;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -31,8 +27,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBuck
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.PPHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
-import com.bakdata.conquery.models.types.specific.AStringType;
-import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
@@ -44,8 +38,6 @@ import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.io.ByteArrayDataOutput;
-import com.google.common.io.ByteStreams;
 import com.jakewharton.byteunits.BinaryByteUnit;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;

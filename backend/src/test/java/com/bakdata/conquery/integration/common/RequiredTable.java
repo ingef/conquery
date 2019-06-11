@@ -1,7 +1,5 @@
 package com.bakdata.conquery.integration.common;
 
-import java.io.File;
-import java.nio.file.Path;
 import java.util.Arrays;
 
 import javax.validation.Valid;
@@ -11,7 +9,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 
 import lombok.Getter;
 import lombok.Setter;
