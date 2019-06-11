@@ -105,4 +105,9 @@ public class ManagedQuery extends ManagedExecution {
 		status.setShared(shared);
 		return status;
 	}
+	
+	@Override
+	public ManagedQuery toResultQuery() {
+		return this;
+	}
 }

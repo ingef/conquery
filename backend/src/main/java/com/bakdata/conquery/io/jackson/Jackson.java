@@ -1,12 +1,8 @@
 package com.bakdata.conquery.io.jackson;
 
-import java.util.List;
 import java.util.Locale;
-import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
-import com.fasterxml.jackson.annotation.JsonSetter.Value;
-import com.fasterxml.jackson.annotation.Nulls;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.DeserializationContext;

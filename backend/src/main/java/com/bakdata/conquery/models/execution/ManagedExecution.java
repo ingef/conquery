@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -132,4 +133,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public ExecutionStatus buildStatus() {
 		return buildStatus(null);
 	}
+
+	public abstract ManagedQuery toResultQuery();
 }

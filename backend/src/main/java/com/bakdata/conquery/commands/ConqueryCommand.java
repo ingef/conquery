@@ -1,12 +1,8 @@
 package com.bakdata.conquery.commands;
 
-import java.util.concurrent.TimeUnit;
-
 import org.eclipse.jetty.util.component.ContainerLifeCycle;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.util.DebugMode;
-import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.cli.ConfiguredCommand;
 import io.dropwizard.setup.Bootstrap;

@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.types.parser;
 
 import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.specific.DateTypeVarInt;
-import com.bakdata.conquery.models.types.specific.VarIntType;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

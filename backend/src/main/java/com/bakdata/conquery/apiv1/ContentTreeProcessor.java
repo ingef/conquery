@@ -11,11 +11,8 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.WebApplicationException;
 
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEList;
-import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -36,12 +33,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.CalculatedValue;
-import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;

@@ -106,6 +106,6 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	
 	@Override
 	public String toString() {
-		return "cached "+store.toString();
+		return "weakcached "+store.toString();
 	}
 }

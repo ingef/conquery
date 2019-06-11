@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import java.util.Set;
 
-import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;

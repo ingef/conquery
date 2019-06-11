@@ -28,6 +28,7 @@ import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -64,8 +65,8 @@ public class ResultCSVResource {
 		authorize(user, queryId, Ability.READ);
 
 		try {
-			ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, queryId);
-			Stream<String> csv = new QueryToCSVRenderer(query.getNamespace()).toCSV(PRINT_SETTINGS, query);
+			ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
+			Stream<String> csv = new QueryToCSVRenderer(exec.getNamespace()).toCSV(PRINT_SETTINGS, exec.toResultQuery());
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
