@@ -24,7 +24,6 @@ public class MemoryClassGenerator extends ClassGenerator {
 	
 	private final MemClassLoader classLoader;
 	private final List<JavaFileObject> files = new ArrayList<>();
-	private final List<String> generated = new ArrayList<>();
 
 	public MemoryClassGenerator() throws IOException {
 		classLoader = new MemClassLoader();
@@ -36,7 +35,7 @@ public class MemoryClassGenerator extends ClassGenerator {
 	}
 	
 	@Override
-	public void compile() throws IOException {
+	public void doCompile() throws IOException {
 		try (JavaFileManager fileManager = new MemJavaFileManager(
 			FILE_MANAGER, 
 			classLoader)
@@ -51,13 +50,7 @@ public class MemoryClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public void close() throws IOException {
-		super.close();
-	}
-
-	@Override
 	protected void addTask(String fullClassName, String content) {
 		files.add(new StringJavaFileObject(fullClassName, content));
-		generated.add(fullClassName);
 	}
 }

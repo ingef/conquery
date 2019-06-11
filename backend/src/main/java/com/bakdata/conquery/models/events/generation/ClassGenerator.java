@@ -30,7 +30,18 @@ public abstract class ClassGenerator implements Closeable {
 
 	public abstract Class<?> getClassByName(String fullClassName) throws ClassNotFoundException;
 
-	public abstract void compile() throws IOException, URISyntaxException;
+	public void compile() throws IOException, URISyntaxException {
+		try {
+			doCompile();
+		} catch(Exception e) {
+			//so that when we close the closing does not try to load any classes
+			//which would mask the exceptions
+			generated.clear();
+			throw e;
+		}
+	}
+
+	protected abstract void doCompile() throws IOException, URISyntaxException;
 
 	@Override
 	public void close() throws IOException {
