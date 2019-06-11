@@ -1,15 +1,16 @@
 // @flow
 
-import React from "react";
+import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import NumberFormat from "react-number-format";
-import { Decimal } from "decimal.js";
 
 import IconButton from "../button/IconButton";
 
 import { isEmpty } from "../common/helpers";
+import type { CurrencyConfigType } from "../common/types/backend";
+
 import { MONEY_RANGE } from "./filterTypes";
+import CurrencyInput from "./CurrencyInput";
 
 const Root = styled("div")`
   position: relative;
@@ -37,25 +38,26 @@ const ClearZone = styled(IconButton)`
   }
 `;
 
+type InputPropsType = {
+  pattern?: RegExp,
+  step?: number,
+  min?: string,
+  max?: string
+};
+
 type PropsType = {
   className?: string,
   inputType: string,
   valueType?: string,
   placeholder?: string,
   value: ?(number | string),
-  formattedValue?: string,
-  inputProps?: Object,
-  onChange: Function
-};
-
-type NumberFormatValueType = {
-  floatValue: number,
-  formattedValue: string,
-  value: string
+  inputProps?: InputPropsType,
+  currencyConfig?: CurrencyConfigType,
+  onChange: (?(number | string)) => void
 };
 
 const BaseInput = (props: PropsType) => {
-  const { currency, pattern } = props.inputProps || {};
+  const { pattern } = props.inputProps || {};
 
   const handleKeyPress = event => {
     if (!pattern) return;
@@ -73,23 +75,12 @@ const BaseInput = (props: PropsType) => {
 
   return (
     <Root className={props.className}>
-      {props.valueType === MONEY_RANGE ? (
-        <NumberFormat
-          prefix={currency.prefix || ""}
-          thousandSeparator={currency.thousandSeparator || ""}
-          decimalSeparator={currency.decimalSeparator || ""}
-          decimalScale={currency.decimalScale || ""}
-          className="clearable-input__input"
+      {props.valueType === MONEY_RANGE && !!props.currencyConfig ? (
+        <CurrencyInput
+          currencyConfig={props.currencyConfig}
           placeholder={props.placeholder}
-          type={props.inputType}
-          onValueChange={(values: NumberFormatValueType) => {
-            const { formattedValue, floatValue } = values;
-            const parsed = new Decimal(floatValue).mul(currency.factor || 0);
-
-            props.onChange(parsed, formattedValue);
-          }}
-          value={props.formattedValue}
-          {...props.inputProps}
+          value={props.value}
+          onChange={props.onChange}
         />
       ) : (
         <Input
@@ -97,7 +88,7 @@ const BaseInput = (props: PropsType) => {
           type={props.inputType}
           onChange={e => props.onChange(e.target.value)}
           onKeyPress={e => handleKeyPress(e)}
-          value={props.value}
+          value={props.value || ""}
           {...props.inputProps}
         />
       )}

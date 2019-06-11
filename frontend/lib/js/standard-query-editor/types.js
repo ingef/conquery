@@ -13,14 +13,6 @@ import type {
   DateRangeType
 } from "../common/types/backend";
 
-export type CurrencyType = {
-  factor: number,
-  prefix: string,
-  thousandSeparator: string,
-  decimalSeparator: string,
-  decimalScale: number
-};
-
 // A concept that is part of a query node in the editor
 export type ConceptType = {
   id: string,

@@ -344,14 +344,9 @@ const setNodeFilterProperties = (state, action, properties) => {
 };
 
 const setNodeFilterValue = (state, action) => {
-  const { value, formattedValue } = action.payload;
+  const { value } = action.payload;
 
-  // "action" is weirdly split if half here.
-  // Check if formattedValue is actually needed and refactor.
-  return setNodeFilterProperties(state, action, {
-    value,
-    formattedValue
-  });
+  return setNodeFilterProperties(state, action, { value });
 };
 
 const setNodeTableSelects = (state, action) => {
@@ -390,8 +385,7 @@ const switchNodeFilterMode = (state, action) => {
 
   return setNodeFilterProperties(state, action, {
     mode,
-    value: null,
-    formattedValue: null
+    value: null
   });
 };
 

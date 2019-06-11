@@ -14,6 +14,13 @@ export type SelectOptionsType = SelectOptionType[];
 
 export type DateRangeType = ?{ min?: string, max?: string };
 
+export type CurrencyConfigType = {
+  prefix: string,
+  thousandSeparator: string,
+  decimalSeparator: string,
+  decimalScale: number
+};
+
 export type InfoType = {
   key: string,
   value: string
@@ -24,18 +31,12 @@ export type RangeFilterValueType = {
   max?: number,
   exact?: number
 };
-export type RangeFilterFormattedValueType = {
-  min?: number,
-  max?: number,
-  exact?: number
-};
 export type RangeFilterType = {
   id: string,
   label: string,
   description?: string,
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE",
   value: ?RangeFilterValueType,
-  formattedValue: ?RangeFilterFormattedValueType,
   unit?: string,
   mode: "range" | "exact",
   precision?: number,
@@ -121,12 +122,6 @@ export type FilterValuesResolutionResultType = {
       value: string
     }[]
   }
-};
-
-export type SearchResult = {
-  result: string[],
-  limit: number,
-  size: number
 };
 
 export type QueryIdType = string;
