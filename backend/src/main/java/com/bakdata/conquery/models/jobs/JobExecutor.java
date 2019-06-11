@@ -93,7 +93,7 @@ public class JobExecutor extends Thread {
 						currentJob.set(null);
 					}
 					catch (Throwable e) {
-						log.error("Fast Job "+job+" failed", e);
+						log.error("Job "+job+" failed", e);
 						currentJob.set(null);
 					}
 				}

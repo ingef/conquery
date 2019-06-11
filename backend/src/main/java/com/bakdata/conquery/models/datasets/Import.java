@@ -72,7 +72,6 @@ public class Import extends NamedImpl<ImportId> {
 	@JsonIgnore
 	public synchronized BlockFactory getBlockFactory() {
 		if(blockFactory == null) {
-			String eventSource = null;
 			String blockSource = null;
 			String factorySource = null;
 			try(ClassGenerator gen = ClassGenerator.create()) {
@@ -82,7 +81,7 @@ public class Import extends NamedImpl<ImportId> {
 				factorySource = applyTemplate("BlockFactoryTemplate.ftl", suffix);
 				
 				if(DebugMode.isActive()) {
-					log.debug("Generated classes for {}:\n{}\n{}\n{}", this, eventSource, blockSource, factorySource);
+					log.debug("Generated classes for {}:\n{}\n{}", this, blockSource, factorySource);
 				}
 				
 				gen.addForCompile(
@@ -101,7 +100,7 @@ public class Import extends NamedImpl<ImportId> {
 					.getConstructor()
 					.newInstance();
 			} catch (Exception e) {
-				log.error("Failed to generate classes for {}:\n{}\n{}\n{}", this, eventSource, blockSource, factorySource);
+				log.error("Failed to generate classes for {}:\n{}\n{}", this, blockSource, factorySource);
 				throw new IllegalStateException("Failed to generate Block/Event classes", e);
 			}
 		}
