@@ -55,8 +55,8 @@ const mapDispatchToProps = dispatch => ({
   onSelectSelects: value => dispatch(setSelects(value)),
   onSelectTableSelects: (tableIdx, value) =>
     dispatch(setTableSelects(tableIdx, value)),
-  onSetFilterValue: (tableIdx, filterIdx, value, formattedValue) =>
-    dispatch(setFilterValue(tableIdx, filterIdx, value, formattedValue)),
+  onSetFilterValue: (tableIdx, filterIdx, value) =>
+    dispatch(setFilterValue(tableIdx, filterIdx, value)),
   onSwitchFilterMode: (tableIdx, filterIdx, mode) =>
     dispatch(switchFilterMode(tableIdx, filterIdx, mode)),
   onResetAllFilters: (andIdx, orIdx) =>

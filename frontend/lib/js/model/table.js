@@ -39,8 +39,7 @@ export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
             default:
               return {
                 ...filter,
-                value: filter.defaultValue || null,
-                formattedValue: undefined
+                value: filter.defaultValue || null
               };
           }
         })
