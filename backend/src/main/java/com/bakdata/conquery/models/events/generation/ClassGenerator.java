@@ -6,17 +6,19 @@ import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.util.DebugMode;
+
 public abstract class ClassGenerator implements Closeable {
 	private final List<String> generated = new ArrayList<>();
 
 
 	public static ClassGenerator create() throws IOException {
-		/*if (DebugMode.isActive()) {
+		if (DebugMode.isActive()) {
 			return new DebugClassGenerator();
 		}
-		else {*/
+		else {
 			return new MemoryClassGenerator();
-		//}
+		}
 	}
 	
 	public void addForCompile(String fullClassName, String content) throws IOException, ClassNotFoundException {
