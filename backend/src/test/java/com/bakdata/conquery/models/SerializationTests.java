@@ -14,8 +14,7 @@ import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 
 public class SerializationTests {
@@ -25,38 +24,44 @@ public class SerializationTests {
 		Dataset dataset = new Dataset();
 		dataset.setName("dataset");
 		
-		SerializationTestUtil.testSerialization(dataset, Dataset.class);
+		SerializationTestUtil
+			.forType(Dataset.class)
+			.test(dataset);
 	}
 	
 	@Test
 	public void mandator() throws IOException, JSONException{
 		Mandator mandator = new Mandator("company", "company");
 		
-		SerializationTestUtil.testSerialization(mandator, Mandator.class);
-		
+		SerializationTestUtil
+			.forType(Mandator.class)
+			.test(mandator);
 	}
 	
 	@Test
 	public void user() throws IOException, JSONException{
 		User user = new User("user", "user");
 		
-		SerializationTestUtil.testSerialization(user, User.class);
-		
+		SerializationTestUtil
+			.forType(User.class)
+			.test(user);
 	}
 	
 	@Test
 	public void datasetPermission() throws IOException, JSONException{
 		DatasetPermission permission = new DatasetPermission(new UserId("user"), Ability.READ.asSet(), new DatasetId("dataset"));
 		
-		SerializationTestUtil.testSerialization(permission, DatasetPermission.class);
-		
+		SerializationTestUtil
+			.forType(DatasetPermission.class)
+			.test(permission);
 	}
 	
 	@Test
 	public void queryPermission() throws IOException, JSONException{
-		QueryPermission permission = new QueryPermission(new UserId("user"), Ability.READ.asSet(), new ManagedQueryId(new DatasetId("dataset"), UUID.randomUUID()));
+		QueryPermission permission = new QueryPermission(new UserId("user"), Ability.READ.asSet(), new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()));
 
-		SerializationTestUtil.testSerialization(permission, QueryPermission.class);
-		
+		SerializationTestUtil
+			.forType(QueryPermission.class)
+			.test(permission);
 	}
 }

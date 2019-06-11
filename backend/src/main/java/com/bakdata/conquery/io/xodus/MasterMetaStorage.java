@@ -6,20 +6,20 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 
 public interface MasterMetaStorage extends ConqueryStorage {
 
-	void addQuery(ManagedQuery query) throws JSONException;
-	ManagedQuery getQuery(ManagedQueryId id);
-	Collection<ManagedQuery> getAllQueries();
-	void updateQuery(ManagedQuery query) throws JSONException;
-	void removeQuery(ManagedQueryId id);
+	void addExecution(ManagedExecution query) throws JSONException;
+	ManagedExecution getExecution(ManagedExecutionId id);
+	Collection<ManagedExecution> getAllExecutions();
+	void updateExecution(ManagedExecution query) throws JSONException;
+	void removeExecution(ManagedExecutionId id);
 	
 
 	/**

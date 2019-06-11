@@ -24,7 +24,9 @@ const WithAuthToken = (Component: any) => {
     }
 
     render() {
-      return <Component />;
+      const { location, ...rest } = this.props;
+
+      return <Component {...rest} />;
     }
   }
 
