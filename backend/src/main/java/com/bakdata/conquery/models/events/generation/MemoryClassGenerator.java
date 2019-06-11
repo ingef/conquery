@@ -37,15 +37,17 @@ public class MemoryClassGenerator extends ClassGenerator {
 	
 	@Override
 	public void compile() throws IOException {
-		try (JavaFileManager fileManager = new MemJavaFileManager(
-			FILE_MANAGER, 
-			classLoader)
-		) {
-			StringWriter output = new StringWriter();
-			CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList("-g:none"), null, files);
-			
-			if (!task.call()) {
-				throw new IllegalStateException("Failed to compile: "+output);
+		synchronized (COMPILER) {
+			try (JavaFileManager fileManager = new MemJavaFileManager(
+				FILE_MANAGER, 
+				classLoader)
+			) {
+				StringWriter output = new StringWriter();
+				CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList("-g:none"), null, files);
+				
+				if (!task.call()) {
+					throw new IllegalStateException("Failed to compile: "+output);
+				}
 			}
 		}
 	}

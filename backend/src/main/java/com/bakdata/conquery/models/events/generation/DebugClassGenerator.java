@@ -63,13 +63,15 @@ public class DebugClassGenerator extends ClassGenerator {
 
 	@Override
 	public void compile() throws IOException {
-		try (StandardJavaFileManager fileManager = COMPILER.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8)) {
-			Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
-			StringWriter output = new StringWriter();
-			CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
-			
-			if (!task.call()) {
-				throw new IllegalStateException("Failed to compile: "+output);
+		synchronized (COMPILER) {
+			try (StandardJavaFileManager fileManager = COMPILER.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8)) {
+				Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
+				StringWriter output = new StringWriter();
+				CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
+				
+				if (!task.call()) {
+					throw new IllegalStateException("Failed to compile: "+output);
+				}
 			}
 		}
 	}
