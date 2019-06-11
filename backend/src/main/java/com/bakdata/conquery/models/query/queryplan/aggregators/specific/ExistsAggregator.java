@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import java.util.Set;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -17,7 +17,7 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	private boolean hit = false;
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
+	public void aggregateEvent(Bucket bucket, int event) {
 		hit = true;
 	}
 

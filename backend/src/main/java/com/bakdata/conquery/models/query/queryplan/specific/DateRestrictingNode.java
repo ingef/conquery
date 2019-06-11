@@ -5,7 +5,7 @@ import java.util.Objects;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -41,9 +41,9 @@ public class DateRestrictingNode extends QPChainNode {
 
 
 	@Override
-	public void nextEvent(Block block, int event) {
-		if (block.eventIsContainedIn(event, validityDateColumn, dateRange)) {
-			getChild().nextEvent(block, event);
+	public void nextEvent(Bucket bucket, int event) {
+		if (bucket.eventIsContainedIn(event, validityDateColumn, dateRange)) {
+			getChild().nextEvent(bucket, event);
 		}
 	}
 

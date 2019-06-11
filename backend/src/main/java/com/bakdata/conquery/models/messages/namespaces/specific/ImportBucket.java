@@ -11,7 +11,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;

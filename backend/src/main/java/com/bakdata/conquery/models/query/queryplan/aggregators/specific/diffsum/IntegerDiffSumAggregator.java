@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -33,9 +33,9 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		long addend = block.has(event, getAddendColumn()) ? block.getInteger(event, getAddendColumn()) : 0;
-		long subtrahend = block.has(event, getSubtrahendColumn()) ? block.getInteger(event, getSubtrahendColumn()) : 0;
+	public void aggregateEvent(Bucket bucket, int event) {
+		long addend = bucket.has(event, getAddendColumn()) ? bucket.getInteger(event, getAddendColumn()) : 0;
+		long subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getInteger(event, getSubtrahendColumn()) : 0;
 
 		sum = sum + addend - subtrahend;
 	}

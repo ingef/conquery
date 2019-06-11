@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -46,8 +46,8 @@ public abstract class QPChainNode extends QPNode {
 	}
 	
 	@Override
-	public void nextBlock(Block block) {
-		child.nextBlock(block);
+	public void nextBlock(Bucket bucket) {
+		child.nextBlock(bucket);
 	}
 	
 	@Override

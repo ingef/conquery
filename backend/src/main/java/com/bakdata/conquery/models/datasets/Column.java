@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.datasets;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
@@ -47,10 +46,6 @@ public class Column extends Labeled<ColumnId> {
 
 	public CType getTypeFor(Bucket bucket) {
 		return getTypeFor(bucket.getImp());
-	}
-	
-	public CType getTypeFor(Block block) {
-		return getTypeFor(block.getBucket().getImp());
 	}
 
 	public CType getTypeFor(Import imp) {

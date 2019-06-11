@@ -8,6 +8,7 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
@@ -42,8 +43,8 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 	}
 
 	@Override
-	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public boolean checkEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
 
@@ -51,7 +52,7 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 			return false;
 		}
 
-		LocalDate date = CDate.toLocalDate(block.getDate(event, getColumn()));
+		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
 
 		final long between = unit.between(date, reference);
 
@@ -59,7 +60,7 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 	}
 
 	@Override
-	public void acceptEvent(Block block, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		//Base class for event based filter nodes to reduce repetition?
 		this.hit = true;
 

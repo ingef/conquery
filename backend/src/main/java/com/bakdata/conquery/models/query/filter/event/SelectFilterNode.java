@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 import com.bakdata.conquery.models.types.specific.AStringType;
@@ -19,9 +20,9 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public void nextBlock(Block block) {
+	public void nextBlock(Bucket bucket) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((AStringType) getColumn().getTypeFor(block)).getId(filterValue);
+		selectedId = ((AStringType) getColumn().getTypeFor(bucket)).getId(filterValue);
 	}
 
 	@Override
@@ -30,18 +31,18 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public boolean checkEvent(Block block, int event) {
-		if (selectedId == -1 || !block.has(event, getColumn())) {
+	public boolean checkEvent(Bucket bucket, int event) {
+		if (selectedId == -1 || !bucket.has(event, getColumn())) {
 			return false;
 		}
 
-		int value = block.getString(event, getColumn());
+		int value = bucket.getString(event, getColumn());
 
 		return value == selectedId;
 	}
 
 	@Override
-	public void acceptEvent(Block block, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		this.hit = true;
 	}
 

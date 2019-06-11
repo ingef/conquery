@@ -6,7 +6,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.QueryPart;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -46,7 +46,7 @@ public interface QueryPlan extends EventIterating {
 
 	void init(Entity entity);
 
-	void nextEvent(Block block, int event);
+	void nextEvent(Bucket bucket, int event);
 
 	int getAggregatorSize();
 	

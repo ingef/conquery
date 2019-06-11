@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum
 import java.math.BigDecimal;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -34,10 +34,10 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		BigDecimal addend = block.has(event, getAddendColumn()) ? block.getDecimal(event, getAddendColumn()) : BigDecimal.ZERO;
+	public void aggregateEvent(Bucket bucket, int event) {
+		BigDecimal addend = bucket.has(event, getAddendColumn()) ? bucket.getDecimal(event, getAddendColumn()) : BigDecimal.ZERO;
 
-		BigDecimal subtrahend = block.has(event, getSubtrahendColumn()) ? block.getDecimal(event, getSubtrahendColumn()) : BigDecimal.ZERO;
+		BigDecimal subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getDecimal(event, getSubtrahendColumn()) : BigDecimal.ZERO;
 
 		sum = sum.add(addend.subtract(subtrahend));
 	}

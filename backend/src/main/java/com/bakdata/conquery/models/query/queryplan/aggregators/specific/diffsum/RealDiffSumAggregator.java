@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific.diffsum;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.ColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -33,13 +33,13 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		double addend = block.has(event, getAddendColumn())
-								? block.getReal(event, getAddendColumn())
+	public void aggregateEvent(Bucket bucket, int event) {
+		double addend = bucket.has(event, getAddendColumn())
+								? bucket.getReal(event, getAddendColumn())
 								: 0;
 
-		double subtrahend = block.has(event, getSubtrahendColumn())
-									? block.getReal(event, getSubtrahendColumn())
+		double subtrahend = bucket.has(event, getSubtrahendColumn())
+									? bucket.getReal(event, getSubtrahendColumn())
 									: 0;
 
 		sum = sum + addend - subtrahend;

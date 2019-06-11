@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.filter.event;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
@@ -22,21 +23,21 @@ public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public boolean checkEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public boolean checkEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
 
-		int stringToken = block.getString(event, getColumn());
+		int stringToken = bucket.getString(event, getColumn());
 
-		String value = (String) getColumn().getTypeFor(block).createScriptValue(stringToken);
+		String value = (String) getColumn().getTypeFor(bucket).createScriptValue(stringToken);
 
 		//if performance is a problem we could find the filterValue once in the dictionary and then only check the values
 		return value.startsWith(filterValue);
 	}
 
 	@Override
-	public void acceptEvent(Block block, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		this.hit = true;
 	}
 

@@ -26,6 +26,7 @@ import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
+import com.google.common.math.IntMath;
 import com.tomgibara.bits.BitStore;
 
 import lombok.Getter;
@@ -63,8 +64,29 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	public PrimitiveIterator.OfInt iterator() {
 		return IntStream
 			.range(0,getBucketSize())
-			.filter(v->offsets[v]!=-1)
+			.filter(this::containsLocalEntity)
 			.iterator();
+	}
+
+	public int toLocal(int entity) {
+		return entity - getBucketSize()*bucket;
+	}
+	
+	public boolean containsLocalEntity(int localEntity) {
+		return offsets[localEntity]!=-1;
+	}
+	
+	public int getFirstEventOfLocal(int localEntity) {
+		return offsets[localEntity];
+	}
+	
+	public int getLastEventOfLocal(int localEntity) {
+		for(localEntity++;localEntity < offsets.length;localEntity++) {
+			if(offsets[localEntity]!=-1) {
+				return offsets[localEntity];
+			}
+		}
+		return numberOfEvents;
 	}
 	
 	@Override

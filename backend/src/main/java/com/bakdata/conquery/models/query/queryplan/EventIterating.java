@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 
@@ -20,5 +20,5 @@ public interface EventIterating {
 	
 	default void nextTable(QueryContext ctx, Table currentTable) {}
 	
-	default void nextBlock(Block block) {}
+	default void nextBlock(Bucket bucket) {}
 }
