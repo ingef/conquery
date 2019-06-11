@@ -23,7 +23,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	@NotNull @Valid
 	private ConnectorId connector;
 	@Valid
-	private List<List<int[]>> mostSpecificChildren;
+	private List<int[]> mostSpecificChildren;
 	
 	public CBlock(BucketId bucket, ConnectorId connector) {
 		this.bucket = bucket;

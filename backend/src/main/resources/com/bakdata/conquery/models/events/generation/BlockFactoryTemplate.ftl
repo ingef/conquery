@@ -27,10 +27,10 @@ import com.google.common.primitives.Ints;
 
 public class BlockFactory_${suffix} extends BlockFactory {
 
-	public Block_${suffix} createBlock(Import imp, List<Object[]> events) {
+	public Bucket_${suffix} createBlock(Import imp, List<Object[]> events) {
 		BitStore nullBits = Bits.store(${imp.nullWidth}*events.size());
-		Block_${suffix} block = new Block_${suffix}();
-		block.setSize(events.size());
+		Bucket_${suffix} block = new Bucket_${suffix}(0, imp, events.size(), new int[]{0});
+		block.initFields(events.size());
 		for(int event = 0; event < events.size(); event++){
 			<#list imp.columns as col>
 			<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
@@ -61,31 +61,7 @@ public class BlockFactory_${suffix} extends BlockFactory {
 		return block;
 	}
 	
-	public Block_${suffix} readBlock(Import imp, InputStream inputStream) throws IOException {
-		try (SmallIn input = new SmallIn(inputStream)){
-			int eventLength = input.readInt(true);
-			int nullBytesLength = input.readInt(true);
-			byte [] nullBytes = input.readBytes(nullBytesLength);
-			
-			BitStore nullBits = Bits.asStore(nullBytes, 0, eventLength*${imp.nullWidth});
-			Block_${suffix} block = new Block_${suffix}();
-			block.setNullBits(nullBits);
-			block.setSize(eventLength);
-			for (int eventId = 0; eventId < eventLength; eventId++) {
-				<#list imp.columns as col>
-				<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
-				<#if col.type.nullLines == col.type.lines>
-				//all values of ${col.name} are null
-				<#elseif col.type.requiresExternalNullStore()>		
-				if(block.has(eventId, ${col.position})) {
-					block.<@f.set col/>(eventId, <@t.kryoDeserialization type=col.type/>);
-				}
-				<#else>
-				block.<@f.set col/>(eventId, <@t.kryoDeserialization type=col.type/>);
-				</#if>
-				</#list>
-			}
-			return block;
-		}
+	public Bucket_${suffix} construct(int bucketNumber, Import imp, int numberOfEvents, int[] offsets) {
+		return new Bucket_${suffix}(int bucketNumber, Import imp, int numberOfEvents, int[] offsets);
 	}
 }

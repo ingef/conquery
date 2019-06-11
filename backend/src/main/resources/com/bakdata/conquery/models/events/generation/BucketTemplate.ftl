@@ -1,7 +1,7 @@
 <#import "/com/bakdata/conquery/models/events/generation/Helper.ftl" as f/>
 package com.bakdata.conquery.models.events.generation;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.util.io.SmallOut;
@@ -23,8 +23,6 @@ import java.math.BigDecimal;
 
 import java.util.Collections;
 import java.util.List;
-
-import org.apache.commons.io.output.ByteArrayOutputStream;
 
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.bits.Bits;
@@ -55,29 +53,23 @@ import com.bakdata.conquery.util.PackedUnsigned1616;
 import com.bakdata.conquery.models.common.CQuarter;
 import com.google.common.primitives.Ints;
 
-public class Block_${suffix} extends Block {
+public class Bucket_${suffix} extends Bucket {
 
-	private BitStore nullBits;
-	private int size;
-	<#list imp.columns as column>
-	<#if column.type.lines != column.type.nullLines>
-	private ${column.type.primitiveType.name}[] <@f.field column/>;
-	</#if>
-	</#list>
-	
-	public void setSize(int size) {
-		this.size = size;
+	public Bucket_${suffix}(int bucketNumber, Import imp, int numberOfEvents, int[] offsets) {
+		super(bucketNumber, imp, numberOfEvents, offsets);
 		<#list imp.columns as column>
 		<#if column.type.lines != column.type.nullLines>
-		<@f.field column/> = new ${column.type.primitiveType.name}[size];
+		<@f.field column/> = new ${column.type.primitiveType.name}[numberOfEvents];
 		</#if>
 		</#list>
 	}
-	
-	/* getter and setter for the fields */
+
 	<#list imp.columns as column>
 	<#if column.type.lines != column.type.nullLines>
 	<#import "/com/bakdata/conquery/models/events/generation/types/${column.type.class.simpleName}.ftl" as t/>
+	
+	private ${column.type.primitiveType.name}[] <@f.field column/>;
+	
 	public ${column.type.primitiveType.name} <@f.get column/>(int event) {
 		return <@f.field column/>[event];
 	}
@@ -92,57 +84,13 @@ public class Block_${suffix} extends Block {
 	</#if>
 	</#list>
 	
-	public void setNullBits(BitStore nullBits){
-		this.nullBits = nullBits;
+	@Override
+	public int getBucketSize() {
+		return ${bucketSize};
 	}
 	
 	@Override
-	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {		
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
-		try (SmallOut output = new SmallOut(baos)){
-			writeContent(output);
-		}
-		byte[] content = baos.toByteArray();
-		
-		gen.writeBinary(content);
-	}
-	
-	@Override
-	public void writeContent(SmallOut output) throws IOException {
-		output.writeInt(this.size, true);
-		
-		byte[] nullBitsAsBytes = Bits.asStore(nullBits.toByteArray()).toByteArray();
-		output.writeInt(nullBitsAsBytes.length, true);
-		output.write(nullBitsAsBytes);
-		
-		for (int event = 0; event < size; event++) {					
-		<#list imp.columns as column>
-			<#import "/com/bakdata/conquery/models/events/generation/types/${column.type.class.simpleName}.ftl" as t/>
-			<#if column.type.lines == column.type.nullLines>
-			<#--no values, column is all null-->
-			<#elseif column.type.requiresExternalNullStore()>
-			if(this.has(event, ${column_index})) {
-				<@t.kryoSerialization type=column.type><@f.get column/>(event)</@t.kryoSerialization>;
-			}
-			<#else>
-			<@t.kryoSerialization type=column.type><@f.get column/>(event)</@t.kryoSerialization>;
-			</#if>
-		</#list>
-		}
-	}
-	
-	@Override
-	public int size() {
-		return size;
-	}
-	
-	@Override
-	public boolean has(int event, Column column) {
-		return has(event, column.getPosition());
-	}
-	
-	public boolean has(int event, int columnPosition) {
+	protected boolean has(int event, int columnPosition) {
 		switch(columnPosition) {
 	<#list imp.columns as col>
 	<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
@@ -295,5 +243,52 @@ public class Block_${suffix} extends Block {
 			</#if>
 		</#list>
 		return builder.build();
+	}
+	
+	@Override
+	public void read(SmallIn input) throws IOException {
+		int eventLength = input.readInt(true);
+		int nullBytesLength = input.readInt(true);
+		byte [] nullBytes = input.readBytes(nullBytesLength);
+		
+		nullBits = Bits.asStore(nullBytes, 0, eventLength*${imp.nullWidth});
+		for (int eventId = 0; eventId < eventLength; eventId++) {
+			<#list imp.columns as col>
+			<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
+			<#if col.type.nullLines == col.type.lines>
+			//all values of ${col.name} are null
+			<#elseif col.type.requiresExternalNullStore()>		
+			if(this.has(eventId, ${col.position})) {
+				this.<@f.set col/>(eventId, <@t.kryoDeserialization type=col.type/>);
+			}
+			<#else>
+			this.<@f.set col/>(eventId, <@t.kryoDeserialization type=col.type/>);
+			</#if>
+			</#list>
+		}
+	}
+	
+	@Override
+	public void writeContent(SmallOut output) throws IOException {
+		output.writeInt(this.numberOfEvents, true);
+		
+		byte[] nullBitsAsBytes = Bits.asStore(nullBits.toByteArray()).toByteArray();
+		output.writeInt(nullBitsAsBytes.length, true);
+		output.write(nullBitsAsBytes);
+		
+		for (int event = 0; event < numberOfEvents; event++) {					
+		<#list imp.columns as column>
+			<#import "/com/bakdata/conquery/models/events/generation/types/${column.type.class.simpleName}.ftl" as t/>
+			<#if column.type.lines == column.type.nullLines>
+			<#--no values, column is all null-->
+			<#elseif column.type.requiresExternalNullStore()>
+			if(this.has(event, ${column_index})) {
+				<@t.kryoSerialization type=column.type><@f.get column/>(event)</@t.kryoSerialization>;
+			}
+			<#else>
+			<@t.kryoSerialization type=column.type><@f.get column/>(event)</@t.kryoSerialization>;
+			</#if>
+		</#list>
+		}
 	}
 }
