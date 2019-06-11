@@ -35,6 +35,7 @@ import { reducer as snackMessage } from "../snack-message";
 
 import { createQueryNodeEditorReducer } from "../query-node-editor";
 
+// TODO: Introduce more StateTypes gradually
 export type StateType = {
   categoryTrees: CategoryTreesStateType,
   datasets: DatasetsStateType,
@@ -43,8 +44,8 @@ export type StateType = {
   uploadConceptListModal: UploadConceptListModalStateType
 };
 
-const buildAppReducer = tabs =>
-  combineReducers({
+const buildAppReducer = tabs => {
+  return combineReducers({
     startup,
     categoryTrees,
     uploadConceptListModal,
@@ -59,7 +60,12 @@ const buildAppReducer = tabs =>
     previousQueriesFilter,
     uploadQueryResults,
     deletePreviousQueryModal,
-    snackMessage
+    snackMessage,
+    ...tabs.reduce((all, tab) => {
+      all[tab.key] = tab.reducer;
+      return all;
+    }, {})
   });
+};
 
 export default buildAppReducer;

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.concepts;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -37,8 +36,7 @@ public class FrontEndConceptBuilder {
 	public static FERoot createRoot(NamespaceStorage storage) {
 
 		FERoot root = new FERoot();
-
-		Map<IId<?>, FENode> roots = new LinkedHashMap<>();
+		Map<IId<?>, FENode> roots = root.getConcepts();
 		//add all real roots
 		for (Concept<?> c : storage.getAllConcepts()) {
 			if(!c.isHidden()) {
@@ -49,7 +47,6 @@ public class FrontEndConceptBuilder {
 		for(StructureNode sn : storage.getStructure()) {
 			roots.put(sn.getId(), createStructureNode(sn, storage));
 		}
-		root.setConcepts(roots);
 		return root;
 	}
 
