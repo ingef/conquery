@@ -16,7 +16,7 @@ public class Freemarker {
 		cfg.setLocalizedLookup(false);
 		cfg.setClassForTemplateLoading(ClassGenerator.class, "/");
 		cfg.setWhitespaceStripping(true);
+		cfg.setNumberFormat("computer");
 		return cfg;
 	}
-
 }

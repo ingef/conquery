@@ -29,7 +29,7 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -38,8 +38,6 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.StringParser;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -107,7 +105,7 @@ public class GenerationTests {
 			);
 	}
 
-	public Block generateBlock(List<Object[]> arrays) throws IOException {
+	public Bucket generateBucket(List<Object[]> arrays) throws IOException {
 		Parser[] parser = new Parser[] {
 			MajorTypeId.DATE.createParser(),
 			MajorTypeId.STRING.createParser(),
@@ -171,11 +169,7 @@ public class GenerationTests {
 			imp.getColumns()[i].getType().writeHeader(new NullOutputStream());
 		}
 
-		return imp.getBlockFactory().createBlock(
-			0,
-			imp,
-			result
-		);
+		return imp.getBlockFactory().create(imp, result);
 	}
 	
 	@ParameterizedTest(name="{0}")
@@ -185,7 +179,7 @@ public class GenerationTests {
 		List<Future<?>> futures = new ArrayList<>();
 		for(int i=0;i<30;i++) {
 			List<Object[]> l = arrays.stream().map(v->Arrays.copyOf(v, v.length)).collect(Collectors.toList());
-			futures.add(pool.submit(()->generateBlock(l)));
+			futures.add(pool.submit(()->generateBucket(l)));
 		}
 		pool.shutdown();
 		for(Future<?> f:futures) {
@@ -197,48 +191,48 @@ public class GenerationTests {
 	@ParameterizedTest(name="{0}")
 	@MethodSource("createRandomContent")
 	public void testSerialization(int numberOfValues, List<Object[]> arrays) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, NoSuchMethodException, SecurityException, JSONException {
-		Block block = generateBlock(arrays);
+		Bucket bucket = generateBucket(arrays);
 		for(int i=0;i<arrays.size();i++) {
 			for(int c=0;c<arrays.get(i).length;c++) {
 				Column fake = new Column();
 				fake.setPosition(c);
 				
 				Object orig = arrays.get(i)[c];
-				String message = "checking "+c+" "+block.getImp().getColumns()[c].getType()+":"+i+" = "+orig;
+				String message = "checking "+c+" "+bucket.getImp().getColumns()[c].getType()+":"+i+" = "+orig;
 				
 				if(orig == null) {
-					assertThat(block.has(i, fake))
+					assertThat(bucket.has(i, fake))
 						.as(message)
 						.isFalse();
 				}
 				else {
-					assertThat(block.has(i, fake))
+					assertThat(bucket.has(i, fake))
 						.as(message+" is not null")
 						.isTrue();
 					
 					if(orig instanceof BigDecimal) {
-						assertThat((BigDecimal)block.getAsObject(i, fake))
+						assertThat((BigDecimal)bucket.getAsObject(i, fake))
 							.as(message)
 							.usingComparator(BigDecimal::compareTo)
 							.isEqualTo(orig);
 					}
 					else {
-						assertThat(block.getAsObject(i, fake))
+						assertThat(bucket.getAsObject(i, fake))
 							.as(message)
 							.isEqualTo(orig);
 					}
 				}
 				
 			}
-			block.calculateMap(i, block.getImp());
+			bucket.calculateMap(i, bucket.getImp());
 		}
 		CentralRegistry registry = new CentralRegistry();
-		registry.register(block.getImp());
+		registry.register(bucket.getImp());
 
 		SerializationTestUtil
-			.forType(Block.class)
+			.forType(Bucket.class)
 			.registry(registry)
-			.test(block);
+			.test(bucket);
 	}
 
 	private ImportColumn column(Import imp, int pos) {

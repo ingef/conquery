@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -48,8 +48,8 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 	}
 	
 	@Override
-	public void nextEvent(Block block, int event) {
-		getChild().nextEvent(block, event);
+	public void nextEvent(Bucket bucket, int event) {
+		getChild().nextEvent(bucket, event);
 	}
 	
 	protected EntityResult result() {

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
@@ -33,26 +33,26 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	}
 	
 	@Override
-	public void nextBlock(Block block) {
-		super.nextBlock(block);
+	public void nextBlock(Bucket bucket) {
+		super.nextBlock(bucket);
 		for(FilterNode<?> f:filters) {
-			f.nextBlock(block);
+			f.nextBlock(bucket);
 		}
 	}
 	
 	@Override
-	public final void nextEvent(Block block, int event) {
+	public final void nextEvent(Bucket bucket, int event) {
 		for(FilterNode<?> f : filters) {
-			if (!f.checkEvent(block, event)) {
+			if (!f.checkEvent(bucket, event)) {
 				return;
 			}
 		}
 
 		for(FilterNode<?> f : filters) {
-			f.acceptEvent(block, event);
+			f.acceptEvent(bucket, event);
 		}
 
-		getChild().nextEvent(block, event);
+		getChild().nextEvent(bucket, event);
 	}
 
 	public boolean isContained() {

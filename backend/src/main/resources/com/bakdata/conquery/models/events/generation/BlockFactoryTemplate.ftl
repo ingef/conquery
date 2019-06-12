@@ -20,17 +20,23 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import java.util.List;
 
 import com.tomgibara.bits.BitStore;
+import com.tomgibara.bits.BitWriter;
 import com.tomgibara.bits.Bits;
 import com.bakdata.conquery.util.PackedUnsigned1616;
 import com.bakdata.conquery.models.common.CQuarter;
 import com.google.common.primitives.Ints;
 
+import java.util.Arrays;
+import it.unimi.dsi.fastutil.ints.IntList;
+import com.bakdata.conquery.models.events.Bucket;
+
 public class BlockFactory_${suffix} extends BlockFactory {
 
-	public Block_${suffix} createBlock(int entity, Import imp, List<Object[]> events) {
+	@Override
+	public Bucket_${suffix} create(Import imp, List<Object[]> events) {
 		BitStore nullBits = Bits.store(${imp.nullWidth}*events.size());
-		Block_${suffix} block = new Block_${suffix}(entity,imp);
-		block.setSize(events.size());
+		Bucket_${suffix} block = new Bucket_${suffix}(0, imp, new int[]{0});
+		block.initFields(events.size());
 		for(int event = 0; event < events.size(); event++){
 			<#list imp.columns as col>
 			<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
@@ -61,31 +67,45 @@ public class BlockFactory_${suffix} extends BlockFactory {
 		return block;
 	}
 	
-	public Block_${suffix} readBlock(int entity, Import imp, InputStream inputStream) throws IOException {
-		try (SmallIn input = new SmallIn(inputStream)){
-			int eventLength = input.readInt(true);
-			int nullBytesLength = input.readInt(true);
-			byte [] nullBytes = input.readBytes(nullBytesLength);
-			
-			BitStore nullBits = Bits.asStore(nullBytes, 0, eventLength*${imp.nullWidth});
-			Block_${suffix} block = new Block_${suffix}(entity,imp);
-			block.setNullBits(nullBits);
-			block.setSize(eventLength);
-			for (int eventId = 0; eventId < eventLength; eventId++) {
-				<#list imp.columns as col>
-				<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
-				<#if col.type.nullLines == col.type.lines>
-				//all values of ${col.name} are null
-				<#elseif col.type.requiresExternalNullStore()>		
-				if(block.has(eventId, ${col.position})) {
-					block.<@f.set col/>(eventId, <@t.kryoDeserialization type=col.type/>);
-				}
-				<#else>
-				block.<@f.set col/>(eventId, <@t.kryoDeserialization type=col.type/>);
+	@Override
+	public Bucket_${suffix} construct(int bucketNumber, Import imp, int[] offsets) {
+		return new Bucket_${suffix}(bucketNumber, imp, offsets);
+	}
+	
+	@Override
+	public Bucket_${suffix} combine(IntList includedEntities, Bucket[] buckets) {
+		int[] offsets = new int[${bucketSize}];
+		Arrays.fill(offsets, -1);
+		int offset = 0;
+		for(int i=0;i<includedEntities.size();i++) {
+			offsets[includedEntities.get(i) - ${bucketSize}*buckets[0].getBucket()]=offset;
+			offset+=buckets[i].getNumberOfEvents();
+		}
+		
+		Bucket_${suffix} result = construct(
+			buckets[0].getBucket(),
+			buckets[0].getImp(),
+			offsets
+		);
+		result.initFields(Arrays.stream(buckets).mapToInt(Bucket::getNumberOfEvents).sum());
+		BitStore bits = Bits.store(${imp.nullWidth}*result.getNumberOfEvents());
+		offset = 0;
+		for(Bucket bucket : buckets) {
+			Bucket_${suffix} cast = (Bucket_${suffix})bucket;
+			bits.setStore(
+				offset*${imp.nullWidth}, 
+				bucket.getNullBits().rangeTo(bucket.getNumberOfEvents()*${imp.nullWidth})
+			);
+			for(int event =0;event<bucket.getNumberOfEvents();event++) {
+				<#list imp.columns as column>
+				<#if column.type.lines != column.type.nullLines>
+				result.<@f.set column/>(offset, cast.<@f.get column/>(event));
 				</#if>
 				</#list>
+				offset++;
 			}
-			return block;
 		}
+		result.setNullBits(bits);
+		return result;
 	}
 }

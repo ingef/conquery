@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
@@ -111,10 +111,10 @@ public class Preprocessed {
 			transformer.finishTransform();
 		}
 		
-		Block block = imp.getBlockFactory().createBlock(entityId, imp, events);
+		Bucket bucket = imp.getBlockFactory().create(imp, events);
 		
 		out.writeInt(entityId, true);
-		block.writeContent(buffer);
+		bucket.writeContent(buffer);
 		out.writeInt(buffer.position(), true);
 		out.writeBytes(buffer.getBuffer(), 0, buffer.position());
 		

@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -28,15 +28,15 @@ public class ConceptNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextBlock(Block block) {
+	public void nextBlock(Bucket bucket) {
 		if (active) {
-			super.nextBlock(block);
-			currentRow = Objects.requireNonNull(entity.getCBlocks().get(table.getResolvedConnector(), block));
+			super.nextBlock(bucket);
+			currentRow = Objects.requireNonNull(entity.getCBlock(table.getResolvedConnector().getId(), bucket.getId()));
 		}
 	}
 
 	@Override
-	public void nextEvent(Block block, int event) {
+	public void nextEvent(Bucket bucket, int event) {
 		if (active) {
 			//check concepts
 			int[] mostSpecificChildren;
@@ -45,14 +45,14 @@ public class ConceptNode extends QPChainNode {
 
 				for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.matchesPrefix(mostSpecificChildren)) {
-						getChild().nextEvent(block, event);
+						getChild().nextEvent(bucket, event);
 					}
 				}
 			}
 			else {
 				for (ConceptElement ce : concepts) { //see #178  we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.getConcept() == ce) {
-						getChild().nextEvent(block, event);
+						getChild().nextEvent(bucket, event);
 					}
 				}
 			}

@@ -9,7 +9,7 @@ import java.util.Set;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -75,16 +75,16 @@ public abstract class QPParentNode extends QPNode {
 	}
 	
 	@Override
-	public void nextBlock(Block block) {
+	public void nextBlock(Bucket bucket) {
 		for(QPNode agg:currentTableChildren) {
-			agg.nextBlock(block);
+			agg.nextBlock(bucket);
 		}
 	}
 	
 	@Override
-	public void nextEvent(Block block, int event) {
+	public void nextEvent(Bucket bucket, int event) {
 		for(QPNode agg:currentTableChildren) {
-			agg.nextEvent(block, event);
+			agg.nextEvent(bucket, event);
 		}
 	}
 	

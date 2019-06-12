@@ -6,7 +6,7 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -19,19 +19,19 @@ import lombok.Setter;
 public class CBlock extends IdentifiableImpl<CBlockId> {
 	
 	@Valid
-	private BlockId block;
+	private BucketId bucket;
 	@NotNull @Valid
 	private ConnectorId connector;
 	@Valid
 	private List<int[]> mostSpecificChildren;
 	
-	public CBlock(BlockId block, ConnectorId connector) {
-		this.block = block;
+	public CBlock(BucketId bucket, ConnectorId connector) {
+		this.bucket = bucket;
 		this.connector = connector;
 	}
 	
 	@Override @JsonIgnore
 	public CBlockId createId() {
-		return new CBlockId(block, connector);
+		return new CBlockId(bucket, connector);
 	}
 }

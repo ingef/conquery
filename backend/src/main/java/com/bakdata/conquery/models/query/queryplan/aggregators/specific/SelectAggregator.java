@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -22,21 +22,21 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public void nextBlock(Block block) {
-		selectedId = ((AStringType) getColumn().getTypeFor(block)).getId(selected);
+	public void nextBlock(Bucket bucket) {
+		selectedId = ((AStringType) getColumn().getTypeFor(bucket)).getId(selected);
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
+	public void aggregateEvent(Bucket bucket, int event) {
 		if (selectedId == -1) {
 			return;
 		}
 
-		if (!block.has(event, getColumn())) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
-		int value = block.getString(event, getColumn());
+		int value = bucket.getString(event, getColumn());
 
 		if (value == selectedId) {
 			hits++;

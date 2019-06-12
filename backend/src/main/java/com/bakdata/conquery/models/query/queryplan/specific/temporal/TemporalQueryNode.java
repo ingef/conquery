@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -84,9 +84,9 @@ public class TemporalQueryNode extends QPNode {
 	 * @param block the new Block
 	 */
 	@Override
-	public void nextBlock(Block block) {
-		reference.getChild().nextBlock(block);
-		preceding.getChild().nextBlock(block);
+	public void nextBlock(Bucket bucket) {
+		reference.getChild().nextBlock(bucket);
+		preceding.getChild().nextBlock(bucket);
 	}
 
 	/**
@@ -107,9 +107,9 @@ public class TemporalQueryNode extends QPNode {
 	 * @return always true.
 	 */
 	@Override
-	public void nextEvent(Block block, int event) {
-		reference.getChild().nextEvent(block, event);
-		preceding.getChild().nextEvent(block, event);
+	public void nextEvent(Bucket bucket, int event) {
+		reference.getChild().nextEvent(bucket, event);
+		preceding.getChild().nextEvent(bucket, event);
 	}
 
 	/**
