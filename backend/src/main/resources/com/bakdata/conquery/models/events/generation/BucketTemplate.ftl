@@ -81,7 +81,7 @@ public class Bucket_${suffix} extends Bucket {
 	
 	@Override
 	public int getBucketSize() {
-		return ${bucketSize?c};
+		return ${bucketSize};
 	}
 	
 	@Override
