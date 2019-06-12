@@ -33,6 +33,6 @@ public abstract class Job {
 
 	@Override
 	public String toString() {
-		return this.getClass().getSimpleName()+"(progress="+progressReporter.getEstimate()+")";
+		return this.getClass().getSimpleName()+"(label='"+getLabel()+"' progress="+progressReporter.getEstimate()+")";
 	}
 }

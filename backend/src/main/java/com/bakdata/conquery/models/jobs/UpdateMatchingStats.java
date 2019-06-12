@@ -88,7 +88,7 @@ public class UpdateMatchingStats extends Job {
 
 	@Override
 	public String getLabel() {
-		return toString();
+		return "updating matching stats for "+worker.getInfo().getId();
 	}
 
 }
