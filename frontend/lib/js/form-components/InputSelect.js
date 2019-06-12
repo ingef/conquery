@@ -19,20 +19,28 @@ type PropsType = FieldPropsType & {
   tooltip?: string
 };
 
-const InputSelect = (props: PropsType) => {
-  const { input, options } = props;
+const InputSelect = ({
+  className,
+  input,
+  label,
+  options,
+  disabled,
+  selectProps,
+  tooltip
+}: PropsType) => {
   const selected = options && options.filter(v => v.value === input.value);
   const defaultValue =
     options && options.filter(v => v.value === input.defaultValue);
 
   return (
     <Labeled
-      disabled={props.disabled}
+      className={className}
+      disabled={disabled}
       valueChanged={!isEmpty(input.value) && input.value !== input.defaultValue}
       label={
         <>
-          {props.label}
-          {props.tooltip && <InfoTooltip text={props.tooltip} />}
+          {label}
+          {tooltip && <InfoTooltip text={tooltip} />}
         </>
       }
     >
@@ -47,10 +55,10 @@ const InputSelect = (props: PropsType) => {
         }
         isSearchable={false}
         isClearable={input.clearable}
-        isDisabled={!!props.disabled}
+        isDisabled={!!disabled}
         placeholder={T.translate("reactSelect.placeholder")}
         noOptionsMessage={() => T.translate("reactSelect.noResults")}
-        {...props.selectProps}
+        {...selectProps}
       />
     </Labeled>
   );
