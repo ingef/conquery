@@ -1,16 +1,11 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
-
-import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -21,7 +16,7 @@ import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
@@ -38,20 +33,14 @@ import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
-import com.bakdata.conquery.util.io.GroupingByteBuffer;
-import com.bakdata.conquery.util.io.MultiByteBuffer;
 import com.bakdata.conquery.util.io.SmallIn;
 import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.google.common.util.concurrent.Uninterruptibles;
 import com.jakewharton.byteunits.BinaryByteUnit;
-import com.tomgibara.fundament.Mapping;
 
-import it.unimi.dsi.fastutil.ints.Int2IntMap;
-import it.unimi.dsi.fastutil.ints.Int2IntOpenHashMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
@@ -147,19 +136,19 @@ public class ImportJob extends Job {
 
 					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
 						buffer.reset();
-						Block block = factory.createBlock(allIdsImp, Collections.singletonList(new Object[0]));
-						block.writeContent(buffer);
+						Bucket bucket = factory.create(allIdsImp, Collections.singletonList(new Object[0]));
+						bucket.writeContent(buffer);
 
 						//copy content into ImportBucket
-						int bucket = Entity.getBucket(entityId, bucketSize);
+						int bucketNumber = Entity.getBucket(entityId, bucketSize);
 						
-						allIdsBuckets
-							.computeIfAbsent(bucket, b->new ImportBucket(new BucketId(allIdsImp.getId(), b)))
-							.getIncludedEntities()
-							.add(entityId);
+						ImportBucket impBucket = allIdsBuckets
+							.computeIfAbsent(bucketNumber, b->new ImportBucket(new BucketId(allIdsImp.getId(), b)));
+						
+						impBucket.getIncludedEntities().add(entityId);
 						
 						allIdsBytes
-							.computeIfAbsent(bucket, i->new ArrayList<>())
+							.computeIfAbsent(bucketNumber, i->new ArrayList<>())
 							.add(buffer.toBytes());
 						
 						child.report(1);
@@ -178,14 +167,14 @@ public class ImportJob extends Job {
 				for (long group = 0; group < header.getGroups(); group++) {
 					int entityId = primaryMapping.source2Target(in.readInt(true));
 					int size = in.readInt(true);
-					int bucket = Entity.getBucket(entityId, bucketSize);
-					buckets
-						.computeIfAbsent(bucket, b->new ImportBucket(new BucketId(imp.getId(), b)))
-						.getIncludedEntities()
-						.add(entityId);
+					int bucketNumber = Entity.getBucket(entityId, bucketSize);
+					ImportBucket bucket = buckets
+						.computeIfAbsent(bucketNumber, b->new ImportBucket(new BucketId(imp.getId(), b)));
+						
+					bucket.getIncludedEntities().add(entityId);
 					
 					bytes
-						.computeIfAbsent(bucket, i->new ArrayList<>())
+						.computeIfAbsent(bucketNumber, i->new ArrayList<>())
 						.add(in.readBytes(size));
 					
 					child.report(1);

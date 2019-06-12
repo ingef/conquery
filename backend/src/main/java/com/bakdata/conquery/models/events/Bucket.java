@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.events;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigDecimal;
 import java.util.Map;
 import java.util.PrimitiveIterator;
@@ -26,7 +25,6 @@ import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
-import com.google.common.math.IntMath;
 import com.tomgibara.bits.BitStore;
 
 import lombok.Getter;
@@ -48,10 +46,9 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	@NotNull @Setter
 	protected BitStore nullBits;
 	
-	public Bucket(int bucket, Import imp, int numberOfEvents, int[] offsets) {
+	public Bucket(int bucket, Import imp, int[] offsets) {
 		this.bucket = bucket;
 		this.imp = imp;
-		this.numberOfEvents = numberOfEvents;
 		this.offsets = offsets;
 	}
 	
@@ -65,11 +62,18 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 		return IntStream
 			.range(0,getBucketSize())
 			.filter(this::containsLocalEntity)
+			.map(this::toGlobal)
 			.iterator();
 	}
 
+	public abstract void initFields(int numberOfEntities);
+	
 	public int toLocal(int entity) {
 		return entity - getBucketSize()*bucket;
+	}
+	
+	public int toGlobal(int entity) {
+		return entity + getBucketSize()*bucket;
 	}
 	
 	public boolean containsLocalEntity(int localEntity) {
@@ -97,12 +101,14 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 			writeContent(output);
 		}
 		byte[] content = baos.toByteArray();
+		gen.writeStartObject();
 		gen.writeNumberField(Fields.bucket, bucket);
-		gen.writeStringField(Fields.imp, imp.toString());
+		gen.writeStringField(Fields.imp, imp.getId().toString());
 		gen.writeNumberField(Fields.numberOfEvents, numberOfEvents);
 		gen.writeFieldName(Fields.offsets);
 		gen.writeArray(offsets, 0, offsets.length);
 		gen.writeBinaryField("content", content);
+		gen.writeEndObject();
 	}
 	
 	public boolean has(int event, Column column) {
@@ -137,9 +143,4 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	public abstract void writeContent(SmallOut output) throws IOException;
 
 	public abstract void read(SmallIn input) throws IOException;
-	public void read(InputStream inputStream) throws IOException {
-		try (SmallIn input = new SmallIn(inputStream)){
-			read(input);
-		}
-	}
 }

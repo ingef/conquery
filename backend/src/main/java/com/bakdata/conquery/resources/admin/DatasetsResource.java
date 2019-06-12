@@ -49,7 +49,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-import com.bakdata.conquery.models.jobs.ImportIdsJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -212,23 +211,6 @@ public class DatasetsResource {
 		}
 
 		processor.addImport(ns.getStorage().getDataset(), selectedFile);
-		return Response.ok().build();
-	}
-	
-	@POST
-	@Path("/{" + DATASET_NAME + "}/ids")
-	public Response addIds(@PathParam(DATASET_NAME) DatasetId datasetId, @QueryParam("file") File file) throws IOException, JSONException {
-		Namespace ns = ctx.getNamespaces().get(datasetId);
-		if (ns == null) {
-			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
-		}
-
-		File selectedFile = new File(processor.getConfig().getStorage().getPreprocessedRoot(), file.toString());
-		if (!selectedFile.exists()) {
-			throw new WebApplicationException("Could not find file " + selectedFile, Status.NOT_FOUND);
-		}
-
-		processor.getJobManager().addSlowJob(new ImportIdsJob(namespaces.get(datasetId), selectedFile));
 		return Response.ok().build();
 	}
 

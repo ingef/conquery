@@ -48,13 +48,15 @@ public class BucketDeserializer extends JsonDeserializer<Bucket> {
 		if (!p.nextFieldName(FIELD_OFFSET)) {
 			ctxt.handleUnexpectedToken(Bucket.class, p.currentToken(), p, "expected field 'offsets'");
 		}
+		p.nextValue();
 		int[] offsets = p.readValueAs(int[].class);
 		
-		Bucket bucket = imp.getBlockFactory().construct(bucketNumber, imp, numberOfEvents, offsets);
+		Bucket bucket = imp.getBlockFactory().construct(bucketNumber, imp, offsets);
 		
 		if (!p.nextFieldName(FIELD_CONTENT)) {
 			ctxt.handleUnexpectedToken(Bucket.class, p.currentToken(), p, "expected field 'content'");
 		}
+		p.nextValue();
 		try(PipedOutputStream out = new PipedOutputStream();
 		SmallIn in = new SmallIn(new PipedInputStream(out));) {
 			EXECUTORS.execute(()->{

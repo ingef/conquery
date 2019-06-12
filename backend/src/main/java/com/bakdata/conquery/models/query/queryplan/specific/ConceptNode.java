@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Objects;
 import java.util.Set;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -43,7 +41,7 @@ public class ConceptNode extends QPChainNode {
 			//check concepts
 			int[] mostSpecificChildren;
 			if (currentRow.getCBlock().getMostSpecificChildren() != null
-				&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(ArrayUtils.indexOf(bucket.getBucket().getBlocks(), bucket)).get(event)) != null)) {
+				&& ((mostSpecificChildren = currentRow.getCBlock().getMostSpecificChildren().get(event)) != null)) {
 
 				for (ConceptElement<?> ce : concepts) { //see #177  we could improve this by building a a prefix tree over concepts.prefix
 					if (ce.matchesPrefix(mostSpecificChildren)) {

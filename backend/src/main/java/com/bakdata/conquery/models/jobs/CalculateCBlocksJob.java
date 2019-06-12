@@ -1,10 +1,8 @@
 package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -16,7 +14,6 @@ import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -99,44 +96,34 @@ public class CalculateCBlocksJob extends Job {
 
 		treeConcept.initializeIdCache(stringType, importId);
 
-		cBlock.setMostSpecificChildren(new ArrayList<>(info.getBucket().getBlocks().length));
+		cBlock.setMostSpecificChildren(new ArrayList<>(info.getBucket().getNumberOfEvents()));
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 		
-		for(Block block:info.getBucket().getBlocks()) {
-			if(block == null) {
-				cBlock.getMostSpecificChildren().add(null);
-			}
-			else {
-				ArrayList<int[]> specificChildren = new ArrayList<>(block.size());
-				cBlock.getMostSpecificChildren().add(specificChildren);
-				
-				for(int event = 0; event < block.size(); event++) {
-					try {
-						if(block.has(event, connector.getColumn())) {
-							int valueIndex = block.getString(event, connector.getColumn());
-							final int finalEvent = event;
-							final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
-								() -> block.calculateMap(finalEvent, info.getImp())
-							);
-		
-							ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
-		
-							if (child != null) {
-								specificChildren.add(child.getPrefix());
-							}
-							else {
-								//see #174  improve handling by copying the relevant things from the old project
-								specificChildren.add(null);
-							}
-						}
-						else {
-							specificChildren.add(null);
-						}
-					} catch (ConceptConfigurationException ex) {
-						log.error("Failed to resolve event "+block+"-"+event+" against concept "+connector, ex);
+		for(int event = 0; event < info.getBucket().getNumberOfEvents(); event++) {
+			try {
+				if(info.getBucket().has(event, connector.getColumn())) {
+					int valueIndex = info.getBucket().getString(event, connector.getColumn());
+					final int finalEvent = event;
+					final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
+						() -> info.getBucket().calculateMap(finalEvent, info.getImp())
+					);
+
+					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
+
+					if (child != null) {
+						cBlock.getMostSpecificChildren().add(child.getPrefix());
+					}
+					else {
+						//see #174  improve handling by copying the relevant things from the old project
+						cBlock.getMostSpecificChildren().add(null);
 					}
 				}
+				else {
+					cBlock.getMostSpecificChildren().add(null);
+				}
+			} catch (ConceptConfigurationException ex) {
+				log.error("Failed to resolve event "+info.getBucket()+"-"+event+" against concept "+connector, ex);
 			}
 		}
 

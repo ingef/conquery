@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.jobs;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.models.concepts.Concept;
@@ -11,7 +9,6 @@ import com.bakdata.conquery.models.concepts.MatchingStats;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -56,31 +53,22 @@ public class UpdateMatchingStats extends Job {
 				Bucket bucket = worker.getStorage().getBucket(cBlock.getBucket());
 				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
 				
-				for (int bId = 0; bId < bucket.getBlocks().length; bId++) {
-					Block block = bucket.getBlocks()[bId];
-					if(block != null) {
-						
-						for (int event = 0; event < block.size(); event++) {
-							if (concept instanceof TreeConcept) {
-								List<int[]> specificChildren = cBlock.getMostSpecificChildren().get(bId);
-								if(specificChildren != null) {
-									int[] localIds = specificChildren.get(event);
-									if (localIds != null) {
-										ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
-			
-										while (e != null) {
-											messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())
-												.addEvent(table, block, cBlock, event);
-											e = e.getParent();
-										}
-									}
-								}
-							}
-							else {
-								messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
-									.addEvent(table, block, cBlock, event);
+				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
+					if (concept instanceof TreeConcept) {
+						int[] localIds = cBlock.getMostSpecificChildren().get(event);
+						if (localIds != null) {
+							ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
+	
+							while (e != null) {
+								messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())
+									.addEvent(table, bucket, cBlock, event);
+								e = e.getParent();
 							}
 						}
+					}
+					else {
+						messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
+							.addEvent(table, bucket, cBlock, event);
 					}
 				}
 			}

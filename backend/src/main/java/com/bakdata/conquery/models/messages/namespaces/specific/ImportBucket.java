@@ -44,29 +44,22 @@ public class ImportBucket extends WorkerMessage.Slow {
 		getProgressReporter().setMax(includedEntities.size());
 		Import imp = context.getStorage().getImport(bucket.getImp());
 		
-		int bytePos = 0;
-		
 		BlockFactory factory = imp.getBlockFactory();
-		
-		Bucket bucket = new Bucket();
-		bucket.setBucket(this.bucket.getBucket());
-		bucket.setImp(imp);
-		bucket.setBlocks(new Block[ConqueryConfig.getInstance().getCluster().getEntityBucketSize()]);
+		Bucket[] buckets = new Bucket[includedEntities.size()];
 		
 		for(int index=0;index<includedEntities.size();index++) {
 			int entity = includedEntities.getInt(index);
 			
 			try(ByteArrayInputStream input = new ByteArrayInputStream(bytes[index])) {
-				Block block = factory.readBlock(imp, input);
-				block.setBucket(bucket);
-				bucket.getBlocks()[bucket.getPosition(entity)] = block;
+				buckets[index] = factory.readSingleValue(bucket.getBucket(), imp, input);
 				if(input.available() > 0) {
 					throw new IllegalStateException("After reading the block of "+entity+" there are still "+input.available()+" bytes remaining in its content");
 				}
 			}
 			getProgressReporter().report(1);
 		}
-		context.getStorage().addBucket(bucket);
+
+		context.getStorage().addBucket(factory.combine(includedEntities, buckets));
 	}
 	
 	@Override

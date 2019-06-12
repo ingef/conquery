@@ -55,13 +55,8 @@ import com.google.common.primitives.Ints;
 
 public class Bucket_${suffix} extends Bucket {
 
-	public Bucket_${suffix}(int bucketNumber, Import imp, int numberOfEvents, int[] offsets) {
-		super(bucketNumber, imp, numberOfEvents, offsets);
-		<#list imp.columns as column>
-		<#if column.type.lines != column.type.nullLines>
-		<@f.field column/> = new ${column.type.primitiveType.name}[numberOfEvents];
-		</#if>
-		</#list>
+	public Bucket_${suffix}(int bucketNumber, Import imp, int[] offsets) {
+		super(bucketNumber, imp, offsets);
 	}
 
 	<#list imp.columns as column>
@@ -86,7 +81,7 @@ public class Bucket_${suffix} extends Bucket {
 	
 	@Override
 	public int getBucketSize() {
-		return ${bucketSize};
+		return ${bucketSize?c};
 	}
 	
 	@Override
@@ -181,6 +176,16 @@ public class Bucket_${suffix} extends Bucket {
 				throw new IllegalArgumentException("Column "+column+" is not a date type");
 		}
 	}
+	
+	@Override
+	public void initFields(int numberOfEvents) {
+		this.setNumberOfEvents(numberOfEvents);
+		<#list imp.columns as column>
+		<#if column.type.lines != column.type.nullLines>
+		<@f.field column/> = new ${column.type.primitiveType.name}[numberOfEvents];
+		</#if>
+		</#list>
+	} 
 
 	@Override
 	public boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges) {
@@ -247,12 +252,13 @@ public class Bucket_${suffix} extends Bucket {
 	
 	@Override
 	public void read(SmallIn input) throws IOException {
-		int eventLength = input.readInt(true);
+		int numberOfEvents = input.readInt(true);
+		initFields(numberOfEvents);
 		int nullBytesLength = input.readInt(true);
 		byte [] nullBytes = input.readBytes(nullBytesLength);
 		
-		nullBits = Bits.asStore(nullBytes, 0, eventLength*${imp.nullWidth});
-		for (int eventId = 0; eventId < eventLength; eventId++) {
+		nullBits = Bits.asStore(nullBytes, 0, numberOfEvents*${imp.nullWidth});
+		for (int eventId = 0; eventId < numberOfEvents; eventId++) {
 			<#list imp.columns as col>
 			<#import "/com/bakdata/conquery/models/events/generation/types/${col.type.class.simpleName}.ftl" as t/>
 			<#if col.type.nullLines == col.type.lines>
@@ -270,13 +276,13 @@ public class Bucket_${suffix} extends Bucket {
 	
 	@Override
 	public void writeContent(SmallOut output) throws IOException {
-		output.writeInt(this.numberOfEvents, true);
+		output.writeInt(getNumberOfEvents(), true);
 		
 		byte[] nullBitsAsBytes = Bits.asStore(nullBits.toByteArray()).toByteArray();
 		output.writeInt(nullBitsAsBytes.length, true);
 		output.write(nullBitsAsBytes);
 		
-		for (int event = 0; event < numberOfEvents; event++) {					
+		for (int event = 0; event < getNumberOfEvents(); event++) {					
 		<#list imp.columns as column>
 			<#import "/com/bakdata/conquery/models/events/generation/types/${column.type.class.simpleName}.ftl" as t/>
 			<#if column.type.lines == column.type.nullLines>

@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.query.filter.event.number;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
