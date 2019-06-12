@@ -74,7 +74,8 @@ public class Import extends NamedImpl<ImportId> {
 		if(blockFactory == null) {
 			String bucketSource = null;
 			String factorySource = null;
-			try(ClassGenerator gen = ClassGenerator.create()) {
+			try {
+				ClassGenerator gen = ClassGenerator.create();
 				String suffix = ConqueryEscape.escape(this.getId().toString().replace('.', '_'));
 				
 				bucketSource = applyTemplate("BucketTemplate.ftl", suffix);

@@ -62,7 +62,7 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public void doCompile() throws IOException {
+	public void compile() throws IOException {
 		synchronized (COMPILER) {
 			try (StandardJavaFileManager fileManager = COMPILER.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8)) {
 				Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);

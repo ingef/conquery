@@ -35,7 +35,7 @@ public class MemoryClassGenerator extends ClassGenerator {
 	}
 	
 	@Override
-	public void doCompile() throws IOException {
+	public void compile() throws IOException {
 		synchronized (COMPILER) {
 			try (JavaFileManager fileManager = new MemJavaFileManager(
 				FILE_MANAGER, 
