@@ -5,7 +5,7 @@ os:
 jdk:
   - openjdk11
 
-before_install: mvn initialize -P setVersion
+before_install: mvn -B -V initialize -P setVersion
 
 stages:
   - name: Tests
