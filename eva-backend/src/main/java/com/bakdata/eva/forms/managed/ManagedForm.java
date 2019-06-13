@@ -3,9 +3,11 @@ package com.bakdata.eva.forms.managed;
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
+import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -82,6 +84,15 @@ public class ManagedForm extends ManagedExecution {
 		else {
 			return ExecutionState.FAILED;
 		}
+	}
+	
+	public ExecutionStatus buildStatus(URLBuilder url) {
+		ExecutionStatus status = super.buildStatus(url);
+		if(internalQuery != null) {
+			Long numberOfResults = Long.valueOf(internalQuery.fetchContainedEntityResult().count());
+			status.setNumberOfResults(numberOfResults);
+		}
+		return status;
 	}
 
 	@Override
