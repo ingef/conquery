@@ -104,14 +104,12 @@ public class StatisticFormTest extends ConqueryTestSpec {
 		description = ConqueryEscape.unescape(description);
 		JsonNode descriptionNode = Jackson.MAPPER.readTree(description);
 		clearTimestamp(descriptionNode);
-		clearFormId(descriptionNode);
 		
 		// Prepare expected description
 		String expectedDesc = injectDataset(support.getDataset().getId(), In.stream(expectedDescription.stream()).readAll());
 		expectedDesc = ConqueryEscape.unescape(expectedDesc);
 		JsonNode expectedDescNode = Jackson.MAPPER.readTree(expectedDesc);
 		clearTimestamp(expectedDescNode);
-		clearFormId(expectedDescNode);
 		
 		// If the following fails, do a diff on the outputs
 		assertThat(descriptionNode).isEqualTo(expectedDescNode);
@@ -133,10 +131,6 @@ public class StatisticFormTest extends ConqueryTestSpec {
 
 	private void clearTimestamp(JsonNode descriptionTree) {
 		((ObjectNode) descriptionTree).set("timestamp", null);
-	}
-	
-	private void clearFormId(JsonNode descriptionTree) {
-		((ObjectNode) descriptionTree).set("id", null);
 	}
 
 	private String injectDataset(DatasetId dataset, String input) {

@@ -9,6 +9,7 @@ import lombok.Data;
 public class ColumnDescriptor {
 	
 	public static enum MatchingType {PSM, EXACT, DESCRIPTIVE, NONE, FIXED}
+	public static enum ColumnType { FIXED, VARIABLE }
 	
 	private String label;
 	private String description;
@@ -21,4 +22,7 @@ public class ColumnDescriptor {
 	
 	// Used by AU
 	private Boolean baseCondition;
+	
+	// Used by Descriptive
+	private ColumnType columnType;
 }
