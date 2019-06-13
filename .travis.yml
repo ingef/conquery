@@ -35,7 +35,7 @@ jobs:
       install:
         - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
         - mvn -B -V -T 1C install -N
-        - cd backend
+        - cd eva-backend
         - mvn -B -V -T 1C install -DskipTests
       script: mvn -B test -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
@@ -45,7 +45,7 @@ jobs:
       install:
         - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
         - mvn -B -V -T 1C install -N
-        - cd backend
+        - cd eva-backend
         - mvn -B -V -T 1C install -DskipTests
       script: mvn -B test -Dgroups="INTEGRATION_PROGRAMMATIC"
 
@@ -55,7 +55,7 @@ jobs:
       install:
         - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
         - mvn -B -V -T 1C install -N
-        - cd backend
+        - cd eva-backend
         - mvn -B -V -T 1C install -DskipTests
       script: mvn -B test -Dgroups="INTEGRATION_JSON"
 
@@ -75,8 +75,8 @@ jobs:
         target_commitish: $TRAVIS_COMMIT
         file_glob: true
         file:
-          - backend/target/backend-*.jar
-          - executable/target/executable-*.jar
+          - eva-backend/target/eva-backend-*.jar
+          - eva-executable/target/eva-executable-*.jar
         skip_cleanup: true
         draft: false
         prerelease: true
@@ -95,8 +95,8 @@ jobs:
         target_commitish: $TRAVIS_COMMIT
         file_glob: true
         file:
-          - backend/target/backend-*.jar
-          - executable/target/executable-*.jar
+          - eva-backend/target/eva-backend-*.jar
+          - eva-executable/target/eva-executable-*.jar
         skip_cleanup: true
         draft: false
         prerelease: false
@@ -105,7 +105,7 @@ jobs:
 
 #remove the installed maven jars before caching
 before_cache:
-  - rm -f -r $HOME/.m2/repository/com/bakdata/conquery/
+  - rm -f -r $HOME/.m2/repository/com/bakdata/
 cache:
   yarn: true
   directories:
