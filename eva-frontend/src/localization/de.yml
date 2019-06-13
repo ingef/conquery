@@ -1,0 +1,126 @@
+rightPane:
+  externalForms: "Statistik"
+
+queryRunner:
+  resultCount: "{count} Versicherte gefunden"
+
+previousQueries:
+  results: "Personen"
+
+previousQueriesFilter:
+  system: "EVA"
+
+externalForms:
+  common:
+    relativeToIndex: "Relativ zum Indexdatum"
+    timespan: "Beobachtungszeitraum"
+    dateMinLabel: "Von"
+    dateMaxLabel: "Bis"
+    timeInterval: "Zeitintervall"
+    indexDate:
+      label: "Zugehörigkeit Indexdatum"
+      before: "VORBEOBACHTUNGSZEITRAUM"
+      neutral: "NEUTRAL"
+      after: "NACHBEOBACHTUNGSZEITRAUM"
+    timeUnit:
+      label: "Zeiteinheit"
+      days: "Tage"
+      quarters: "Quartale"
+      years: "Jahre"
+      complete: "Gesamter Zeitraum"
+    timestamp:
+      label: "Zeitstempel Indexdatum"
+      first: "ERSTES"
+      last: "LETZTES"
+      random: "ZUFÄLLIG"
+    queryGroup: "Versichertengruppe"
+    filter: "Filter"
+    concept:
+      expand: "Untergeordnete Attribute einbeziehen / wieder ausschließen."
+    clear: "Formular leeren"
+
+  psmForm:
+    headline: "PSM Anfrage"
+    timeCountBefore: "Zeit davor"
+    timeCountAfter: "Zeit danach"
+    controlGroup: "Vergleichsgruppe"
+    featureGroup: "Interventionsgruppe"
+    feature: "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
+    outcome: "Konzepte im Nachbeobachtungszeitraum (Outcome Zeitraum)"
+    automaticVariableSelection: "Automatische Variablenselektion"
+    caliper: "Caliper"
+    matchingPartners: "Matching Partner"
+    excludeOutliersDead: "Verstorbene ausschließen"
+    excludeOutliersMaxMoney: "Ausreißer ausschließen: max. Kosten"
+    resultGroupDropzone: "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
+    attributeDropzone: "Füge ein Konzept oder eine Konzeptliste hinzu"
+    conceptNodeDropzone: "Füge ein Konzept oder eine Konzeptliste hinzu"
+    featureGroupTimestamp: "Zeitstempel Indexdatum Interventionsgruppe"
+    controlGroupTimestamp: "Zeitstempel Indexdatum Vergleichsgruppe"
+    controlGroupDataset: "Datensatz für Vergleichsgruppe"
+    featureGroupDataset: "Datensatz für Interventionsgruppe"
+    conceptMatchingType:
+      psm: "PSM"
+      exact: "EXAKT"
+      descriptive: "DESKRIPTIV"
+    timeUnit:
+      label: "Zeiteinheit des Vor- und Nachbeobachtungszeitraums"
+
+  exportForm:
+    headline: "Exportformular"
+    queryGroup: "Versichertengruppe"
+    queryGroupDropzone: "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
+    timeMode:
+      absolute: "Absolut"
+      relative: "Relativ"
+    timeCountBefore: "Zeit davor"
+    timeCountAfter: "Zeit danach"
+    feature: "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
+    outcome: "Konzepte im Nachbeobachtungszeitraum (Outcome Zeitraum)"
+    concepts: "Konzepte"
+    attributeDropzone: "Füge ein Konzept oder eine Konzeptliste hinzu"
+    timeUnit:
+      label: "Zeiteinheit des Vor- und Nachbeobachtungszeitraums"
+
+  mapForm:
+    headline: "Regionale Verteilung"
+    region: "Region"
+    country: "Deutschland"
+    federalState: "Bundesland"
+    granularity:
+      label: "Granularität"
+      levels:
+        federal_state: "Bundesland"
+        district: "Kreise"
+        zip_code: "PLZ"
+        kv: "KV"
+    features: "Konzepte"
+    conceptNodeDropzoneText: "Füge ein Konzept oder eine Konzeptliste hinzu"
+    isRelative: "Relative Darstellung"
+    timeUnit:
+      label: "Stratifizierung Beobachtungszeitraum"
+
+  descriptionForm:
+    headline: "Deskriptives Formular"
+    timeMode:
+      absolute: "Absolut"
+      relative: "Relativ"
+    resolution: "Stratifizierung Beobachtungszeitraum"
+    queryGroupDropzoneText: "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
+    features: "Konzepte im Vorbeobachtungszeitraum (Feature Zeitraum)"
+    outcomes: "Konzepte im Nachbeobachtungszeitraum (Outcome Zeitraum)"
+    dropzoneText: "Füge ein Konzept oder eine Konzeptliste hinzu"
+    timeCountBefore: "Quartale davor"
+    timeCountAfter: "Quartale danach"
+    concepts: "Konzepte"
+
+  auForm:
+    headline: "AU Bericht"
+    queryGroup: "Versichertengruppe"
+    queryGroupDropzoneText: "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
+    baseCondition: "Grundbedingung"
+    attributeDropzone: "Füge ein Konzept oder eine Konzeptliste hinzu"
+
+uploadQueryResultsModal:
+  formatInfo:
+    text: '<div style="text-align: left;">Upload-Format (Kopfzeile erforderlich) <br/><br/>Möglichkeit 1:<br/>Spalte 1: Versicherten-ID (KV-Nr, EGK-Nr oder PID)<br/>Spalte 2: Hauptkassen-IK (H2IK)<br/>Spalte 3: Datum_von<br/>Spalte 4: Datum_bis<br/>z.B. A123456789;999999999;01.01.2016;31.12.2016<br/><br/>Möglichkeit 2:<br/>Spalte 1: Versicherten-ID (KV-Nr, EGK-Nr oder PID)<br/>Spalte 2: Hauptkassen-IK (H2IK)<br/>Spalte 3: Zeitspanne<br/>z.B. A123456789;999999999;{{{"[2014-10-01,2014-10-15)", "[2014-12-01,2014-12-15)"}}}</div>'

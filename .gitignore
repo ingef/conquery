@@ -1,0 +1,13 @@
+**/.project
+**/.classpath
+**/.settings
+**/.checkstyle
+/eva-frontend/target/
+
+# Netbeans
+nbactions.xml
+nb-configuration.xml
+*.xml.versionsBackup.idea
+**/.idea
+**/target/
+node_modules

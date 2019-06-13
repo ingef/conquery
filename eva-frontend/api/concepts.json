@@ -1,0 +1,780 @@
+{
+  "version": 1483614241,
+  "concepts": {
+    "0": {
+      "label": "ATC",
+      "active": false,
+      "children": ["atc.a", 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21],
+      "matchingEntries": 67234,
+      "selects": [
+        {
+          "id": "12345678",
+          "label": "Filme gespielt Gesamt",
+          "description": "Beispieldescription",
+          "default": true
+        },
+        {
+          "id": "123456789",
+          "label": "Summe Gage",
+          "description": "Die Summe berechnet sich aus X und Y und Z und example."
+        },
+        {
+          "id": "123456789a",
+          "label": "Hatte Spaß im Dreh",
+          "description": "Der Spaß ist manchmal gegeben und manchmal nicht."
+        }
+      ],
+      "tables": [
+        {
+          "id": "atc.atc",
+          "label": "ATC",
+          "selects": [
+            {
+              "id": "12345",
+              "label": "Filme gespielt Gesamt",
+              "description": "Beispieldescription",
+              "default": true
+            },
+            {
+              "id": "123456",
+              "label": "Summe Gage",
+              "description": "Die Summe berechnet sich aus X und Y und Z und example."
+            },
+            {
+              "id": "1234567",
+              "label": "Hatte Spaß im Dreh",
+              "description": "Der Spaß ist manchmal gegeben und manchmal nicht."
+            }
+          ],
+
+          "filters": [
+            {
+              "id": "conquery_date_selection",
+              "label": "Datum",
+              "type": "SELECT",
+              "options": [
+                {
+                  "value": "abgabedatum",
+                  "label": "Abgabedatum"
+                },
+                {
+                  "value": "verordnungsdatum",
+                  "label": "Verordnungsdatum"
+                }
+              ],
+              "defaultValue": "abgabedatum"
+            },
+            {
+              "id": "fachgruppe__ber_die_lanr",
+              "label": "Fachgruppe über die LANR",
+              "type": "MULTI_SELECT",
+              "description": "Fachgruppe",
+              "options": [
+                {
+                  "value": "00",
+                  "label": "keine Information"
+                },
+                {
+                  "value": "23",
+                  "label": "Internist"
+                },
+                {
+                  "value": "01",
+                  "label": "Allgemeinmediziner (Hausarzt)"
+                },
+                {
+                  "value": "67",
+                  "label": "Urologie"
+                },
+                {
+                  "value": "24",
+                  "label": "Angiologie"
+                },
+                {
+                  "value": "46",
+                  "label": "Kinder- und Jugendmedizin mit Schwerpunkt und Teilnahme an haus- und fachärztlicher Versorgung"
+                },
+                {
+                  "value": "02",
+                  "label": "Arzt/Praktischer Arzt (Hausarzt)"
+                },
+                {
+                  "value": "47",
+                  "label": "Kinder- und Jugendpsychiatrie und -psychotherapie"
+                },
+                {
+                  "value": "25",
+                  "label": "Endokrinologie und Diabetologie"
+                },
+                {
+                  "value": "03",
+                  "label": "Internist (Hausarzt)"
+                },
+                {
+                  "value": "48",
+                  "label": "Laboratoriumsmedizin"
+                },
+                {
+                  "value": "04",
+                  "label": "Anästhesiologie"
+                },
+                {
+                  "value": "26",
+                  "label": "Gastroenterologie"
+                },
+                {
+                  "value": "27",
+                  "label": "Hämatologie und Onkologie"
+                },
+                {
+                  "value": "05",
+                  "label": "Augenheilkunde"
+                },
+                {
+                  "value": "28",
+                  "label": "Kardiologie"
+                },
+                {
+                  "value": "06",
+                  "label": "Chirurgie"
+                },
+                {
+                  "value": "07",
+                  "label": "Gefäßchirurgie"
+                },
+                {
+                  "value": "29",
+                  "label": "Nephrologie"
+                },
+                {
+                  "value": "08",
+                  "label": "Viszeralchirurgie"
+                },
+                {
+                  "value": "90",
+                  "label": "90"
+                },
+                {
+                  "value": "70",
+                  "label": "70"
+                },
+                {
+                  "value": "50",
+                  "label": "Mund-Kiefer-Gesichtschirurgie"
+                },
+                {
+                  "value": "51",
+                  "label": "Nervenheilkunde/Neurologie und Psychiatrie"
+                },
+                {
+                  "value": "52",
+                  "label": "Neurochirurgie"
+                },
+                {
+                  "value": "30",
+                  "label": "Pneumologie"
+                },
+                {
+                  "value": "31",
+                  "label": "Innere Medizin/Rheumatologie"
+                },
+                {
+                  "value": "53",
+                  "label": "Neurologie"
+                },
+                {
+                  "value": "54",
+                  "label": "Nuklearmedizin"
+                },
+                {
+                  "value": "10",
+                  "label": "Orthopädie"
+                },
+                {
+                  "value": "99",
+                  "label": "sonstige Fachgruppen"
+                },
+                {
+                  "value": "11",
+                  "label": "Unfallchirurgie"
+                },
+                {
+                  "value": "78",
+                  "label": "78"
+                },
+                {
+                  "value": "12",
+                  "label": "Chirurgie/Rheumatologie"
+                },
+                {
+                  "value": "34",
+                  "label": "Kinderarzt (Hausarzt)"
+                },
+                {
+                  "value": "57",
+                  "label": "Physikalische und Rehabilitative Medizin"
+                },
+                {
+                  "value": "13",
+                  "label": "Plastische Chirurgie"
+                },
+                {
+                  "value": "79",
+                  "label": "79"
+                },
+                {
+                  "value": "58",
+                  "label": "Psychiatrie und Psychotherapie"
+                },
+                {
+                  "value": "15",
+                  "label": "Frauenheilkunde"
+                },
+                {
+                  "value": "38",
+                  "label": "Neuropädiatrie (Hausarzt)"
+                },
+                {
+                  "value": "16",
+                  "label": "Gynäkologische Endokrinologie und Reproduktionsmedizin"
+                },
+                {
+                  "value": "17",
+                  "label": "Gynäkologische Onkologie"
+                },
+                {
+                  "value": "18",
+                  "label": "Spezielle Geburtshilfe und Perinatalmedizin"
+                },
+                {
+                  "value": "19",
+                  "label": "Hals-Nasen-Ohrenheilkunde"
+                },
+                {
+                  "value": "85",
+                  "label": "85"
+                },
+                {
+                  "value": "20",
+                  "label": "Phoniatrie"
+                },
+                {
+                  "value": "21",
+                  "label": "Geschlechtskrankheiten"
+                }
+              ]
+            },
+            {
+              "id": "lanr_am_evo",
+              "label": "LANR AM EVO",
+              "type": "BIG_MULTI_SELECT",
+              "description": "Lebenslange Arztnummer"
+            },
+            {
+              "id": "generika",
+              "label": "Generika",
+              "type": "MULTI_SELECT",
+              "description": "Generikakennzeichen",
+              "options": [
+                {
+                  "value": "0",
+                  "label": "Arzneimittel mit Patent- bzw. Schutzfristen"
+                },
+                {
+                  "value": "1",
+                  "label": "patentfreies Original"
+                },
+                {
+                  "value": "2",
+                  "label": "Generikum inkl. Biosimilar"
+                },
+                {
+                  "value": "3",
+                  "label": "Sonstige nicht generikafähige Arzneimittel und Arzneimittel außer Handel (seit mehr als 24 Monaten)"
+                }
+              ]
+            },
+            {
+              "id": "kv",
+              "label": "KV",
+              "type": "MULTI_SELECT",
+              "description": "Vertrags-KV des verordnenden Arztes (über BSNR)",
+              "options": [
+                {
+                  "value": "78",
+                  "label": "Mecklenburg-Vorpommern"
+                },
+                {
+                  "value": "01",
+                  "label": "Schleswig-Holstein"
+                },
+                {
+                  "value": "02",
+                  "label": "Hamburg"
+                },
+                {
+                  "value": "46",
+                  "label": "Hessen"
+                },
+                {
+                  "value": "38",
+                  "label": "Nordrhein"
+                },
+                {
+                  "value": "17",
+                  "label": "Niedersachsen"
+                },
+                {
+                  "value": "93",
+                  "label": "Thüringen"
+                },
+                {
+                  "value": "71",
+                  "label": "Bayern"
+                },
+                {
+                  "value": "83",
+                  "label": "Brandenburg"
+                },
+                {
+                  "value": "51",
+                  "label": "Rheinland-Pfalz"
+                },
+                {
+                  "value": "73",
+                  "label": "Saarland"
+                },
+                {
+                  "value": "52",
+                  "label": "Baden-Württemberg"
+                },
+                {
+                  "value": "20",
+                  "label": "Westfalen-Lippe"
+                },
+                {
+                  "value": "98",
+                  "label": "Sachsen"
+                }
+              ]
+            },
+            {
+              "id": "anzahl_rezepte",
+              "label": "Anzahl Rezepte",
+              "type": "INTEGER_RANGE",
+              "unit": "Rezepte",
+              "description": "Anzahl der unterschiedlichen Verschreibungen",
+              "min": 1
+            },
+            {
+              "id": "apotheken_typ",
+              "label": "Apotheken-Typ",
+              "type": "MULTI_SELECT",
+              "description": "Typ der ausgebenden Institution",
+              "options": [
+                {
+                  "value": "33",
+                  "label": "Orthopädiemechaniker, Bandagisten, Sanitätshäuser, Arzt- und Krankenhausbedarf, Stomafachhandel, Hilfsmittel"
+                },
+                {
+                  "value": "59",
+                  "label": "Sonstige Erbringer von Leistungen i. S. des SGB"
+                },
+                {
+                  "value": "26",
+                  "label": "Krankenhäuser, Krankenhausapotheken"
+                },
+                {
+                  "value": "30",
+                  "label": "Apotheken"
+                }
+              ]
+            },
+            {
+              "id": "apotheken_ik",
+              "label": "Apotheken-IK",
+              "type": "BIG_MULTI_SELECT",
+              "description": "IK der ausgebenden Apotheke"
+            },
+            {
+              "id": "anzahl_der_packungen",
+              "label": "Anzahl der Packungen",
+              "type": "REAL_RANGE",
+              "unit": "Packungen",
+              "description": "Anzahl der Packungen"
+            },
+            {
+              "id": "ddd",
+              "label": "DDD",
+              "type": "REAL_RANGE",
+              "description": "Enthaltene Menge an Tagesdosen"
+            }
+          ]
+        }
+      ],
+      "detailsAvailable": true
+    },
+    "2": {
+      "label": "HiMi",
+      "active": false,
+      "children": [
+        29,
+        30,
+        31,
+        32,
+        33,
+        34,
+        35,
+        36,
+        37,
+        38,
+        39,
+        40,
+        41,
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56,
+        57,
+        58,
+        59,
+        60,
+        61,
+        62,
+        63,
+        64,
+        65,
+        66,
+        67
+      ],
+      "matchingEntries": 1033,
+      "tables": [
+        {
+          "id": 2,
+          "label": "Himi_table"
+        }
+      ],
+      "detailsAvailable": true
+    },
+    "6": {
+      "parent": -7,
+      "label": "Morbi MG",
+      "active": false,
+      "children": [104, 105, 106, 107, 108, 109, 110],
+      "matchingEntries": 0,
+      "tables": [
+        {
+          "id": 8,
+          "label": "MG_Table"
+        }
+      ],
+      "detailsAvailable": true
+    },
+    "4": {
+      "parent": -7,
+      "label": "Morbi DXG",
+      "active": false,
+      "children": [90, 91, 92, 93, 94, 95, 96],
+      "matchingEntries": 0,
+      "tables": [
+        {
+          "id": 6,
+          "label": "DXG_Table"
+        }
+      ],
+      "detailsAvailable": true
+    },
+    "1": {
+      "label": "GOPS",
+      "active": false,
+      "children": [22, 23, 24, 25, 26, 27, 28],
+      "matchingEntries": 3595,
+      "tables": [
+        {
+          "id": 1,
+          "label": "GOPS_table"
+        }
+      ],
+      "detailsAvailable": true
+    },
+    "3": {
+      "label": "ICD",
+      "active": false,
+      "children": [
+        68,
+        69,
+        70,
+        71,
+        72,
+        73,
+        74,
+        75,
+        76,
+        77,
+        78,
+        79,
+        80,
+        81,
+        82,
+        83,
+        84,
+        85,
+        86,
+        87,
+        88,
+        89
+      ],
+      "matchingEntries": 427169,
+      "tables": [
+        {
+          "id": 3,
+          "label": "Krankenhaus",
+          "filters": [
+            {
+              "id": 0,
+              "label": "Diagnoseart",
+              "type": "MULTI_SELECT",
+              "description": "Die Arte der Diagnose",
+              "options": [
+                {
+                  "value": 0,
+                  "label": "1"
+                },
+                {
+                  "value": 1,
+                  "label": "2"
+                }
+              ]
+            },
+            {
+              "id": 1,
+              "label": "Fallzahl",
+              "type": "INTEGER_RANGE",
+              "unit": "Fälle",
+              "description": "Die Anzahl der Fälle",
+              "min": 1
+            },
+            {
+              "id": 2,
+              "label": "Quartale",
+              "type": "INTEGER_RANGE",
+              "unit": "Quartale",
+              "description": "Anzahl der Quartale mit Diagnose",
+              "min": 1,
+              "max": 4
+            },
+            {
+              "id": 3,
+              "label": "Dosis",
+              "type": "REAL_RANGE",
+              "unit": "mg",
+              "description": "Durchschnittliche Tagesdosis",
+              "min": 0,
+              "max": 4,
+              "precision": 0.001
+            },
+            {
+              "id": 4,
+              "label": "PLZ",
+              "type": "STRING",
+              "description": "PLZ des Krankenhauses"
+            }
+          ]
+        },
+        {
+          "id": 4,
+          "label": "AU Fall",
+          "filters": [
+            {
+              "id": 0,
+              "label": "AU Dauer",
+              "type": "INTEGER_RANGE",
+              "unit": "Tage",
+              "description": "Gesamte AU Dauer im Zeitraum",
+              "min": 1
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "label": "Arzt",
+          "filters": [
+            {
+              "id": 0,
+              "label": "LANR",
+              "type": "BIG_MULTI_SELECT",
+              "description": "Lebenslange Arztnummer",
+              "threshold": 1
+            }
+          ]
+        }
+      ],
+      "detailsAvailable": true,
+      "codeListResolvable": true
+    },
+    "7": {
+      "label": "OPS",
+      "active": false,
+      "children": [111, 112, 113, 114, 115, 116],
+      "matchingEntries": 89882,
+      "tables": [
+        {
+          "id": 9,
+          "label": "Krankenhaus OPs"
+        },
+        {
+          "id": 10,
+          "label": "Arzt OPs"
+        }
+      ],
+      "detailsAvailable": true
+    },
+    "-7": {
+      "label": "Morbi",
+      "description": "example structure node",
+      "active": false,
+      "children": [4, 6, 5],
+      "matchingEntries": 0,
+      "detailsAvailable": false
+    },
+    "5": {
+      "parent": -7,
+      "label": "Morbi KH",
+      "active": false,
+      "children": [97, 98, 99, 100, 101, 102, 103],
+      "matchingEntries": 22191,
+      "tables": [
+        {
+          "id": 7,
+          "label": "Krankenhaus"
+        }
+      ],
+      "detailsAvailable": true
+    },
+    "-8": {
+      "label": "Stammdaten",
+      "active": false,
+      "children": [-9, -10, 47110815, -12],
+      "matchingEntries": 0,
+      "detailsAvailable": false
+    },
+    "-9": {
+      "parent": -8,
+      "label": "Alter",
+      "tables": [
+        {
+          "id": 8,
+          "label": "Alter",
+          "filters": [
+            {
+              "id": 0,
+              "label": "Alter",
+              "type": "INTEGER_RANGE",
+              "unit": "Jahre",
+              "description": "Alter in Jahren",
+              "min": 1
+            }
+          ]
+        }
+      ],
+      "detailsAvailable": false
+    },
+    "-10": {
+      "parent": -8,
+      "label": "Geschlecht",
+      "tables": [
+        {
+          "id": 9,
+          "label": "Geschlecht",
+          "filters": [
+            {
+              "id": 0,
+              "label": "Geschlecht",
+              "type": "MULTI_SELECT",
+              "unit": "Geschlecht",
+              "description": "Geschlecht",
+              "options": [
+                {
+                  "value": 0,
+                  "label": "männlich"
+                },
+                {
+                  "value": 1,
+                  "label": "weiblich"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "detailsAvailable": false
+    },
+    "47110815": {
+      "parent": -8,
+      "label": "Region",
+      "tables": [
+        {
+          "id": 10,
+          "label": "Region",
+          "filters": [
+            {
+              "id": 0,
+              "label": "Region",
+              "type": "MULTI_SELECT",
+              "unit": "Region",
+              "description": "Region",
+              "options": [
+                {
+                  "value": 0,
+                  "label": "Thüringen"
+                },
+                {
+                  "value": 1,
+                  "label": "Brandenburg"
+                },
+                {
+                  "value": 2,
+                  "label": "Berlin"
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "detailsAvailable": true,
+      "codeListResolvable": true
+    },
+    "-12": {
+      "parent": -8,
+      "label": "Versichertentage",
+      "tables": [
+        {
+          "id": 10,
+          "label": "Versichertentage",
+          "filters": [
+            {
+              "id": 0,
+              "label": "Versichertentage",
+              "type": "INTEGER_RANGE",
+              "unit": "Tage",
+              "description": "Versichertentage",
+              "min": 1
+            }
+          ]
+        }
+      ],
+      "detailsAvailable": false
+    }
+  }
+}

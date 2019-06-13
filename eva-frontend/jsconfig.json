@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "conquery/*": ["../conquery/frontend/lib/*"]
+    }
+  },
+  "exclude": ["node_modules", "dist"],
+  "include": ["src"]
+}

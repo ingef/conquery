@@ -1,0 +1,563 @@
+{
+    "type": "STATSTIC_FORM_TEST",
+    "label": "SIMPLE PSM-FORM Test",
+    "expectedCsv": "tests/form/PSM_FORM/SIMPLE_PSM_FORM/expected.csv",
+    "expectedDescription": "tests/form/PSM_FORM/SIMPLE_PSM_FORM/expected_description.json",
+    "form": {
+        "type": "PSM_FORM",
+        "features": [
+            {
+                "type": "MATCHED",
+                "matchingType": "PSM",
+                "children": [
+                    {
+                        "ids": [
+                            "${dataset}.alter"
+                        ],
+                        "type": "CONCEPT",
+                        "label": "Alter",
+                        "tables": [
+                            {
+                                "id": "${dataset}.alter.alter",
+                                "filters": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "outcomes": [
+            {
+                "type": "MATCHED",
+                "children": [
+                    {
+                        "ids": [
+                            "${dataset}.geschlecht"
+                        ],
+                        "type": "CONCEPT",
+                        "label": "Geschlecht",
+                        "tables": [
+                            {
+                                "id": "${dataset}.geschlecht.geschlecht",
+                                "filters": []
+                            }
+                        ]
+                    }
+                ]
+            }
+        ],
+        "controlGroup": {
+            "id": "${dataset}.00000000-0000-0000-0000-000000000001",
+            "timestamp": "FIRST",
+            "datasetId": "${dataset}",
+            "label": "Control Group"
+        },
+        "featureGroup": {
+            "id": "${dataset}.00000000-0000-0000-0000-000000000002",
+            "timestamp": "FIRST",
+            "datasetId": "${dataset}",
+            "label": "Feature Group"
+        },
+        "indexDate": "BEFORE",
+        "timeUnit": "QUARTERS",
+        "timeCountBefore": 1,
+        "timeCountAfter": 1,
+        "automaticVariableSelection": false,
+        "matchingPartners": 1,
+        "caliper": 0.2,
+        "title": "MaxPSM",
+        "description": "Beschreibung"
+    },
+    "concepts": [
+        {
+            "type" : "VIRTUAL",
+            "name" : "alter",
+            "label" : "Alter",
+            "hidden" : false,
+            "connectors" : [
+                {
+                    "name" : "alter",
+                    "label" : "Alter",
+                    "validityDates" : [
+                        {
+                            "name" : "versichertenzeit",
+                            "label" : "Versichertenzeit",
+                            "column" : "vers_stamm.date"
+                        },
+                        {
+                            "name" : "erster_tag",
+                            "label" : "Erster Tag",
+                            "column" : "vers_stamm.date_start"
+                        },
+                        {
+                            "name" : "letzter_tag",
+                            "label" : "Letzter Tag",
+                            "column" : "vers_stamm.date_end"
+                        }
+                    ],
+                    "table" : "vers_stamm",
+                    "filter" : {
+                        "type" : "DATE_DISTANCE",
+                        "name" : "alterseinschränkung",
+                        "label" : "Alterseinschränkung",
+                        "description" : "Alter zur gegebenen Datumseinschränkung",
+                        "column" : "vers_stamm.geburtsdatum",
+                        "timeUnit" : "YEARS"
+                    }
+                }
+            ],
+            "selects" : [
+                {
+                    "type" : "DATE_DISTANCE",
+                    "name" : "alterseinschränkung_select",
+                    "label" : "Alterseinschränkung_select",
+                    "description" : "Automatisch erzeugter Zusatzwert.",
+                    "column" : "vers_stamm.geburtsdatum",
+                    "timeUnit" : "YEARS",
+                    "default" : true
+                }
+            ]
+        },
+        {
+            "type" : "VIRTUAL",
+            "name" : "geschlecht",
+            "label" : "Geschlecht",
+            "hidden" : false,
+            "connectors" : [
+                {
+                    "name" : "geschlecht",
+                    "label" : "Geschlecht",
+                    "validityDates" : [
+                        {
+                            "name" : "versichertenzeit",
+                            "label" : "Versichertenzeit",
+                            "column" : "vers_stamm.date"
+                        },
+                        {
+                            "name" : "erster_tag",
+                            "label" : "Erster Tag",
+                            "column" : "vers_stamm.date_start"
+                        },
+                        {
+                            "name" : "letzter_tag",
+                            "label" : "Letzter Tag",
+                            "column" : "vers_stamm.date_end"
+                        }
+                    ],
+                    "table" : "vers_stamm",
+                    "filter" : {
+                        "type" : "SELECT",
+                        "name" : "geschlecht",
+                        "label" : "Geschlecht",
+                        "column" : "vers_stamm.geschlecht",
+                        "labels" : {
+                            "1" : "Weiblich",
+                            "2" : "Männlich"
+                        },
+                        "matchLabels" : false
+                    }
+                }
+            ],
+            "selects" : [
+                {
+                    "type" : "FIRST",
+                    "column" : "vers_stamm.geschlecht",
+                    "name" : "geschlecht_select",
+                    "label" : "Geschlecht_select",
+                    "description" : "Automatisch erzeugter Zusatzwert.",
+                    "default" : true,
+                    "categorical" : true
+                }
+            ]
+        },
+        {
+            "type" : "VIRTUAL",
+            "name" : "bundesland",
+            "label" : "Bundesland",
+            "hidden" : false,
+            "connectors" : [
+                {
+                    "name" : "bundesland",
+                    "label" : "Bundesland",
+                    "validityDates" : [
+                        {
+                            "name" : "dauer",
+                            "label" : "Dauer",
+                            "column" : "vers_region.dauer"
+                        },
+                        {
+                            "name" : "erster_tag",
+                            "label" : "Erster Tag",
+                            "column" : "vers_region.erster_tag"
+                        },
+                        {
+                            "name" : "letzter_tag",
+                            "label" : "Letzter Tag",
+                            "column" : "vers_region.letzter_tag"
+                        }
+                    ],
+                    "table" : "vers_region",
+                    "filter" : {
+                        "type" : "SELECT",
+                        "name" : "bundesland",
+                        "label" : "Bundesland",
+                        "column" : "vers_region.bundesland",
+                        "labels" : {
+                            "01" : "Schleswig-Holstein",
+                            "02" : "Hamburg",
+                            "03" : "Niedersachsen",
+                            "04" : "Bremen",
+                            "05" : "Nordrhein-Westfalen",
+                            "06" : "Hessen",
+                            "07" : "Rheinland-Pfalz",
+                            "08" : "Baden-Württemberg",
+                            "09" : "Bayern",
+                            "10" : "Saarland",
+                            "11" : "Berlin",
+                            "12" : "Brandenburg",
+                            "13" : "Mecklenburg-Vorpommern",
+                            "14" : "Sachsen",
+                            "15" : "Sachsen-Anhalt",
+                            "16" : "Thüringen"
+                        },
+                        "matchLabels" : false
+                    }
+                }
+            ],
+            "selects" : [
+                {
+                    "type" : "FIRST",
+                    "column" : "vers_region.bundesland",
+                    "name" : "bundesland_select",
+                    "label" : "Bundesland_select",
+                    "description" : "Automatisch erzeugter Zusatzwert.",
+                    "default" : true,
+                    "categorical" : true
+                }
+            ]
+        },
+        {
+            "type" : "VIRTUAL",
+            "name" : "hash",
+            "label" : "HASH",
+            "hidden" : true,
+            "connectors" : [
+                {
+                    "name" : "hash",
+                    "label" : "hash",
+                    "validityDates" : [
+                        {
+                            "name" : "versichertenzeit",
+                            "label" : "Versichertenzeit",
+                            "column" : "vers_stamm.date"
+                        },
+                        {
+                            "name" : "erster_tag",
+                            "label" : "Erster Tag",
+                            "column" : "vers_stamm.date_start"
+                        },
+                        {
+                            "name" : "letzter_tag",
+                            "label" : "Letzter Tag",
+                            "column" : "vers_stamm.date_end"
+                        }
+                    ],
+                    "table" : "vers_stamm",
+                    "filter" : {
+                        "type" : "BIG_MULTI_SELECT",
+                        "name" : "pid-hash",
+                        "label" : "PID-Hash",
+                        "column" : "vers_stamm.pid_hash",
+                        "matchLabels" : false
+                    }
+                }
+            ],
+            "selects" : [
+                {
+                    "type" : "FIRST",
+                    "column" : "vers_stamm.pid_hash",
+                    "name" : "pid-hash_select",
+                    "label" : "PID-Hash_select",
+                    "description" : "Automatisch erzeugter Zusatzwert.",
+                    "default" : true
+                }
+            ]
+        },
+        {
+            "type" : "VIRTUAL",
+            "name" : "leistungskosten_2",
+            "label" : "Leistungskosten (KH+AM+AMB+DIA+HIMI+HEMI ohne KG)",
+            "additionalInfos" : [
+                {
+                    "key" : "Leistungskosten TP4a, TP3, TP1+DIR ABR, Dialysesachkosten, TP5-HiMi, TP5-HeMi",
+                    "value" : "Alle Abrechnungen aus dem Krankenhaus (unabhängig, ob vollstationärer, teilstationärer, vorstationärer Fall oder ambulante Behandlung), aus den Apotheken, im Kollektivvertrag der ambulanten Versorgung und im Rahmen von Selektivverträgen nach §73b, §73c und §140a"
+                }
+            ],
+            "hidden" : false,
+            "connectors" : [
+                {
+                    "name" : "leistungskosten_ohne_kg",
+                    "label" : "Leistungskosten ohne KG",
+                    "validityDates" : [
+                        {
+                            "name" : "entlassungs-/abgabe-/behandlungsbeginn/leistungsdatum",
+                            "label" : "Entlassungs-/Abgabe-/Behandlungsbeginn/Leistungsdatum",
+                            "column" : "kosten_ohne_kg.datum"
+                        }
+                    ],
+                    "selects" : [
+                        {
+                            "type" : "SUM",
+                            "name" : "leistungskosten;_eingabe_in_euro_select",
+                            "label" : "Leistungskosten; Eingabe in Euro_select",
+                            "description" : "Automatisch erzeugter Zusatzwert.",
+                            "distinct" : false,
+                            "column" : "kosten_ohne_kg.plus",
+                            "subtractColumn" : "kosten_ohne_kg.minus",
+                            "default" : true
+                        }
+                    ],
+                    "table" : "kosten_ohne_kg",
+                    "filter" : {
+                        "type" : "SUM",
+                        "name" : "leistungskosten;_eingabe_in_euro",
+                        "label" : "Leistungskosten; Eingabe in Euro",
+                        "description" : "KH+AM+AMB+DIA+HIMI+HEMI ohne KG",
+                        "column" : "kosten_ohne_kg.plus",
+                        "subtractColumn" : "kosten_ohne_kg.minus",
+                        "distinct" : false
+                    }
+                }
+            ]
+        },
+        {
+            "label": "Verstorbene",
+            "name": "verstorbene_ct",
+            "type": "VIRTUAL",
+            "connectors": [
+                {
+                    "label": "Verstorben",
+                    "validityDates": [
+                        {
+                            "label": "Sterbedatum",
+                            "column": "verstorbene.sterbedatum"
+                        }
+                    ],
+                    "table": "verstorbene"
+                }
+            ],
+            "selects" : [
+                {
+                    "type" : "EXISTS",
+                    "name" : "verstorbene_exists",
+                    "label" : "Verstorbene",
+                    "default" : true
+                }
+            ]
+        }
+    ],
+    "content": {
+        "tables": [
+            {
+                "csv": "tests/form/PSM_FORM/SIMPLE_PSM_FORM/ver_stamm.csv",
+                "name": "vers_stamm",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+                "columns": [
+                    {
+                        "name" : "date",
+                        "type" : "DATE_RANGE"
+                    },
+                    {
+                        "name" : "dayType",
+                        "type" : "STRING"
+                    },
+                    {
+                        "name" : "date_start",
+                        "type" : "DATE"
+                    },
+                    {
+                        "name" : "date_end",
+                        "type" : "DATE"
+                    },
+                    {
+                        "name" : "bezugsjahr",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "geburtsdatum",
+                        "type" : "DATE"
+                    },
+                    {
+                        "name" : "export_geburtsdatum",
+                        "type" : "STRING"
+                    },
+                    {
+                        "name" : "geschlecht",
+                        "type" : "STRING"
+                    },
+                    {
+                        "name" : "sterbedatum",
+                        "type" : "DATE"
+                    },
+                    {
+                        "name" : "quell_ref",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "fehler_code",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "flag_analyse",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "flag_destatis",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "flag_demo",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "pid_hash",
+                        "type" : "STRING"
+                    }
+                ]
+            },
+            {
+                "csv": "tests/form/PSM_FORM/SIMPLE_PSM_FORM/vers_region.csv",
+                "name": "vers_region",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+                "columns": [
+                    {
+                        "name" : "dauer",
+                        "type" : "DATE_RANGE"
+                    },
+                    {
+                        "name" : "bezugsjahr",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "bundesland",
+                        "type" : "STRING"
+                    },
+                    {
+                        "name" : "ausland",
+                        "type" : "STRING"
+                    },
+                    {
+                        "name" : "plz",
+                        "type" : "STRING"
+                    },
+                    {
+                        "name" : "kgs",
+                        "type" : "STRING"
+                    },
+                    {
+                        "name" : "kv_wohnort",
+                        "type" : "STRING"
+                    },
+                    {
+                        "name" : "erster_tag",
+                        "type" : "DATE"
+                    },
+                    {
+                        "name" : "letzter_tag",
+                        "type" : "DATE"
+                    },
+                    {
+                        "name" : "quell_ref",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "fehler_code",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "flag_analyse",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "flag_destatis",
+                        "type" : "INTEGER"
+                    },
+                    {
+                        "name" : "flag_demo",
+                        "type" : "INTEGER"
+                    }
+                ]
+            },
+            {
+                "csv": "tests/form/PSM_FORM/SIMPLE_PSM_FORM/kosten_ohne_kg.csv",
+                "name": "kosten_ohne_kg",
+                "primaryColumn": {
+                    "name": "pid",
+                    "type": "STRING"
+                },
+                "columns": [
+                    {
+                        "name": "plus",
+                        "type": "MONEY"
+                    },
+                    {
+                        "name": "minus",
+                        "type": "MONEY"
+                    },
+                    {
+                        "name": "datum",
+                        "type": "DATE"
+                    }
+                ]
+            },
+            {
+                "csv": "tests/form/PSM_FORM/SIMPLE_PSM_FORM/verstorbene.csv",
+                "name" : "verstorbene",
+                "primaryColumn" : {
+                    "name" : "pid",
+                    "type" : "STRING"
+                },
+                "columns": [
+                    {
+                        "name": "bezugsjahr",
+                        "type": "INTEGER"
+                    },
+                    {
+                        "name": "k_mensch_id",
+                        "type": "INTEGER"
+                    },
+                    {
+                        "name": "geburtsdatum",
+                        "type": "DATE"
+                    },
+                    {
+                        "name": "geschlecht",
+                        "type": "STRING"
+                    },
+                    {
+                        "name": "sterbedatum",
+                        "type": "DATE"
+                    },
+                    {
+                        "name": "quell_ref",
+                        "type": "INTEGER"
+                    },
+                    {
+                        "name": "fehler_code",
+                        "type": "INTEGER"
+                    }
+                ]
+            }
+        ],
+        "previousQueryResults": [
+            "tests/form/PSM_FORM/SIMPLE_PSM_FORM/query_results_1.csv",
+            "tests/form/PSM_FORM/SIMPLE_PSM_FORM/query_results_2.csv"
+        ]
+    }
+}

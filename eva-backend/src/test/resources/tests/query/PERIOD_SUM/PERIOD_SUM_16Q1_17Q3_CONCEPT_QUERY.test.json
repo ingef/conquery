@@ -1,0 +1,88 @@
+{  
+   "type":"QUERY_TEST",
+   "label":"PERIOD_SUM_16Q1_17Q3 Test",
+   "expectedCsv":"tests/query/PERIOD_SUM/expected_16Q1_17Q3.csv",
+   "query":{  
+      "type":"CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+            "type":"DATE_RESTRICTION",
+            "dateRange":{  
+               "min":"2016-01-01",
+               "max":"2017-09-30"
+            },
+            "child":{  
+                  
+                     "ids":[  
+                        "${dataset}.period_sum"
+                     ],
+                     "type":"CONCEPT",
+                     "label":"Risikofaktor PERIOD_SUM",
+                     "tables":[  
+                        {  
+                           "id":"${dataset}.period_sum.period_sum_connector",
+                           "filters":[  
+                              {  
+                                 "filter":"${dataset}.period_sum.period_sum_connector.value",
+                                 "type":"REAL_RANGE",
+                                 "value":{  
+                                    "min": 100.5,
+									"max": 100.5
+                                 }
+                              }
+                           ]
+                        }
+                     ]
+                  
+               }
+            }
+         ]
+      }
+   },
+   "concepts":[  
+      {  
+         "label":"period_sum",
+         "type":"VIRTUAL",
+         "connectors":[  
+            {  
+               "label":"period_sum_connector",
+               "table":"vers_stamm",
+               "validityDates":{  
+                  "label":"datum",
+                  "column":"vers_stamm.datum"
+               },
+               "filter":{  
+                  "label":"value",
+                  "description":"Risikofaktor",
+                  "column":"vers_stamm.value",
+                  "type":"PERIOD_SUM"
+               }
+            }
+         ]
+      }
+   ],
+   "content":{  
+      "tables":[  
+         {  
+            "csv":"tests/query/PERIOD_SUM/content.csv",
+            "name":"vers_stamm",
+            "primaryColumn":{  
+               "name":"pid",
+               "type":"STRING"
+            },
+            "columns": [
+        {
+          "name": "value",
+          "type": "REAL"
+        },
+        {
+          "name": "datum",
+          "type": "DATE_RANGE"
+        }
+      ]
+         }
+      ]
+   }
+}

@@ -1,0 +1,23 @@
+# Tmp / invisibles
+.DS_Store
+*.log
+
+# Libraries
+node_modules
+
+# Artifacts
+.nyc_output
+coverage
+dist
+conquery-*.tgz
+node/
+node_modules/
+
+/target/
+
+# maven
+*.xml.versionsBackup
+
+# vscode
+launch.json
+/bin/

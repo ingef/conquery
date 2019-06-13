@@ -1,0 +1,3 @@
+[submodule "eva-frontend/conquery"]
+	path = eva-frontend/conquery
+	url = https://github.com/bakdata/conquery.git
