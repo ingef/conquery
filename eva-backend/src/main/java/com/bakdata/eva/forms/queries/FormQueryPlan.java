@@ -18,12 +18,15 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
+import com.bakdata.eva.query.aggregators.ValueAtBeginOfQuarterAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.eva.models.forms.DateContext;
 
+import com.bakdata.eva.query.aggregators.PeriodAverageAggregator;
+import com.bakdata.eva.query.aggregators.PeriodSumAggregator;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 
@@ -38,15 +41,15 @@ public class FormQueryPlan implements QueryPlan {
 	@Getter
 	private int aggregatorOffset = 0;
 	private int addedAggregators = 0;
-	
-	
+
+
 	public FormQueryPlan(ConceptQueryPlan plan, Int2ObjectMap<List<DateContext>> includedEntities, List<TableId> requiredTables, int aggregatorOffset) {
 		this.plan = plan;
 		this.includedEntities = includedEntities;
 		this.requiredTables = requiredTables;
 		this.aggregatorOffset = aggregatorOffset;
 	}
-	
+
 	@Override
 	public void init(Entity entity) {
 		this.entity = entity;
@@ -55,10 +58,25 @@ public class FormQueryPlan implements QueryPlan {
 			containedChildren = new ArrayList<>(contained.size());
 			for(int i=0; i<contained.size(); i++) {
 				addedAggregators = 0;
-				ConceptQueryPlan containedChild = plan.createClone();
+
+				CloneContext newCtx = new CloneContext();
+
+				// If this is a subquery of an export form, change period aggregators to other FirstValue, as they do not make sense there.
+				if (contained.get(i).getIndex() != null) {
+					for (Aggregator<?> aggregator : plan.getAggregators()) {
+						if (aggregator instanceof PeriodSumAggregator) {
+							newCtx.inject(aggregator, new ValueAtBeginOfQuarterAggregator<>(((PeriodSumAggregator) aggregator).getColumn()));
+						}else if (aggregator instanceof PeriodAverageAggregator) {
+							newCtx.inject(aggregator, new ValueAtBeginOfQuarterAggregator<>(((PeriodAverageAggregator) aggregator).getColumn()));
+						}
+					}
+				}
+
+				ConceptQueryPlan containedChild = plan.clone(newCtx);
+
 				//add index value
 				containedChild.addAggregator(
-					aggregatorOffset, 
+					aggregatorOffset,
 					new ConstantValueAggregator(
 						contained.get(i).getIndex(),
 						ResultType.INTEGER
@@ -86,7 +104,7 @@ public class FormQueryPlan implements QueryPlan {
 					)
 				);
 				addedAggregators++;
-				
+
 				containedChild.init(entity);
 				containedChildren.add(containedChild);
 			}
@@ -95,31 +113,31 @@ public class FormQueryPlan implements QueryPlan {
 			containedChildren = Collections.emptyList();
 		}
 	}
-	
+
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		requiredTables.addAll(this.requiredTables);
 	}
-	
+
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		for(int i=0; i< containedChildren.size(); i++) {
 			CDateSet newSet = CDateSet.create(ctx.getDateRestriction());
 			newSet.retainAll(contained.get(i).getDateRange());
 			containedChildren.get(i).nextTable(
-				ctx.withDateRestriction(newSet), 
+				ctx.withDateRestriction(newSet),
 				currentTable
 			);
 		}
 	}
-	
+
 	@Override
 	public void nextBlock(Bucket bucket) {
 		for(QueryPlan qp : containedChildren) {
 			qp.nextBlock(bucket);
 		}
 	}
-	
+
 	@Override
 	public EntityResult createResult() {
 		if(contained == null) {
