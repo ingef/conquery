@@ -168,7 +168,8 @@ public abstract class Form {
 				for (CQElement e : or.getChildren()) {
 					if (e instanceof CQConcept) {
 						CQConcept concept = (CQConcept) e;
-						if (concept.getSelects().isEmpty()) {
+						List<SelectDescriptor> selects = e.collectSelects();
+						if (selects.isEmpty()) {
 							Concept<?> resolved = namespaces.resolve(concept.getIds().get(0).findConcept());
 							if (!resolved.getSelects().isEmpty()) {
 								concept.getSelects().add(resolved.getSelects().get(0));
@@ -208,8 +209,8 @@ public abstract class Form {
 			for (int i = 0; i < fd.getFeatures().size(); i++) {
 				CQOr feature = fd.getFeatures().get(i);
 				CQConcept c = (CQConcept) feature.getChildren().get(0);
-				for(Select select : c.getSelects()) {
-					ResultType selectorType = select.getResultType();
+				for(SelectDescriptor select : c.collectSelects()) {
+					ResultType selectorType = select.getSelect().getResultType();
 					ArrayList<ConceptElementId<?>> nodes = new ArrayList<>(c.getIds());
 					// Sort nodes for deterministic column names
 					nodes.sort(CEID_COMPARATOR);
@@ -229,7 +230,7 @@ public abstract class Form {
 					}
 	
 					// If ConceptTree, get the root for the StatisticServer
-					Concept<?> concept = select.getHolder().findConcept();
+					Concept<?> concept = select.getSelect().getHolder().findConcept();
 					String root = null;
 					if (concept instanceof TreeConcept) {
 						root = concept.getLabel();
@@ -239,7 +240,7 @@ public abstract class Form {
 						.builder()
 						.label(c.getLabel())
 						.description(description)
-						.column(fd.getGroupType().getPrefix() + namer.apply(new SelectDescriptor(select, c)))
+						.column(fd.getGroupType().getPrefix() + namer.apply(select))
 						.type(selectorType)
 						.rootConcept(root)
 						.build();
