@@ -4,7 +4,7 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
@@ -17,7 +17,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 public class ValueAtBeginOfQuarterAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;
-	private Block block;
+	private Bucket bucket;
 
 	private Column validityDateColumn;
 	private int firstDayOfQuarter;
@@ -34,26 +34,26 @@ public class ValueAtBeginOfQuarterAggregator<VALUE> extends SingleColumnAggregat
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn()) || ! block.has(event, validityDateColumn)) {
+	public void aggregateEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn()) || ! bucket.has(event, validityDateColumn)) {
 			return;
 		}
 
-		int next = block.getAsDateRange(event, validityDateColumn).getMinValue();
+		int next = bucket.getAsDateRange(event, validityDateColumn).getMinValue();
 
 		if (next == firstDayOfQuarter) {
-			value = block.getRaw(event, getColumn());
-			this.block = block;
+			value = bucket.getRaw(event, getColumn());
+			this.bucket = bucket;
 		}
 	}
 
 	@Override
 	public VALUE getAggregationResult() {
-		if (block == null) {
+		if (bucket == null) {
 			return null;
 		}
 
-		return (VALUE) getColumn().getTypeFor(block).createPrintValue(value);
+		return (VALUE) getColumn().getTypeFor(bucket).createPrintValue(value);
 	}
 
 	@Override
