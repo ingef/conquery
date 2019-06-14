@@ -58,9 +58,9 @@ public class DictionaryMapping {
 			}
 			source2TargetMap[id] = targetId;
 			
-			int bucket = Entity.getBucket(id, bucketSize);
+			int bucket = Entity.getBucket(targetId, bucketSize);
 			usedBuckets.add(bucket);
-			if (namespace.getResponsibleWorker(id) == null) {
+			if (namespace.getResponsibleWorker(targetId) == null) {
 				newBuckets.add(bucket);
 			}
 		}
