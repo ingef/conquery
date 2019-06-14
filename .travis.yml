@@ -22,7 +22,7 @@ jobs:
       script:
         - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
         - mvn -B -V -T 1C install -N
-        - mvn -B -V -T 1C install -pl eva-frontend-resources
+        - mvn -B -V install -pl eva-frontend-resources
         - mvn -B -V -T 1C install -pl eva-backend
         - mvn -B -V -T 1C install -pl eva-executable
 
@@ -41,9 +41,7 @@ jobs:
         tag_name: $TRAVIS_TAG
         target_commitish: $TRAVIS_COMMIT
         file_glob: true
-        file:
-          - eva-backend/target/eva-backend-*.jar
-          - eva-executable/target/eva-executable-*.jar
+        file: eva-executable/target/eva-executable-*.jar
         skip_cleanup: true
         draft: false
         prerelease: true
@@ -61,9 +59,7 @@ jobs:
         tag_name: $TRAVIS_TAG
         target_commitish: $TRAVIS_COMMIT
         file_glob: true
-        file:
-          - eva-backend/target/eva-backend-*.jar
-          - eva-executable/target/eva-executable-*.jar
+        file: eva-executable/target/eva-executable-*.jar
         skip_cleanup: true
         draft: false
         prerelease: false
