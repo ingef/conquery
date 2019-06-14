@@ -189,19 +189,23 @@ public class ImportJob extends Job {
 	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
 		for(int bucketNumber : primaryMapping.getUsedBuckets()) {
 			ImportBucket bucket = buckets.get(bucketNumber);
-			List<byte[]> buffers = bytes.get(bucketNumber);
-			bucket.setBytes(buffers.toArray(new byte[0][]));
-			
-			WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
-			if (responsibleWorker == null) {
-				throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
+			//a bucket could be empty since the used buckets coming from the
+			//dictionary could contain ids that have no events (see filter)
+			if(bucket != null) {
+				List<byte[]> buffers = bytes.get(bucketNumber);
+				bucket.setBytes(buffers.toArray(new byte[0][]));
+				
+				WorkerInformation responsibleWorker = namespace.getResponsibleWorkerForBucket(bucketNumber);
+				if (responsibleWorker == null) {
+					throw new IllegalStateException("No responsible worker for bucket " + bucketNumber);
+				}
+				try {
+					responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
+				} catch (InterruptedException e) {
+					log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
+				}
+				responsibleWorker.send(bucket);
 			}
-			try {
-				responsibleWorker.getConnectedSlave().waitForFreeJobqueue();
-			} catch (InterruptedException e) {
-				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
-			}
-			responsibleWorker.send(bucket);
 		}
 	}
 
