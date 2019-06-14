@@ -93,7 +93,7 @@ public class IntegrationTests {
 					c.getClass().getSimpleName(),
 					//classpath URI
 					URI.create("classpath:/"+c.getClass().getName().replace('.', '/')+".java"),
-					new IntegrationTest.Wrapper(CONQUERY, c)
+					new IntegrationTest.Wrapper(c.getClass().getSimpleName(), CONQUERY, c)
 				)
 			);
 	}
@@ -132,7 +132,10 @@ public class IntegrationTests {
 			return DynamicTest.dynamicTest(
 				name,
 				resource.getURL().toURI(),
-				new IntegrationTest.Wrapper(CONQUERY, new JsonIntegrationTest(node))
+				new IntegrationTest.Wrapper(
+					name,
+					CONQUERY,
+					new JsonIntegrationTest(node))
 			);
 		}
 		catch(Exception e) {
