@@ -81,7 +81,10 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		scheduler.scheduleAtFixedRate(
 			() -> {
 				if(context.isConnected()) {
-					context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
+					if(context.isConnected()) {
+						context
+							.send(new UpdateJobManagerStatus(jobManager.reportStatus()))
+							.awaitAnyResult();					}
 				}
 			},
 			30, 5, TimeUnit.SECONDS

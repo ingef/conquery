@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
 
+import com.bakdata.conquery.models.messages.MessageAnswer;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 
 import lombok.RequiredArgsConstructor;
@@ -20,7 +21,8 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 	private final IoSession session;
 	private final LinkedBlockingQueue<NetworkMessage<?>> queuedMessages = new LinkedBlockingQueue<>(20);
 
-	public WriteFuture send(final NetworkMessage<?> message) {
+	@Override
+	public MessageAnswer send(final NetworkMessage<?> message) {
 		try {
 			while(!queuedMessages.offer(message, 2, TimeUnit.MINUTES)) {
 				log.debug("Waiting for full writing queue for {}\n\tcurrently filled by: {}",
@@ -37,16 +39,13 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 		}
 		WriteFuture future = session
 				.write(message);
-		return future
-			.addListener(f->queuedMessages.remove(message));
+		return new MessageAnswer(
+			message.getMessageId(),
+			future.addListener(f->queuedMessages.remove(message))
+		);
 	}
 	
-	public void trySend(final NetworkMessage<?> message) {
-		if(isConnected()) {
-			session.write(message);
-		}
-	}
-	
+	@Override
 	public SocketAddress getRemoteAddress() {
 		return session.getRemoteAddress();
 	}
@@ -55,6 +54,7 @@ public class NetworkSession implements MessageSender<NetworkMessage<?>> {
 		return session.getLocalAddress();
 	}
 
+	@Override
 	public void awaitClose() {
 		session.closeOnFlush().awaitUninterruptibly();
 	}

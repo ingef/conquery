@@ -2,8 +2,7 @@ package com.bakdata.conquery.io.mina;
 
 import java.net.SocketAddress;
 
-import org.apache.mina.core.future.WriteFuture;
-
+import com.bakdata.conquery.models.messages.MessageAnswer;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -13,8 +12,7 @@ import lombok.Setter;
 
 public interface MessageSender<MESSAGE> {
 
-	WriteFuture send(MESSAGE message);
-	void trySend(MESSAGE message);
+	MessageAnswer send(MESSAGE message);
 	@JsonIgnore
 	SocketAddress getRemoteAddress();
 	void awaitClose();
@@ -27,13 +25,8 @@ public interface MessageSender<MESSAGE> {
 		TARGET transform(MESSAGE message);
 		
 		@Override
-		default WriteFuture send(MESSAGE message) {
+		default MessageAnswer send(MESSAGE message) {
 			return getMessageParent().send(transform(message));
-		}
-		
-		@Override
-		default void trySend(MESSAGE message) {
-			getMessageParent().trySend(transform(message));
 		}
 		
 		@Override
@@ -59,13 +52,8 @@ public interface MessageSender<MESSAGE> {
 		protected NetworkSession session;
 		
 		@Override
-		public WriteFuture send(MESSAGE message) {
+		public MessageAnswer send(MESSAGE message) {
 			return session.send(message);
-		}
-		
-		@Override
-		public void trySend(MESSAGE message) {
-			session.trySend(message);
 		}
 		
 		@Override
