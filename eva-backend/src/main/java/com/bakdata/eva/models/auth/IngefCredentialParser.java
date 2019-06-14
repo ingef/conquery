@@ -64,7 +64,7 @@ public class IngefCredentialParser{
 
 	private List<NameValuePair> parseURLParameters(String decrypted) {
 		List<NameValuePair> pairs = URLEncodedUtils.parse(decrypted, CHARSET);
-		log.info("Parsed the authorization token {}", pairs);
+		log.trace("Parsed the authorization token {}", pairs);
 		return pairs;
 	}
 
