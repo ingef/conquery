@@ -52,6 +52,7 @@ type QueryNodeEditorState = {
   selectedInputTableIdx: number,
   selectedInput: number,
   editingLabel: boolean,
+
   onSelectDetailsView: Function,
   onSelectInputTableView: Function,
   onShowDescription: Function,
@@ -64,7 +65,11 @@ export type PropsType = {
   editorState: QueryNodeEditorState,
   node: QueryNodeType,
   showTables: boolean,
+  disabledTables: string[],
   isExcludeTimestampsPossible: boolean,
+  datasetId: number,
+  suggestions: ?Object,
+
   onCloseModal: Function,
   onUpdateLabel: Function,
   onDropConcept: Function,
@@ -78,8 +83,6 @@ export type PropsType = {
   onLoadFilterSuggestions: Function,
   onSelectSelects: Function,
   onSelectTableSelects: Function,
-  datasetId: number,
-  suggestions: ?Object,
   onToggleIncludeSubnodes: Function
 };
 
@@ -131,7 +134,7 @@ export const createConnectedQueryNodeEditor = (
       setInputTableViewActive,
       setFocusedInput,
       reset
-    } = createQueryNodeEditorActions(ownProps.type);
+    } = createQueryNodeEditorActions(ownProps.name);
 
     return {
       ...externalDispatchProps,

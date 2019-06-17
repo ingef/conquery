@@ -727,10 +727,6 @@ const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
 };
 
-const deselectNode = (state, action) => {
-  return setAllElementsProperties(state, { isEditing: false });
-};
-
 const updateNodeLabel = (state, action) => {
   const node = selectEditedNode(state);
 
@@ -891,7 +887,7 @@ const query = (
     case SELECT_NODE_FOR_EDITING:
       return selectNodeForEditing(state, action);
     case DESELECT_NODE:
-      return deselectNode(state, action);
+      return setAllElementsProperties(state, { isEditing: false });
     case UPDATE_NODE_LABEL:
       return updateNodeLabel(state, action);
     case ADD_CONCEPT_TO_NODE:

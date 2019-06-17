@@ -8,6 +8,7 @@ import { tableHasActiveFilters } from "../model/table";
 
 import { EditableText } from "../form-components";
 import FaIcon from "../icon/FaIcon";
+import BasicButton from "../button/BasicButton";
 
 import ResetAllFiltersButton from "./ResetAllFiltersButton";
 import type { PropsType } from "./QueryNodeEditor";
@@ -36,26 +37,34 @@ const CategoryHeader = styled("p")`
   color: ${({ theme }) => theme.col.black};
 `;
 
-const StyledButton = styled("div")`
+const StyledButton = styled(BasicButton)`
   font-size: ${({ theme }) => theme.font.md};
-  padding: 8px 15px;
+  line-height: 21px;
+  border: 0;
   margin-top: 3px;
   font-weight: 700;
-  color: ${({ theme }) => theme.col.black};
+  color: ${({ theme, disabled }) =>
+    disabled ? theme.col.gray : theme.col.black};
   width: 100%;
   text-align: left;
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  line-height: 21px;
-  cursor: pointer;
   transition: background-color 0.1s;
 
-  background-color: ${({ theme, active }) =>
-    active ? theme.col.blueGrayVeryLight : theme.col.grayVeryLight};
+  background-color: ${({ theme, active, disabled }) =>
+    active
+      ? theme.col.blueGrayVeryLight
+      : disabled
+      ? "transparent"
+      : theme.col.grayVeryLight};
   &:hover {
-    background-color: ${({ theme, active }) =>
-      active ? theme.col.blueGrayVeryLight : theme.col.grayLight};
+    background-color: ${({ theme, active, disabled }) =>
+      active
+        ? theme.col.blueGrayVeryLight
+        : disabled
+        ? "transparent"
+        : theme.col.grayLight};
   }
 `;
 
@@ -74,6 +83,7 @@ const MenuColumn = (props: PropsType) => {
     node,
     editorState,
     showTables,
+    disabledTables,
     onToggleTable,
     onResetAllFilters,
     onUpdateLabel
@@ -114,6 +124,7 @@ const MenuColumn = (props: PropsType) => {
             {T.translate("queryNodeEditor.conceptNodeTables")}
           </CategoryHeader>
           {node.tables.map((table, tableIdx) => {
+            const isDisabled = disabledTables.includes(table.id);
             const isActive =
               editorState.selectedInputTableIdx === tableIdx &&
               !editorState.detailsViewActive;
@@ -122,6 +133,7 @@ const MenuColumn = (props: PropsType) => {
               <StyledButton
                 key={tableIdx}
                 active={isActive}
+                disabled={isDisabled}
                 onClick={() => {
                   editorState.onSelectInputTableView(tableIdx);
                 }}
@@ -130,11 +142,13 @@ const MenuColumn = (props: PropsType) => {
                   left
                   regular
                   icon={table.exclude ? "square" : "check-square"}
-                  disabled={!table.exclude && onlyOneTableIncluded}
+                  disabled={
+                    isDisabled || (!table.exclude && onlyOneTableIncluded)
+                  }
                   onClick={event => {
                     event.stopPropagation();
 
-                    if (table.exclude || !onlyOneTableIncluded)
+                    if (!isDisabled && (table.exclude || !onlyOneTableIncluded))
                       onToggleTable(tableIdx, !table.exclude);
                   }}
                 />

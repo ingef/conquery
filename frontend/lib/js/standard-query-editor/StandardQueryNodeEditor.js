@@ -5,6 +5,8 @@ import React from "react";
 import { createConnectedQueryNodeEditor } from "../query-node-editor";
 import { hasConceptChildren } from "../category-trees/globalTreeStoreHelper";
 
+import type { PropsType } from "../query-node-editor/QueryNodeEditor";
+
 import {
   deselectNode,
   updateNodeLabel,
@@ -39,6 +41,7 @@ const mapStateToProps = state => {
     node,
     editorState: state.queryNodeEditor,
     showTables,
+    disabledTables: [],
     isExcludeTimestampsPossible: true,
     canIncludeSubnodes: hasConceptChildren(node),
     currencyConfig: state.startup.config.currency
@@ -75,4 +78,6 @@ const QueryNodeEditor = createConnectedQueryNodeEditor(
   mapDispatchToProps
 );
 
-export default props => <QueryNodeEditor type="standard" {...props} />;
+export default (props: PropsType) => (
+  <QueryNodeEditor name="standard" {...props} />
+);
