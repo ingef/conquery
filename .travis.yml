@@ -16,48 +16,15 @@ stages:
 
 jobs:
   include:
-    # ------------------------------
-    # Test stage
-    # ------------------------------
     - stage: Tests
-      name: "Frontend Tests"
+      name: "Tests"
       install: skip
       script:
+        - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
+        - mvn -B -V -T 1C install -N
         - mvn -B -V install -pl eva-frontend-resources
-        - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
-        - mvn -B -V -T 1C install -pl eva-backend -DskipTests
-        - mvn -B -V -T 1C install -N
-        - mvn -B -V -T 1C test -pl eva-executable
-
-    #build backend and run all non-integration tests
-    - stage: Tests
-      name: "Unit Tests"
-      install:
-        - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
-        - mvn -B -V -T 1C install -N
-        - cd eva-backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
-
-    #build and test only INTEGRATION_PROGRAMMATIC
-    - stage: Tests
-      name: "Programmatic Integration Tests"
-      install:
-        - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
-        - mvn -B -V -T 1C install -N
-        - cd eva-backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_PROGRAMMATIC"
-
-    #build and test only INTEGRATION_JSONs
-    - stage: Tests
-      name: "Integration Tests"
-      install:
-        - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
-        - mvn -B -V -T 1C install -N
-        - cd eva-backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
+        - mvn -B -V -T 1C install -pl eva-backend
+        - mvn -B -V -T 1C install -pl eva-executable
 
     # ------------------------------
     # Release stages
@@ -74,9 +41,7 @@ jobs:
         tag_name: $TRAVIS_TAG
         target_commitish: $TRAVIS_COMMIT
         file_glob: true
-        file:
-          - eva-backend/target/eva-backend-*.jar
-          - eva-executable/target/eva-executable-*.jar
+        file: eva-executable/target/eva-executable-*.jar
         skip_cleanup: true
         draft: false
         prerelease: true
@@ -94,9 +59,7 @@ jobs:
         tag_name: $TRAVIS_TAG
         target_commitish: $TRAVIS_COMMIT
         file_glob: true
-        file:
-          - eva-backend/target/eva-backend-*.jar
-          - eva-executable/target/eva-executable-*.jar
+        file: eva-executable/target/eva-executable-*.jar
         skip_cleanup: true
         draft: false
         prerelease: false
