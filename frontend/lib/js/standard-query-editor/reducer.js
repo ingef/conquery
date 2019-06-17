@@ -628,7 +628,7 @@ const loadPreviousQuerySuccess = (state, action) => {
     ...label,
     id: action.payload.data.id,
     loading: false,
-    query: action.payload.data.query.query // TODO: Backend bug, here should be only "query"
+    query: action.payload.data.query
   });
 };
 const loadPreviousQueryError = (state, action) => {
