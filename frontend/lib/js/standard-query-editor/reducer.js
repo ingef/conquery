@@ -66,7 +66,6 @@ import {
 
 import type {
   QueryNodeType,
-  QueryGroupType,
   StandardQueryType,
   DraggedNodeType,
   DraggedQueryType
