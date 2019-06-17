@@ -22,7 +22,9 @@ export function tableIsDisabled(
   table: TableWithFilterValueType,
   disabledTables: string[]
 ) {
-  return disabledTables.includes(table.id);
+  return disabledTables.some(
+    tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
+  );
 }
 
 export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
