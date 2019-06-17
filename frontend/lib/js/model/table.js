@@ -18,6 +18,13 @@ export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
       filter => !isEmpty(filter.value) && filter.value !== filter.defaultValue
     ));
 
+export function tableIsDisabled(
+  table: TableWithFilterValueType,
+  disabledTables: string[]
+) {
+  return disabledTables.includes(table.id);
+}
+
 export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
   return (tables || []).map(table => {
     const selects = table.selects

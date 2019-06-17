@@ -4,7 +4,7 @@ import React from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 
-import { tableHasActiveFilters } from "../model/table";
+import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
 
 import { EditableText } from "../form-components";
 import FaIcon from "../icon/FaIcon";
@@ -124,7 +124,7 @@ const MenuColumn = (props: PropsType) => {
             {T.translate("queryNodeEditor.conceptNodeTables")}
           </CategoryHeader>
           {node.tables.map((table, tableIdx) => {
-            const isDisabled = disabledTables.includes(table.id);
+            const isDisabled = tableIsDisabled(table, disabledTables);
             const isActive =
               editorState.selectedInputTableIdx === tableIdx &&
               !editorState.detailsViewActive;
