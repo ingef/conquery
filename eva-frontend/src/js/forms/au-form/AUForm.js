@@ -96,6 +96,23 @@ const AUForm = (props: PropsType) => {
           disallowMultipleColumns: true
         }}
       />
+      <Field
+        name="features"
+        component={ConceptGroup}
+        props={{
+          name: "features",
+          label: T.translate("externalForms.auForm.features"),
+          conceptDropzoneText: T.translate(
+            "externalForms.auForm.attributeDropzone"
+          ),
+          attributeDropzoneText: T.translate(
+            "externalForms.auForm.attributeDropzone"
+          ),
+          datasetId: props.selectedDatasetId,
+          formType: type,
+          enableDropFile: true
+        }}
+      />
     </form>
   );
 };
@@ -106,6 +123,7 @@ export default reduxForm({
   initialValues: {
     queryGroup: null,
     baseCondition: [],
+    features: [],
     dateRange: {
       min: null,
       max: null
