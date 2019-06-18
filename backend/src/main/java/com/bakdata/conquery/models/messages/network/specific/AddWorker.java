@@ -48,7 +48,9 @@ public class AddWorker extends SlaveMessage.Slow {
 		worker.setSession(context.getRawSession());
 		workerStorage.setWorker(info);
 		context.getWorkers().add(worker);
-		context.send(new RegisterWorker(worker.getInfo()));
+		context
+			.send(new RegisterWorker(worker.getInfo()))
+			.awaitSuccess();
 	}
 
 	private File createWorkerName(ConqueryConfig config) {

@@ -221,9 +221,9 @@ public class DatasetsResource {
 		Dataset dataset = ns.getStorage().getDataset();
 		dataset.getTables().remove(tableParam);
 		ns.getStorage().updateDataset(dataset);
-		for (WorkerInformation w : ns.getWorkers()) {
-			w.send(new UpdateDataset(dataset));
-		}
+		ns
+			.sendToAll(new UpdateDataset(dataset))
+			.awaitSuccess();
 		return Response.ok().build();
 	}
 
@@ -252,9 +252,9 @@ public class DatasetsResource {
 		Dataset dataset = ns.getStorage().getDataset();
 		dataset.getConcepts().removeIf(c -> c.getId().equals(conceptId));
 		ns.getStorage().updateDataset(dataset);
-		for (WorkerInformation w : ns.getWorkers()) {
-			w.send(new UpdateDataset(dataset));
-		}
+		ns
+			.sendToAll(new UpdateDataset(dataset))
+			.awaitSuccess();
 		return Response.ok().build();
 	}
 }

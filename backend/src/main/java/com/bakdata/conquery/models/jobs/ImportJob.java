@@ -56,7 +56,6 @@ public class ImportJob extends Job {
 	private final TableId table;
 	private final File importFile;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void execute() throws JSONException {
 		this.progressReporter.setMax(16);
@@ -86,9 +85,11 @@ public class ImportJob extends Job {
 			for (int bucket : primaryMapping.getNewBuckets()) {
 				namespace.addResponsibility(bucket);
 			}
-			for (WorkerInformation w : namespace.getWorkers()) {
-				w.send(new UpdateWorkerBucket(w));
-			}
+			response.dependOn(
+				namespace
+					.sendToAll(UpdateWorkerBucket::new)
+					.awaitSuccess()
+			);
 			namespace.updateWorkerMap();
 
 			//update the allIdsTable
@@ -201,7 +202,7 @@ public class ImportJob extends Job {
 			} catch (InterruptedException e) {
 				log.error("Interrupted while waiting for worker " + responsibleWorker + " to have free space in queue", e);
 			}
-			responsibleWorker.send(bucket);
+			response.dependOn(responsibleWorker.send(bucket));
 		}
 	}
 

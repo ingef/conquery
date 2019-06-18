@@ -16,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 @ToString
 @Slf4j
-public class MessageAnswer {
+public class MessageAnswer implements Awaitable {
 	
 	public static enum Status {OK, FAILED}
 	
@@ -28,6 +28,7 @@ public class MessageAnswer {
 	 * wait until the receiver of the message answers with a positive
 	 * or negative response
 	 */
+	@Override
 	public void awaitAnyResult() {
 		try {
 			Uninterruptibles.getUninterruptibly(status);
@@ -38,6 +39,7 @@ public class MessageAnswer {
 		}
 	}
 
+	@Override
 	public void awaitSuccess() {
 		try {
 			if(Uninterruptibles.getUninterruptibly(status) != Status.OK) {

@@ -148,7 +148,9 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			w.setSession(new NetworkSession(session));
 			WorkerInformation info = w.getInfo();
 			log.info("Sending worker identity '{}'", info.getName());
-			networkSession.send(new RegisterWorker(info));
+			networkSession
+				.send(new RegisterWorker(info))
+				.awaitSuccess();
 		}
 	}
 	

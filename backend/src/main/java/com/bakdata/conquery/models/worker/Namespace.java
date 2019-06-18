@@ -5,8 +5,11 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.function.Function;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.messages.MessageAnswer;
+import com.bakdata.conquery.models.messages.MessageAnswers;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryManager;
 import com.bakdata.conquery.models.query.entity.Entity;
@@ -49,13 +52,26 @@ public class Namespace {
 		}
 	}
 	
-	public void sendToAll(WorkerMessage msg) {
+	public MessageAnswers sendToAll(WorkerMessage msg) {
 		if(workers.isEmpty()) {
 			throw new IllegalStateException("There are no workers yet");
 		}
+		List<MessageAnswer> answers = new ArrayList<>(workers.size());
 		for(WorkerInformation w:workers) {
-			w.send(msg);
+			answers.add(w.send(msg));
 		}
+		return new MessageAnswers(answers);
+	}
+	
+	public MessageAnswers sendToAll(Function<WorkerInformation, WorkerMessage> messageCreator) {
+		if(workers.isEmpty()) {
+			throw new IllegalStateException("There are no workers yet");
+		}
+		List<MessageAnswer> answers = new ArrayList<>(workers.size());
+		for(WorkerInformation w:workers) {
+			answers.add(w.send(messageCreator.apply(w)));
+		}
+		return new MessageAnswers(answers);
 	}
 	
 	public synchronized void updateWorkerMap() {

@@ -152,7 +152,9 @@ public class DatasetsProcessor {
 	}
 
 	public void addWorker(SlaveInformation slave, Dataset dataset) {
-		slave.send(new AddWorker(dataset));
+		slave
+			.send(new AddWorker(dataset))
+			.awaitSuccess();
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
