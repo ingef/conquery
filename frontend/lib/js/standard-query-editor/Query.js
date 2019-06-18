@@ -9,7 +9,7 @@ import T from "i18n-react";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
-import type { DateRangeType } from "../api/types";
+import type { DateRangeT } from "../api/types";
 
 import {
   dropAndNode,
@@ -33,7 +33,7 @@ import QueryGroup from "./QueryGroup";
 type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
-  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
+  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeT) => void,
   dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
   deleteNode: Function,
   deleteGroup: Function,

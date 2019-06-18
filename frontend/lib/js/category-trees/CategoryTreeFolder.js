@@ -3,7 +3,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 
-import type { NodeType, ConceptIdT } from "../api/types";
+import type { ConceptT, ConceptIdT } from "../api/types";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import Openable from "./Openable";
@@ -18,7 +18,7 @@ const Root = styled("div")`
 type PropsType = {
   depth: number,
   trees: Object,
-  tree: NodeType,
+  tree: ConceptT,
   treeId: ConceptIdT,
   active: boolean,
   open?: boolean,

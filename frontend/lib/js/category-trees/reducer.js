@@ -1,6 +1,6 @@
 // @flow
 
-import type { ConceptElementType, ConceptIdT } from "../api/types";
+import type { ConceptT, ConceptIdT } from "../api/types";
 
 import {
   LOAD_TREES_START,
@@ -15,12 +15,11 @@ import {
   SEARCH_TREES_ERROR,
   CLEAR_SEARCH_QUERY,
   CHANGE_SEARCH_QUERY,
-  TOGGLE_ALL_OPEN,
   TOGGLE_SHOW_MISMATCHES
 } from "./actionTypes";
 import { setTree } from "./globalTreeStoreHelper";
 
-export type TreesType = { [treeId: string]: NodeType };
+export type TreesType = { [treeId: string]: ConceptT };
 
 export type SearchType = {
   allOpen: boolean,

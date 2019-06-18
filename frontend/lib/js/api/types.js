@@ -121,7 +121,7 @@ export type ConceptElementT = ConceptBaseT & {
   selects?: SelectorT[] // Empty array: key not defined
 };
 
-export type ConceptType = ConceptElementT | ConceptStructT;
+export type ConceptT = ConceptElementT | ConceptStructT;
 
 export type FilterConfigT = {
   filter: FilterIdT, // TODO: Rename this: "id"

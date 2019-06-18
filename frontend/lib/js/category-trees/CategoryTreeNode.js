@@ -5,9 +5,9 @@ import styled from "@emotion/styled";
 
 import {
   type ConceptIdT,
-  type InfoType,
-  type DateRangeType,
-  type NodeType
+  type InfoT,
+  type DateRangeT,
+  type ConceptT
 } from "../api/types";
 import { type DraggedNodeType } from "../standard-query-editor/types";
 import { type SearchType } from "./reducer";
@@ -28,9 +28,9 @@ type TreeNodeData = {
   description: string,
   active: boolean,
   matchingEntries: number,
-  dateRange: DateRangeType,
-  additionalInfos: Array<InfoType>,
-  children: Array<ConceptIdT>,
+  dateRange: DateRangeT,
+  additionalInfos: InfoT[],
+  children: ConceptIdT[],
 
   tree: ConceptIdT
 };
@@ -44,7 +44,7 @@ type PropsType = {
   onToggleOpen: () => void
 };
 
-const selectTreeNodeData = (concept: NodeType, tree: ConceptIdT) => ({
+const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
   label: concept.label,
   description: concept.description,
   active: concept.active,
