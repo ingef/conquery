@@ -9,7 +9,7 @@ import T from "i18n-react";
 import { type QueryNodeType } from "../standard-query-editor/types";
 
 import TransparentButton from "../button/TransparentButton";
-import EscAble from "../common/components/EscAble";
+import useEscPress from "../hooks/useEscPress";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
@@ -18,7 +18,7 @@ import DescriptionColumn from "./DescriptionColumn";
 
 import { createQueryNodeEditorActions } from "./actions";
 
-const StyledEscAble = styled(EscAble)`
+const Root = styled("div")`
   padding: 0 10px;
   left: 0;
   top: 0;
@@ -89,6 +89,13 @@ export type PropsType = {
 const QueryNodeEditor = (props: PropsType) => {
   const { node, editorState } = props;
 
+  function close() {
+    editorState.onReset();
+    props.onCloseModal();
+  }
+
+  useEscPress(close);
+
   if (!node) return null;
 
   const selectedTable =
@@ -96,13 +103,8 @@ const QueryNodeEditor = (props: PropsType) => {
       ? node.tables[editorState.selectedInputTableIdx]
       : null;
 
-  function close() {
-    editorState.onReset();
-    props.onCloseModal();
-  }
-
   return (
-    <StyledEscAble onEscPressed={close}>
+    <Root>
       <Wrapper>
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
@@ -114,7 +116,7 @@ const QueryNodeEditor = (props: PropsType) => {
           {T.translate("common.done")}
         </CloseButton>
       </Wrapper>
-    </StyledEscAble>
+    </Root>
   );
 };
 

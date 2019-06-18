@@ -43,7 +43,7 @@ type PropsType = {
   isModalOpen: boolean,
   resolved: Object,
   error: Object,
-  onCloseModal: Function
+  onClose: Function
 };
 
 const UploadFilterListModal = (props: PropsType) => {
@@ -55,7 +55,7 @@ const UploadFilterListModal = (props: PropsType) => {
     unresolvedItemsCount,
     resolvedItemsCount,
     error,
-    onCloseModal
+    onClose
   } = props;
 
   const hasUnresolvedItems = unresolvedItemsCount > 0;
@@ -63,7 +63,7 @@ const UploadFilterListModal = (props: PropsType) => {
 
   return (
     <Modal
-      closeModal={onCloseModal}
+      onClose={onClose}
       doneButton
       headline={T.translate("uploadFilterListModal.headline")}
     >
@@ -143,7 +143,7 @@ const mapStateToProps = (state: StateType) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onCloseModal: () => dispatch(uploadFilterListModalClose())
+  onClose: () => dispatch(uploadFilterListModalClose())
 });
 
 export default connect(

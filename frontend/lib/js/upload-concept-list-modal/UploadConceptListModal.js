@@ -70,7 +70,7 @@ type PropsType = {
   unresolvedItemsCount: number,
   error: Object,
 
-  onCloseModal: Function,
+  onClose: Function,
   onAccept: Function,
   onUpdateLabel: Function,
   onSelectConceptRootNode: Function
@@ -93,7 +93,7 @@ const UploadConceptListModal = (props: PropsType) => {
 
     onAccept,
     onUpdateLabel,
-    onCloseModal,
+    onClose,
     onSelectConceptRootNode
   } = props;
 
@@ -102,7 +102,7 @@ const UploadConceptListModal = (props: PropsType) => {
 
   return (
     <Modal
-      closeModal={onCloseModal}
+      onClose={onClose}
       doneButton
       headline={T.translate("uploadConceptListModal.headline")}
     >
@@ -233,7 +233,7 @@ const mapStateToProps = (state: StateType) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onCloseModal: () => dispatch(uploadConceptListModalClose()),
+  onClose: () => dispatch(uploadConceptListModalClose()),
   onUpdateLabel: label => dispatch(uploadConceptListModalUpdateLabel(label)),
   onAccept: (...params) =>
     dispatch(acceptAndCloseUploadConceptListModal(...params)),
