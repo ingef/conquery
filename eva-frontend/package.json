@@ -6,7 +6,7 @@
   "main": "server.js",
   "engines": {
     "node": ">=10",
-    "yarn": ">=1.13.0"
+    "yarn": ">=1.16.0"
   },
   "scripts": {
     "start": "cross-env NODE_ENV=development node ./server",
