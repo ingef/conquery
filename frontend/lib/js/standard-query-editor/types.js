@@ -1,17 +1,17 @@
 // @flow
 
 import type {
-  TreeNodeIdType,
-  QueryIdType,
-  RangeFilterType,
-  RangeFilterValueType,
-  MultiSelectFilterType,
-  MultiSelectFilterValueType,
-  SelectFilterType,
-  SelectFilterValueType,
-  SelectorType,
-  DateRangeType
-} from "../common/types/backend";
+  ConceptIdT,
+  QueryIdT,
+  RangeFilterT,
+  RangeFilterValueT,
+  MultiSelectFilterT,
+  MultiSelectFilterValueT,
+  SelectFilterT,
+  SelectFilterValueT,
+  SelectorT,
+  DateRangeT
+} from "../api/types";
 
 // A concept that is part of a query node in the editor
 export type ConceptType = {
@@ -33,16 +33,16 @@ export type InfoType = {
   value: string
 };
 
-export type RangeFilterWithValueType = RangeFilterType & {
-  value?: RangeFilterValueType
+export type RangeFilterWithValueType = RangeFilterT & {
+  value?: RangeFilterValueT
 };
 
-export type MultiSelectFilterWithValueType = MultiSelectFilterType & {
-  value?: MultiSelectFilterValueType
+export type MultiSelectFilterWithValueType = MultiSelectFilterT & {
+  value?: MultiSelectFilterValueT
 };
 
-export type SelectFilterWithValueType = SelectFilterType & {
-  value?: SelectFilterValueType
+export type SelectFilterWithValueType = SelectFilterT & {
+  value?: SelectFilterValueT
 };
 
 export type FilterWithValueType =
@@ -50,7 +50,7 @@ export type FilterWithValueType =
   | MultiSelectFilterWithValueType
   | RangeFilterWithValueType;
 
-export type SelectedSelectorType = SelectorType & {
+export type SelectedSelectorType = SelectorT & {
   selected?: boolean
 };
 
@@ -63,7 +63,7 @@ export type TableWithFilterValueType = {
 };
 
 export type DraggedQueryType = {
-  id: QueryIdType,
+  id: QueryIdT,
   // eslint-disable-next-line no-use-before-define
   query?: PreviousQueryType,
   label: string,
@@ -83,10 +83,10 @@ export type DraggedQueryType = {
 // A Query Node that is being dragged from the tree or within the standard editor.
 // Corresponds to CATEGORY_TREE_NODE and QUERY_NODE drag-and-drop types.
 export type DraggedNodeType = {
-  ids: TreeNodeIdType[],
+  ids: ConceptIdT[],
   tables: TableWithFilterValueType[],
   selects: SelectedSelectorType[],
-  tree: TreeNodeIdType,
+  tree: ConceptIdT,
   label: string,
   excludeTimestamps?: boolean,
 
@@ -106,10 +106,10 @@ export type DraggedNodeType = {
 };
 
 export type ConceptQueryNodeType = {
-  ids: TreeNodeIdType[],
+  ids: ConceptIdT[],
   tables: TableWithFilterValueType[],
   selects: SelectedSelectorType[],
-  tree: TreeNodeIdType,
+  tree: ConceptIdT,
 
   label: string,
   description?: string,
@@ -127,7 +127,7 @@ export type PreviousQueryQueryNodeType = {
   loading?: boolean,
   error?: string,
 
-  id: QueryIdType,
+  id: QueryIdT,
   // eslint-disable-next-line no-use-before-define
   query?: PreviousQueryType,
   isPreviousQuery: true
@@ -137,7 +137,7 @@ export type QueryNodeType = ConceptQueryNodeType | PreviousQueryQueryNodeType;
 
 export type QueryGroupType = {
   elements: QueryNodeType[],
-  dateRange?: DateRangeType,
+  dateRange?: DateRangeT,
   exclude?: boolean
 };
 

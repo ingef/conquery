@@ -6,17 +6,12 @@ import {
   LOAD_CONFIG_SUCCESS
 } from "./actionTypes";
 
-import type { CurrencyConfigType } from "../common/types/backend";
-
-export type ConfigType = {
-  version: string,
-  currency: CurrencyConfigType
-};
+import type { GetFrontendConfigResponseT } from "../api/types";
 
 export type StateType = {
   loading: boolean,
   error: ?string,
-  config: ConfigType
+  config: GetFrontendConfigResponseT
 };
 
 const initialState: StateType = {

@@ -4,7 +4,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import type { NodeType, TreeNodeIdType } from "../common/types/backend";
+import type { ConceptT, ConceptIdT } from "../api/types";
 import FaIcon from "../icon/FaIcon";
 import IconButton from "../button/IconButton";
 
@@ -12,9 +12,9 @@ import CategoryTreeNode from "./CategoryTreeNode";
 import { type SearchType } from "./reducer";
 
 type PropsType = {
-  id: TreeNodeIdType,
-  tree: NodeType,
-  treeId: TreeNodeIdType,
+  id: ConceptIdT,
+  tree: ConceptT,
+  treeId: ConceptIdT,
   label: string,
   depth: number,
   loading: boolean,

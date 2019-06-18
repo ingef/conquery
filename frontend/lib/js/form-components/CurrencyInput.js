@@ -4,12 +4,12 @@ import * as React from "react";
 import NumberFormat from "react-number-format";
 
 import { isEmpty } from "../common/helpers";
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigT } from "../api/types";
 
 type PropsType = {
   value: ?number,
   onChange: (?number) => void,
-  currencyConfig?: CurrencyConfigType,
+  currencyConfig?: CurrencyConfigT,
   placeholder?: string
 };
 

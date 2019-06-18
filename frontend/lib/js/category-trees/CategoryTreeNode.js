@@ -4,11 +4,11 @@ import React from "react";
 import styled from "@emotion/styled";
 
 import {
-  type TreeNodeIdType,
-  type InfoType,
-  type DateRangeType,
-  type NodeType
-} from "../common/types/backend";
+  type ConceptIdT,
+  type InfoT,
+  type DateRangeT,
+  type ConceptT
+} from "../api/types";
 import { type DraggedNodeType } from "../standard-query-editor/types";
 import { type SearchType } from "./reducer";
 
@@ -28,15 +28,15 @@ type TreeNodeData = {
   description: string,
   active: boolean,
   matchingEntries: number,
-  dateRange: DateRangeType,
-  additionalInfos: Array<InfoType>,
-  children: Array<TreeNodeIdType>,
+  dateRange: DateRangeT,
+  additionalInfos: InfoT[],
+  children: ConceptIdT[],
 
-  tree: TreeNodeIdType
+  tree: ConceptIdT
 };
 
 type PropsType = {
-  id: TreeNodeIdType,
+  id: ConceptIdT,
   data: TreeNodeData,
   depth: number,
   open: boolean,
@@ -44,7 +44,7 @@ type PropsType = {
   onToggleOpen: () => void
 };
 
-const selectTreeNodeData = (concept: NodeType, tree: TreeNodeIdType) => ({
+const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
   label: concept.label,
   description: concept.description,
   active: concept.active,

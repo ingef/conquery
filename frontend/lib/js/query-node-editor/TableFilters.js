@@ -21,7 +21,7 @@ import {
 
 import type { FilterWithValueType } from "../standard-query-editor/types";
 
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigT } from "../api/types";
 
 type PropsType = {
   filters: ?(FilterWithValueType[]),
@@ -33,7 +33,7 @@ type PropsType = {
   onShowDescription: Function,
   suggestions: ?Object,
   onDropFilterValuesFile: Function,
-  currencyConfig: CurrencyConfigType
+  currencyConfig: CurrencyConfigT
 };
 
 const Row = styled("div")`

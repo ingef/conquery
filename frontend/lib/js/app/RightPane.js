@@ -2,7 +2,7 @@
 
 import React from "react";
 import { connect } from "react-redux";
-import type { TabType } from "../common/types/tabs";
+import type { TabType } from "../pane/types";
 
 import { Pane } from "../pane";
 

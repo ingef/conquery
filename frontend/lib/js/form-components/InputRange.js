@@ -3,9 +3,9 @@
 import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
-import { type FieldPropsType } from "redux-form";
+import type { FieldPropsType } from "redux-form";
 
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigT } from "../api/types";
 
 import InputText from "./InputText";
 import ToggleButton from "./ToggleButton";
@@ -50,7 +50,7 @@ type PropsType = FieldPropsType & {
       max?: number
     }
   },
-  currencyConfig?: CurrencyConfigType
+  currencyConfig?: CurrencyConfigT
 };
 
 function getMinMaxExact(value) {

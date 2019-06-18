@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Route, Switch, Router } from "react-router";
-import type { TabType } from "../common/types/tabs";
+import type { TabType } from "../pane/types";
 
 import { Unauthorized, WithAuthToken } from "../authorization";
 

@@ -1,14 +1,14 @@
 // @flow
 
 import React from "react";
-import { type FieldPropsType } from "redux-form";
+import type { FieldPropsType } from "redux-form";
 
 import { isEmpty } from "../common/helpers";
 
 import BaseInput from "./BaseInput";
 import Labeled from "./Labeled";
 
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigT } from "../api/types";
 
 type PropsType = FieldPropsType & {
   label: string,
@@ -18,7 +18,7 @@ type PropsType = FieldPropsType & {
   placeholder?: string,
   tinyLabel?: boolean,
   inputProps?: Object,
-  currencyConfig?: CurrencyConfigType,
+  currencyConfig?: CurrencyConfigT,
   fullWidth?: boolean
 };
 

@@ -4,7 +4,7 @@ import { type Dispatch } from "redux-thunk";
 
 import api from "../api";
 import { flatmap } from "../common/helpers/commonHelper";
-import { type DateRangeType } from "../common/types/backend";
+import type { DateRangeT } from "../api/types";
 import { getFileRows } from "../common/helpers/fileHelper";
 
 import { defaultSuccess, defaultError } from "../common/actions";
@@ -43,7 +43,7 @@ import {
 
 export const dropAndNode = (
   item: DraggedNodeType | DraggedQueryType,
-  dateRange: ?DateRangeType
+  dateRange: ?DateRangeT
 ) => ({
   type: DROP_AND_NODE,
   payload: { item, dateRange }

@@ -1,10 +1,6 @@
 // @flow
-import { includes, flatmap } from "../common/helpers";
-import type {
-  NodeType,
-  TableType,
-  TreeNodeIdType
-} from "../common/types/backend";
+import { includes } from "../common/helpers";
+import type { ConceptT, TableT, ConceptIdT } from "../api/types";
 
 import type { TreesType } from "./reducer";
 
@@ -26,9 +22,9 @@ export function resetAllTrees() {
 // SETTER
 //
 export function setTree(
-  rootConcept: TreeNodeIdType,
-  treeId: TreeNodeIdType,
-  tree: NodeType
+  rootConcept: ConceptIdT,
+  treeId: ConceptIdT,
+  tree: ConceptT
 ): void {
   // This replaces the root concept with the one loaded initially (at /concepts)
   const concepts = {
@@ -42,8 +38,8 @@ export function setTree(
 //
 // GETTER
 //
-export function getConceptById(conceptId?: TreeNodeIdType): ?NodeType {
-  const keys: TreeNodeIdType[] = Object.keys(window.categoryTrees);
+export function getConceptById(conceptId?: ConceptIdT): ?ConceptT {
+  const keys: ConceptIdT[] = Object.keys(window.categoryTrees);
 
   for (let i = 0; i < keys.length; i++) {
     const concept = window.categoryTrees[keys[i]][conceptId];
@@ -57,7 +53,7 @@ export function getConceptById(conceptId?: TreeNodeIdType): ?NodeType {
 //
 // GETTER including parent tables all the way to the root concept
 //
-const findParentConcepts = (concepts: NodeType[]): NodeType[] => {
+const findParentConcepts = (concepts: ConceptT[]): ConceptT[] => {
   // Get parent from first concept
   const parentId = concepts[0].parent;
   const parentConcept = getConceptById(parentId);
@@ -75,12 +71,12 @@ const findParentConcepts = (concepts: NodeType[]): NodeType[] => {
 };
 
 export const getConceptsByIdsWithTablesAndSelects = (
-  conceptIds: TreeNodeIdType[],
+  conceptIds: ConceptIdT[],
   rootConcepts: TreesType
 ): ?{
-  concepts: (NodeType & { id: TreeNodeIdType })[],
-  root: TreeNodeIdType,
-  tables: TableType[]
+  concepts: (ConceptT & { id: ConceptIdT })[],
+  root: ConceptIdT,
+  tables: TableT[]
 } => {
   const concepts = conceptIds
     .map(id => ({ concept: getConceptById(id), id }))
@@ -113,12 +109,12 @@ export const getConceptsByIdsWithTablesAndSelects = (
   };
 };
 
-export const hasConceptChildren = node => {
+export const hasConceptChildren = (node: ConceptT): boolean => {
   if (!node) return false;
 
   const concept = getConceptById(node.ids);
 
-  return concept && concept.children && concept.children.length > 0;
+  return !!concept && !!concept.children && concept.children.length > 0;
 };
 
 /*
@@ -170,10 +166,10 @@ const doesQueryMatchNode = (node, query) => {
 */
 const findConcepts = (
   treeId: string,
-  nodeId: TreeNodeIdType,
-  node: NodeType,
+  nodeId: ConceptIdT,
+  node: ConceptT,
   query: string,
-  intermediateResult: { [TreeNodeIdType]: number }
+  intermediateResult: { [ConceptIdT]: number }
 ) => {
   const isNodeIncluded = doesQueryMatchNode(node, query);
 

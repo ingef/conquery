@@ -7,7 +7,7 @@ import T from "i18n-react";
 import IconButton from "../button/IconButton";
 
 import { isEmpty } from "../common/helpers";
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigT } from "../api/types";
 
 import { MONEY_RANGE } from "./filterTypes";
 import CurrencyInput from "./CurrencyInput";
@@ -52,7 +52,7 @@ type PropsType = {
   placeholder?: string,
   value: ?(number | string),
   inputProps?: InputPropsType,
-  currencyConfig?: CurrencyConfigType,
+  currencyConfig?: CurrencyConfigT,
   onChange: (?(number | string)) => void
 };
 

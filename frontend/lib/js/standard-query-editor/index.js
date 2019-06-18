@@ -1,7 +1,7 @@
 // @flow
 
 import { combineReducers } from "redux";
-import type { TabType } from "../common/types/tabs";
+import type { TabType } from "../pane/types";
 
 import { createQueryRunnerReducer } from "../query-runner";
 import { default as queryReducer } from "./reducer";

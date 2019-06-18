@@ -10,7 +10,7 @@ import {
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
-import { type DateRangeType } from "../common/types/backend";
+import type { DateRangeT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
 
@@ -166,7 +166,7 @@ const dropAndNode = (
   action: {
     payload: {
       item: DraggedNodeType | DraggedQueryType,
-      dateRange?: DateRangeType
+      dateRange?: DateRangeT
     }
   }
 ) => {
