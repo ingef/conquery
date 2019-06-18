@@ -469,6 +469,7 @@ const FormConcept = (props: PropsType) => {
         ))}
       />
       <FormQueryNodeEditor
+        disabledTables={[]}
         formType={props.formType}
         fieldName={props.name}
         datasetId={props.datasetId}
