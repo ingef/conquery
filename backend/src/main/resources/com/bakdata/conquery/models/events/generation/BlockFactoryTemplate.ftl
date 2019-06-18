@@ -17,7 +17,9 @@ import java.time.LocalDate;
 import java.lang.Integer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
+import java.util.Comparator;
 import java.util.List;
+import java.util.stream.IntStream;
 
 import com.tomgibara.bits.BitStore;
 import com.tomgibara.bits.BitWriter;
@@ -29,13 +31,14 @@ import com.google.common.primitives.Ints;
 import java.util.Arrays;
 import it.unimi.dsi.fastutil.ints.IntList;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.query.entity.Entity;
 
 public class BlockFactory_${suffix} extends BlockFactory {
 
 	@Override
 	public Bucket_${suffix} create(Import imp, List<Object[]> events) {
 		BitStore nullBits = Bits.store(${imp.nullWidth}*events.size());
-		Bucket_${suffix} block = new Bucket_${suffix}(0, imp, new int[]{0});
+		Bucket_${suffix} block = construct(0, imp, new int[]{0});
 		block.initFields(events.size());
 		for(int event = 0; event < events.size(); event++){
 			<#list imp.columns as col>
@@ -74,24 +77,31 @@ public class BlockFactory_${suffix} extends BlockFactory {
 	
 	@Override
 	public Bucket_${suffix} combine(IntList includedEntities, Bucket[] buckets) {
+		int[] order = IntStream
+			.range(0, includedEntities.size())
+			.boxed()
+			.sorted(Comparator.comparing(includedEntities::getInt))
+			.mapToInt(Integer::intValue)
+			.toArray();
 		int[] offsets = new int[${bucketSize}];
+		int bucketNumber = Entity.getBucket(includedEntities.getInt(0), ${bucketSize});
 		Arrays.fill(offsets, -1);
 		int offset = 0;
-		for(int i=0;i<includedEntities.size();i++) {
-			offsets[includedEntities.get(i) - ${bucketSize}*buckets[0].getBucket()]=offset;
-			offset+=buckets[i].getNumberOfEvents();
+		for(int index : order) {
+			offsets[includedEntities.getInt(index) - ${bucketSize}*bucketNumber]=offset;
+			offset+=buckets[index].getNumberOfEvents();
 		}
 		
 		Bucket_${suffix} result = construct(
-			buckets[0].getBucket(),
+			bucketNumber,
 			buckets[0].getImp(),
 			offsets
 		);
 		result.initFields(Arrays.stream(buckets).mapToInt(Bucket::getNumberOfEvents).sum());
 		BitStore bits = Bits.store(${imp.nullWidth}*result.getNumberOfEvents());
 		offset = 0;
-		for(Bucket bucket : buckets) {
-			Bucket_${suffix} cast = (Bucket_${suffix})bucket;
+		for(int index : order) {
+			Bucket_${suffix} bucket = (Bucket_${suffix})buckets[index];
 			bits.setStore(
 				offset*${imp.nullWidth}, 
 				bucket.getNullBits().rangeTo(bucket.getNumberOfEvents()*${imp.nullWidth})
@@ -99,7 +109,7 @@ public class BlockFactory_${suffix} extends BlockFactory {
 			for(int event =0;event<bucket.getNumberOfEvents();event++) {
 				<#list imp.columns as column>
 				<#if column.type.lines != column.type.nullLines>
-				result.<@f.set column/>(offset, cast.<@f.get column/>(event));
+				result.<@f.set column/>(offset, bucket.<@f.get column/>(event));
 				</#if>
 				</#list>
 				offset++;
