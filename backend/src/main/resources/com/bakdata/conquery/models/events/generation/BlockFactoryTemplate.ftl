@@ -17,6 +17,7 @@ import java.time.LocalDate;
 import java.lang.Integer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.IntStream;
 
@@ -30,6 +31,7 @@ import com.google.common.primitives.Ints;
 import java.util.Arrays;
 import it.unimi.dsi.fastutil.ints.IntList;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.query.entity.Entity;
 
 public class BlockFactory_${suffix} extends BlockFactory {
 
@@ -82,13 +84,11 @@ public class BlockFactory_${suffix} extends BlockFactory {
 			.mapToInt(Integer::intValue)
 			.toArray();
 		int[] offsets = new int[${bucketSize}];
-		IntRange.
-		int bucketNumber = Entity.getBucket(includedEntity.get(0), ${bucketSize});
+		int bucketNumber = Entity.getBucket(includedEntities.getInt(0), ${bucketSize});
 		Arrays.fill(offsets, -1);
 		int offset = 0;
 		for(int index : order) {
-			offsets[includedEntities.get(index) - ${bucketSize}*bucketNumber]=offset;
-			and this is very wrong since we did not sort things beforehand
+			offsets[includedEntities.getInt(index) - ${bucketSize}*bucketNumber]=offset;
 			offset+=buckets[index].getNumberOfEvents();
 		}
 		
@@ -101,7 +101,7 @@ public class BlockFactory_${suffix} extends BlockFactory {
 		BitStore bits = Bits.store(${imp.nullWidth}*result.getNumberOfEvents());
 		offset = 0;
 		for(int index : order) {
-			Bucket_${suffix} cast = (Bucket_${suffix})buckets[index];
+			Bucket_${suffix} bucket = (Bucket_${suffix})buckets[index];
 			bits.setStore(
 				offset*${imp.nullWidth}, 
 				bucket.getNullBits().rangeTo(bucket.getNumberOfEvents()*${imp.nullWidth})
@@ -109,7 +109,7 @@ public class BlockFactory_${suffix} extends BlockFactory {
 			for(int event =0;event<bucket.getNumberOfEvents();event++) {
 				<#list imp.columns as column>
 				<#if column.type.lines != column.type.nullLines>
-				result.<@f.set column/>(offset, cast.<@f.get column/>(event));
+				result.<@f.set column/>(offset, bucket.<@f.get column/>(event));
 				</#if>
 				</#list>
 				offset++;
