@@ -4,7 +4,7 @@ import * as React from "react";
 import NumberFormat from "react-number-format";
 
 import { isEmpty } from "../common/helpers";
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigType } from "../api/types";
 
 type PropsType = {
   value: ?number,

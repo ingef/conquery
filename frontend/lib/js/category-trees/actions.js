@@ -5,7 +5,7 @@ import { type Dispatch } from "redux-thunk";
 import { type DatasetIdType } from "../dataset/reducer";
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
-import type { TreeNodeIdType } from "../common/types/backend";
+import type { TreeNodeIdType } from "../api/types";
 import { isEmpty } from "../common/helpers";
 
 import { resetAllTrees, search } from "./globalTreeStoreHelper";

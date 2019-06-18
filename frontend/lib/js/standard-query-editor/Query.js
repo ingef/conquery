@@ -9,7 +9,7 @@ import T from "i18n-react";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
-import type { DateRangeType } from "../common/types/backend";
+import type { DateRangeType } from "../api/types";
 
 import {
   dropAndNode,

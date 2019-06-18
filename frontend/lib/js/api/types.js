@@ -103,7 +103,9 @@ export type NodeType = {
 };
 
 export type RootType = {
-  concepts: Map<TreeNodeIdType, NodeType>,
+  concepts: {
+    [key: TreeNodeIdType]: NodeType
+  },
   version: number
 };
 

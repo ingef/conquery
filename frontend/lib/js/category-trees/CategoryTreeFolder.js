@@ -3,7 +3,7 @@
 import React from "react";
 import styled from "@emotion/styled";
 
-import type { NodeType, TreeNodeIdType } from "../common/types/backend";
+import type { NodeType, TreeNodeIdType } from "../api/types";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import Openable from "./Openable";

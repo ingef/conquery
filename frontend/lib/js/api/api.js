@@ -10,7 +10,7 @@ import type {
   RootType,
   TreeNodeIdType,
   ConceptListResolutionResultType
-} from "../common/types/backend";
+} from "./types";
 
 import { transformQueryToApi } from "./apiHelper";
 

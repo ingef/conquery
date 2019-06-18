@@ -1,6 +1,6 @@
 // @flow
 
-import type { ConceptListResolutionResultType } from "../common/types/backend";
+import type { ConceptListResolutionResultType } from "../api/types";
 import { stripFilename } from "../common/helpers/fileHelper";
 
 import {

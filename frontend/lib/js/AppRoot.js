@@ -4,7 +4,7 @@ import React from "react";
 import { Provider } from "react-redux";
 import { hot } from "react-hot-loader";
 
-import type { TabType } from "./common/types/tabs";
+import type { TabType } from "./pane/types";
 
 import AppRouter from "./app/AppRouter";
 

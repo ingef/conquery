@@ -1,6 +1,6 @@
 // @flow
 
-import type { TreeNodeIdType } from "../common/types/backend";
+import type { TreeNodeIdType } from "../api/types";
 
 export type UploadConceptListModalResultType = {
   label: string,

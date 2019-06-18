@@ -3,7 +3,7 @@
 import { connect } from "react-redux";
 import { type Dispatch } from "redux-thunk";
 
-import type { DateRangeType, InfoType } from "../common/types/backend";
+import type { DateRangeType, InfoType } from "../api/types";
 
 import { isEmpty } from "../common/helpers";
 import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";

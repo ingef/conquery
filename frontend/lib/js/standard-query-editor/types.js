@@ -11,7 +11,7 @@ import type {
   SelectFilterValueType,
   SelectorType,
   DateRangeType
-} from "../common/types/backend";
+} from "../api/types";
 
 // A concept that is part of a query node in the editor
 export type ConceptType = {

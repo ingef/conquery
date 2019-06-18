@@ -5,7 +5,7 @@ import styled from "@emotion/styled";
 import T from "i18n-react";
 import { type FieldPropsType } from "redux-form";
 
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigType } from "../api/types";
 
 import InputText from "./InputText";
 import ToggleButton from "./ToggleButton";

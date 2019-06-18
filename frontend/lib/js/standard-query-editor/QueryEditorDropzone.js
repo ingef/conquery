@@ -10,7 +10,7 @@ import Dropzone from "../form-components/Dropzone";
 import FaIcon from "../icon/FaIcon";
 
 import { dndTypes } from "../common/constants";
-import type { QueryIdType } from "../common/types/backend";
+import type { QueryIdType } from "../api/types";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
 
 type DraggedFileType = Object;

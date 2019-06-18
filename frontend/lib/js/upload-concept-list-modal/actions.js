@@ -5,7 +5,7 @@ import type { Dispatch } from "redux";
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
 import { isEmpty } from "../common/helpers";
-import type { TreeNodeIdType } from "../common/types/backend";
+import type { TreeNodeIdType } from "../api/types";
 
 import {
   UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,

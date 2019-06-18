@@ -1,6 +1,6 @@
 // flow
 
-import type { SelectorType } from "../common/types/backend";
+import type { SelectorType } from "../api/types";
 
 export function objectHasSelectedSelects(obj) {
   return (

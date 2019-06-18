@@ -8,7 +8,7 @@ import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
 
 import { isEmpty } from "../common/helpers";
-import { type SelectOptionsType } from "../common/types/backend";
+import { type SelectOptionsType } from "../api/types";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 type PropsType = FieldPropsType & {

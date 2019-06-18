@@ -1,6 +1,6 @@
 // @flow
 
-import type { FilterValuesResolutionResultType } from "../common/types/backend";
+import type { FilterValuesResolutionResultType } from "../api/types";
 
 import {
   MODAL_CLOSE,

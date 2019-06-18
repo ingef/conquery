@@ -8,7 +8,7 @@ import { type FieldPropsType } from "redux-form";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
 
-import { type SelectOptionsType } from "../common/types/backend";
+import { type SelectOptionsType } from "../api/types";
 import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
 

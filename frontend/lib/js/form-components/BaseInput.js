@@ -7,7 +7,7 @@ import T from "i18n-react";
 import IconButton from "../button/IconButton";
 
 import { isEmpty } from "../common/helpers";
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigType } from "../api/types";
 
 import { MONEY_RANGE } from "./filterTypes";
 import CurrencyInput from "./CurrencyInput";

@@ -1,10 +1,6 @@
 // @flow
 import { includes, flatmap } from "../common/helpers";
-import type {
-  NodeType,
-  TableType,
-  TreeNodeIdType
-} from "../common/types/backend";
+import type { NodeType, TableType, TreeNodeIdType } from "../api/types";
 
 import type { TreesType } from "./reducer";
 

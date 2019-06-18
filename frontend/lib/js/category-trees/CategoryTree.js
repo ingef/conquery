@@ -4,7 +4,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import type { NodeType, TreeNodeIdType } from "../common/types/backend";
+import type { NodeType, TreeNodeIdType } from "../api/types";
 import FaIcon from "../icon/FaIcon";
 import IconButton from "../button/IconButton";
 

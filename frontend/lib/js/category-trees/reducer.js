@@ -1,6 +1,6 @@
 // @flow
 
-import type { NodeType, TreeNodeIdType } from "../common/types/backend";
+import type { NodeType, TreeNodeIdType } from "../api/types";
 
 import {
   LOAD_TREES_START,

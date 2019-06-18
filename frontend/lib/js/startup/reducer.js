@@ -6,7 +6,7 @@ import {
   LOAD_CONFIG_SUCCESS
 } from "./actionTypes";
 
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigType } from "../api/types";
 
 export type ConfigType = {
   version: string,

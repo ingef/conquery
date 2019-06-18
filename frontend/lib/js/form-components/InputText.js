@@ -8,7 +8,7 @@ import { isEmpty } from "../common/helpers";
 import BaseInput from "./BaseInput";
 import Labeled from "./Labeled";
 
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigType } from "../api/types";
 
 type PropsType = FieldPropsType & {
   label: string,

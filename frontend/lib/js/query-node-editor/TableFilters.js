@@ -21,7 +21,7 @@ import {
 
 import type { FilterWithValueType } from "../standard-query-editor/types";
 
-import type { CurrencyConfigType } from "../common/types/backend";
+import type { CurrencyConfigType } from "../api/types";
 
 type PropsType = {
   filters: ?(FilterWithValueType[]),

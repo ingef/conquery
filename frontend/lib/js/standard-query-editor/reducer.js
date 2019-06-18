@@ -10,7 +10,7 @@ import {
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
-import { type DateRangeType } from "../common/types/backend";
+import { type DateRangeType } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
 

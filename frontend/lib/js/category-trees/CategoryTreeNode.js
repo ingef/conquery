@@ -8,7 +8,7 @@ import {
   type InfoType,
   type DateRangeType,
   type NodeType
-} from "../common/types/backend";
+} from "../api/types";
 import { type DraggedNodeType } from "../standard-query-editor/types";
 import { type SearchType } from "./reducer";
 
