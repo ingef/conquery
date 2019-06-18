@@ -1,7 +1,6 @@
 // @flow
 
 import React from "react";
-import styled from "@emotion/styled";
 import { Field, reduxForm } from "redux-form";
 
 import {
@@ -23,7 +22,7 @@ import FormField from "../common/FormField";
 import { type } from "./formType";
 
 import { T } from "conquery/lib/js/localization";
-import { type SelectOptionsType } from "conquery/lib/js/common/types/backend";
+import type { SelectOptionsT } from "conquery/lib/js/api/types";
 
 import InputText from "conquery/lib/js/form-components/InputText";
 import InputSelect from "conquery/lib/js/form-components/InputSelect";
@@ -35,7 +34,7 @@ const QUERY_GROUP_TIMESTAMP_OPTIONS = ["FIRST", "LAST", "RANDOM"];
 
 type PropsType = {
   onSubmit: Function,
-  availableDatasets: SelectOptionsType,
+  availableDatasets: SelectOptionsT,
   selectedDatasetId: string
 };
 
