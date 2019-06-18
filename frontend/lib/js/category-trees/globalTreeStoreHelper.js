@@ -1,6 +1,6 @@
 // @flow
 import { includes, flatmap } from "../common/helpers";
-import type { NodeType, TableType, TreeNodeIdType } from "../api/types";
+import type { NodeType, TableType, ConceptIdT } from "../api/types";
 
 import type { TreesType } from "./reducer";
 
@@ -22,8 +22,8 @@ export function resetAllTrees() {
 // SETTER
 //
 export function setTree(
-  rootConcept: TreeNodeIdType,
-  treeId: TreeNodeIdType,
+  rootConcept: ConceptIdT,
+  treeId: ConceptIdT,
   tree: NodeType
 ): void {
   // This replaces the root concept with the one loaded initially (at /concepts)
@@ -38,8 +38,8 @@ export function setTree(
 //
 // GETTER
 //
-export function getConceptById(conceptId?: TreeNodeIdType): ?NodeType {
-  const keys: TreeNodeIdType[] = Object.keys(window.categoryTrees);
+export function getConceptById(conceptId?: ConceptIdT): ?NodeType {
+  const keys: ConceptIdT[] = Object.keys(window.categoryTrees);
 
   for (let i = 0; i < keys.length; i++) {
     const concept = window.categoryTrees[keys[i]][conceptId];
@@ -71,11 +71,11 @@ const findParentConcepts = (concepts: NodeType[]): NodeType[] => {
 };
 
 export const getConceptsByIdsWithTablesAndSelects = (
-  conceptIds: TreeNodeIdType[],
+  conceptIds: ConceptIdT[],
   rootConcepts: TreesType
 ): ?{
-  concepts: (NodeType & { id: TreeNodeIdType })[],
-  root: TreeNodeIdType,
+  concepts: (NodeType & { id: ConceptIdT })[],
+  root: ConceptIdT,
   tables: TableType[]
 } => {
   const concepts = conceptIds
@@ -166,10 +166,10 @@ const doesQueryMatchNode = (node, query) => {
 */
 const findConcepts = (
   treeId: string,
-  nodeId: TreeNodeIdType,
+  nodeId: ConceptIdT,
   node: NodeType,
   query: string,
-  intermediateResult: { [TreeNodeIdType]: number }
+  intermediateResult: { [ConceptIdT]: number }
 ) => {
   const isNodeIncluded = doesQueryMatchNode(node, query);
 

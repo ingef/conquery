@@ -1,42 +1,47 @@
 // @flow
 
-// This file specifies data types that are provided by the backend api
-//
-// Part of the data is saved in the redux state
-// Other parts (concept trees) are stored in window.categoryTrees (see globalTreeStoreHelper)
+// This file specifies
+// - response type provided by the backend API
+// - partial types that the reponses are built from
 
-export type SelectOptionType = {
+export type DatasetIdT = string;
+export type DatasetT = {
+  id: DatasetIdT,
+  label: string
+};
+
+export type SelectOptionT = {
   label: string,
   value: number | string
 };
 
-export type SelectOptionsType = SelectOptionType[];
+export type SelectOptionsT = SelectOptionT[];
 
-export type DateRangeType = ?{ min?: string, max?: string };
+// Example: { min: "2019-01-01", max: "2019-12-31" }
+export type DateRangeT = ?{ min?: string, max?: string };
 
-export type CurrencyConfigType = {
+export type CurrencyConfigT = {
   prefix: string,
   thousandSeparator: string,
   decimalSeparator: string,
   decimalScale: number
 };
 
-export type InfoType = {
-  key: string,
-  value: string
+export type FilterIdT = string;
+export type FilterBaseT = {
+  id: FilterIdT,
+  label: string,
+  description?: string
 };
 
-export type RangeFilterValueType = {
+export type RangeFilterValueT = {
   min?: number,
   max?: number,
   exact?: number
 };
-export type RangeFilterType = {
-  id: string,
-  label: string,
-  description?: string,
+export type RangeFilterT = FilterBaseT & {
   type: "INTEGER_RANGE" | "REAL_RANGE" | "MONEY_RANGE",
-  value: ?RangeFilterValueType,
+  value: ?RangeFilterValueT,
   unit?: string,
   mode: "range" | "exact",
   precision?: number,
@@ -45,80 +50,214 @@ export type RangeFilterType = {
   pattern?: string
 };
 
-export type MultiSelectFilterValueType = (string | number)[];
-export type MultiSelectFilterType = {
-  id: string,
-  label: string,
-  description?: string,
-  type: "MULTI_SELECT",
+export type MultiSelectFilterValueT = (string | number)[];
+export type MultiSelectFilterT = FilterBaseT & {
+  type: "MULTI_SELECT" | "BIG_MULTI_SELECT",
   unit?: string,
-  options: SelectOptionsType,
-  defaultValue: ?MultiSelectFilterValueType
+  options: SelectOptionsT,
+  defaultValue: ?MultiSelectFilterValueT
 };
 
-export type SelectFilterValueType = string | number;
-export type SelectFilterType = {
-  id: string,
-  label: string,
-  description?: string,
+export type SelectFilterValueT = string | number;
+export type SelectFilterT = FilterBaseT & {
   type: "SELECT",
   unit?: string,
-  options: SelectOptionsType,
-  defaultValue: ?SelectFilterValueType
+  options: SelectOptionsT,
+  defaultValue: ?SelectFilterValueT
 };
 
-export type FilterType =
-  | SelectFilterType
-  | MultiSelectFilterType
-  | RangeFilterType;
+export type StringFilterValueT = string;
+export type StringFilterT = FilterBaseT & {
+  type: "STRING"
+};
 
-export type TableType = {
-  id: string,
+export type FilterT =
+  | StringFilterT
+  | SelectFilterT
+  | MultiSelectFilterT
+  | RangeFilterT;
+
+export type TableIdT = string;
+export type TableT = {
+  id: TableIdT,
+  connectorId: string, // TODO: Weird - remove
   label: string,
   exclude?: boolean,
-  filters: ?(FilterType[])
+  filters?: FilterT[]
 };
 
-export type SelectorType = {
-  id: string,
+export type SelectorIdT = string;
+export type SelectorT = {
+  id: SelectorIdT,
   label: string,
   description: string,
   default?: boolean
 };
 
-export type TreeNodeIdType = string;
-export type NodeType = {
-  parent: TreeNodeIdType,
+export type InfoT = {
+  key: string,
+  value: string
+};
+
+export type ConceptIdT = string;
+
+export type ConceptBaseT = {
   label: string,
-  description: string,
-  active?: boolean,
-  children: TreeNodeIdType[],
-  additionalInfos?: InfoType[],
-  matchingEntries?: number,
-  dateRange?: DateRangeType,
-  tables: TableType[],
-  selects?: SelectorType[],
-  detailsAvailable?: boolean,
-  codeListResolvable?: boolean
+  active: boolean,
+  detailsAvailable: boolean,
+  codeListResolvable: boolean,
+  matchingEntries: number, // Even sent with 0 - TODO: Don't sent for struct nodes
+  children?: ConceptIdT[], // Might be an empty struct or a "virtual node"
+  description?: string,
+  additionalInfos?: InfoT[],
+  dateRange?: DateRangeT
 };
 
-export type RootType = {
+export type ConceptStructT = ConceptBaseT;
+
+export type ConceptElementT = ConceptBaseT & {
+  parent?: ConceptIdT, // If not set, it's nested under a struct node
+  tables?: TableT[], // Empty array: key not defined
+  selects?: SelectorT[] // Empty array: key not defined
+};
+
+export type ConceptType = ConceptElementT | ConceptStructT;
+
+export type FilterConfigT = {
+  filter: FilterIdT, // TODO: Rename this: "id"
+  type:  // TODO: NOT USED, the type is clear based on the filter id
+    | "INTEGER_RANGE"
+    | "REAL_RANGE"
+    | "MONEY_RANGE"
+    | "STRING"
+    | "SELECT"
+    | "MULTI_SELECT"
+    | "BIG_MULTI_SELECT",
+  value:
+    | StringFilterValueT
+    | RangeFilterValueT
+    | SelectFilterValueT
+    | MultiSelectFilterValueT
+};
+
+export type TableConfigT = {
+  id: TableIdT,
+  filters?: FilterConfigT
+}[];
+
+export type SelectsConfigT = SelectorIdT[];
+
+export type QueryConceptT = {
+  type: "CONCEPT",
+  ids: ConceptIdT[],
+  label: string, // Used to expand
+  excludeFromTimestampAggregation: boolean, // TODO: Not used
+  tables: TableConfigT,
+  selects?: SelectsConfigT
+};
+
+export type QueryIdT = string;
+export type SavedQueryT = {
+  type: "SAVED_QUERY",
+  query: QueryIdT // TODO: rename this "id"
+};
+
+export type OrQueryT = {
+  type: "OR",
+  children: (QueryConceptT | SavedQueryT)[]
+};
+
+export type DateRestrictionQueryT = {
+  type: "DATE_RESTRICTION",
+  dateRange: DateRangeT,
+  child: OrQueryT
+};
+
+export type NegationQueryT = {
+  type: "NEGATION",
+  child: DateRestrictionQueryT | OrQueryT
+};
+
+export type AndQueryT = {
+  type: "AND",
+  children: (DateRestrictionQueryT | NegationQueryT | OrQueryT)[]
+};
+
+export type QueryT = {
+  type: "CONCEPT_QUERY",
+  root: AndQueryT | NegationQueryT | DateRestrictionQueryT
+};
+
+// ---------------------------------------
+// ---------------------------------------
+// API RESPONSES
+// ---------------------------------------
+// ---------------------------------------
+export type GetDatasetsResponseT = DatasetT[];
+
+export type GetFrontendConfigResponseT = {
+  currency: CurrencyConfigT,
+  version: string
+};
+
+export type GetConceptResponseT = {
+  [key: ConceptIdT]: ConceptElementT
+};
+
+export type GetConceptsResponseT = {
   concepts: {
-    [key: TreeNodeIdType]: NodeType
+    [key: ConceptIdT]: ConceptStructT | ConceptElementT
   },
-  version: number
+  version?: number
 };
 
-export type ConceptListResolutionResultType = {
+// TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
+export type PostQueriesResponseT = {
+  id: QueryIdT
+};
+
+// TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
+export type GetQueryResponseDoneT = {
+  status: "DONE",
+  numberOfResults: number,
+  resultUrl: string
+};
+
+export type GetQueryResponseT =
+  | GetQueryResponseDoneT
+  | {
+      status: "FAILED" | "CANCELED"
+    };
+
+export type GetStoredQueryResponseT = {
+  id: QueryIdT,
+  label: string,
+  createdAt: string, // ISO timestamp: 2019-06-18T11:11:50.528626+02:00
+  own: boolean,
+  shared: boolean,
+  system: boolean,
+  ownerName: string,
+  numberOfResults: number,
+  resultUrl: string,
+  requiredTime: number,
+  tags?: string[],
+  query: QueryT, // TODO: Not required in QUERIES response. Creates additional load
+  owner: string, // TODO: Not used. And it's actually an ID
+  status: "DONE" // TODO: Not used anymore. Should be DONE always
+};
+
+export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
+
+export type PostConceptResolveResponseT = {
   resolvedConcepts?: string[],
   unknownConcepts?: string[]
 };
 
-export type FilterValuesResolutionResultType = {
+export type PostFilterResolveResponseT = {
   unknownCodes?: string[],
   resolvedFilter?: {
-    filterId: string,
-    tableId: string,
+    filterId: FilterIdT,
+    tableId: TableIdT,
     value: {
       label: string,
       value: string
@@ -126,4 +265,8 @@ export type FilterValuesResolutionResultType = {
   }
 };
 
-export type QueryIdType = string;
+export type PostFilterSuggestionsResponseT = {
+  resolvedFilter: {
+    value: string
+  }
+};

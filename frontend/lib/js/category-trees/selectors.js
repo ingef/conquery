@@ -1,6 +1,6 @@
 // @flow
 
-import { type TreeNodeIdType } from "../api/types";
+import { type ConceptIdT } from "../api/types";
 import { type SearchType } from "./reducer";
 
 const isChildWithinResults = (children: [], search: SearchType) => {
@@ -8,7 +8,7 @@ const isChildWithinResults = (children: [], search: SearchType) => {
 };
 
 export const isNodeInSearchResult = (
-  id: TreeNodeIdType,
+  id: ConceptIdT,
   children?: [],
   search: SearchType
 ) => {

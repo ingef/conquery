@@ -5,7 +5,7 @@ import { type Dispatch } from "redux-thunk";
 import { type DatasetIdType } from "../dataset/reducer";
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
-import type { TreeNodeIdType } from "../api/types";
+import type { ConceptIdT } from "../api/types";
 import { isEmpty } from "../common/helpers";
 
 import { resetAllTrees, search } from "./globalTreeStoreHelper";
@@ -64,16 +64,16 @@ export const loadTrees = (datasetId: DatasetIdType) => {
   };
 };
 
-export const loadTreeStart = (treeId: TreeNodeIdType) => ({
+export const loadTreeStart = (treeId: ConceptIdT) => ({
   type: LOAD_TREE_START,
   payload: { treeId }
 });
-export const loadTreeError = (treeId: TreeNodeIdType, err: any) =>
+export const loadTreeError = (treeId: ConceptIdT, err: any) =>
   defaultError(LOAD_TREE_ERROR, err, { treeId });
-export const loadTreeSuccess = (treeId: TreeNodeIdType, res: any) =>
+export const loadTreeSuccess = (treeId: ConceptIdT, res: any) =>
   defaultSuccess(LOAD_TREE_SUCCESS, res, { treeId });
 
-export const loadTree = (datasetId: DatasetIdType, treeId: TreeNodeIdType) => {
+export const loadTree = (datasetId: DatasetIdType, treeId: ConceptIdT) => {
   return (dispatch: Dispatch) => {
     dispatch(loadTreeStart(treeId));
 

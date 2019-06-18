@@ -1,6 +1,6 @@
 // @flow
 
-import type { TreeNodeIdType } from "../api/types";
+import type { ConceptIdT } from "../api/types";
 
 export type UploadConceptListModalResultType = {
   label: string,
@@ -15,6 +15,6 @@ export type UploadConceptListModalResultType = {
         value: string
       }[]
     },
-    selectedRoot: TreeNodeIdType
+    selectedRoot: ConceptIdT
   }
 };

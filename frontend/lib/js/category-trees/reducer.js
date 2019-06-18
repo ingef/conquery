@@ -1,6 +1,6 @@
 // @flow
 
-import type { NodeType, TreeNodeIdType } from "../api/types";
+import type { ConceptElementType, ConceptIdT } from "../api/types";
 
 import {
   LOAD_TREES_START,
@@ -28,7 +28,7 @@ export type SearchType = {
   loading: boolean,
   query: string,
   words: ?(string[]),
-  result: ?{ [TreeNodeIdType]: number },
+  result: ?{ [ConceptIdT]: number },
   resultCount: number,
   duration: number
 };

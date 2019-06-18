@@ -4,7 +4,7 @@ import React from "react";
 import styled from "@emotion/styled";
 
 import {
-  type TreeNodeIdType,
+  type ConceptIdT,
   type InfoType,
   type DateRangeType,
   type NodeType
@@ -30,13 +30,13 @@ type TreeNodeData = {
   matchingEntries: number,
   dateRange: DateRangeType,
   additionalInfos: Array<InfoType>,
-  children: Array<TreeNodeIdType>,
+  children: Array<ConceptIdT>,
 
-  tree: TreeNodeIdType
+  tree: ConceptIdT
 };
 
 type PropsType = {
-  id: TreeNodeIdType,
+  id: ConceptIdT,
   data: TreeNodeData,
   depth: number,
   open: boolean,
@@ -44,7 +44,7 @@ type PropsType = {
   onToggleOpen: () => void
 };
 
-const selectTreeNodeData = (concept: NodeType, tree: TreeNodeIdType) => ({
+const selectTreeNodeData = (concept: NodeType, tree: ConceptIdT) => ({
   label: concept.label,
   description: concept.description,
   active: concept.active,

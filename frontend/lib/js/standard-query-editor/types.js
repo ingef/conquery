@@ -1,7 +1,7 @@
 // @flow
 
 import type {
-  TreeNodeIdType,
+  ConceptIdT,
   QueryIdType,
   RangeFilterType,
   RangeFilterValueType,
@@ -83,10 +83,10 @@ export type DraggedQueryType = {
 // A Query Node that is being dragged from the tree or within the standard editor.
 // Corresponds to CATEGORY_TREE_NODE and QUERY_NODE drag-and-drop types.
 export type DraggedNodeType = {
-  ids: TreeNodeIdType[],
+  ids: ConceptIdT[],
   tables: TableWithFilterValueType[],
   selects: SelectedSelectorType[],
-  tree: TreeNodeIdType,
+  tree: ConceptIdT,
   label: string,
   excludeTimestamps?: boolean,
 
@@ -106,10 +106,10 @@ export type DraggedNodeType = {
 };
 
 export type ConceptQueryNodeType = {
-  ids: TreeNodeIdType[],
+  ids: ConceptIdT[],
   tables: TableWithFilterValueType[],
   selects: SelectedSelectorType[],
-  tree: TreeNodeIdType,
+  tree: ConceptIdT,
 
   label: string,
   description?: string,
