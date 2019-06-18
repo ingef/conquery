@@ -80,10 +80,10 @@ export type FilterT =
 export type TableIdT = string;
 export type TableT = {
   id: TableIdT,
-  connectorId: string, // TODO: Weird - remove
+  connectorId: string, // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string,
   exclude?: boolean,
-  filters?: FilterT[]
+  filters?: FilterT[] // Empty array: key not defined
 };
 
 export type SelectorIdT = string;
@@ -106,10 +106,10 @@ export type ConceptBaseT = {
   active: boolean,
   detailsAvailable: boolean,
   codeListResolvable: boolean,
-  matchingEntries: number, // Even sent with 0 - TODO: Don't sent for struct nodes
+  matchingEntries: number, // TODO: Don't send with struct nodes (even sent with 0)
   children?: ConceptIdT[], // Might be an empty struct or a "virtual node"
-  description?: string,
-  additionalInfos?: InfoT[],
+  description?: string, // Empty array: key not defined
+  additionalInfos?: InfoT[], // Empty array: key not defined
   dateRange?: DateRangeT
 };
 
@@ -208,7 +208,7 @@ export type GetConceptsResponseT = {
   concepts: {
     [key: ConceptIdT]: ConceptStructT | ConceptElementT
   },
-  version?: number
+  version?: number // TODO: Is this even sent anymore?
 };
 
 // TODO: This actually returns GETStoredQueryResponseT => a lot of unused fields
@@ -241,11 +241,12 @@ export type GetStoredQueryResponseT = {
   resultUrl: string,
   requiredTime: number,
   tags?: string[],
-  query: QueryT, // TODO: Not required in QUERIES response. Creates additional load
-  owner: string, // TODO: Not used. And it's actually an ID
-  status: "DONE" // TODO: Not used anymore. Should be DONE always
+  query: QueryT, // TODO: Remove in QUERIES response. Creates a lot of additional traffic right now
+  owner: string, // TODO: Remove. Not used. And it's actually an ID
+  status: "DONE" // TODO: Remove. Not used here
 };
 
+// TODO: This actually returns a lot of unused fields, see above
 export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
 
 export type PostConceptResolveResponseT = {
