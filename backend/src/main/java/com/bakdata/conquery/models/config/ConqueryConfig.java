@@ -7,6 +7,8 @@ import java.util.NoSuchElementException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.models.auth.AuthConfig;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
@@ -44,7 +46,7 @@ public class ConqueryConfig extends Configuration {
 	@Valid @NotNull
 	private APIConfig api = new APIConfig();
 	@NotNull
-	private String[] additionalFormats = new String[0];
+	private String[] additionalFormats = ArrayUtils.EMPTY_STRING_ARRAY;
 	@Valid @NotNull
 	private FrontendConfig frontend = new FrontendConfig();
 	

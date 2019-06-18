@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.identifiable.mapping;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 
@@ -46,7 +48,7 @@ public class IdAccessorImpl implements IdAccessor {
 			}
 		}
 
-		return result.toArray(new String[0]);
+		return result.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
 	}
 
 	/**

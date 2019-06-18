@@ -23,10 +23,10 @@ jobs:
       name: "Frontend Tests"
       install: skip
       script:
-        - mvn -B -V install -N
+        - mvn -B -V -T 1C install -N
         - mvn -B -V install -pl frontend-resources
-        - mvn -B -V install -pl backend -DskipTests
-        - mvn -B -V package -pl executable
+        - mvn -B -V -T 1C install -pl backend -DskipTests
+        - mvn -B -V -T 1C package -pl executable
 
     #build backend and run all non-integration tests
     - stage: Tests
@@ -57,7 +57,7 @@ jobs:
     # ------------------------------
 
     - stage: Prerelease
-      install: mvn -B -V -T 1C package -DskipTests
+      install: mvn -B -V package -DskipTests
       script: skip
       deploy:
         provider: releases
@@ -75,7 +75,7 @@ jobs:
           all_branches: true
 
     - stage: Release
-      install: mvn -B -V -T 1C package -DskipTests
+      install: mvn -B -V package -DskipTests
       script: skip
       deploy:
         provider: releases

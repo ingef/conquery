@@ -36,7 +36,7 @@ const ResetAll = styled(IconButton)`
 type PropsType = {
   group: Object,
   andIdx: number,
-  onCloseModal: () => void,
+  onClose: () => void,
   onSetDate: any => void,
   onResetAllDates: () => void
 };
@@ -53,7 +53,7 @@ const QueryGroupModal = (props: PropsType) => {
   const { onSetDate } = props;
 
   return (
-    <Modal closeModal={props.onCloseModal} doneButton tabIndex={3}>
+    <Modal onClose={props.onClose} doneButton tabIndex={3}>
       <Root>
         <Headline>
           {props.group.elements.reduce(
@@ -110,7 +110,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = (dispatch: any) => ({
-  onCloseModal: () => dispatch(queryGroupModalClearNode()),
+  onClose: () => dispatch(queryGroupModalClearNode()),
   onSetDate: (andIdx, date) => dispatch(queryGroupModalSetDate(andIdx, date)),
   onResetAllDates: andIdx => dispatch(queryGroupModalResetAllDates(andIdx))
 });

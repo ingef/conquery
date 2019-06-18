@@ -59,7 +59,7 @@ const FileInput = styled("input")`
 `;
 
 type PropsType = {
-  onCloseModal: Function,
+  onClose: Function,
   onUploadFile: Function,
   loading: boolean,
   success: ?Object,
@@ -107,7 +107,7 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
   render() {
     return (
       <Modal
-        closeModal={this.props.onCloseModal}
+        onClose={this.props.onClose}
         doneButton
         headline={
           <>

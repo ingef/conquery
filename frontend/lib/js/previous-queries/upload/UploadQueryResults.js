@@ -37,7 +37,7 @@ const UploadQueryResults = (props: PropsType) => {
       </IconButton>
       {props.isModalOpen && (
         <UploadQueryResultsModal
-          onCloseModal={props.onCloseModal}
+          onClose={props.onCloseModal}
           onUploadFile={file => props.onUploadFile(props.datasetId, file)}
           loading={props.loading}
           success={props.success}
