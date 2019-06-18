@@ -155,7 +155,7 @@ const QueryNodeEditor = createConnectedQueryNodeEditor(
 
 export const FormQueryNodeEditor = (props: PropsType) => (
   <QueryNodeEditor
-    type={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
+    name={`${props.formType}_${toUpperCaseUnderscore(props.fieldName)}`}
     {...props}
   />
 );
