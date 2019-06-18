@@ -114,8 +114,8 @@
 				<configuration>
 					<installDirectory>${workingDirectory}</installDirectory>
 					<workingDirectory>${workingDirectory}</workingDirectory>
-					<nodeVersion>v10.15.1</nodeVersion>
-					<yarnVersion>v1.13.0</yarnVersion>
+					<nodeVersion>v10.16.0</nodeVersion>
+					<yarnVersion>v1.16.0</yarnVersion>
 				</configuration>
 			</plugin>
 			<!-- workaround for https://issues.apache.org/jira/browse/MRESOURCES-236 -->
