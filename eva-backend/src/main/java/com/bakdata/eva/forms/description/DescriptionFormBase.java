@@ -70,7 +70,8 @@ public abstract class DescriptionFormBase extends StatisticForm {
 		}
 		
 	}
-			
+	
+	@JsonIgnore
 	public BiConsumer<ColumnDescriptor, CQOr> getColumnManipulator(){
 		return new ColumnManipulator();
 	}
