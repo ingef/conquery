@@ -83,21 +83,19 @@ public class JobExecutor extends Thread {
 					try {
 						if(job.isCancelled()){
 							log.trace("{} skipping cancelled job {}", this.getName(), job);
-							currentJob.set(null);
 							continue;
 						}
 
 						log.trace("{} started job {} with Id {}", this.getName(), job, job.getJobId());
 						job.execute();
 						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
-						currentJob.set(null);
 					}
 					catch (Throwable e) {
 						log.error("Job "+job+" failed", e);
-						currentJob.set(null);
 					}
 				}
 				busy.set(false);
+				currentJob.set(null);
 			} catch (InterruptedException e) {
 				log.warn("Interrupted JobManager polling", e);
 			}
