@@ -6,6 +6,8 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -36,7 +38,7 @@ public class ManagedQuery extends ManagedExecution {
 
 	private IQuery query;
 	@NotNull
-	private String[] tags = new String[0];
+	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
 	/**
 	 * The number of contained entities the last time this query was executed.

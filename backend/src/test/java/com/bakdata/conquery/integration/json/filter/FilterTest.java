@@ -10,6 +10,7 @@ import java.util.List;
 import javax.validation.constraints.NotNull;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
@@ -105,7 +106,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		format.setLineSeparator("\n");
 		settings.setFormat(format);
 		settings.setHeaderExtractionEnabled(true);
-		DateFormats.initialize(new String[0]);
+		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : content.getTables()) {

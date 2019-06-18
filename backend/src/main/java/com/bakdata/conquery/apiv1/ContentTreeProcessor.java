@@ -11,6 +11,8 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.WebApplicationException;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FERoot;
@@ -152,7 +154,7 @@ public class ContentTreeProcessor {
 					List<FEValue> filterValues = new LinkedList<>();
 					QuickSearch<FilterSearchItem> search = selectFilter.getSourceSearch();
 					if (search != null) {
-						filterValues.addAll(createSourceSearchResult(search, conceptCodes.toArray(new String[0])));
+						filterValues.addAll(createSourceSearchResult(search, conceptCodes.toArray(ArrayUtils.EMPTY_STRING_ARRAY)));
 					}
 
 					List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());

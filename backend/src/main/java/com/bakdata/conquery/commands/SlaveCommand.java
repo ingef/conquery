@@ -84,7 +84,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 					context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
 				}
 			},
-			30, 5, TimeUnit.SECONDS
+			30, 1, TimeUnit.SECONDS
 		);
 
 
