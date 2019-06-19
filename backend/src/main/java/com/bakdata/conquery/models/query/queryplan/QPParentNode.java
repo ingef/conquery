@@ -53,15 +53,15 @@ public abstract class QPParentNode extends QPNode {
 	@Override
 	public void init(Entity entity) {
 		super.init(entity);
-		for(QPNode c:children) {
-			c.init(entity);
+		for(int i=children.size();i>=0;i--) {
+			children.get(i).init(entity);
 		}
 	}
 	
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
-		for(QPNode c:children) {
-			c.collectRequiredTables(requiredTables);
+		for(int i=children.size();i>=0;i--) {
+			children.get(i).collectRequiredTables(requiredTables);
 		}
 	}
 	
@@ -69,22 +69,22 @@ public abstract class QPParentNode extends QPNode {
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
 		currentTableChildren = childMap.get(currentTable.getId());
-		for(QPNode agg:currentTableChildren) {
-			agg.nextTable(ctx, currentTable);
+		for(int i=currentTableChildren.size();i>=0;i--) {
+			currentTableChildren.get(i).nextTable(ctx, currentTable);
 		}
 	}
 	
 	@Override
 	public void nextBlock(Bucket bucket) {
-		for(QPNode agg:currentTableChildren) {
-			agg.nextBlock(bucket);
+		for(int i=currentTableChildren.size();i>=0;i--) {
+			currentTableChildren.get(i).nextBlock(bucket);
 		}
 	}
 	
 	@Override
 	public void nextEvent(Bucket bucket, int event) {
-		for(QPNode agg:currentTableChildren) {
-			agg.nextEvent(bucket, event);
+		for(int i=currentTableChildren.size();i>=0;i--) {
+			currentTableChildren.get(i).nextEvent(bucket, event);
 		}
 	}
 	
