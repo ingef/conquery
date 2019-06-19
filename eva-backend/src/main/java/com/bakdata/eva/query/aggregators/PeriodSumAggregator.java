@@ -73,7 +73,7 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 		final long quartersToEnd = quartersBetween(date, endRestriction);
 
 		if (quartersFromBegin % 4 == 0) {
-			if (quartersToEnd > 4 || nQuarters == 4) {
+			if (quartersToEnd >= 4) {
 				sum += value;
 			}
 		}
