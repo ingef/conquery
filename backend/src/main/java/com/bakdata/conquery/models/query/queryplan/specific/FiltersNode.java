@@ -79,4 +79,9 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 			f.collectRequiredTables(requiredTables);
 		}
 	}
+	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
 }

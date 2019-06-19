@@ -143,4 +143,14 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	public abstract void writeContent(SmallOut output) throws IOException;
 
 	public abstract void read(SmallIn input) throws IOException;
+
+	public int localEntityFor(int event) {
+		int entity = -1;
+		for(int i=0;i<getBucketSize();i++) {
+			if(containsLocalEntity(i) && getFirstEventOfLocal(i)<=event) {
+				entity = i;
+			}
+		}
+		return entity;
+	}
 }

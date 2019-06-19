@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.entity;
 
 import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Import;
@@ -50,6 +51,10 @@ public class Entity {
 
 	public EntityRow getCBlock(ConnectorId connector, BucketId bucket) {
 		return cBlocks.get(connector, bucket);
+	}
+	
+	public Map<BucketId, EntityRow> getCBlockPreSelect(ConnectorId connector) {
+		return cBlocks.row(connector);
 	}
 
 	public List<Bucket> getBucket(Table table) {

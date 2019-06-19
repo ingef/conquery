@@ -53,14 +53,14 @@ public abstract class QPParentNode extends QPNode {
 	@Override
 	public void init(Entity entity) {
 		super.init(entity);
-		for(int i=children.size();i>=0;i--) {
+		for(int i=0,size=children.size();i<size;i++) {
 			children.get(i).init(entity);
 		}
 	}
 	
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
-		for(int i=children.size();i>=0;i--) {
+		for(int i=0,size=children.size();i<size;i++) {
 			children.get(i).collectRequiredTables(requiredTables);
 		}
 	}
@@ -69,21 +69,31 @@ public abstract class QPParentNode extends QPNode {
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
 		currentTableChildren = childMap.get(currentTable.getId());
-		for(int i=currentTableChildren.size();i>=0;i--) {
+		for(int i=0,size=currentTableChildren.size();i<size;i++) {
 			currentTableChildren.get(i).nextTable(ctx, currentTable);
 		}
 	}
 	
 	@Override
 	public void nextBlock(Bucket bucket) {
-		for(int i=currentTableChildren.size();i>=0;i--) {
+		for(int i=0,size=currentTableChildren.size();i<size;i++) {
 			currentTableChildren.get(i).nextBlock(bucket);
 		}
 	}
 	
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		boolean interest = false;
+		for(int i=0,size=currentTableChildren.size();i<size;i++) {
+			interest |= currentTableChildren.get(i).isOfInterest(bucket);
+		}
+		return interest;
+	}
+	
 	@Override
 	public void nextEvent(Bucket bucket, int event) {
-		for(int i=currentTableChildren.size();i>=0;i--) {
+		for(int i=0,size=currentTableChildren.size();i<size;i++) {
 			currentTableChildren.get(i).nextEvent(bucket, event);
 		}
 	}
