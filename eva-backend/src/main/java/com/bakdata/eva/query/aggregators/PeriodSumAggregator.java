@@ -37,7 +37,7 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
-		return sum;
+		return nQuarters >= 4 ? sum : null;
 	}
 
 	private long quartersBetween(LocalDate begin, LocalDate end) {
@@ -76,12 +76,9 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 			if (quartersToEnd > 4 || nQuarters == 4) {
 				sum += value;
 			}
-			else if (nQuarters < 4) {
-				sum += value * (nQuarters - Math.floor(nQuarters / 4d) * 4) / 4d;
-			}
 		}
 		else if (odd && quartersToEnd == 4) {
-			sum += value * (nQuarters - Math.floor(nQuarters / 4d) * 4) / 4d;
+			sum += value * (nQuarters - Math.floor(nQuarters / 4d) * 4d) / 4d;
 		}
 	}
 
