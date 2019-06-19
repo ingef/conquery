@@ -37,6 +37,10 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
+		if (nQuarters < 4) {
+			return null;
+		}
+
 		return sum;
 	}
 
@@ -73,15 +77,12 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 		final long quartersToEnd = quartersBetween(date, endRestriction);
 
 		if (quartersFromBegin % 4 == 0) {
-			if (quartersToEnd > 4 || nQuarters == 4) {
+			if (quartersToEnd >= 4) {
 				sum += value;
-			}
-			else if (nQuarters < 4) {
-				sum += value * (nQuarters - Math.floor(nQuarters / 4d) * 4) / 4d;
 			}
 		}
 		else if (odd && quartersToEnd == 4) {
-			sum += value * (nQuarters - Math.floor(nQuarters / 4d) * 4) / 4d;
+			sum += value * (nQuarters - Math.floor(nQuarters / 4d) * 4d) / 4d;
 		}
 	}
 
