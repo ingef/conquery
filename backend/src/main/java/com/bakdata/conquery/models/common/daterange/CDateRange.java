@@ -184,12 +184,12 @@ public abstract class CDateRange implements IRange<LocalDate, CDateRange> {
 
 	@Override
 	public boolean contains(LocalDate value) {
-		return contains(CDate.ofLocalDate(value));
+		return value != null && contains(CDate.ofLocalDate(value));
 	}
 
 	@Override
 	public boolean contains(CDateRange other) {
-		return contains(other.getMinValue()) && contains(other.getMaxValue());
+		return other != null && contains(other.getMinValue()) && contains(other.getMaxValue());
 	}
 
 	public abstract boolean contains(int rep);
