@@ -23,7 +23,7 @@ public class JettyConfigurationUtil {
 		resourceConfig.register(new JsonValidationExceptionMapper());
 		// default Dropwizard's exception mappers
 		resourceConfig.register(new LoggingExceptionMapper<Throwable>() {});
-		resourceConfig.register(new JsonProcessingExceptionMapper(true));
+		resourceConfig.register(ConqueryJsonExceptionMapper.class);
 		resourceConfig.register(new EarlyEofExceptionMapper());
 		//allow cross origin
 		/*if(config.getApi().isAllowCORSRequests())
