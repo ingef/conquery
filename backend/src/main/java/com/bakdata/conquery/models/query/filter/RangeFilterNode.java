@@ -24,7 +24,6 @@ public class RangeFilterNode<TYPE extends Comparable> extends AggregationResultF
 
 	@Override
 	public boolean isContained() {
-		TYPE aggregationResult = getAggregator().getAggregationResult();
-		return aggregationResult != null && filterValue.contains(aggregationResult);
+		return filterValue.contains(getAggregator().getAggregationResult());
 	}
 }
