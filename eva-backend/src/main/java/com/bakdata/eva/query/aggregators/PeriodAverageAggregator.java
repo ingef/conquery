@@ -39,8 +39,9 @@ public class PeriodAverageAggregator extends SingleColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
-		if(nQuarters < 4)
+		if(nQuarters < 4) {
 			return null;
+		}
 
 		return sum / (double) includedQuarters;
 	}

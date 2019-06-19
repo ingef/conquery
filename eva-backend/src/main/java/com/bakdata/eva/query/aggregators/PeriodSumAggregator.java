@@ -37,7 +37,11 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
-		return nQuarters >= 4 ? sum : null;
+		if (nQuarters < 4) {
+			return null;
+		}
+
+		return sum;
 	}
 
 	private long quartersBetween(LocalDate begin, LocalDate end) {
