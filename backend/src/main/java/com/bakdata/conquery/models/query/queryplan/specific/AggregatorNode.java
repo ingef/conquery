@@ -50,4 +50,9 @@ public class AggregatorNode<T> extends QPNode  {
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		aggregator.nextTable(ctx, currentTable);
 	}
+	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
 }

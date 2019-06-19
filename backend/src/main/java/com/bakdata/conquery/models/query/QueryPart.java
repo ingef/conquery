@@ -35,11 +35,13 @@ public class QueryPart implements Callable<EntityResult> {
 				for(Bucket bucket : entity.getBucket(currentTable)) {
 					int localEntity = bucket.toLocal(entity.getId());
 					if(bucket.containsLocalEntity(localEntity)) {
-						queryPlan.nextBlock(bucket);
-						int start = bucket.getFirstEventOfLocal(localEntity);
-						int end = bucket.getLastEventOfLocal(localEntity);
-						for(int event = start; event < end ; event++) {
-							queryPlan.nextEvent(bucket, event);
+						if(queryPlan.isOfInterest(bucket)) {
+							queryPlan.nextBlock(bucket);
+							int start = bucket.getFirstEventOfLocal(localEntity);
+							int end = bucket.getLastEventOfLocal(localEntity);
+							for(int event = start; event < end ; event++) {
+								queryPlan.nextEvent(bucket, event);
+							}
 						}
 					}
 				}

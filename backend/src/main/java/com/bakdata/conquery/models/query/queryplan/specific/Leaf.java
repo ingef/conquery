@@ -23,5 +23,8 @@ public class Leaf extends QPNode {
 		return triggered;
 	}
 
-	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
 }

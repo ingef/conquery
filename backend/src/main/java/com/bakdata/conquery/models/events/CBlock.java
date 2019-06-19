@@ -22,6 +22,7 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	private BucketId bucket;
 	@NotNull @Valid
 	private ConnectorId connector;
+	private long[] includedConcepts;
 	@Valid
 	private List<int[]> mostSpecificChildren;
 	

@@ -21,4 +21,6 @@ public interface EventIterating {
 	default void nextTable(QueryContext ctx, Table currentTable) {}
 	
 	default void nextBlock(Bucket bucket) {}
+	
+	boolean isOfInterest(Bucket bucket);
 }

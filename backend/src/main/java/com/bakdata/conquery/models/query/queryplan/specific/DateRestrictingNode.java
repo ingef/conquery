@@ -13,23 +13,26 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class DateRestrictingNode extends QPChainNode {
 
-	private final CDateSet dateRange;
+	private final CDateSet restriction;
 	private Column validityDateColumn;
 
-	public DateRestrictingNode(CDateSet dateRange, QPNode child) {
+	public DateRestrictingNode(CDateSet restriction, QPNode child) {
 		super(child);
-		this.dateRange = dateRange;
+		this.restriction = restriction;
 	}
 
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
-		dateRestriction.retainAll(dateRange);
-
-		super.nextTable(
-				ctx.withDateRestriction(dateRestriction),
-				currentTable
-		);
+		//if there was no date restriction we can just use the restriction CDateSet
+		if(ctx.getDateRestriction().isAll()) {
+			ctx = ctx.withDateRestriction(CDateSet.create(restriction));
+		}
+		else {
+			CDateSet dateRestriction = CDateSet.create(ctx.getDateRestriction());
+			dateRestriction.retainAll(restriction);
+			ctx = ctx.withDateRestriction(dateRestriction);
+		}
+		super.nextTable(ctx, currentTable);
 
 
 		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());
@@ -42,7 +45,7 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public void nextEvent(Bucket bucket, int event) {
-		if (bucket.eventIsContainedIn(event, validityDateColumn, dateRange)) {
+		if (bucket.eventIsContainedIn(event, validityDateColumn, restriction)) {
 			getChild().nextEvent(bucket, event);
 		}
 	}
@@ -54,6 +57,6 @@ public class DateRestrictingNode extends QPChainNode {
 
 	@Override
 	public QPNode doClone(CloneContext ctx) {
-		return new DateRestrictingNode(dateRange, getChild().clone(ctx));
+		return new DateRestrictingNode(restriction, getChild().clone(ctx));
 	}
 }

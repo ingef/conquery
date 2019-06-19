@@ -26,4 +26,9 @@ public abstract class FilterNode<FILTER_VALUE> implements EventIterating, CtxClo
 	public abstract void acceptEvent(Bucket bucket, int event);
 
 	public abstract boolean isContained();
+	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
 }

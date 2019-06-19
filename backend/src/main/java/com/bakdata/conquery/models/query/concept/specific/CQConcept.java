@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -97,6 +98,7 @@ public class CQConcept implements CQElement {
 			tableNodes.add(
 				new ConceptNode(
 					concepts,
+					calculateBitMask(concepts),
 					t,
 					new ValidityDateNode(
 						selectValidityDateColumn(t),
@@ -107,6 +109,14 @@ public class CQConcept implements CQElement {
 		}
 
 		return OrNode.of(tableNodes);
+	}
+
+	private long calculateBitMask(ConceptElement<?>[] concepts) {
+		long mask = 0;
+		for(ConceptElement<?> concept : concepts) {
+			mask |= concept.calculateBitMask();
+		}
+		return mask;
 	}
 
 	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {

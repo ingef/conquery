@@ -70,4 +70,9 @@ public abstract class QPChainNode extends QPNode {
 	public boolean isContained() {
 		return child.isContained();
 	}
+	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return child.isOfInterest(bucket);
+	}
 }

@@ -14,4 +14,9 @@ public interface Aggregator<T> extends CtxCloneable<Aggregator<T>>, EventIterati
 	
 	@JsonIgnore
 	ResultType getResultType();
+	
+	@Override
+	default boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
 }
