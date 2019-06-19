@@ -119,7 +119,7 @@ public class CalculateCBlocksJob extends Job {
 						cBlock.getMostSpecificChildren().add(child.getPrefix());
 						ConceptTreeNode<?> it = child;
 						while(it != null) {
-							cBlock.getIncludedConcepts()[bucket.localEntityFor(event)] |= child.calculateBitMask();
+							cBlock.getIncludedConcepts()[bucket.localEntityFor(event)] |= it.calculateBitMask();
 							it = it.getParent();
 						}
 					}
