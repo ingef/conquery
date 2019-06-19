@@ -85,8 +85,8 @@ public class PeriodAverageAggregator extends SingleColumnAggregator<Double> {
 				sum += value;
 			}
 			else if (nQuarters < 4) {
-				this.includedQuarters += overHangWeight;
-				sum += value * overHangWeight;
+				this.includedQuarters += nQuarters;
+				sum += value * nQuarters;
 			}
 		}
 		else if (odd && quartersToEnd == 4) {
