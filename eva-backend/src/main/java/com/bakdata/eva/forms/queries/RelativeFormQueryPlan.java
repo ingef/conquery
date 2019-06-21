@@ -64,7 +64,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		return
 			featurePlan.isOfInterest(bucket)
 			|
-			featurePlan.isOfInterest(bucket);
+			outcomePlan.isOfInterest(bucket);
 	}
 	
 	@Override
