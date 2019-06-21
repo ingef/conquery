@@ -21,7 +21,8 @@ public class ConceptNode extends QPChainNode {
 	private final ConceptElement[] concepts;
 	private final long requiredBits;
 	private final CQTable table;
-	private boolean active = false;
+	private boolean tableActive = false;
+	private boolean interested = false;
 	private Map<BucketId, EntityRow> preCurrentRow = null;
 	private EntityRow currentRow = null;
 	
@@ -39,37 +40,37 @@ public class ConceptNode extends QPChainNode {
 	
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
-		active = table.getResolvedConnector().getTable().equals(currentTable);
-		if(active) {
+		tableActive = table.getResolvedConnector().getTable().equals(currentTable);
+		if(tableActive) {
 			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);
 		}
 	}
 
 	@Override
 	public void nextBlock(Bucket bucket) {
-		if (active) {
+		if (tableActive && interested) {
 			super.nextBlock(bucket);
 		}
 	}
 	
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		if (active) {
+		if (tableActive) {
 			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 			int localEntity = bucket.toLocal(entity.getId());
 			long bits = currentRow.getCBlock().getIncludedConcepts()[localEntity];
 			if((bits & requiredBits) != 0L || requiredBits == 0L) {
-				active = true;
+				interested = true;
 				return super.isOfInterest(bucket);
 			}
 		}
-		active = false;
+		interested = false;
 		return false;
 	}
 
 	@Override
 	public void nextEvent(Bucket bucket, int event) {
-		if (active) {
+		if (tableActive && interested) {
 			//check concepts
 			int[] mostSpecificChildren;
 			if (currentRow.getCBlock().getMostSpecificChildren() != null
