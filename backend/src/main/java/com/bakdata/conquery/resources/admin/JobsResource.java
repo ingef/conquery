@@ -40,7 +40,7 @@ public class JobsResource {
 					if(progressReporter.getProgress()>=1) {
 						progressReporter.done();
 					}
-					Uninterruptibles.sleepUninterruptibly((int)(Math.random()*200), TimeUnit.SECONDS);
+					Uninterruptibles.sleepUninterruptibly((int)(Math.random()*200), TimeUnit.MILLISECONDS);
 				}
 			}
 
