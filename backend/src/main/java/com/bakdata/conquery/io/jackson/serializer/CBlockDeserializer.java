@@ -17,6 +17,7 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
+import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
 
 import lombok.AllArgsConstructor;
@@ -56,6 +57,10 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 			type = type.getContentType();
 		}
 		BeanDescription descr = ctxt.getConfig().introspect(type);
-		return new CBlockDeserializer((JsonDeserializer)ctxt.getFactory().createBeanDeserializer(ctxt, type, descr));
+		JsonDeserializer<?> deser = ctxt.getFactory().createBeanDeserializer(ctxt, type, descr);
+		if(deser instanceof ResolvableDeserializer) {
+			((ResolvableDeserializer) deser).resolve(ctxt);
+		}
+		return new CBlockDeserializer((JsonDeserializer)deser);
 	}
 }

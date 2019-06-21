@@ -88,7 +88,7 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 					entry.setValue(readValue(v));
 					consumer.accept(entry);
 				} catch(Exception e) {
-					log.warn("Could not parse value for key "+k, e);
+					log.warn("Could not parse value for key "+entry.getKey(), e);
 				}
 			} catch(Exception e) {
 				log.warn("Could not parse key "+k, e);
