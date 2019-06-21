@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
@@ -13,6 +14,7 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.BlockManager;
@@ -56,13 +58,14 @@ public class CalculateCBlocksJob extends Job {
 			try {
 				if (!blockManager.hasCBlock(infos.get(i).getCBlockId())) {
 					CBlock cBlock = createCBlock(connector, infos.get(i));
-					cBlock.setIncludedConcepts(new long[infos.get(i).getBucket().getBucketSize()]);
+					cBlock.initIndizes(infos.get(i).getBucket().getBucketSize());
 					if (treeConcept) {
 						calculateCBlock(cBlock, (ConceptTreeConnector) connector, infos.get(i));
 					}
 					else {
 						calculateCBlock(cBlock, (VirtualConceptConnector) connector, infos.get(i));
 					}
+					setDateRangeIndex(cBlock, infos.get(i));
 					blockManager.addCalculatedCBlock(cBlock);
 					storage.addCBlock(cBlock);
 				}
@@ -76,6 +79,23 @@ public class CalculateCBlocksJob extends Job {
 		}
 	}
 	
+	private void setDateRangeIndex(CBlock cBlock, CalculationInformation info) {
+		Bucket bucket = info.getBucket();
+		Table table = storage.getDataset().getTables().get(bucket.getImp().getTable());
+		for(Column column : table.getColumns()) {
+			if(column.getType().isDateCompatible()) {
+				for(int event = 0; event < bucket.getNumberOfEvents(); event++) {
+					if(bucket.has(event, column)) {
+						CDateRange range = bucket.getAsDateRange(event, column);
+						int entity = bucket.localEntityFor(event);
+						cBlock.getMinDate()[entity] = Math.min(cBlock.getMinDate()[entity], range.getMinValue());
+						cBlock.getMaxDate()[entity] = Math.max(cBlock.getMaxDate()[entity], range.getMaxValue());
+					}
+				}
+			}
+		}
+	}
+
 	private CBlock createCBlock(Connector connector, CalculationInformation info) {
 		return new CBlock(
 			info.getBucket().getId(),
@@ -90,7 +110,7 @@ public class CalculateCBlocksJob extends Job {
 
 		Bucket bucket = info.getBucket();
 		
-		AStringType stringType = (AStringType) info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
+		AStringType<?> stringType = (AStringType<?>) info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
 
 		final TreeConcept treeConcept = connector.getConcept();
 
