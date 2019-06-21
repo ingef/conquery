@@ -54,6 +54,9 @@ public class DateRestrictingNode extends QPChainNode {
 		EntityRow currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
 		CBlock cBlock = currentRow.getCBlock();
 		int localId = bucket.toLocal(entity.getId());
+		if(cBlock.getMinDate()[localId] > cBlock.getMaxDate()[localId]) {
+			return false;
+		}
 		CDateRange range = CDateRange.of(
 			cBlock.getMinDate()[localId],
 			cBlock.getMaxDate()[localId]
