@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.Arrays;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -26,6 +27,8 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	@NotNull @Valid
 	private ConnectorId connector;
 	private long[] includedConcepts;
+	private int[] minDate;
+	private int[] maxDate;
 	@Valid
 	private List<int[]> mostSpecificChildren;
 	
@@ -37,5 +40,13 @@ public class CBlock extends IdentifiableImpl<CBlockId> {
 	@Override @JsonIgnore
 	public CBlockId createId() {
 		return new CBlockId(bucket, connector);
+	}
+
+	public void initIndizes(int bucketSize) {
+		includedConcepts = new long[bucketSize];
+		minDate = new int[bucketSize];
+		maxDate = new int[bucketSize];
+		Arrays.fill(minDate, Integer.MAX_VALUE);
+		Arrays.fill(maxDate, Integer.MIN_VALUE);
 	}
 }

@@ -41,7 +41,7 @@ public class ConceptNode extends QPChainNode {
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		active = table.getResolvedConnector().getTable().equals(currentTable);
 		if(active) {
-			super.nextTable(ctx, currentTable);
+			super.nextTable(ctx.withConnector(table.getResolvedConnector()), currentTable);
 		}
 	}
 
