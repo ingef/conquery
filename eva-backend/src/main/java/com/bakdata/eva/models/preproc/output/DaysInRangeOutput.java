@@ -10,8 +10,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDate;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.common.QuarterUtils;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.ColumnDescription;
 import com.bakdata.conquery.models.preproc.PPColumn;

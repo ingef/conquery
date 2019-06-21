@@ -2,10 +2,7 @@ package com.bakdata.eva.forms.description.relative;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
-import java.util.function.BiConsumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Min;
@@ -20,21 +17,17 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.eva.forms.common.ColumnDescriptor;
 import com.bakdata.eva.forms.common.FeatureGroupDescription;
 import com.bakdata.eva.forms.common.Form;
 import com.bakdata.eva.forms.common.TimeAccessedResult;
-import com.bakdata.eva.forms.common.ColumnDescriptor.ColumnType;
 import com.bakdata.eva.forms.description.DescriptionFormBase;
 import com.bakdata.eva.forms.export.ExportForm;
 import com.bakdata.eva.forms.export.ExportGenerator;
 import com.bakdata.eva.models.forms.EventIndex;
 import com.bakdata.eva.models.forms.FeatureGroup;
 import com.bakdata.eva.models.forms.Resolution;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import lombok.Getter;

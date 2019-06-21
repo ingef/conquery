@@ -18,15 +18,15 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.ConstantValueAggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
-import com.bakdata.eva.query.aggregators.ValueAtBeginOfQuarterAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 import com.bakdata.eva.models.forms.DateContext;
-
 import com.bakdata.eva.query.aggregators.PeriodAverageAggregator;
 import com.bakdata.eva.query.aggregators.PeriodSumAggregator;
+import com.bakdata.eva.query.aggregators.ValueAtBeginOfQuarterAggregator;
+
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 
@@ -136,6 +136,15 @@ public class FormQueryPlan implements QueryPlan {
 		for(QueryPlan qp : containedChildren) {
 			qp.nextBlock(bucket);
 		}
+	}
+	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		boolean interesting = false;
+		for(QueryPlan qp : containedChildren) {
+			interesting |= qp.isOfInterest(bucket);
+		}
+		return interesting;
 	}
 
 	@Override

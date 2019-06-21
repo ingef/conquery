@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.eva.forms.common.FormAnswer;
-import com.bakdata.eva.forms.common.StatisticForm;
 import com.bakdata.eva.forms.managed.ManagedForm;
 import com.bakdata.eva.forms.managed.ManagedStatisticForm;
 import com.bakdata.eva.models.config.StatisticConfig;

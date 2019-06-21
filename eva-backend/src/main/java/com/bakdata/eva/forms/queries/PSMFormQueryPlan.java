@@ -58,6 +58,14 @@ public class PSMFormQueryPlan implements QueryPlan {
 	}
 	
 	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return
+			controlPlan.isOfInterest(bucket)
+			|
+			featurePlan.isOfInterest(bucket);
+	}
+	
+	@Override
 	public void nextEvent(Bucket bucket, int event) {
 		controlPlan.nextEvent(bucket, event);
 		featurePlan.nextEvent(bucket, event);

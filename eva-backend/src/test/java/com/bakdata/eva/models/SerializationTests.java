@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
-import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.util.support.TestAuth;
 import com.bakdata.eva.forms.auform.AUForm;
 import com.bakdata.eva.forms.common.Form;

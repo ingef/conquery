@@ -60,6 +60,14 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	}
 	
 	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return
+			featurePlan.isOfInterest(bucket)
+			|
+			featurePlan.isOfInterest(bucket);
+	}
+	
+	@Override
 	public void nextEvent(Bucket bucket, int event) {
 		featurePlan.nextEvent(bucket, event);
 		outcomePlan.nextEvent(bucket, event);
