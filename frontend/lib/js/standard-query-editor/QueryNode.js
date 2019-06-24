@@ -152,7 +152,7 @@ const nodeSource = {
     // Return the data describing the dragged item
     // NOT using `...node` since that would also spread `children` in.
     // This item may stem from either:
-    // 1) A concept (dragged from CategoryTreeNode)
+    // 1) A concept (dragged from ConceptTreeNode)
     // 2) A previous query (dragged from PreviousQueries)
     const { node, andIdx, orIdx } = props;
     const { height, width } = findDOMNode(component).getBoundingClientRect();

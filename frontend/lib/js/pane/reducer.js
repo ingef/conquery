@@ -9,7 +9,7 @@ export type TabType = {
 
 export type StateType = {
   left: {
-    activeTab: "categoryTrees" | "previousQueries",
+    activeTab: "conceptTrees" | "previousQueries",
     tabs: TabType[]
   },
   right: {
@@ -21,9 +21,9 @@ export type StateType = {
 export const buildPanesReducer = tabs => {
   const initialState: StateType = {
     left: {
-      activeTab: "categoryTrees",
+      activeTab: "conceptTrees",
       tabs: [
-        { label: "leftPane.categoryTrees", key: "categoryTrees" },
+        { label: "leftPane.conceptTrees", key: "conceptTrees" },
         { label: "leftPane.previousQueries", key: "previousQueries" }
       ]
     },

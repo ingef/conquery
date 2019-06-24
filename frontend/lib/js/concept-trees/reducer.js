@@ -149,7 +149,7 @@ const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
   };
 };
 
-const categoryTrees = (
+const conceptTrees = (
   state: StateType = initialState,
   action: Object
 ): StateType => {
@@ -210,4 +210,4 @@ const categoryTrees = (
   }
 };
 
-export default categoryTrees;
+export default conceptTrees;

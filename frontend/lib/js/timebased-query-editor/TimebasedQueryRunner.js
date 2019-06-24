@@ -23,7 +23,7 @@ const mapStateToProps = (state, ownProps) => ({
     .runningQuery,
   // Following ones only needed in dispatch functions
   queryId: state.timebasedQueryEditor.timebasedQueryRunner.runningQuery,
-  version: state.categoryTrees.version,
+  version: state.conceptTrees.version,
   query: state.timebasedQueryEditor.timebasedQuery
 });
 

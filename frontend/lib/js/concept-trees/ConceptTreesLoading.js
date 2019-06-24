@@ -20,6 +20,6 @@ const StyledFaIcon = styled(FaIcon)`
 export default () => (
   <ConceptTreesLoading>
     <StyledFaIcon icon="spinner" />
-    <span>{T.translate("categoryTreeList.loading")}</span>
+    <span>{T.translate("conceptTreeList.loading")}</span>
   </ConceptTreesLoading>
 );

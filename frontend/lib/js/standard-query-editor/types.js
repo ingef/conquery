@@ -81,7 +81,7 @@ export type DraggedQueryType = {
 };
 
 // A Query Node that is being dragged from the tree or within the standard editor.
-// Corresponds to CATEGORY_TREE_NODE and QUERY_NODE drag-and-drop types.
+// Corresponds to CONCEPT_TREE_NODE and QUERY_NODE drag-and-drop types.
 export type DraggedNodeType = {
   ids: ConceptIdT[],
   tables: TableWithFilterValueType[],

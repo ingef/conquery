@@ -54,9 +54,9 @@ export default () => (
   <Root>
     <MsgContainer>
       <Msg>
-        <Message>{T.translate("categoryTreeList.noTrees")}</Message>
+        <Message>{T.translate("conceptTreeList.noTrees")}</Message>
         <SubMessage>
-          {T.translate("categoryTreeList.noTreesExplanation")}
+          {T.translate("conceptTreeList.noTreesExplanation")}
         </SubMessage>
       </Msg>
     </MsgContainer>

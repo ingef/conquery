@@ -2,7 +2,7 @@ locale: "en"
 
 headline: "Queries and Analyses"
 leftPane:
-  categoryTrees: "Concepts"
+  conceptTrees: "Concepts"
   previousQueries: "Queries"
 
 rightPane:
@@ -10,7 +10,7 @@ rightPane:
   timebasedQueryEditor: "Timebased Editor"
   externalForms: "Forms"
 
-categoryTreeList:
+conceptTreeList:
   loading: "Loading concept trees"
   loadingTree: "Loading concept: {tree}"
   error: "Could not load concept: {tree}."

@@ -8,7 +8,7 @@ import api from "../api";
 import { isEmpty } from "../common/helpers";
 
 import { defaultError, defaultSuccess } from "../common/actions";
-import { loadTrees } from "../category-trees/actions";
+import { loadTrees } from "../concept-trees/actions";
 import { loadPreviousQueries } from "../previous-queries/list/actions";
 import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 import { setMessage } from "../snack-message/actions";

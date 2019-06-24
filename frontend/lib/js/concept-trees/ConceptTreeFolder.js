@@ -6,10 +6,11 @@ import styled from "@emotion/styled";
 import type { ConceptT, ConceptIdT } from "../api/types";
 
 import { getConceptById } from "./globalTreeStoreHelper";
-import Openable from "./Openable";
-import CategoryTree from "./CategoryTree";
-import CategoryTreeNodeTextContainer from "./CategoryTreeNodeTextContainer";
 import { type SearchType } from "./reducer";
+
+import Openable from "./Openable";
+import ConceptTree from "./ConceptTree";
+import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 
 const Root = styled("div")`
   font-size: ${({ theme }) => theme.font.sm};
@@ -36,7 +37,7 @@ const sumMatchingEntries = (children, initSum) => {
   }, initSum);
 };
 
-const CategoryTreeFolder = (props: PropsType) => {
+const ConceptTreeFolder = (props: PropsType) => {
   const { tree, search } = props;
   const matchingEntries =
     !tree.children || !tree.matchingEntries
@@ -45,7 +46,7 @@ const CategoryTreeFolder = (props: PropsType) => {
 
   return (
     <Root>
-      <CategoryTreeNodeTextContainer
+      <ConceptTreeNodeTextContainer
         node={{
           id: props.treeId,
           label: props.tree.label,
@@ -56,7 +57,7 @@ const CategoryTreeFolder = (props: PropsType) => {
           children: props.tree.children
         }}
         createQueryElement={() => {
-          // We don't have to implement this since CategoryTreeFolders should never be
+          // We don't have to implement this since ConceptTreeFolders should never be
           // dragged into the editor, hence they're 'active: false' and thus not draggable
         }}
         isTreeFolder
@@ -75,7 +76,7 @@ const CategoryTreeFolder = (props: PropsType) => {
             const rootConcept = getConceptById(childId);
 
             return (
-              <CategoryTree
+              <ConceptTree
                 key={i}
                 id={childId}
                 label={tree.label}
@@ -92,7 +93,7 @@ const CategoryTreeFolder = (props: PropsType) => {
             return tree.children &&
               props.tree.children &&
               props.tree.children.length > 0 ? (
-              <OpenableCategoryTreeFolder
+              <OpenableConceptTreeFolder
                 key={i}
                 trees={props.trees}
                 tree={tree}
@@ -104,7 +105,7 @@ const CategoryTreeFolder = (props: PropsType) => {
                 onLoadTree={props.onLoadTree}
               />
             ) : (
-              <CategoryTreeFolder
+              <ConceptTreeFolder
                 key={i}
                 trees={props.trees}
                 tree={tree}
@@ -122,6 +123,6 @@ const CategoryTreeFolder = (props: PropsType) => {
   );
 };
 
-const OpenableCategoryTreeFolder = Openable(CategoryTreeFolder);
+const OpenableConceptTreeFolder = Openable(ConceptTreeFolder);
 
-export default OpenableCategoryTreeFolder;
+export default OpenableConceptTreeFolder;

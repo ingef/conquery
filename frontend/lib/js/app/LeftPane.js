@@ -6,7 +6,7 @@ import { connect } from "react-redux";
 import { type DatasetIdType } from "../dataset/reducer";
 
 import { Pane } from "../pane";
-import { CategoryTreeList, CategoryTreeSearchBox } from "../category-trees";
+import { ConceptTreeList, ConceptTreeSearchBox } from "../concept-trees";
 import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
 
 type PropsType = {
@@ -17,10 +17,10 @@ type PropsType = {
 const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {
   return (
     <Pane left>
-      {activeTab === "categoryTrees" && (
-        <CategoryTreeSearchBox datasetId={selectedDatasetId} />
+      {activeTab === "conceptTrees" && (
+        <ConceptTreeSearchBox datasetId={selectedDatasetId} />
       )}
-      <CategoryTreeList datasetId={selectedDatasetId} />
+      <ConceptTreeList datasetId={selectedDatasetId} />
       {activeTab === "previousQueries" && (
         <PreviousQueriesTab datasetId={selectedDatasetId} />
       )}

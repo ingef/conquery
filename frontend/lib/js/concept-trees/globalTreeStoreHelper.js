@@ -6,7 +6,7 @@ import type { TreesType } from "./reducer";
 
 // Globally store the huge (1-5 MB) trees for read only
 // - keeps the redux store free from huge data
-window.categoryTrees = {};
+window.conceptTrees = {};
 
 // To make this global variable a little more sane to use,
 // we only use it with the following  getters / setters
@@ -15,7 +15,7 @@ window.categoryTrees = {};
 // RESETTER
 //
 export function resetAllTrees() {
-  window.categoryTrees = {};
+  window.conceptTrees = {};
 }
 
 //
@@ -32,17 +32,17 @@ export function setTree(
     [treeId]: rootConcept
   };
 
-  window.categoryTrees[treeId] = concepts;
+  window.conceptTrees[treeId] = concepts;
 }
 
 //
 // GETTER
 //
 export function getConceptById(conceptId?: ConceptIdT): ?ConceptT {
-  const keys: ConceptIdT[] = Object.keys(window.categoryTrees);
+  const keys: ConceptIdT[] = Object.keys(window.conceptTrees);
 
   for (let i = 0; i < keys.length; i++) {
-    const concept = window.categoryTrees[keys[i]][conceptId];
+    const concept = window.conceptTrees[keys[i]][conceptId];
 
     if (concept) return concept;
   }
@@ -122,10 +122,10 @@ export const hasConceptChildren = (node: ConceptT): boolean => {
   as there are up to 200k concepts that need to be searched.
 */
 export const search = async (query: string) => {
-  const result = Object.keys(window.categoryTrees).reduce(
+  const result = Object.keys(window.conceptTrees).reduce(
     (all, key) => ({
       ...all,
-      ...findConcepts(key, key, window.categoryTrees[key][key], query, {})
+      ...findConcepts(key, key, window.conceptTrees[key][key], query, {})
     }),
     {}
   );
@@ -191,7 +191,7 @@ const findConcepts = (
     const result = findConcepts(
       treeId,
       child,
-      window.categoryTrees[treeId][child],
+      window.conceptTrees[treeId][child],
       query,
       intermediateResult
     );

@@ -113,7 +113,7 @@ function shouldShowNumber(search, node) {
 }
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
-class CategoryTreeNodeTextContainer extends React.Component {
+class ConceptTreeNodeTextContainer extends React.Component {
   render() {
     const {
       node,
@@ -216,10 +216,10 @@ const collect = (connect, monitor) => ({
   isDragging: monitor.isDragging()
 });
 
-const DraggableCategoryTreeNodeTextContainer = DragSource(
-  dndTypes.CATEGORY_TREE_NODE,
+const DraggableConceptTreeNodeTextContainer = DragSource(
+  dndTypes.CONCEPT_TREE_NODE,
   nodeSource,
   collect
-)(CategoryTreeNodeTextContainer);
+)(ConceptTreeNodeTextContainer);
 
-export default AdditionalInfoHoverable(DraggableCategoryTreeNodeTextContainer);
+export default AdditionalInfoHoverable(DraggableConceptTreeNodeTextContainer);

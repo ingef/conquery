@@ -24,7 +24,7 @@ type PropsType = {
 };
 
 const DROP_TYPES = [
-  dndTypes.CATEGORY_TREE_NODE,
+  dndTypes.CONCEPT_TREE_NODE,
   dndTypes.QUERY_NODE,
   dndTypes.PREVIOUS_QUERY,
   NativeTypes.FILE

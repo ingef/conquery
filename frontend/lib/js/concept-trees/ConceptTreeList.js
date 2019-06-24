@@ -10,12 +10,12 @@ import type { StateType } from "../app/reducers";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import { type TreesType, type SearchType } from "./reducer";
-import CategoryTree from "./CategoryTree";
-import CategoryTreeFolder from "./CategoryTreeFolder";
 import { isNodeInSearchResult, getAreTreesAvailable } from "./selectors";
 
 import EmptyConceptTreeList from "./EmptyConceptTreeList";
 import ConceptTreesLoading from "./ConceptTreesLoading";
+import ConceptTree from "./ConceptTree";
+import ConceptTreeFolder from "./ConceptTreeFolder";
 
 const Root = styled("div")`
   flex-grow: 1;
@@ -25,7 +25,7 @@ const Root = styled("div")`
   padding: 0 10px 0;
   white-space: nowrap;
 
-  // Only hide the category trees when the tab is not selected
+  // Only hide the Concept trees when the tab is not selected
   // Because mount / unmount would reset the open states
   // that are React states and not part of the Redux state
   // because if they were part of Redux state, the entire tree
@@ -44,7 +44,7 @@ type PropsType = {
   search?: SearchType
 };
 
-class CategoryTreeList extends React.Component<PropsType> {
+class ConceptTreeList extends React.Component<PropsType> {
   props: PropsType;
 
   render() {
@@ -59,7 +59,7 @@ class CategoryTreeList extends React.Component<PropsType> {
 
     return (
       !search.loading && (
-        <Root show={activeTab === "categoryTrees"}>
+        <Root show={activeTab === "conceptTrees"}>
           {loading && <ConceptTreesLoading />}
           {!loading && !areTreesAvailable && <EmptyConceptTreeList />}
           {Object.keys(trees)
@@ -79,7 +79,7 @@ class CategoryTreeList extends React.Component<PropsType> {
               if (!render) return null;
 
               return tree.detailsAvailable ? (
-                <CategoryTree
+                <ConceptTree
                   key={i}
                   id={treeId}
                   label={tree.label}
@@ -92,7 +92,7 @@ class CategoryTreeList extends React.Component<PropsType> {
                   onLoadTree={onLoadTree}
                 />
               ) : (
-                <CategoryTreeFolder
+                <ConceptTreeFolder
                   key={i}
                   trees={trees}
                   tree={tree}
@@ -112,14 +112,14 @@ class CategoryTreeList extends React.Component<PropsType> {
 }
 
 export default connect(
-  state => ({
-    trees: state.categoryTrees.trees,
-    loading: state.categoryTrees.loading,
+  (state: StateType) => ({
+    trees: state.conceptTrees.trees,
+    loading: state.conceptTrees.loading,
     areTreesAvailable: getAreTreesAvailable(state),
     activeTab: state.panes.left.activeTab,
-    search: state.categoryTrees.search
+    search: state.conceptTrees.search
   }),
   (dispatch, ownProps) => ({
     onLoadTree: id => dispatch(loadTree(ownProps.datasetId, id))
   })
-)(CategoryTreeList);
+)(ConceptTreeList);

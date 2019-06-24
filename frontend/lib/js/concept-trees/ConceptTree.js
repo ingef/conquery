@@ -8,7 +8,7 @@ import type { ConceptT, ConceptIdT } from "../api/types";
 import FaIcon from "../icon/FaIcon";
 import IconButton from "../button/IconButton";
 
-import CategoryTreeNode from "./CategoryTreeNode";
+import ConceptTreeNode from "./ConceptTreeNode";
 import { type SearchType } from "./reducer";
 
 type PropsType = {
@@ -45,7 +45,7 @@ const Spinner = styled("span")`
   margin-right: 6px;
 `;
 
-const CategoryTree = (props: PropsType) => {
+export default (props: PropsType) => {
   if (props.loading)
     return (
       <LoadingTree>
@@ -53,7 +53,7 @@ const CategoryTree = (props: PropsType) => {
           <FaIcon icon="spinner" />
         </Spinner>
         <span>
-          {T.translate("categoryTreeList.loadingTree", { tree: props.label })}
+          {T.translate("conceptTreeList.loadingTree", { tree: props.label })}
         </span>
       </LoadingTree>
     );
@@ -65,12 +65,12 @@ const CategoryTree = (props: PropsType) => {
           icon="redo"
           onClick={() => props.onLoadTree(props.treeId)}
         />
-        {T.translate("categoryTreeList.error", { tree: props.label })}
+        {T.translate("conceptTreeList.error", { tree: props.label })}
       </ErrorMessage>
     );
   else if (props.tree)
     return (
-      <CategoryTreeNode
+      <ConceptTreeNode
         id={props.id}
         data={{ ...props.tree, tree: props.treeId }}
         depth={props.depth}
@@ -79,5 +79,3 @@ const CategoryTree = (props: PropsType) => {
     );
   else return null;
 };
-
-export default CategoryTree;

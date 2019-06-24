@@ -2,9 +2,9 @@
 
 import { combineReducers } from "redux";
 
-import categoryTrees, {
-  type StateType as CategoryTreesStateType
-} from "../category-trees/reducer";
+import conceptTrees, {
+  type StateType as ConceptTreesStateType
+} from "../concept-trees/reducer";
 
 import {
   reducer as datasets,
@@ -37,7 +37,7 @@ import { createQueryNodeEditorReducer } from "../query-node-editor";
 
 // TODO: Introduce more StateTypes gradually
 export type StateType = {
-  categoryTrees: CategoryTreesStateType,
+  conceptTrees: ConceptTreesStateType,
   datasets: DatasetsStateType,
   tooltip: TooltipStateType,
   panes: PanesStateType,
@@ -47,7 +47,7 @@ export type StateType = {
 const buildAppReducer = tabs => {
   return combineReducers({
     startup,
-    categoryTrees,
+    conceptTrees,
     uploadConceptListModal,
     uploadFilterListModal,
     queryNodeEditor: createQueryNodeEditorReducer("standard"),
