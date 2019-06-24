@@ -90,10 +90,9 @@ public class AUForm extends StatisticForm {
 	@Valid
 	private Range<LocalDate> dateRange;
 	private List<CQOr> baseCondition = new ArrayList<>();
+	private List<CQOr> features = new ArrayList<>();
 	@JsonIgnore
 	private User formUser;
-	@JsonIgnore
-	private List<CQOr> features = new ArrayList<>();
 	private String joinedConditionName = "";
 
 	private static String[] ACCIDENT_AT_WORK_CODE = new String[] { "Arbeitsunfall" };
@@ -128,6 +127,18 @@ public class AUForm extends StatisticForm {
 		columns.addAll(createICDColumns(namespaces, datasetName));
 
 		this.setFixedFeatures(columns.toArray(new FixedColumn[0]));
+		
+		// Check if Concepts supplied by user are from ICD Concept
+		ConceptId icdId = new ConceptId(queryGroup.getDataset(), "icd");
+		long icdConceptCount = features.stream()
+			.flatMap(or -> or.getChildren().stream())
+			.filter(CQConcept.class::isInstance)
+			.map(CQConcept.class::cast)
+			.map(c -> c.getIds().get(0).findConcept())
+			.filter(id -> id.equals(icdId)).count();
+		if(icdConceptCount != features.size()) {
+			throw new IllegalArgumentException("Only "+icdConceptCount+" of "+features.size()+" concepts belong to "+ icdId+". However, all need to stem form there at the moment");
+		}
 
 		// CNS and sensory organs group
 		List<FixedColumn> sense = List
@@ -135,7 +146,6 @@ public class AUForm extends StatisticForm {
 				FixedColumn.of(FeatureGroup.SINGLE_GROUP, datasetName, "icd", "g00-g99"),
 				FixedColumn.of(FeatureGroup.SINGLE_GROUP, datasetName, "icd", "h00-h59"),
 				FixedColumn.of(FeatureGroup.SINGLE_GROUP, datasetName, "icd", "h60-h95"));
-		addConceptConfig(namespaces, sense);
 		features.add(createFixedOrGroup(namespaces, false, "Nervensystem und Sinnesorgane", sense));
 
 		// digestion organs
@@ -143,10 +153,14 @@ public class AUForm extends StatisticForm {
 			.of(
 				FixedColumn.of(FeatureGroup.SINGLE_GROUP, datasetName, "icd", "k00-k93"),
 				FixedColumn.of(FeatureGroup.SINGLE_GROUP, datasetName, "icd", "a00-b99", "a00-a09"));
-		addConceptConfig(namespaces, digest);
 		features.add(createFixedOrGroup(namespaces, false, "Verdauungsorgane", digest));
 
 		features.add(createMiscellaneousConcept(namespaces, findMiscellaneousConceptIds(namespaces.resolve(queryGroup.getDataset()))));
+		
+		// Apply concept configuration to all resolved fields
+		features.forEach(or -> {
+			or.getChildren().forEach(c -> applyConceptConfig(namespaces,(CQConcept) c));
+		});
 		// place condition at the end of all fixed columns
 		if (!baseCondition.isEmpty()) {
 			features.add(baseCondition.get(0));
@@ -208,12 +222,28 @@ public class AUForm extends StatisticForm {
 		return columns;
 	}
 
+	/**
+	 * Adds configurations for the later resolved columns.
+	 * @param namespaces
+	 * @param columns
+	 */
 	private void addConceptConfig(Namespaces namespaces, List<FixedColumn> columns) {
 		for (FixedColumn column : columns) {
-			setSelectors(namespaces, column);
-			setDefaultDateSelection(namespaces, column);
-			useOnlyDisabilityTable(column);
+			chainColumnManipulator(column, new SelectSetter(namespaces));
+			chainColumnManipulator(column, new DisabilityTableFilter());
+			chainColumnManipulator(column, new DefaultDateSelection(namespaces));
 		}
+	}
+	
+	/**
+	 * Apply configurations on already supplied CQConcepts.
+	 * @param namespaces
+	 * @param columns
+	 */
+	private void applyConceptConfig(Namespaces namespaces, CQConcept concept) {
+		new SelectSetter(namespaces).accept(concept);
+		new DisabilityTableFilter().accept(concept);
+		new DefaultDateSelection(namespaces).accept(concept);
 	}
 
 	/**
@@ -268,7 +298,7 @@ public class AUForm extends StatisticForm {
 		FixedColumn column = FixedColumn.of(FeatureGroup.SINGLE_GROUP, datasetName, "icd", "s00-t98");
 		column.setConceptConfiguration(concept -> {
 			concept.setLabel(label);
-			concept.getTables().removeIf(this::isNotDisabilityTable);
+			concept.getTables().removeIf(DisabilityTableFilter::isNotDisabilityTable);
 			concept.getTables().stream().forEach(table -> {
 				CQMultiSelectFilter f = new CQMultiSelectFilter();
 				Filter<?> filter = namespaces
@@ -304,20 +334,40 @@ public class AUForm extends StatisticForm {
 	 * @param column
 	 * @return modified column
 	 */
-	private FixedColumn setDefaultDateSelection(Namespaces namespaces, FixedColumn column) {
-		Consumer<CQConcept> configurator = column.getConceptConfiguration();
-		column.setConceptConfiguration(concept -> {
+	@RequiredArgsConstructor
+	private static class DefaultDateSelection implements Consumer<CQConcept>{
+		private final Namespaces namespaces;
+		
+		@Override
+		public void accept(CQConcept concept) {
 			concept.getTables().stream().forEach(table -> {
 				CQSelectFilter dateFilter = createDateSelectionFilter(namespaces.resolve(table.getId()));
 				if (table.getFilters() == null || table.getFilters().isEmpty())
 					table.setFilters(new ArrayList<>());
 				table.getFilters().add(dateFilter);
 			});
-			configurator.accept(concept);
-		});
-		return column;
+		}
+		
+		private static CQSelectFilter createDateSelectionFilter(Connector connector) {
+			if (connector.getValidityDates().size() > 1) {
+				CQSelectFilter dateFilter = new CQSelectFilter();
+				dateFilter.setValue(DISABILITY_DATE_TYPE);
+				dateFilter
+					.setFilter(connector.getFilter(new FilterId(connector.getId(), ConqueryConstants.VALIDITY_DATE_SELECTION_FILTER_NAME)));
+				return dateFilter;
+			}
+			return null;
+		}
+		
 	}
 	
+	/**
+	 * wraps an existing concept configuration within selects for exists and
+	 * "AU-Tage"
+	 * 
+	 * @param column
+	 * @return modified column
+	 */
 	@RequiredArgsConstructor
 	private static class SelectSetter implements Consumer<CQConcept> {
 		
@@ -332,33 +382,8 @@ public class AUForm extends StatisticForm {
 		}
 	}
 
-	/**
-	 * wraps an existing concept configuration within selects for exists and
-	 * "AU-Tage"
-	 * 
-	 * @param column
-	 * @return modified column
-	 */
-	private FixedColumn setSelectors(Namespaces namespaces, FixedColumn column) {
-		Consumer<CQConcept> configurator = column.getConceptConfiguration();
-		column.setConceptConfiguration(concept -> {
-			new SelectSetter(namespaces).accept(concept);
-			configurator.accept(concept);
-		});
-		return column;
-	}
 
-	private CQSelectFilter createDateSelectionFilter(Connector connector) {
-		if (connector.getValidityDates().size() > 1) {
-			CQSelectFilter dateFilter = new CQSelectFilter();
-			dateFilter.setValue(DISABILITY_DATE_TYPE);
-			dateFilter
-				.setFilter(connector.getFilter(new FilterId(connector.getId(), ConqueryConstants.VALIDITY_DATE_SELECTION_FILTER_NAME)));
-			return dateFilter;
-		}
-		return null;
-	}
-
+	
 	/**
 	 * modifies the given fixed column such that only the disability table is used.
 	 * Any existing configuration method is wrapped and called after table removal.
@@ -366,17 +391,27 @@ public class AUForm extends StatisticForm {
 	 * @param column
 	 * @return altered input column
 	 */
-	private FixedColumn useOnlyDisabilityTable(FixedColumn column) {
+	@RequiredArgsConstructor
+	private static class DisabilityTableFilter implements Consumer<CQConcept> {
+		
+
+		@Override
+		public void accept(CQConcept concept) {
+			concept.getTables().removeIf(DisabilityTableFilter::isNotDisabilityTable);
+		}
+
+		private static boolean isNotDisabilityTable(CQTable table) {
+			return !table.getId().getConnector().equalsIgnoreCase("au_fall");
+		}
+	}
+	
+	private FixedColumn chainColumnManipulator(FixedColumn column, Consumer<CQConcept> manipulator) {
 		Consumer<CQConcept> previousConfigurator = column.getConceptConfiguration();
-		column.setConceptConfiguration(concept -> {
-			concept.getTables().removeIf(this::isNotDisabilityTable);
+		column.setConceptConfiguration( concept -> {
+			manipulator.accept(concept);
 			previousConfigurator.accept(concept);
 		});
 		return column;
-	}
-
-	private boolean isNotDisabilityTable(CQTable table) {
-		return !table.getId().getConnector().equalsIgnoreCase("au_fall");
 	}
 
 	private List<ConceptElementId<?>> findMiscellaneousConceptIds(Dataset dataset) {
@@ -434,7 +469,7 @@ public class AUForm extends StatisticForm {
 		t.setConcept(concept);
 
 		List<FilterValue<?>> filters = new ArrayList<>();
-		filters.add(createDateSelectionFilter(namespaces.resolve(t.getId())));
+		filters.add(DefaultDateSelection.createDateSelectionFilter(namespaces.resolve(t.getId())));
 		t.setFilters(filters);
 		concept.setTables(Arrays.asList(t));
 		new SelectSetter(namespaces).accept(concept);
