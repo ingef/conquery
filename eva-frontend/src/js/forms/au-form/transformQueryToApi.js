@@ -14,7 +14,8 @@ export const transformAUFormQueryToApi = form => {
       max: form.dateRange.max
     },
     queryGroup: form.queryGroup.id,
-    baseCondition: transformAUElementGroupsToApi(form.baseCondition)
+    baseCondition: transformAUElementGroupsToApi(form.baseCondition),
+    features: transformAUElementGroupsToApi(form.features)
   };
 };
 

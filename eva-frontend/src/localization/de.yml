@@ -119,6 +119,7 @@ externalForms:
     queryGroup: "Versichertengruppe"
     queryGroupDropzoneText: "Füge eine Versichertengruppe aus einer bestehenden Anfrage hinzu"
     baseCondition: "Grundbedingung"
+    features: "Zusätzliche ICD-Codes"
     attributeDropzone: "Füge ein Konzept oder eine Konzeptliste hinzu"
 
 uploadQueryResultsModal:
