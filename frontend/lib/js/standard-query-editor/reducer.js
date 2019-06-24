@@ -6,7 +6,7 @@ import difference from "lodash.difference";
 import {
   getConceptsByIdsWithTablesAndSelects,
   getConceptById
-} from "../category-trees/globalTreeStoreHelper";
+} from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
@@ -427,7 +427,7 @@ const resetGroupDates = (state, action) => {
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
-// since `savedTables` comes from a `savedConcept` in a `categoryTree`. Such a
+// since `savedTables` comes from a `savedConcept` in a `conceptTree`. Such a
 // `savedConcept` is never modified and only declares possible filters.
 // Since `table` comes from a previous query, it may have set filter values
 // if so, we will need to merge them in.
@@ -562,7 +562,7 @@ const expandNode = (rootConcepts, node) => {
 };
 
 // Completely override all groups in the editor with the previous groups, but
-// a) merge elements with concept data from category trees (esp. "tables")
+// a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
 const expandPreviousQuery = (state, action) => {

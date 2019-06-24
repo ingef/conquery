@@ -121,7 +121,7 @@ function mapStateToProps(state) {
     isEmptyQuery: state.queryEditor.query.length === 0,
 
     // only used by other actions
-    rootConcepts: state.categoryTrees.trees
+    rootConcepts: state.conceptTrees.trees
   };
 }
 

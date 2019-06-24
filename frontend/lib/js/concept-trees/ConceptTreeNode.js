@@ -14,7 +14,7 @@ import { type SearchType } from "./reducer";
 
 import { getConceptById } from "./globalTreeStoreHelper";
 import Openable from "./Openable";
-import CategoryTreeNodeTextContainer from "./CategoryTreeNodeTextContainer";
+import ConceptTreeNodeTextContainer from "./ConceptTreeNodeTextContainer";
 import { isNodeInSearchResult } from "./selectors";
 
 const Root = styled("div")`
@@ -56,7 +56,7 @@ const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
   tree
 });
 
-class CategoryTreeNode extends React.Component<PropsType> {
+class ConceptTreeNode extends React.Component<PropsType> {
   _onToggleOpen() {
     if (!this.props.data.children) return;
 
@@ -76,7 +76,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
 
     return (
       <Root>
-        <CategoryTreeNodeTextContainer
+        <ConceptTreeNodeTextContainer
           node={{
             id,
             label: data.label,
@@ -120,7 +120,7 @@ class CategoryTreeNode extends React.Component<PropsType> {
               const child = getConceptById(childId);
 
               return child ? (
-                <OpenableCategoryTreeNode
+                <OpenableConceptTreeNode
                   key={i}
                   id={childId}
                   data={selectTreeNodeData(child, data.tree)}
@@ -136,6 +136,6 @@ class CategoryTreeNode extends React.Component<PropsType> {
   }
 }
 
-const OpenableCategoryTreeNode = Openable(CategoryTreeNode);
+const OpenableConceptTreeNode = Openable(ConceptTreeNode);
 
-export default OpenableCategoryTreeNode;
+export default OpenableConceptTreeNode;

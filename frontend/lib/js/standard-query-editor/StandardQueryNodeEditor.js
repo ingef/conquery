@@ -3,7 +3,7 @@
 import React from "react";
 
 import { createConnectedQueryNodeEditor } from "../query-node-editor";
-import { hasConceptChildren } from "../category-trees/globalTreeStoreHelper";
+import { hasConceptChildren } from "../concept-trees/globalTreeStoreHelper";
 
 import type { PropsType } from "../query-node-editor/QueryNodeEditor";
 

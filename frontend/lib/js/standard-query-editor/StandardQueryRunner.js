@@ -24,7 +24,7 @@ const mapStateToProps = (state, ownProps) => ({
   isQueryRunning: !!state.queryEditor.queryRunner.runningQuery,
   // Following ones only needed in dispatch functions
   queryId: state.queryEditor.queryRunner.runningQuery,
-  version: state.categoryTrees.version,
+  version: state.conceptTrees.version,
   query: state.queryEditor.query
 });
 

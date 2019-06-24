@@ -206,7 +206,7 @@ const selectResolvedItemsCount = state => {
 };
 
 const selectAvailableConceptRootNodes = state => {
-  const { trees } = state.categoryTrees;
+  const { trees } = state.conceptTrees;
 
   if (!trees) return null;
 
@@ -228,7 +228,7 @@ const mapStateToProps = (state: StateType) => ({
   resolved: state.uploadConceptListModal.resolved,
   resolvedItemsCount: selectResolvedItemsCount(state),
   unresolvedItemsCount: selectUnresolvedItemsCount(state),
-  rootConcepts: state.categoryTrees.trees,
+  rootConcepts: state.conceptTrees.trees,
   error: state.uploadConceptListModal.error
 });
 

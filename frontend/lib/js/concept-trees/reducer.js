@@ -149,7 +149,7 @@ const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
   };
 };
 
-const categoryTrees = (
+const conceptTrees = (
   state: StateType = initialState,
   action: Object
 ): StateType => {
@@ -180,7 +180,7 @@ const categoryTrees = (
     case SEARCH_TREES_ERROR:
       return {
         ...state,
-        search: { ...state.search, loading: false },
+        search: { ...state.search, loading: false, duration: 0 },
         error: action.payload.message
       };
     case CLEAR_SEARCH_QUERY:
@@ -210,4 +210,4 @@ const categoryTrees = (
   }
 };
 
-export default categoryTrees;
+export default conceptTrees;

@@ -2,7 +2,7 @@ locale: "de"
 
 headline: "Anfragen und Analyse"
 leftPane:
-  categoryTrees: "Konzeptbäume"
+  conceptTrees: "Konzeptbäume"
   previousQueries: "Anfragen"
 
 rightPane:
@@ -10,7 +10,7 @@ rightPane:
   timebasedQueryEditor: "Zeit-Editor"
   externalForms: "Formulare"
 
-categoryTreeList:
+conceptTreeList:
   loading: "Lade Konzeptbäume"
   loadingTree: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."

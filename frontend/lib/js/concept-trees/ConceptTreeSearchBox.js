@@ -27,7 +27,7 @@ const StyledButton = styled(TransparentButton)`
   margin: 3px 0 3px 5px;
 `;
 
-const CategoryTreeSearchBox = ({
+const ConceptTreeSearchBox = ({
   showMismatches,
   onToggleShowMismatches,
   areTreesAvailable,
@@ -38,18 +38,18 @@ const CategoryTreeSearchBox = ({
   return (
     <SearchBox
       {...props}
-      placeholder={T.translate("categoryTreeList.searchPlaceholder")}
+      placeholder={T.translate("conceptTreeList.searchPlaceholder")}
       textAppend={
         <div>
           <Displaying>
             {showMismatches
-              ? T.translate("categoryTreeList.showingMismatches")
-              : T.translate("categoryTreeList.showingMatchesOnly")}
+              ? T.translate("conceptTreeList.showingMismatches")
+              : T.translate("conceptTreeList.showingMatchesOnly")}
           </Displaying>
           <StyledButton tiny onClick={onToggleShowMismatches}>
             {showMismatches
-              ? T.translate("categoryTreeList.showMatchesOnly")
-              : T.translate("categoryTreeList.showMismatches")}
+              ? T.translate("conceptTreeList.showMatchesOnly")
+              : T.translate("conceptTreeList.showMismatches")}
           </StyledButton>
         </div>
       }
@@ -59,8 +59,8 @@ const CategoryTreeSearchBox = ({
 
 const mapStateToProps = state => ({
   areTreesAvailable: getAreTreesAvailable(state),
-  showMismatches: state.categoryTrees.search.showMismatches,
-  search: state.categoryTrees.search
+  showMismatches: state.conceptTrees.search.showMismatches,
+  search: state.conceptTrees.search
 });
 
 const mapDispatchToProps = dispatch => ({
@@ -75,4 +75,4 @@ const mapDispatchToProps = dispatch => ({
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(CategoryTreeSearchBox);
+)(ConceptTreeSearchBox);
