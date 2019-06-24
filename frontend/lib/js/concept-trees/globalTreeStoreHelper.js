@@ -171,17 +171,21 @@ const findConcepts = (
   query: string,
   intermediateResult: { [ConceptIdT]: number }
 ) => {
+  // !node normall shouldn't happen.
+  // It happens when window.conceptTrees doesn't contain a node
+  // that was somewhere specified as a child.
+  // TODO: Stronger contract with API on what shape of data is allowed
+  if (!node) return intermediateResult;
+
   const isNodeIncluded = doesQueryMatchNode(node, query);
 
   // Early return if there are no children
   if (!node.children) {
     if (isNodeIncluded) {
       intermediateResult[nodeId] = 1;
-
-      return intermediateResult;
-    } else {
-      return intermediateResult;
     }
+
+    return intermediateResult;
   }
 
   // Count node as 1 already, if it matches

@@ -98,15 +98,18 @@ export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
 export const searchTrees = (datasetId: DatasetIdType, query: string) => {
-  return (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query));
 
     if (isEmpty(query)) return;
 
-    return search(query).then(
-      r => dispatch(searchTreesSuccess(query, r)),
-      e => dispatch(searchTreesError(query, e))
-    );
+    try {
+      const result = await search(query);
+
+      dispatch(searchTreesSuccess(query, result));
+    } catch (e) {
+      dispatch(searchTreesError(query, e));
+    }
   };
 };
 

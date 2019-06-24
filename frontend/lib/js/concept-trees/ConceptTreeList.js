@@ -25,14 +25,17 @@ const Root = styled("div")`
   padding: 0 10px 0;
   white-space: nowrap;
 
-  // Only hide the Concept trees when the tab is not selected
-  // Because mount / unmount would reset the open states
-  // that are React states and not part of the Redux state
-  // because if they were part of Redux state, the entire tree
-  // would have to re-render when a single node would be opened
-  //
-  // Also: Can't set it to initial, because IE11 doesn't work then
-  // => Empty string instead
+  ${
+    ""
+    // Only hide the Concept trees when the tab is not selected
+    // Because mount / unmount would reset the open states
+    // that are React states and not part of the Redux state
+    // because if they were part of Redux state, the entire tree
+    // would have to re-render when a single node would be opened
+    //
+    // Also: Can't set it to initial, because IE11 doesn't work then
+    // => Empty string instead
+  }
   display: ${({ show }) => (show ? "" : "none")};
 `;
 
