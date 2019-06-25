@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
@@ -29,6 +30,8 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Table;
@@ -42,6 +45,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.dropwizard.auth.Auth;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -60,7 +64,7 @@ public class DatasetsResource {
 	@Inject
 	public DatasetsResource(
 		AdminProcessor processor,
-		//@Auth User user,
+		@Auth User user,
 		@PathParam(DATASET_NAME) DatasetId datasetId
 	) {
 		this.processor = processor;
@@ -69,12 +73,8 @@ public class DatasetsResource {
 		if(namespace == null) {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}
-		//authorize(user, datasetId, Ability.READ);
+		authorize(user, datasetId, Ability.READ);
 	}
-
-
-
-
 
 	@POST
 	@Consumes(MediaType.WILDCARD)
@@ -89,7 +89,6 @@ public class DatasetsResource {
 	public void addTable(@FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
 		for (BodyPart part : schemas.getParent().getBodyParts()) {
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
-				// ContentDisposition meta = part.getContentDisposition();
 				Table t = mapper.readValue(is, Table.class);
 				processor.addTable(namespace.getDataset(), t);
 			}

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 
@@ -15,12 +16,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 
+import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
@@ -39,7 +43,7 @@ public class ConceptsUIResource {
 	
 	@Inject
 	public ConceptsUIResource(
-		//@Auth User user,
+		@Auth User user,
 		AdminProcessor processor,
 		@PathParam(DATASET_NAME) DatasetId datasetId,
 		@PathParam(CONCEPT_NAME) ConceptId conceptId
@@ -49,7 +53,7 @@ public class ConceptsUIResource {
 		if(namespace == null) {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}
-		//authorize(user, datasetId, Ability.READ);
+		authorize(user, datasetId, Ability.READ);
 		this.concept = namespace.getStorage().getConcept(conceptId);
 		if(this.concept == null) {
 			throw new WebApplicationException("Could not find concept "+conceptId, Status.NOT_FOUND);

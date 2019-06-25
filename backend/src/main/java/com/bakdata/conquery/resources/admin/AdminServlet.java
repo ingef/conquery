@@ -12,9 +12,6 @@ import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthCookieFilter;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.jobs.JobManager;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.rest.DatasetsResource;
@@ -22,7 +19,6 @@ import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
-import com.bakdata.conquery.resources.admin.ui.UIContext;
 
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;

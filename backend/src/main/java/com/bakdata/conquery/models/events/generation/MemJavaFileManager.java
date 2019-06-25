@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.events.generation;
 
 import java.io.IOException;
-import java.util.Set;
 
 import javax.tools.FileObject;
 import javax.tools.ForwardingJavaFileManager;

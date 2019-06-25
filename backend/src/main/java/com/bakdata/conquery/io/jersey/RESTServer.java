@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
 import io.dropwizard.server.DefaultServerFactory;
 import lombok.experimental.UtilityClass;
 

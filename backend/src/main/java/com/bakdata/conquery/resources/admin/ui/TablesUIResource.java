@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
@@ -18,6 +19,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -25,6 +28,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 
+import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,7 +47,7 @@ public class TablesUIResource {
 	
 	@Inject
 	public TablesUIResource(
-		//@Auth User user,
+		@Auth User user,
 		AdminProcessor processor,
 		@PathParam(DATASET_NAME) DatasetId datasetId,
 		@PathParam(TABLE_NAME) TableId tableId
@@ -53,7 +57,7 @@ public class TablesUIResource {
 		if(namespace == null) {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}
-		//authorize(user, datasetId, Ability.READ);
+		authorize(user, datasetId, Ability.READ);
 		this.table = namespace.getStorage().getDataset().getTables().getOptional(tableId)
 			.orElseThrow(() -> new WebApplicationException("Could not find table "+tableId, Status.NOT_FOUND));
 	}
