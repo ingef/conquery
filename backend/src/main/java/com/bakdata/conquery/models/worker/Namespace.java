@@ -6,8 +6,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 
-import javax.annotation.Nonnull;
-
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
@@ -89,9 +87,11 @@ public class Namespace {
 		}
 	}
 	
-	@Nonnull
 	public synchronized WorkerInformation getResponsibleWorker(int entityId) {
-		int bucket = Entity.getBucket(entityId, entityBucketSize);
+		return getResponsibleWorkerForBucket(Entity.getBucket(entityId, entityBucketSize));
+	}
+	
+	public synchronized WorkerInformation getResponsibleWorkerForBucket(int bucket) {
 		if(bucket < bucket2WorkerMap.size()) {
 			return bucket2WorkerMap.get(bucket);
 		}

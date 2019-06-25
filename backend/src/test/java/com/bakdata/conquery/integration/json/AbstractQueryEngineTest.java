@@ -3,9 +3,7 @@ package com.bakdata.conquery.integration.json;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
-import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -13,10 +11,10 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
-import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -49,7 +47,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
-		if (managed.getStatus() == QueryStatus.FAILED) {
+		if (managed.getState() == ExecutionState.FAILED) {
 			fail("Query failed");
 		}
 

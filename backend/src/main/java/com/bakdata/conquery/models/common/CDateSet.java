@@ -16,7 +16,9 @@ import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
-import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
@@ -211,7 +213,7 @@ public class CDateSet {
 		if (firstEntry == null) {
 			throw new NoSuchElementException();
 		}
-		return new CDateRange(firstEntry.getValue().getMinValue(), rangesByLowerBound.lastEntry().getValue().getMaxValue());
+		return CDateRange.of(firstEntry.getValue().getMinValue(), rangesByLowerBound.lastEntry().getValue().getMaxValue());
 	}
 
 	public void add(CDateRange rangeToAdd) {
@@ -245,7 +247,7 @@ public class CDateSet {
 		// Remove ranges which are strictly enclosed.
 		rangesByLowerBound.subMap(lbToAdd, IntMath.saturatedAdd(ubToAdd, 1)).clear();
 
-		putRange(new CDateRange(lbToAdd, ubToAdd));
+		putRange(CDateRange.of(lbToAdd, ubToAdd));
 	}
 	
 	public void remove(CDateRange rangeToRemove) {
@@ -256,11 +258,11 @@ public class CDateSet {
 			CDateRange rangeBelowLB = entryBelowLB.getValue();
 			//left neighbor intersects removed range => shorten it to everything before removed range
 			if (rangeBelowLB.getMaxValue() >= rangeToRemove.getMinValue()) {
-				putRange(new CDateRange(rangeBelowLB.getMinValue(), rangeToRemove.getMinValue() - 1));
+				putRange(CDateRange.of(rangeBelowLB.getMinValue(), rangeToRemove.getMinValue() - 1));
 				
 				//left neighbor reaches beyond removed range => have to add cut of right part
 				if (rangeBelowLB.getMaxValue() > rangeToRemove.getMaxValue()) {
-					putRange(new CDateRange(rangeToRemove.getMaxValue() + 1, rangeBelowLB.getMaxValue()));
+					putRange(CDateRange.of(rangeToRemove.getMaxValue() + 1, rangeBelowLB.getMaxValue()));
 				}
 			}
 		}
@@ -271,7 +273,7 @@ public class CDateSet {
 			//if reaches beyond removed range => have to add cut of right part
 			if (rangeBelowUB.getMaxValue() > rangeToRemove.getMaxValue()) {
 				// { > }
-				putRange(new CDateRange(rangeToRemove.getMaxValue() + 1, rangeBelowUB.getMaxValue()));
+				putRange(CDateRange.of(rangeToRemove.getMaxValue() + 1, rangeBelowUB.getMaxValue()));
 			}
 		}
 
@@ -290,13 +292,21 @@ public class CDateSet {
 		sb.append('}');
 		return sb.toString();
 	}
+	
+	@JsonIgnore
+	public boolean isAll() {
+		if(this.rangesByLowerBound.isEmpty()) {
+			return false;
+		}
+		return this.rangesByLowerBound.values().iterator().next().isAll();
+	}
 
 	public void retainAll(CDateSet retained) {
 		if(retained.isEmpty()) {
 			this.clear();
 			return;
 		}
-		if(retained.asRanges().iterator().next().isAll()) {
+		if(retained.isAll()) {
 			return;
 		}
 
@@ -304,17 +314,17 @@ public class CDateSet {
 		
 		//remove all before the first range
 		if(!l.get(0).isAtMost()) {
-			this.remove(new CDateRange(Integer.MIN_VALUE, l.get(0).getMinValue() - 1));
+			this.remove(CDateRange.of(Integer.MIN_VALUE, l.get(0).getMinValue() - 1));
 		}
 		
 		//remove all between ranges
 		for(int i=0;i<l.size()-1;i++) {
-			this.remove(new CDateRange(l.get(i).getMaxValue() + 1, l.get(i+1).getMinValue() - 1));
+			this.remove(CDateRange.of(l.get(i).getMaxValue() + 1, l.get(i+1).getMinValue() - 1));
 		}
 		
 		//remove all after the last Range
 		if(!l.get(l.size()-1).isAtLeast()) {
-			this.remove(new CDateRange(l.get(l.size()-1).getMaxValue() + 1, Integer.MAX_VALUE));
+			this.remove(CDateRange.of(l.get(l.size()-1).getMaxValue() + 1, Integer.MAX_VALUE));
 		}
 	}
 	
@@ -325,12 +335,12 @@ public class CDateSet {
 
 		//remove all before the range
 		if(!retained.isAtMost()) {
-			this.remove(new CDateRange(Integer.MIN_VALUE, retained.getMinValue() - 1));
+			this.remove(CDateRange.of(Integer.MIN_VALUE, retained.getMinValue() - 1));
 		}
 		
 		//remove all after the Range
 		if(!retained.isAtLeast()) {
-			this.remove(new CDateRange(retained.getMaxValue() + 1, Integer.MAX_VALUE));
+			this.remove(CDateRange.of(retained.getMaxValue() + 1, Integer.MAX_VALUE));
 		}
 	}
 
@@ -367,7 +377,7 @@ public class CDateSet {
 			.results()
 			.map(mr -> {
 				try {
-					return DateRangeType.parseISORange(mr.group(2));
+					return DateRangeParser.parseISORange(mr.group(2));
 				}
 				catch(Exception e) {
 					throw new RuntimeException(e);

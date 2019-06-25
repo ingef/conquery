@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.concepts;
 
 import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -34,7 +34,7 @@ public class StructureNode extends Labeled<StructureNodeId> {
 	@JsonBackReference(MANAGED_STRUCTURE_STRUCTURE)
 	private StructureNode parent;
 	@Getter
-	private Set<ConceptId> containedRoots = Collections.emptySet();
+	private LinkedHashSet<ConceptId> containedRoots = new LinkedHashSet<>();
 	private List<KeyValue> additionalInfos = Collections.emptyList();
 	
 	@Override

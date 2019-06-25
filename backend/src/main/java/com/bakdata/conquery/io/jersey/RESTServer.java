@@ -5,6 +5,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import com.bakdata.conquery.io.jackson.PathParamInjector;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.CachingFilter;
+import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
 import com.bakdata.conquery.models.auth.AuthorizationExceptionMapper;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -31,7 +32,7 @@ public class RESTServer {
 		jersey.register(new JsonValidationExceptionMapper());
 		// default Dropwizard's exception mappers
 		jersey.register(new LoggingExceptionMapper<Throwable>() {});
-		jersey.register(new JsonProcessingExceptionMapper(true));
+		jersey.register(ConqueryJsonExceptionMapper.class);
 		jersey.register(new EarlyEofExceptionMapper());
 		//allow cross origin
 		if(config.getApi().isAllowCORSRequests()) {

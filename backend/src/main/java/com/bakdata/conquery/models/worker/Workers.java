@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.worker;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -13,7 +14,7 @@ import lombok.Getter;
 
 public class Workers implements NamespaceCollection {
 	@Getter
-	private Map<WorkerId, Worker> workers = new HashMap<>();
+	private ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
 	@JsonIgnore
 	private transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
 

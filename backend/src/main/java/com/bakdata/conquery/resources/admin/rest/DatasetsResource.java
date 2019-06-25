@@ -28,7 +28,6 @@ import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
@@ -49,7 +48,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@PermitAll @AuthCookie
+@PermitAll
 @Getter @Setter @Slf4j
 @Path("datasets/{" + DATASET_NAME + "}")
 public class DatasetsResource {
@@ -81,7 +80,7 @@ public class DatasetsResource {
 	@Consumes(MediaType.WILDCARD)
 	@Path("mapping")
 	public void setIdMapping(@FormDataParam("data_csv") InputStream data) throws IOException, JSONException {
-		processor.setIdMapping(namespace, data);
+		processor.setIdMapping(data, namespace);
 	}
 
 	@POST

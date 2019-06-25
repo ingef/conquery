@@ -3,16 +3,19 @@ package com.bakdata.conquery.models.events.generation;
 import java.io.File;
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
+import javax.tools.JavaCompiler;
 import javax.tools.JavaCompiler.CompilationTask;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardJavaFileManager;
+import javax.tools.ToolProvider;
 
 import org.apache.commons.lang3.StringUtils;
 
@@ -22,11 +25,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class DebugClassGenerator extends ClassGenerator {
+	
+	private static final JavaCompiler COMPILER = ToolProvider.getSystemJavaCompiler();
 
 	private File tmp;
 	private final URLClassLoader classLoader;
 	private final List<File> files = new ArrayList<>();
-	private final List<JavaFileObject> mFiles = new ArrayList<>();
 	private final List<String> generated = new ArrayList<>();
 
 
@@ -38,7 +42,7 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public void addTask(String fullClassName, String content) throws IOException {
+	public synchronized void addTask(String fullClassName, String content) throws IOException {
 		String[] parts = StringUtils.split(fullClassName, '.');
 		String className = parts[parts.length - 1];
 		File dir = tmp;
@@ -53,33 +57,22 @@ public class DebugClassGenerator extends ClassGenerator {
 	}
 
 	@Override
-	public Class<?> getClassByName(String fullClassName) throws ClassNotFoundException {
+	public synchronized Class<?> getClassByName(String fullClassName) throws ClassNotFoundException {
 		return Class.forName(fullClassName, true, classLoader);
 	}
 
 	@Override
-	public void compile() throws IOException, URISyntaxException {
-		try (StandardJavaFileManager fileManager = getCompiler().getStandardFileManager(null, null, null)) {
-			Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
-			StringWriter output = new StringWriter();
-			CompilationTask task = getCompiler().getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
-			
-			if (!task.call()) {
-				throw new IllegalStateException("Failed to compile: "+output);
+	public void compile() throws IOException {
+		synchronized (COMPILER) {
+			try (StandardJavaFileManager fileManager = COMPILER.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8)) {
+				Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromFiles(files);
+				StringWriter output = new StringWriter();
+				CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList("-g", "-Xlint"), null, units);
+				
+				if (!task.call()) {
+					throw new IllegalStateException("Failed to compile: "+output);
+				}
 			}
 		}
-	}
-
-	@Override
-	public void close() throws IOException {
-		// load classes to memory before closing
-		for (String cl : generated) {
-			try {
-				getClassByName(cl);
-			} catch (ClassNotFoundException e) {
-				throw new IllegalStateException("Failed to load class that was generated " + cl, e);
-			}
-		}
-		fileManager.close();
 	}
 }

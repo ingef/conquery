@@ -7,9 +7,11 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -27,12 +29,12 @@ import lombok.RequiredArgsConstructor;
 public class CQReusedQuery implements CQElement {
 
 	@Getter @NotNull @Valid
-	private final ManagedQueryId query;
-	@Getter
+	private final ManagedExecutionId query;
+	@Getter @InternalOnly
 	private IQuery resolvedQuery;
 
 	@Override
-	public void collectRequiredQueries(Set<ManagedQueryId> requiredQueries) {
+	public void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {
 		requiredQueries.add(query);
 	}
 	
@@ -43,7 +45,7 @@ public class CQReusedQuery implements CQElement {
 	
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
-		resolvedQuery = Objects.requireNonNull(context.getStorage().getQuery(query)).getQuery();
+		resolvedQuery = ((ManagedQuery)Objects.requireNonNull(context.getStorage().getExecution(query))).getQuery();
 		return this;
 	}
 

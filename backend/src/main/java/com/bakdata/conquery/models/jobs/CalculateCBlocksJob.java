@@ -5,22 +5,25 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.BlockManager;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 
 import lombok.Getter;
@@ -42,8 +45,8 @@ public class CalculateCBlocksJob extends Job {
 		return "Calculate "+infos.size()+" CBlocks for "+connector.getId();
 	}
 	
-	public void addCBlock(Import imp, Block block, CBlockId cBlockId) {
-		infos.add(new CalculationInformation(table, imp, block, cBlockId));
+	public void addCBlock(Import imp, Bucket bucket, CBlockId cBlockId) {
+		infos.add(new CalculationInformation(table, imp, bucket, cBlockId));
 	}
 	
 	@Override
@@ -55,12 +58,14 @@ public class CalculateCBlocksJob extends Job {
 			try {
 				if (!blockManager.hasCBlock(infos.get(i).getCBlockId())) {
 					CBlock cBlock = createCBlock(connector, infos.get(i));
+					cBlock.initIndizes(infos.get(i).getBucket().getBucketSize());
 					if (treeConcept) {
 						calculateCBlock(cBlock, (ConceptTreeConnector) connector, infos.get(i));
 					}
 					else {
 						calculateCBlock(cBlock, (VirtualConceptConnector) connector, infos.get(i));
 					}
+					setDateRangeIndex(cBlock, infos.get(i));
 					blockManager.addCalculatedCBlock(cBlock);
 					storage.addCBlock(cBlock);
 				}
@@ -74,9 +79,26 @@ public class CalculateCBlocksJob extends Job {
 		}
 	}
 	
+	private void setDateRangeIndex(CBlock cBlock, CalculationInformation info) {
+		Bucket bucket = info.getBucket();
+		Table table = storage.getDataset().getTables().get(bucket.getImp().getTable());
+		for(Column column : table.getColumns()) {
+			if(column.getType().isDateCompatible()) {
+				for(int event = 0; event < bucket.getNumberOfEvents(); event++) {
+					if(bucket.has(event, column)) {
+						CDateRange range = bucket.getAsDateRange(event, column);
+						int entity = bucket.localEntityFor(event);
+						cBlock.getMinDate()[entity] = Math.min(cBlock.getMinDate()[entity], range.getMinValue());
+						cBlock.getMaxDate()[entity] = Math.max(cBlock.getMaxDate()[entity], range.getMaxValue());
+					}
+				}
+			}
+		}
+	}
+
 	private CBlock createCBlock(Connector connector, CalculationInformation info) {
 		return new CBlock(
-			info.getBlock().getId(),
+			info.getBucket().getId(),
 			connector.getId()
 		);
 	}
@@ -86,7 +108,9 @@ public class CalculateCBlocksJob extends Job {
 
 	private void calculateCBlock(CBlock cBlock, ConceptTreeConnector connector, CalculationInformation info) {
 
-		IStringType stringType = (IStringType) info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
+		Bucket bucket = info.getBucket();
+		
+		AStringType<?> stringType = (AStringType<?>) info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
 
 		final TreeConcept treeConcept = connector.getConcept();
 
@@ -96,24 +120,28 @@ public class CalculateCBlocksJob extends Job {
 
 		treeConcept.initializeIdCache(stringType, importId);
 
-		cBlock.setMostSpecificChildren(new ArrayList<>(info.getBlock().size()));
-		Block block = info.getBlock();
+		cBlock.setMostSpecificChildren(new ArrayList<>(bucket.getNumberOfEvents()));
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
-
-		for(int event = 0; event < block.size(); event++) {
+		
+		for(int event = 0; event < bucket.getNumberOfEvents(); event++) {
 			try {
-				if(block.has(event, connector.getColumn())) {
-					int valueIndex = block.getString(event, connector.getColumn());
+				if(bucket.has(event, connector.getColumn())) {
+					int valueIndex = bucket.getString(event, connector.getColumn());
 					final int finalEvent = event;
 					final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
-							() -> block.calculateMap(finalEvent, info.getImp())
+						() -> bucket.calculateMap(finalEvent, info.getImp())
 					);
 
 					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
 
 					if (child != null) {
 						cBlock.getMostSpecificChildren().add(child.getPrefix());
+						ConceptTreeNode<?> it = child;
+						while(it != null) {
+							cBlock.getIncludedConcepts()[bucket.localEntityFor(event)] |= it.calculateBitMask();
+							it = it.getParent();
+						}
 					}
 					else {
 						//see #174  improve handling by copying the relevant things from the old project
@@ -124,17 +152,17 @@ public class CalculateCBlocksJob extends Job {
 					cBlock.getMostSpecificChildren().add(null);
 				}
 			} catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event "+block+"-"+event+" against concept "+connector, ex);
+				log.error("Failed to resolve event "+bucket+"-"+event+" against concept "+connector, ex);
 			}
 		}
 
 		//see #175  metrics candidate
 		log.trace(
-				"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
-				cache.getHits(),
-				cache.getMisses(),
-				(double) cache.getHits() / cache.getMisses(),
-				(double) cache.getHits() / (cache.getHits() + cache.getMisses())
+			"Hits: {}, Misses: {}, Hits/Misses: {}, %Hits: {} (Up to now)",
+			cache.getHits(),
+			cache.getMisses(),
+			(double) cache.getHits() / cache.getMisses(),
+			(double) cache.getHits() / (cache.getHits() + cache.getMisses())
 		);
 	}
 
@@ -146,7 +174,7 @@ public class CalculateCBlocksJob extends Job {
 	private static class CalculationInformation {
 		private final Table table;
 		private final Import imp;
-		private final Block block;
+		private final Bucket bucket;
 		private final CBlockId cBlockId;
 	}
 }

@@ -2,6 +2,7 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -66,13 +67,16 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
 		connector = new NioSocketConnector();
 		jobManager = new JobManager(label);
-		environment.lifecycle().manage(jobManager);
-		environment.lifecycle().manage(this);
-		
-		scheduler = environment
-			.lifecycle()
-			.scheduledExecutorService("Scheduled Messages")
-			.build();
+		synchronized (environment) {
+			environment.lifecycle().manage(jobManager);
+			environment.lifecycle().manage(this);
+			validator = environment.getValidator();
+			
+			scheduler = environment
+				.lifecycle()
+				.scheduledExecutorService("Scheduled Messages")
+				.build();
+		}
 		
 		scheduler.scheduleAtFixedRate(
 			() -> {
@@ -80,12 +84,11 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 					context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
 				}
 			},
-			30, 5, TimeUnit.SECONDS
+			30, 1, TimeUnit.SECONDS
 		);
 
 
 		this.config = config;
-		validator = environment.getValidator();
 		
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles()) {
@@ -199,7 +202,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void stop() throws Exception {
-		for(Worker w : workers.getWorkers().values()) {
+		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
 				w.close();
 			} catch(Exception e) {

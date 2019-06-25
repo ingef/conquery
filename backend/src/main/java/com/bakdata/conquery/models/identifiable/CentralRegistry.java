@@ -1,7 +1,10 @@
 package com.bakdata.conquery.models.identifiable;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
@@ -16,21 +19,43 @@ import lombok.NoArgsConstructor;
 public class CentralRegistry implements Injectable {
 	
 	private final IdMap map = new IdMap<>();
+	private final Map<IId<?>, Supplier<Identifiable<?>>> cacheables = new HashMap<>();
 	
-	public void register(Identifiable<?> ident) {
+	public synchronized void register(Identifiable<?> ident) {
 		map.add(ident);
 	}
 	
+	public synchronized void registerCacheable(IId<?> id, Supplier<Identifiable<?>> supplier) {
+		cacheables.put(id, supplier);
+	}
+	
 	public <T extends Identifiable<?>> T resolve(IId<T> name) {
-		return (T) map.getOrFail(name);
+		Object res = map.get(name);
+		if(res!=null) {
+			return (T)res;
+		}
+		Supplier<Identifiable<?>> supplier = cacheables.get(name);
+		if(supplier == null) {
+			throw new NoSuchElementException("Could not find an element called '"+name+"'");
+		}
+		return (T)supplier.get();
 	}
 
 	public <T extends Identifiable<?>> Optional<T> getOptional(IId<T> name) {
-		return map.getOptional(name);
+		Object res = map.get(name);
+		if(res!=null) {
+			return Optional.of((T)res);
+		}
+		Supplier<Identifiable<?>> supplier = cacheables.get(name);
+		if(supplier == null) {
+			return Optional.empty();
+		}
+		return Optional.of((T)supplier.get());
 	}
 
-	public void remove(IId<?> id) {
+	public synchronized void remove(IId<?> id) {
 		map.remove(id);
+		cacheables.remove(id);
 	}
 	
 	public void remove(Identifiable<?> ident) {

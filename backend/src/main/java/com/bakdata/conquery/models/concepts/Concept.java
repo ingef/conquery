@@ -62,4 +62,9 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	public int countElements() {
 		return 1;
 	}
+	
+	@Override
+	public long calculateBitMask() {
+		return 0L;
+	}
 }

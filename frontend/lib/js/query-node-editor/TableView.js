@@ -51,12 +51,11 @@ const TableView = (props: PropsType) => {
         <TableFilters
           key={editorState.selectedInputTableIdx}
           filters={selectedTable.filters}
-          onSetFilterValue={(filterIdx, value, formattedValue) =>
+          onSetFilterValue={(filterIdx, value) =>
             onSetFilterValue(
               editorState.selectedInputTableIdx,
               filterIdx,
-              value,
-              formattedValue
+              value
             )
           }
           onSwitchFilterMode={(filterIdx, mode) =>

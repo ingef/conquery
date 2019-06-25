@@ -4,11 +4,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 
 
 public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, Integer>> {
@@ -25,21 +25,21 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	}
 
 	@Override
-	public void nextBlock(Block block) {
-		IStringType type = (IStringType) getColumn().getTypeFor(block);
+	public void nextBlock(Bucket bucket) {
+		AStringType type = (AStringType) getColumn().getTypeFor(bucket);
 
 		for (int index = 0; index < selection.length; index++) {
-			selectedValues[index] = type.getStringId(selection[index]);
+			selectedValues[index] = type.getId(selection[index]);
 		}
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public void aggregateEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
-		int stringToken = block.getString(event, getColumn());
+		int stringToken = bucket.getString(event, getColumn());
 
 		for (int index = 0; index < selectedValues.length; index++) {
 			if (selectedValues[index] == stringToken) {

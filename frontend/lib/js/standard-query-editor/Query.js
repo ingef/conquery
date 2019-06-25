@@ -9,7 +9,7 @@ import T from "i18n-react";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
-import type { DateRangeType } from "../common/types/backend";
+import type { DateRangeT } from "../api/types";
 
 import {
   dropAndNode,
@@ -27,16 +27,17 @@ import type {
   DraggedNodeType,
   DraggedQueryType
 } from "./types";
-import { QueryEditorDropzone } from "./QueryEditorDropzone";
+import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroup from "./QueryGroup";
 
 type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
-  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
+  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeT) => void,
   dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
   deleteNode: Function,
   deleteGroup: Function,
+  dropConceptListFile: Function,
   toggleExcludeGroup: Function,
   expandPreviousQuery: Function,
   loadPreviousQuery: Function,
@@ -57,7 +58,8 @@ const Groups = styled("div")`
 `;
 
 const QueryGroupConnector = styled("p")`
-  padding: 70px 6px;
+  padding: 110px 6px 0;
+  margin: 0;
   font-size: ${({ theme }) => theme.font.sm};
   color: ${({ theme }) => theme.col.gray};
   text-align: center;
@@ -66,17 +68,14 @@ const QueryGroupConnector = styled("p")`
 const Query = (props: PropsType) => {
   return (
     <Container>
-      {props.isEmptyQuery && (
-        // Render a large Dropzone
+      {props.isEmptyQuery ? (
         <QueryEditorDropzone
           isInitial
-          onDropNode={item => props.dropAndNode(item)}
+          onDropNode={props.dropAndNode}
           onDropFile={props.dropConceptListFile}
           onLoadPreviousQuery={props.loadPreviousQuery}
         />
-      )}
-      {!props.isEmptyQuery && (
-        // Render all query groups plus individual AND / OR dropzones
+      ) : (
         <Groups>
           {props.query
             .map((group, andIdx) => [
@@ -102,14 +101,13 @@ const Query = (props: PropsType) => {
               </QueryGroupConnector>
             ])
             .concat(
-              <div className="dropzone-wrap" key={props.query.length + 1}>
-                <QueryEditorDropzone
-                  isAnd
-                  onDropNode={item => props.dropAndNode(item, props.dateRange)}
-                  onDropFile={file => props.dropConceptListFile(file)}
-                  onLoadPreviousQuery={props.loadPreviousQuery}
-                />
-              </div>
+              <QueryEditorDropzone
+                key={props.query.length + 1}
+                isAnd
+                onDropNode={item => props.dropAndNode(item, props.dateRange)}
+                onDropFile={props.dropConceptListFile}
+                onLoadPreviousQuery={props.loadPreviousQuery}
+              />
             )}
         </Groups>
       )}
@@ -119,11 +117,11 @@ const Query = (props: PropsType) => {
 
 function mapStateToProps(state) {
   return {
-    query: state.panes.right.tabs.queryEditor.query,
-    isEmptyQuery: state.panes.right.tabs.queryEditor.query.length === 0,
+    query: state.queryEditor.query,
+    isEmptyQuery: state.queryEditor.query.length === 0,
 
     // only used by other actions
-    rootConcepts: state.categoryTrees.trees
+    rootConcepts: state.conceptTrees.trees
   };
 }
 
@@ -140,8 +138,8 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   selectNodeForEditing: (andIdx, orIdx) =>
     dispatch(selectNodeForEditing(andIdx, orIdx)),
   queryGroupModalSetNode: andIdx => dispatch(queryGroupModalSetNode(andIdx)),
-  expandPreviousQuery: (rootConcepts, query) =>
-    dispatch(expandPreviousQuery(rootConcepts, query)),
+  expandPreviousQuery: (datasetId, rootConcepts, queryId) =>
+    dispatch(expandPreviousQuery(datasetId, rootConcepts, queryId)),
   loadPreviousQuery: (datasetId, queryId) =>
     dispatch(loadPreviousQuery(datasetId, queryId))
 });
@@ -152,8 +150,12 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...ownProps,
   loadPreviousQuery: queryId =>
     dispatchProps.loadPreviousQuery(ownProps.selectedDatasetId, queryId),
-  expandPreviousQuery: query =>
-    dispatchProps.expandPreviousQuery(stateProps.rootConcepts, query)
+  expandPreviousQuery: queryId =>
+    dispatchProps.expandPreviousQuery(
+      ownProps.selectedDatasetId,
+      stateProps.rootConcepts,
+      queryId
+    )
 });
 
 export default connect(

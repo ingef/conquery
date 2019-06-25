@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.identifiable.ids;
 
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -15,9 +14,6 @@ import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
-import com.google.common.collect.PeekingIterator;
 
 @JsonDeserialize(using=IdDeserializer.class)
 public interface IId<TYPE> {
@@ -26,6 +22,18 @@ public interface IId<TYPE> {
 	Joiner JOINER = Joiner.on(JOIN_CHAR);
 	Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
 	Map<List<String>, IId<?>> INTERNED_IDS = new ConcurrentHashMap<>();
+	
+	List<String> collectComponents();
+	static <ID extends IId<?>> ID intern(ID id) {
+		ID old = (ID) INTERNED_IDS.putIfAbsent(id.collectComponents(), id);
+		if(old == null) {
+			return id;
+		}
+		else {
+			checkConflict(id, old);
+			return old;
+		}
+	}
 	
 	interface Parser<ID extends IId<?>> {
 		
@@ -44,40 +52,73 @@ public interface IId<TYPE> {
 		
 		@SuppressWarnings("unchecked")
 		default ID parse(List<String> parts) {
-			return (ID)INTERNED_IDS.computeIfAbsent(parts, this::createId);
+			//first check if we get the result with the list (which might be a sublist)
+			ID result = (ID) INTERNED_IDS.get(parts);
+			if(result == null) {
+				result = createId(parts);
+				//if not make a minimal list and use that to compute so that we do not keep the sublist
+				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(parts), result);
+				if(secondResult != null) {
+					checkConflict(result, secondResult);
+					return secondResult;
+				}
+			}
+			return result;
 		}
 		
+		@SuppressWarnings("unchecked")
+		default ID parse(IdIterator parts) {
+			//first check if we get the result with the list (which might be a sublist)
+			List<String> input = parts.getRemaining();
+			ID result = (ID) INTERNED_IDS.get(input);
+			if(result == null) {
+				parts.internNext();
+				result = parseInternally(parts);
+				//if not make a minimal list and use that to compute so that we do not keep the sublist
+				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(input), result);
+				if(secondResult != null) {
+					checkConflict(result, secondResult);
+					return secondResult;
+				}
+				else {
+					return result;
+				}
+			}
+			parts.consumeAll();
+			return result;
+		}
+		
+		ID parseInternally(IdIterator parts);
+		
 		default ID createId(List<String> parts) {
-			parts = ImmutableList.copyOf(Lists.transform(parts,String::intern));
-			PeekingIterator<String> it = Iterators.peekingIterator(parts.iterator());
-			return checkNoRemaining(parse(it), it, parts);
+			IdIterator it = new IdIterator(parts);
+			return checkNoRemaining(parseInternally(it), it, parts);
 		}
 		
 		default ID parsePrefixed(String dataset, String id) {
+			String[] result;
 			String[] split = split(id);
 			//if already prefixed
 			if(split.length > 0 && split[0].equals(dataset)) {
-				return parse(ImmutableList.copyOf(split));
+				result = split;
 			}
-
-			List<String> parts = ImmutableList.<String>builderWithExpectedSize(split.length+1)
-				.add(dataset)
-				.add(split)
-				.build();
-			return parse(parts);
+			else {
+				result = new String[split.length+1];
+				result[0] = dataset;
+				System.arraycopy(split, 0, result, 1, split.length);
+			}
+			return parse(Arrays.asList(result));
 		}
 		
-		ID parse(PeekingIterator<String> parts);
-		
-		default ID checkNoRemaining(ID id, Iterator<String> remaining, List<String> allParts) {
-			if(remaining.hasNext()) {
+		default ID checkNoRemaining(ID id, IdIterator remaining, List<String> allParts) {
+			if(remaining.remaining()>0) {
 				throw new IllegalStateException(
 					String.format(
 						"After parsing '%s' as id '%s' of type %s there are parts remaining: '%s'",
 						IId.JOINER.join(allParts),
 						id,
 						id.getClass().getSimpleName(),
-						IId.JOINER.join(remaining)
+						IId.JOINER.join(remaining.getRemaining())
 					)
 				);
 			}
@@ -116,5 +157,11 @@ public interface IId<TYPE> {
 	
 	static <T extends IId<?>> Parser<T> createParser(Class<T> idClass) {
 		return (Parser<T>)idClass.getDeclaredClasses()[0].getEnumConstants()[0];
+	}
+	
+	static void checkConflict(IId<?> id, IId<?> cached) {
+		if(!cached.equals(id)) {
+			throw new IllegalStateException("The cached id '"+cached+"'("+cached.getClass().getSimpleName()+") conflicted with a new entry of "+id.getClass().getSimpleName());
+		}
 	}
 }

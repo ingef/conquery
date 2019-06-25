@@ -1,25 +1,31 @@
 package com.bakdata.conquery.models.concepts.tree.perf;
 
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
-import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
-import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
-import com.bakdata.conquery.models.types.specific.StringType;
-import com.bakdata.conquery.util.CalculatedValue;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomUtils;
-
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.RandomUtils;
+
+import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
+import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
+import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
+import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
+import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
+import com.bakdata.conquery.models.types.specific.VarIntTypeInt;
+import com.bakdata.conquery.util.CalculatedValue;
+import com.bakdata.conquery.util.dict.SuccinctTrie;
+
+import lombok.extern.slf4j.Slf4j;
+
 @Slf4j
 public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<Integer> {
 
-	private Dictionary dict;
+	private SuccinctTrie dict;
 	private ConceptTreeCache cache;
 	private List<Integer> ids;
+	private StringTypeEncoded type;
 
 	@Override
 	public String getName() {
@@ -37,10 +43,13 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 		return "prefixes.concept.json";
 	}
 
-	public List<String> getTestStrings() {
+	public List<byte[]> getTestStrings() {
 		return Arrays.asList(
-				"63F", "J14B", "N01C", "I10C", "L36Z", "960Z", "M10B", "X07A", "F06E", "P04C", "R63E", "O65B", "G77B", "F60B", "I65A", "F57Z", "R16Z", "R01D", "I23B", "A11E", "B44D", "F14A", "N62B", "Q61C", "I43B", "L43Z", "B36A", "F12F", "Z64B", "G07B"
-		);
+			"63F", "J14B", "N01C", "I10C", "L36Z", "960Z", "M10B", "X07A", "F06E", "P04C", "R63E", "O65B", "G77B", "F60B", "I65A", "F57Z", "R16Z", "R01D", "I23B", "A11E", "B44D", "F14A", "N62B", "Q61C", "I43B", "L43Z", "B36A", "F12F", "Z64B", "G07B"
+		)
+		.stream()
+		.map(String::getBytes)
+		.collect(Collectors.toList());
 	}
 
 	@Override
@@ -50,7 +59,7 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 
 	@Override
 	public void postprocessConcepts() {
-		dict = new Dictionary();
+		dict = new SuccinctTrie();
 
 		ids = getTestStrings().stream().map(dict::add).collect(Collectors.toList());
 		dict.compress();
@@ -58,8 +67,8 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 		TreeChildPrefixIndex.putIndexInto(newConcept);
 		TreeChildPrefixIndex.putIndexInto(referenceConcept);
 
-		StringType type = new StringType();
-		type.setDictionary(dict);
+		type = new StringTypeEncoded(new StringTypeDictionary(new VarIntTypeInt(-1, +1)), Encoding.UTF8);
+		type.getSubType().setDictionary(dict);
 		newConcept.initializeIdCache(type, importId);
 
 		cache = newConcept.getCache(importId);
@@ -67,7 +76,7 @@ public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<I
 
 	@Override
 	public void referenceSearch(Integer key) throws ConceptConfigurationException {
-		referenceConcept.findMostSpecificChild(dict.getElement(key),  new CalculatedValue<>(() -> Collections.singletonMap("distinction", RandomUtils.nextInt(8, 19 ))));
+		referenceConcept.findMostSpecificChild(type.getElement(key),  new CalculatedValue<>(() -> Collections.singletonMap("distinction", RandomUtils.nextInt(8, 19 ))));
 	}
 
 	@Override

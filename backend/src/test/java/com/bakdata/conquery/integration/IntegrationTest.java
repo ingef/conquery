@@ -6,6 +6,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 public interface IntegrationTest {
 
@@ -22,14 +23,24 @@ public interface IntegrationTest {
 		}
 	}
 	
+	@Slf4j
 	@RequiredArgsConstructor
 	static final class Wrapper implements Executable {
+		private final String name;
 		private final TestConquery testConquery;
 		private final IntegrationTest test;
 		
 		@Override
 		public void execute() throws Throwable {
-			test.execute(testConquery);
+			log.info("STARTING integration test {}", name);
+			try {
+				test.execute(testConquery);
+			}
+			catch(Exception e) {
+				log.info("FAILED integration test "+name, e);
+				throw e;
+			}
+			log.info("SUCCESS integration test {}", name);
 		}
 	}
 }

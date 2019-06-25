@@ -7,6 +7,7 @@ import javax.tools.ToolProvider;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.bakdata.conquery.commands.CollectEntitiesCommand;
 import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
@@ -52,13 +53,14 @@ public class Conquery extends Application<ConqueryConfig> {
 
 		bootstrap.addCommand(new SlaveCommand());
 		bootstrap.addCommand(new PreprocessorCommand());
+		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
 
 		//do some setup in other classes after initialization but before running a command
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				configuration.initializeDatePatterns();
+				configuration.initialize();
 			}
 
 			@Override

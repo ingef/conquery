@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 
 import T from "i18n-react";
 import { type FieldPropsType } from "redux-form";
@@ -16,6 +17,7 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 
 import Label from "./Label";
 import Labeled from "./Labeled";
+import BaseInput from "./BaseInput";
 
 const Root = styled("div")`
   text-align: ${({ center }) => (center ? "center" : "left")};
@@ -27,8 +29,12 @@ const Pickers = styled("div")`
 `;
 
 const StyledLabel = styled(Label)`
-  font-size: ${({ theme }) => theme.font.md};
-  margin-bottom: 10px;
+  ${({ theme, large }) =>
+    large &&
+    css`
+      font-size: ${theme.font.md};
+      margin: 20px 0 10px;
+    `}
 `;
 
 const StyledLabeled = styled(Labeled)`
@@ -43,6 +49,7 @@ type PropsType = FieldPropsType & {
   labelSuffix?: React.Node,
   className?: string,
   inline?: boolean,
+  large?: boolean,
   center?: boolean
 };
 
@@ -91,6 +98,7 @@ const InputDateRange = (props: PropsType) => {
   };
 
   const {
+    large,
     inline,
     center,
     label,
@@ -107,7 +115,7 @@ const InputDateRange = (props: PropsType) => {
   return (
     <Root center={center}>
       {label && (
-        <StyledLabel>
+        <StyledLabel large={large}>
           {label}
           <InfoTooltip
             text={T.translate("inputDateRange.tooltip.possiblePattern")}
@@ -117,25 +125,23 @@ const InputDateRange = (props: PropsType) => {
       )}
       <Pickers inline={inline} center={center}>
         <StyledLabeled label={T.translate("inputDateRange.from")}>
-          <input
-            tabIndex={1}
+          <BaseInput
+            inputType="text"
             value={min}
             placeholder={displayDateFormat.toUpperCase()}
-            onChange={event =>
-              onChangeRaw("min", event.target.value, displayDateFormat)
-            }
+            onChange={value => onChangeRaw("min", value, displayDateFormat)}
             onBlur={e => applyDate("min", e.target.value, displayDateFormat)}
+            inputProps={{ tabIndex: 1, autoFocus: true }}
           />
         </StyledLabeled>
         <StyledLabeled label={T.translate("inputDateRange.to")}>
-          <input
-            tabIndex={2}
+          <BaseInput
+            inputType="text"
             value={max}
             placeholder={displayDateFormat.toUpperCase()}
-            onChange={event =>
-              onChangeRaw("max", event.target.value, displayDateFormat)
-            }
+            onChange={value => onChangeRaw("max", value, displayDateFormat)}
             onBlur={e => applyDate("max", e.target.value, displayDateFormat)}
+            inputProps={{ tabIndex: 2 }}
           />
         </StyledLabeled>
       </Pickers>

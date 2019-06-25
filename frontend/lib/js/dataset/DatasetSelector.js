@@ -59,7 +59,7 @@ const mapStateToProps = state => ({
   selectedDatasetId: state.datasets.selectedDatasetId,
   datasets: state.datasets.data,
   error: state.datasets.error,
-  query: state.panes.right.tabs.queryEditor.query
+  query: state.queryEditor.query
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

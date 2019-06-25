@@ -2,41 +2,51 @@
 
 import React from "react";
 import T from "i18n-react";
-import { type FieldPropsType } from "redux-form";
+import type { FieldPropsType } from "redux-form";
 
 import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
 
 import { isEmpty } from "../common/helpers";
-import { type SelectOptionsType } from "../common/types/backend";
+import type { SelectOptionsT } from "../api/types";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 type PropsType = FieldPropsType & {
+  className?: string,
   label: string,
-  options: SelectOptionsType,
+  options: SelectOptionsT,
   disabled?: boolean,
   selectProps?: Object,
   tooltip?: string
 };
 
-const InputSelect = (props: PropsType) => {
-  const { input, options } = props;
+const InputSelect = ({
+  className,
+  input,
+  label,
+  options,
+  disabled,
+  selectProps,
+  tooltip
+}: PropsType) => {
   const selected = options && options.filter(v => v.value === input.value);
   const defaultValue =
     options && options.filter(v => v.value === input.defaultValue);
 
   return (
     <Labeled
-      disabled={props.disabled}
+      className={className}
+      disabled={disabled}
       valueChanged={!isEmpty(input.value) && input.value !== input.defaultValue}
       label={
         <>
-          {props.label}
-          {props.tooltip && <InfoTooltip text={props.tooltip} />}
+          {label}
+          {tooltip && <InfoTooltip text={tooltip} />}
         </>
       }
     >
       <ReactSelect
+        highlightChanged
         name="form-field"
         value={selected}
         defaultValue={defaultValue}
@@ -46,30 +56,10 @@ const InputSelect = (props: PropsType) => {
         }
         isSearchable={false}
         isClearable={input.clearable}
-        isDisabled={!!props.disabled}
+        isDisabled={!!disabled}
         placeholder={T.translate("reactSelect.placeholder")}
         noOptionsMessage={() => T.translate("reactSelect.noResults")}
-        {...props.selectProps}
-        ref={r => {
-          if (!r) return;
-
-          const select = r.select;
-          // https://github.com/JedWatson/react-select/issues/2816#issuecomment-425280935
-          if (!select.onInputBlurPatched) {
-            const originalOnInputBlur = select.onInputBlur;
-            select.onInputBlur = e => {
-              if (
-                select.menuListRef &&
-                select.menuListRef.contains(document.activeElement)
-              ) {
-                select.inputRef.focus();
-                return;
-              }
-              originalOnInputBlur(e);
-            };
-            select.onInputBlurPatched = true;
-          }
-        }}
+        {...selectProps}
       />
     </Labeled>
   );

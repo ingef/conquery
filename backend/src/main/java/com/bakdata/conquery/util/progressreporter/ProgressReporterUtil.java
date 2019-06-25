@@ -31,7 +31,7 @@ public class ProgressReporterUtil {
 		} else if (done) {
 			return ProgressReporterUtil.MAX_PROGRESS;
 		} else {
-			long nanosEstimated = DoubleMath.roundToLong(elapsed / progress - elapsed, RoundingMode.HALF_UP);
+			long nanosEstimated = DoubleMath.roundToLong((1+elapsed) / (1+progress - elapsed), RoundingMode.HALF_UP);
 			Duration estimate = Duration.ofNanos(nanosEstimated);
 			int percent = DoubleMath.roundToInt(progress * 100, RoundingMode.FLOOR);
 

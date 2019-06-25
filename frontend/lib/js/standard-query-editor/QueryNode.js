@@ -6,6 +6,7 @@ import styled from "@emotion/styled";
 import T from "i18n-react";
 import { DragSource, type ConnectDragSource } from "react-dnd";
 
+import AdditionalInfoHoverable from "../tooltip/AdditionalInfoHoverable";
 import { dndTypes } from "../common/constants";
 import { ErrorMessage } from "../error-message";
 import { nodeHasActiveFilters } from "../model/node";
@@ -99,10 +100,12 @@ class QueryNode extends React.Component {
       onToggleTimestamps
     } = this.props;
 
+    const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
+
     return (
       <Root
         ref={instance => connectDragSource(instance)}
-        hasActiveFilters={!node.error && nodeHasActiveFilters(node)}
+        hasActiveFilters={hasActiveFilters}
         onClick={!node.error && onEditClick}
       >
         <Node>
@@ -116,7 +119,7 @@ class QueryNode extends React.Component {
           ) : (
             <>
               <Label>{node.label || node.id}</Label>
-              {node.description && (
+              {node.description && (!node.ids || node.ids.length === 1) && (
                 <Description>{node.description}</Description>
               )}
             </>
@@ -149,7 +152,7 @@ const nodeSource = {
     // Return the data describing the dragged item
     // NOT using `...node` since that would also spread `children` in.
     // This item may stem from either:
-    // 1) A concept (dragged from CategoryTreeNode)
+    // 1) A concept (dragged from ConceptTreeNode)
     // 2) A previous query (dragged from PreviousQueries)
     const { node, andIdx, orIdx } = props;
     const { height, width } = findDOMNode(component).getBoundingClientRect();
@@ -164,6 +167,10 @@ const nodeSource = {
 
       label: node.label,
       excludeTimestamps: node.excludeTimestamps,
+
+      additionalInfos: node.additionalInfos,
+      matchingEntries: node.matchingEntries,
+      dateRange: node.dateRange,
 
       loading: node.loading,
       error: node.error
@@ -196,4 +203,6 @@ const collect = (connect, monitor) => ({
   isDragging: monitor.isDragging()
 });
 
-export default DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(QueryNode);
+export default AdditionalInfoHoverable(
+  DragSource(dndTypes.QUERY_NODE, nodeSource, collect)(QueryNode)
+);

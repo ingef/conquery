@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
@@ -10,8 +10,13 @@ public interface Aggregator<T> extends CtxCloneable<Aggregator<T>>, EventIterati
 
 	T getAggregationResult();
 
-	void aggregateEvent(Block block, int event);
+	void aggregateEvent(Bucket bucket, int event);
 	
 	@JsonIgnore
 	ResultType getResultType();
+	
+	@Override
+	default boolean isOfInterest(Bucket bucket) {
+		return true;
+	}
 }

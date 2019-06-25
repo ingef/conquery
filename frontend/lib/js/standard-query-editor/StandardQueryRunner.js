@@ -12,20 +12,20 @@ function isButtonEnabled(state, ownProps) {
   return !!// Return true or false even if all are undefined / null
   (
     ownProps.datasetId !== null &&
-    !state.panes.right.tabs.queryEditor.queryRunner.startQuery.loading &&
-    !state.panes.right.tabs.queryEditor.queryRunner.stopQuery.loading &&
-    state.panes.right.tabs.queryEditor.query.length > 0
+    !state.queryEditor.queryRunner.startQuery.loading &&
+    !state.queryEditor.queryRunner.stopQuery.loading &&
+    state.queryEditor.query.length > 0
   );
 }
 
 const mapStateToProps = (state, ownProps) => ({
-  queryRunner: state.panes.right.tabs.queryEditor.queryRunner,
+  queryRunner: state.queryEditor.queryRunner,
   isButtonEnabled: isButtonEnabled(state, ownProps),
-  isQueryRunning: !!state.panes.right.tabs.queryEditor.queryRunner.runningQuery,
+  isQueryRunning: !!state.queryEditor.queryRunner.runningQuery,
   // Following ones only needed in dispatch functions
-  queryId: state.panes.right.tabs.queryEditor.queryRunner.runningQuery,
-  version: state.categoryTrees.version,
-  query: state.panes.right.tabs.queryEditor.query
+  queryId: state.queryEditor.queryRunner.runningQuery,
+  version: state.conceptTrees.version,
+  query: state.queryEditor.query
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({

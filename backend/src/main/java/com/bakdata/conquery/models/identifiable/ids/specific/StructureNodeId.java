@@ -5,8 +5,8 @@ import java.util.List;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -35,13 +35,16 @@ public class StructureNodeId extends AId<StructureNode> implements NamespacedId 
 		INSTANCE;
 		
 		@Override
-		public StructureNodeId parse(PeekingIterator<String> parts) {
-			DatasetId dataset = DatasetId.Parser.INSTANCE.parse(parts);
-			StructureNodeId result = new StructureNodeId(dataset, null, parts.next());
-			while(parts.hasNext()) {
-				result = new StructureNodeId(dataset, result, parts.next());
+		public StructureNodeId parseInternally(IdIterator parts) {
+			String name = parts.next();
+			if(parts.remaining() == 1) {
+				DatasetId dataset = DatasetId.Parser.INSTANCE.parse(parts);
+				return new StructureNodeId(dataset, null, name);
 			}
-			return result;
+			else {
+				StructureNodeId parent = parse(parts);
+				return new StructureNodeId(parent.getDataset(), parent, name);
+			}
 		}
 	}
 }

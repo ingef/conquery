@@ -9,7 +9,7 @@ import T from "i18n-react";
 import { type QueryNodeType } from "../standard-query-editor/types";
 
 import TransparentButton from "../button/TransparentButton";
-import EscAble from "../common/components/EscAble";
+import useEscPress from "../hooks/useEscPress";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
@@ -18,7 +18,7 @@ import DescriptionColumn from "./DescriptionColumn";
 
 import { createQueryNodeEditorActions } from "./actions";
 
-const StyledEscAble = styled(EscAble)`
+const Root = styled("div")`
   padding: 0 10px;
   left: 0;
   top: 0;
@@ -37,7 +37,7 @@ const Wrapper = styled("div")`
   width: 100%;
   height: 100%;
   overflow: auto;
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
 const CloseButton = styled(TransparentButton)`
@@ -52,6 +52,7 @@ type QueryNodeEditorState = {
   selectedInputTableIdx: number,
   selectedInput: number,
   editingLabel: boolean,
+
   onSelectDetailsView: Function,
   onSelectInputTableView: Function,
   onShowDescription: Function,
@@ -64,7 +65,11 @@ export type PropsType = {
   editorState: QueryNodeEditorState,
   node: QueryNodeType,
   showTables: boolean,
+  disabledTables: string[],
   isExcludeTimestampsPossible: boolean,
+  datasetId: number,
+  suggestions: ?Object,
+
   onCloseModal: Function,
   onUpdateLabel: Function,
   onDropConcept: Function,
@@ -78,13 +83,18 @@ export type PropsType = {
   onLoadFilterSuggestions: Function,
   onSelectSelects: Function,
   onSelectTableSelects: Function,
-  datasetId: number,
-  suggestions: ?Object,
   onToggleIncludeSubnodes: Function
 };
 
 const QueryNodeEditor = (props: PropsType) => {
   const { node, editorState } = props;
+
+  function close() {
+    editorState.onReset();
+    props.onCloseModal();
+  }
+
+  useEscPress(close);
 
   if (!node) return null;
 
@@ -93,13 +103,8 @@ const QueryNodeEditor = (props: PropsType) => {
       ? node.tables[editorState.selectedInputTableIdx]
       : null;
 
-  function close() {
-    editorState.onReset();
-    props.onCloseModal();
-  }
-
   return (
-    <StyledEscAble onEscPressed={close}>
+    <Root>
       <Wrapper>
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
@@ -111,7 +116,7 @@ const QueryNodeEditor = (props: PropsType) => {
           {T.translate("common.done")}
         </CloseButton>
       </Wrapper>
-    </StyledEscAble>
+    </Root>
   );
 };
 
@@ -131,7 +136,7 @@ export const createConnectedQueryNodeEditor = (
       setInputTableViewActive,
       setFocusedInput,
       reset
-    } = createQueryNodeEditorActions(ownProps.type);
+    } = createQueryNodeEditorActions(ownProps.name);
 
     return {
       ...externalDispatchProps,

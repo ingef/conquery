@@ -4,7 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
@@ -18,17 +17,13 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
-import com.bakdata.conquery.util.io.FileTreeReduction;
 
 import io.dropwizard.views.View;
 import lombok.Getter;
@@ -37,7 +32,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@PermitAll @AuthCookie
+@PermitAll
 @Getter @Setter @Slf4j
 @Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
 public class TablesUIResource {
@@ -77,7 +72,6 @@ public class TablesUIResource {
 			processor.getUIContext(),
 			new TableStatistics(
 				table,
-				imports.stream().mapToLong(Import::getNumberOfBlocks).sum(),
 				imports.stream().mapToLong(Import::getNumberOfEntries).sum()
 			)
 		);

@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -21,9 +21,9 @@ public class AggregatorNode<T> extends QPNode  {
 	private boolean triggered = false;
 	
 	@Override
-	public void nextEvent(Block block, int event) {
+	public void nextEvent(Bucket bucket, int event) {
 		triggered = true;
-		aggregator.aggregateEvent(block, event);
+		aggregator.aggregateEvent(bucket, event);
 	}
 
 	@Override
@@ -42,12 +42,17 @@ public class AggregatorNode<T> extends QPNode  {
 	}
 	
 	@Override
-	public void nextBlock(Block block) {
-		aggregator.nextBlock(block);
+	public void nextBlock(Bucket bucket) {
+		aggregator.nextBlock(bucket);
 	}
 	
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		aggregator.nextTable(ctx, currentTable);
+	}
+	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return true;
 	}
 }

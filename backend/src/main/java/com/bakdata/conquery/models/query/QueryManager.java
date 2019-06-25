@@ -2,14 +2,17 @@ package com.bakdata.conquery.models.query;
 
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.IdMap;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -23,7 +26,7 @@ public class QueryManager {
 
 	@NonNull
 	private final Namespace namespace;
-	private final IdMap<ManagedQueryId, ManagedQuery> queries = new IdMap<>();
+	private final Map<ManagedExecutionId, ManagedQuery> queries = new HashMap<>();
 
 	public void initMaintenance(ScheduledExecutorService service) {
 		if (service == null) {
@@ -41,7 +44,7 @@ public class QueryManager {
 	public void maintain() {
 		LocalDateTime threshold = LocalDateTime.now().minus(10L, ChronoUnit.MINUTES);
 
-		for (ManagedQuery mq : queries.values()) {
+		for (ManagedExecution mq : queries.values()) {
 			if (mq.getFinishTime() != null && mq.getFinishTime().isBefore(threshold)) {
 				queries.remove(mq.getId());
 			}
@@ -59,8 +62,8 @@ public class QueryManager {
 		));
 		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
 		managed.setQueryId(queryId);
-		namespace.getStorage().getMetaStorage().addQuery(managed);
-		queries.add(managed);
+		namespace.getStorage().getMetaStorage().addExecution(managed);
+		queries.put(managed.getId(), managed);
 
 		
 		for(WorkerInformation worker : namespace.getWorkers()) {
@@ -71,7 +74,7 @@ public class QueryManager {
 	
 	public ManagedQuery reexecuteQuery(ManagedQuery query) throws JSONException {
 		query.initExecutable(namespace);
-		queries.add(query);
+		queries.put(query.getId(), query);
 		
 		for(WorkerInformation worker : namespace.getWorkers()) {
 			worker.send(new ExecuteQuery(query));
@@ -80,12 +83,12 @@ public class QueryManager {
 	}
 
 	public void addQueryResult(ShardResult result) {
-		ManagedQuery managedQuery = queries.getOrFail(result.getQueryId());
+		ManagedQuery managedQuery = getQuery(result.getQueryId());
 		managedQuery.addResult(result);
 	}
 
-	public ManagedQuery getQuery(ManagedQueryId id) {
-		return queries.getOrFail(id);
+	public ManagedQuery getQuery(ManagedExecutionId id) {
+		return Objects.requireNonNull(queries.get(id), ()->"unknown query id "+id);
 	}
 
 }

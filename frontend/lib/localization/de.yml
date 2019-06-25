@@ -2,7 +2,7 @@ locale: "de"
 
 headline: "Anfragen und Analyse"
 leftPane:
-  categoryTrees: "Konzeptbäume"
+  conceptTrees: "Konzeptbäume"
   previousQueries: "Anfragen"
 
 rightPane:
@@ -10,7 +10,7 @@ rightPane:
   timebasedQueryEditor: "Zeit-Editor"
   externalForms: "Formulare"
 
-categoryTreeList:
+conceptTreeList:
   loading: "Lade Konzeptbäume"
   loadingTree: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
@@ -36,10 +36,9 @@ queryRunner:
   resultCount: "{count} Ergebnisse"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
-  downloadResults: "CSV"
 
 queryEditor:
-  couldNotExpandNode: "Knoten nicht gefunden"
+  couldNotExpandNode: "Konzept nicht gefunden"
   couldNotInsertConceptList: "Fehler beim Einfügen der Konzeptliste"
   edit: "Bearbeiten"
   exclude: "Nicht"
@@ -51,9 +50,14 @@ queryEditor:
   loadingPreviousQuery: "Lade Anfragedetails"
 
 dropzone:
-  dragElementPlease: "Ziehe ein Konzept oder eine Anfrage in diesen Bereich"
-  dragElementPleaseShort: "Füge ein Element hinzu"
+  dragElementPlease: "Füge ein Element hinzu"
   dragQuery: "Füge eine Anfrage hinzu"
+  explanation: "In diesem Bereich erstellst Du eine Anfrage"
+  drop: "Ziehe"
+  aConcept: "ein Konzept"
+  aQuery: "eine Anfrage"
+  aConceptList: "eine Konzeptliste"
+  intoThisArea: "in diesen Bereich"
 
 datasetSelector:
   pleaseChoose: "Datenbank auswählen"
@@ -65,7 +69,8 @@ queryNodeEditor:
   conceptNodes: "Konzeptknoten"
   conceptNodeTables: "Anfragetabellen"
   properties: "Eigenschaften"
-  resetAll: "Alle zurücksetzen"
+  reset: "Zurücksetzen"
+  resetSettings: "Änderungen zurücksetzen"
   excludeTimestamps: "Von Zeitberechnung ausschließen"
   excludingTimestamps: "Von Zeitberechnung ausgeschlossen"
   description: "Beschreibung"
@@ -76,6 +81,7 @@ queryNodeEditor:
   tooManyValues: "{count} Werte ausgewählt"
   filters: "Filter"
   selects: "Zusatzwerte"
+  nodeNotFound: "Konzept nicht gefunden"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
@@ -101,11 +107,11 @@ common:
   clearValue: "Wert entfernen"
 
 tooltip:
+  headline: "Info"
+  placeholder: "Weitere Informationen zu Konzepten ..."
   entriesFound:
-    1: "gefundener Eintrag"
-    _: "gefundene Einträge"
-
-  placeholder: "Weitere Informationen über einen Konzeptknoten ..."
+    1: "Eintrag"
+    _: "Einträge"
   date:
     daterange: "Zeitraum"
     from: "Von"
@@ -183,7 +189,8 @@ timebasedQueryEditor:
 externalForms:
   forms: "Formulare"
   formValidation:
-    isRequired: "ist erforderlich"
+    mustBePositiveNumber: "Muss positive Zahl sein"
+    isRequired: "Erforderlich"
     invalidDateRange: "Enddatum liegt vor Startdatum"
 
   common:
@@ -211,18 +218,17 @@ externalForms:
     edit: "Bearbeiten"
 
 uploadQueryResultsModal:
-  headline: "Anfrageergebnis hochladen"
+  headline: "Ergebnisliste hochladen"
   dropzone: "Lege eine CSV-Datei hier ab"
   upload: "Hochladen"
   uploadFailed: "Konnte Datei nicht hochladen"
   uploadFailedSub: "Bitte überprüfen Sie das Format und die Netzwerkverbindung"
-  uploadSucceeded: "Datei hochladen erfolgreich"
-  previousQueryCreated: "Frühere Anfrage erfolgreich erstellt"
+  uploadSucceeded: "Ergebnisliste hochladen erfolgreich"
   formatInfo:
     text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
 
 uploadConceptListModal:
-  headline: "Konzeptliste hochladen"
+  headline: "Konzepte aus Liste einfügen"
   label: "Name der Liste"
   selectConceptRootNode: "Konzeptbaum-Wurzel auswählen"
   insertNode: "Jetzt einfügen"
@@ -236,7 +242,7 @@ uploadConceptListModal:
   error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
 
 uploadFilterListModal:
-  headline: "Filter-Werte hochladen"
+  headline: "Filter-Werte aus Liste einfügen"
 
 conceptListDetailsModal:
   conceptTreeRoot: "Konzeptbaum"

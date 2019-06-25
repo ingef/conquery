@@ -6,11 +6,11 @@ import difference from "lodash.difference";
 import {
   getConceptsByIdsWithTablesAndSelects,
   getConceptById
-} from "../category-trees/globalTreeStoreHelper";
+} from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
-import { type DateRangeType } from "../common/types/backend";
+import type { DateRangeT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
 
@@ -66,7 +66,6 @@ import {
 
 import type {
   QueryNodeType,
-  QueryGroupType,
   StandardQueryType,
   DraggedNodeType,
   DraggedQueryType
@@ -118,6 +117,10 @@ const filterItem = (
       loading: item.loading,
       error: item.error,
 
+      additionalInfos: item.additionalInfos,
+      matchingEntries: item.matchingEntries,
+      dateRange: item.dateRange,
+
       isPreviousQuery: item.isPreviousQuery
     };
 };
@@ -163,7 +166,7 @@ const dropAndNode = (
   action: {
     payload: {
       item: DraggedNodeType | DraggedQueryType,
-      dateRange?: DateRangeType
+      dateRange?: DateRangeT
     }
   }
 ) => {
@@ -340,14 +343,9 @@ const setNodeFilterProperties = (state, action, properties) => {
 };
 
 const setNodeFilterValue = (state, action) => {
-  const { value, formattedValue } = action.payload;
+  const { value } = action.payload;
 
-  // "action" is weirdly split if half here.
-  // Check if formattedValue is actually needed and refactor.
-  return setNodeFilterProperties(state, action, {
-    value,
-    formattedValue
-  });
+  return setNodeFilterProperties(state, action, { value });
 };
 
 const setNodeTableSelects = (state, action) => {
@@ -386,8 +384,7 @@ const switchNodeFilterMode = (state, action) => {
 
   return setNodeFilterProperties(state, action, {
     mode,
-    value: null,
-    formattedValue: null
+    value: null
   });
 };
 
@@ -430,7 +427,7 @@ const resetGroupDates = (state, action) => {
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
-// since `savedTables` comes from a `savedConcept` in a `categoryTree`. Such a
+// since `savedTables` comes from a `savedConcept` in a `conceptTree`. Such a
 // `savedConcept` is never modified and only declares possible filters.
 // Since `table` comes from a previous query, it may have set filter values
 // if so, we will need to merge them in.
@@ -526,7 +523,6 @@ const expandNode = (rootConcepts, node) => {
       return {
         ...node,
         id: node.query,
-        query: node.resolvedQuery,
         isPreviousQuery: true
       };
     case "DATE_RESTRICTION":
@@ -566,18 +562,11 @@ const expandNode = (rootConcepts, node) => {
 };
 
 // Completely override all groups in the editor with the previous groups, but
-// a) merge elements with concept data from category trees (esp. "tables")
+// a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (
-  state,
-  action: { payload: { groups: QueryGroupType[] } }
-) => {
+const expandPreviousQuery = (state, action) => {
   const { rootConcepts, query } = action.payload;
-
-  if (!query.root || query.root.type !== "AND") {
-    throw new Error("Cant expand query, because root is not AND");
-  }
 
   return query.root.children.map(child => expandNode(rootConcepts, child));
 };
@@ -639,7 +628,7 @@ const loadPreviousQuerySuccess = (state, action) => {
     ...label,
     id: action.payload.data.id,
     loading: false,
-    query: action.payload.data.query.query // TODO: Backend bug, here should be only "query"
+    query: action.payload.data.query
   });
 };
 const loadPreviousQueryError = (state, action) => {
@@ -735,10 +724,6 @@ const insertUploadedConceptList = (state, action) => {
 
 const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
-};
-
-const deselectNode = (state, action) => {
-  return setAllElementsProperties(state, { isEditing: false });
 };
 
 const updateNodeLabel = (state, action) => {
@@ -901,7 +886,7 @@ const query = (
     case SELECT_NODE_FOR_EDITING:
       return selectNodeForEditing(state, action);
     case DESELECT_NODE:
-      return deselectNode(state, action);
+      return setAllElementsProperties(state, { isEditing: false });
     case UPDATE_NODE_LABEL:
       return updateNodeLabel(state, action);
     case ADD_CONCEPT_TO_NODE:

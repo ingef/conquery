@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
@@ -26,7 +26,7 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 		this.context = ctx;
 	}
 
-	public abstract void nextEvent(Block block, int event);
+	public abstract void nextEvent(Bucket bucket, int event);
 
 	public abstract boolean isContained();
 

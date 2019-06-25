@@ -13,7 +13,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.exceptions.JSONException;
 
@@ -22,7 +21,7 @@ import lombok.Setter;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@PermitAll @AuthCookie
+@PermitAll
 @Path("/")
 @Getter @Setter
 public class AdminResource {

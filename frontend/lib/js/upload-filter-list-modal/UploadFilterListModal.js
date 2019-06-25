@@ -1,16 +1,40 @@
 // @flow
 
 import React from "react";
+import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
 import T from "i18n-react";
-import classnames from "classnames";
 
 import { Modal } from "../modal";
 import { ScrollableList } from "../scrollable-list";
 import type { StateType } from "../app/reducers";
+import FaIcon from "../icon/FaIcon";
 
 import { uploadFilterListModalClose } from "./actions";
+
+const Root = styled("div")`
+  padding: 0 0 10px;
+`;
+const Section = styled("div")`
+  padding: 10px 20px;
+`;
+const Msg = styled("p")`
+  margin: 10px 0 5px;
+`;
+const BigIcon = styled(FaIcon)`
+  font-size: 20px;
+  margin-right: 10px;
+`;
+const ErrorIcon = styled(BigIcon)`
+  color: ${({ theme }) => theme.col.red};
+`;
+const SuccessIcon = styled(BigIcon)`
+  color: ${({ theme }) => theme.col.green};
+`;
+const CenteredIcon = styled(FaIcon)`
+  text-align: center;
+`;
 
 type PropsType = {
   unresolvedItemsCount: number,
@@ -19,10 +43,10 @@ type PropsType = {
   isModalOpen: boolean,
   resolved: Object,
   error: Object,
-  onCloseModal: Function
+  onClose: Function
 };
 
-const UploadConceptListModal = (props: PropsType) => {
+const UploadFilterListModal = (props: PropsType) => {
   if (!props.isModalOpen) return null;
 
   const {
@@ -31,78 +55,61 @@ const UploadConceptListModal = (props: PropsType) => {
     unresolvedItemsCount,
     resolvedItemsCount,
     error,
-    onCloseModal
+    onClose
   } = props;
 
   const hasUnresolvedItems = unresolvedItemsCount > 0;
   const hasResolvedItems = resolvedItemsCount > 0;
 
   return (
-    <Modal closeModal={onCloseModal} doneButton>
-      <div className="upload-concept-list-modal">
-        <h3>{T.translate("uploadFilterListModal.headline")}</h3>
+    <Modal
+      onClose={onClose}
+      doneButton
+      headline={T.translate("uploadFilterListModal.headline")}
+    >
+      <Root>
+        {loading && <CenteredIcon icon="spinner" />}
         {error && (
-          <div className="upload-concept-list-modal__status upload-concept-list-modal__section">
-            <p className="upload-concept-list-modal__error">
-              <i className="fa fa-exclamation-circle fa-2x" />
-            </p>
-            <p>{T.translate("uploadConceptListModal.error")}</p>
-          </div>
-        )}
-        {loading && (
-          <div
-            className={classnames(
-              "upload-concept-list-modal__status",
-              "upload-concept-list-modal__section",
-              "upload-concept-list-modal__loading"
-            )}
-          >
-            <i className="fa fa-spinner fa-2x" />
-          </div>
+          <p>
+            <ErrorIcon icon="exclamation-circle" />
+            {T.translate("uploadConceptListModal.error")}
+          </p>
         )}
         {resolved && (
-          <div className="upload-concept-list-modal__status upload-concept-list-modal__section">
-            {hasResolvedItems && !hasUnresolvedItems && (
-              <p className="upload-concept-list-modal__success">
-                <i className="fa fa-check-circle fa-2x" />
-              </p>
-            )}
-            {hasResolvedItems && hasUnresolvedItems && (
-              <p className="upload-concept-list-modal__info">
-                <i className="fa fa-info-circle fa-2x" />
-              </p>
-            )}
-            {!hasResolvedItems && hasUnresolvedItems && (
-              <p className="upload-concept-list-modal__error">
-                <i className="fa fa-exclamation-circle fa-2x" />
-              </p>
-            )}
+          <Section>
             {hasResolvedItems && (
-              <p>
+              <Msg>
+                <SuccessIcon icon="check-circle" />
                 {T.translate("uploadConceptListModal.resolvedCodes", {
                   context: resolvedItemsCount
                 })}
-              </p>
+              </Msg>
             )}
             {hasUnresolvedItems && (
-              <div>
-                <p>
-                  {T.translate("uploadConceptListModal.unknownCodes", {
-                    context: unresolvedItemsCount
-                  })}
-                </p>
-                <div className="upload-concept-list-modal__section">
-                  <ScrollableList
-                    maxVisibleItems={3}
-                    fullWidth
-                    items={resolved.unknownCodes}
+              <>
+                <Msg>
+                  <ErrorIcon icon="exclamation-circle" />
+                  <span
+                    dangerouslySetInnerHTML={{
+                      __html: T.translate(
+                        "uploadConceptListModal.unknownCodes",
+                        {
+                          context: unresolvedItemsCount
+                        }
+                      )
+                    }}
                   />
-                </div>
-              </div>
+                </Msg>
+                <ScrollableList
+                  maxVisibleItems={3}
+                  fullWidth
+                  items={resolved.unknownCodes}
+                />
+              </>
             )}
-          </div>
+          </Section>
         )}
-      </div>
+      </Root>
     </Modal>
   );
 };
@@ -136,10 +143,10 @@ const mapStateToProps = (state: StateType) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onCloseModal: () => dispatch(uploadFilterListModalClose())
+  onClose: () => dispatch(uploadFilterListModalClose())
 });
 
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(UploadConceptListModal);
+)(UploadFilterListModal);

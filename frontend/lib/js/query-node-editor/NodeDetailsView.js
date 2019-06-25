@@ -4,7 +4,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import { getConceptById } from "../category-trees/globalTreeStoreHelper";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { sortSelects } from "../model/select";
 
 import InputMultiSelect from "../form-components/InputMultiSelect";
@@ -17,6 +17,7 @@ import ConceptDropzone from "./ConceptDropzone";
 import ContentCell from "./ContentCell";
 
 const Row = styled("div")`
+  max-width: 300px;
   margin-bottom: 10px;
 `;
 
@@ -35,7 +36,7 @@ const NodeDetailsView = (props: PropsType) => {
     onRemoveConcept
   } = props;
 
-  const rootConcept = node.isPreviousQuery ? getConceptById(node.tree) : null;
+  const rootConcept = !node.isPreviousQuery ? getConceptById(node.tree) : null;
 
   return (
     <ContentCell>
@@ -67,7 +68,7 @@ const NodeDetailsView = (props: PropsType) => {
           />
         </Row>
       )}
-      {!node.isPreviousQuery && rootConcept && (
+      {!node.isPreviousQuery && rootConcept && rootConcept.children && (
         <Row>
           <RowHeading>{rootConcept.label}</RowHeading>
           <div>
@@ -77,10 +78,10 @@ const NodeDetailsView = (props: PropsType) => {
             {node.ids.map(conceptId => (
               <ConceptEntry
                 key={conceptId}
-                node={rootConcept}
+                node={getConceptById(conceptId)}
+                conceptId={conceptId}
                 canRemoveConcepts={node.ids.length > 1}
                 onRemoveConcept={onRemoveConcept}
-                conceptId={conceptId}
               />
             ))}
           </div>

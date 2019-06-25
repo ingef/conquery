@@ -13,7 +13,7 @@ import { deletePreviousQueryModalClose } from "./actions";
 
 type PropsType = {
   queryId: string | number,
-  onCloseModal: () => void,
+  onClose: () => void,
   onDeletePreviousQuery: () => void
 };
 
@@ -32,10 +32,10 @@ const PrimaryBtn = styled(PrimaryButton)`
 const DeletePreviousQueryModal = (props: PropsType) => {
   return (
     !!props.queryId && (
-      <Modal closeModal={props.onCloseModal}>
+      <Modal onClose={props.onClose}>
         <Root>
           <h3>{T.translate("deletePreviousQueryModal.areYouSure")}</h3>
-          <Btn onClick={props.onCloseModal}>{T.translate("common.cancel")}</Btn>
+          <Btn onClick={props.onClose}>{T.translate("common.cancel")}</Btn>
           <PrimaryBtn onClick={props.onDeletePreviousQuery}>
             {T.translate("common.delete")}
           </PrimaryBtn>
@@ -50,7 +50,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = dispatch => ({
-  onCloseModal: () => dispatch(deletePreviousQueryModalClose()),
+  onClose: () => dispatch(deletePreviousQueryModalClose()),
   onDeletePreviousQuery: (datasetId, queryId) => {
     dispatch(deletePreviousQueryModalClose());
     dispatch(deletePreviousQuery(datasetId, queryId));

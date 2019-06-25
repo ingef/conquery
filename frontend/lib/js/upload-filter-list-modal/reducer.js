@@ -1,6 +1,6 @@
 // @flow
 
-import type { FilterValuesResolutionResultType } from "../common/types/backend";
+import type { PostFilterResolveResponseT } from "../api/types";
 
 import {
   MODAL_CLOSE,
@@ -12,7 +12,7 @@ import {
 export type StateType = {
   isModalOpen: boolean,
   loading: boolean,
-  resolved: FilterValuesResolutionResultType,
+  resolved: PostFilterResolveResponseT,
   error: ?Error
 };
 

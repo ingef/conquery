@@ -4,7 +4,6 @@ import React from "react";
 import { findDOMNode } from "react-dom";
 import T from "i18n-react";
 import styled from "@emotion/styled";
-import classnames from "classnames";
 import { DragSource } from "react-dnd";
 
 import VerticalToggleButton, {

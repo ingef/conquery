@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.aggregators;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
@@ -19,7 +19,7 @@ public abstract class ColumnAggregator<T> implements Aggregator<T> {
 	public abstract Column[] getRequiredColumns();
 
 	@Override
-	public abstract void aggregateEvent(Block block, int event);
+	public abstract void aggregateEvent(Bucket bucket, int event);
 
 	@Override
 	public String toString(){

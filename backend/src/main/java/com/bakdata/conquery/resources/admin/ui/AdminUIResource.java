@@ -27,11 +27,11 @@ import javax.ws.rs.core.UriBuilder;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import com.bakdata.conquery.io.jersey.AuthCookie;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobStatus;
@@ -39,7 +39,6 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingSt
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
@@ -49,12 +48,13 @@ import com.google.common.util.concurrent.Uninterruptibles;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
-//@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
+@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
+@Slf4j
 @Path("/")
-@AuthCookie
 @RequiredArgsConstructor(onConstructor_=@Inject)
 public class AdminUIResource {
 
@@ -90,6 +90,13 @@ public class AdminUIResource {
 		@NotEmpty @FormDataParam("mandantor_name") String name,
 		@NotEmpty @FormDataParam("mandantor_id") String idString) throws JSONException {
 		processor.createMandator(name, idString);
+		return Response.ok().build();
+	}
+	
+	@DELETE
+	@Path("/mandators/{"+ MANDATOR_NAME +"}")
+	public Response deleteMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) throws JSONException {
+		processor.deleteMandator(mandatorId);
 		return Response.ok().build();
 	}
 	
@@ -130,7 +137,7 @@ public class AdminUIResource {
 
 		managed.awaitDone(1, TimeUnit.DAYS);
 
-		if (managed.getStatus() == QueryStatus.FAILED) {
+		if (managed.getState() == ExecutionState.FAILED) {
 			throw new IllegalStateException("Query failed");
 		}
 

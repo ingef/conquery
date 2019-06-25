@@ -26,7 +26,7 @@ type PropsType = {
 
 const Root = styled("div")`
   margin-bottom: 5px;
-  padding: 0 10px 0 20px;
+  padding: 0 10px;
 `;
 
 const UploadQueryResults = (props: PropsType) => {
@@ -37,7 +37,7 @@ const UploadQueryResults = (props: PropsType) => {
       </IconButton>
       {props.isModalOpen && (
         <UploadQueryResultsModal
-          onCloseModal={props.onCloseModal}
+          onClose={props.onCloseModal}
           onUploadFile={file => props.onUploadFile(props.datasetId, file)}
           loading={props.loading}
           success={props.success}

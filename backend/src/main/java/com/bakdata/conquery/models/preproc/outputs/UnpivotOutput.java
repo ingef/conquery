@@ -9,8 +9,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -28,7 +28,7 @@ public class UnpivotOutput extends Output {
 	private boolean includeNulls=false;
 	
 	@Override
-	public List<Object> createOutput(CType<?,?> type, String[] row, int source, long sourceLine) throws ParsingException {
+	public List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException {
 		List<Object> parsedRows = new ArrayList<>();
 		for(int i=0;i<inputColumns.length;i++) {
 			String value = row[inputColumns[i]];

@@ -113,7 +113,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			standaloneCommand.getMaster().getAdmin().getAdminProcessor()
 		);
 		while(ns.getWorkers().size() < ns.getNamespaces().getSlaves().size()) {
-			Uninterruptibles.sleepUninterruptibly(500, TimeUnit.MILLISECONDS);
+			Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
 		}
 		support.waitUntilWorkDone();
 		openSupports.add(support);
@@ -158,7 +158,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		}
 		
 		//make buckets very small
-		config.getCluster().setEntityBucketSize(1);
+		//but not so small that we can't test bucket problems
+		config.getCluster().setEntityBucketSize(3);
 
 		return config;
 	}

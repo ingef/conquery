@@ -7,11 +7,11 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.TABLE;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -20,11 +20,13 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.EntityTag;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.apiv1.ContentTreeProcessor.ResolvedConceptsResult;
-import com.bakdata.conquery.models.api.description.FENode;
+import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -39,6 +41,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
+import com.google.common.collect.MoreCollectors;
 
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
@@ -76,22 +79,20 @@ public class ContentTreeResources {
 	@Path("{" + DATASET + "}/concepts/{" + CONCEPT + "}")
 	public Response getNode(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(CONCEPT) ConceptId id, @Context HttpServletRequest req) {
 		authorize(user, datasetId, Ability.READ);
-		// if (useCaching && req.getHeader(HttpHeaders.IF_NONE_MATCH) != null
-		// &&
-		// currentTag.equals(EntityTag.valueOf(req.getHeader(HttpHeaders.IF_NONE_MATCH))))
-		// {
-		// return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
-		// }
 		Dataset dataset = dsUtil.getDataset(datasetId);
-		Map<ConceptElementId<?>, FENode> result = processor.getNode(dataset, id);
-
+		FEList result = processor.getNode(dataset.getConcepts().stream().filter(c->c.getId().equals(id)).collect(MoreCollectors.onlyElement()));
 		if (result == null) {
 			throw new WebApplicationException("There is not concept with the id " + id + " in the dataset " + dataset, Status.NOT_FOUND);
+		}
+		
+		//check if browser still has this version cached
+		if (req.getHeader(HttpHeaders.IF_NONE_MATCH) != null && result.getCacheId().equals(EntityTag.valueOf(req.getHeader(HttpHeaders.IF_NONE_MATCH)))) {
+			return Response.status(HttpServletResponse.SC_NOT_MODIFIED).build();
 		}
 		else {
 			return Response
 				.ok(result)
-				// .tag(currentTag)
+				.tag(result.getCacheId())
 				.build();
 		}
 	}

@@ -11,7 +11,7 @@ import AnimatedDots from "../common/components/AnimatedDots";
 import BaseInput from "../form-components/BaseInput";
 
 const Root = styled("div")`
-  margin: 0 10px 5px 20px;
+  margin: 0 10px 5px;
   position: relative;
 `;
 

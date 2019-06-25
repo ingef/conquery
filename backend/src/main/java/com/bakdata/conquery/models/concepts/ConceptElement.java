@@ -53,4 +53,6 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return true;
 	}
+
+	public abstract long calculateBitMask();
 }

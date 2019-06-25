@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.addPermission;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
@@ -19,13 +18,13 @@ import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryStatus;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Iterators;
 
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -39,21 +38,21 @@ public class StoredQueriesProcessor {
 		this.namespaces = namespaces;
 	}
 
-	public List<SQStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
-		Collection<ManagedQuery> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllQueries();
+	public List<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
+		Collection<ManagedExecution> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllExecutions();
 
 		return allQueries
 			.stream()
-			.filter(q -> q.getStatus() == QueryStatus.DONE)
+			.filter(q -> q.getState() == ExecutionState.DONE)
 			//to exclude subtypes from somewhere else
-			.filter(q -> q.getQuery().getClass().equals(ConceptQuery.class))
-			.map(mq -> SQStatus.buildFromQuery(namespaces.getMetaStorage(), mq, URLBuilder.fromRequest(req)))
+			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery)q).getQuery().getClass().equals(ConceptQuery.class))
+			.map(mq -> mq.buildStatus(URLBuilder.fromRequest(req)))
 			.collect(Collectors.toList());
 	}
 
-	public void deleteQuery(Dataset dataset, ManagedQuery query) {
+	public void deleteQuery(Dataset dataset, ManagedExecution query) {
 		MasterMetaStorage storage = namespaces.get(dataset.getId()).getStorage().getMetaStorage();
-		storage.removeQuery(query.getId());
+		storage.removeExecution(query.getId());
 	}
 
 	public void shareQuery(MasterMetaStorage storage, User user, ManagedQuery query, boolean shared) {
@@ -68,7 +67,7 @@ public class StoredQueriesProcessor {
 					removePermission(mandator, queryPermission, storage);
 				}
 				query.setShared(shared);
-				storage.updateQuery(query);
+				storage.updateExecution(query);
 			} catch (JSONException e) {
 				log.error("", e);
 			}
@@ -78,19 +77,19 @@ public class StoredQueriesProcessor {
 	public void updateQueryLabel(MasterMetaStorage storage, User user, ManagedQuery query, String label) throws JSONException {
 		authorize(user, query, Ability.LABEL);
 		query.setLabel(label);
-		storage.updateQuery(query);
+		storage.updateExecution(query);
 	}
 
 	public void tagQuery(MasterMetaStorage storage, User user, ManagedQuery query, String[] newTags) throws JSONException {
 		authorize(user, query, Ability.TAG);
 		query.setTags(newTags);
-		storage.updateQuery(query);
+		storage.updateExecution(query);
 	}
 
-	public SQStatus getQueryWithSource(Dataset dataset, ManagedQueryId queryId) {
-		ManagedQuery query = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getQuery(queryId);
+	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId) {
+		ManagedExecution query = namespaces.getMetaStorage().getExecution(queryId);
 
-		return SQStatus.buildFromQuery(namespaces.getMetaStorage(), query);
+		return query.buildStatus();
 	}
 
 }

@@ -1,14 +1,12 @@
 package com.bakdata.conquery.models.identifiable.ids.specific;
 
-import static com.bakdata.conquery.models.identifiable.ids.IId.createParser;
-
 import java.util.List;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.google.common.collect.PeekingIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -36,9 +34,8 @@ public class UserId extends PermissionOwnerId<User> {
 		INSTANCE;
 		
 		@Override
-		public UserId parse(PeekingIterator<String> parts) {
-			com.bakdata.conquery.models.identifiable.ids.IId.Parser<?> parser = createParser(PermissionOwnerId.class);
-			return (UserId) parser.parse(parts);
+		public UserId parseInternally(IdIterator parts) {
+			return (UserId) PermissionOwnerId.Parser.INSTANCE.parse(parts);
 		}
 	}
 

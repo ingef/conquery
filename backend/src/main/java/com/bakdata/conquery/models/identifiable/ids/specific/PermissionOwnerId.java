@@ -6,7 +6,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.google.common.collect.PeekingIterator;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
@@ -23,9 +23,9 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 		INSTANCE;
 		
 		@Override
-		public PermissionOwnerId<?> parse(PeekingIterator<String> parts) {
-			String type = parts.next();
+		public PermissionOwnerId<?> parseInternally(IdIterator parts) {
 			String ownerId = parts.next();
+			String type = parts.next();
 			switch(type) {
 				case UserId.TYPE:
 					return new UserId(ownerId);

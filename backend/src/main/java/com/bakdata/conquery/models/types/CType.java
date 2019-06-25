@@ -2,18 +2,17 @@ package com.bakdata.conquery.models.types;
 
 import java.io.IOException;
 import java.io.OutputStream;
+import java.math.RoundingMode;
 import java.util.function.Consumer;
-
-import javax.annotation.Nonnull;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.dictionary.Dictionary;
-import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonParser;
+import com.google.common.math.LongMath;
 import com.google.common.primitives.Primitives;
 
 import lombok.Getter;
@@ -23,7 +22,7 @@ import lombok.Setter;
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
 @Getter @Setter @RequiredArgsConstructor
-public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?,?>> implements MajorTypeIdHolder {
+public abstract class CType<MAJOR_JAVA_TYPE, JAVA_TYPE> implements MajorTypeIdHolder {
 
 	@JsonIgnore
 	private transient final MajorTypeId typeId;
@@ -34,47 +33,7 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?,?>> implements
 	private long nullLines = 0;
 
 	public void init(DatasetId dataset) {}
-	public JAVA_TYPE parse(String v) throws ParsingException {
-		if(v==null) {
-			return null;
-		}
-		else {
-			try {
-				return parseValue(v);
-			}
-			catch(Exception e) {
-				throw new ParsingException("Failed to parse '"+v+"' as "+this.getClass().getSimpleName(), e);
-			}
-		}
-	}
 	
-	public JAVA_TYPE addLine(JAVA_TYPE v) {
-		lines++;
-		if(v == null) {
-			nullLines++;
-		}
-		else {
-			registerValue(v);
-		}
-		return v;
-	}
-
-	protected abstract JAVA_TYPE parseValue(@Nonnull String value) throws ParsingException;
-
-	protected void registerValue(JAVA_TYPE v) {};
-
-	public CType<?,MAJOR_TYPE> bestSubType() {
-		return this;
-	}
-	
-	public JAVA_TYPE transformFromMajorType(MAJOR_TYPE majorType, Object value) {
-		return (JAVA_TYPE)value;
-	}
-	
-	public Object transformToMajorType(JAVA_TYPE value, MAJOR_TYPE majorType) {
-		return value;
-	}
-
 	public Object createScriptValue(JAVA_TYPE value) {
 		return value;
 	}
@@ -91,9 +50,7 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?,?>> implements
 		return this.getClass().getSimpleName();
 	}
 
-	public boolean canStoreNull() {
-		return !primitiveType.isPrimitive();
-	}
+	public abstract boolean canStoreNull();
 
 	public boolean requiresExternalNullStore() {
 		return !canStoreNull() && getNullLines()>0;
@@ -102,5 +59,22 @@ public abstract class CType<JAVA_TYPE, MAJOR_TYPE extends CType<?,?>> implements
 	@JsonIgnore
 	public Class<?> getBoxedType(){
 		return Primitives.wrap(getPrimitiveType());
+	}
+	
+	public long estimateMemoryConsumption() {
+		long width = estimateMemoryBitWidth();
+		if(!canStoreNull()) {
+			width++;
+		}
+		return LongMath.divide(
+			(lines-nullLines) * width + nullLines * Math.min(Long.SIZE, width),
+			8, RoundingMode.CEILING
+		); 
+	}
+
+	public abstract long estimateMemoryBitWidth();
+	
+	public long estimateTypeSize() {
+		return 0;
 	}
 }

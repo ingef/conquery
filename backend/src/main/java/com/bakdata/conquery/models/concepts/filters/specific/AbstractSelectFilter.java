@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 import com.zigurs.karlis.utils.search.QuickSearch;
@@ -84,6 +84,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		if (values == null) {
 			values = new HashSet<>();
 		}
-		values.addAll(Sets.newHashSet(((IStringType) getColumn().getTypeFor(imp)).iterator()));
+		values.addAll(Sets.newHashSet(((AStringType) getColumn().getTypeFor(imp)).iterator()));
 	}
 }

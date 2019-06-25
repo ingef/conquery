@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.xodus.NamespacedStorage;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
 import com.bakdata.conquery.models.events.generation.SafeJavaString;
@@ -43,7 +44,6 @@ public class Import extends NamedImpl<ImportId> {
 	private TableId table;
 	@JsonManagedReference @NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
-	private long numberOfBlocks;
 	private long numberOfEntries;
 	@JsonIgnore
 	private transient BlockFactory blockFactory;
@@ -72,27 +72,22 @@ public class Import extends NamedImpl<ImportId> {
 	@JsonIgnore
 	public synchronized BlockFactory getBlockFactory() {
 		if(blockFactory == null) {
-			String eventSource = null;
-			String blockSource = null;
+			String bucketSource = null;
 			String factorySource = null;
-			try(ClassGenerator gen = ClassGenerator.create()) {
+			try {
+				ClassGenerator gen = ClassGenerator.create();
 				String suffix = ConqueryEscape.escape(this.getId().toString().replace('.', '_'));
 				
-				eventSource = applyTemplate("EventTemplate.ftl", suffix);
-				blockSource = applyTemplate("BlockTemplate.ftl", suffix);
+				bucketSource = applyTemplate("BucketTemplate.ftl", suffix);
 				factorySource = applyTemplate("BlockFactoryTemplate.ftl", suffix);
 				
 				if(DebugMode.isActive()) {
-					log.debug("Generated classes for {}:\n{}\n{}\n{}", this, eventSource, blockSource, factorySource);
+					log.debug("Generated classes for {}:\n{}\n{}", this, bucketSource, factorySource);
 				}
 				
 				gen.addForCompile(
-					"com.bakdata.conquery.models.events.generation.Event_"+suffix,
-					eventSource
-				);
-				gen.addForCompile(
-					"com.bakdata.conquery.models.events.generation.Block_"+suffix,
-					blockSource
+					"com.bakdata.conquery.models.events.generation.Bucket_"+suffix,
+					bucketSource
 				);
 				gen.addForCompile(
 					"com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix,
@@ -106,8 +101,8 @@ public class Import extends NamedImpl<ImportId> {
 					.getConstructor()
 					.newInstance();
 			} catch (Exception e) {
-				log.error("Failed to generate classes for {}:\n{}\n{}\n{}", this, eventSource, blockSource, factorySource);
-				throw new IllegalStateException("Failed to generate Block/Event classes", e);
+				log.error("Failed to generate classes for {}:\n{}\n{}", this, bucketSource, factorySource);
+				throw new IllegalStateException("Failed to generate Bucket classes", e);
 			}
 		}
 		
@@ -129,6 +124,7 @@ public class Import extends NamedImpl<ImportId> {
 						.put("types", MajorTypeId.values())
 						.put("safeName", SafeName.INSTANCE)
 						.put("safeJavaString", SafeJavaString.INSTANCE)
+						.put("bucketSize", ConqueryConfig.getInstance().getCluster().getEntityBucketSize())
 						.build(),
 					writer
 			);

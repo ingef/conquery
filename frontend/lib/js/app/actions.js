@@ -7,7 +7,7 @@
 // to support asynchronous calls, e.g. API calls.
 
 import * as genericActions from "../common/actions";
-import * as categoryTreeActions from "../category-trees/actions";
+import * as conceptTreeActions from "../concept-trees/actions";
 import * as datasetSelectorActions from "../dataset/actions";
 import * as queryGroupModalActions from "../query-group-modal/actions";
 import * as additionalInfosActions from "../tooltip/actions";
@@ -26,7 +26,7 @@ const timebasedQueryRunnerActions = createQueryRunnerActions("timebased");
 
 export default {
   ...genericActions,
-  ...categoryTreeActions,
+  ...conceptTreeActions,
   ...queryEditorActions,
   ...standardQueryRunnerActions,
   ...timebasedQueryRunnerActions,

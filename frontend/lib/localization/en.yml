@@ -2,7 +2,7 @@ locale: "en"
 
 headline: "Queries and Analyses"
 leftPane:
-  categoryTrees: "Concepts"
+  conceptTrees: "Concepts"
   previousQueries: "Queries"
 
 rightPane:
@@ -10,7 +10,7 @@ rightPane:
   timebasedQueryEditor: "Timebased Editor"
   externalForms: "Forms"
 
-categoryTreeList:
+conceptTreeList:
   loading: "Loading concept trees"
   loadingTree: "Loading concept: {tree}"
   error: "Could not load concept: {tree}."
@@ -36,10 +36,9 @@ queryRunner:
   resultCount: "{count} results"
   queryFailed: "The query failed."
   queryCanceled: "The query was canceled."
-  downloadResults: "CSV"
 
 queryEditor:
-  couldNotExpandNode: "Could not find node"
+  couldNotExpandNode: "Concept not found"
   couldNotInsertConceptList: "Could not insert the Concept List"
   edit: "Edit"
   exclude: "Exclude"
@@ -49,9 +48,14 @@ queryEditor:
   loadingPreviousQuery: "Loading Query Details"
 
 dropzone:
-  dragElementPlease: "Drag a concept or a query into this area"
-  dragElementPleaseShort: "Add an element"
+  dragElementPlease: "Add an element"
   dragQuery: "Add a query"
+  explanation: "You'll create a query in this area"
+  drop: "Drop"
+  aConcept: "a concept"
+  aQuery: "a previous query"
+  aConceptList: "a concept list"
+  intoThisArea: "into this area"
 
 datasetSelector:
   pleaseChoose: "Choose a data set"
@@ -63,7 +67,8 @@ queryNodeEditor:
   conceptNodes: "Concept Nodes"
   conceptNodeTables: "Input Tables"
   properties: "Properties"
-  resetAll: "Reset all"
+  reset: "Reset"
+  resetSettings: "Reset all settings"
   excludeTimestamps: "Exclude from time calculation"
   excludingTimestamps: "Excluded from time calculation"
   description: "Description"
@@ -74,6 +79,7 @@ queryNodeEditor:
   tooManyValues: "{count} values selected"
   filters: "Filters"
   selects: "More values"
+  nodeNotFound: "Concept not found"
 
 queryGroupModal:
   explanation: "Set time frame"
@@ -99,11 +105,11 @@ common:
   clearValue: "Clear value"
 
 tooltip:
+  headline: "Info"
+  placeholder: "More information on a concept ..."
   entriesFound:
-    1: "entry found"
-    _: "entries found"
-
-  placeholder: "More information about a concept ..."
+    1: "entry"
+    _: "entries"
   date:
     daterange: "Date range"
     from: "From"
@@ -181,7 +187,8 @@ timebasedQueryEditor:
 externalForms:
   forms: "Forms"
   formValidation:
-    isRequired: "is required"
+    mustBePositiveNumber: "Must be a positive number"
+    isRequired: "Required"
     invalidDateRange: "End date is smaller than start date"
 
   common:
@@ -209,13 +216,12 @@ externalForms:
     edit: "Edit"
 
 uploadQueryResultsModal:
-  headline: "Upload query result"
+  headline: "Upload result list"
   dropzone: "Drop a CSV file here"
   upload: "Upload"
   uploadFailed: "Could not upload file"
   uploadFailedSub: "Please check the file format and your network connection"
-  uploadSucceeded: "File was successfully uploaded"
-  previousQueryCreated: "Previous query was successfully uploaded"
+  uploadSucceeded: "Result list was successfully uploaded"
   formatInfo:
     text: "File should contain one result per row with comma-separated values"
 

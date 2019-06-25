@@ -171,14 +171,15 @@ public class AdminProcessor {
 		slave.send(new AddWorker(dataset));
 	}
 
-	public void setIdMapping(Namespace namespace, InputStream data) throws JSONException, IOException {
-		CSV csvData = new CSV(
+	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
+		try(CSV csvData = new CSV(
 			ConqueryConfig.getInstance().getCsv().withSkipHeader(false),
 			data
-		);
-		IdMappingConfig mappingConfig = config.getIdMapping();
-		PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
-		namespace.getStorage().updateIdMapping(mapping);
+		)) {
+			IdMappingConfig mappingConfig = config.getIdMapping();
+			PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
+			namespace.getStorage().updateIdMapping(mapping);
+		}
 	}
 
 	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {
@@ -186,10 +187,18 @@ public class AdminProcessor {
 	}
 	
 	public void createMandator(String name, String idString) throws JSONException {
-
 		log.info("New mandator:\tName: {}\tId: {} ", name, idString);
 		Mandator mandator = new Mandator(idString, name);
 		storage.addMandator(mandator);
+	}
+	
+	/**
+	 * Deletes the mandator, that is identified by the id.
+	 * @param mandatorId The id belonging to the mandator
+	 */
+	public void deleteMandator(MandatorId mandatorId) {
+		log.info("Deleting mandator: {}", mandatorId);
+		storage.removeMandator(mandatorId);
 	}
 
 	public List<Mandator> getAllMandators() {

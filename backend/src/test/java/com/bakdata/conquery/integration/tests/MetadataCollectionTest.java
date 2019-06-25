@@ -8,7 +8,7 @@ import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.models.common.CDateRange;
+import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -43,7 +43,7 @@ public class MetadataCollectionTest implements ProgrammaticIntegrationTest, Inte
 		conquery.waitUntilWorkDone();
 		
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-		
+
 		//check the number of matched events
 		assertThat(concept.getMatchingStats().countEvents()).isEqualTo(4);
 		assertThat(concept.getChildren()).allSatisfy(c -> {

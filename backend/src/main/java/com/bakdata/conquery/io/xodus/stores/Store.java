@@ -26,4 +26,6 @@ public interface Store<KEY, VALUE> extends Closeable {
 	public Collection<VALUE> getAll();
 
 	public void inject(Injectable injectable);
+
+	public Collection<KEY> getAllKeys();
 }

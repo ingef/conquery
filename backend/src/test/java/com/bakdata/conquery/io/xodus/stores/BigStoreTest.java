@@ -15,6 +15,8 @@ import org.junit.jupiter.api.Test;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -49,20 +51,20 @@ public class BigStoreTest {
 		try (BigStore<DictionaryId, Dictionary> store = new BigStore<>(Validators.newValidator(), env, StoreInfo.DICTIONARIES)) {
 			store.setChunkSize(Ints.checkedCast(Size.megabytes(1).toBytes()));
 			
-			Dictionary nDict = new Dictionary();
+			Dictionary nDict = new MapDictionary();
 			nDict.setName("dict");
 			nDict.setDataset(new DatasetId("test"));
+			DirectDictionary direct = new DirectDictionary(nDict);
 			
 			for(int v = 0; v < 1000000; v++) {
-				nDict.add(Integer.toHexString(v));
+				direct.add(Integer.toHexString(v));
 			}
-			nDict.compress();
-			
+
 			//check if manual serialization deserialization works
 			byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);
 			Dictionary simpleCopy = Jackson.BINARY_MAPPER.readValue(bytes, Dictionary.class);
 			for(int v = 0; v < 1000000; v++) {
-				assertThat(simpleCopy.getId(Integer.toHexString(v))).isEqualTo(v);
+				assertThat(direct.getId(Integer.toHexString(v))).isEqualTo(v);
 			}
 			
 			//check if store works
@@ -78,7 +80,7 @@ public class BigStoreTest {
 					.iterator()))
 			).hasSameContentAs(new ByteArrayInputStream(bytes));
 			
-			Dictionary copy = store.get(nDict.getId());
+			DirectDictionary copy = new DirectDictionary(store.get(nDict.getId()));
 			for(int v = 0; v < 1000000; v++) {
 				assertThat(copy.getId(Integer.toHexString(v))).isEqualTo(v);
 			}
@@ -90,11 +92,10 @@ public class BigStoreTest {
 		try (BigStore<DictionaryId, Dictionary> store = new BigStore<>(Validators.newValidator(), env, StoreInfo.DICTIONARIES)) {
 			store.setChunkSize(Ints.checkedCast(Size.megabytes(1).toBytes()));
 			
-			Dictionary nDict = new Dictionary();
+			Dictionary nDict = new MapDictionary();
 			nDict.setName("dict");
 			nDict.setDataset(new DatasetId("test"));
 			
-			nDict.compress();
 			//check if manual serialization deserialization works
 			byte[] bytes = Jackson.BINARY_MAPPER.writeValueAsBytes(nDict);
 			Dictionary simpleCopy = Jackson.BINARY_MAPPER.readValue(bytes, Dictionary.class);

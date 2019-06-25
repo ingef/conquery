@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Environment;
 
@@ -23,7 +22,7 @@ public class JettyConfigurationUtil {
 		resourceConfig.register(new JsonValidationExceptionMapper());
 		// default Dropwizard's exception mappers
 		resourceConfig.register(new LoggingExceptionMapper<Throwable>() {});
-		resourceConfig.register(new JsonProcessingExceptionMapper(true));
+		resourceConfig.register(ConqueryJsonExceptionMapper.class);
 		resourceConfig.register(new EarlyEofExceptionMapper());
 		//allow cross origin
 		/*if(config.getApi().isAllowCORSRequests())

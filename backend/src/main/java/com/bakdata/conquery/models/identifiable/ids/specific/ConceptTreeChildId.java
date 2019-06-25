@@ -4,8 +4,8 @@ import java.util.List;
 
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
-import com.google.common.collect.PeekingIterator;
 
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -37,13 +37,10 @@ public class ConceptTreeChildId extends ConceptElementId<ConceptTreeChild> imple
 		INSTANCE;
 		
 		@Override
-		public ConceptTreeChildId parse(PeekingIterator<String> parts) {
-			ConceptId parent = ConceptId.Parser.INSTANCE.parse(parts);
-			ConceptTreeChildId result = new ConceptTreeChildId(parent, parts.next());
-			while(parts.hasNext()) {
-				result = new ConceptTreeChildId(result, parts.next());
-			}
-			return result;
+		public ConceptTreeChildId parseInternally(IdIterator parts) {
+			String childName = parts.next();
+			ConceptElementId<?> parent = ConceptElementId.Parser.INSTANCE.parse(parts);
+			return new ConceptTreeChildId(parent, childName);
 		}
 	}
 }

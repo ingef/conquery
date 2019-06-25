@@ -14,6 +14,7 @@ type InfoType = {
 export type AdditionalInfosType = {
   label: ?string,
   description: ?string,
+  isFolder: boolean,
   matchingEntries: ?number,
   dateRange: ?Object,
   infos: ?(InfoType[])
@@ -21,16 +22,17 @@ export type AdditionalInfosType = {
 
 export type StateType = {
   displayTooltip: boolean,
-  toggleAdditionInfos: boolean,
+  toggleAdditionalInfos: boolean,
   additionalInfos: AdditionalInfosType
 };
 
 const initialState = {
   displayTooltip: true,
-  toggleAdditionInfos: false,
+  toggleAdditionalInfos: false,
   additionalInfos: {
     label: null,
     description: null,
+    isFolder: false,
     matchingEntries: null,
     dateRange: null,
     infos: null
@@ -38,7 +40,7 @@ const initialState = {
 };
 
 const setAdditionalInfos = (state, action) => {
-  if (state.toggleAdditionInfos)
+  if (state.toggleAdditionalInfos)
     return {
       ...state
     };
@@ -48,6 +50,7 @@ const setAdditionalInfos = (state, action) => {
     additionalInfos: (action.payload && action.payload.additionalInfos) || {
       label: null,
       description: null,
+      isFolder: false,
       matchingEntries: null,
       dateRange: null,
       infos: null
@@ -65,7 +68,7 @@ const tooltip = (
     case TOGGLE_ADDITIONAL_INFOS:
       return {
         ...state,
-        toggleAdditionInfos: !state.toggleAdditionInfos
+        toggleAdditionalInfos: !state.toggleAdditionalInfos
       };
     case TOGGLE_DISPLAY_TOOLTIP:
       return {

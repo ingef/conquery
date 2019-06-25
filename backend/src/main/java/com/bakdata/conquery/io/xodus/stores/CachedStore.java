@@ -21,7 +21,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	private static final  ProgressBar PROGRESS_BAR = new ProgressBar(0, System.out);
 	
-	private final ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
+	private ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;
 	
 	@Override
@@ -71,7 +71,8 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void fillCache() {
 		AtomicLong totalSize = new AtomicLong(0);
-		long count = count();
+		int count = count();
+		cache = new ConcurrentHashMap<KEY, VALUE>(count);
 		final ProgressBar bar;
 		Stopwatch timer = Stopwatch.createStarted();
 		
@@ -130,5 +131,10 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public String toString() {
 		return "cached "+store.toString();
+	}
+
+	@Override
+	public Collection<KEY> getAllKeys() {
+		return cache.keySet();
 	}
 }

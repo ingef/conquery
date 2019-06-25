@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -26,7 +26,7 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {}
+	public void aggregateEvent(Bucket bucket, int event) {}
 	
 	@Override
 	public ResultType getResultType() {

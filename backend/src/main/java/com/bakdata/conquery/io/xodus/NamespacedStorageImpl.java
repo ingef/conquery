@@ -14,13 +14,17 @@ import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
@@ -32,7 +36,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implements NamespacedStorage {
 
 	protected SingletonStore<Dataset> dataset;
-	protected IdentifiableStore<Dictionary> dictionaries;
+	protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries;
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
 
@@ -65,7 +69,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				}
 				centralRegistry.remove(ds);
 			});
-		this.dictionaries =	StoreInfo.DICTIONARIES.big(this);
+		if(ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
+			this.dictionaries =	StoreInfo.DICTIONARIES.weakBig(this);
+		}
+		else {
+			this.dictionaries =	StoreInfo.DICTIONARIES.big(this);
+		}
 		
 		this.concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(this)
 			.onAdd(concept -> {
@@ -143,8 +152,8 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public Dictionary getPrimaryDictionary() {
-		return dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset()));
+	public DirectDictionary getPrimaryDictionary() {
+		return new DirectDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())));
 	}
 
 	@Override
@@ -161,8 +170,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Dictionary computeDictionary(DictionaryId id) throws JSONException {
 		Dictionary e = getDictionary(id);
 		if (e == null) {
-			e = new Dictionary(id);
-			e.compress();
+			e = new MapDictionary(id);
 			updateDictionary(e);
 		}
 		return e;
