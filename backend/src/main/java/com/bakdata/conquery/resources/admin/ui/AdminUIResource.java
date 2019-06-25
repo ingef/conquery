@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.jobs.JobStatus;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
@@ -185,8 +186,8 @@ public class AdminUIResource {
 	@GET
 	@Path("/jobs/")
 	public View getJobs() {
-		Map<String, List<JobStatus>> status = ImmutableMap
-			.<String, List<JobStatus>>builder()
+		Map<String, JobManagerStatus> status = ImmutableMap
+			.<String, JobManagerStatus>builder()
 			.put("Master", jobManager.reportStatus())
 			.putAll(
 				namespaces
