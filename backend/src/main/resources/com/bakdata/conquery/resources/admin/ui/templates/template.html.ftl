@@ -83,7 +83,7 @@
 						"Content-Type": "application/json"
 					}})
 						.then(function(response){
-							if (response.status.ok) {
+							if (response.ok) {
 								setTimeout(location.reload, 2000);
 							}
 							else {
