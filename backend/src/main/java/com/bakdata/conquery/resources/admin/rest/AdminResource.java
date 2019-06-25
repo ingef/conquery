@@ -15,6 +15,8 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +37,7 @@ public class AdminResource {
 	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
 		processor.addDataset(name);
 		return Response
-			.seeOther(UriBuilder.fromPath("/admin/").path(AdminResource.class).build())
+			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsUIResource.class).resolveTemplate(ResourceConstants.DATASET_NAME, name).build())
 			.build();
 	}
 }
