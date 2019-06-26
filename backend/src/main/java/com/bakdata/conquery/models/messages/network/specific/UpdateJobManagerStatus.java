@@ -1,12 +1,9 @@
 package com.bakdata.conquery.models.messages.network.specific;
 
-import java.util.Collections;
-import java.util.List;
-
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.jobs.JobStatus;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.network.MasterMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Master;
@@ -24,7 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UpdateJobManagerStatus extends MasterMessage {
 	@NotNull
-	private List<JobStatus> status = Collections.emptyList();
+	private JobManagerStatus status;
 
 	@Override
 	public void react(Master context) throws Exception {

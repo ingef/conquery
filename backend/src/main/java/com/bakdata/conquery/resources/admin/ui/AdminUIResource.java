@@ -5,7 +5,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 
 import java.net.SocketAddress;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -39,7 +38,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.jobs.Job;
-import com.bakdata.conquery.models.jobs.JobStatus;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
 import com.bakdata.conquery.models.worker.SlaveInformation;
@@ -188,11 +187,12 @@ public class AdminUIResource {
 	@GET
 	@Path("/jobs/")
 	public View getJobs() {
-		Map<String, List<JobStatus>> status = ImmutableMap
-			.<String, List<JobStatus>>builder()
+		Map<String, JobManagerStatus> status = ImmutableMap
+			.<String, JobManagerStatus>builder()
 			.put("Master", processor.getJobManager().reportStatus())
 			.putAll(
-				processor.getNamespaces()
+				processor
+					.getNamespaces()
 					.getSlaves()
 					.values()
 					.stream()

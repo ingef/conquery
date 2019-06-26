@@ -1,17 +1,20 @@
 <#import "templates/template.html.ftl" as layout>
 <@layout.layout>
-	<#list c as node, jobs>
+	<#list c as node, status>
 	<div class="row">
 		<div class="col">
 			<div class="card">
 				<div class="card-body">
 					<h5 class="card-title">
 						${node}
-						<span class="badge badge-secondary">${jobs?size}</span>
+						<span class="float-right">
+							<small>updated ${status.ageString} ago</small> 
+							<span class="badge badge-secondary">${status.jobs?size}</span>
+						</span>
 					</h5>
                     <div class="card-text" style="max-height:50vh; overflow: auto">
                         <table class="table">
-                            <#list jobs as job>
+                            <#list status.jobs as job>
                             <tr class="${job.cancelled?then('active','')}">
                                 <td>
                                     ${job.label}
