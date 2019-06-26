@@ -6,6 +6,7 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
+import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.realm.AuthorizingRealm;
@@ -27,6 +28,7 @@ import lombok.extern.slf4j.Slf4j;
  * security management is then also used for authorizations based on
  * permissions, that the handling of a request triggers.
  */
+@Provider
 @Slf4j @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
@@ -69,7 +71,7 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 		return new DefaultAuthFilterBuilder();
 	}
 
-	public static AuthDynamicFeature asDropwizardFeature(MasterMetaStorage storage, AuthConfig config) {
+	public static AuthFilter<ConqueryToken, User> asDropwizardFeature(MasterMetaStorage storage, AuthConfig config) {
 		AuthorizingRealm realm = config.getRealm(storage);
 		UnknownUserHandler uuHandler = config.getUnknownUserHandler(storage);
 
@@ -79,6 +81,6 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 			.setAuthenticator(new ConqueryAuthenticator(storage, realm, uuHandler))
 			.setUnauthorizedHandler(new DefaultUnauthorizedHandler())
 			.buildAuthFilter();
-		return new AuthDynamicFeature(authFilter);
+		return authFilter;
 	}
 }

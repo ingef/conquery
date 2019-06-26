@@ -52,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@PermitAll
+
 @Getter @Setter @Slf4j
 @Path("datasets/{" + DATASET_NAME + "}")
 public class DatasetsResource {

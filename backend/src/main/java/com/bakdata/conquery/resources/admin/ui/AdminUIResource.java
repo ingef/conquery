@@ -52,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@PermitAll
+
 @Slf4j
 @Path("/")
 @RequiredArgsConstructor(onConstructor_=@Inject)

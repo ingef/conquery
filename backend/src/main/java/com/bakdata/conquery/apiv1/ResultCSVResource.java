@@ -41,7 +41,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
 @Path("datasets/{" + DATASET + "}/result/")
-@PermitAll
+
 @Slf4j
 public class ResultCSVResource {
 

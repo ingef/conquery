@@ -39,7 +39,7 @@ import io.dropwizard.jersey.PATCH;
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
-@PermitAll
+
 public class StoredQueriesResource {
 
 	private final StoredQueriesProcessor processor;

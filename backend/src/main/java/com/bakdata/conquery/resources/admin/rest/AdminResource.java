@@ -23,7 +23,7 @@ import lombok.Setter;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@PermitAll
+
 @Path("/")
 @Getter @Setter
 public class AdminResource {
