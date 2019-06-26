@@ -7,7 +7,7 @@
 		<h3>Dataset Permissions</h3>
 		<@permissionTable.permissionTable permissions=c.datasetPermissions />
 		
-		<form action="/admin/permissions/dataset" method="POST" enctype="multipart/form-data">
+		<form method="POST" enctype="multipart/form-data">
 			<h4>New Dataset Permission</h4>
 			<div class="form-row">
   				<div class="form-group col">

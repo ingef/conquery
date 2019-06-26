@@ -1,4 +1,4 @@
-package com.bakdata.conquery.resources.admin.ui;
+package com.bakdata.conquery.resources.admin.ui.model;
 
 import java.util.List;
 

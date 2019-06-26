@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import io.dropwizard.jersey.jackson.JsonProcessingExceptionMapper;
 import io.dropwizard.server.DefaultServerFactory;
 import lombok.experimental.UtilityClass;
 
@@ -23,7 +22,7 @@ public class RESTServer {
 
 	public static void configure(ConqueryConfig config, ResourceConfig jersey) {
 		// Bind User class to REST authentication
-		jersey.register(new AuthValueFactoryProvider.Binder(User.class));
+		jersey.register(new AuthValueFactoryProvider.Binder<>(User.class));
 		//change exception mapper behavior because of JERSEY-2437
 		//https://github.com/eclipse-ee4j/jersey/issues/2709
 		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
