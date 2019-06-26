@@ -25,7 +25,7 @@ public class IngefTokenExtractor implements TokenExtractor {
 		if (credentials == null)
 			credentials = requestContext.getUriInfo().getQueryParameters().getFirst(OAUTH_ACCESS_TOKEN_PARAM);
 
-		// This Cookie is only set in DatasetsResource
+		// This Cookie is only set in HDatasets
 		Cookie cookie = requestContext.getCookies().get(OAUTH_ACCESS_TOKEN_PARAM);
 		if (cookie != null && credentials == null)
 			credentials = cookie.getValue();
