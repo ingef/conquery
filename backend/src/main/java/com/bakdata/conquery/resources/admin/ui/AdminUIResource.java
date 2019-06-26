@@ -35,7 +35,6 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.concepts.conditions.GroovyCondition;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -52,12 +51,10 @@ import com.google.common.collect.ImmutableMap;
 import groovy.lang.GroovyShell;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
-import lombok.extern.slf4j.Slf4j;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @PermitAll
-@Slf4j
 @Path("/")
 public class AdminUIResource {
 	
