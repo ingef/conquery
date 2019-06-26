@@ -14,7 +14,7 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.DatasetsProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -37,7 +37,7 @@ public class StandaloneSupport implements Closeable {
 	@Getter
 	private final ConqueryConfig config;
 	@Getter
-	private final DatasetsProcessor datasetsProcessor;
+	private final AdminProcessor datasetsProcessor;
 
 
 	public void waitUntilWorkDone() {

@@ -52,7 +52,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Path("datasets")
 @Produces(AdditionalMediaTypes.JSON)
-@PermitAll
+
 public class ContentTreeResources {
 
 	private final ContentTreeProcessor processor;

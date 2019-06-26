@@ -37,7 +37,7 @@ import io.dropwizard.auth.Auth;
 @Path("datasets/{" + DATASET + "}/queries")
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
-@PermitAll
+
 public class QueryResource {
 
 	private final QueryProcessor processor;
