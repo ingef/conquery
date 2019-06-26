@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import javax.annotation.security.PermitAll;
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.POST;

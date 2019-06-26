@@ -1,34 +1,19 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.PermitAll;
-import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
+import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import com.bakdata.conquery.resources.hierarchies.HTables;
 
-import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,32 +23,10 @@ import lombok.extern.slf4j.Slf4j;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 
 @Getter @Setter @Slf4j
-@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
-public class TablesUIResource {
-	
-	private AdminProcessor processor;
-	private Namespace namespace;
-	private Table table;
-	
-	@Inject
-	public TablesUIResource(
-		@Auth User user,
-		AdminProcessor processor,
-		@PathParam(DATASET_NAME) DatasetId datasetId,
-		@PathParam(TABLE_NAME) TableId tableId
-	) {
-		this.processor = processor;
-		this.namespace = processor.getNamespaces().get(datasetId);
-		if(namespace == null) {
-			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
-		}
-		authorize(user, datasetId, Ability.READ);
-		this.table = namespace.getStorage().getDataset().getTables().getOptional(tableId)
-			.orElseThrow(() -> new WebApplicationException("Could not find table "+tableId, Status.NOT_FOUND));
-	}
+public class TablesUIResource extends HTables {
 	
 	@GET
-	public View getTable() {
+	public View getTableView() {
 		List<Import> imports = namespace
 			.getStorage()
 			.getAllImports()

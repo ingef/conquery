@@ -1,16 +1,12 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.annotation.security.PermitAll;
-import javax.inject.Inject;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -30,52 +26,26 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
-import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import io.dropwizard.auth.Auth;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-
-@Getter @Setter @Slf4j
-@Path("datasets/{" + DATASET_NAME + "}")
-public class DatasetsResource {
+@Getter @Setter
+public class DatasetsResource extends HDatasets {
 	
-	private final AdminProcessor processor;
-	private final Namespace namespace;
-	private final ObjectMapper mapper;
-	
-	@Inject
-	public DatasetsResource(
-		AdminProcessor processor,
-		@Auth User user,
-		@PathParam(DATASET_NAME) DatasetId datasetId
-	) {
-		this.processor = processor;
-		this.mapper = processor.getNamespaces().injectInto(Jackson.MAPPER);
-		this.namespace = processor.getNamespaces().get(datasetId);
-		if(namespace == null) {
-			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
-		}
-		authorize(user, datasetId, Ability.READ);
-	}
-
 	@POST
 	@Consumes(MediaType.WILDCARD)
 	@Path("mapping")
@@ -87,6 +57,7 @@ public class DatasetsResource {
 	@Path("tables")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public void addTable(@FormDataParam("table_schema") FormDataBodyPart schemas) throws IOException, JSONException {
+		ObjectMapper mapper = processor.getNamespaces().injectInto(Jackson.MAPPER);
 		for (BodyPart part : schemas.getParent().getBodyParts()) {
 			try (InputStream is = part.getEntityAs(InputStream.class)) {
 				Table t = mapper.readValue(is, Table.class);

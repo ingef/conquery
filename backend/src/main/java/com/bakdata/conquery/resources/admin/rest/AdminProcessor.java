@@ -52,8 +52,8 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.resources.admin.ui.FEMandatorContent;
-import com.bakdata.conquery.resources.admin.ui.UIContext;
+import com.bakdata.conquery.resources.admin.ui.model.FEMandatorContent;
+import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
