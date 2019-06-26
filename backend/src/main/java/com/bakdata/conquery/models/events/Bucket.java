@@ -114,6 +114,18 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	public boolean has(int event, Column column) {
 		return has(event, column.getPosition());
 	}
+	
+	public Iterable<BucketEntry> entries() {
+		return ()->IntStream
+			.range(0,getBucketSize())
+			.filter(this::containsLocalEntity)
+			.boxed()
+			.flatMap(le -> IntStream
+				.range(getFirstEventOfLocal(le), getLastEventOfLocal(le))
+				.mapToObj(e->new BucketEntry(le,e))
+			)
+			.iterator();
+	}
 
 	public abstract int getBucketSize();
 	
@@ -143,14 +155,4 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	public abstract void writeContent(SmallOut output) throws IOException;
 
 	public abstract void read(SmallIn input) throws IOException;
-
-	public int localEntityFor(int event) {
-		int entity = -1;
-		for(int i=0;i<getBucketSize();i++) {
-			if(containsLocalEntity(i) && getFirstEventOfLocal(i)<=event) {
-				entity = i;
-			}
-		}
-		return entity;
-	}
 }
