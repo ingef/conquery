@@ -13,7 +13,7 @@ import { createFormSuggestionActions } from "../form-suggestions/actions";
 
 import { createConnectedQueryNodeEditor } from "conquery/lib/js/query-node-editor";
 import { toUpperCaseUnderscore } from "conquery/lib/js/common/helpers";
-import { hasConceptChildren } from "conquery/lib/js/category-trees/globalTreeStoreHelper";
+import { hasConceptChildren } from "conquery/lib/js/concept-trees/globalTreeStoreHelper";
 
 export type PropsType = {
   formType: string,
