@@ -15,7 +15,9 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -62,7 +64,11 @@ public class StoredQueriesResource {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
-		return processor.getQueryWithSource(dsUtil.getDataset(datasetId), queryId);
+		ExecutionStatus status = processor.getQueryWithSource(dataset, queryId);
+		if(status == null) {
+			throw new WebApplicationException("Unknown query "+queryId, Status.NOT_FOUND);
+		}
+		return status;
 	}
 
 	@PATCH

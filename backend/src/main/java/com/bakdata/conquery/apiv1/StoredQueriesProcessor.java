@@ -96,7 +96,9 @@ public class StoredQueriesProcessor {
 
 	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId) {
 		ManagedExecution query = namespaces.getMetaStorage().getExecution(queryId);
-
+		if(query == null) {
+			return null;
+		}
 		return query.buildStatus();
 	}
 

@@ -21,7 +21,7 @@
                                 </td>
                                 <td class="w-100">
                                     <div class="progress position-relative">
-                                        <div class="progress-bar" role="progressbar" style="width: ${job.progressReporter.progress?c}" aria-valuenow="${job.progressReporter.progress?c}" aria-valuemin="0" aria-valuemax="1"></div>
+                                        <div class="progress-bar" role="progressbar" style="width: ${job.progressReporter.progress?string.percent}" aria-valuenow="${job.progressReporter.progress?c}" aria-valuemin="0" aria-valuemax="1"></div>
                                         <small class="justify-content-center d-flex position-absolute w-100"><pre>${job.progressReporter.estimate}</pre></small>
                                     </div>
                                 </td>
