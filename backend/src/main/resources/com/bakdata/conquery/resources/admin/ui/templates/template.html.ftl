@@ -33,7 +33,7 @@
 			<a class="nav-link" href="/admin/jobs">Jobs</a>
 		  </li>
 		  <li class="nav-item">
-			<a class="nav-link" href="/admin/query">Query</a>
+			<a class="nav-link" href="/admin/script">Script</a>
 		  </li>
 		  <li class="nav-item">
 			<a class="nav-link" href="/admin/mandators">Mandators</a>
@@ -83,7 +83,7 @@
 						"Content-Type": "application/json"
 					}})
 						.then(function(response){
-							if (response.status.ok) {
+							if (response.ok) {
 								setTimeout(location.reload, 2000);
 							}
 							else {

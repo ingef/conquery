@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "SIMPLE_VIRTUAL_CONCEPT_QUERY Test",
+  "label": "COUNT_DISTINCT_AGGREGATOR Test",
   "expectedCsv": "tests/aggregator/COUNT_DISTINCT_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",
