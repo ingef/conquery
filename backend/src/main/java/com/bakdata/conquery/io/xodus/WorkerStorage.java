@@ -2,13 +2,12 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.List;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BlockManager;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;

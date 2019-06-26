@@ -1,19 +1,17 @@
 package com.bakdata.conquery.io.jetty;
-import com.fasterxml.jackson.core.JsonGenerationException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
-import io.dropwizard.jersey.errors.ErrorMessage;
-import io.dropwizard.jersey.errors.LoggingExceptionMapper;
-import lombok.extern.slf4j.Slf4j;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.Provider;
+
+import com.fasterxml.jackson.core.JsonGenerationException;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.exc.InvalidDefinitionException;
+
+import io.dropwizard.jersey.errors.ErrorMessage;
+import io.dropwizard.jersey.errors.LoggingExceptionMapper;
+import lombok.extern.slf4j.Slf4j;
 
 @Provider
 @Slf4j

@@ -5,14 +5,17 @@ import java.io.IOException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerResponseContext;
 import javax.ws.rs.container.ContainerResponseFilter;
+import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.NewCookie;
+import javax.ws.rs.ext.Provider;
 
 import org.eclipse.jetty.http.HttpHeader;
 
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
+@Provider @PreMatching
 public class AuthCookieFilter implements ContainerResponseFilter {
 	
 	private static final String ACCESS_TOKEN = "access_token";
