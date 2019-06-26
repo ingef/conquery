@@ -1,5 +1,7 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -20,6 +22,7 @@ import lombok.Setter;
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter @Setter
+@Path("datasets/{" + DATASET_NAME + "}")
 public class DatasetsUIResource extends HDatasets {
 	
 	@GET

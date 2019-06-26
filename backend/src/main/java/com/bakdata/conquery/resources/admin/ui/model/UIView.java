@@ -16,8 +16,12 @@ public class UIView<CONTENT_TYPE> extends View {
 	}
 	
 	public UIView(String templateName, UIContext ctx, CONTENT_TYPE content) {
-		super(templateName, StandardCharsets.UTF_8);
+		super(resolve(templateName), StandardCharsets.UTF_8);
 		this.c = content;
 		this.ctx = ctx;
+	}
+
+	private static String resolve(String templateName) {
+        return String.format("/com/bakdata/conquery/resources/admin/ui/%s", templateName);
 	}
 }
