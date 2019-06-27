@@ -9,14 +9,14 @@ import difference from "lodash.difference";
 import { resetAllFiltersInTables } from "conquery/lib/js/model/table";
 import { nodeHasActiveFilters } from "conquery/lib/js/model/node";
 
-import { CATEGORY_TREE_NODE } from "conquery/lib/js/common/constants/dndTypes";
+import { CONCEPT_TREE_NODE } from "conquery/lib/js/common/constants/dndTypes";
 import Dropzone from "conquery/lib/js/form-components/Dropzone";
 
 import {
   getConceptById,
   getConceptsByIdsWithTablesAndSelects,
   hasConceptChildren
-} from "conquery/lib/js/category-trees/globalTreeStoreHelper";
+} from "conquery/lib/js/concept-trees/globalTreeStoreHelper";
 import { withDefaultValues } from "conquery/lib/js/standard-query-editor/reducer";
 
 import DynamicInputGroup from "../../form-components/DynamicInputGroup";
@@ -377,7 +377,7 @@ const FormConcept = (props: PropsType) => {
       <DropzoneList
         label={props.label}
         dropzoneText={props.attributeDropzoneText}
-        acceptedDropTypes={[CATEGORY_TREE_NODE]}
+        acceptedDropTypes={[CONCEPT_TREE_NODE]}
         disallowMultipleColumns={props.disallowMultipleColumns}
         onDelete={i => props.input.onChange(removeValue(props.input.value, i))}
         onDrop={(dropzoneProps, monitor) => {
@@ -443,7 +443,7 @@ const FormConcept = (props: PropsType) => {
                   />
                 ) : (
                   <Dropzone
-                    acceptedDropTypes={[CATEGORY_TREE_NODE]}
+                    acceptedDropTypes={[CONCEPT_TREE_NODE]}
                     onDrop={(dropzoneProps, monitor) => {
                       const item = monitor.getItem();
 

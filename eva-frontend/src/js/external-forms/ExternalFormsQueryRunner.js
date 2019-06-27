@@ -41,7 +41,7 @@ const mapStateToProps = (state, ownProps) => ({
   isQueryRunning: !!state.externalForms.queryRunner.runningQuery,
   // Following ones only needed in dispatch functions
   queryId: state.externalForms.queryRunner.runningQuery,
-  version: state.categoryTrees.version,
+  version: state.conceptTrees.version,
   query: {
     formName: state.externalForms.activeForm,
     form: getFormValues(state.externalForms.activeForm, selectReduxFormState)(
