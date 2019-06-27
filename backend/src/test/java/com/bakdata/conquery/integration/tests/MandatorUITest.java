@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -34,7 +35,7 @@ public class MandatorUITest implements IntegrationTest.Simple {
 	private MandatorId mandatorId = mandator.getId();
 	private User user = new User("testUser@test.de", "testUserName");
 	private UserId userId = user.getId();
-	private ConqueryPermission permission = new DatasetPermission(null, Ability.READ.asSet(), new DatasetId("testDatasetId"));
+	private ConqueryPermission permission = new DatasetPermission((PermissionOwnerId)null, Ability.READ.asSet(), new DatasetId("testDatasetId"));
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {

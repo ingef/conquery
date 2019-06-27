@@ -36,7 +36,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 		Concept<?> concept = con.getConcept();
 		if(concept instanceof TreeConcept) {
 			TreeConcept tree = (TreeConcept) concept;
-			block.getMostSpecificChildren().replaceAll(c->tree.getElementByLocalId(c).getPrefix());
+			block.getMostSpecificChildren().replaceAll(c->c==null?c:tree.getElementByLocalId(c).getPrefix());
 		}
 		return block;
 	}
