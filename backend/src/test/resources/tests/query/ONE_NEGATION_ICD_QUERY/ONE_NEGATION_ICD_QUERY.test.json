@@ -40,7 +40,7 @@
               
               "type": "CONCEPT",
               "ids": [
-                "${dataset}.icd.a00$2db99.a00$2da09.a01"
+                "${dataset}.icd.a00$2db99.a00$2da09.a00"
               ],
               "label": "A00",
               "tables": [
