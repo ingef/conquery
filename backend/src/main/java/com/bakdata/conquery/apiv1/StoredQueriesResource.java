@@ -15,19 +15,25 @@ import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response.Status;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.google.common.collect.Iterators;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
@@ -35,7 +41,7 @@ import io.dropwizard.jersey.PATCH;
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
-@PermitAll
+
 public class StoredQueriesResource {
 
 	private final StoredQueriesProcessor processor;
@@ -62,7 +68,11 @@ public class StoredQueriesResource {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
-		return processor.getQueryWithSource(dsUtil.getDataset(datasetId), queryId);
+		ExecutionStatus status = processor.getQueryWithSource(dataset, queryId);
+		if(status == null) {
+			throw new WebApplicationException("Unknown query "+queryId, Status.NOT_FOUND);
+		}
+		return status;
 	}
 
 	@PATCH
@@ -72,7 +82,21 @@ public class StoredQueriesResource {
 
 		Dataset dataset = dsUtil.getDataset(datasetId);
 
-		processor.patchQuery(user, dataset, queryId, patch);
+		MasterMetaStorage storage = processor.getNamespaces().get(dataset.getId()).getStorage().getMetaStorage();
+		ManagedExecution exec = storage.getExecution(queryId);
+		if(!(exec instanceof ManagedQuery)) {
+			throw new IllegalArgumentException(queryId+" is not a patchable query");
+		}
+		ManagedQuery query = (ManagedQuery) exec;
+		if (patch.has("tags")) {
+			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)), String.class);
+			processor.tagQuery(storage, user, query, newTags);
+		} else if (patch.has("label")) {
+			processor.updateQueryLabel(storage, user, query, patch.get("label").textValue());
+		} else if (patch.has("shared")) {
+			processor.shareQuery(storage, user, query, patch.get("shared").asBoolean());
+		}
+		
 		return getQueryWithSource(user, datasetId, queryId);
 	}
 

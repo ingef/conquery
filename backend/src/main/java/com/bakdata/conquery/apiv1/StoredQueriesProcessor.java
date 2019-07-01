@@ -25,14 +25,13 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.google.common.collect.Iterators;
 
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class StoredQueriesProcessor {
-
+	@Getter
 	private final Namespaces namespaces;
 
 	public StoredQueriesProcessor(Namespaces namespaces) {
@@ -56,47 +55,42 @@ public class StoredQueriesProcessor {
 		storage.removeExecution(query.getId());
 	}
 
-	public void patchQuery(User user, Dataset dataset, ManagedExecutionId queryId, JsonNode patch) throws JSONException {
-		MasterMetaStorage storage = namespaces.get(dataset.getId()).getStorage().getMetaStorage();
-		ManagedExecution query = storage.getExecution(queryId);
-		if (patch.has("label")) {
-			authorize(user, queryId, Ability.LABEL);
-			query.setLabel(patch.get("label").textValue());
-			storage.updateExecution(query);
-		}
-		else if(query instanceof ManagedQuery) {
-			ManagedQuery mq = (ManagedQuery) query;
-			
-			if (patch.has("tags")) {
-				authorize(user, queryId, Ability.TAG);
-				String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)), String.class);
-				mq.setTags(newTags);
+	public void shareQuery(MasterMetaStorage storage, User user, ManagedQuery query, boolean shared) {
+		authorize(user, query, Ability.SHARE);
+		QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, query.getId());
+		user.getRoles().forEach((Mandator mandator) -> {
+			try {
+				if (shared) {
+					addPermission(mandator, queryPermission, storage);
+				}
+				else {
+					removePermission(mandator, queryPermission, storage);
+				}
+				query.setShared(shared);
 				storage.updateExecution(query);
-			} else if (patch.has("shared")) {
-				authorize(user, queryId, Ability.SHARE);
-				QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, queryId);
-				boolean shared = patch.get("shared").asBoolean();
-				user.getRoles().forEach((Mandator mandator) -> {
-					try {
-						if (shared) {
-							addPermission(mandator, queryPermission, storage);
-						}
-						else {
-							removePermission(mandator, queryPermission, storage);
-						}
-						mq.setShared(shared);
-						storage.updateExecution(query);
-					} catch (JSONException e) {
-						log.error("", e);
-					}
-				});
+			} catch (JSONException e) {
+				log.error("", e);
 			}
-		}
+		});
+	}
+
+	public void updateQueryLabel(MasterMetaStorage storage, User user, ManagedQuery query, String label) throws JSONException {
+		authorize(user, query, Ability.LABEL);
+		query.setLabel(label);
+		storage.updateExecution(query);
+	}
+
+	public void tagQuery(MasterMetaStorage storage, User user, ManagedQuery query, String[] newTags) throws JSONException {
+		authorize(user, query, Ability.TAG);
+		query.setTags(newTags);
+		storage.updateExecution(query);
 	}
 
 	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId) {
 		ManagedExecution query = namespaces.getMetaStorage().getExecution(queryId);
-
+		if(query == null) {
+			return null;
+		}
 		return query.buildStatus();
 	}
 

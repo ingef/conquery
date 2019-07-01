@@ -14,7 +14,7 @@ import PrimaryButton from "../button/PrimaryButton";
 import FaIcon from "../icon/FaIcon";
 
 import type { StateType } from "../app/reducers";
-import type { DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdT } from "../api/types";
 
 import {
   uploadConceptListModalUpdateLabel,
@@ -63,7 +63,7 @@ type PropsType = {
   label: String,
   availableConceptRootNodes: Object[],
   selectedConceptRootNode: Object,
-  selectedDatasetId: DatasetIdType,
+  selectedDatasetId: DatasetIdT,
   conceptCodesFromFile: Array<string>,
   resolved: Object,
   resolvedItemsCount: number,

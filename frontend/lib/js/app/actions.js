@@ -23,6 +23,7 @@ import createQueryRunnerActions from "../query-runner/actions";
 
 const standardQueryRunnerActions = createQueryRunnerActions("standard");
 const timebasedQueryRunnerActions = createQueryRunnerActions("timebased");
+const externalQueryRunnerActions = createQueryRunnerActions("external");
 
 export default {
   ...genericActions,
@@ -38,5 +39,6 @@ export default {
   ...previousQueriesSearchActions,
   ...previousQueriesFilterActions,
   ...deletePreviousQueryModalActions,
-  ...timebasedQueryEditorActions
+  ...timebasedQueryEditorActions,
+  ...externalQueryRunnerActions
 };

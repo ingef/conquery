@@ -11,6 +11,21 @@ import { loadPreviousQueries } from "../previous-queries/list/actions";
 import * as actionTypes from "./actionTypes";
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
 
+/*
+  This implements a polling mechanism,
+  because queries are running sometimes longer than 10s.
+  (we're using "long polling", where the backend delays the response)
+
+  The polling works like:
+  - Start the query (POST request)
+    - From the response, get an ID when query was successfully started
+  - Continuously poll (GET request) for the query results using that ID
+  - Stop polling once the status is DONE, CANCELED or FAILED
+
+  Also, there's a possibility to stop a query while it's running,
+  by sending a DELETE request for that query ID
+*/
+
 export default function createQueryRunnerActions(
   type: string,
   isExternalForm: boolean = false
@@ -26,7 +41,7 @@ export default function createQueryRunnerActions(
   const STOP_QUERY_SUCCESS = actionTypes[`STOP_${uppercaseType}_QUERY_SUCCESS`];
   const STOP_QUERY_ERROR = actionTypes[`STOP_${uppercaseType}_QUERY_ERROR`];
   const QUERY_RESULT_START = actionTypes[`QUERY_${uppercaseType}_RESULT_START`];
-  const QUERY_RESULT_STOP = actionTypes[`QUERY_${uppercaseType}_RESULT_STOP`];
+  const QUERY_RESULT_RESET = actionTypes[`QUERY_${uppercaseType}_RESULT_RESET`];
   const QUERY_RESULT_SUCCESS =
     actionTypes[`QUERY_${uppercaseType}_RESULT_SUCCESS`];
   const QUERY_RESULT_ERROR = actionTypes[`QUERY_${uppercaseType}_RESULT_ERROR`];
@@ -77,7 +92,7 @@ export default function createQueryRunnerActions(
   };
 
   const queryResultStart = () => ({ type: QUERY_RESULT_START });
-  const queryResultStop = () => ({ type: QUERY_RESULT_STOP });
+  const queryResultReset = () => ({ type: QUERY_RESULT_RESET });
   const queryResultError = err => defaultError(QUERY_RESULT_ERROR, err);
   const queryResultSuccess = res => defaultSuccess(QUERY_RESULT_SUCCESS, res);
   const queryResult = (datasetId, queryId) => {
@@ -90,7 +105,7 @@ export default function createQueryRunnerActions(
         r => {
           // Indicate that looking for the result has stopped,
           // but not necessarily succeeded
-          dispatch(queryResultStop());
+          dispatch(queryResultReset());
 
           if (r.status === "DONE") {
             dispatch(queryResultSuccess(r));
@@ -128,7 +143,7 @@ export default function createQueryRunnerActions(
     [`stop${capitalizedType}QuerySuccess`]: stopQuerySuccess,
     [`stop${capitalizedType}Query`]: stopQuery,
     [`query${capitalizedType}ResultStart`]: queryResultStart,
-    [`query${capitalizedType}ResultStop`]: queryResultStop,
+    [`query${capitalizedType}ResultReset`]: queryResultReset,
     [`query${capitalizedType}ResultError`]: queryResultError,
     [`query${capitalizedType}ResultSuccess`]: queryResultSuccess,
     [`query${capitalizedType}Result`]: queryResult

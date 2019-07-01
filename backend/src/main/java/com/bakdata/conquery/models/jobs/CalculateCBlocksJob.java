@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.BucketEntry;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
@@ -53,7 +54,7 @@ public class CalculateCBlocksJob extends Job {
 	public void execute() throws Exception {
 		boolean treeConcept = connector.getConcept() instanceof TreeConcept;
 		this.progressReporter.setMax(infos.size());
-
+		
 		for(int i=0;i<infos.size();i++) {
 			try {
 				if (!blockManager.hasCBlock(infos.get(i).getCBlockId())) {
@@ -84,12 +85,11 @@ public class CalculateCBlocksJob extends Job {
 		Table table = storage.getDataset().getTables().get(bucket.getImp().getTable());
 		for(Column column : table.getColumns()) {
 			if(column.getType().isDateCompatible()) {
-				for(int event = 0; event < bucket.getNumberOfEvents(); event++) {
-					if(bucket.has(event, column)) {
-						CDateRange range = bucket.getAsDateRange(event, column);
-						int entity = bucket.localEntityFor(event);
-						cBlock.getMinDate()[entity] = Math.min(cBlock.getMinDate()[entity], range.getMinValue());
-						cBlock.getMaxDate()[entity] = Math.max(cBlock.getMaxDate()[entity], range.getMaxValue());
+				for(BucketEntry entry : bucket.entries()) {
+					if(bucket.has(entry.getEvent(), column)) {
+						CDateRange range = bucket.getAsDateRange(entry.getEvent(), column);
+						cBlock.getMinDate()[entry.getLocalEntity()] = Math.min(cBlock.getMinDate()[entry.getLocalEntity()], range.getMinValue());
+						cBlock.getMaxDate()[entry.getLocalEntity()] = Math.max(cBlock.getMaxDate()[entry.getLocalEntity()], range.getMaxValue());
 					}
 				}
 			}
@@ -124,13 +124,14 @@ public class CalculateCBlocksJob extends Job {
 
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 		
-		for(int event = 0; event < bucket.getNumberOfEvents(); event++) {
+		for(BucketEntry entry : bucket.entries()) {
 			try {
+				final int event = entry.getEvent();
 				if(bucket.has(event, connector.getColumn())) {
 					int valueIndex = bucket.getString(event, connector.getColumn());
-					final int finalEvent = event;
+					
 					final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
-						() -> bucket.calculateMap(finalEvent, info.getImp())
+						() -> bucket.calculateMap(event, info.getImp())
 					);
 
 					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
@@ -139,7 +140,7 @@ public class CalculateCBlocksJob extends Job {
 						cBlock.getMostSpecificChildren().add(child.getPrefix());
 						ConceptTreeNode<?> it = child;
 						while(it != null) {
-							cBlock.getIncludedConcepts()[bucket.localEntityFor(event)] |= it.calculateBitMask();
+							cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
 							it = it.getParent();
 						}
 					}
@@ -152,7 +153,7 @@ public class CalculateCBlocksJob extends Job {
 					cBlock.getMostSpecificChildren().add(null);
 				}
 			} catch (ConceptConfigurationException ex) {
-				log.error("Failed to resolve event "+bucket+"-"+event+" against concept "+connector, ex);
+				log.error("Failed to resolve event "+bucket+"-"+entry.getEvent()+" against concept "+connector, ex);
 			}
 		}
 
