@@ -13,7 +13,7 @@ import actions from "../../app/actions";
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
 import { openUploadModal, closeUploadModal } from "./actions";
 
-const { startExternalQuery } = actions;
+const { startExternalQuery, queryExternalResultReset } = actions;
 
 type PropsType = {
   datasetId: ?DatasetIdT,
@@ -50,18 +50,23 @@ const UploadQueryResults = (props: PropsType) => {
   );
 };
 
-const mapStateToProps = state => ({
-  isModalOpen: state.uploadQueryResults.isModalOpen,
-  loading:
-    state.uploadQueryResults.queryRunner.startQuery.loading ||
-    !!state.uploadQueryResults.queryRunner.runningQuery,
-  success: state.uploadQueryResults.queryRunner.success,
-  error: state.uploadQueryResults.queryRunner.error
-});
+const selectQueryRunner = state => state.uploadQueryResults.queryRunner;
+
+const mapStateToProps = state => {
+  const queryRunner = selectQueryRunner(state);
+
+  return {
+    isModalOpen: state.uploadQueryResults.isModalOpen,
+    loading: queryRunner.startQuery.loading || !!queryRunner.runningQuery,
+    success: queryRunner.queryResult.success,
+    error: queryRunner.startQuery.error || queryRunner.queryResult.error
+  };
+};
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onOpenModal: () => dispatch(openUploadModal()),
-  onCloseModal: () => dispatch(closeUploadModal()),
+  onCloseModal: () =>
+    dispatch([closeUploadModal(), queryExternalResultReset()]),
   onUpload: (datasetId, query) => dispatch(startExternalQuery(datasetId, query))
 });
 
