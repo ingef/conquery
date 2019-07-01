@@ -21,5 +21,5 @@ export default ({ file, onUpload }) => {
     parse(file);
   }, [file]);
 
-  return <div>{JSON.stringify(csv)}</div>;
+  return <div>{file.name}</div>;
 };

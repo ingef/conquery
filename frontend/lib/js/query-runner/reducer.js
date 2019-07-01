@@ -15,16 +15,19 @@ export type StateType = {
   queryRunning: boolean,
   startQuery: APICallType,
   stopQuery: APICallType,
-  queryResult: APICallType
+  queryResult: APICallType & {
+    resultCount?: number,
+    resultUrl?: string
+  }
 };
 
 export default function createQueryRunnerReducer(type: string): Function {
   const initialState: StateType = {
     runningQuery: null,
     queryRunning: false,
-    startQuery: Object,
-    stopQuery: Object,
-    queryResult: Object
+    startQuery: {},
+    stopQuery: {},
+    queryResult: {}
   };
 
   const capitalType = toUpperCaseUnderscore(type);

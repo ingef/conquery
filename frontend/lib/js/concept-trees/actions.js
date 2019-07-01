@@ -3,7 +3,7 @@
 import { type Dispatch } from "redux-thunk";
 import { RateLimit } from "async-sema";
 
-import { type DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdT } from "../api/types";
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
 import type { ConceptIdT } from "../api/types";
@@ -33,7 +33,7 @@ export const loadTreesError = (err: any) => defaultError(LOAD_TREES_ERROR, err);
 export const loadTreesSuccess = (res: any) =>
   defaultSuccess(LOAD_TREES_SUCCESS, res);
 
-export const loadTrees = (datasetId: DatasetIdType) => {
+export const loadTrees = (datasetId: DatasetIdT) => {
   return (dispatch: Dispatch) => {
     // TODO: Careful, side effect, extract this soon
     resetAllTrees();
@@ -79,7 +79,7 @@ const TREES_TO_LOAD_IN_PARALLEL = 5;
 
 const lim = new RateLimit(TREES_TO_LOAD_IN_PARALLEL);
 
-export const loadTree = (datasetId: DatasetIdType, treeId: ConceptIdT) => {
+export const loadTree = (datasetId: DatasetIdT, treeId: ConceptIdT) => {
   return async (dispatch: Dispatch) => {
     dispatch(loadTreeStart(treeId));
 
@@ -106,7 +106,7 @@ export const searchTreesSuccess = (query: string, result: Object) => ({
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
-export const searchTrees = (datasetId: DatasetIdType, query: string) => {
+export const searchTrees = (datasetId: DatasetIdT, query: string) => {
   return async (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query));
 

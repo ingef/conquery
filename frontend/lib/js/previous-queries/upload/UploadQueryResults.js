@@ -6,15 +6,17 @@ import T from "i18n-react";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
 
-import { type DatasetIdType } from "../../dataset/reducer";
-
+import type { DatasetIdT } from "../../api/types";
 import IconButton from "../../button/IconButton";
+import actions from "../../app/actions";
 
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
-import { openUploadModal, closeUploadModal, upload } from "./actions";
+import { openUploadModal, closeUploadModal } from "./actions";
+
+const { startExternalQuery } = actions;
 
 type PropsType = {
-  datasetId: ?DatasetIdType,
+  datasetId: ?DatasetIdT,
   isModalOpen: boolean,
   loading: boolean,
   success: ?Object,
@@ -50,15 +52,17 @@ const UploadQueryResults = (props: PropsType) => {
 
 const mapStateToProps = state => ({
   isModalOpen: state.uploadQueryResults.isModalOpen,
-  loading: state.uploadQueryResults.loading,
-  success: state.uploadQueryResults.success,
-  error: state.uploadQueryResults.error
+  loading:
+    state.uploadQueryResults.queryRunner.startQuery.loading ||
+    state.uploadQueryResults.queryRunner.queryResult.loading,
+  success: state.uploadQueryResults.queryRunner.success,
+  error: state.uploadQueryResults.queryRunner.error
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onOpenModal: () => dispatch(openUploadModal()),
   onCloseModal: () => dispatch(closeUploadModal()),
-  onUpload: (datasetId, query) => dispatch(upload(datasetId, query))
+  onUpload: (datasetId, query) => dispatch(startExternalQuery(datasetId, query))
 });
 
 export default connect(

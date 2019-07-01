@@ -11,6 +11,21 @@ import { loadPreviousQueries } from "../previous-queries/list/actions";
 import * as actionTypes from "./actionTypes";
 import { QUERY_AGAIN_TIMEOUT } from "./constants";
 
+/*
+  This implements a polling mechanism,
+  because queries are running sometimes longer than 10s.
+  (we're using "long polling", where the backend delays the response)
+
+  The polling works like:
+  - Start the query (POST request)
+    - From the response, get an ID when query was successfully started
+  - Continuously poll (GET request) for the query results using that ID
+  - Stop polling once the status is DONE, CANCELED or FAILED
+
+  Also, there's a possibility to stop a query while it's running,
+  by sending a DELETE request for that query ID
+*/
+
 export default function createQueryRunnerActions(
   type: string,
   isExternalForm: boolean = false

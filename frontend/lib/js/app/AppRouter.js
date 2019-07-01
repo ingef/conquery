@@ -2,7 +2,7 @@
 
 import React from "react";
 import { Route, Switch, Router } from "react-router";
-import type { TabType } from "../pane/types";
+import type { TabT } from "../pane/types";
 
 import { Unauthorized, WithAuthToken } from "../authorization";
 
@@ -10,7 +10,7 @@ import App from "./App";
 
 type PropsType = {
   history: Object,
-  rightTabs: TabType[]
+  rightTabs: TabT[]
 };
 
 const AppWithAuthToken = WithAuthToken(App);
