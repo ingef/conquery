@@ -1,5 +1,7 @@
 // @flow
 
+import type { DatasetIdT } from "../api/types";
+
 import {
   LOAD_DATASETS_START,
   LOAD_DATASETS_SUCCESS,
@@ -8,10 +10,8 @@ import {
   SAVE_QUERY
 } from "./actionTypes";
 
-export type DatasetIdType = string;
-
 export type DatasetType = {
-  id: DatasetIdType,
+  id: DatasetIdT,
   label: string
 };
 
@@ -19,7 +19,7 @@ export type StateType = {
   loading: boolean,
   error: ?string,
   data: DatasetType[],
-  selectedDatasetId: ?DatasetIdType
+  selectedDatasetId: ?DatasetIdT
 };
 
 const initialState: StateType = {

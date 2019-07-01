@@ -20,7 +20,8 @@ import uploadConceptListModal, {
   type StateType as UploadConceptListModalStateType
 } from "../upload-concept-list-modal/reducer";
 
-import { type StateType as PanesStateType } from "../pane";
+import type { StateType as PanesStateType } from "../pane";
+import type { TabT } from "../pane/types";
 
 import { reducer as startup } from "../startup";
 import { buildPanesReducer } from "../pane/reducer";
@@ -44,7 +45,7 @@ export type StateType = {
   uploadConceptListModal: UploadConceptListModalStateType
 };
 
-const buildAppReducer = tabs => {
+const buildAppReducer = (tabs: TabT[]) => {
   return combineReducers({
     startup,
     conceptTrees,

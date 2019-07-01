@@ -3,7 +3,7 @@
 import React from "react";
 import { connect } from "react-redux";
 
-import { type DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdT } from "../api/types";
 
 import { Pane } from "../pane";
 import { ConceptTreeList, ConceptTreeSearchBox } from "../concept-trees";
@@ -11,7 +11,7 @@ import PreviousQueriesTab from "../previous-queries/list/PreviousQueriesTab";
 
 type PropsType = {
   activeTab: string,
-  selectedDatasetId: ?DatasetIdType
+  selectedDatasetId: ?DatasetIdT
 };
 
 const LeftPane = ({ activeTab, selectedDatasetId }: PropsType) => {

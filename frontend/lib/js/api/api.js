@@ -2,7 +2,7 @@
 
 import { apiUrl } from "../environment";
 
-import { type DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdT, QueryIdT } from "../api/types";
 import type {
   ConceptIdT,
   GetFrontendConfigResponseT,
@@ -30,13 +30,13 @@ export function getDatasets() {
 }
 
 export const getConcepts = (
-  datasetId: DatasetIdType
+  datasetId: DatasetIdT
 ): Promise<GetConceptsResponseT> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts`);
 };
 
 export const getConcept = (
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   conceptId: ConceptIdT
 ): Promise<GetConceptResponseT> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}`);
@@ -44,7 +44,7 @@ export const getConcept = (
 
 // Same signature as postFormQueries
 export function postQueries(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   query: Object,
   queryType: string
 ): Promise<PostQueriesResponseT> {
@@ -58,8 +58,8 @@ export function postQueries(
 }
 
 export function deleteQuery(
-  datasetId: DatasetIdType,
-  queryId: number
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
 ): Promise<null> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/queries/${queryId}`, {
     method: "DELETE"
@@ -67,15 +67,15 @@ export function deleteQuery(
 }
 
 export function getQuery(
-  datasetId: DatasetIdType,
-  queryId: number
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
 ): Promise<GetQueryResponseT> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/queries/${queryId}`);
 }
 
 // Same signature as postQueries, plus a form query transformator
 export function postFormQueries(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   query: Object,
   queryType: string,
   version: any,
@@ -91,8 +91,8 @@ export function postFormQueries(
 }
 
 export function deleteFormQuery(
-  datasetId: DatasetIdType,
-  queryId: number
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
 ): Promise<null> {
   return fetchJson(
     apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`,
@@ -103,21 +103,21 @@ export function deleteFormQuery(
 }
 
 export function getFormQuery(
-  datasetId: DatasetIdType,
-  queryId: number
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
 ): Promise<GetQueryResponseT> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`);
 }
 
 export function getStoredQueries(
-  datasetId: DatasetIdType
+  datasetId: DatasetIdT
 ): Promise<GetStoredQueriesResponseT> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries`);
 }
 
 export function getStoredQuery(
-  datasetId: DatasetIdType,
-  queryId: number
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
 ): Promise<GetStoredQueryResponseT> {
   return fetchJson(
     apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`
@@ -125,8 +125,8 @@ export function getStoredQuery(
 }
 
 export function deleteStoredQuery(
-  datasetId: DatasetIdType,
-  queryId: number
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
 ): Promise<null> {
   return fetchJson(
     apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`,
@@ -137,8 +137,8 @@ export function deleteStoredQuery(
 }
 
 export function patchStoredQuery(
-  datasetId: DatasetIdType,
-  queryId: number,
+  datasetId: DatasetIdT,
+  queryId: QueryIdT,
   attributes: Object
 ): Promise<null> {
   return fetchJson(
@@ -151,7 +151,7 @@ export function patchStoredQuery(
 }
 
 export function postPrefixForSuggestions(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   conceptId: string,
   tableId: string,
   filterId: string,
@@ -169,7 +169,7 @@ export function postPrefixForSuggestions(
 }
 
 export function postConceptsListToResolve(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   conceptId: string,
   concepts: string[]
 ): Promise<PostConceptResolveResponseT> {
@@ -183,7 +183,7 @@ export function postConceptsListToResolve(
 }
 
 export function postFilterValuesResolve(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   conceptId: string,
   tableId: string,
   filterId: string,
