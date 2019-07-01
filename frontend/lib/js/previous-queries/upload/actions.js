@@ -1,6 +1,5 @@
 // @flow
 
-import Papa from "papaparse";
 import T from "i18n-react";
 import { type Dispatch } from "redux-thunk";
 
@@ -15,9 +14,9 @@ import { loadPreviousQueries } from "../list/actions";
 import {
   OPEN_UPLOAD_MODAL,
   CLOSE_UPLOAD_MODAL,
-  UPLOAD_FILE_START,
-  UPLOAD_FILE_SUCCESS,
-  UPLOAD_FILE_ERROR
+  UPLOAD_START,
+  UPLOAD_SUCCESS,
+  UPLOAD_ERROR
 } from "./actionTypes";
 
 export const openUploadModal = () => ({
@@ -28,28 +27,23 @@ export const closeUploadModal = () => ({
   type: CLOSE_UPLOAD_MODAL
 });
 
-export const uploadFileStart = () => ({ type: UPLOAD_FILE_START });
-export const uploadFileSuccess = (success: any) =>
-  defaultSuccess(UPLOAD_FILE_SUCCESS, success);
-export const uploadFileError = (error: any) =>
-  defaultError(UPLOAD_FILE_ERROR, error);
+export const uploadStart = () => ({ type: UPLOAD_START });
+export const uploadSuccess = (success: any) =>
+  defaultSuccess(UPLOAD_SUCCESS, success);
+export const uploadError = (error: any) => defaultError(UPLOAD_ERROR, error);
 
-export const uploadFile = (datasetId: DatasetIdType, file: any) => (
+export const upload = (datasetId: DatasetIdType, query: Object) => async (
   dispatch: Dispatch
 ) => {
-  dispatch(uploadFileStart());
+  dispatch(uploadStart());
 
-  Papa.parse(file, {
-    skipEmptyLines: true,
-    complete: results => {
-      return api.postQueries(datasetId, results, "external").then(
-        r => {
-          dispatch(uploadFileSuccess(r));
+  try {
+    const results = await api.postQueries(datasetId, query, "external");
 
-          return dispatch(loadPreviousQueries(datasetId));
-        },
-        e => dispatch(uploadFileError(e))
-      );
-    }
-  });
+    dispatch(uploadSuccess(results));
+
+    return dispatch(loadPreviousQueries(datasetId));
+  } catch (e) {
+    return dispatch(uploadError(e));
+  }
 };

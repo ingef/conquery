@@ -11,7 +11,7 @@ import { type DatasetIdType } from "../../dataset/reducer";
 import IconButton from "../../button/IconButton";
 
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
-import { openUploadModal, closeUploadModal, uploadFile } from "./actions";
+import { openUploadModal, closeUploadModal, upload } from "./actions";
 
 type PropsType = {
   datasetId: ?DatasetIdType,
@@ -21,7 +21,7 @@ type PropsType = {
   error: ?Object,
   onOpenModal: Function,
   onCloseModal: Function,
-  onUploadFile: Function
+  onUpload: Function
 };
 
 const Root = styled("div")`
@@ -38,7 +38,7 @@ const UploadQueryResults = (props: PropsType) => {
       {props.isModalOpen && (
         <UploadQueryResultsModal
           onClose={props.onCloseModal}
-          onUploadFile={file => props.onUploadFile(props.datasetId, file)}
+          onUpload={query => props.onUpload(props.datasetId, query)}
           loading={props.loading}
           success={props.success}
           error={props.error}
@@ -58,7 +58,7 @@ const mapStateToProps = state => ({
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onOpenModal: () => dispatch(openUploadModal()),
   onCloseModal: () => dispatch(closeUploadModal()),
-  onUploadFile: (datasetId, file) => dispatch(uploadFile(datasetId, file))
+  onUpload: (datasetId, query) => dispatch(upload(datasetId, query))
 });
 
 export default connect(

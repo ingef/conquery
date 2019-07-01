@@ -15,6 +15,8 @@ import FaIcon from "../../icon/FaIcon";
 import IconButton from "../../button/IconButton";
 import PrimaryButton from "../../button/PrimaryButton";
 
+import CSVColumnPicker from "./CSVColumnPicker";
+
 const Root = styled("div")`
   text-align: center;
 `;
@@ -60,7 +62,7 @@ const FileInput = styled("input")`
 
 type PropsType = {
   onClose: Function,
-  onUploadFile: Function,
+  onUpload: Function,
   loading: boolean,
   success: ?Object,
   error: ?Object
@@ -75,7 +77,9 @@ const DROP_TYPES = [NativeTypes.FILE];
 class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
   props: PropsType;
   state: StateType = {
-    file: null
+    file: null,
+    format: [], // Contains
+    values: [] // Contains an array per line
   };
 
   constructor(props) {
@@ -130,15 +134,10 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
           {!this.props.success && (
             <div>
               {this.state.file ? (
-                <p>
-                  {this.state.file.name}
-                  <StyledIconButton
-                    frame
-                    regular
-                    icon="trash-alt"
-                    onClick={this.onReset}
-                  />
-                </p>
+                <CSVColumnPicker
+                  file={this.state.file}
+                  onUpload={this.props.onUpload}
+                />
               ) : (
                 <StyledDropzone
                   acceptedDropTypes={DROP_TYPES}
@@ -167,13 +166,6 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
                   />
                 </Error>
               )}
-              <PrimaryButton
-                disabled={!this.state.file || this.props.loading}
-                onClick={() => this.props.onUploadFile(this.state.file)}
-              >
-                {this.props.loading && <FaIcon white icon="spinner" />}{" "}
-                {T.translate("uploadQueryResultsModal.upload")}
-              </PrimaryButton>
             </div>
           )}
         </Root>
