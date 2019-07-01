@@ -12,8 +12,6 @@ import Dropzone from "../../form-components/Dropzone";
 import { Modal } from "../../modal";
 import { ErrorMessage } from "../../error-message";
 import FaIcon from "../../icon/FaIcon";
-import IconButton from "../../button/IconButton";
-import PrimaryButton from "../../button/PrimaryButton";
 
 import CSVColumnPicker from "./CSVColumnPicker";
 
@@ -43,10 +41,6 @@ const StyledFaIcon = styled(FaIcon)`
 
 const SuccessMsg = styled("p")`
   margin: 0;
-`;
-
-const StyledIconButton = styled(IconButton)`
-  margin-left: 10px;
 `;
 
 const StyledDropzone = styled(Dropzone)`
@@ -136,7 +130,9 @@ class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
               {this.state.file ? (
                 <CSVColumnPicker
                   file={this.state.file}
+                  loading={this.props.loading}
                   onUpload={this.props.onUpload}
+                  onReset={this.onReset}
                 />
               ) : (
                 <StyledDropzone
