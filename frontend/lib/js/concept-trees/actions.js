@@ -1,7 +1,7 @@
 // @flow
 
 import { type Dispatch } from "redux-thunk";
-import { RateLimit } from "async-sema";
+// import { RateLimit } from "async-sema";
 
 import type { DatasetIdT } from "../api/types";
 import api from "../api";
@@ -77,14 +77,14 @@ export const loadTreeSuccess = (treeId: ConceptIdT, res: any) =>
 
 const TREES_TO_LOAD_IN_PARALLEL = 5;
 
-const lim = new RateLimit(TREES_TO_LOAD_IN_PARALLEL);
+// const lim = new RateLimit(TREES_TO_LOAD_IN_PARALLEL);
 
 export const loadTree = (datasetId: DatasetIdT, treeId: ConceptIdT) => {
   return async (dispatch: Dispatch) => {
     dispatch(loadTreeStart(treeId));
 
     try {
-      await lim();
+      // await lim();
 
       const result = await api.getConcept(datasetId, treeId);
 
