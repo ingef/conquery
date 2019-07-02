@@ -64,7 +64,6 @@ public class ContentTreeProcessor {
 		
 	public ContentTreeProcessor(Namespaces namespaces) {
 		this.namespaces = namespaces;
-		FilterSearch.init(namespaces.getAllDatasets());
 	}
 
 	public FERoot getRoot(NamespaceStorage storage) {
