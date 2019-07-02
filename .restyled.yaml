@@ -1,0 +1,15 @@
+enabled: true
+#auto: false
+#pull_requests: true
+#comments: true
+request_review: author
+labels: ["code-style"]
+
+restylers:
+  - astyle:
+      include:
+        - "**/*.java"
+      arguments:
+        - --style=java
+        - --indent=force-tab=4
+        - --lineend=linux
