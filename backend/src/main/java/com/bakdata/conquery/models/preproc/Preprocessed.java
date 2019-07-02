@@ -34,6 +34,7 @@ public class Preprocessed {
 	private List<List<Object[]>> entries = new ArrayList<>();
 	
 	private final SmallOut buffer = new SmallOut((int)Size.megabytes(50).toBytes());
+	private Import imp;
 
 	public Preprocessed(PreprocessingConfig config, ImportDescriptor descriptor) throws IOException {
 		this.file = descriptor.getInputFile();
@@ -123,7 +124,7 @@ public class Preprocessed {
 	}
 	
 	public void writeToFile(SmallOut out) throws IOException {
-		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
+		imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 		
 		for(int entityId = 0; entityId < entries.size(); entityId++) {
 			List<Object[]> events = entries.get(entityId);
@@ -145,6 +146,8 @@ public class Preprocessed {
 				.columns(columns)
 				.groups(writtenGroups)
 				.validityHash(hash)
+				.classes(imp.getClasses())
+				.suffix(imp.getSuffix())
 				.build();
 		
 		try {

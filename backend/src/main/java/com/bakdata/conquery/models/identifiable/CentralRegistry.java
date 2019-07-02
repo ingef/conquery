@@ -36,7 +36,7 @@ public class CentralRegistry implements Injectable {
 		}
 		Supplier<Identifiable<?>> supplier = cacheables.get(name);
 		if(supplier == null) {
-			throw new NoSuchElementException("Could not find an element called '"+name+"'");
+			throw new NoSuchElementException("Could not find an "+name.getClass().getSimpleName()+" element called '"+name+"'");
 		}
 		return (T)supplier.get();
 	}
