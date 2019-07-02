@@ -114,7 +114,7 @@ public class MapForm extends StatisticForm {
 	}
 
 	@Override
-	public ManagedQuery executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
+	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
 		AbsExportForm form = new AbsExportForm();
 		form.setColumns(new ArrayList<>(getColumns()));
 		form.setDateRange(getDateRange());
@@ -122,7 +122,9 @@ public class MapForm extends StatisticForm {
 		form.setFixedFeatures(getFixedFeatures());
 		form.setQueryGroup(this.getQueryGroup());
 
-		return new AbsExportGenerator(dataset, user, namespaces).executeQuery(form, resolution, false);
+		return Collections.singletonList(
+			new AbsExportGenerator(dataset, user, namespaces).executeQuery(form, resolution, false)
+		);
 	}
 
 	@Override

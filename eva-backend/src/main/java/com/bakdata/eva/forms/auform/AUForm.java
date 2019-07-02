@@ -175,7 +175,7 @@ public class AUForm extends StatisticForm {
 	}
 
 	@Override
-	public ManagedQuery executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
+	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
 		AbsExportForm form = new AbsExportForm();
 		form.setColumns(new ArrayList<>(getColumns()));
 		form.setDateRange(dateRange);
@@ -184,7 +184,9 @@ public class AUForm extends StatisticForm {
 		form.setFeatures(features);
 		form.init(namespaces, user);
 
-		return new AbsExportGenerator(dataset, user, namespaces).executeQuery(form, DateContextMode.QUARTER_WISE, false);
+		return Collections.singletonList(
+			new AbsExportGenerator(dataset, user, namespaces).executeQuery(form, DateContextMode.QUARTER_WISE, false)
+		);
 	}
 
 	@Override

@@ -2,6 +2,7 @@ package com.bakdata.eva.forms.description.relative;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -60,7 +61,7 @@ public class RelativeDescriptionForm extends DescriptionFormBase {
 	}
 
 	@Override
-	public ManagedQuery executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
+	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
 		ExportForm form = new ExportForm();
 		form.setColumns(new ArrayList<>(getColumns()));
 		form.setTimeCountAfter(timeCountAfter);
@@ -73,7 +74,9 @@ public class RelativeDescriptionForm extends DescriptionFormBase {
 		form.setTimeUnit(timeUnit);
 		form.init(namespaces, user);
 		
-		return new ExportGenerator(dataset, user, namespaces).execute(form, false);
+		return Collections.singletonList(
+			new ExportGenerator(dataset, user, namespaces).execute(form, false)
+		);
 	}
 
 	@Override

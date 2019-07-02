@@ -85,15 +85,21 @@ public class StatisticFormTest extends ConqueryTestSpec {
 		MasterMetaStorage storage = support.getStandaloneCommand().getMaster().getStorage();
 		Namespaces namespaces = storage.getNamespaces();
 		
-		ManagedQuery managed = form.executeQuery(support.getDataset(), TestAuth.SuperUser.INSTANCE, namespaces);
-		managed.awaitDone(10, TimeUnit.MINUTES);
+		List<ManagedQuery> managed = form.executeQuery(support.getDataset(), TestAuth.SuperUser.INSTANCE, namespaces);
+		
+		for(ManagedQuery q : managed) {
+			q.awaitDone(10, TimeUnit.MINUTES);
 
-		if (managed.getState() == ExecutionState.FAILED) {
-			fail("Query failed");
+			if (q.getState() == ExecutionState.FAILED) {
+				fail("Query failed");
+			}
 		}
 
-		List<String> actual = new QueryToCSVRenderer(support.getNamespace())
-			.toCSV(PrintSettings.builder().prettyPrint(false).nameExtractor(form.getColumnNamer().getNamer()).build(), managed)
+		QueryToCSVRenderer renderer = new QueryToCSVRenderer(support.getNamespace());
+		PrintSettings settings = PrintSettings.builder().prettyPrint(false).nameExtractor(form.getColumnNamer().getNamer()).build();
+		List<String> actual = managed
+			.stream()
+			.flatMap(q -> renderer.toCSV(settings, q))
 			.collect(Collectors.toList());
 		for(String line : actual) {
 			log.info(line);

@@ -3,6 +3,7 @@ package com.bakdata.eva.forms.absexport;
 import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -57,9 +58,11 @@ public class AbsExportForm extends Form {
 	}
 
 	@Override
-	public ManagedQuery executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
-		return new AbsExportGenerator(dataset, user, namespaces)
-			.executeQuery(this, DateContextMode.QUARTER_WISE, true);
+	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
+		return Collections.singletonList(
+			new AbsExportGenerator(dataset, user, namespaces)
+				.executeQuery(this, DateContextMode.QUARTER_WISE, true)
+		);
 	}
 
 	@Override

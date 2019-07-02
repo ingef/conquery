@@ -122,7 +122,7 @@ public class PSMForm extends StatisticForm {
 	}
 
 	@Override
-	public ManagedQuery executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException, IOException {
+	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException, IOException {
 		return new PSMGenerator(dataset, user, namespaces).execute(this);
 	}
 

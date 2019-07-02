@@ -2,6 +2,7 @@ package com.bakdata.eva.forms.psm;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.UUID;
 import java.util.regex.Matcher;
@@ -38,17 +39,22 @@ public class PSMGenerator {
 		this.mapper = namespaces.injectInto(Jackson.MAPPER.copy());
 	}
 
-	public ManagedQuery execute(PSMForm form) throws JSONException, IOException {
+	public List<ManagedQuery> execute(PSMForm form) throws JSONException, IOException {
 		ExportGenerator generator = new ExportGenerator(dataset, user, namespaces);
 		RelativeFormQuery a = generator.generate(transformForm(form, form.getControlGroup()));
 		RelativeFormQuery b = generator.generate(transformForm(form, form.getFeatureGroup()));
 
-		return namespaces.get(dataset.getId()).getQueryManager().createQuery(new PSMFormQuery(a, b), user);
+		return Arrays.asList(
+			namespaces.get(form.getControlGroup().resolveDatasetId()).getQueryManager().createQuery(new PSMFormQuery(a, true), user),
+			namespaces.get(form.getFeatureGroup().resolveDatasetId()).getQueryManager().createQuery(new PSMFormQuery(b, false), user)
+		);
 	}
 
 	private ExportForm transformForm(PSMForm form, TimeAccessedResult group) throws IOException {
-		DatasetId datasetId = group.getDatasetId().orElse(group.getId().getDataset());
-		Dataset target = namespaces.get(datasetId).getStorage().getDataset();
+		Dataset target = namespaces
+			.get(group.resolveDatasetId())
+			.getStorage()
+			.getDataset();
 
 		ExportForm result = new ExportForm();
 		result.setColumns(form.getColumns());
