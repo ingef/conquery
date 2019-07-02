@@ -47,18 +47,18 @@ public class Import extends NamedImpl<ImportId> {
 	private long numberOfEntries;
 	@JsonIgnore
 	private transient BlockFactory blockFactory;
-	
+
 	@Override
 	public ImportId createId() {
 		return new ImportId(table, getName());
 	}
-	
+
 	@JsonIgnore
 	public int getNullWidth() {
 		//count the columns which can not store null
 		return Ints.checkedCast(Arrays.stream(columns).
 				filter(col -> col.getType().requiresExternalNullStore()
-						&& col.getType().getNullLines() < col.getType().getLines())
+					&& col.getType().getNullLines() < col.getType().getLines())
 				.count());
 	}
 
@@ -70,21 +70,21 @@ public class Import extends NamedImpl<ImportId> {
 	}
 
 	@JsonIgnore
-    public synchronized BlockFactory getBlockFactory() {
+	public synchronized BlockFactory getBlockFactory() {
 		if(blockFactory == null) {
 			String bucketSource = null;
 			String factorySource = null;
 			try {
 				ClassGenerator gen = ClassGenerator.create();
 				String suffix = ConqueryEscape.escape(this.getId().toString().replace('.', '_'));
-				
+
 				bucketSource = applyTemplate("BucketTemplate.ftl", suffix);
 				factorySource = applyTemplate("BlockFactoryTemplate.ftl", suffix);
-				
+
 				if(DebugMode.isActive()) {
 					log.debug("Generated classes for {}:\n{}\n{}", this, bucketSource, factorySource);
 				}
-				
+
 				gen.addForCompile(
 					"com.bakdata.conquery.models.events.generation.Bucket_"+suffix,
 					bucketSource
@@ -93,45 +93,48 @@ public class Import extends NamedImpl<ImportId> {
 					"com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix,
 					factorySource
 				);
-				
+
 				gen.compile();
-				
+
 				blockFactory = (BlockFactory) gen
 					.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix)
 					.getConstructor()
 					.newInstance();
-			} catch (Exception e) {
+			}
+			catch (Exception e) {
 				log.error("Failed to generate classes for {}:\n{}\n{}", this, bucketSource, factorySource);
 				throw new IllegalStateException("Failed to generate Bucket classes", e);
 			}
 		}
-		
+
 		return blockFactory;
 	}
-	
+
 	private String applyTemplate(String templateName, String suffix) {
-		try(Reader reader = In.resource(BlockFactory.class, templateName).withUTF8().asReader();
+		try
+			(Reader reader = In.resource(BlockFactory.class, templateName).withUTF8().asReader();
 				StringWriter writer = new StringWriter()) {
-			
+
 			Configuration cfg = Freemarker.createForJavaTemplates();
-	
+
 			new Template("template_"+templateName, reader, cfg)
-				.process(
-					ImmutableMap
-						.builder()
-						.put("suffix", suffix)
-						.put("imp", this)
-						.put("types", MajorTypeId.values())
-						.put("safeName", SafeName.INSTANCE)
-						.put("safeJavaString", SafeJavaString.INSTANCE)
-						.put("bucketSize", ConqueryConfig.getInstance().getCluster().getEntityBucketSize())
-						.build(),
-					writer
+			.process(
+				ImmutableMap
+				.builder()
+				.put("suffix", suffix)
+				.put("imp", this)
+				.put("types", MajorTypeId.values())
+				.put("safeName", SafeName.INSTANCE)
+				.put("safeJavaString", SafeJavaString.INSTANCE)
+				.put("bucketSize", ConqueryConfig.getInstance().getCluster().getEntityBucketSize())
+				.build(),
+				writer
 			);
-			
+
 			writer.close();
 			return writer.toString();
-		} catch (TemplateException | IOException e) {
+		}
+		catch (TemplateException | IOException e) {
 			throw new IllegalStateException("Failed to generate class "+templateName+" for "+this, e);
 		}
 	}
@@ -150,8 +153,8 @@ public class Import extends NamedImpl<ImportId> {
 			impCols[c] = col;
 		}
 		imp.setColumns(impCols);
-		
+
 		return imp;
 	}
-	
+
 }
