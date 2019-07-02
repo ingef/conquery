@@ -70,7 +70,7 @@ public class Import extends NamedImpl<ImportId> {
 	}
 
 	@JsonIgnore
-	public synchronized BlockFactory getBlockFactory() {
+    public synchronized BlockFactory getBlockFactory() {
 		if(blockFactory == null) {
 			String bucketSource = null;
 			String factorySource = null;
