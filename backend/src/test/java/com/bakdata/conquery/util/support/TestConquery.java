@@ -24,8 +24,10 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.ConfigCloner;
 import com.google.common.io.Files;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -112,9 +114,13 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			localCfg,
 			standaloneCommand.getMaster().getAdmin().getAdminProcessor()
 		);
-		while(ns.getWorkers().size() < ns.getNamespaces().getSlaves().size()) {
-			Uninterruptibles.sleepUninterruptibly(50, TimeUnit.MILLISECONDS);
-		}
+
+		Wait.builder()
+			.attempts(100)
+			.stepTime(50)
+			.build()
+			.until(()->ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
+
 		support.waitUntilWorkDone();
 		openSupports.add(support);
 		return support;
@@ -123,8 +129,9 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	/*package*/ synchronized void stop(StandaloneSupport support) {
 		log.info("Tearing down dataset");
 		
-		//standaloneCommand.getMaster().getStorage().removeDataset(support.getDataset().getId());
-		//standaloneCommand.getMaster().getStorage().getInformation().sendToAll(new RemoveDataset(dataset.getId()));
+		DatasetId dataset = support.getDataset().getId();
+		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s->s.send(new RemoveWorker(dataset)));
+		standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 
 		openSupports.remove(support);
 	}
