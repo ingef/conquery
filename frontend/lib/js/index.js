@@ -1,6 +1,6 @@
 // @flow
 
-import "./fixEdge";
+import "./browserShimsAndPolyfills";
 
 import React from "react";
 import ReactDOM from "react-dom";
@@ -16,8 +16,6 @@ import {
   type Environment,
   basename
 } from "./environment";
-
-require("es6-promise").polyfill();
 
 // TODO: OG image required?
 // require('../../images/og.png');
