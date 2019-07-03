@@ -4,6 +4,9 @@ import java.io.IOException;
 import java.io.Reader;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.UUID;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -13,6 +16,8 @@ import com.bakdata.conquery.io.xodus.NamespacedStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
+import com.bakdata.conquery.models.events.generation.MemClassLoader;
+import com.bakdata.conquery.models.events.generation.MemJavaFileObject;
 import com.bakdata.conquery.models.events.generation.SafeJavaString;
 import com.bakdata.conquery.models.events.generation.SafeName;
 import com.bakdata.conquery.models.identifiable.NamedImpl;
@@ -22,7 +27,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.util.ConqueryEscape;
-import com.bakdata.conquery.util.DebugMode;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.powerlibraries.io.In;
@@ -45,8 +49,11 @@ public class Import extends NamedImpl<ImportId> {
 	@JsonManagedReference @NotNull
 	private ImportColumn[] columns = new ImportColumn[0];
 	private long numberOfEntries;
+	private Map<String, byte[]> classes;
+	private String suffix;
 	@JsonIgnore
 	private transient BlockFactory blockFactory;
+	
 	
 	@Override
 	public ImportId createId() {
@@ -72,44 +79,74 @@ public class Import extends NamedImpl<ImportId> {
 	@JsonIgnore
 	public synchronized BlockFactory getBlockFactory() {
 		if(blockFactory == null) {
-			String bucketSource = null;
-			String factorySource = null;
-			try {
-				ClassGenerator gen = ClassGenerator.create();
-				String suffix = ConqueryEscape.escape(this.getId().toString().replace('.', '_'));
-				
-				bucketSource = applyTemplate("BucketTemplate.ftl", suffix);
-				factorySource = applyTemplate("BlockFactoryTemplate.ftl", suffix);
-				
-				if(DebugMode.isActive()) {
-					log.debug("Generated classes for {}:\n{}\n{}", this, bucketSource, factorySource);
-				}
-				
-				gen.addForCompile(
-					"com.bakdata.conquery.models.events.generation.Bucket_"+suffix,
-					bucketSource
-				);
-				gen.addForCompile(
-					"com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix,
-					factorySource
-				);
-				
-				gen.compile();
-				
-				blockFactory = (BlockFactory) gen
-					.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+suffix)
-					.getConstructor()
-					.newInstance();
-			} catch (Exception e) {
-				log.error("Failed to generate classes for {}:\n{}\n{}", this, bucketSource, factorySource);
-				throw new IllegalStateException("Failed to generate Bucket classes", e);
+			if(classes!=null) {
+				loadClasses();
+			}
+			else {
+				generateClasses();
 			}
 		}
 		
 		return blockFactory;
 	}
 	
-	private String applyTemplate(String templateName, String suffix) {
+	public synchronized String getSuffix() {
+		if(suffix == null) {
+			suffix = UUID.randomUUID().toString().replace('-', '_')+"_"+ConqueryEscape.escape(table.getTable())+"_"+ConqueryEscape.escape(getName());
+		}
+		return suffix;
+	}
+	
+	private void loadClasses() {
+		try {
+			MemClassLoader loader = new MemClassLoader();
+			for(Entry<String, byte[]> e : classes.entrySet()) {
+				loader.addClassFile(new MemJavaFileObject(e.getKey(), e.getValue()));
+			}
+			blockFactory = (BlockFactory) Class.forName("com.bakdata.conquery.models.events.generation.BlockFactory_"+getSuffix(), true, loader)
+				.getConstructor()
+				.newInstance();
+		} catch (Exception e) {
+			throw new IllegalStateException("Failed to load classes for "+this, e);
+		}
+	}
+
+	private void generateClasses() {
+		String bucketSource = null;
+		String factorySource = null;
+		try {
+			ClassGenerator gen = new ClassGenerator();
+			
+			addClass(
+				gen,
+				"com.bakdata.conquery.models.events.generation.Bucket_"+getSuffix(),
+				"BucketTemplate.ftl"
+			);
+			addClass(
+				gen,
+				"com.bakdata.conquery.models.events.generation.BlockFactory_"+getSuffix(),
+				"BlockFactoryTemplate.ftl"
+			);
+			gen.compile();
+			classes = gen.getClasses();
+			
+			blockFactory = (BlockFactory) gen
+				.getClassByName("com.bakdata.conquery.models.events.generation.BlockFactory_"+getSuffix())
+				.getConstructor()
+				.newInstance();
+		} catch (Exception e) {
+			log.error("Failed to generate classes for {}:\n{}\n{}", this, bucketSource, factorySource);
+			throw new IllegalStateException("Failed to generate Bucket classes", e);
+		}
+	}
+
+	private void addClass(ClassGenerator gen, String className, String template) throws ClassNotFoundException, IOException {
+		String source = applyTemplate(template);
+		log.trace("Generating class {} for {}:\n{}", className, this, source);
+		gen.addForCompile(className, source);
+	}
+
+	private String applyTemplate(String templateName) {
 		try(Reader reader = In.resource(BlockFactory.class, templateName).withUTF8().asReader();
 				StringWriter writer = new StringWriter()) {
 			
@@ -119,7 +156,7 @@ public class Import extends NamedImpl<ImportId> {
 				.process(
 					ImmutableMap
 						.builder()
-						.put("suffix", suffix)
+						.put("suffix", getSuffix())
 						.put("imp", this)
 						.put("types", MajorTypeId.values())
 						.put("safeName", SafeName.INSTANCE)

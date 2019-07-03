@@ -1,8 +1,9 @@
 // @flow
 
 import { type Dispatch } from "redux-thunk";
+// import { RateLimit } from "async-sema";
 
-import { type DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdT } from "../api/types";
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
 import type { ConceptIdT } from "../api/types";
@@ -32,7 +33,7 @@ export const loadTreesError = (err: any) => defaultError(LOAD_TREES_ERROR, err);
 export const loadTreesSuccess = (res: any) =>
   defaultSuccess(LOAD_TREES_SUCCESS, res);
 
-export const loadTrees = (datasetId: DatasetIdType) => {
+export const loadTrees = (datasetId: DatasetIdT) => {
   return (dispatch: Dispatch) => {
     // TODO: Careful, side effect, extract this soon
     resetAllTrees();
@@ -52,9 +53,10 @@ export const loadTrees = (datasetId: DatasetIdType) => {
             for (const filter of table.filters || [])
               if (filter.defaultValue) filter.value = filter.defaultValue;
 
-        Object.keys(r.concepts).forEach(conceptId => {
-          if (r.concepts[conceptId].detailsAvailable)
+        Object.keys(r.concepts).forEach(async conceptId => {
+          if (r.concepts[conceptId].detailsAvailable) {
             dispatch(loadTree(datasetId, conceptId));
+          }
         });
 
         return r.concepts;
@@ -73,16 +75,23 @@ export const loadTreeError = (treeId: ConceptIdT, err: any) =>
 export const loadTreeSuccess = (treeId: ConceptIdT, res: any) =>
   defaultSuccess(LOAD_TREE_SUCCESS, res, { treeId });
 
-export const loadTree = (datasetId: DatasetIdType, treeId: ConceptIdT) => {
-  return (dispatch: Dispatch) => {
+const TREES_TO_LOAD_IN_PARALLEL = 5;
+
+// const lim = new RateLimit(TREES_TO_LOAD_IN_PARALLEL);
+
+export const loadTree = (datasetId: DatasetIdT, treeId: ConceptIdT) => {
+  return async (dispatch: Dispatch) => {
     dispatch(loadTreeStart(treeId));
 
-    return api
-      .getConcept(datasetId, treeId)
-      .then(
-        r => dispatch(loadTreeSuccess(treeId, r)),
-        e => dispatch(loadTreeError(treeId, e))
-      );
+    try {
+      // await lim();
+
+      const result = await api.getConcept(datasetId, treeId);
+
+      dispatch(loadTreeSuccess(treeId, result));
+    } catch (e) {
+      dispatch(loadTreeError(treeId, e));
+    }
   };
 };
 
@@ -97,7 +106,7 @@ export const searchTreesSuccess = (query: string, result: Object) => ({
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
-export const searchTrees = (datasetId: DatasetIdType, query: string) => {
+export const searchTrees = (datasetId: DatasetIdT, query: string) => {
   return async (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query));
 

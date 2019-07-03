@@ -1,6 +1,6 @@
 // @flow
 
-import React from "react";
+import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import { NativeTypes } from "react-dnd-html5-backend";
@@ -12,8 +12,8 @@ import Dropzone from "../../form-components/Dropzone";
 import { Modal } from "../../modal";
 import { ErrorMessage } from "../../error-message";
 import FaIcon from "../../icon/FaIcon";
-import IconButton from "../../button/IconButton";
-import PrimaryButton from "../../button/PrimaryButton";
+
+import CSVColumnPicker from "./CSVColumnPicker";
 
 const Root = styled("div")`
   text-align: center;
@@ -43,10 +43,6 @@ const SuccessMsg = styled("p")`
   margin: 0;
 `;
 
-const StyledIconButton = styled(IconButton)`
-  margin-left: 10px;
-`;
-
 const StyledDropzone = styled(Dropzone)`
   padding: 40px;
   width: 100%;
@@ -58,128 +54,96 @@ const FileInput = styled("input")`
   display: none;
 `;
 
-type PropsType = {
-  onClose: Function,
-  onUploadFile: Function,
+type PropsT = {
   loading: boolean,
   success: ?Object,
-  error: ?Object
-};
-
-type StateType = {
-  file: any
+  error: ?Object,
+  onClose: Function,
+  onUpload: Function
 };
 
 const DROP_TYPES = [NativeTypes.FILE];
 
-class UploadQueryResultsModal extends React.Component<PropsType, StateType> {
-  props: PropsType;
-  state: StateType = {
-    file: null
-  };
+export default ({ loading, success, error, onClose, onUpload }: PropsT) => {
+  const [file, setFile] = React.useState(null);
+  const fileInputRef = React.useRef();
 
-  constructor(props) {
-    super(props);
-
-    this.fileInputRef = React.createRef();
-  }
-
-  onDrop = (_, monitor) => {
+  function onDrop(_, monitor) {
     const item = monitor.getItem();
 
     if (item.files) {
-      this.setState({ file: item.files[0] });
+      setFile(item.files[0]);
     }
-  };
-
-  onSelectFile = file => {
-    this.setState({ file: this.fileInputRef.current.files[0] });
-  };
-
-  onOpenFileDialog = () => {
-    this.fileInputRef.current.click();
-  };
-
-  onReset = () => {
-    this.setState({ file: null });
-  };
-
-  render() {
-    return (
-      <Modal
-        onClose={this.props.onClose}
-        doneButton
-        headline={
-          <>
-            {T.translate("uploadQueryResultsModal.headline")}
-            <InfoTooltip
-              text={T.translate("uploadQueryResultsModal.formatInfo.text")}
-            />
-          </>
-        }
-      >
-        <Root>
-          {this.props.success && (
-            <Success>
-              <StyledFaIcon icon="check-circle" />
-              <SuccessMsg>
-                {T.translate("uploadQueryResultsModal.uploadSucceeded")}
-              </SuccessMsg>
-            </Success>
-          )}
-          {!this.props.success && (
-            <div>
-              {this.state.file ? (
-                <p>
-                  {this.state.file.name}
-                  <StyledIconButton
-                    frame
-                    regular
-                    icon="trash-alt"
-                    onClick={this.onReset}
-                  />
-                </p>
-              ) : (
-                <StyledDropzone
-                  acceptedDropTypes={DROP_TYPES}
-                  onDrop={this.onDrop}
-                  onClick={this.onOpenFileDialog}
-                >
-                  <FileInput
-                    ref={this.fileInputRef}
-                    type="file"
-                    onChange={this.onSelectFile}
-                  />
-                  {T.translate("uploadQueryResultsModal.dropzone")}
-                </StyledDropzone>
-              )}
-              {this.props.error && (
-                <Error>
-                  <ErrorMessage
-                    message={T.translate(
-                      "uploadQueryResultsModal.uploadFailed"
-                    )}
-                  />
-                  <ErrorMessageSub
-                    message={T.translate(
-                      "uploadQueryResultsModal.uploadFailedSub"
-                    )}
-                  />
-                </Error>
-              )}
-              <PrimaryButton
-                disabled={!this.state.file || this.props.loading}
-                onClick={() => this.props.onUploadFile(this.state.file)}
-              >
-                {this.props.loading && <FaIcon white icon="spinner" />}{" "}
-                {T.translate("uploadQueryResultsModal.upload")}
-              </PrimaryButton>
-            </div>
-          )}
-        </Root>
-      </Modal>
-    );
   }
-}
 
-export default UploadQueryResultsModal;
+  function onSelectFile(file) {
+    setFile(fileInputRef.current.files[0]);
+  }
+
+  function onOpenFileDialog() {
+    fileInputRef.current.click();
+  }
+
+  return (
+    <Modal
+      onClose={onClose}
+      doneButton
+      headline={
+        <>
+          {T.translate("uploadQueryResultsModal.headline")}
+          <InfoTooltip
+            text={T.translate("uploadQueryResultsModal.formatInfo.text")}
+          />
+        </>
+      }
+    >
+      <Root>
+        {success ? (
+          <Success>
+            <StyledFaIcon icon="check-circle" />
+            <SuccessMsg>
+              {T.translate("uploadQueryResultsModal.uploadSucceeded")}
+            </SuccessMsg>
+          </Success>
+        ) : (
+          <div>
+            {file && (
+              <CSVColumnPicker
+                file={file}
+                loading={loading}
+                onUpload={onUpload}
+                onReset={() => setFile(null)}
+              />
+            )}
+            {!file && (
+              <StyledDropzone
+                acceptedDropTypes={DROP_TYPES}
+                onDrop={onDrop}
+                onClick={onOpenFileDialog}
+              >
+                <FileInput
+                  ref={fileInputRef}
+                  type="file"
+                  onChange={onSelectFile}
+                />
+                {T.translate("uploadQueryResultsModal.dropzone")}
+              </StyledDropzone>
+            )}
+            {error && (
+              <Error>
+                <ErrorMessage
+                  message={T.translate("uploadQueryResultsModal.uploadFailed")}
+                />
+                <ErrorMessageSub
+                  message={T.translate(
+                    "uploadQueryResultsModal.uploadFailedSub"
+                  )}
+                />
+              </Error>
+            )}
+          </div>
+        )}
+      </Root>
+    </Modal>
+  );
+};

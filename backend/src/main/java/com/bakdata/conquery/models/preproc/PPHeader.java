@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.util.Map;
+
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 import lombok.AllArgsConstructor;
@@ -17,4 +19,6 @@ public class PPHeader {
 	private CDateRange eventRange;
 	private PPColumn primaryColumn;
 	private PPColumn[] columns;
+	private Map<String, byte[]> classes;
+	private String suffix;
 }

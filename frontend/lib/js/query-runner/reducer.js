@@ -15,16 +15,19 @@ export type StateType = {
   queryRunning: boolean,
   startQuery: APICallType,
   stopQuery: APICallType,
-  queryResult: APICallType
+  queryResult: APICallType & {
+    resultCount?: number,
+    resultUrl?: string
+  }
 };
 
 export default function createQueryRunnerReducer(type: string): Function {
   const initialState: StateType = {
     runningQuery: null,
     queryRunning: false,
-    startQuery: Object,
-    stopQuery: Object,
-    queryResult: Object
+    startQuery: {},
+    stopQuery: {},
+    queryResult: {}
   };
 
   const capitalType = toUpperCaseUnderscore(type);
@@ -38,7 +41,7 @@ export default function createQueryRunnerReducer(type: string): Function {
   const STOP_QUERY_SUCCESS = actionTypes[`STOP_${capitalType}_QUERY_SUCCESS`];
   const STOP_QUERY_ERROR = actionTypes[`STOP_${capitalType}_QUERY_ERROR`];
   const QUERY_RESULT_START = actionTypes[`QUERY_${capitalType}_RESULT_START`];
-  const QUERY_RESULT_STOP = actionTypes[`QUERY_${capitalType}_RESULT_STOP`];
+  const QUERY_RESULT_RESET = actionTypes[`QUERY_${capitalType}_RESULT_RESET`];
   const QUERY_RESULT_SUCCESS =
     actionTypes[`QUERY_${capitalType}_RESULT_SUCCESS`];
   const QUERY_RESULT_ERROR = actionTypes[`QUERY_${capitalType}_RESULT_ERROR`];
@@ -55,6 +58,8 @@ export default function createQueryRunnerReducer(type: string): Function {
     // E.G. STATUS DONE
     return {
       loading: false,
+      success: true,
+      error: null,
       resultCount: data.numberOfResults,
       resultUrl: data.resultUrl
     };
@@ -106,8 +111,8 @@ export default function createQueryRunnerReducer(type: string): Function {
       // To check for query results
       case QUERY_RESULT_START:
         return { ...state, queryResult: { loading: true } };
-      case QUERY_RESULT_STOP:
-        return { ...state, queryResult: { loading: false } };
+      case QUERY_RESULT_RESET:
+        return { ...state, queryResult: {} };
       case QUERY_RESULT_SUCCESS:
         const { data } = action.payload;
 

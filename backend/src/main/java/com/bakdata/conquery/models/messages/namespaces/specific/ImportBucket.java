@@ -64,7 +64,7 @@ public class ImportBucket extends WorkerMessage.Slow {
 		return
 			"Importing "
 			+ bytes.length
-			+ "entities from "
+			+ " entities from "
 			+ BinaryByteUnit.format(Arrays.stream(bytes).mapToInt(v->v.length).sum())
 			+ " as "
 			+ bucket.getImp().getTag()

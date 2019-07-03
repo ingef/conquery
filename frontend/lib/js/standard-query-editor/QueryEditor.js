@@ -4,13 +4,13 @@ import styled from "@emotion/styled";
 import { QueryGroupModal } from "../query-group-modal";
 import UploadConceptListModal from "../upload-concept-list-modal/UploadConceptListModal";
 import UploadFilterListModal from "../upload-filter-list-modal/UploadFilterListModal";
-import type { DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdT } from "../api/types";
 
 import Query from "./Query";
 import StandardQueryNodeEditor from "./StandardQueryNodeEditor";
 
 type PropsType = {
-  selectedDatasetId: DatasetIdType
+  selectedDatasetId: DatasetIdT
 };
 
 const Root = styled("div")`
