@@ -2,6 +2,7 @@ package com.bakdata.eva.forms.export;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -61,8 +62,10 @@ public class ExportForm extends Form {
 	}
 
 	@Override
-	public ManagedQuery executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
-		return new ExportGenerator(dataset, user, namespaces).execute(this, true);
+	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
+		return Collections.singletonList(
+			new ExportGenerator(dataset, user, namespaces).execute(this, true)
+		);
 	}
 
 	@Override

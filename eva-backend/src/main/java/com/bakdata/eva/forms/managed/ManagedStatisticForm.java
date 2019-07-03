@@ -85,11 +85,12 @@ public class ManagedStatisticForm extends ManagedForm {
 		ConqueryConfig config = ConqueryConfig.getInstance();
 		String json = ((StatisticForm)form).toStatisticJSON(namespace.getNamespaces());
 
-		Stream<String> queryResult = new QueryToCSVRenderer(namespace)
-			.toCSV(
-				PrintSettings.builder().prettyPrint(false).nameExtractor(form.getColumnNamer().getNamer()).build(),
-				internalQuery
-			);
+		QueryToCSVRenderer renderer = new QueryToCSVRenderer(namespace);
+		PrintSettings settings = PrintSettings.builder().prettyPrint(false).nameExtractor(form.getColumnNamer().getNamer()).build();
+		Stream<String> queryResult = internalQueries
+			.stream()
+			.flatMap(q -> renderer.toCSV(settings, q));
+		
 		ByteArrayOutputStream matrixOut = new ByteArrayOutputStream();
 		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(matrixOut, StandardCharsets.UTF_8))) {
 			Iterator<String> it = queryResult.iterator();

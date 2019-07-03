@@ -88,7 +88,7 @@ public abstract class Form {
 		}
 	};
 
-	public abstract ManagedQuery executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException, IOException;
+	public abstract List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException, IOException;
 
 	@JsonIgnore
 	public abstract Collection<ManagedExecutionId> getUsedQueries();

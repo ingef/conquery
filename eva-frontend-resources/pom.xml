@@ -48,7 +48,29 @@
                                 <resource>
                                     <directory>${project.parent.basedir}/eva-frontend</directory>
                                     <excludes>
-                                    	<exclude>**/target/</exclude>
+                                        <exclude>**/target/</exclude>
+                                        <exclude>conquery/</exclude>
+                                    </excludes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>copy-dependency</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${workingDirectory}</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>${project.parent.basedir}/eva-frontend</directory>
+                                    <includes>
+                                        <include>conquery/frontend/</include>
+                                    </includes>
+                                    <excludes>
+                                        <exclude>**/target/</exclude>
                                     </excludes>
                                 </resource>
                             </resources>

@@ -3,6 +3,7 @@ package com.bakdata.eva.forms.description.absolute;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import javax.validation.Valid;
@@ -46,7 +47,7 @@ public class AbsDescriptionForm extends DescriptionFormBase {
 	}
 
 	@Override
-	public ManagedQuery executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
+	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
 		AbsExportForm form = new AbsExportForm();
 		form.setColumns(new ArrayList<>(getColumns()));
 		form.setDateRange(dateRange);
@@ -55,7 +56,9 @@ public class AbsDescriptionForm extends DescriptionFormBase {
 		form.setFeatures(getFeatures());
 		form.init(namespaces, formUser);
 		
-		return new AbsExportGenerator(dataset, user, namespaces).executeQuery(form, resolution, false);
+		return Collections.singletonList(
+			new AbsExportGenerator(dataset, user, namespaces).executeQuery(form, resolution, false)
+		);
 	}
 	
 	@Override

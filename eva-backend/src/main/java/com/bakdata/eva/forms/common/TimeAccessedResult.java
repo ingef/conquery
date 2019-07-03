@@ -18,4 +18,8 @@ public class TimeAccessedResult {
 	private TimeSelector timestamp;
 	private Optional<DatasetId> datasetId;
 	private String label;
+	
+	public DatasetId resolveDatasetId() {
+		return datasetId.orElse(id.getDataset());
+	}
 }

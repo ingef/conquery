@@ -1,6 +1,7 @@
 package com.bakdata.eva.forms.managed;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.apiv1.URLBuilder;
@@ -39,7 +40,7 @@ public class ManagedForm extends ManagedExecution {
 	@JsonIgnore
 	private transient ListenableFuture<ExecutionState> formFuture;
 
-	protected ManagedQuery internalQuery;
+	protected List<ManagedQuery> internalQueries;
 
 	public ManagedForm(Form form, Namespace namespace, UserId owner) {
 		super(namespace, owner);
@@ -72,24 +73,29 @@ public class ManagedForm extends ManagedExecution {
 	}
 	
 	protected ExecutionState execute() throws JSONException, IOException {
-		internalQuery = form.executeQuery(
+		internalQueries = form.executeQuery(
 			getNamespace().getStorage().getDataset(),
 			getNamespace().getStorage().getMetaStorage().getUser(getOwner()),
 			getNamespace().getNamespaces()
 		);
-		internalQuery.awaitDone(1, TimeUnit.DAYS);
-		if(internalQuery.getState() == ExecutionState.DONE) {
-			return ExecutionState.DONE;
+		for(ManagedQuery internalQuery : internalQueries) {
+			internalQuery.awaitDone(1, TimeUnit.DAYS);
+			if(internalQuery.getState() != ExecutionState.DONE) {
+				return ExecutionState.FAILED;
+			}
 		}
-		else {
-			return ExecutionState.FAILED;
-		}
+		return ExecutionState.DONE;
 	}
 	
+	@Override
 	public ExecutionStatus buildStatus(URLBuilder url) {
 		ExecutionStatus status = super.buildStatus(url);
-		if(internalQuery != null) {
-			Long numberOfResults = Long.valueOf(internalQuery.fetchContainedEntityResult().count());
+		if(internalQueries != null) {
+			long numberOfResults = internalQueries
+				.stream()
+				.filter(mq->mq.getState() == ExecutionState.DONE)
+				.mapToLong(mq->mq.fetchContainedEntityResult().count())
+				.sum();
 			status.setNumberOfResults(numberOfResults);
 		}
 		return status;
@@ -97,6 +103,6 @@ public class ManagedForm extends ManagedExecution {
 
 	@Override
 	public ManagedQuery toResultQuery() {
-		return internalQuery;
+		throw new UnsupportedOperationException();
 	}
 }
