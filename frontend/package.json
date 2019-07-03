@@ -66,7 +66,7 @@
     "react-split-pane": "^0.1.77",
     "react-tippy": "^1.2.3",
     "redux": "^4.0.1",
-    "redux-form": "^8.2.3",
+    "redux-form": "^8.2.4",
     "redux-multi": "^0.1.12",
     "redux-thunk": "^2.3.0",
     "terser-webpack-plugin": "^1.2.3"
