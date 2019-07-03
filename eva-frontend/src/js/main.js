@@ -21,7 +21,7 @@ initializeLocalization("de", de, translations, evaStrings);
 const isProduction = process.env.NODE_ENV === "production";
 const environment = {
   isProduction: isProduction,
-  basename: isProduction ? "/app" : "/",
+  basename: isProduction ? "/app" : "https://37c21eb1.eu.ngrok.io",
   apiUrl: "/api"
 };
 

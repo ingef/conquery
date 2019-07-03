@@ -16,6 +16,7 @@ module.exports = {
   entry: {
     main: removeEmpty([
       "@babel/polyfill",
+      "classlist-polyfill",
       ifDevelopment("webpack-hot-middleware/client?reload=true"),
       path.join(__dirname, `src/js/main.js`)
     ])
@@ -59,7 +60,6 @@ module.exports = {
     rules: [
       {
         test: /\.js$/,
-        exclude: path.join(__dirname, "./node_modules/"),
         use: "babel-loader"
       },
       {
