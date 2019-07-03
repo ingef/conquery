@@ -1,8 +1,9 @@
+name-template: '$NEXT_PATCH_VERSION'
+tag-template: 'v$NEXT_PATCH_VERSION'
+categories:
+  - title: '⚙️ Dependencies'
+    label: 'dependencies'
 template: |
   ## Changes
 
   $CHANGES
-
-  ### Contributors
-
-  $CONTRIBUTORS
