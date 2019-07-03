@@ -13,7 +13,8 @@
     "start": "cross-env NODE_ENV=development node app/server",
     "start-production": "cross-env NODE_ENV=production node app/server",
     "lint": "eslint --ext=js lib/js test app/src/js",
-    "build": "rimraf ./app/dist && cross-env NODE_ENV=production webpack -p --config ./app/webpack.config.js --progress --colors",
+    "build": "rimraf ./app/dist && cross-env NODE_ENV=production webpack -p --config ./app/webpack.config.js --colors",
+    "build-ci": "rimraf ./app/dist && cross-env NODE_ENV=production webpack -p --config ./app/webpack.config.js",
     "heroku-postbuild": "yarn run build",
     "flow": "flow; test $? -eq 0 -o $? -eq 2",
     "test": "cross-env NODE_ENV=test jest test 2>&1"
