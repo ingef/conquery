@@ -13,10 +13,11 @@ const { ifProduction, ifDevelopment } = getIfUtils(env);
 module.exports = ["en", "de"].map(lang => ({
   mode: env,
   name: lang,
-  devtool: ifDevelopment("eval-source-map", "source-map"),
+  devtool: ifDevelopment("inline-source-map", "source-map"),
   entry: {
     main: removeEmpty([
       "@babel/polyfill",
+      "classlist-polyfill",
       ifDevelopment("webpack-hot-middleware/client?reload=true"),
       path.join(__dirname, `src/js/main.${lang}.js`)
     ])
@@ -59,7 +60,8 @@ module.exports = ["en", "de"].map(lang => ({
     rules: [
       {
         test: /\.js$/,
-        exclude: path.join(__dirname, "../node_modules/"),
+        // exclude: /node_modules\/(?!(async-sema)\/).*/,
+        // exclude: /node_modules/,
         use: "babel-loader"
       },
       {
