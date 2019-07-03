@@ -43,7 +43,15 @@ public class StoredQueriesProcessor {
 			.stream()
 			//to exclude subtypes from somewhere else
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery)q).getQuery().getClass().equals(ConceptQuery.class))
-			.map(mq -> mq.buildStatus(URLBuilder.fromRequest(req)));
+			.flatMap(mq -> {
+				try {
+					return Stream.of(mq.buildStatus(URLBuilder.fromRequest(req)));
+				}
+				catch(Exception e) {
+					log.warn("Could not build status of "+mq, e);
+					return Stream.empty();
+				}
+			});
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedExecution query) {

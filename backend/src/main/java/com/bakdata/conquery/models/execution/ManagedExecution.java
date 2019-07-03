@@ -17,6 +17,7 @@ import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.ResultCSVResource;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -118,7 +119,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				: null)
 			.status(state)
 			.owner(Optional.ofNullable(owner).orElse(null))
-			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user).getLabel()).orElse(null))
+			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user)).map(User::getLabel).orElse(null))
 			.resultUrl(
 				url != null
 				? url
