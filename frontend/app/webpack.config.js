@@ -13,10 +13,15 @@ const { ifProduction, ifDevelopment } = getIfUtils(env);
 module.exports = ["en", "de"].map(lang => ({
   mode: env,
   name: lang,
-  devtool: ifDevelopment("eval-source-map", "source-map"),
+  devtool: ifDevelopment("inline-source-map", "source-map"),
   entry: {
     main: removeEmpty([
       "@babel/polyfill",
+
+      // For react-onclickoutside, see
+      // https://github.com/Pomax/react-onclickoutside
+      "classlist-polyfill",
+
       ifDevelopment("webpack-hot-middleware/client?reload=true"),
       path.join(__dirname, `src/js/main.${lang}.js`)
     ])
@@ -59,7 +64,10 @@ module.exports = ["en", "de"].map(lang => ({
     rules: [
       {
         test: /\.js$/,
-        exclude: path.join(__dirname, "../node_modules/"),
+        // Babel 7 excludes node_modules by default
+        // TODO: Here's a placeholder for un-excluding modules
+        //       Find out whether that's needed in the future
+        // exclude: /node_modules\/(?!(module1|module2)\/).*/,
         use: "babel-loader"
       },
       {

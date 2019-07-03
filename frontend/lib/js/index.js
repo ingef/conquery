@@ -5,7 +5,7 @@ import "./browserShimsAndPolyfills";
 import React from "react";
 import ReactDOM from "react-dom";
 import { ThemeProvider } from "emotion-theming";
-import createHistory from "history/createBrowserHistory";
+import { createBrowserHistory } from "history";
 
 import "./app/actions"; //  To initialize parameterized actions
 import { makeStore } from "./store";
@@ -29,7 +29,7 @@ const initialState = {};
 const renderRoot = (tabs: Object, theme) => {
   browserHistory =
     browserHistory ||
-    createHistory({
+    createBrowserHistory({
       basename: basename()
     });
   store = store || makeStore(initialState, browserHistory, tabs);
