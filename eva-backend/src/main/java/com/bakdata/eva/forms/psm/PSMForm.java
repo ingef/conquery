@@ -100,7 +100,9 @@ public class PSMForm extends StatisticForm {
 					FixedColumn.of(FeatureGroup.FEATURE, datasetIdControl, "verstorbene_ct"),
 					FixedColumn.of(FeatureGroup.FEATURE, datasetIdControl, "leistungskosten_2"),
 					FixedColumn.of(FeatureGroup.FEATURE, datasetIdControl, "hash"),
-					FixedColumn.of(FeatureGroup.OUTCOME, datasetIdControl, "leistungskosten_2") });
+					FixedColumn.of(FeatureGroup.OUTCOME, datasetIdControl, "leistungskosten_2")
+				}
+			);
 
 		// Set labels of groups, if not done already
 		checkAndSetGroupLabel(namespaces, featureGroup);

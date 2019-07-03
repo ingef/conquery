@@ -87,9 +87,8 @@ public class ManagedStatisticForm extends ManagedForm {
 
 		QueryToCSVRenderer renderer = new QueryToCSVRenderer(namespace);
 		PrintSettings settings = PrintSettings.builder().prettyPrint(false).nameExtractor(form.getColumnNamer().getNamer()).build();
-		Stream<String> queryResult = internalQueries
-			.stream()
-			.flatMap(q -> renderer.toCSV(settings, q));
+		Stream<String> queryResult = renderer
+			.toCSV(settings, internalQueries);
 		
 		ByteArrayOutputStream matrixOut = new ByteArrayOutputStream();
 		try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(matrixOut, StandardCharsets.UTF_8))) {
