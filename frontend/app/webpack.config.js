@@ -17,7 +17,11 @@ module.exports = ["en", "de"].map(lang => ({
   entry: {
     main: removeEmpty([
       "@babel/polyfill",
+
+      // For react-onclickoutside, see
+      // https://github.com/Pomax/react-onclickoutside
       "classlist-polyfill",
+
       ifDevelopment("webpack-hot-middleware/client?reload=true"),
       path.join(__dirname, `src/js/main.${lang}.js`)
     ])
