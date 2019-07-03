@@ -48,7 +48,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		this.meta = StoreInfo.NAMESPACES.singleton(this);
-		this.executions = StoreInfo.EXECUTIONS.identifiable(this, namespaces);
+		this.executions = StoreInfo.EXECUTIONS.<ManagedExecution>identifiable(this, namespaces)
+			.onAdd(value-> value.initExecutable(namespaces.get(value.getDataset())));
 		
 		MasterMetaStorage storage = this;
 		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage);
