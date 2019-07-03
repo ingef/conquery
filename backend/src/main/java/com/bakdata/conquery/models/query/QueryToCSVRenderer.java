@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
@@ -40,6 +41,18 @@ public class QueryToCSVRenderer {
 		return Stream.concat(
 			Stream.of(HEADER + DELIMETER + JOINER.join(infos.stream().map(ResultInfo::getUniqueName).iterator())),
 			createCSVBody(cfg, infos, query)
+		);
+	}
+	
+	public Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries) {
+		if (queries.stream().anyMatch(q->q.getState() != ExecutionState.DONE)) {
+			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
+		}
+		return Stream.concat(
+			Stream.of(HEADER + DELIMETER + JOINER.join(queries.iterator().next().getResultInfos(cfg).stream().map(ResultInfo::getUniqueName).iterator())),
+			queries
+				.stream()
+				.flatMap(q->createCSVBody(cfg, q.getResultInfos(cfg), q))
 		);
 	}
 
