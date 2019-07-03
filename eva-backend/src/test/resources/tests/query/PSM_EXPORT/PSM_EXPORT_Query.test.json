@@ -5,7 +5,7 @@
 	"query": 
 	{
 		"type": "PSM_FORM_QUERY",
-		"featureGroup": {
+		"group": {
 			"type": "RELATIVE_FORM_QUERY",
 			"featureQuery": {
 				"type": "FORM_QUERY",
@@ -56,57 +56,7 @@
 				}
 			}
 		},
-		"controlGroup": {
-			"type": "RELATIVE_FORM_QUERY",
-			"featureQuery": {
-				"type": "FORM_QUERY",
-				"includedEntities": {
-					"0": [
-						{"dateRange":"2000-01-01/2002-12-31", "eventDate":"2001-01-01"},
-						{"dateRange":"2000-01-01/2000-12-31", "index": 0, "eventDate":"2001-01-01"},
-						{"dateRange":"2001-01-01/2001-12-31", "index": 1, "eventDate":"2001-01-01"},
-						{"dateRange":"2002-01-01/2002-12-31", "index": 2, "eventDate":"2001-01-01"}
-					]
-				},
-				"root": {
-					"type": "CONCEPT",
-					"ids": [
-					  "${dataset}.test_tree.test_child1"
-					],
-					"selects": ["${dataset}.test_tree.exists"],
-					"tables": [
-						{
-						  "id": "${dataset}.test_tree.test_column",
-						   "filters": []
-						}
-					]
-				}
-			},
-			"outcomeQuery":{
-				"type": "FORM_QUERY",
-				"includedEntities": {
-					"0": [
-						{"dateRange":"2000-01-01/2002-12-31", "eventDate":"2001-01-01"},
-						{"dateRange":"2000-01-01/2000-12-31", "index": 0, "eventDate":"2001-01-01"},
-						{"dateRange":"2001-01-01/2001-12-31", "index": 1, "eventDate":"2001-01-01"},
-						{"dateRange":"2002-01-01/2002-12-31", "index": 2, "eventDate":"2001-01-01"}
-					]
-				},
-				"root": {
-					"type": "CONCEPT",
-					"ids": [
-					  "${dataset}.test_tree.test_child1"
-					],
-					"selects": ["${dataset}.test_tree.exists"],
-					"tables": [
-						{
-						  "id": "${dataset}.test_tree.test_column",
-						   "filters": []
-						}
-					]
-				}
-			}
-		}
+		"constant": true
 	},
 	"concepts": [
 		{
