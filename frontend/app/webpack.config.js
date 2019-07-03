@@ -60,8 +60,10 @@ module.exports = ["en", "de"].map(lang => ({
     rules: [
       {
         test: /\.js$/,
-        // exclude: /node_modules\/(?!(async-sema)\/).*/,
-        // exclude: /node_modules/,
+        // Babel 7 excludes node_modules by default
+        // TODO: Here's a placeholder for un-excluding modules
+        //       Find out whether that's needed in the future
+        // exclude: /node_modules\/(?!(module1|module2)\/).*/,
         use: "babel-loader"
       },
       {
