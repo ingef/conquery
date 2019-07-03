@@ -75,7 +75,7 @@ export const loadTreeError = (treeId: ConceptIdT, err: any) =>
 export const loadTreeSuccess = (treeId: ConceptIdT, res: any) =>
   defaultSuccess(LOAD_TREE_SUCCESS, res, { treeId });
 
-const TREES_TO_LOAD_IN_PARALLEL = 5;
+// const TREES_TO_LOAD_IN_PARALLEL = 5;
 
 // const lim = new RateLimit(TREES_TO_LOAD_IN_PARALLEL);
 
