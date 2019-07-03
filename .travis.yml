@@ -22,6 +22,8 @@ jobs:
     # ------------------------------
     - stage: Tests
       name: "Frontend Tests"
+      env:
+        - EXCLUDE_SOURCE_MAPS=true
       install: skip
       script:
         - mvn -B -V -T 1C install -N
