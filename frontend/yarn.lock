@@ -4878,10 +4878,10 @@ humps@^2.0.1:
   resolved "https://registry.yarnpkg.com/humps/-/humps-2.0.1.tgz#dd02ea6081bd0568dc5d073184463957ba9ef9aa"
   integrity sha1-3QLqYIG9BWjcXQcxhEY5V7qe+ao=
 
-i18n-react@^0.6.4:
-  version "0.6.4"
-  resolved "https://registry.yarnpkg.com/i18n-react/-/i18n-react-0.6.4.tgz#6d1ec68eea4224987070f9ba200b709b604f4f47"
-  integrity sha512-gSbfWmBGZtja8j9ZrHErkkPuJb+Os2XHCFv5i5l5BzQhqOJWL/DVpu5GexmnM4HUfgiJ6F4c3HqrXkjzZ8AttA==
+i18n-react@^0.7.0:
+  version "0.7.0"
+  resolved "https://registry.yarnpkg.com/i18n-react/-/i18n-react-0.7.0.tgz#458df2cc2562f24e14bf62763c2b8863cc39ec8f"
+  integrity sha512-rDQs3p5KvRo7/ItFDyMcZQ2BXoVnmOhfahD27Q4loE1U1k7lKW6CsCY9kKbRBdfJSsBGZsaPc7PISg09nhWzJg==
 
 iconv-lite@0.4.24, iconv-lite@^0.4.24, iconv-lite@^0.4.4, iconv-lite@^0.4.5, iconv-lite@~0.4.13:
   version "0.4.24"
