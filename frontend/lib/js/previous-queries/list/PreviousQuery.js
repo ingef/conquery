@@ -72,8 +72,8 @@ const Root = styled("div")`
     own
       ? `4px solid ${theme.col.orange}`
       : system
-      ? `4px solid ${theme.col.blueGrayDark}`
-      : `1px solid ${theme.col.grayLight}`};
+        ? `4px solid ${theme.col.blueGrayDark}`
+        : `1px solid ${theme.col.grayLight}`};
 
   &:hover {
     ${({ theme, own, system }) =>
@@ -200,13 +200,14 @@ class PreviousQuery extends React.Component {
             ) : (
               peopleFound
             )}
-            {query.own && query.shared && (
-              <SharedIndicator
-                onClick={() => onToggleSharePreviousQuery(!query.shared)}
-              >
-                {T.translate("previousQuery.shared")}
-              </SharedIndicator>
-            )}
+            {query.own &&
+              query.shared && (
+                <SharedIndicator
+                  onClick={() => onToggleSharePreviousQuery(!query.shared)}
+                >
+                  {T.translate("previousQuery.shared")}
+                </SharedIndicator>
+              )}
             <TopRight>
               {executedAt}
               {mayEditQuery &&
@@ -220,15 +221,16 @@ class PreviousQuery extends React.Component {
                     />
                   </StyledWithTooltip>
                 )}
-              {query.own && !query.shared && (
-                <StyledWithTooltip text={T.translate("previousQuery.share")}>
-                  <IconButton
-                    icon="upload"
-                    bare
-                    onClick={() => onToggleSharePreviousQuery(!query.shared)}
-                  />
-                </StyledWithTooltip>
-              )}
+              {query.own &&
+                !query.shared && (
+                  <StyledWithTooltip text={T.translate("previousQuery.share")}>
+                    <IconButton
+                      icon="upload"
+                      bare
+                      onClick={() => onToggleSharePreviousQuery(!query.shared)}
+                    />
+                  </StyledWithTooltip>
+                )}
               {query.loading ? (
                 <StyledFaIcon icon="spinner" />
               ) : (
