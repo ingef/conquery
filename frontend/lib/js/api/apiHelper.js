@@ -16,7 +16,8 @@ import { isEmpty } from "../common/helpers";
 
 import type {
   TableWithFilterValueType,
-  SelectedSelectorType
+  SelectedSelectorType,
+  SelectedDateColumnT
 } from "../standard-query-editor/types";
 
 export const transformFilterValueToApi = (filter: any) => {
@@ -41,6 +42,14 @@ export const transformSelectsToApi = (selects?: ?(SelectedSelectorType[])) => {
     : [];
 };
 
+export const transformDateColumnToApi = (dateColumn?: SelectedDateColumnT) => {
+  if (!dateColumn) return null;
+
+  return {
+    value: dateColumn.value
+  };
+};
+
 export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
   if (!tables) return [];
 
@@ -50,6 +59,7 @@ export const transformTablesToApi = (tables: TableWithFilterValueType[]) => {
       // Explicitly whitelist the tables that we allow to send to the API
       return {
         id: table.connectorId,
+        dateColumn: transformDateColumnToApi(table.dateColumn),
         selects: transformSelectsToApi(table.selects),
         filters: table.filters
           ? table.filters

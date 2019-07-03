@@ -80,6 +80,8 @@ queryNodeEditor:
   filters: "Filters"
   selects: "More values"
   nodeNotFound: "Concept not found"
+  selectValidityDate: "Relevant date interval"
+  dateColumn: "Date column"
 
 queryGroupModal:
   explanation: "Set time frame"

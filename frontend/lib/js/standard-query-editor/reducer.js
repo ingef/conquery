@@ -61,7 +61,8 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
-  TOGGLE_INCLUDE_SUBNODES
+  TOGGLE_INCLUDE_SUBNODES,
+  SET_DATE_COLUMN
 } from "./actionTypes";
 
 import type {
@@ -78,7 +79,17 @@ export const withDefaultValues = arr => {
 
   return arr.map(obj => {
     // Tables passed
-    if (obj.selects) return { ...obj, selects: withDefaultValues(obj.selects) };
+    if (obj.selects)
+      return {
+        ...obj,
+        dateColumn:
+          !!obj.dateColumn &&
+          !!obj.dateColumn.options &&
+          obj.dateDolumn.options.length > 0
+            ? { ...obj.dateColumn, value: obj.dateColumn.options[0] }
+            : null,
+        selects: withDefaultValues(obj.selects)
+      };
 
     // Selects passed
     return { ...obj, selected: !!obj.default };
@@ -361,6 +372,24 @@ const setNodeTableSelects = (state, action) => {
       ...select,
       selected: !!value.find(selectedValue => selectedValue.value === select.id)
     }))
+  };
+
+  return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
+};
+
+const setNodeTableDateColumn = (state, action) => {
+  const { tableIdx, value } = action.payload;
+  const { andIdx, orIdx } = selectEditedNode(state);
+  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const { dateColumn } = table;
+
+  // value contains the selects that have now been selected
+  const newTable = {
+    ...table,
+    dateColumn: {
+      ...dateColumn,
+      value
+    }
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
@@ -933,6 +962,8 @@ const query = (
       return setResolvedFilterValues(state, action);
     case TOGGLE_INCLUDE_SUBNODES:
       return toggleIncludeSubnodes(state, action);
+    case SET_DATE_COLUMN:
+      return setNodeTableDateColumn(state, action);
     default:
       return state;
   }

@@ -54,10 +54,21 @@ export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
         })
       : null;
 
+    const dateColumn = table.dateColumn
+      ? {
+          ...table.dateColumn,
+          value:
+            !!table.dateColumn.options && table.dateColumn.options.length > 0
+              ? table.dateColumn.options[0]
+              : null
+        }
+      : null;
+
     return {
       ...table,
       filters,
       selects,
+      dateColumn,
       exclude: false
     };
   });

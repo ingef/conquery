@@ -10,7 +10,9 @@ import type {
   SelectFilterT,
   SelectFilterValueT,
   SelectorT,
-  DateRangeT
+  TableT,
+  DateRangeT,
+  DateColumnT
 } from "../api/types";
 
 // A concept that is part of a query node in the editor
@@ -54,12 +56,14 @@ export type SelectedSelectorType = SelectorT & {
   selected?: boolean
 };
 
-export type TableWithFilterValueType = {
-  id: string,
-  label: string,
-  exclude?: boolean,
+export type SelectedDateColumnT = DateColumnT & {
+  value?: string
+};
+
+export type TableWithFilterValueType = TableT & {
   filters: ?(FilterWithValueType[]),
-  selects?: SelectedSelectorType[]
+  selects?: SelectedSelectorType[],
+  dateColumn?: SelectedDateColumnT
 };
 
 export type DraggedQueryType = {

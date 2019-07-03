@@ -73,7 +73,7 @@ export type StringFilterT = FilterBaseT & {
 
 export type DateColumnT = {
   options: SelectOptionT,
-  defaultValue: ?SelectFilterValueT
+  defaultValue: ?string
 };
 
 export type FilterT =
@@ -85,11 +85,12 @@ export type FilterT =
 export type TableIdT = string;
 export type TableT = {
   id: TableIdT,
-  dateColumn: DateColumnT
+  dateColumn: DateColumnT,
   connectorId: string, // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string,
   exclude?: boolean,
-  filters?: FilterT[] // Empty array: key not defined
+  filters?: FilterT[], // Empty array: key not defined
+  selects?: SelectorT[] // Empty array: key not defined
 };
 
 export type SelectorIdT = string;
