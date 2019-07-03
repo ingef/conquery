@@ -14,6 +14,10 @@ function shuffleArray(array) {
   return array;
 }
 
+const ERROR = JSON.stringify({
+  message: "Could not process the request"
+});
+
 const LONG_DELAY = 500;
 const SHORT_DELAY = 300;
 const NO_DELAY = 10;
@@ -24,10 +28,17 @@ module.exports = function(app, port) {
     QUERIES
   */
   app.post("/api/datasets/:datasetId/queries", function response(req, res) {
+    const dice = Math.random();
+
     setTimeout(() => {
-      res.setHeader("Content-Type", "application/json");
-      res.status(201);
-      res.send(JSON.stringify({ id: 1 }));
+      if (dice < 0.3) {
+        res.status(422);
+        res.send(ERROR);
+      } else {
+        res.setHeader("Content-Type", "application/json");
+        res.status(201);
+        res.send(JSON.stringify({ id: 1 }));
+      }
     }, NO_DELAY);
   });
 
@@ -47,7 +58,10 @@ module.exports = function(app, port) {
 
       const dice = Math.random();
 
-      if (dice > 0.1 && dice <= 0.6)
+      if (dice <= 0.3) {
+        res.status(422);
+        res.send(ERROR);
+      } else if (dice > 0.3 && dice <= 0.7)
         res.send(JSON.stringify({ id: 1, status: "RUNNING" }));
       else
         res.send(
@@ -329,4 +343,3 @@ module.exports = function(app, port) {
     res.send(config);
   });
 };
-

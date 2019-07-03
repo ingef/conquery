@@ -56,7 +56,6 @@ public class ImportJob extends Job {
 	private final TableId table;
 	private final File importFile;
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public void execute() throws JSONException {
 		this.progressReporter.setMax(16);
@@ -98,6 +97,7 @@ public class ImportJob extends Job {
 			allIdsImp.setTable(new TableId(namespace.getStorage().getDataset().getId(), ConqueryConstants.ALL_IDS_TABLE));
 			allIdsImp.setNumberOfEntries(header.getGroups());
 			allIdsImp.setColumns(new ImportColumn[0]);
+			allIdsImp.getBlockFactory(); //so that classes are created before storing/sending
 			namespace.getStorage().updateImport(allIdsImp);
 			namespace.sendToAll(new AddImport(allIdsImp));
 			this.progressReporter.report(1);
@@ -109,6 +109,8 @@ public class ImportJob extends Job {
 			imp.setName(header.getName());
 			imp.setTable(table);
 			imp.setNumberOfEntries(header.getRows());
+			imp.setClasses(header.getClasses());
+			imp.setSuffix(header.getSuffix());
 			imp.setColumns(new ImportColumn[header.getColumns().length]);
 			for (int i = 0; i < header.getColumns().length; i++) {
 				PPColumn src = header.getColumns()[i];

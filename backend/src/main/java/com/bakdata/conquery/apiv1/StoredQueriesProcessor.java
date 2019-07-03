@@ -5,8 +5,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
 
 import java.util.Collection;
-import java.util.List;
-import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -18,7 +17,6 @@ import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -38,16 +36,22 @@ public class StoredQueriesProcessor {
 		this.namespaces = namespaces;
 	}
 
-	public List<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
+	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
 		Collection<ManagedExecution> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllExecutions();
 
 		return allQueries
 			.stream()
-			.filter(q -> q.getState() == ExecutionState.DONE)
 			//to exclude subtypes from somewhere else
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery)q).getQuery().getClass().equals(ConceptQuery.class))
-			.map(mq -> mq.buildStatus(URLBuilder.fromRequest(req)))
-			.collect(Collectors.toList());
+			.flatMap(mq -> {
+				try {
+					return Stream.of(mq.buildStatus(URLBuilder.fromRequest(req)));
+				}
+				catch(Exception e) {
+					log.warn("Could not build status of "+mq, e);
+					return Stream.empty();
+				}
+			});
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedExecution query) {

@@ -8,8 +8,7 @@ import { css } from "@emotion/core";
 import T from "i18n-react";
 import { DragSource } from "react-dnd";
 import { connect } from "react-redux";
-import formatDistance from "date-fns/formatDistance";
-import parseISO from "date-fns/parseISO";
+import { parseISO, formatDistance } from "date-fns";
 
 import { getDateLocale } from "../../localization";
 

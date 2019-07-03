@@ -1,7 +1,7 @@
 // @flow
 
 import { type Dispatch } from "redux-thunk";
-import { RateLimit } from "async-sema";
+import { RateLimit } from "../common/helpers/rateLimitHelper";
 
 import type { DatasetIdT } from "../api/types";
 import api from "../api";

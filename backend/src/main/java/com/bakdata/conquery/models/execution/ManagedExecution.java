@@ -17,6 +17,7 @@ import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.ResultCSVResource;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -53,7 +54,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
-	protected transient ExecutionState state = ExecutionState.RUNNING;
+	protected transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
 	protected transient CountDownLatch execution;
 	@JsonIgnore
@@ -118,7 +119,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				: null)
 			.status(state)
 			.owner(Optional.ofNullable(owner).orElse(null))
-			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user).getLabel()).orElse(null))
+			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user)).map(User::getLabel).orElse(null))
 			.resultUrl(
 				url != null
 				? url
