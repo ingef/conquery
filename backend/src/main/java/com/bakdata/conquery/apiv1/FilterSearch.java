@@ -4,7 +4,6 @@ import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTIO
 import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
