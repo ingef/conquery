@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -11,16 +12,20 @@ import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 public class Workers implements NamespaceCollection {
+	@Getter @Setter
+	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
 	private ConcurrentHashMap<WorkerId, Worker> workers = new ConcurrentHashMap<>();
 	@JsonIgnore
 	private transient Map<DatasetId, Worker> dataset2Worker = new HashMap<>();
 
 	public void add(Worker worker) {
+		nextWorker.incrementAndGet();
 		workers.put(worker.getInfo().getId(), worker);
 		dataset2Worker.put(worker.getStorage().getDataset().getId(), worker);
 	}
