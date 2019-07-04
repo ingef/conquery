@@ -10,32 +10,32 @@ steps:
   inputs:
     jdkVersionOption: '1.11'
     goals: install
-    options: -N
+    options: -B -V -T 1C -N
 
 - task: Maven@3
   displayName: frontend tests
   inputs:
     jdkVersionOption: '1.11'
     goals: install
-    options: -pl frontend-resources
+    options: -B -V -pl frontend-resources
 
 - task: Maven@3
   displayName: unit tests
   inputs:
     jdkVersionOption: '1.11'
     goals: install
-    options: -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+    options: -B -V -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
 - task: Maven@3
   displayName: programmatic integration tests
   inputs:
     jdkVersionOption: '1.11'
     goals: test
-    options: -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+    options: -B -V -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
 
 - task: Maven@3
   displayName: json integration tests
   inputs:
     jdkVersionOption: '1.11'
     goals: test
-    options: -pl backend -Dgroups="INTEGRATION_JSON"
+    options: -B -V -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
