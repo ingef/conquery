@@ -8,12 +8,17 @@ const { getIfUtils, removeEmpty } = require("webpack-config-utils");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 
 const env = process.env.NODE_ENV || "development";
+const excludeSourceMaps = process.env.EXCLUDE_SOURCE_MAPS;
+
 const { ifProduction, ifDevelopment } = getIfUtils(env);
 
 module.exports = ["en", "de"].map(lang => ({
   mode: env,
   name: lang,
-  devtool: ifDevelopment("inline-source-map", "source-map"),
+  devtool: ifDevelopment(
+    "eval-source-map",
+    !!excludeSourceMaps ? "none" : "source-map"
+  ),
   entry: {
     main: removeEmpty([
       "@babel/polyfill",

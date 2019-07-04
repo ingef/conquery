@@ -40,7 +40,7 @@ public class IdentifiableStore<VALUE extends Identifiable<?>> extends KeyIncludi
 	protected void removed(VALUE value) {
 		try {
 			if(value != null) {
-				if(value != null && onRemove != null) {
+				if(onRemove != null) {
 					onRemove.accept(value);
 				}
 				centralRegistry.remove(value);
