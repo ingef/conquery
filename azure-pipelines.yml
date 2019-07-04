@@ -1,8 +1,3 @@
-# Starter pipeline
-# Start with a minimal pipeline that you can customize to build and deploy your code.
-# Add steps that build, run tests, deploy, and more:
-# https://aka.ms/yaml
-
 trigger:
 - master
 
@@ -10,10 +5,13 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: echo Hello, world!
-  displayName: 'Run a one-line script'
-
-- script: |
-    echo Add other tasks to build, test, and deploy your project.
-    echo See https://aka.ms/yaml
-  displayName: 'Run a multi-line script'
+- script: mvn -B -V -T 1C install -N
+  displayName: build root
+- script: mvn -B -V install -pl frontend-resources
+  displayName: test frontend
+- script: mvn -B -V -T 1C install -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+  displayName: unit tests
+- script: mvn -B -V -T 1C test -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+  displayName: programmatic integration tests
+- script: mvn -B -V -T 1C test -pl backend -Dgroups="INTEGRATION_JSON"
+  displayName: json integration tests
