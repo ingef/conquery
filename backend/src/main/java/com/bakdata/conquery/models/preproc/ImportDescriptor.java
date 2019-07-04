@@ -75,7 +75,7 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 
 	@Override
 	public String toString() {
-		return "ImportDescriptor [table=" + table + ", name=" + getName() + ", file=" + getInputFile().getDescriptionFile() + "]";
+		return "ImportDescriptor [table=" + table + ", name=" + getName() + "]";
 	}
 	
 }

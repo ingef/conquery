@@ -10,14 +10,14 @@ import lombok.extern.slf4j.Slf4j;
 
 public interface IntegrationTest {
 
-	void execute(TestConquery testConquery) throws Exception;
+	void execute(String name, TestConquery testConquery) throws Exception;
 
 	static interface Simple extends IntegrationTest {
 		void execute(StandaloneSupport conquery) throws Exception;
 		
 		@Override
-		default void execute(TestConquery testConquery) throws Exception {
-			try(StandaloneSupport conquery = testConquery.getSupport()) {
+		default void execute(String name, TestConquery testConquery) throws Exception {
+			try(StandaloneSupport conquery = testConquery.getSupport(name)) {
 				execute(conquery);
 			}
 		}
@@ -34,7 +34,7 @@ public interface IntegrationTest {
 		public void execute() throws Throwable {
 			log.info("STARTING integration test {}", name);
 			try {
-				test.execute(testConquery);
+				test.execute(name, testConquery);
 			}
 			catch(Exception e) {
 				log.info("FAILED integration test "+name, e);

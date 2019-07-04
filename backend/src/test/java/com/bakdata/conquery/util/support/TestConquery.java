@@ -7,8 +7,7 @@ import java.io.File;
 import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.ws.rs.client.Client;
 
@@ -30,7 +29,6 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.ConfigCloner;
 import com.google.common.io.Files;
-import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
@@ -47,6 +45,8 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallback {
 
+	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
+	
 	private StandaloneCommand standaloneCommand;
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
@@ -75,10 +75,13 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		}
 	}
 	
-	public synchronized StandaloneSupport getSupport() {
+	public synchronized StandaloneSupport getSupport(String name) {
 		try {
 			log.info("Setting up dataset");
-			String name = UUID.randomUUID().toString();
+			int count = NAME_COUNTS.merge(name, 0, (a,b)->a++);
+			if(count > 0) {
+				name+="["+count+"]";
+			}
 			DatasetId datasetId = new DatasetId(name);
 			standaloneCommand.getMaster().getAdmin().getAdminProcessor().addDataset(name);
 			return createSupport(datasetId, name);

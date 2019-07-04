@@ -5,6 +5,8 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
 
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
@@ -12,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -20,8 +23,12 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 
 import lombok.Getter;
@@ -37,12 +44,13 @@ public class StoredQueriesProcessor {
 	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
-		Collection<ManagedExecution> allQueries = namespaces.get(dataset.getId()).getStorage().getMetaStorage().getAllExecutions();
+		Collection<ManagedExecution> allQueries = namespaces.getMetaStorage().getAllExecutions();
 
 		return allQueries
 			.stream()
 			//to exclude subtypes from somewhere else
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery)q).getQuery().getClass().equals(ConceptQuery.class))
+			.filter(q -> q.getDataset().equals(dataset.getId()))
 			.flatMap(mq -> {
 				try {
 					return Stream.of(mq.buildStatus(URLBuilder.fromRequest(req)));
@@ -59,35 +67,50 @@ public class StoredQueriesProcessor {
 		storage.removeExecution(query.getId());
 	}
 
-	public void shareQuery(MasterMetaStorage storage, User user, ManagedQuery query, boolean shared) {
-		authorize(user, query, Ability.SHARE);
-		QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, query.getId());
-		user.getRoles().forEach((Mandator mandator) -> {
-			try {
-				if (shared) {
-					addPermission(mandator, queryPermission, storage);
+	public void shareQuery(User user, ManagedQuery query, boolean shared) throws JSONException {
+		updateQueryVersions(user, query, Ability.SHARE, q-> {
+			QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, q.getId());
+			user.getRoles().forEach((Mandator mandator) -> {
+				try {
+					if (shared) {
+						addPermission(mandator, queryPermission, namespaces.getMetaStorage());
+					}
+					else {
+						removePermission(mandator, queryPermission, namespaces.getMetaStorage());
+					}
+					q.setShared(shared);
+					namespaces.getMetaStorage().updateExecution(q);
+				} catch (JSONException e) {
+					log.error("Failed to set shared status for query "+query, e);
 				}
-				else {
-					removePermission(mandator, queryPermission, storage);
-				}
-				query.setShared(shared);
-				storage.updateExecution(query);
-			} catch (JSONException e) {
-				log.error("", e);
-			}
+			});
 		});
+		
 	}
 
-	public void updateQueryLabel(MasterMetaStorage storage, User user, ManagedQuery query, String label) throws JSONException {
-		authorize(user, query, Ability.LABEL);
-		query.setLabel(label);
-		storage.updateExecution(query);
+	public void updateQueryLabel(User user, ManagedQuery query, String label) throws JSONException {
+		updateQueryVersions(user, query, Ability.LABEL, q->q.setLabel(label));
 	}
 
-	public void tagQuery(MasterMetaStorage storage, User user, ManagedQuery query, String[] newTags) throws JSONException {
-		authorize(user, query, Ability.TAG);
-		query.setTags(newTags);
-		storage.updateExecution(query);
+	public void tagQuery(User user, ManagedQuery query, String[] newTags) throws JSONException {
+		updateQueryVersions(user, query, Ability.TAG, q->q.setTags(newTags));
+	}
+	
+	public void updateQueryVersions(User user, ManagedQuery query, Ability requiredAbility, Consumer<ManagedQuery> updater) throws JSONException {
+		authorize(user, query, requiredAbility);
+		
+		for(Namespace ns : namespaces.getNamespaces()) {
+			if(user.isPermitted(new DatasetPermission(user, Ability.READ.asSet(), ns.getDataset().getId()))) {
+				ManagedExecutionId id = new ManagedExecutionId(ns.getDataset().getId(), query.getQueryId());
+				ManagedQuery exec = (ManagedQuery)namespaces.getMetaStorage().getExecution(id);
+				if(exec != null) {
+					if(user.isPermitted(new QueryPermission(user.getId(), requiredAbility.asSet(), id))) {
+						updater.accept(exec);
+						namespaces.getMetaStorage().updateExecution(exec);
+					}
+				}
+			}
+		}
 	}
 
 	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId) {

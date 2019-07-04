@@ -33,7 +33,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	private User user = new User("user@test.email", "USER_LABEL");
 
 	@Override
-	public void execute(TestConquery testConquery) throws Exception {
+	public void execute(String name, TestConquery testConquery) throws Exception {
 		//read test sepcification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
@@ -43,7 +43,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		PersistentIdMap persistentIdMap = getPersistentIdMap();
 
 
-		try (StandaloneSupport conquery = testConquery.getSupport()) {
+		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
 			dataset = conquery.getDataset().getId();
 
 			test = JsonIntegrationTest.readJson(dataset, testJson);
