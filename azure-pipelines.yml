@@ -1,6 +1,8 @@
 trigger:
 - master
 
+variables:
+  EXCLUDE_SOURCE_MAPS: true
 pool:
   vmImage: 'ubuntu-latest'
 
