@@ -110,10 +110,10 @@ public class CPSTypeIdResolver implements TypeIdResolver {
 				log.warn("\tBase Class {}:\tNo registered types", b);
 			}
 			else {
-				log.info("\tBase Class {}", b);
+				log.info("\tBase Class {}", b.getSimpleName());
 				map.calculateInverse();
 				for(Entry<Class<?>, String> e:map) {
-					log.info("\t\t{}\t->\t{}", e.getValue(), e.getKey());
+					log.info("\t\t{}\t->\t{}", e.getValue(), e.getKey().getSimpleName());
 				}
 			}
 			
