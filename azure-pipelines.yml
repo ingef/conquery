@@ -5,13 +5,37 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- script: mvn -B -V -T 1C install -N
+- task: Maven@3
   displayName: build root
-- script: mvn -B -V install -pl frontend-resources
-  displayName: test frontend
-- script: mvn -B -V -T 1C install -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: install
+    options: -N
+
+- task: Maven@3
+  displayName: frontend tests
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: install
+    options: -pl frontend-resources
+
+- task: Maven@3
   displayName: unit tests
-- script: mvn -B -V -T 1C test -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: install
+    options: -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+
+- task: Maven@3
   displayName: programmatic integration tests
-- script: mvn -B -V -T 1C test -pl backend -Dgroups="INTEGRATION_JSON"
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: test
+    options: -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+
+- task: Maven@3
   displayName: json integration tests
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: test
+    options: -pl backend -Dgroups="INTEGRATION_JSON"
