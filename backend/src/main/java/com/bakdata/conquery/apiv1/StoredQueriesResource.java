@@ -7,7 +7,6 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
