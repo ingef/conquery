@@ -31,6 +31,7 @@ import com.google.common.util.concurrent.Uninterruptibles;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -69,7 +70,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		initExecutable(namespace);
 	}
 
-	public void initExecutable(Namespace namespace) {
+	public void initExecutable(@NonNull Namespace namespace) {
 		this.namespace = namespace;
 		this.execution = new CountDownLatch(1);
 		this.dataset = namespace.getStorage().getDataset().getId();
