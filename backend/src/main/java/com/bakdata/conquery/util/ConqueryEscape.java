@@ -100,6 +100,6 @@ public class ConqueryEscape {
 	}
 
 	protected boolean matchesFirst(byte v) {
-		return matchesFirst(v);
+		return matchesOther(v);
 	}
 }
