@@ -21,7 +21,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 public class Namespaces implements NamespaceCollection {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
@@ -42,6 +44,19 @@ public class Namespaces implements NamespaceCollection {
 
 	public Namespace get(DatasetId dataset) {
 		return datasets.get(dataset);
+	}
+	
+	public void removeNamespace(DatasetId id) {
+		Namespace removed = datasets.remove(id);
+		if(removed != null) {
+			workers.keySet().removeIf(w->w.getDataset().equals(id));
+			try {
+				removed.getStorage().close();
+			}
+			catch(Exception e) {
+				log.error("Failed to shutdown storage "+removed, e);
+			}
+		}
 	}
 
 	@Override
