@@ -7,7 +7,6 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
@@ -90,11 +89,11 @@ public class StoredQueriesResource {
 		ManagedQuery query = (ManagedQuery) exec;
 		if (patch.has("tags")) {
 			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)), String.class);
-			processor.tagQuery(storage, user, query, newTags);
+			processor.tagQuery(user, query, newTags);
 		} else if (patch.has("label")) {
-			processor.updateQueryLabel(storage, user, query, patch.get("label").textValue());
+			processor.updateQueryLabel(user, query, patch.get("label").textValue());
 		} else if (patch.has("shared")) {
-			processor.shareQuery(storage, user, query, patch.get("shared").asBoolean());
+			processor.shareQuery(user, query, patch.get("shared").asBoolean());
 		}
 		
 		return getQueryWithSource(user, datasetId, queryId);
