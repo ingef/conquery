@@ -8,6 +8,7 @@ jdk:
 before_install: mvn -B -V initialize -P setVersion
 
 stages:
+  - name: Noop
   - name: Prerelease
     if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
   - name: Release
@@ -15,6 +16,9 @@ stages:
 
 jobs:
   include:
+    - stage: Noop
+      install: skip
+      script: skip
     # ------------------------------
     # Release stages
     # ------------------------------
