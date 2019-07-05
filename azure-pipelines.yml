@@ -16,10 +16,9 @@ steps:
     goals: install
     options: $(MVN_CFG) -T 1C -N
 
-- bash: ls $(Build.Repository.LocalPath)/$(CACHE_DIR)
 - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
   inputs:
-    keyfile: .gitignore
+    keyfile: pom.xml
     targetfolder: $(CACHE_DIR)/**
     vstsFeed: ConqueryCache
 
@@ -50,9 +49,3 @@ steps:
     jdkVersionOption: '1.11'
     goals: test
     options: $(MVN_CFG) -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
-
-- task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
-  inputs:
-    keyfile: .gitignore
-    targetfolder: $(CACHE_DIR)
-    vstsFeed: ConqueryCache
