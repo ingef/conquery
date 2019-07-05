@@ -19,7 +19,7 @@ steps:
   inputs:
     keyfile: pom.xml
     targetfolder: cache
-    vstsFeed: 11c96d61-cff6-44fb-99ad-444797bb2b5c
+    vstsFeed: $(ArtifactFeed)
 
 - task: Maven@3
   displayName: frontend tests
