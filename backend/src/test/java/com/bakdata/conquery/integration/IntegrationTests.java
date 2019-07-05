@@ -114,7 +114,7 @@ public class IntegrationTests {
 		
 		return dynamicContainer(
 			currentDir.getName(),
-			URI.create("classpath:/"+currentDir.getFullName()),
+			URI.create("classpath:/"+currentDir.getFullName()+"/"),
 			list.stream()
 		);
 	}
@@ -131,7 +131,7 @@ public class IntegrationTests {
 			
 			return DynamicTest.dynamicTest(
 				name,
-				resource.getURL().toURI(),
+				URI.create("classpath:/"+resource.getPath()),
 				new IntegrationTest.Wrapper(
 					name,
 					CONQUERY,
@@ -139,24 +139,13 @@ public class IntegrationTests {
 			);
 		}
 		catch(Exception e) {
-			try {
-				return DynamicTest.dynamicTest(
-					name,
-					resource.getURL().toURI(),
-					() -> {
-						throw e;
-					}
-				);
-			}
-			catch (URISyntaxException e1) {
-				log.error("Failed while trying to create errored test", e1);
-				return DynamicTest.dynamicTest(
-					name,
-					() -> {
-						throw e;
-					}
-				);
-			}
+			return DynamicTest.dynamicTest(
+				name,
+				resource.getURI(),
+				() -> {
+					throw e;
+				}
+			);
 		}
 	}
 }
