@@ -3,6 +3,7 @@ trigger:
 
 variables:
   EXCLUDE_SOURCE_MAPS: true
+  MVN_CFG: -B -V
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -12,32 +13,32 @@ steps:
   inputs:
     jdkVersionOption: '1.11'
     goals: install
-    options: -B -V -T 1C -N
+    options: $MVN_CFG -T 1C -N
 
 - task: Maven@3
   displayName: frontend tests
   inputs:
     jdkVersionOption: '1.11'
     goals: install
-    options: -B -V -pl frontend-resources
+    options: $MVN_CFG -pl frontend-resources
 
 - task: Maven@3
   displayName: unit tests
   inputs:
     jdkVersionOption: '1.11'
     goals: install
-    options: -B -V -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+    options: $MVN_CFG -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
 - task: Maven@3
   displayName: programmatic integration tests
   inputs:
     jdkVersionOption: '1.11'
     goals: test
-    options: -B -V -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+    options: $MVN_CFG -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
 
 - task: Maven@3
   displayName: json integration tests
   inputs:
     jdkVersionOption: '1.11'
     goals: test
-    options: -B -V -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
+    options: $MVN_CFG -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
