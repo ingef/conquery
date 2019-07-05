@@ -3,7 +3,8 @@ trigger:
 
 variables:
   EXCLUDE_SOURCE_MAPS: true
-  MVN_CFG: -B -V -Dmaven.repo.local=$(Agent.BuildDirectory)/cache/.m2
+  CACHE_DIR: $(Agent.BuildDirectory)/cache/.m2
+  MVN_CFG: -B -V -Dmaven.repo.local=$(CACHE_DIR)
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -42,3 +43,9 @@ steps:
     jdkVersionOption: '1.11'
     goals: test
     options: $(MVN_CFG) -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
+
+- task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
+  inputs:
+    keyfile: .gitignore
+    targetfolder: $(CACHE_DIR)
+    vstsFeed: ConqueryCache
