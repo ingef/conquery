@@ -106,7 +106,7 @@ class QueryNode extends React.Component {
       <Root
         ref={instance => connectDragSource(instance)}
         hasActiveFilters={hasActiveFilters}
-        onClick={!node.error && onEditClick}
+        onClick={!!node.error ? () => null : onEditClick}
       >
         <Node>
           {node.isPreviousQuery && (
