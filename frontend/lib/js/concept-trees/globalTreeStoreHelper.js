@@ -2,7 +2,7 @@
 import { includes } from "../common/helpers";
 import type { ConceptT, TableT, ConceptIdT } from "../api/types";
 
-import type { TreesType } from "./reducer";
+import type { TreesT } from "./reducer";
 
 // Globally store the huge (1-5 MB) trees for read only
 // - keeps the redux store free from huge data
@@ -72,7 +72,7 @@ const findParentConcepts = (concepts: ConceptT[]): ConceptT[] => {
 
 export const getConceptsByIdsWithTablesAndSelects = (
   conceptIds: ConceptIdT[],
-  rootConcepts: TreesType
+  rootConcepts: TreesT
 ): ?{
   concepts: (ConceptT & { id: ConceptIdT })[],
   root: ConceptIdT,

@@ -10,7 +10,7 @@ import {
   SAVE_QUERY
 } from "./actionTypes";
 
-export type DatasetType = {
+export type DatasetT = {
   id: DatasetIdT,
   label: string
 };
@@ -18,7 +18,7 @@ export type DatasetType = {
 export type StateType = {
   loading: boolean,
   error: ?string,
-  data: DatasetType[],
+  data: DatasetT[],
   selectedDatasetId: ?DatasetIdT
 };
 
