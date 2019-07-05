@@ -19,7 +19,7 @@ steps:
 - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
   inputs:
     keyfile: .gitignore
-    targetfolder: $(CACHE_DIR)
+    targetfolder: $(CACHE_DIR)/**
     vstsFeed: ConqueryCache
 
 - task: Maven@3
