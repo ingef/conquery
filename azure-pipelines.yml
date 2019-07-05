@@ -3,13 +3,11 @@ trigger:
 
 variables:
   EXCLUDE_SOURCE_MAPS: true
-  MVN_CFG: -B -V
+  MVN_CFG: -B -V -Dmaven.repo.local=$(Agent.BuildDirectory)/cache/.m2
 pool:
   vmImage: 'ubuntu-latest'
 
 steps:
-- bash: echo $PWD
-- bash: echo $(Agent.BuildDirectory)
 - task: Maven@3
   displayName: build root
   inputs:
