@@ -85,7 +85,7 @@ export const withDefaultValues = arr => {
         dateColumn:
           !!obj.dateColumn &&
           !!obj.dateColumn.options &&
-          obj.dateDolumn.options.length > 0
+          obj.dateColumn.options.length > 0
             ? { ...obj.dateColumn, value: obj.dateColumn.options[0] }
             : null,
         selects: withDefaultValues(obj.selects)
