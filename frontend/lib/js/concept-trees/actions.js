@@ -67,7 +67,7 @@ export const loadTreeError = (treeId: ConceptIdT, err: any) =>
 export const loadTreeSuccess = (treeId: ConceptIdT, res: any) =>
   defaultSuccess(LOAD_TREE_SUCCESS, res, { treeId });
 
-const TREES_TO_LOAD_IN_PARALLEL = 10;
+const TREES_TO_LOAD_IN_PARALLEL = 5;
 
 const semaphore = new Sema(TREES_TO_LOAD_IN_PARALLEL);
 
