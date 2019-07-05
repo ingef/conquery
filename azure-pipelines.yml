@@ -3,8 +3,7 @@ trigger:
 
 variables:
   EXCLUDE_SOURCE_MAPS: true
-  CACHE_DIR: cache/.m2
-  MVN_CFG: -B -V -Dmaven.repo.local=$(Build.Repository.LocalPath)/$(CACHE_DIR)
+  MVN_CFG: -B -V -Dmaven.repo.local=$(Build.Repository.LocalPath)/cache/.m2
 pool:
   vmImage: 'ubuntu-latest'
 
@@ -19,7 +18,7 @@ steps:
 - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
   inputs:
     keyfile: pom.xml
-    targetfolder: $(CACHE_DIR)/**
+    targetfolder: cache
     vstsFeed: ConqueryCache
 
 - task: Maven@3
