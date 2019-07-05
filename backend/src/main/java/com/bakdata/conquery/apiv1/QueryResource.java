@@ -7,7 +7,6 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;

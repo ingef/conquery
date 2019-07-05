@@ -6,7 +6,7 @@ import java.util.Set;
 public enum Ability {
 	DELETE,
 	READ,
-	
+
 	// Query Specific
 	TAG,
 	CANCEL,

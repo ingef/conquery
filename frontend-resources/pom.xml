@@ -97,7 +97,7 @@
 						<phase>generate-resources</phase>
 
 						<configuration>
-							<arguments>build</arguments>
+							<arguments>build-ci</arguments>
 						</configuration>
 					</execution>
 					<execution>

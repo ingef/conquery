@@ -8,7 +8,6 @@ jdk:
 before_install: mvn -B -V initialize -P setVersion
 
 stages:
-  - name: Tests
   - name: Prerelease
     if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
   - name: Release
@@ -16,42 +15,6 @@ stages:
 
 jobs:
   include:
-    # ------------------------------
-    # Test stage
-    # ------------------------------
-    - stage: Tests
-      name: "Frontend Tests"
-      install: skip
-      script:
-        - mvn -B -V -T 1C install -N
-        - mvn -B -V install -pl frontend-resources
-        - mvn -B -V -T 1C install -pl backend -DskipTests
-        - mvn -B -V -T 1C package -pl executable
-
-    #build backend and run all non-integration tests
-    - stage: Tests
-      name: "Unit Tests"
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
-
-    #build and test only INTEGRATION_PROGRAMMATIC
-    - stage: Tests
-      name: "Programmatic Integration Tests"
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_PROGRAMMATIC"
-
-    #build and test only INTEGRATION_JSONs
-    - stage: Tests
-      name: "Integration Tests"
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
-
     # ------------------------------
     # Release stages
     # ------------------------------

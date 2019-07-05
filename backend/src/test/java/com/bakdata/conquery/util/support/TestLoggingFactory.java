@@ -74,7 +74,7 @@ public class TestLoggingFactory implements LoggingFactory {
 		CHANGE_LOGGER_CONTEXT_LOCK.lock();
 		final Logger root;
 		try {
-			root = configureLoggers(name);
+			root = configureLoggers();
 		}
 		finally {
 			CHANGE_LOGGER_CONTEXT_LOCK.unlock();
@@ -162,6 +162,7 @@ public class TestLoggingFactory implements LoggingFactory {
 			consoleAppender.setContext(loggerContext);
 			consoleAppender.start();
 			logger.addAppender(consoleAppender);
+			configureLoggers();
 			loggerContext.start();
 		}
 		finally {
@@ -191,7 +192,7 @@ public class TestLoggingFactory implements LoggingFactory {
 		root.addAppender(appender);
 	}
 
-	private Logger configureLoggers(String name) {
+	private Logger configureLoggers() {
 		final Logger root = loggerContext.getLogger(org.slf4j.Logger.ROOT_LOGGER_NAME);
 		loggerContext.reset();
 
