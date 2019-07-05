@@ -16,6 +16,7 @@ steps:
     goals: install
     options: $(MVN_CFG) -T 1C -N
 
+- bash: ls $(Build.Repository.LocalPath)/$(CACHE_DIR)
 - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
   inputs:
     keyfile: .gitignore
