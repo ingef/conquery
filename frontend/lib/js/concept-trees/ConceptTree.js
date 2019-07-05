@@ -9,13 +9,15 @@ import FaIcon from "../icon/FaIcon";
 import IconButton from "../button/IconButton";
 
 import ConceptTreeNode from "./ConceptTreeNode";
+import ConceptTreeNodeText from "./ConceptTreeNodeText";
 import { type SearchType } from "./reducer";
 
 type PropsType = {
   id: ConceptIdT,
-  tree: ConceptT,
+  tree: ?ConceptT,
   treeId: ConceptIdT,
   label: string,
+  description: ?string,
   depth: number,
   loading: boolean,
   error: ?string,
@@ -23,7 +25,7 @@ type PropsType = {
 };
 
 const LoadingTree = styled("p")`
-  padding-left: 24px;
+  padding-left: ${({ depth }) => 24 + depth * 15}px;
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
   line-height: 20px;
@@ -31,7 +33,7 @@ const LoadingTree = styled("p")`
 const ErrorMessage = styled("p")`
   color: ${({ theme }) => theme.col.red};
   font-weight: 400;
-  padding-left: 12px;
+  padding-left: ${({ depth }) => 12 + depth * 15}px;
   font-size: ${({ theme }) => theme.font.sm};
   margin: 2px 0;
   line-height: 20px;
@@ -48,18 +50,16 @@ const Spinner = styled("span")`
 export default (props: PropsType) => {
   if (props.loading)
     return (
-      <LoadingTree>
+      <LoadingTree depth={props.depth}>
         <Spinner>
           <FaIcon icon="spinner" />
         </Spinner>
-        <span>
-          {T.translate("conceptTreeList.loadingTree", { tree: props.label })}
-        </span>
+        <span>{props.label}</span>
       </LoadingTree>
     );
   else if (props.error)
     return (
-      <ErrorMessage>
+      <ErrorMessage depth={props.depth}>
         <ReloadButton
           red
           icon="redo"
@@ -77,5 +77,6 @@ export default (props: PropsType) => {
         search={props.search}
       />
     );
-  else return null;
+  else
+    return <ConceptTreeNodeText disabled label={props.label} depth={props.depth} />;
 };
