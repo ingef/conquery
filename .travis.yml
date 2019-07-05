@@ -9,7 +9,7 @@ before_install: mvn -B -V initialize -P setEvaVersion
 
 stages:
   - name: Tests
-    if: IS NOT present OR tag != "DRAFT"
+    if: tag IS NOT present OR tag != "DRAFT"
   - name: Prerelease
     if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
   - name: Release
