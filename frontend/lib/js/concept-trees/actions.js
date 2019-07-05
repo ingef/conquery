@@ -50,7 +50,9 @@ export const loadTrees = (datasetId: DatasetIdT) => {
       if (!result.concepts) return;
 
       for (const treeId of Object.keys(result.concepts)) {
-        dispatch(loadTree(datasetId, treeId));
+        if (result.concepts[treeId].detailsAvailable) {
+          dispatch(loadTree(datasetId, treeId));
+        }
       }
     } catch (e) {
       dispatch(loadTreesError(e));
