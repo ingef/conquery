@@ -9,6 +9,10 @@ import {
   type DateRangeT,
   type ConceptT
 } from "../api/types";
+
+import { selectsWithDefaults } from "../model/select";
+import { tablesWithDefaults } from "../model/table";
+
 import { type DraggedNodeType } from "../standard-query-editor/types";
 import { type SearchType } from "./reducer";
 
@@ -90,6 +94,7 @@ class ConceptTreeNode extends React.Component<PropsType> {
           }}
           createQueryElement={(): DraggedNodeType => {
             const { tables, selects } = getConceptById(data.tree);
+
             const description = data.description
               ? { description: data.description }
               : {};
@@ -98,8 +103,8 @@ class ConceptTreeNode extends React.Component<PropsType> {
               ids: [id],
               ...description,
               label: data.label,
-              tables,
-              selects,
+              tables: tablesWithDefaults(tables),
+              selects: selectsWithDefaults(selects),
 
               additionalInfos: data.additionalInfos,
               matchingEntries: data.matchingEntries,

@@ -13,6 +13,7 @@ import { isEmpty, objectWithoutKey } from "../common/helpers";
 import type { DateRangeT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
+import { selectsWithDefaults } from "../model/select";
 
 import {
   QUERY_GROUP_MODAL_SET_DATE,
@@ -74,41 +75,22 @@ import type {
 
 const initialState: StandardQueryType = [];
 
-export const withDefaultValues = arr => {
-  if (!arr) return arr;
-
-  return arr.map(obj => {
-    // Tables passed
-    if (obj.selects)
-      return {
-        ...obj,
-        dateColumn:
-          !!obj.dateColumn &&
-          !!obj.dateColumn.options &&
-          obj.dateColumn.options.length > 0
-            ? { ...obj.dateColumn, value: obj.dateColumn.options[0] }
-            : null,
-        selects: withDefaultValues(obj.selects)
-      };
-
-    // Selects passed
-    return { ...obj, selected: !!obj.default };
-  });
-};
-
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
 ): QueryNodeType => {
   // This sort of mapping might be a problem when adding new optional properties to
   // either Nodes or Queries: Flow won't complain when we omit those optional
   // properties here. But we can't use a spread operator either...
+  const baseItem = {
+    label: item.label,
+    excludeTimestamps: item.excludeTimestamps,
+    loading: item.loading,
+    error: item.error
+  };
 
   if (item.isPreviousQuery)
     return {
-      label: item.label,
-      excludeTimestamps: item.excludeTimestamps,
-      loading: item.loading,
-      error: item.error,
+      ...baseItem,
 
       id: item.id,
       // eslint-disable-next-line no-use-before-define
@@ -117,16 +99,13 @@ const filterItem = (
     };
   else
     return {
+      ...baseItem,
+
       ids: item.ids,
       description: item.description,
-      tables: withDefaultValues(item.tables),
-      selects: withDefaultValues(item.selects),
+      tables: item.tables,
+      selects: item.selects,
       tree: item.tree,
-
-      label: item.label,
-      excludeTimestamps: item.excludeTimestamps,
-      loading: item.loading,
-      error: item.error,
 
       additionalInfos: item.additionalInfos,
       matchingEntries: item.matchingEntries,
@@ -426,12 +405,7 @@ const resetNodeAllFilters = (state, action) => {
 
   const newState = setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: false,
-    selects: node.selects
-      ? node.selects.map(select => ({
-          ...select,
-          selected: false
-        }))
-      : null
+    selects: selectsWithDefaults(node.selects)
   });
 
   if (!node.tables) return newState;

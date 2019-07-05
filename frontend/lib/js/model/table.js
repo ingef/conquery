@@ -2,21 +2,27 @@
 
 import type { TableWithFilterValueType } from "../standard-query-editor/types";
 
-import { MULTI_SELECT, BIG_MULTI_SELECT } from "../form-components/filterTypes";
+import { isEmpty, compose } from "../common/helpers";
 
-import { isEmpty } from "../common/helpers";
-
-import { objectHasSelectedSelects } from "./select";
+import { objectHasSelectedSelects, selectsWithDefaults } from "./select";
+import { filtersWithDefaults } from "./filter";
 
 export const tablesHaveActiveFilter = (tables: TableWithFilterValueType[]) =>
   tables.some(table => tableHasActiveFilters(table));
 
 export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
   objectHasSelectedSelects(table) ||
+  tableHasNonDefaultDateColumn(table) ||
   (table.filters &&
     table.filters.some(
       filter => !isEmpty(filter.value) && filter.value !== filter.defaultValue
     ));
+
+const tableHasNonDefaultDateColumn = (table: TableWithFilterValueType) =>
+  !!table.dateColumn &&
+  !!table.dateColumn.options &&
+  table.dateColumn.options.length > 0 &&
+  table.dateColumn.value !== table.dateColumn.options[0].value;
 
 export function tableIsDisabled(
   table: TableWithFilterValueType,
@@ -28,48 +34,42 @@ export function tableIsDisabled(
 }
 
 export const resetAllFiltersInTables = (tables: TableWithFilterValueType[]) => {
-  return (tables || []).map(table => {
-    const selects = table.selects
-      ? table.selects.map(select => ({
-          ...select,
-          selected: false
-        }))
-      : null;
+  if (!tables) return [];
 
-    const filters = table.filters
-      ? table.filters.map(filter => {
-          switch (filter.type) {
-            case MULTI_SELECT:
-            case BIG_MULTI_SELECT:
-              return {
-                ...filter,
-                value: filter.defaultValue || []
-              };
-            default:
-              return {
-                ...filter,
-                value: filter.defaultValue || null
-              };
-          }
-        })
-      : null;
-
-    const dateColumn = table.dateColumn
-      ? {
-          ...table.dateColumn,
-          value:
-            !!table.dateColumn.options && table.dateColumn.options.length > 0
-              ? table.dateColumn.options[0]
-              : null
-        }
-      : null;
-
-    return {
-      ...table,
-      filters,
-      selects,
-      dateColumn,
-      exclude: false
-    };
-  });
+  return tablesWithDefaults(tables);
 };
+
+const tableWithDefaultDateColumn = table => {
+  return {
+    ...table,
+    dateColumn:
+      !!table.dateColumn &&
+      !!table.dateColumn.options &&
+      table.dateColumn.options.length > 0
+        ? { ...table.dateColumn, value: table.dateColumn.options[0].value }
+        : null
+  };
+};
+
+const tableWithDefaultFilters = table => ({
+  ...table,
+  filters: filtersWithDefaults(table.filters)
+});
+
+const tableWithDefaultSelects = table => ({
+  ...table,
+  selects: selectsWithDefaults(table.selects)
+});
+
+const tableWithDefaults = table =>
+  compose(
+    tableWithDefaultDateColumn,
+    tableWithDefaultSelects,
+    tableWithDefaultFilters
+  )({
+    ...table,
+    exclude: false
+  });
+
+export const tablesWithDefaults = tables =>
+  tables ? tables.map(tableWithDefaults) : null;

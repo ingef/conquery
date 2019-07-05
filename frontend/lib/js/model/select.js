@@ -19,3 +19,11 @@ export function sortSelects(selects: SelectorT[]) {
     .concat() // To avoid mutating the original array
     .sort((a, b) => (a.label < b.label ? -1 : 1));
 }
+
+const withDefaultSelect = select => ({
+  ...select,
+  selected: !!select.default
+});
+
+export const selectsWithDefaults = selects =>
+  selects ? selects.map(withDefaultSelect) : null;
