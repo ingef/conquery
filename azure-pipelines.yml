@@ -4,7 +4,7 @@ trigger:
 variables:
   EXCLUDE_SOURCE_MAPS: true
   CACHE_DIR: cache/.m2
-  MVN_CFG: -B -V -Dmaven.repo.local=$(Agent.BuildDirectory)/$(CACHE_DIR)
+  MVN_CFG: -B -V -Dmaven.repo.local=$(Build.ArtifactStagingDirectory)/$(CACHE_DIR)
 pool:
   vmImage: 'ubuntu-latest'
 
