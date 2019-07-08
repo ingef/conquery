@@ -23,7 +23,7 @@ import com.github.powerlibraries.io.Out;
 
 public class ClassGenerator {
 	private static final JavaCompiler COMPILER = ToolProvider.getSystemJavaCompiler();
-	private static final JavaFileManager FILE_MANAGER = /*new CachedJavaFileManager(*/COMPILER.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8);//);
+	private static final JavaFileManager FILE_MANAGER = new CachedJavaFileManager(COMPILER.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8));
 	
 	private final List<String> generated = new ArrayList<>();	
 	private final MemClassLoader classLoader = new MemClassLoader();
