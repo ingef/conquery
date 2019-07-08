@@ -19,7 +19,7 @@ import {
 } from "./actionTypes";
 import { setTree } from "./globalTreeStoreHelper";
 
-export type TreesType = { [treeId: string]: ConceptT };
+export type TreesT = { [treeId: string]: ConceptT };
 
 export type SearchType = {
   allOpen: boolean,
@@ -35,7 +35,7 @@ export type SearchType = {
 export type StateType = {
   loading: boolean,
   version: any,
-  trees: TreesType,
+  trees: TreesT,
   search: SearchType
 };
 
@@ -141,11 +141,19 @@ const setTreeError = (state: StateType, action: Object): StateType => {
 };
 
 const setLoadTreesSuccess = (state: StateType, action: Object): StateType => {
+  const { concepts, version } = action.payload.data;
+
+  // Assign default select filter values
+  for (const concept of Object.values(concepts))
+    for (const table of concept.tables || [])
+      for (const filter of table.filters || [])
+        if (filter.defaultValue) filter.value = filter.defaultValue;
+
   return {
     ...state,
     loading: false,
-    version: action.payload.data.version,
-    trees: action.payload.data.concepts
+    version: version,
+    trees: concepts
   };
 };
 

@@ -33,7 +33,7 @@ public class CachedJavaFileManager extends ForwardingJavaFileManager<JavaFileMan
 
 	
 	@Override
-	public Iterable<JavaFileObject> list(Location location, String packageName, Set<Kind> kinds, boolean recurse) throws IOException {
+	public synchronized Iterable<JavaFileObject> list(Location location, String packageName, Set<Kind> kinds, boolean recurse) throws IOException {
 		ListKey key = new ListKey(location, packageName, kinds, recurse);
 		try {
 			return cache.get(key);

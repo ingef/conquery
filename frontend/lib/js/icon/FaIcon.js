@@ -18,8 +18,10 @@ export const Icon = styled(FontAwesomeIcon, { shouldForwardProp })`
   text-align: ${({ center }) => (center ? "center" : "left")};
   font-size: ${({ theme, large, tiny }) =>
     large ? theme.font.md : tiny ? theme.font.tiny : theme.font.sm};
-  color: ${({ theme, white, light, main, active }) =>
-    active
+  color: ${({ theme, white, light, main, active, disabled }) =>
+    disabled
+      ? theme.col.grayMediumLight
+      : active
       ? theme.col.blueGrayDark
       : white
       ? "#fff"

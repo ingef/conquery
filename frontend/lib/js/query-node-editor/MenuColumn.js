@@ -4,7 +4,11 @@ import React from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 
-import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
+import {
+  tableHasActiveFilters,
+  tableIsBlacklisted,
+  tableIsWhitelisted
+} from "../model/table";
 
 import { EditableText } from "../form-components";
 import FaIcon from "../icon/FaIcon";
@@ -83,7 +87,8 @@ const MenuColumn = (props: PropsType) => {
     node,
     editorState,
     showTables,
-    disabledTables,
+    blacklistedTables,
+    whitelistedTables,
     onToggleTable,
     onResetAllFilters,
     onUpdateLabel
@@ -124,7 +129,12 @@ const MenuColumn = (props: PropsType) => {
             {T.translate("queryNodeEditor.conceptNodeTables")}
           </CategoryHeader>
           {node.tables.map((table, tableIdx) => {
-            const isDisabled = tableIsDisabled(table, disabledTables);
+            const isDisabled =
+              (!!whitelistedTables &&
+                !tableIsWhitelisted(table, whitelistedTables)) ||
+              (!!blacklistedTables &&
+                tableIsBlacklisted(table, blacklistedTables));
+
             const isActive =
               editorState.selectedInputTableIdx === tableIdx &&
               !editorState.detailsViewActive;

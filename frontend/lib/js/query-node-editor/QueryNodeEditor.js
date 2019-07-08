@@ -65,10 +65,11 @@ export type PropsType = {
   editorState: QueryNodeEditorState,
   node: QueryNodeType,
   showTables: boolean,
-  disabledTables: string[],
   isExcludeTimestampsPossible: boolean,
   datasetId: number,
   suggestions: ?Object,
+  whitelistedTables?: string[],
+  blacklistedTables?: string[],
 
   onCloseModal: Function,
   onUpdateLabel: Function,
