@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.events.generation;
 
 import java.util.List;
 
-import com.bakdata.conquery.util.ConqueryEscape;
+import com.bakdata.conquery.util.ConqueryJavaEscape;
 
 import freemarker.template.SimpleScalar;
 import freemarker.template.TemplateMethodModelEx;
@@ -18,6 +18,6 @@ public enum SafeName implements TemplateMethodModelEx {
 			throw new TemplateModelException("safeName requires exactly one string argument");
 		}
 		String name = ((SimpleScalar) arguments.get(0)).getAsString();
-		return new SimpleScalar(ConqueryEscape.escape(name));
+		return new SimpleScalar(ConqueryJavaEscape.escape(name));
 	}
 }

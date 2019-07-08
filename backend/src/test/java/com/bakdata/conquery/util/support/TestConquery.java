@@ -87,7 +87,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			return createSupport(datasetId, name);
 		}
 		catch(Exception e) {
-			return fail("Failed to create support for "+name, e);
+			return fail("Failed to create a support for "+name, e);
 		}
 	}
 	
