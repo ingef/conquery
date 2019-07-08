@@ -1,7 +1,7 @@
 // @flow
 
 import { type Dispatch } from "redux-thunk";
-import { RateLimit } from "../common/helpers/rateLimitHelper";
+import { Sema } from "../common/helpers/rateLimitHelper";
 
 import type { DatasetIdT } from "../api/types";
 import api from "../api";
@@ -10,6 +10,7 @@ import type { ConceptIdT } from "../api/types";
 import { isEmpty } from "../common/helpers";
 
 import { resetAllTrees, search } from "./globalTreeStoreHelper";
+import { getDatasetId } from "../dataset/globalDatasetHelper";
 import {
   LOAD_TREES_START,
   LOAD_TREES_SUCCESS,
@@ -34,35 +35,28 @@ export const loadTreesSuccess = (res: any) =>
   defaultSuccess(LOAD_TREES_SUCCESS, res);
 
 export const loadTrees = (datasetId: DatasetIdT) => {
-  return (dispatch: Dispatch) => {
+  return async (dispatch: Dispatch) => {
     // TODO: Careful, side effect, extract this soon
     resetAllTrees();
 
     dispatch(clearTrees());
     dispatch(loadTreesStart());
 
-    return api.getConcepts(datasetId).then(
-      r => {
-        dispatch(loadTreesSuccess(r));
+    try {
+      const result = await api.getConcepts(datasetId);
 
-        if (!r.concepts) return;
+      dispatch(loadTreesSuccess(result));
 
-        // Assign default select filter values
-        for (const concept of Object.values(r.concepts))
-          for (const table of concept.tables || [])
-            for (const filter of table.filters || [])
-              if (filter.defaultValue) filter.value = filter.defaultValue;
+      if (!result.concepts) return;
 
-        Object.keys(r.concepts).forEach(async conceptId => {
-          if (r.concepts[conceptId].detailsAvailable) {
-            dispatch(loadTree(datasetId, conceptId));
-          }
-        });
-
-        return r.concepts;
-      },
-      e => dispatch(loadTreesError(e))
-    );
+      for (const treeId of Object.keys(result.concepts)) {
+        if (result.concepts[treeId].detailsAvailable) {
+          dispatch(loadTree(datasetId, treeId));
+        }
+      }
+    } catch (e) {
+      dispatch(loadTreesError(e));
+    }
   };
 };
 
@@ -77,19 +71,28 @@ export const loadTreeSuccess = (treeId: ConceptIdT, res: any) =>
 
 const TREES_TO_LOAD_IN_PARALLEL = 5;
 
-const lim = new RateLimit(TREES_TO_LOAD_IN_PARALLEL);
+const semaphore = new Sema(TREES_TO_LOAD_IN_PARALLEL);
 
 export const loadTree = (datasetId: DatasetIdT, treeId: ConceptIdT) => {
   return async (dispatch: Dispatch) => {
+    await semaphore.acquire();
+
+    // If the datasetId changed in the mean time, don't load the tree
+    if (datasetId !== getDatasetId()) {
+      console.log(`${datasetId} not matching, not loading ${treeId}`);
+      semaphore.release();
+      return;
+    }
+
     dispatch(loadTreeStart(treeId));
 
     try {
-      await lim();
-
       const result = await api.getConcept(datasetId, treeId);
 
+      semaphore.release();
       dispatch(loadTreeSuccess(treeId, result));
     } catch (e) {
+      semaphore.release();
       dispatch(loadTreeError(treeId, e));
     }
   };
