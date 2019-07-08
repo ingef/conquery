@@ -78,7 +78,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	public synchronized StandaloneSupport getSupport(String name) {
 		try {
 			log.info("Setting up dataset");
-			int count = NAME_COUNTS.merge(name, 0, (a,b)->a++);
+			int count = NAME_COUNTS.merge(name, 0, (a,b)->a+1);
 			if(count > 0) {
 				name+="["+count+"]";
 			}
