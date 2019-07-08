@@ -71,7 +71,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			return createSupport(datasetId, datasetId.getName());
 		}
 		catch(Exception e) {
-			return fail(e);
+			return fail("Failed to open dataset "+datasetId, e);
 		}
 	}
 	
@@ -87,7 +87,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			return createSupport(datasetId, name);
 		}
 		catch(Exception e) {
-			return fail(e);
+			return fail("Failed to create support for "+name, e);
 		}
 	}
 	
