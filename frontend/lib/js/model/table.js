@@ -18,11 +18,20 @@ export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
       filter => !isEmpty(filter.value) && filter.value !== filter.defaultValue
     ));
 
-export function tableIsDisabled(
+export function tableIsBlacklisted(
   table: TableWithFilterValueType,
-  disabledTables: string[]
+  blacklistedTables: string[]
 ) {
-  return disabledTables.some(
+  return blacklistedTables.some(
+    tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
+  );
+}
+
+export function tableIsWhitelisted(
+  table: TableWithFilterValueType,
+  whitelistedTables: string[]
+) {
+  return whitelistedTables.some(
     tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
   );
 }

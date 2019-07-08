@@ -23,3 +23,21 @@ export const nodeHasExludedTable = (node: ConceptQueryNodeType) => {
 
   return node.tables.some(table => table.exclude);
 };
+
+export const nodeIsDisabled = (
+  node: ConceptQueryNodeType,
+  disallowedConceptIds: string[]
+) =>
+  !!node.ids &&
+  disallowedConceptIds.some(id =>
+    node.ids.some(conceptId => conceptId.indexOf(id.toLowerCase()) !== -1)
+  );
+
+export const nodeIsEnabled = (
+  node: ConceptQueryNodeType,
+  allowedConceptIds: string[]
+) =>
+  !!node.ids &&
+  allowedConceptIds.some(id =>
+    node.ids.every(conceptId => conceptId.indexOf(id.toLowerCase()) !== -1)
+  );
