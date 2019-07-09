@@ -11,7 +11,7 @@ pool:
 steps:
 - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreAndSaveCacheV1.RestoreAndSaveCache@1
   inputs:
-    keyfile: .gitignore
+    keyfile: 'frontend/yarn.lock, **/pom.xml, !**/target/**/pom.xml'
     targetfolder: cache
     vstsFeed: $(ArtifactFeed)
 
