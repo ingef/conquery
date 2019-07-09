@@ -12,12 +12,12 @@ type PropsType = {
 };
 
 const Label = styled("span")`
-  ${({ isSelected }) =>
+  ${({ theme, isSelected }) =>
     isSelected &&
     css`
-      background-color: ${({ theme }) => theme.col.grayVeryLight};
-      border: 1px solid ${({ theme }) => theme.col.blueGrayLight};
-      border-radius: ${({ theme }) => theme.borderRadius};
+      background-color: ${theme.col.grayVeryLight};
+      border: 1px solid ${theme.col.blueGrayLight};
+      border-radius: ${theme.borderRadius};
       padding: 0 3px;
     `};
 `;
