@@ -9,17 +9,14 @@ public class DefaultIdMappingAccessor implements IdMappingAccessor {
 	@Getter
 	private final int[] idsUsed;
 	@Getter
-	@ToString.Exclude
-	private final IdMappingConfig mapping;
+	private final String[] header;
 
 	public DefaultIdMappingAccessor(IdMappingConfig mapping, int[] idsUsed) {
 		this.idsUsed = idsUsed;
-		this.mapping = mapping;
-	}
-
-	@Override
-	public String[] getHeader() {
-		return mapping.getHeader();
+		this.header = new String[idsUsed.length];
+		for(int i=0; i<header.length; i++) {
+			header[i] = mapping.getPrintIdFields()[idsUsed[i]];
+		}
 	}
 
 	@Override
