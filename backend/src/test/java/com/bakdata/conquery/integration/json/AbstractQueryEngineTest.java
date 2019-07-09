@@ -16,6 +16,8 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -48,7 +50,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		managed.awaitDone(1, TimeUnit.DAYS);
 
 		if (managed.getState() == ExecutionState.FAILED) {
-			fail("Query failed");
+			managed
+				.getResults()
+				.stream()
+				.filter(EntityResult::isFailed)
+				.map(FailedEntityResult.class::cast)
+				.forEach(r->log.error("Failure in query {}: {}", managed.getId(), r.getExceptionStackTrace()));
+			fail("Query failed (see above)");
 		}
 
 		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace())
