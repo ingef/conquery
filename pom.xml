@@ -22,7 +22,7 @@
 		<module>frontend-resources</module>
 		<module>backend</module>
 		<module>executable</module>
-		<module>integration-tests</module>
+		<module>tests</module>
 	</modules>
 
 	<dependencyManagement>
