@@ -223,7 +223,7 @@ uploadQueryResultsModal:
   uploadFailedSub: "Please check the file format and your network connection"
   uploadSucceeded: "Result list was successfully uploaded"
   formatInfo:
-    text: "File should contain one result per row with comma-separated values"
+    text: "File should contain one result per row, separated by ; (semicolon)"
 
 uploadConceptListModal:
   headline: "Upload concepts"

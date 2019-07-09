@@ -5,7 +5,6 @@ export default function parseCSV(file) {
     Papa.parse(file, {
       header: false,
       skipEmptyLines: true,
-      delimiter: ";",
       delimitersToGuess: [";", ",", ":"],
       complete: (results, file) => resolve(results, file)
     });

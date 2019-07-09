@@ -225,7 +225,7 @@ uploadQueryResultsModal:
   uploadFailedSub: "Bitte überprüfen Sie das Format und die Netzwerkverbindung"
   uploadSucceeded: "Ergebnisliste hochladen erfolgreich"
   formatInfo:
-    text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
+    text: "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
 
 uploadConceptListModal:
   headline: "Konzepte aus Liste einfügen"
