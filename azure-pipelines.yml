@@ -8,6 +8,12 @@ pool:
   vmImage: 'ubuntu-latest'
 
 steps:
+- task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreCacheV1.RestoreCache@1
+  inputs:
+    keyfile: .gitignore
+    targetfolder: cache
+    vstsFeed: $(ArtifactFeed)
+
 - task: Maven@3
   displayName: build root
   inputs:
@@ -17,7 +23,7 @@ steps:
 
 - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
   inputs:
-    keyfile: pom.xml
+    keyfile: .gitignore
     targetfolder: cache
     vstsFeed: $(ArtifactFeed)
 
