@@ -22,9 +22,6 @@ import com.bakdata.conquery.util.DebugMode;
 import com.github.powerlibraries.io.Out;
 
 public class ClassGenerator {
-	private static final JavaCompiler COMPILER = ToolProvider.getSystemJavaCompiler();
-	private static final JavaFileManager FILE_MANAGER = new CachedJavaFileManager(COMPILER.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8));
-	
 	private final List<String> generated = new ArrayList<>();	
 	private final MemClassLoader classLoader = new MemClassLoader();
 	private final List<StringJavaFileObject> files = new ArrayList<>();
@@ -56,17 +53,16 @@ public class ClassGenerator {
 	}
 
 	public void compile() throws IOException, URISyntaxException {
-		synchronized (COMPILER) {
-			try (JavaFileManager fileManager = new MemJavaFileManager(
-				FILE_MANAGER, 
-				classLoader)
-			) {
-				StringWriter output = new StringWriter();
-				CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList(debug?"-g":"-g:none"), null, files);
-				
-				if (!task.call()) {
-					throw new IllegalStateException("Failed to compile: "+output);
-				}
+		JavaCompiler compiler = ToolProvider.getSystemJavaCompiler();
+		try (JavaFileManager fileManager = new MemJavaFileManager(
+			compiler.getStandardFileManager(null, Locale.ROOT, StandardCharsets.UTF_8), 
+			classLoader
+		)) {
+			StringWriter output = new StringWriter();
+			CompilationTask task = compiler.getTask(output, fileManager, null, Arrays.asList(debug?"-g":"-g:none"), null, files);
+			
+			if (!task.call()) {
+				throw new IllegalStateException("Failed to compile: "+output);
 			}
 		}
 	}

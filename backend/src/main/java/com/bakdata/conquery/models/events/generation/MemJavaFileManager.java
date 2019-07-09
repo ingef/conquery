@@ -27,6 +27,6 @@ public class MemJavaFileManager extends ForwardingJavaFileManager<JavaFileManage
 	@Override
 	public void close() throws IOException {
 		super.flush();
-		//super.close();
+		super.close();
 	}
 }

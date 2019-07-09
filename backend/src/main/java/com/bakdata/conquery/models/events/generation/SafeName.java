@@ -12,6 +12,7 @@ public enum SafeName implements TemplateMethodModelEx {
 	
 	INSTANCE;
 	
+	@SuppressWarnings("rawtypes")
 	@Override
 	public Object exec(List arguments) throws TemplateModelException {
 		if(arguments.size() != 1 || !(arguments.get(0) instanceof SimpleScalar)) {
