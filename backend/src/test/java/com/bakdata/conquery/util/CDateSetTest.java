@@ -1,4 +1,4 @@
-package com.bakdata.conquery.integration.common;
+package com.bakdata.conquery.util;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
