@@ -13,15 +13,17 @@ import InfoTooltip from "../tooltip/InfoTooltip";
 
 type PropsType = FieldPropsType & {
   className?: string,
-  label: string,
+  label?: string,
   options: SelectOptionsT,
   disabled?: boolean,
+  small?: boolean,
   selectProps?: Object,
   tooltip?: string
 };
 
 const InputSelect = ({
   className,
+  small,
   input,
   label,
   options,
@@ -40,14 +42,15 @@ const InputSelect = ({
       valueChanged={!isEmpty(input.value) && input.value !== input.defaultValue}
       label={
         <>
-          {label}
-          {tooltip && <InfoTooltip text={tooltip} />}
+          {!!label && label}
+          {!!tooltip && <InfoTooltip text={tooltip} />}
         </>
       }
     >
       <ReactSelect
         highlightChanged
         name="form-field"
+        small={small}
         value={selected}
         defaultValue={defaultValue}
         options={options}

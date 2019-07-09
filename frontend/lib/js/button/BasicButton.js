@@ -9,6 +9,7 @@ const BasicButton = styled("button")`
   font-size: ${({ theme, small, tiny }) =>
     tiny || (small && theme.font.xs) || theme.font.sm};
   transition: all 0.2s;
+  border-radius: ${({ theme }) => theme.borderRadius};
 
   &:disabled {
     cursor: not-allowed;
