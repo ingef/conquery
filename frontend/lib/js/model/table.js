@@ -20,9 +20,29 @@ export const tableHasActiveFilters = (table: TableWithFilterValueType) =>
 
 export function tableIsDisabled(
   table: TableWithFilterValueType,
-  disabledTables: string[]
+  blacklistedTables?: string[],
+  whitelistedTables?: string[]
 ) {
-  return disabledTables.some(
+  return (
+    (!!whitelistedTables && !tableIsWhitelisted(table, whitelistedTables)) ||
+    (!!blacklistedTables && tableIsBlacklisted(table, blacklistedTables))
+  );
+}
+
+export function tableIsBlacklisted(
+  table: TableWithFilterValueType,
+  blacklistedTables: string[]
+) {
+  return blacklistedTables.some(
+    tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
+  );
+}
+
+export function tableIsWhitelisted(
+  table: TableWithFilterValueType,
+  whitelistedTables: string[]
+) {
+  return whitelistedTables.some(
     tableName => table.id.toLowerCase().indexOf(tableName.toLowerCase()) !== -1
   );
 }

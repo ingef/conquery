@@ -41,7 +41,6 @@ const mapStateToProps = state => {
     node,
     editorState: state.queryNodeEditor,
     showTables,
-    disabledTables: [],
     isExcludeTimestampsPossible: true,
     canIncludeSubnodes: hasConceptChildren(node),
     currencyConfig: state.startup.config.currency

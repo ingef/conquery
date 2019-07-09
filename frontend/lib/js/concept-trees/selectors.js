@@ -24,6 +24,7 @@ export const isNodeInSearchResult = (
 
 export const getAreTreesAvailable = state => {
   return (
-    state.conceptTrees.trees && Object.keys(state.conceptTrees.trees).length > 0
+    !!state.conceptTrees.trees &&
+    Object.keys(state.conceptTrees.trees).length > 0
   );
 };

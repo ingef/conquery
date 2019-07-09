@@ -71,14 +71,14 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			return createSupport(datasetId, datasetId.getName());
 		}
 		catch(Exception e) {
-			return fail(e);
+			return fail("Failed to open dataset "+datasetId, e);
 		}
 	}
 	
 	public synchronized StandaloneSupport getSupport(String name) {
 		try {
 			log.info("Setting up dataset");
-			int count = NAME_COUNTS.merge(name, 0, (a,b)->a++);
+			int count = NAME_COUNTS.merge(name, 0, (a,b)->a+1);
 			if(count > 0) {
 				name+="["+count+"]";
 			}
@@ -87,7 +87,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			return createSupport(datasetId, name);
 		}
 		catch(Exception e) {
-			return fail(e);
+			return fail("Failed to create a support for "+name, e);
 		}
 	}
 	

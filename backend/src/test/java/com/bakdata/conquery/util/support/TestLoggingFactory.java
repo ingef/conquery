@@ -144,6 +144,7 @@ public class TestLoggingFactory implements LoggingFactory {
 
 	@Override
 	public void reset() {
+		/*
 		CHANGE_LOGGER_CONTEXT_LOCK.lock();
 		try {
 			// Flush all the loggers and reinstate only the console logger as a
@@ -168,6 +169,7 @@ public class TestLoggingFactory implements LoggingFactory {
 		finally {
 			CHANGE_LOGGER_CONTEXT_LOCK.unlock();
 		}
+		*/
 	}
 
 	private void flushAppender(AsyncAppender appender) throws InterruptedException {

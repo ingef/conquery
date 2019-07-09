@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.util.ConqueryEscape;
+import com.bakdata.conquery.util.ConqueryJavaEscape;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.powerlibraries.io.In;
@@ -92,7 +92,7 @@ public class Import extends NamedImpl<ImportId> {
 	
 	public synchronized String getSuffix() {
 		if(suffix == null) {
-			suffix = UUID.randomUUID().toString().replace('-', '_')+"_"+ConqueryEscape.escape(table.getTable())+"_"+ConqueryEscape.escape(getName());
+			suffix = UUID.randomUUID().toString().replace('-', '_')+"_"+ConqueryJavaEscape.escape(table.getTable())+"_"+ConqueryJavaEscape.escape(getName());
 		}
 		return suffix;
 	}

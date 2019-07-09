@@ -4,13 +4,12 @@ import React from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 
-import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
-
 import { EditableText } from "../form-components";
-import FaIcon from "../icon/FaIcon";
-import BasicButton from "../button/BasicButton";
 
 import ResetAllFiltersButton from "./ResetAllFiltersButton";
+import MenuColumnItem from "./MenuColumnItem";
+import MenuColumnButton from "./MenuColumnButton";
+
 import type { PropsType } from "./QueryNodeEditor";
 
 const FixedColumn = styled("div")`
@@ -37,42 +36,6 @@ const CategoryHeader = styled("p")`
   color: ${({ theme }) => theme.col.black};
 `;
 
-const StyledButton = styled(BasicButton)`
-  font-size: ${({ theme }) => theme.font.md};
-  line-height: 21px;
-  border: 0;
-  margin-top: 3px;
-  font-weight: 700;
-  color: ${({ theme, disabled }) =>
-    disabled ? theme.col.gray : theme.col.black};
-  width: 100%;
-  text-align: left;
-  display: inline-flex;
-  flex-direction: row;
-  align-items: center;
-  transition: background-color 0.1s;
-
-  background-color: ${({ theme, active, disabled }) =>
-    active
-      ? theme.col.blueGrayVeryLight
-      : disabled
-      ? "transparent"
-      : theme.col.grayVeryLight};
-  &:hover {
-    background-color: ${({ theme, active, disabled }) =>
-      active
-        ? theme.col.blueGrayVeryLight
-        : disabled
-        ? "transparent"
-        : theme.col.grayLight};
-  }
-`;
-
-const StyledFaIcon = styled(FaIcon)`
-  font-size: ${({ theme }) => theme.font.lg};
-  line-height: ${({ theme }) => theme.font.lg};
-`;
-
 const NodeName = styled("div")`
   padding: 10px 15px;
   border-bottom: 1px solid #ccc;
@@ -83,13 +46,14 @@ const MenuColumn = (props: PropsType) => {
     node,
     editorState,
     showTables,
-    disabledTables,
+    blacklistedTables,
+    whitelistedTables,
     onToggleTable,
     onResetAllFilters,
     onUpdateLabel
   } = props;
 
-  const onlyOneTableIncluded =
+  const isOnlyOneTableIncluded =
     !node.isPreviousQuery &&
     node.tables.filter(table => !table.exclude).length === 1;
 
@@ -112,58 +76,33 @@ const MenuColumn = (props: PropsType) => {
         )}
         {node.isPreviousQuery && (node.label || node.id || node.ids)}
       </NodeName>
-      <StyledButton
+      <MenuColumnButton
         active={editorState.detailsViewActive}
         onClick={editorState.onSelectDetailsView}
       >
         {T.translate("queryNodeEditor.properties")}
-      </StyledButton>
+      </MenuColumnButton>
       {!node.isPreviousQuery && showTables && (
         <div>
           <CategoryHeader>
             {T.translate("queryNodeEditor.conceptNodeTables")}
           </CategoryHeader>
-          {node.tables.map((table, tableIdx) => {
-            const isDisabled = tableIsDisabled(table, disabledTables);
-            const isActive =
-              editorState.selectedInputTableIdx === tableIdx &&
-              !editorState.detailsViewActive;
-
-            return (
-              <StyledButton
-                key={tableIdx}
-                active={isActive}
-                disabled={isDisabled}
-                onClick={() => {
-                  editorState.onSelectInputTableView(tableIdx);
-                }}
-              >
-                <StyledFaIcon
-                  left
-                  regular
-                  icon={table.exclude ? "square" : "check-square"}
-                  disabled={
-                    isDisabled || (!table.exclude && onlyOneTableIncluded)
-                  }
-                  onClick={event => {
-                    event.stopPropagation();
-
-                    if (!isDisabled && (table.exclude || !onlyOneTableIncluded))
-                      onToggleTable(tableIdx, !table.exclude);
-                  }}
-                />
-                {table.label}
-                {tableHasActiveFilters(table) && (
-                  <StyledFaIcon
-                    right
-                    white={isActive}
-                    light={!isActive}
-                    icon="filter"
-                  />
-                )}
-              </StyledButton>
-            );
-          })}
+          {node.tables.map((table, tableIdx) => (
+            <MenuColumnItem
+              key={tableIdx}
+              idx={tableIdx}
+              table={table}
+              isActive={
+                editorState.selectedInputTableIdx === tableIdx &&
+                !editorState.detailsViewActive
+              }
+              isOnlyOneTableIncluded={isOnlyOneTableIncluded}
+              blacklistedTables={blacklistedTables}
+              whitelistedTables={whitelistedTables}
+              onClick={() => editorState.onSelectInputTableView(tableIdx)}
+              onToggleTable={value => onToggleTable(tableIdx, value)}
+            />
+          ))}
           <ResetAllFiltersButton
             node={node}
             onResetAllFilters={onResetAllFilters}
