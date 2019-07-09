@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -86,9 +87,18 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 		importTableContents(support);
 		support.waitUntilWorkDone();
+		importIdMapping(support);
 		importPreviousQueries(support);
 	}
 
+	private void importIdMapping(StandaloneSupport support) throws JSONException, IOException {
+		if(content.getIdMapping() == null) {
+			return;
+		}
+		try(InputStream in = content.getIdMapping().stream()) {
+			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
+		}
+	}
 	private void importPreviousQueries(StandaloneSupport support) throws JSONException, IOException {
 		// Load previous query results if available
 		int id = 1;

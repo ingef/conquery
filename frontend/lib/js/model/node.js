@@ -23,3 +23,39 @@ export const nodeHasExludedTable = (node: ConceptQueryNodeType) => {
 
   return node.tables.some(table => table.exclude);
 };
+
+export function nodeIsInvalid(
+  node: ConceptQueryNodeType,
+  blacklistedConceptIds?: string[],
+  whitelistedConceptIds?: string[]
+) {
+  return (
+    (!!whitelistedConceptIds &&
+      !nodeIsWhitelisted(node, whitelistedConceptIds)) ||
+    (!!blacklistedConceptIds && nodeIsBlacklisted(node, blacklistedConceptIds))
+  );
+}
+
+export function nodeIsBlacklisted(
+  node: ConceptQueryNodeType,
+  blacklistedConceptIds: string[]
+) {
+  return (
+    !!node.ids &&
+    blacklistedConceptIds.some(id =>
+      node.ids.some(conceptId => conceptId.indexOf(id.toLowerCase()) !== -1)
+    )
+  );
+}
+
+export function nodeIsWhitelisted(
+  node: ConceptQueryNodeType,
+  whitelistedConceptIds: string[]
+) {
+  return (
+    !!node.ids &&
+    whitelistedConceptIds.some(id =>
+      node.ids.every(conceptId => conceptId.indexOf(id.toLowerCase()) !== -1)
+    )
+  );
+}

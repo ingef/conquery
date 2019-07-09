@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -17,8 +18,8 @@ public interface IdMappingAccessor {
 	 * @return whether the mapping can be applied to the header.
 	 */
 	default boolean canBeApplied(List<String> csvHeader) {
-		for (String fieldInCsvHeader: csvHeader) {
-			if(!ArrayUtils.contains(getHeader(),fieldInCsvHeader)){
+		for (String requiredHeader : getHeader()) {
+			if(!csvHeader.contains(requiredHeader)) {
 				return false;
 			}
 		}
@@ -34,6 +35,7 @@ public interface IdMappingAccessor {
 	 */
 	default IdAccessor getApplicationMapping(String[] csvHeader, NamespaceStorage storage) {
 		int[] applicationMapping = new int[csvHeader.length];
+		Arrays.fill(applicationMapping, -1);
 		for (int indexInHeader = 0; indexInHeader < csvHeader.length; indexInHeader++) {
 			String csvHeaderField = csvHeader[indexInHeader];
 			int indexInCsvHeader = ArrayUtils.indexOf(getHeader(),csvHeaderField);
