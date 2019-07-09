@@ -58,7 +58,7 @@ function buildQuery(csv) {
       csv.data[0].length >= 4
         ? ["ID", "ID", "START_DATE", "END_DATE"]
         : ["ID", "ID", "DATE_SET"],
-    values: csv.data.slice(1)
+    values: csv.data
   };
 }
 
