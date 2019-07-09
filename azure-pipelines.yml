@@ -21,12 +21,6 @@ steps:
     goals: install
     options: $(MVN_CFG) -T 1C -N
 
-- task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
-  inputs:
-    keyfile: .gitignore
-    targetfolder: cache
-    vstsFeed: $(ArtifactFeed)
-
 - task: Maven@3
   displayName: frontend tests
   inputs:
@@ -54,3 +48,9 @@ steps:
     jdkVersionOption: '1.11'
     goals: test
     options: $(MVN_CFG) -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
+
+- task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
+  inputs:
+    keyfile: .gitignore
+    targetfolder: cache
+    vstsFeed: $(ArtifactFeed)
