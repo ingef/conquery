@@ -170,7 +170,7 @@ public class FrontEndConceptBuilder {
 					con
 					.getValidityDates()
 					.stream()
-					.collect(Collectors.toMap(ValidityDate::getName, ValidityDate::getLabel))
+					.collect(Collectors.toMap(vd->vd.getId().toString(), ValidityDate::getLabel))
 				)
 			);
 		}
