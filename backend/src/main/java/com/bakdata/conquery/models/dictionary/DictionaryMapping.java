@@ -69,4 +69,13 @@ public class DictionaryMapping {
 	public int source2Target(int sourceId) {
 		return source2TargetMap[sourceId];
 	}
+
+	public int getNumberOfNewIds() {
+		if(newIds == null) {
+			return 0;
+		}
+		else {
+			return newIds.getMax() - newIds.getMin() + 1;
+		}
+	}
 }

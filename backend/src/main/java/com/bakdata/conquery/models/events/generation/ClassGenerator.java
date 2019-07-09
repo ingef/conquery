@@ -62,7 +62,7 @@ public class ClassGenerator {
 				classLoader)
 			) {
 				StringWriter output = new StringWriter();
-				CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList("-g:none"), null, files);
+				CompilationTask task = COMPILER.getTask(output, fileManager, null, Arrays.asList(debug?"-g":"-g:none"), null, files);
 				
 				if (!task.call()) {
 					throw new IllegalStateException("Failed to compile: "+output);
