@@ -82,23 +82,32 @@ const SELECT_OPTIONS = [
 export default ({ file, loading, onUpload, onReset }: PropsT) => {
   const [csv, setCSV] = React.useState([]);
   const [csvHeader, setCSVHeader] = React.useState([]);
+  const [csvLoading, setCSVLoading] = React.useState(false);
 
   React.useEffect(() => {
     async function parse(f) {
-      const result = await parseCSV(f);
+      try {
+        setCSVLoading(true);
 
-      if (result.data.length > 0) {
-        setCSV(result.data);
-        setCSVHeader(
-          // This is experimental still.
-          // External queries (uploaded lists) usually contain three or four columns.
-          // The first two columns are IDs, which will be concatenated
-          // The other two columns are date ranges
-          // We simply assume that the data is in this format by default
-          result.data[0].length >= 4
-            ? ["ID", "ID", "START_DATE", "END_DATE"]
-            : ["ID", "ID", "DATE_SET"]
-        );
+        const result = await parseCSV(f);
+
+        setCSVLoading(false);
+
+        if (result.data.length > 0) {
+          setCSV(result.data);
+          setCSVHeader(
+            // This is experimental still.
+            // External queries (uploaded lists) usually contain three or four columns.
+            // The first two columns are IDs, which will be concatenated
+            // The other two columns are date ranges
+            // We simply assume that the data is in this format by default
+            result.data[0].length >= 4
+              ? ["ID", "ID", "START_DATE", "END_DATE"]
+              : ["ID", "ID", "DATE_SET"]
+          );
+        }
+      } catch (e) {
+        setCSVLoading(false);
       }
     }
 
@@ -120,6 +129,11 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
       </Row>
       <Table>
         <thead>
+          {csvLoading && (
+            <tr>
+              <th>{T.translate("csvColumnPicker.loading")}</th>
+            </tr>
+          )}
           {csv.length > 0 &&
             csv.slice(0, 1).map((row, j) => (
               <tr key={j}>
@@ -168,7 +182,10 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
           )}
         </tbody>
       </Table>
-      <PrimaryButton disabled={loading} onClick={uploadQuery}>
+      <PrimaryButton
+        disabled={loading || csv.length === 0}
+        onClick={uploadQuery}
+      >
         {loading && <FaIcon white icon="spinner" />}{" "}
         {T.translate("uploadQueryResultsModal.upload")}
       </PrimaryButton>

@@ -225,6 +225,9 @@ uploadQueryResultsModal:
   formatInfo:
     text: "File should contain one result per row, separated by ; (semicolon)"
 
+csvColumnPicker:
+  loading: "Reading data ..."
+
 uploadConceptListModal:
   headline: "Upload concepts"
   label: "Name of the Concept"
