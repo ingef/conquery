@@ -8,28 +8,18 @@ variables:
 
 
 jobs:
-- job: prepare
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
-  - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreCacheV1.RestoreCache@1
-    inputs:
-      keyfile: 'frontend/yarn.lock, **/pom.xml, !**/target/**/pom.xml'
-      targetfolder: cache
-      vstsFeed: $(ArtifactFeed)
-  - task: Maven@3
-    displayName: build root
-    inputs:
-      jdkVersionOption: '1.11'
-      goals: install
-      options: $(MVN_CFG) -T 1C -N
-
 - job: tests_frontend
   displayName: Frontend Tests
-  dependsOn: prepare
   pool:
-    vmImage: 'ubuntu-16.04'
+    vmImage: ubuntu-16.04
   steps:
+
+  - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreAndSaveCacheV1.RestoreAndSaveCache@1
+    inputs:
+      keyfile: frontend/yarn.lock, frontend-resources/pom.xml
+      targetfolder: cache
+      vstsFeed: $(ArtifactFeed)
+
   - task: Maven@3
     displayName: frontend tests
     inputs:
@@ -39,11 +29,24 @@ jobs:
 
 - job: tests_backend
   displayName: Backend Tests
-  dependsOn: prepare
   timeoutInMinutes: 15
   pool:
-    vmImage: 'ubuntu-16.04'
-  steps:   
+    vmImage: ubuntu-16.04
+  steps:  
+
+  - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreAndSaveCacheV1.RestoreAndSaveCache@1
+    inputs:
+      keyfile: '**/pom.xml, !**/target/**/pom.xml'
+      targetfolder: cache
+      vstsFeed: $(ArtifactFeed)
+
+  - task: Maven@3
+    displayName: build root
+    inputs:
+      jdkVersionOption: '1.11'
+      goals: install
+      options: $(MVN_CFG) -T 1C -N
+
   - task: Maven@3
     displayName: unit tests
     inputs:
@@ -65,21 +68,8 @@ jobs:
       goals: test
       options: $(MVN_CFG) -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
 
-- job: save_cache
-  displayName: Frontend Tests
-  dependsOn:
-  - tests_backend
-  - tests_frontend
-  pool:
-    vmImage: 'ubuntu-16.04'
-  steps:
   - task: DeleteFiles@1
     displayName: prepare cache
     inputs:
       sourceFolder: cache/.m2/repository/com/bakdata
       contents: '**'
-  - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
-    inputs:
-      keyfile: 'frontend/yarn.lock, **/pom.xml, !**/target/**/pom.xml'
-      targetfolder: cache
-      vstsFeed: $(ArtifactFeed)
