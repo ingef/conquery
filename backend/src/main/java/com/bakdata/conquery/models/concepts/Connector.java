@@ -11,7 +11,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
@@ -43,13 +42,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	@NotNull
 	private List<ValidityDate> validityDates = new ArrayList<>();
-	@JsonManagedReference
-	private ValidityDateSelectionFilter dateSelectionFilter;
-
 	@JsonBackReference
 	private Concept<?> concept;
-
-	@JsonIgnore @Getter(AccessLevel.NONE)
+	@JsonIgnore @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
 	@NotNull @Getter @Setter @JsonManagedReference

@@ -13,6 +13,7 @@ import { isEmpty, objectWithoutKey } from "../common/helpers";
 import type { DateRangeT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
+import { selectsWithDefaults } from "../model/select";
 
 import {
   QUERY_GROUP_MODAL_SET_DATE,
@@ -61,7 +62,8 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
-  TOGGLE_INCLUDE_SUBNODES
+  TOGGLE_INCLUDE_SUBNODES,
+  SET_DATE_COLUMN
 } from "./actionTypes";
 
 import type {
@@ -73,31 +75,22 @@ import type {
 
 const initialState: StandardQueryType = [];
 
-export const withDefaultValues = arr => {
-  if (!arr) return arr;
-
-  return arr.map(obj => {
-    // Tables passed
-    if (obj.selects) return { ...obj, selects: withDefaultValues(obj.selects) };
-
-    // Selects passed
-    return { ...obj, selected: !!obj.default };
-  });
-};
-
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
 ): QueryNodeType => {
   // This sort of mapping might be a problem when adding new optional properties to
   // either Nodes or Queries: Flow won't complain when we omit those optional
   // properties here. But we can't use a spread operator either...
+  const baseItem = {
+    label: item.label,
+    excludeTimestamps: item.excludeTimestamps,
+    loading: item.loading,
+    error: item.error
+  };
 
   if (item.isPreviousQuery)
     return {
-      label: item.label,
-      excludeTimestamps: item.excludeTimestamps,
-      loading: item.loading,
-      error: item.error,
+      ...baseItem,
 
       id: item.id,
       // eslint-disable-next-line no-use-before-define
@@ -106,16 +99,13 @@ const filterItem = (
     };
   else
     return {
+      ...baseItem,
+
       ids: item.ids,
       description: item.description,
-      tables: withDefaultValues(item.tables),
-      selects: withDefaultValues(item.selects),
+      tables: item.tables,
+      selects: item.selects,
       tree: item.tree,
-
-      label: item.label,
-      excludeTimestamps: item.excludeTimestamps,
-      loading: item.loading,
-      error: item.error,
 
       additionalInfos: item.additionalInfos,
       matchingEntries: item.matchingEntries,
@@ -366,6 +356,24 @@ const setNodeTableSelects = (state, action) => {
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
 };
 
+const setNodeTableDateColumn = (state, action) => {
+  const { tableIdx, value } = action.payload;
+  const { andIdx, orIdx } = selectEditedNode(state);
+  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const { dateColumn } = table;
+
+  // value contains the selects that have now been selected
+  const newTable = {
+    ...table,
+    dateColumn: {
+      ...dateColumn,
+      value
+    }
+  };
+
+  return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
+};
+
 const setNodeSelects = (state, action) => {
   const { value } = action.payload;
   const { andIdx, orIdx } = selectEditedNode(state);
@@ -397,12 +405,7 @@ const resetNodeAllFilters = (state, action) => {
 
   const newState = setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: false,
-    selects: node.selects
-      ? node.selects.map(select => ({
-          ...select,
-          selected: false
-        }))
-      : null
+    selects: selectsWithDefaults(node.selects)
   });
 
   if (!node.tables) return newState;
@@ -933,6 +936,8 @@ const query = (
       return setResolvedFilterValues(state, action);
     case TOGGLE_INCLUDE_SUBNODES:
       return toggleIncludeSubnodes(state, action);
+    case SET_DATE_COLUMN:
+      return setNodeTableDateColumn(state, action);
     default:
       return state;
   }

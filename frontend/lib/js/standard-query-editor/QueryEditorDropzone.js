@@ -10,7 +10,7 @@ import Dropzone from "../form-components/Dropzone";
 import FaIcon from "../icon/FaIcon";
 
 import { dndTypes } from "../common/constants";
-import type { QueryIdType } from "../api/types";
+import type { QueryIdT } from "../api/types";
 import type { DraggedNodeType, DraggedQueryType } from "./types";
 
 type DraggedFileType = Object;
@@ -20,7 +20,7 @@ type PropsType = {
   isAnd?: boolean,
   onDropNode: (DraggedNodeType | DraggedQueryType) => void,
   onDropFile: DraggedFileType => void,
-  onLoadPreviousQuery: QueryIdType => void
+  onLoadPreviousQuery: QueryIdT => void
 };
 
 const DROP_TYPES = [

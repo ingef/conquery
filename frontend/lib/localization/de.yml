@@ -82,6 +82,8 @@ queryNodeEditor:
   filters: "Filter"
   selects: "Zusatzwerte"
   nodeNotFound: "Konzept nicht gefunden"
+  selectValidityDate: "Relevanter Zeitraum"
+  dateColumn: "Datumsspalte"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"

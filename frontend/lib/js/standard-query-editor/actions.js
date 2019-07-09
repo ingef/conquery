@@ -38,7 +38,8 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
-  TOGGLE_INCLUDE_SUBNODES
+  TOGGLE_INCLUDE_SUBNODES,
+  SET_DATE_COLUMN
 } from "./actionTypes";
 
 export const dropAndNode = (
@@ -156,6 +157,11 @@ export const setTableSelects = (tableIdx, value) => ({
 export const setSelects = value => ({
   type: SET_SELECTS,
   payload: { value }
+});
+
+export const setDateColumn = (tableIdx, value) => ({
+  type: SET_DATE_COLUMN,
+  payload: { tableIdx, value }
 });
 
 export const resetAllFilters = (andIdx: number, orIdx: number) => ({

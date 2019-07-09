@@ -10,6 +10,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -21,6 +22,7 @@ import lombok.Setter;
 public class CQTable {
 	@Valid @NotNull
 	private ConnectorId id;
+	private ValidityDateId dateColumn;
 	@Valid @NotNull
 	private List<FilterValue<?>> filters = Collections.emptyList();
 

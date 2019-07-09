@@ -13,6 +13,7 @@ import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
+import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
@@ -146,7 +147,7 @@ public class FrontEndConceptBuilder {
 	}
 
 	public static FETable createTable(Connector con) {
-		return FETable.builder()
+		FETable result = FETable.builder()
 			.id(con.getTable().getId())
 			.connectorId(con.getId())
 			.label(con.getLabel())
@@ -162,6 +163,19 @@ public class FrontEndConceptBuilder {
 				.map(FrontEndConceptBuilder::createSelect)
 				.collect(Collectors.toList())
 			).build();
+		
+		if(con.getValidityDates().size() > 0) {
+			result.setValidityDateSelection(
+				FEValue.fromLabels(
+					con
+					.getValidityDates()
+					.stream()
+					.collect(Collectors.toMap(vd->vd.getId().toString(), ValidityDate::getLabel))
+				)
+			);
+		}
+		
+		return result;
 	}
 
 	public static FESelect createFilter(Select select) {

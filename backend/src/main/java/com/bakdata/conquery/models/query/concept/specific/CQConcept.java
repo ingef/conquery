@@ -14,7 +14,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -25,7 +24,6 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
@@ -147,20 +145,19 @@ public class CQConcept implements CQElement {
 	}
 
 	private Column selectValidityDateColumn(CQTable t) {
-		//check if we have a manually selected validity date then use that
-		for(FilterValue<?> fv : t.getFilters()) {
-			if(fv instanceof CQSelectFilter && fv.getFilter() instanceof ValidityDateSelectionFilter) {
-				return t
-					.getResolvedConnector()
-					.getValidityDateColumn(((CQSelectFilter)fv).getValue());
-			}
+		if(t.getDateColumn() != null) {
+			return t
+				.getResolvedConnector()
+				.getValidityDateColumn(t.getDateColumn().getValidityDate());
 		}
 
 		//else use this first defined validity date column
-		if(!t.getResolvedConnector().getValidityDates().isEmpty())
+		else if(!t.getResolvedConnector().getValidityDates().isEmpty()) {
 			return t.getResolvedConnector().getValidityDates().get(0).getColumn();
-		else
+		}
+		else {
 			return null;
+		}
 	}
 
 	@Override

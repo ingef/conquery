@@ -21,7 +21,8 @@ import {
   dropFilterValuesFile,
   toggleIncludeSubnodes,
   setSelects,
-  setTableSelects
+  setTableSelects,
+  setDateColumn
 } from "./actions";
 
 const findNodeBeingEdited = query =>
@@ -69,7 +70,8 @@ const mapDispatchToProps = dispatch => ({
   onDropFilterValuesFile: (...params) =>
     dispatch(dropFilterValuesFile(...params)),
   onToggleIncludeSubnodes: isIncludeSubNodes =>
-    dispatch(toggleIncludeSubnodes(isIncludeSubNodes))
+    dispatch(toggleIncludeSubnodes(isIncludeSubNodes)),
+  onSetDateColumn: (tableIdx, value) => dispatch(setDateColumn(tableIdx, value))
 });
 
 const QueryNodeEditor = createConnectedQueryNodeEditor(

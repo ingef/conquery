@@ -26,9 +26,7 @@ import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
-import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -91,20 +89,6 @@ public class AdminProcessor {
 	}
 
 	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
-
-		// if there are multiple selectable dates we need to add the select date filter
-		for (Connector con : c.getConnectors()) {
-			if (con.getValidityDates().size() > 1) {
-				ValidityDateSelectionFilter f = new ValidityDateSelectionFilter();
-				f.setConnector(con);
-				f.setName(ConqueryConstants.VALIDITY_DATE_SELECTION_FILTER_NAME);
-				f.setLabel(I18n.LABELS.getDateSelection());
-				con.setDateSelectionFilter(f);
-				// remove the sometimes already calculated all filters map so it is recalculated
-				con.setAllFiltersMap(null);
-			}
-		}
-
 		c.setDataset(dataset.getId());
 		jobManager
 			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
@@ -185,13 +169,13 @@ public class AdminProcessor {
 	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {
 		namespaces.get(dataset.getId()).getStorage().updateStructure(structure);
 	}
-	
+
 	public void createMandator(String name, String idString) throws JSONException {
 		log.info("New mandator:\tName: {}\tId: {} ", name, idString);
 		Mandator mandator = new Mandator(idString, name);
 		storage.addMandator(mandator);
 	}
-	
+
 	/**
 	 * Deletes the mandator, that is identified by the id.
 	 * @param mandatorId The id belonging to the mandator
@@ -233,7 +217,7 @@ public class AdminProcessor {
 				otherPermissions.add(permission);
 			}
 		}
-		
+
 		List<Dataset> datasets = storage.getNamespaces().getAllDatasets();
 
 		return new FEMandatorContent(
@@ -245,7 +229,7 @@ public class AdminProcessor {
 			Ability.READ.asSet(),
 			datasets);
 	}
-	
+
 	/**
 	 * Handles creation of permissions.
 	 * @param permission The permission to create.
@@ -254,7 +238,7 @@ public class AdminProcessor {
 	public void createPermission(ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.addPermission(getOwnerFromPermission(permission, storage), permission, storage);
 	}
-	
+
 	/**
 	 * Handles deletion of permissions.
 	 * @param permission The permission to delete.
@@ -263,7 +247,7 @@ public class AdminProcessor {
 	public void deletePermission(ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
 	}
-	
+
 	/**
 	 * Retrieves the {@link PermissionOwner} from an permission that should be created or deleted.
 	 * @param permission The permission with an owner.
@@ -281,7 +265,7 @@ public class AdminProcessor {
 		}
 		return owner;
 	}
-	
+
 	public UIContext getUIContext() {
 		return new UIContext(namespaces);
 	}
