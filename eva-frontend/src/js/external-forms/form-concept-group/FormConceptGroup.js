@@ -17,7 +17,8 @@ import {
   getConceptsByIdsWithTablesAndSelects,
   hasConceptChildren
 } from "conquery/lib/js/concept-trees/globalTreeStoreHelper";
-import { withDefaultValues } from "conquery/lib/js/standard-query-editor/reducer";
+import { tablesWithDefaults } from "conquery/lib/js/model/table";
+import { selectsWithDefaults } from "conquery/lib/js/model/select";
 
 import DynamicInputGroup from "../../form-components/DynamicInputGroup";
 import DropzoneList from "../../form-components/DropzoneList";
@@ -156,8 +157,8 @@ const initializeConcept = item => {
 
   return {
     ...item,
-    tables: withDefaultValues(item.tables),
-    selects: withDefaultValues(item.selects)
+    tables: tablesWithDefaults(item.tables),
+    selects: selectsWithDefaults(item.selects)
   };
 };
 
