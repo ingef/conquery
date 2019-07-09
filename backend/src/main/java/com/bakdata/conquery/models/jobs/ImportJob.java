@@ -95,7 +95,7 @@ public class ImportJob extends Job {
 			Import allIdsImp = new Import();
 			allIdsImp.setName(new ImportId(table, header.getName()).toString());
 			allIdsImp.setTable(new TableId(namespace.getStorage().getDataset().getId(), ConqueryConstants.ALL_IDS_TABLE));
-			allIdsImp.setNumberOfEntries(header.getGroups());
+			allIdsImp.setNumberOfEntries(primaryMapping.getNumberOfNewIds());
 			allIdsImp.setColumns(new ImportColumn[0]);
 			allIdsImp.getBlockFactory(); //so that classes are created before storing/sending
 			namespace.getStorage().updateImport(allIdsImp);
@@ -134,7 +134,7 @@ public class ImportJob extends Job {
 				Int2ObjectMap<List<byte[]>> allIdsBytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 				try (SmallOut buffer = new SmallOut(2048)) {
 					ProgressReporter child = this.progressReporter.subJob(5);
-					child.setMax(primaryMapping.getNewIds().getMax() - primaryMapping.getNewIds().getMin() + 1);
+					child.setMax(primaryMapping.getNumberOfNewIds());
 
 					for (int entityId : RangeUtil.iterate(primaryMapping.getNewIds())) {
 						buffer.reset();
