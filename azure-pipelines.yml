@@ -53,7 +53,7 @@ steps:
   displayName: prepare cache
   inputs:
     sourceFolder: cache/.m2/repository/com/bakdata
-    contents: **
+    contents: '**'
 - task: 1ESLighthouseEng.PipelineArtifactCaching.SaveCacheV1.SaveCache@1
   inputs:
     keyfile: .gitignore
