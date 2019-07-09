@@ -5,53 +5,71 @@ variables:
   EXCLUDE_SOURCE_MAPS: true
   MVN_CFG: -B -V -Dmaven.repo.local=$(Build.Repository.LocalPath)/cache/.m2
   YARN_CACHE_FOLDER: $(Build.Repository.LocalPath)/cache/yarn/
-pool:
-  vmImage: 'ubuntu-latest'
 
-steps:
-- task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreAndSaveCacheV1.RestoreAndSaveCache@1
-  inputs:
-    keyfile: 'frontend/yarn.lock, **/pom.xml, !**/target/**/pom.xml'
-    targetfolder: cache
-    vstsFeed: $(ArtifactFeed)
 
-- task: Maven@3
-  displayName: build root
-  inputs:
-    jdkVersionOption: '1.11'
-    goals: install
-    options: $(MVN_CFG) -T 1C -N
+jobs:
+- job: tests_frontend
+  displayName: Frontend Tests
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
 
-- task: Maven@3
-  displayName: frontend tests
-  inputs:
-    jdkVersionOption: '1.11'
-    goals: install
-    options: $(MVN_CFG) -pl frontend-resources
+  - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreAndSaveCacheV1.RestoreAndSaveCache@1
+    inputs:
+      keyfile: frontend/yarn.lock, frontend-resources/pom.xml
+      targetfolder: cache
+      vstsFeed: $(ArtifactFeed)
 
-- task: Maven@3
-  displayName: unit tests
-  inputs:
-    jdkVersionOption: '1.11'
-    goals: install
-    options: $(MVN_CFG) -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+  - task: Maven@3
+    displayName: frontend tests
+    inputs:
+      jdkVersionOption: '1.11'
+      goals: install
+      options: $(MVN_CFG) -pl frontend-resources
 
-- task: Maven@3
-  displayName: programmatic integration tests
-  inputs:
-    jdkVersionOption: '1.11'
-    goals: test
-    options: $(MVN_CFG) -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+- job: tests_backend
+  displayName: Backend Tests
+  timeoutInMinutes: 15
+  pool:
+    vmImage: ubuntu-16.04
+  steps:  
 
-- task: Maven@3
-  displayName: json integration tests
-  inputs:
-    jdkVersionOption: '1.11'
-    goals: test
-    options: $(MVN_CFG) -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
+  - task: 1ESLighthouseEng.PipelineArtifactCaching.RestoreAndSaveCacheV1.RestoreAndSaveCache@1
+    inputs:
+      keyfile: '**/pom.xml, !**/target/**/pom.xml'
+      targetfolder: cache
+      vstsFeed: $(ArtifactFeed)
 
-- task: DeleteFiles@1
-  displayName: prepare cache
-  inputs:
-    sourceFolder: cache/.m2/repository/com/bakdata
-    contents: '**'
+  - task: Maven@3
+    displayName: build root
+    inputs:
+      jdkVersionOption: '1.11'
+      goals: install
+      options: $(MVN_CFG) -T 1C -N
+
+  - task: Maven@3
+    displayName: unit tests
+    inputs:
+      jdkVersionOption: '1.11'
+      goals: install
+      options: $(MVN_CFG) -T 1C -pl backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+
+  - task: Maven@3
+    displayName: programmatic integration tests
+    inputs:
+      jdkVersionOption: '1.11'
+      goals: test
+      options: $(MVN_CFG) -T 1C -pl backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+
+  - task: Maven@3
+    displayName: json integration tests
+    inputs:
+      jdkVersionOption: '1.11'
+      goals: test
+      options: $(MVN_CFG) -T 1C -pl backend -Dgroups="INTEGRATION_JSON"
+
+  - task: DeleteFiles@1
+    displayName: prepare cache
+    inputs:
+      sourceFolder: cache/.m2/repository/com/bakdata
+      contents: '**'
