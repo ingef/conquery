@@ -8,18 +8,19 @@ variables:
 
 
 jobs:
-# - job: tests_frontend
-#   displayName: Frontend Tests
-#   pool:
-#     vmImage: ubuntu-16.04
-#   steps:
-
-#   - task: Maven@3
-#     displayName: frontend tests
-#     inputs:
-#       jdkVersionOption: '1.11'
-#       goals: install
-#       options: $(MVN_CFG) -pl eva-frontend-resources
+- job: tests_frontend
+  displayName: Frontend Tests
+  pool:
+    vmImage: ubuntu-16.04
+  steps:
+  - checkout: self  
+    submodules: true
+  - task: Maven@3
+    displayName: frontend tests
+    inputs:
+      jdkVersionOption: '1.11'
+      goals: install
+      options: $(MVN_CFG) -pl eva-frontend-resources
 
 - job: tests_backend
   displayName: Backend Tests
