@@ -1,0 +1,5 @@
+eGK_Nr,KV_Nummer,PID,H2IK,index,date_range,test_tree.test_child1_test_tree.exists
+,,0,,,2000-01-01/2002-12-31,t
+,,0,,0,2000-01-01/2000-12-31,t
+,,0,,1,2001-01-01/2001-12-31,t
+,,0,,2,2002-01-01/2002-12-31,f

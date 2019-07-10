@@ -1,5 +1,0 @@
-pid,bezugsjahr,drg,entlassungsdatum,diagnoseart,sekundaerkz,icd_code,icd_codesuffix,icd_codezusatz,icd_codezusatzsuffix,lokalisation,kh_ik,quell_ref,fehler_code,kh_vers_kennz,kh_fall_id,flag_analyse,flag_destatis,flag_demo,ambo_abrech_art,verweildauer,aufnahmedatum,aufnahmegrund,entlassungsgrund,behandlungstyp
-pid0,2013,P,27.04.2013,2,P,P120,,,,,1,228,0,0,0,1,0,1,,3,24.03.2013,107,1,1
-pid0,2013,P,27.04.2013,3,P,P599,,,,,1,228,0,0,0,1,0,1,,3,24.03.2013,107,1,1
-pid0,2013,P,27.04.2013,1,P,P599,,,,,1,228,0,0,0,1,0,1,,3,24.03.2013,107,1,1
-pid0,2013,P,27.04.2013,2,P,P391,,,,,1,228,0,0,0,1,0,1,,3,24.03.2013,107,1,1

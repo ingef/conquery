@@ -1,0 +1,46 @@
+{
+    "type": "DESCRIPTION_FORM_ABSOLUTE_TIME",
+    "title": "test",
+    "description": "Beschreibung",
+    "timestamp": null,
+    "user": {
+        "name": "superUser",
+        "company": "",
+        "email": "superUser"
+    },
+    "additionalFields": {
+        "resolution": "COMPLETE_ONLY",
+        "id": "00000000-0000-0000-0000-000000000001",
+        "type": "DESCRIPTION_FORM_ABSOLUTE_TIME",
+        "dateRange": {
+            "min": "2017-03-08",
+            "max": "2019-03-04"
+        },
+        "features": [
+            {
+                "label": "versichertentage",
+                "column": "versichertentage_0",
+                "type": "INTEGER",
+                "columnType": "FIXED"
+            },
+            {
+                "label": "geschlecht",
+                "column": "geschlecht_1",
+                "type": "STRING",
+                "columnType": "FIXED"
+            },
+            {
+                "label": "alter",
+                "column": "alter_2",
+                "type": "DATE",
+                "columnType": "FIXED"
+            },
+            {
+                "label": "Alter",
+                "column": "alter_3",
+                "type": "DATE",
+                "columnType": "VARIABLE"
+            }
+        ]
+    }
+}

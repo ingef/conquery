@@ -1,5 +1,0 @@
-pid,behandlungsdatum,behandlungsdatum_first,efn_id,bs_nr,bs_nr_voll,lanr,fg,icd_code,diagnosesicherheit,lokalisation,vertrags_id,quell_ref,fehler_code,flag_analyse,flag_destatis,flag_demo
-pid0,2017-06-01/2017-09-30,01.06.2017,0,0,0,0,34,9,G,0,KV,246,0,1,0,1
-pid0,2017-06-01/2017-09-30,01.06.2017,0,0,0,0,34,1,G,0,KV,246,0,1,0,1
-pid0,2017-03-01/2017-06-30,01.03.2017,0,0,0,0,34,1,G,0,KV,246,0,1,0,1
-pid0,2016-12-01/2017-03-31,01.12.2016,0,0,0,0,34,2,G,0,KV,246,0,1,0,1
