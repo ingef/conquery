@@ -40,7 +40,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	private static final long serialVersionUID = 1L;
 
-	@NotNull
+	@NotNull @JsonManagedReference
 	private List<ValidityDate> validityDates = new ArrayList<>();
 	@JsonBackReference
 	private Concept<?> concept;
