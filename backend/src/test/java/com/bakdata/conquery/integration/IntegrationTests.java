@@ -16,8 +16,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.bakdata.conquery.TestTags;
@@ -29,22 +27,22 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.github.classgraph.Resource;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j @RequiredArgsConstructor
 public class IntegrationTests {
 
 	
-	private static final String DEFAULT_TEST_ROOT = "tests/";
+	private final String defaultTestRoot;
 	
 	@RegisterExtension
 	public static final TestConquery CONQUERY = new TestConquery();
 
-	@TestFactory @Tag(TestTags.INTEGRATION_JSON)
 	public List<DynamicNode> jsonTests() throws IOException {
 		final String testRoot = Objects.requireNonNullElse(
 			System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
-			DEFAULT_TEST_ROOT
+			defaultTestRoot
 		);
 		
 		ResourceTree tree = new ResourceTree(null, null);
@@ -70,7 +68,6 @@ public class IntegrationTests {
 		}
 	}
 	
-	@TestFactory @Tag(TestTags.INTEGRATION_PROGRAMMATIC)
 	public Stream<DynamicNode> programmaticTests() throws IOException {
 		List<Class<?>> programmatic = CPSTypeIdResolver
 			.SCAN_RESULT
