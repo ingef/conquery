@@ -8,8 +8,6 @@ jdk:
 before_install: mvn -B -V initialize -P setEvaVersion
 
 stages:
-  - name: Tests
-    if: tag IS NOT present OR tag != "DRAFT"
   - name: Prerelease
     if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
   - name: Release
@@ -17,16 +15,6 @@ stages:
 
 jobs:
   include:
-    - stage: Tests
-      name: "Tests"
-      install: skip
-      script:
-        - mvn -B -V -T 1C install -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
-        - mvn -B -V -T 1C install -N
-#        - mvn -B -V install -pl eva-frontend-resources
-        - mvn -B -V install -pl eva-backend
-#        - mvn -B -V -T 1C install -pl eva-executable
-
     # ------------------------------
     # Release stages
     # ------------------------------
