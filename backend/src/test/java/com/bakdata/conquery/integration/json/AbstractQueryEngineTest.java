@@ -47,7 +47,11 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
 		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query, DevAuthConfig.USER);
 
-		managed.awaitDone(1, TimeUnit.DAYS);
+		managed.awaitDone(10, TimeUnit.SECONDS);
+		while(managed.getState()!=ExecutionState.DONE) {
+			log.warn("waiting for more than 10 seconds on "+getLabel());
+			managed.awaitDone(1, TimeUnit.DAYS);
+		}
 
 		if (managed.getState() == ExecutionState.FAILED) {
 			managed

@@ -2,6 +2,7 @@ package com.bakdata.conquery.util.support;
 
 import java.io.Closeable;
 import java.io.File;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
@@ -44,6 +45,7 @@ public class StandaloneSupport implements Closeable {
 		log.info("Waiting for jobs to finish");
 		boolean busy;
 		//sample 10 times from the job queues to make sure we are done with everything
+		long started = System.nanoTime();
 		for(int i=0;i<10;i++) {
 			do {
 				busy = false;
@@ -51,6 +53,10 @@ public class StandaloneSupport implements Closeable {
 				for (SlaveCommand slave : standaloneCommand.getSlaves())
 					busy |= slave.getJobManager().isSlowWorkerBusy();
 				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
+					log.warn("waiting for done work for a long time");
+					started = System.nanoTime();
+				}
 			} while(busy);
 		}
 		log.info("all jobs finished");
