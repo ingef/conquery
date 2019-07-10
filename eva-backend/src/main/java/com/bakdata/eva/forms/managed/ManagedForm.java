@@ -103,6 +103,11 @@ public class ManagedForm extends ManagedExecution {
 
 	@Override
 	public ManagedQuery toResultQuery() {
-		throw new UnsupportedOperationException();
+		if(internalQueries.size() == 1) {
+			return internalQueries.get(0);
+		}
+		else {
+			throw new UnsupportedOperationException("Can't return the result query of a multi query form");
+		}
 	}
 }

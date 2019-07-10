@@ -67,17 +67,20 @@ public class StatisticFormTest extends ConqueryTestSpec {
 
 		LoadingUtil.importTables(support, content);
 		support.waitUntilWorkDone();
+		log.info("{} IMPORT TABLES", getLabel());
 
 		importConcepts(support);
 		support.waitUntilWorkDone();
+		log.info("{} IMPORT CONCEPTS", getLabel());
 
 		LoadingUtil.importTableContents(support, content);
 		support.waitUntilWorkDone();
+		log.info("{} IMPORT TABLE CONTENTS", getLabel());
 		LoadingUtil.importPreviousQueries(support, content, TestAuth.SuperUser.INSTANCE);
 
 		MasterMetaStorage storage = support.getStandaloneCommand().getMaster().getStorage();
 		form.init(storage.getNamespaces(), TestAuth.SuperUser.INSTANCE);
-
+		log.info("{} FORM INIT", getLabel());
 	}
 
 	@Override
@@ -88,12 +91,18 @@ public class StatisticFormTest extends ConqueryTestSpec {
 		List<ManagedQuery> managed = form.executeQuery(support.getDataset(), TestAuth.SuperUser.INSTANCE, namespaces);
 		
 		for(ManagedQuery q : managed) {
-			q.awaitDone(10, TimeUnit.MINUTES);
+			q.awaitDone(1, TimeUnit.MINUTES);
 
-			if (q.getState() == ExecutionState.FAILED) {
-				fail("Query failed");
+			if (q.getState() != ExecutionState.DONE) {
+				if(q.getState() == ExecutionState.FAILED) {
+					fail(getLabel()+" Query failed");
+				}
+				else {
+					fail(getLabel()+" not finished after 1min");
+				}
 			}
 		}
+		log.info("{} QUERIES EXECUTED", getLabel());
 
 		QueryToCSVRenderer renderer = new QueryToCSVRenderer(support.getNamespace());
 		PrintSettings settings = PrintSettings.builder().prettyPrint(false).nameExtractor(form.getColumnNamer().getNamer()).build();
@@ -103,6 +112,7 @@ public class StatisticFormTest extends ConqueryTestSpec {
 		for(String line : actual) {
 			log.info(line);
 		}
+		log.info("{} CSV RENDERED", getLabel());
 		
 		// Prepare generated description
 		String description = form.toStatisticJSON(namespaces);
