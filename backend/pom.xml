@@ -40,6 +40,12 @@
 						<goals>
 							<goal>test-jar</goal>
 						</goals>
+						<configuration>
+							<excludes>
+								<exclude>tests/**/*</exclude>
+								<exclude>com/bakdata/conquery/integration/ConqueryIntegrationTests</exclude>
+							</excludes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
