@@ -25,7 +25,7 @@ jobs:
         - mvn -B -V -T 1C install -N
 #        - mvn -B -V install -pl eva-frontend-resources
         - mvn -B -V install -pl eva-backend
-        - mvn -B -V -T 1C install -pl eva-executable
+#        - mvn -B -V -T 1C install -pl eva-executable
 
     # ------------------------------
     # Release stages
