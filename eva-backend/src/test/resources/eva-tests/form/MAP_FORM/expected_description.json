@@ -1,0 +1,50 @@
+{
+    "type": "MAP_FORM",
+    "title": "test",
+    "description": "Beschreibung",
+    "timestamp": null,
+    "user": {
+        "name": "superUser",
+        "company": "",
+        "email": "superUser"
+    },
+    "additionalFields": {
+        "type": "MAP",
+        "dateRange": {
+            "min": "2017-03-08",
+            "max": "2019-03-04"
+        },
+        "granularity": "FEDERAL_STATE",
+        "outcomeColumnName": "alter_3",
+        "region": "DE",
+        "resolution": "COMPLETE_ONLY",
+        "features": [
+            {
+                "label": "alter",
+                "column": "alter_0",
+                "type": "DATE"
+            },
+            {
+                "label": "geschlecht",
+                "column": "geschlecht_1",
+                "type": "STRING"
+            },
+            {
+                "label": "bundesland",
+                "column": "bundesland_2",
+                "type": "STRING"
+            },
+            {
+                "label": "Alter",
+                "column": "alter_3",
+                "type": "DATE"
+            }
+        ],
+        "granularityColumnName": "bundesland_2",
+        "relative": false,
+        "featureGroup": {
+            "id": "${dataset}.00000000-0000-0000-0000-000000000001",
+            "datasetId": "${dataset}"
+        }
+    }
+}

@@ -1,2 +1,0 @@
-pid,date,dayType,date_start,date_end,bezugs_jahr,geburtsdatum,export_geburtsdatum,geschlecht,sterbedatum,quell_ref,fehler_code,flag_analyse,flag_destatis,flag_demo,pid_hash
-pid0,01.11.2014/13.11.2014,,01.11.2014,13.11.2014,2015,01.01.2015,01.01.2015,1,,228,0,1,0,1,5
