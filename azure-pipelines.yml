@@ -27,6 +27,8 @@ jobs:
   pool:
     vmImage: ubuntu-16.04
   steps:  
+  - checkout: self
+    submodules: true
 
   - task: Maven@3
     displayName: build conquery
