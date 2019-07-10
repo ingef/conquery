@@ -19,7 +19,7 @@ public class JettyConfigurationUtil {
 
 	public static void configure(DropwizardResourceConfig resourceConfig) {
 		// Register custom mapper
-		resourceConfig.register(new JsonValidationExceptionMapper());
+		resourceConfig.register(JsonValidationExceptionMapper.class);
 		// default Dropwizard's exception mappers
 		resourceConfig.register(new LoggingExceptionMapper<Throwable>() {});
 		resourceConfig.register(ConqueryJsonExceptionMapper.class);
