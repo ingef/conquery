@@ -1,5 +1,6 @@
 trigger:
 - master
+- develop
 
 variables:
   EXCLUDE_SOURCE_MAPS: true
