@@ -48,24 +48,6 @@
 					</execution>
 				</executions>
 			</plugin>
-			<plugin>
-				<groupId>com.github.wvengen</groupId>
-				<artifactId>proguard-maven-plugin</artifactId>
-				<version>2.1.0</version>
-				<executions>
-					<execution>
-						<phase>package</phase>
-						<goals>
-							<goal>proguard</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<obfuscate>false</obfuscate>
-					<injar>executable-${project.version}.jar</injar>
-					<outputDirectory>target</outputDirectory>
-				</configuration>
-			</plugin>
 		</plugins>
 	</build>
 
