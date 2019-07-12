@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -63,14 +64,12 @@ public class IdAccessorImpl implements IdAccessor {
 	@Override
 	public CsvEntityId getCsvEntityId(String[] csvLine) {
 		String[] reorderedCsvLine = reorder(csvLine);
-		CsvEntityId csvEntityId = storage.getIdMapping()
-			.getExternalIdPartCsvIdMap()
-			.get(new SufficientExternalEntityId(reorderedCsvLine));
-		if (csvEntityId != null) {
-			return csvEntityId;
-		}
-		// fallback: we join everything relevant together
-		return getFallbackCsvId(reorderedCsvLine);
+		return Optional
+			.ofNullable(storage.getIdMapping())
+			.map(PersistentIdMap::getExternalIdPartCsvIdMap)
+			.map(m->m.get(new SufficientExternalEntityId(reorderedCsvLine)))
+			// fallback: we join everything relevant together
+			.orElseGet(()->getFallbackCsvId(reorderedCsvLine));
 	}
 
 	/**
