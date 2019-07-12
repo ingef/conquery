@@ -40,7 +40,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	private static final long serialVersionUID = 1L;
 
-	@NotNull
+	@NotNull @JsonManagedReference
 	private List<ValidityDate> validityDates = new ArrayList<>();
 	@JsonBackReference
 	private Concept<?> concept;
@@ -64,6 +64,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 					ValidityDate sd = new ValidityDate();
 					sd.setColumn(c);
 					sd.setName(c.getName());
+					sd.setConnector(this);
 					return sd;
 				})
 				.collect(Collectors.toList())

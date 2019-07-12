@@ -184,7 +184,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			try {
 				log.info("Trying to connect to {}", address);
 				ConnectFuture future = connector.connect(address);
-				future.awaitUninterruptibly();
+				future.awaitUninterruptibly(1, TimeUnit.MINUTES);
 
 				break;
 			} catch(RuntimeIoException e) {
