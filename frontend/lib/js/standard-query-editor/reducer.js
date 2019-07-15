@@ -553,12 +553,16 @@ const expandNode = (rootConcepts, node) => {
 
       const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
       const label = node.label || lookupResult.concepts[0].label;
+      const description =
+        node.description || lookupResult.concepts[0].description;
 
       return {
         ...node,
         label,
+        description,
         tables,
         selects,
+        excludeTimestamps: node.excludeFromTimeAggregation,
         tree: lookupResult.root
       };
   }
