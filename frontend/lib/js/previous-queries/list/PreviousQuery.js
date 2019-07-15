@@ -15,6 +15,7 @@ import { getDateLocale } from "../../localization";
 import { ErrorMessage } from "../../error-message";
 import { dndTypes } from "../../common/constants";
 import { SelectableLabel } from "../../selectable-label";
+import { isEmpty } from "../../common/helpers/commonHelper";
 
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
@@ -168,10 +169,9 @@ class PreviousQuery extends React.Component {
       onToggleSharePreviousQuery
     } = this.props;
 
-    const peopleFound =
-      query.numberOfResults === null
-        ? T.translate("previousQuery.notExecuted")
-        : `${query.numberOfResults} ${T.translate("previousQueries.results")}`;
+    const peopleFound = isEmpty(query.numberOfResults)
+      ? T.translate("previousQuery.notExecuted")
+      : `${query.numberOfResults} ${T.translate("previousQueries.results")}`;
     const dateLocale = getDateLocale();
     const executedAt = formatDistance(parseISO(query.createdAt), new Date(), {
       locale: dateLocale,

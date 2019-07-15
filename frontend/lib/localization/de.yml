@@ -44,9 +44,7 @@ queryEditor:
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
-  details: "Details"
   previousQuery: "Anfrage"
-  conceptList: "Konzeptliste"
   loadingPreviousQuery: "Lade Anfragedetails"
 
 dropzone:
