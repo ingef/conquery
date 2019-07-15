@@ -1,4 +1,5 @@
 const path = require("path");
+const version = require("../package.json").version;
 
 // Taken from:
 // http://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
@@ -322,4 +323,14 @@ module.exports = function(app, port) {
       }, 500);
     }
   );
+
+  app.get("/api/config/frontend", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+
+    const config = require("./config.json");
+
+    config.version = version;
+
+    res.send(config);
+  });
 };
