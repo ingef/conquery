@@ -8,6 +8,7 @@ const MenuColumnButton = styled(BasicButton)`
   font-size: ${({ theme }) => theme.font.md};
   line-height: 21px;
   border: 0;
+  border-radius: 0;
   margin-top: 3px;
   font-weight: 700;
   color: ${({ theme, disabled }) =>
