@@ -57,6 +57,9 @@ export default ({
     whitelistedTables
   );
 
+  // TODO: This creates an invalid DOM nesting, a <button> inside a <button>
+  //       Yet, this is the way we can get it to work in IE11
+  //       => Try to use a clickable div and a nested button instead
   return (
     <MenuColumnButton active={isActive} disabled={isDisabled} onClick={onClick}>
       <SxIconButton
