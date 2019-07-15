@@ -11,6 +11,7 @@ import IconButton from "../../button/IconButton";
 import FaIcon from "../../icon/FaIcon";
 
 import ReactSelect from "../../form-components/ReactSelect";
+import InputSelect from "../../form-components/InputSelect";
 
 type ExternalQueryT = {
   format: string[],
@@ -26,8 +27,13 @@ type PropsT = {
 
 const Row = styled("div")`
   display: flex;
-  align-items: center;
+  justify-content: space-between;
   margin-bottom: 15px;
+`;
+
+const Grow = styled("div")`
+  display: flex;
+  align-items: center;
 `;
 
 const Table = styled("table")`
@@ -63,6 +69,12 @@ const SxPadded = styled(Padded)`
   margin-top: 10px;
 `;
 
+const SxInputSelect = styled(InputSelect)`
+  width: 150px;
+  text-align: left;
+  display: inline-block;
+`;
+
 // Theoretically possible in the backend:
 // ID (some string)
 // EVENT_DATE (a single day),
@@ -79,17 +91,24 @@ const SELECT_OPTIONS = [
   { label: "IGNORE", value: "IGNORE" }
 ];
 
+const DELIMITER_OPTIONS = [
+  { label: T.translate("csvColumnPicker.semicolon") + " ( ; )", value: ";" },
+  { label: T.translate("csvColumnPicker.comma") + " ( , )", value: "," },
+  { label: T.translate("csvColumnPicker.colon") + " ( : )", value: ":" }
+];
+
 export default ({ file, loading, onUpload, onReset }: PropsT) => {
   const [csv, setCSV] = React.useState([]);
+  const [delimiter, setDelimiter] = React.useState(";");
   const [csvHeader, setCSVHeader] = React.useState([]);
   const [csvLoading, setCSVLoading] = React.useState(false);
 
   React.useEffect(() => {
-    async function parse(f) {
+    async function parse(f, d) {
       try {
         setCSVLoading(true);
 
-        const result = await parseCSV(f);
+        const result = await parseCSV(f, d);
 
         setCSVLoading(false);
 
@@ -111,8 +130,10 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
       }
     }
 
-    parse(file);
-  }, [file]);
+    if (!!file) {
+      parse(file, delimiter);
+    }
+  }, [file, delimiter]);
 
   function uploadQuery() {
     onUpload({
@@ -124,8 +145,21 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
   return (
     <div>
       <Row>
-        <FileName>{file.name}</FileName>
-        <SxIconButton frame regular icon="trash-alt" onClick={onReset} />
+        <Grow>
+          <FileName>{file.name}</FileName>
+          <SxIconButton frame regular icon="trash-alt" onClick={onReset} />
+        </Grow>
+        {csv.length > 0 && (
+          <SxInputSelect
+            label={T.translate("csvColumnPicker.delimiter")}
+            input={{
+              onChange: setDelimiter,
+              value: delimiter,
+              defaultValue: DELIMITER_OPTIONS[0]
+            }}
+            options={DELIMITER_OPTIONS}
+          />
+        )}
       </Row>
       <Table>
         <thead>

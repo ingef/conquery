@@ -107,6 +107,7 @@ common:
   description: "Beschreibung"
   clearAll: "Alle entfernen"
   clearValue: "Wert entfernen"
+  closeEsc: "Schließen (ESC)"
 
 tooltip:
   headline: "Info"
@@ -231,6 +232,10 @@ uploadQueryResultsModal:
 
 csvColumnPicker:
   loading: "Lese Daten ..."
+  delimiter: "Trennzeichen"
+  semicolon: "Semikolon"
+  colon: "Doppelpunkt"
+  comma: "Komma"
 
 uploadConceptListModal:
   headline: "Konzepte aus Liste einfügen"

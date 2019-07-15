@@ -8,6 +8,7 @@ import onClickOutside from "react-onclickoutside";
 import useEscPress from "../hooks/useEscPress";
 
 import TransparentButton from "../button/TransparentButton";
+import WithTooltip from "../tooltip/WithTooltip";
 
 const Root = styled("div")`
   position: fixed;
@@ -42,7 +43,7 @@ const Headline = styled("h3")`
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-const SxButton = styled(TransparentButton)`
+const SxWithTooltip = styled(WithTooltip)`
   position: absolute;
   top: 12px;
   right: 15px;
@@ -92,14 +93,16 @@ const Modal = ({
     <Root className={className}>
       <ModalContent onClose={onClose}>
         {doneButton && (
-          <SxButton
-            small
-            tabIndex={tabIndex || 0}
-            icon="times"
-            onClick={onClose}
-          >
-            {T.translate("common.done")}
-          </SxButton>
+          <SxWithTooltip text={T.translate("common.closeEsc")}>
+            <TransparentButton
+              small
+              tabIndex={tabIndex || 0}
+              icon="times"
+              onClick={onClose}
+            >
+              {T.translate("common.done")}
+            </TransparentButton>
+          </SxWithTooltip>
         )}
         {headline && <Headline>{headline}</Headline>}
         {children}
