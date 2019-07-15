@@ -155,6 +155,7 @@ previousQueries:
   noQueriesFound: "Keine Anfragen gefunden"
 
 previousQuery:
+  notExecuted: "Noch nicht ausgeführt"
   addTag: "Schlagwort hinzufügen"
   share: "Freigeben"
   shared: "Freigegeben"

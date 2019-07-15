@@ -168,9 +168,10 @@ class PreviousQuery extends React.Component {
       onToggleSharePreviousQuery
     } = this.props;
 
-    const peopleFound = `${query.numberOfResults} ${T.translate(
-      "previousQueries.results"
-    )}`;
+    const peopleFound =
+      query.numberOfResults === null
+        ? T.translate("previousQuery.notExecuted")
+        : `${query.numberOfResults} ${T.translate("previousQueries.results")}`;
     const dateLocale = getDateLocale();
     const executedAt = formatDistance(parseISO(query.createdAt), new Date(), {
       locale: dateLocale,
