@@ -126,20 +126,27 @@ module.exports = function(app, port) {
         "interesting"
       ];
 
-      for (var i = 25600; i < 35600; i++)
+      for (var i = 25600; i < 35600; i++) {
+        const notExecuted = Math.random() < 0.1;
+
         ids.push({
           id: i,
           label: Math.random() > 0.7 ? "Gespeicherte Anfrage" : null,
-          numberOfResults: Math.floor(Math.random() * 500000),
+          numberOfResults: notExecuted
+            ? null
+            : Math.floor(Math.random() * 500000),
           tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
           createdAt: new Date(
             Date.now() - Math.floor(Math.random() * 10000000)
           ).toISOString(),
           own: Math.random() < 0.1,
           shared: Math.random() < 0.8,
-          resultUrl: `http://localhost:${port}/api/results/results.csv`,
+          resultUrl: notExecuted
+            ? null
+            : `http://localhost:${port}/api/results/results.csv`,
           ownerName: "System"
         });
+      }
 
       res.send(JSON.stringify(ids));
     }, 500);
