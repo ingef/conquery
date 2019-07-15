@@ -12,6 +12,7 @@
     "start": "cross-env NODE_ENV=development node ./server",
     "start-production": "cross-env NODE_ENV=production PORT=8002 node server",
     "build": "rimraf ./dist && cross-env NODE_ENV=production webpack --config ./webpack.config.js --progress --colors",
+    "build-ci": "rimraf ./dist && cross-env NODE_ENV=production webpack --config ./webpack.config.js",
     "lint": "eslint --ext=js src/js"
   },
   "dependencies": {
