@@ -46,7 +46,7 @@ public class ManagedQuery extends ManagedExecution {
 	 * @param lastResultCount the new count for JACKSON
 	 * @returns the number of contained entities
 	 */
-	private long lastResultCount;
+	private Long lastResultCount;
 	
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
@@ -103,7 +103,7 @@ public class ManagedQuery extends ManagedExecution {
 		status.setTags(tags);
 		status.setQuery(query);
 		Long numberOfResults = Long.valueOf(fetchContainedEntityResult().count());
-		status.setNumberOfResults(numberOfResults > 0 ? numberOfResults : lastResultCount);
+		status.setNumberOfResults(lastResultCount);
 		status.setShared(shared);
 		return status;
 	}
