@@ -4,14 +4,31 @@ import React from "react";
 import T from "i18n-react";
 import styled from "@emotion/styled";
 
+import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
+
 import { tableHasActiveFilters, tableIsDisabled } from "../model/table";
 import type { TableWithFilterValueType } from "../standard-query-node-editor/types";
 
 import MenuColumnButton from "./MenuColumnButton";
 
-const StyledFaIcon = styled(FaIcon)`
+const SxIconButton = styled(IconButton)`
   font-size: ${({ theme }) => theme.font.lg};
+  line-height: ${({ theme }) => theme.font.lg};
+  padding: 0;
+
+  svg {
+    font-size: ${({ theme }) => theme.font.lg};
+    line-height: ${({ theme }) => theme.font.lg};
+  }
+`;
+const SxFaIcon = styled(FaIcon)`
+  font-size: ${({ theme }) => theme.font.lg};
+  line-height: ${({ theme }) => theme.font.lg};
+`;
+
+const Label = styled("span")`
+  padding-left: 10px;
   line-height: ${({ theme }) => theme.font.lg};
 `;
 
@@ -42,8 +59,7 @@ export default ({
 
   return (
     <MenuColumnButton active={isActive} disabled={isDisabled} onClick={onClick}>
-      <StyledFaIcon
-        left
+      <SxIconButton
         regular
         icon={table.exclude ? "square" : "check-square"}
         disabled={isDisabled || (!table.exclude && isOnlyOneTableIncluded)}
@@ -55,9 +71,9 @@ export default ({
             onToggleTable(!table.exclude);
         }}
       />
-      {table.label}
+      <Label>{table.label}</Label>
       {tableHasActiveFilters(table) && (
-        <StyledFaIcon right white={isActive} light={!isActive} icon="filter" />
+        <SxFaIcon right white={isActive} light={!isActive} icon="filter" />
       )}
     </MenuColumnButton>
   );
