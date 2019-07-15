@@ -51,6 +51,7 @@ const IconButton = ({
   large,
   regular,
   tight,
+  left,
   children,
   iconProps,
   ...restProps
@@ -58,6 +59,7 @@ const IconButton = ({
   <StyledTransparentButton active={active} {...restProps}>
     <StyledFaIcon
       main
+      left={left}
       hasChildren={!!children}
       regular={regular}
       large={large}
