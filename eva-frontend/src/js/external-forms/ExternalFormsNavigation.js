@@ -20,11 +20,16 @@ type PropsType = {
 const Root = styled("div")`
   flex-shrink: 0;
   margin-bottom: 10px;
-  padding: 0 20px 0 10px;
+  padding: 0 20px 10px 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
   box-sizing: border-box;
   display: flex;
   flex-direction: row;
   align-items: flex-start;
+`;
+
+const SxInputSelect = styled(InputSelect)`
+  flex-grow: 1;
 `;
 
 const ExternalFormsNavigation = (props: PropsType) => {
@@ -37,7 +42,7 @@ const ExternalFormsNavigation = (props: PropsType) => {
 
   return (
     <Root>
-      <InputSelect
+      <SxInputSelect
         label={T.translate("externalForms.forms")}
         options={options}
         input={{
