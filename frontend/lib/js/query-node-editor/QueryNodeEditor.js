@@ -7,6 +7,7 @@ import { connect } from "react-redux";
 import T from "i18n-react";
 
 import { type QueryNodeType } from "../standard-query-editor/types";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import TransparentButton from "../button/TransparentButton";
 import useEscPress from "../hooks/useEscPress";
@@ -14,7 +15,6 @@ import useEscPress from "../hooks/useEscPress";
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
 import TableView from "./TableView";
-import DescriptionColumn from "./DescriptionColumn";
 
 import { createQueryNodeEditorActions } from "./actions";
 
@@ -40,11 +40,14 @@ const Wrapper = styled("div")`
   border-radius: ${({ theme }) => theme.borderRadius};
 `;
 
-const CloseButton = styled(TransparentButton)`
-  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
+const SxWithTooltip = styled(WithTooltip)`
   position: absolute;
   bottom: 10px;
   right: 20px;
+`;
+
+const CloseButton = styled(TransparentButton)`
+  border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
 `;
 
 type QueryNodeEditorState = {
@@ -92,8 +95,8 @@ const QueryNodeEditor = (props: PropsType) => {
   const { node, editorState } = props;
 
   function close() {
-    editorState.onReset();
     props.onCloseModal();
+    editorState.onReset();
   }
 
   useEscPress(close);
@@ -113,10 +116,11 @@ const QueryNodeEditor = (props: PropsType) => {
         {!editorState.detailsViewActive && selectedTable != null && (
           <TableView {...props} />
         )}
-        {!editorState.detailsViewActive && <DescriptionColumn {...props} />}
-        <CloseButton small onClick={close}>
-          {T.translate("common.done")}
-        </CloseButton>
+        <SxWithTooltip text={T.translate("common.closeEsc")}>
+          <CloseButton small onClick={close}>
+            {T.translate("common.done")}
+          </CloseButton>
+        </SxWithTooltip>
       </Wrapper>
     </Root>
   );

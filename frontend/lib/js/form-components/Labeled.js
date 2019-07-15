@@ -2,17 +2,19 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 
 import Label from "./Label";
 
 const Root = styled("label")`
-  width: ${({ fullWidth }) => (fullWidth ? "100%" : "initial")};
-
-  input {
-    width: ${({ fullWidth }) => (fullWidth ? "100%" : "initial")};
-    border: 1px solid
-      ${({ theme, valueChanged }) =>
-        valueChanged ? theme.col.blueGrayDark : "initial"};
+  ${({ fullWidth }) =>
+    fullWidth &&
+    css`
+      width: 100%;
+      input {
+        width: 100%;
+      }
+    `};
   }
 `;
 
