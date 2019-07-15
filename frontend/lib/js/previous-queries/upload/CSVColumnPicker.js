@@ -91,17 +91,17 @@ const SELECT_OPTIONS = [
   { label: "IGNORE", value: "IGNORE" }
 ];
 
-const DELIMITER_OPTIONS = [
-  { label: T.translate("csvColumnPicker.semicolon") + " ( ; )", value: ";" },
-  { label: T.translate("csvColumnPicker.comma") + " ( , )", value: "," },
-  { label: T.translate("csvColumnPicker.colon") + " ( : )", value: ":" }
-];
-
 export default ({ file, loading, onUpload, onReset }: PropsT) => {
   const [csv, setCSV] = React.useState([]);
   const [delimiter, setDelimiter] = React.useState(";");
   const [csvHeader, setCSVHeader] = React.useState([]);
   const [csvLoading, setCSVLoading] = React.useState(false);
+
+  const DELIMITER_OPTIONS = [
+    { label: T.translate("csvColumnPicker.semicolon") + " ( ; )", value: ";" },
+    { label: T.translate("csvColumnPicker.comma") + " ( , )", value: "," },
+    { label: T.translate("csvColumnPicker.colon") + " ( : )", value: ":" }
+  ];
 
   React.useEffect(() => {
     async function parse(f, d) {
