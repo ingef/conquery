@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 
 /**
- * Entity is included, when collection is not empty.
+ * Entity is included, when the collection is not empty.
  */
 public class CollectionNotEmptyFilterNode<FILTER_VALUE> extends AggregationResultFilterNode<Aggregator<Collection<?>>, FILTER_VALUE> {
 

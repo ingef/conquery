@@ -74,4 +74,15 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	public ResultType getResultType() {
 		return ResultType.STRING;
 	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		for (String selected : selection) {
+			if(((AStringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) == -1) {
+				return false;
+			}
+		}
+
+		return super.isOfInterest(bucket);
+	}
 }

@@ -58,4 +58,10 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
 	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return super.isOfInterest(bucket) &&
+			   ((AStringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) != -1;
+	}
 }

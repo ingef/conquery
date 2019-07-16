@@ -55,4 +55,9 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	public String toString() {
 		return getClass().getSimpleName();
 	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return aggregator.isOfInterest(bucket);
+	}
 }

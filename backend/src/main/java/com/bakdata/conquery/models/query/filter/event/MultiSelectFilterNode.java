@@ -62,4 +62,15 @@ public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 	public boolean isContained() {
 		return hit;
 	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		for (String selected : getFilterValue()) {
+			if(((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(selected) == -1) {
+				return false;
+			}
+		}
+
+		return super.isOfInterest(bucket);
+	}
 }
