@@ -8,8 +8,10 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 
+/**
+ * Aggregator summing over {@code addendColumn} and subtracting over {@code subtrahendColumn}, for money columns.
+ */
 public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
-
 
 	@Getter
 	private Column addendColumn;

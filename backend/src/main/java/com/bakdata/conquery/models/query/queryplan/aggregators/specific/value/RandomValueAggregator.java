@@ -8,6 +8,10 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator, returning a random value of a column.
+ * @param <VALUE> Value type of the column/return value
+ */
 public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;

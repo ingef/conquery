@@ -8,7 +8,10 @@ import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-
+/**
+ * Aggregator, returning the last value (by validity date) of a column.
+ * @param <VALUE> Value type of the column/return value
+ */
 public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 
 	private Object value;

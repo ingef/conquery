@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 
 /**
- * Aggregator node forwarding only events with distinct values to {@code aggregator}.
+ * Helper Aggregator, forwarding only events with distinct values to {@code aggregator}.
  * @param <VALUE>
  */
 public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {

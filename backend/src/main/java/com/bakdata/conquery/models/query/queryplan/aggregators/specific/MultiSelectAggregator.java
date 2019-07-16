@@ -10,7 +10,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.types.specific.AStringType;
 
-
+/**
+ * Aggregator counting the occurrence of multiple values.
+ */
 public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, Integer>> {
 
 	private final String[] selection;

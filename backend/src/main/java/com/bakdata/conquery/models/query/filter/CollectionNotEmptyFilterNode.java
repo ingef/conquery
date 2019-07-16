@@ -8,9 +8,8 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * Includes entities when the specified column is one of many values.
+ * Entity is included, when the collection is not empty.
  */
-@Slf4j
 public class CollectionNotEmptyFilterNode<FILTER_VALUE> extends AggregationResultFilterNode<Aggregator<Collection<?>>, FILTER_VALUE> {
 
 	public CollectionNotEmptyFilterNode(Aggregator<Collection<?>> aggregator) {

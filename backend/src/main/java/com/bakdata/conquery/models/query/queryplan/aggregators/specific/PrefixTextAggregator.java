@@ -9,7 +9,9 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-
+/**
+ * Aggregator, returning all values of a column, beginning with a specified value.
+ */
 public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 
 	private final Set<String> entries = new HashSet<>();
