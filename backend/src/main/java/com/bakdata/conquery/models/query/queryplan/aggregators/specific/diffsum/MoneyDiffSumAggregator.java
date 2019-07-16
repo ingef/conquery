@@ -8,14 +8,17 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 
+/**
+ * Aggregator summing over {@code addendColumn} and subtracting over {@code subtrahendColumn}, for money columns.
+ */
 public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
-
 
 	@Getter
 	private Column addendColumn;
 	@Getter
 	private Column subtrahendColumn;
 	private long sum = 0L;
+	private boolean hit;
 
 	public MoneyDiffSumAggregator(Column addend, Column subtrahend) {
 		this.addendColumn = addend;
@@ -34,6 +37,13 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Override
 	public void aggregateEvent(Bucket bucket, int event) {
+
+		if (!bucket.has(event, getAddendColumn()) && !bucket.has(event, getSubtrahendColumn())) {
+			return;
+		}
+
+		hit = true;
+
 		long addend = bucket.has(event, getAddendColumn()) ? bucket.getMoney(event, getAddendColumn()) : 0;
 
 		long subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getMoney(event, getSubtrahendColumn()) : 0;
@@ -43,7 +53,7 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Override
 	public Long getAggregationResult() {
-		return sum;
+		return hit ? sum : null;
 	}
 	
 	@Override

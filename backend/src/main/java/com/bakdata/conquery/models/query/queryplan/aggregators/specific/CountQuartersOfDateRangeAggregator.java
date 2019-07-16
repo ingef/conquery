@@ -17,8 +17,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
- * Entity is included when the number of distinct quarters for all events is
- * within a given range. Implementation is specific for DateRanges
+ * Count the number of distinct quarters for all events. Implementation is specific for DateRanges
  */
 public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<Long> {
 

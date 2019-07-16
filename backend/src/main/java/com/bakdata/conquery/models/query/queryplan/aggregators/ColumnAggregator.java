@@ -7,6 +7,9 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Base class for aggregators acting on columns.
+ */
 public abstract class ColumnAggregator<T> implements Aggregator<T> {
 
 	@Override
