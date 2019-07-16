@@ -16,10 +16,9 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import lombok.Getter;
 import lombok.Setter;
 
-@Getter @Setter
+@Setter
 @Path("datasets/{" + DATASET_NAME + "}")
 public abstract class HDatasets extends HAuthorized {
 	

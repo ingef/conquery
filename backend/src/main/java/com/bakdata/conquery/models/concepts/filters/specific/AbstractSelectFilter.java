@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.api.description.FEValue;
@@ -39,7 +40,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	@JsonIgnore
 	protected Map<String, String> labelsToRealLabels;
 	@JsonIgnore
-	protected transient QuickSearch sourceSearch;
+	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
 	@JsonIgnore
 	private final int maximumSize;

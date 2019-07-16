@@ -44,7 +44,7 @@ import lombok.Setter;
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter @Setter
-public class DatasetsResource extends HDatasets {
+public class AdminDatasetResource extends HDatasets {
 	
 	@POST
 	@Consumes(MediaType.WILDCARD)

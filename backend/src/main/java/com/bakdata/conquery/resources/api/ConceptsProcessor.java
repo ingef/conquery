@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.resources.api;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +13,8 @@ import javax.ws.rs.WebApplicationException;
 
 import org.apache.commons.lang3.ArrayUtils;
 
+import com.bakdata.conquery.apiv1.FilterSearchItem;
+import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEList;
 import com.bakdata.conquery.models.api.description.FERoot;
@@ -32,9 +34,9 @@ import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.google.common.cache.CacheBuilder;
@@ -45,14 +47,17 @@ import com.zigurs.karlis.utils.search.QuickSearch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+@Getter
 @Slf4j
-public class ContentTreeProcessor {
-
-	private Namespaces namespaces;
-	private LoadingCache<Concept<?>, FEList> nodeCache = CacheBuilder.newBuilder()
+@RequiredArgsConstructor
+public class ConceptsProcessor {
+	
+	private final Namespaces namespaces;
+	private final LoadingCache<Concept<?>, FEList> nodeCache = CacheBuilder.newBuilder()
 		.softValues()
 		.expireAfterWrite(10, TimeUnit.MINUTES)
 		.build(new CacheLoader<Concept<?>, FEList>() {
@@ -62,35 +67,11 @@ public class ContentTreeProcessor {
 			};
 		});
 		
-	public ContentTreeProcessor(Namespaces namespaces) {
-		this.namespaces = namespaces;
-	}
-
 	public FERoot getRoot(NamespaceStorage storage) {
 
 		return FrontEndConceptBuilder.createRoot(storage);
 	}
-
-	public List<FEValue> autocompleteTextFilter(Dataset dataset, Table table, Filter filter, String text) {
-		List<FEValue> result = new LinkedList<>();
-
-		BigMultiSelectFilter tf = (BigMultiSelectFilter) filter;
-
-		QuickSearch<FilterSearchItem> search = tf.getSourceSearch();
-		if (search != null) {
-			result = createSourceSearchResult(tf.getSourceSearch(), text);
-		}
-		
-		if (tf.getRealLabels() != null) {
-			result.addAll(tf.getRealLabels().entrySet().stream()
-				.filter(r -> r.getValue().equalsIgnoreCase(text))
-				.map(r -> new FEValue(r.getKey(), r.getValue())).collect(Collectors.toList()));
-		}
-
-		// see https://github.com/bakdata/conquery/issues/235
-		return result;
-	}
-
+	
 	public FEList getNode(Concept<?> concept) {
 		try {
 			return nodeCache.get(concept);
@@ -109,7 +90,86 @@ public class ContentTreeProcessor {
 			.collect(Collectors.toList());
 	}
 
-	public ResolvedConceptsResult resolve(Dataset dataset, ConceptElement conceptElement, List<String> conceptCodes) {
+	public ResolvedConceptsResult resolveFilterValues(Filter<?> filter, List<String> values) {
+		ResolvedFilter rf = createResolvedFilter(filter);
+
+		List<FEValue> filterValues = new LinkedList<>();
+		QuickSearch<FilterSearchItem> search = rf.getSourceSearch();
+		if (search != null) {
+			filterValues.addAll(createSourceSearchResult(search, values.toArray(new String[values.size()])));
+		}
+		
+		if (rf.getRealLabels() != null) {
+			List<String> resolveFilterValues = new ArrayList<>(rf.getRealLabels().values());
+			List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
+			resolveFilterValues.removeIf(fv -> !toRemove.contains(fv) && !values.contains(fv));
+			filterValues = resolveFilterValues.stream().map(v -> new FEValue(rf.getRealLabels().get(v), v)).collect(Collectors.toList());
+			values.removeAll(resolveFilterValues);
+		}
+
+		// see https://github.com/bakdata/conquery/issues/251
+		return new ResolvedConceptsResult(
+			null,
+			new ResolvedFilterResult(filter.getConnector().getId(), filter.getId(), filterValues),
+			values);
+	}
+	
+	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
+		List<FEValue> result = new LinkedList<>();
+
+		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
+		if (search != null) {
+			result = createSourceSearchResult(filter.getSourceSearch(), text);
+		}
+		
+		if (filter.getRealLabels() != null) {
+			result.addAll(filter.getRealLabels().entrySet().stream()
+				.filter(r -> r.getValue().equalsIgnoreCase(text))
+				.map(r -> new FEValue(r.getKey(), r.getValue())).collect(Collectors.toList()));
+		}
+
+		// see https://github.com/bakdata/conquery/issues/235
+		return result;
+	}
+	
+	private ResolvedFilter createResolvedFilter(Filter<?> filter) {
+		ResolvedFilter result = new ResolvedFilter();
+
+		if (filter instanceof BigMultiSelectFilter) {
+			BigMultiSelectFilter bmsf = (BigMultiSelectFilter) filter;
+			result.setColumn(bmsf.getColumn());
+			result.setRealLabels(bmsf.getRealLabels());
+			result.setSourceSearch(bmsf.getSourceSearch());
+		} else if (filter instanceof MultiSelectFilter) {
+			MultiSelectFilter msf = (MultiSelectFilter) filter;
+			result.setColumn(msf.getColumn());
+			result.setRealLabels(msf.getRealLabels());
+			result.setSourceSearch(msf.getSourceSearch());
+		} else {
+			try {
+				throw new WebApplicationException(String.format("Could not resolved Filter values for this Type. Filter: %s", filter.getName()));
+			} catch (WebApplicationException ex) {
+				log.error(ex.getMessage());
+			}
+		}
+		
+
+		return result;
+	}
+	
+	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, String... values) {
+		List<FilterSearchItem> result = new LinkedList<>();
+		for (String value : values) {
+			result.addAll(search.findItems(value, 50));
+		}
+		
+		return result
+			.stream()
+			.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
+			.collect(Collectors.toList());
+	}
+	
+	public ResolvedConceptsResult resolve(ConceptElement<?> conceptElement, List<String> conceptCodes) {
 		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
 
 		if (conceptElement.getConcept() instanceof TreeConcept) {
@@ -167,103 +227,39 @@ public class ContentTreeProcessor {
 
 					return new ResolvedConceptsResult(
 						null,
-						new ResolvedFilterResult(connector.getId().toString(), selectFilter.getId().toString(), filterValues),
+						new ResolvedFilterResult(connector.getId(), selectFilter.getId(), filterValues),
 						unknownCodes);
 				}
 			}
 		}
 		return new ResolvedConceptsResult(null, null, conceptCodes);
 	}
-
-	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, String... values) {
-		List<FilterSearchItem> result = new LinkedList<>();
-		for (String value : values) {
-			result.addAll(search.findItems(value, 50));
-		}
-		
-		return result
-			.stream()
-			.map(item -> new FEValue(item.getLabel(), item.getValue(), item.getTemplateValues(), item.getOptionValue()))
-			.collect(Collectors.toList());
-	}
-
-	private ResolvedFilter createResolvedFilter(Filter<?> filter) {
-		ResolvedFilter result = new ResolvedFilter();
-
-		if (filter instanceof BigMultiSelectFilter) {
-			BigMultiSelectFilter bmsf = (BigMultiSelectFilter) filter;
-			result.setColumn(bmsf.getColumn());
-			result.setRealLabels(bmsf.getRealLabels());
-			result.setSourceSearch(bmsf.getSourceSearch());
-		} else if (filter instanceof MultiSelectFilter) {
-			MultiSelectFilter msf = (MultiSelectFilter) filter;
-			result.setColumn(msf.getColumn());
-			result.setRealLabels(msf.getRealLabels());
-			result.setSourceSearch(msf.getSourceSearch());
-		} else {
-			try {
-				throw new WebApplicationException(String.format("Could not resolved Filter values for this Type. Filter: %s", filter.getName()));
-			} catch (WebApplicationException ex) {
-				log.error(ex.getMessage());
-			}
-		}
-		
-
-		return result;
-	}
-
-	public ResolvedConceptsResult resolveFilterValues(Dataset dataset, Table table, Filter filter, List<String> values) {
-		ResolvedFilter rf = createResolvedFilter(filter);
-
-		List<FEValue> filterValues = new LinkedList<>();
-		QuickSearch<FilterSearchItem> search = rf.getSourceSearch();
-		if (search != null) {
-			filterValues.addAll(createSourceSearchResult(search, values.toArray(new String[values.size()])));
-		}
-		
-		if (rf.getRealLabels() != null) {
-			List<String> resolveFilterValues = new ArrayList<>(rf.getRealLabels().values());
-			List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
-			resolveFilterValues.removeIf(fv -> !toRemove.contains(fv) && !values.contains(fv));
-			filterValues = resolveFilterValues.stream().map(v -> new FEValue(rf.getRealLabels().get(v), v)).collect(Collectors.toList());
-			values.removeAll(resolveFilterValues);
-		}
-
-		// see https://github.com/bakdata/conquery/issues/251
-		return new ResolvedConceptsResult(
-			null,
-			new ResolvedFilterResult(table.getId().getTable(), filter.getId().toString(), filterValues),
-			values);
-	}
-
-	@Getter
-	@Setter
-	@AllArgsConstructor
-	public static class ResolvedConceptsResult {
-
-		private List<String> resolvedConcepts;
-		private ResolvedFilterResult resolvedFilter;
-		private List<String> unknownCodes;
-	}
-
+	
 	@Getter
 	@Setter
 	@AllArgsConstructor
 	public static class ResolvedFilterResult {
-
-		private String tableId;
-		private String filterId;
+		private ConnectorId tableId;
+		private FilterId filterId;
 		private List<FEValue> value;
 	}
-
+	
 	@Getter
 	@Setter
 	@AllArgsConstructor
 	@NoArgsConstructor
 	private class ResolvedFilter {
-
 		private Column column;
 		private Map<String, String> realLabels;
-		private QuickSearch sourceSearch;
+		private QuickSearch<FilterSearchItem> sourceSearch;
+	}
+	
+	@Getter
+	@Setter
+	@AllArgsConstructor
+	public static class ResolvedConceptsResult {
+		private List<String> resolvedConcepts;
+		private ResolvedFilterResult resolvedFilter;
+		private List<String> unknownCodes;
 	}
 }
