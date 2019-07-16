@@ -16,7 +16,6 @@ import lombok.Setter;
 
 /**
  * Defines an aggregator over just a single column.
- * @param <T>
  */
 @AllArgsConstructor
 public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
