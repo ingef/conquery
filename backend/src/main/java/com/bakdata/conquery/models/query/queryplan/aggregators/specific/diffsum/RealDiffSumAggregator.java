@@ -16,6 +16,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	private Column subtrahendColumn;
 
 	private double sum = 0;
+	private boolean hit;
 
 	public RealDiffSumAggregator(Column addend, Column subtrahend) {
 		this.addendColumn = addend;
@@ -34,6 +35,13 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 	@Override
 	public void aggregateEvent(Bucket bucket, int event) {
+
+		if (!bucket.has(event, getAddendColumn()) && !bucket.has(event, getSubtrahendColumn())) {
+			return;
+		}
+
+		hit = true;
+
 		double addend = bucket.has(event, getAddendColumn())
 								? bucket.getReal(event, getAddendColumn())
 								: 0;
@@ -47,7 +55,7 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
-		return sum;
+		return hit ? sum : null;
 	}
 	
 	@Override

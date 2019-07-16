@@ -12,6 +12,8 @@ import lombok.Getter;
 
 public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
+	private boolean hit = false;
+
 	@Getter
 	private Column addendColumn;
 	@Getter
@@ -35,6 +37,12 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
 	@Override
 	public void aggregateEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getAddendColumn()) && !bucket.has(event, getSubtrahendColumn())) {
+			return;
+		}
+
+		hit = true;
+
 		BigDecimal addend = bucket.has(event, getAddendColumn()) ? bucket.getDecimal(event, getAddendColumn()) : BigDecimal.ZERO;
 
 		BigDecimal subtrahend = bucket.has(event, getSubtrahendColumn()) ? bucket.getDecimal(event, getSubtrahendColumn()) : BigDecimal.ZERO;
@@ -44,7 +52,7 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 
 	@Override
 	public BigDecimal getAggregationResult() {
-		return sum;
+		return hit ? sum : null;
 	}
 	
 	@Override

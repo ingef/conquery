@@ -45,7 +45,7 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public Long getAggregationResult() {
-		return hits;
+		return hits > 0 ? hits : null;
 	}
 
 	@Override

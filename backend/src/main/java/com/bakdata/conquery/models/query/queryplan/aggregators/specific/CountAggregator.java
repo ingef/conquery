@@ -6,10 +6,6 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-/**
- * Entity is included when number of events with non null values is within a
- * given range.
- */
 public class CountAggregator extends SingleColumnAggregator<Long> {
 
 	private long count = 0;
