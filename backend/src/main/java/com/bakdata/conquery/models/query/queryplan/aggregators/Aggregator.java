@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
  *
  * An Aggregator is usually created by an associated {@code Select}, which is their API Layer counterpart.
  *
- * @param <T>
+ * @param <T> Java result type after aggregation.
  */
 public interface Aggregator<T> extends CtxCloneable<Aggregator<T>>, EventIterating {
 

@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
  * Base class for aggregators acting on columns.
- * @param <T>
  */
 public abstract class ColumnAggregator<T> implements Aggregator<T> {
 
