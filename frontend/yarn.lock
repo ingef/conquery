@@ -2607,7 +2607,7 @@ classlist-polyfill@^1.2.0:
   resolved "https://registry.yarnpkg.com/classlist-polyfill/-/classlist-polyfill-1.2.0.tgz#935bc2dfd9458a876b279617514638bcaa964a2e"
   integrity sha1-k1vC39lFiodrJ5YXUUY4vKqWSi4=
 
-classnames@^2.2.5:
+classnames@^2.2.5, classnames@^2.2.6:
   version "2.2.6"
   resolved "https://registry.yarnpkg.com/classnames/-/classnames-2.2.6.tgz#43935bffdd291f326dad0a205309b38d00f650ce"
   integrity sha512-JR/iSQOSt+LQIWwrwEzJ9uk0xfN3mTVYMwt1Ir5mUcSN6pU+V4zQFFaJsclJbPuAUQH+yfWef6tm7l1quW3C8Q==
@@ -4764,6 +4764,11 @@ hosted-git-info@^2.1.4:
   version "2.7.1"
   resolved "https://registry.yarnpkg.com/hosted-git-info/-/hosted-git-info-2.7.1.tgz#97f236977bd6e125408930ff6de3eec6281ec047"
   integrity sha512-7T/BxH19zbcCTa8XkMlbK5lTo1WtgkFi3GvdWEyNuc4Vex7/9Dqbnpsf4JMydcfj9HCg4zUWFTL3Za6lapg5/w==
+
+hotkeys-js@^3.6.11:
+  version "3.6.12"
+  resolved "https://registry.yarnpkg.com/hotkeys-js/-/hotkeys-js-3.6.12.tgz#316a312dc6864f0cd5dae2b26f443d53b38490c0"
+  integrity sha512-M5HLqgE1NAh67v+4dOIL/mGY8t8oLXtJG5wu60c3NVHCpHQZdznxKS0BswSz7pgA4tEiYvh8dZFF9am3L3PFgg==
 
 hsl-regex@^1.0.0:
   version "1.0.0"
@@ -8105,6 +8110,15 @@ react-highlight-words@^0.11.0:
   dependencies:
     highlight-words-core "^1.2.0"
     prop-types "^15.5.8"
+
+react-hot-keys@^2.0.0-beta.2:
+  version "2.0.0-beta.2"
+  resolved "https://registry.yarnpkg.com/react-hot-keys/-/react-hot-keys-2.0.0-beta.2.tgz#731f1c29aa4418c865ef30599d3fb64637beb6c9"
+  integrity sha512-A03Pmzgh/x+ebM32XjlUtie9ZDD0Ky+0RgvOJPX6eYVWHDLLRv+e1S1GJ0z/GtdExZ105ghA73qi1QG4cPO4nQ==
+  dependencies:
+    "@babel/runtime" "^7.4.5"
+    classnames "^2.2.6"
+    hotkeys-js "^3.6.11"
 
 react-hot-loader@^4.6.5:
   version "4.11.1"

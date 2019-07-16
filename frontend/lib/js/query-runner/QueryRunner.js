@@ -1,7 +1,8 @@
 // @flow
 
 import React from "react";
-import styled from '@emotion/styled';
+import styled from "@emotion/styled";
+import Hotkeys from "react-hot-keys";
 
 import QueryResults from "./QueryResults";
 import QueryRunningSpinner from "./QueryRunningSpinner";
@@ -55,6 +56,12 @@ const QueryRunner = (props: PropsType) => {
 
   return (
     <Root>
+      <Hotkeys
+        keyName="shift+enter"
+        onKeyDown={() => {
+          if (isButtonEnabled) btnAction();
+        }}
+      />
       <Left>
         <QueryRunnerButton
           onClick={btnAction}
