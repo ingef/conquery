@@ -51,4 +51,10 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	public boolean isContained() {
 		return hit;
 	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return super.isOfInterest(bucket) &&
+			   ((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
+	}
 }

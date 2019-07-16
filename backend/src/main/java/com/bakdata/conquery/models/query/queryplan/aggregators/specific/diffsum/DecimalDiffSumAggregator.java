@@ -62,4 +62,9 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;
 	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return false;
+	}
 }
