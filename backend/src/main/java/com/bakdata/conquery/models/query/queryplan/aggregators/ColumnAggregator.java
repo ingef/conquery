@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.types.CType;
 
 /**
  * Base class for aggregators acting on columns.
- * @param <T>
  */
 public abstract class ColumnAggregator<T> implements Aggregator<T> {
 

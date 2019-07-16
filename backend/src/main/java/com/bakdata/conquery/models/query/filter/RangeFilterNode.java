@@ -4,8 +4,6 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
  * Entity is included, when the result of the aggregator is contained in the range.
  */
