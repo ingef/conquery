@@ -5,6 +5,7 @@ import styled from "@emotion/styled";
 import T from "i18n-react";
 
 import DownloadButton from "../button/DownloadButton";
+import { isEmpty } from "../common/helpers/commonHelper";
 
 const Root = styled("div")`
   display: flex;
@@ -26,13 +27,10 @@ type PropsType = {
 };
 
 const QueryResults = (props: PropsType) => {
-  if (
-    typeof props.resultCount === "undefined" &&
-    typeof props.resultUrl === "undefined"
-  )
-    return null;
+  if (isEmpty(props.resultCount) && isEmpty(props.resultUrl)) return null;
 
-  let isDownload = props.resultCount > 0 || props.resultUrl;
+  const isDownload = props.resultCount > 0 || !!props.resultUrl;
+  const ending = props.resultUrl.split(".").reverse()[0];
 
   return (
     <Root>
@@ -41,10 +39,7 @@ const QueryResults = (props: PropsType) => {
       </Text>
       {isDownload && (
         <StyledDownloadButton frame primary url={props.resultUrl}>
-          {props.resultUrl
-            .split(".")
-            .reverse()[0]
-            .toUpperCase()}
+          {ending.toUpperCase()}
         </StyledDownloadButton>
       )}
     </Root>
