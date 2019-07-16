@@ -8,6 +8,9 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator implementing a sum over {@code column}, for decimal columns.
+ */
 public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 
 	private boolean hit = false;

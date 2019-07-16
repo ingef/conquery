@@ -14,8 +14,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
- * Entity is included when the number of distinct quarters of the related events
- * is within a given range. Implementation is specific for LocalDates
+ * Count the number of distinct quarters of the related events. Implementation is specific for LocalDates
  */
 public class CountQuartersOfDatesAggregator extends SingleColumnAggregator<Long> {
 

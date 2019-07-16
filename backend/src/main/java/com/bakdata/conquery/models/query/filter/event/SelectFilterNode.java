@@ -8,7 +8,9 @@ import com.bakdata.conquery.models.types.specific.AStringType;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+/**
+ * Single events are filtered, and included if they have a selected value. Entity is only included if it has any event with selected value.
+ */
 public class SelectFilterNode extends SingleColumnFilterNode<String> {
 
 	private int selectedId = -1;

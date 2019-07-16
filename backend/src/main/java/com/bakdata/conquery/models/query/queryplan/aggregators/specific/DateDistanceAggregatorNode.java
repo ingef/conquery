@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
- * Entity is included as long as Dates are within a certain range.
+ * Aggregator, returning the min duration in the column, relative to the end of date restriction.
  */
 public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 

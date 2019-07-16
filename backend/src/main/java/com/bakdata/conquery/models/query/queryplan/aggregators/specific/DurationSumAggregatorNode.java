@@ -9,6 +9,9 @@ import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator, counting the number of days present.
+ */
 public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 
 	private CDateSet set = CDateSet.create();

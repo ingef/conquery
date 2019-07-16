@@ -6,6 +6,9 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator implementing a sum over {@code column}, for real columns.
+ */
 public class RealSumAggregator extends SingleColumnAggregator<Double> {
 
 	private boolean hit = false;

@@ -11,6 +11,11 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.Getter;
 
+/**
+ * Abstract class
+ * @param <AGGREGATOR>
+ * @param <FILTER_VALUE>
+ */
 public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
 
 	@Getter

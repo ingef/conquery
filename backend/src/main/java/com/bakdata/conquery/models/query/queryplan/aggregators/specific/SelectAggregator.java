@@ -9,7 +9,9 @@ import com.bakdata.conquery.models.types.specific.AStringType;
 
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+/**
+ * Aggregator counting the number of occurrences of a selected value in a column.
+ */
 public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	private final String selected;
