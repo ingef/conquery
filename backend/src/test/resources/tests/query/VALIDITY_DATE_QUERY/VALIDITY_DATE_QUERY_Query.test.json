@@ -12,7 +12,9 @@
             "tables": [
                 {
                     "id": "${dataset}.test_tree.test_column",
-                    "dateColumn": "${dataset}.test_tree.test_column.other_date"
+                    "dateColumn": {
+                        "value": "${dataset}.test_tree.test_column.other_date"
+                    }
                 }
             ]
         }
