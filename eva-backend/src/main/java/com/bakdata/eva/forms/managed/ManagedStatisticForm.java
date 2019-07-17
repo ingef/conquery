@@ -85,7 +85,7 @@ public class ManagedStatisticForm extends ManagedForm {
 		ConqueryConfig config = ConqueryConfig.getInstance();
 		String json = ((StatisticForm)form).toStatisticJSON(namespace.getNamespaces());
 
-		QueryToCSVRenderer renderer = new QueryToCSVRenderer(namespace);
+		QueryToCSVRenderer renderer = new QueryToCSVRenderer();
 		PrintSettings settings = PrintSettings.builder().prettyPrint(false).nameExtractor(form.getColumnNamer().getNamer()).build();
 		Stream<String> queryResult = renderer
 			.toCSV(settings, internalQueries);
