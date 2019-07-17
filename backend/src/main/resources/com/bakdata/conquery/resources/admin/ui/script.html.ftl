@@ -11,13 +11,15 @@
 				
 				var samples = {
 					"null": "",
-					"translateId": "namespaces.get(new DatasetId(\"demo\")).getStorage().getPrimaryDictionary().getId(\"3124\")"
+					"translateId": "namespaces.get(new DatasetId(\"demo\")).getStorage().getPrimaryDictionary().getId(\"3124\")",
+					"addPermission": "namespaces.getMetaStorage().addPermission(\n\tnew com.bakdata.conquery.models.auth.permissions.DatasetPermission(new com.bakdata.conquery.models.identifiable.ids.specific.UserId(\"demo@demo.com\"),\n\tcom.bakdata.conquery.models.auth.permissions.Ability.READ.asSet(),\n\tnew com.bakdata.conquery.models.identifiable.ids.specific.DatasetId(\"test\"))\n)"
 				};
 			</script>
 			Sample Scripts:
 			<select id="samples" onchange="setValue()">
 				<option value="null"></option>
 				<option value="translateId">find internal id</option>
+				<option value="addPermission">add permission</option>
 			</select>
 			
 			<form action="/admin/script" method="POST" enctype="multipart/form-data">
