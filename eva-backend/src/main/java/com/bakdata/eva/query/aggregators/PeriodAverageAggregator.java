@@ -32,6 +32,7 @@ public class PeriodAverageAggregator extends SingleColumnAggregator<Double> {
 	private double overHangWeight;
 
 	private boolean odd;
+	private boolean hit = false;
 
 	public PeriodAverageAggregator(@NsIdRef Column column) {
 		super(column);
@@ -39,7 +40,7 @@ public class PeriodAverageAggregator extends SingleColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
-		if(nQuarters < 4) {
+		if(!hit || nQuarters < 4) {
 			return null;
 		}
 
@@ -73,6 +74,8 @@ public class PeriodAverageAggregator extends SingleColumnAggregator<Double> {
 			return;
 		}
 
+		hit = true;
+
 		final LocalDate date = bucket.getAsDateRange(event, getValidityDate()).getMin();
 		final double value = bucket.getReal(event, getColumn());
 
@@ -89,11 +92,6 @@ public class PeriodAverageAggregator extends SingleColumnAggregator<Double> {
 			this.includedQuarters += overHangWeight;
 			sum += value * overHangWeight;
 		}
-	}
-
-	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[] { getColumn() };
 	}
 
 	@Override

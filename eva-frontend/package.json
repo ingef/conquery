@@ -12,6 +12,7 @@
     "start": "cross-env NODE_ENV=development node ./server",
     "start-production": "cross-env NODE_ENV=production PORT=8002 node server",
     "build": "rimraf ./dist && cross-env NODE_ENV=production webpack --config ./webpack.config.js --progress --colors",
+    "build-ci": "rimraf ./dist && cross-env NODE_ENV=production webpack --config ./webpack.config.js",
     "lint": "eslint --ext=js src/js"
   },
   "dependencies": {
@@ -50,6 +51,7 @@
     "react-dnd-touch-backend": "^0.8.3",
     "react-dom": "^16.8.1",
     "react-highlight-words": "^0.11.0",
+    "react-hot-keys": "^2.0.0-beta.2",
     "react-list": "^0.8.0",
     "react-markdown": "^4.0.8",
     "react-number-format": "^3.3.0",
