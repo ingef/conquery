@@ -20,7 +20,6 @@ import lombok.Getter;
 @Getter
 @AllArgsConstructor
 public class FEMandatorContent {
-
 	public Mandator self;
 	public List<User> users;
 	public List<DatasetPermission> datasetPermissions;
@@ -29,5 +28,4 @@ public class FEMandatorContent {
 	
 	public Set<Ability> abilities;
 	public List<Dataset> datasets;
-
 }

@@ -6,4 +6,5 @@ public class ResourceConstants {
 	public static final String CONCEPT_NAME = "conceptName";
 	public static final String MANDATOR_NAME = "mandatorName";
 	public static final String JOB_ID = "jobId";
+	public static final String PERMISSION_ID = "permissionId";
 }

@@ -14,7 +14,7 @@
                     <td>${permission.class.getSimpleName()}</td>
                     <td>${permission.getTarget().toString()}</td>
                     <td><#list permission.getAbilities() as ability>${ability} </#list></td>
-                    <td><a href="" onclick="event.preventDefault(); fetch('/admin/permissions', {method: 'delete'});"><i class="fas fa-trash-alt text-danger"></i></a></td>
+                    <td><a href="" onclick="event.preventDefault(); fetch('/admin/permissions/${permission.id}',{method: 'delete'}).then(function(){location.reload()});"><i class="fas fa-trash-alt text-danger"></i></a></td>
                 </tr>
             </#list>
         </tbody>

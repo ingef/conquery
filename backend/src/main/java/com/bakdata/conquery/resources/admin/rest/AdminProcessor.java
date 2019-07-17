@@ -35,6 +35,7 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.i18n.I18n;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
@@ -244,7 +245,11 @@ public class AdminProcessor {
 	 * @param permission The permission to delete.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void deletePermission(ConqueryPermission permission) throws JSONException {
+	public void deletePermission(PermissionId permissionId) throws JSONException {
+		ConqueryPermission permission = storage.getPermission(permissionId);
+		if(permission == null) {
+			throw new IllegalArgumentException("Permission not found in storage");
+		}
 		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
 	}
 
@@ -255,6 +260,9 @@ public class AdminProcessor {
 	 * @return The Owner.
 	 */
 	private static PermissionOwner<?> getOwnerFromPermission(ConqueryPermission permission, MasterMetaStorage storage) {
+		if(permission == null) {
+			throw new IllegalArgumentException("Permission was null");
+		}
 		PermissionOwnerId<?> ownerId = permission.getOwnerId();
 		if(ownerId == null) {
 			throw new IllegalArgumentException("The ownerId is not allowed to be null.");
