@@ -11,6 +11,7 @@ variables:
 
 
 jobs:
+############### Frontend Tests
 - job: tests_frontend
   displayName: Frontend Tests
   pool:
@@ -31,6 +32,9 @@ jobs:
       goals: package
       options: $(MVN) -pl eva-frontend-resources
 
+
+
+############### Backend Tests
 - job: tests_backend
   displayName: Backend Tests
   timeoutInMinutes: 15
