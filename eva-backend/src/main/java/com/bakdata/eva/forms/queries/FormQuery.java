@@ -19,6 +19,7 @@ import com.bakdata.eva.EvaConstants;
 import com.bakdata.eva.models.forms.DateContext;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NonNull;
