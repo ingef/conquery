@@ -165,7 +165,7 @@ public class FrontEndConceptBuilder {
 			).build();
 		
 		if(con.getValidityDates().size() > 0) {
-			result.setValidityDateSelection(
+			result.setDateColumn(
 				FEValue.fromLabels(
 					con
 					.getValidityDates()
