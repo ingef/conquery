@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.api.APIResource;
 import com.bakdata.conquery.resources.api.ConceptElementResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
@@ -38,6 +39,15 @@ public class ApiV1 implements ResourcesProvider {
 			@Override
 			protected void configure() {
 				bind(new ConceptsProcessor(master.getNamespaces())).to(ConceptsProcessor.class);
+				bind(
+					new AdminProcessor(
+						master.getConfig(),
+						master.getStorage(),
+						master.getNamespaces(),
+						master.getJobManager(),
+						master.getMaintenanceService()
+					)
+				).to(AdminProcessor.class);
 			}
 		});
 		environment.register(APIResource.class);

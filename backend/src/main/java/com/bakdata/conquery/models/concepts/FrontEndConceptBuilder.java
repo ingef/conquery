@@ -166,7 +166,7 @@ public class FrontEndConceptBuilder {
 				.collect(Collectors.toList())
 			).build();
 		
-		if(con.getValidityDates().size() > 0) {
+		if(con.getValidityDates().size() > 1) {
 			result.setDateColumn(
 				new FEValidityDate(
 					null,
