@@ -22,7 +22,7 @@ public class PeriodSumFilter extends SingleColumnFilter<Range<BigDecimal>> {
 	}
 
 	@Override
-	public FilterNode createAggregator(Range<BigDecimal> filterValue) {
+	public FilterNode<?> createAggregator(Range<BigDecimal> filterValue) {
 		return new RangeFilterNode<>(Range.DoubleRange.fromNumberRange(filterValue), new PeriodSumAggregator(getColumn()));
 	}
 }

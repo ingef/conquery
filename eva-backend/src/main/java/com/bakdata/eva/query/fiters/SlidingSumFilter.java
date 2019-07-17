@@ -55,7 +55,7 @@ public class SlidingSumFilter extends Filter<Range<BigDecimal>> {
 	}
 
 	@Override
-	public FilterNode createAggregator(Range<BigDecimal> filterValue) {
+	public FilterNode<?> createAggregator(Range<BigDecimal> filterValue) {
 		return new RangeFilterNode<>(Range.DoubleRange.fromNumberRange(filterValue), new SlidingSumAggregator(dateRangeColumn, valueColumn, maximumDaysColumn));
 	}
 }

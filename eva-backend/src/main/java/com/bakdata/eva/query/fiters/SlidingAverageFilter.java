@@ -43,7 +43,7 @@ public class SlidingAverageFilter extends Filter<Range<BigDecimal>> {
 	protected Column maximumDaysColumn;
 
 	@Override
-	public FilterNode createAggregator(Range<BigDecimal> filterValue) {
+	public FilterNode<?> createAggregator(Range<BigDecimal> filterValue) {
 		return new RangeFilterNode<>(Range.DoubleRange.fromNumberRange(filterValue), new SlidingAverageAggregator(dateRangeColumn, valueColumn, maximumDaysColumn));
 	}
 
