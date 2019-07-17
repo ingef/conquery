@@ -63,7 +63,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 			fail("Query failed (see above)");
 		}
 
-		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace())
+		List<String> actual = new QueryToCSVRenderer()
 			.toCSV(PRINT_SETTINGS, managed)
 			.collect(Collectors.toList());
 
