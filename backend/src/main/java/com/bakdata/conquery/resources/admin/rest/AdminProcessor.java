@@ -6,6 +6,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -247,7 +248,7 @@ public class AdminProcessor {
 	public void deletePermission(PermissionId permissionId) throws JSONException {
 		ConqueryPermission permission = storage.getPermission(permissionId);
 		if(permission == null) {
-			throw new IllegalArgumentException("Permission not found in storage");
+			throw new NoSuchElementException("Permission "+permissionId+" not found in storage");
 		}
 		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
 	}
