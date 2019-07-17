@@ -95,11 +95,6 @@ public class PeriodAverageAggregator extends SingleColumnAggregator<Double> {
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[] { getColumn() };
-	}
-
-	@Override
 	public PeriodAverageAggregator doClone(CloneContext context) {
 		return new PeriodAverageAggregator(getColumn());
 	}

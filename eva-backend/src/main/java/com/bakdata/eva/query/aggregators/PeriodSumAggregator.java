@@ -91,11 +91,6 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 	}
 
 	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[] { getColumn() };
-	}
-
-	@Override
 	public PeriodSumAggregator doClone(CloneContext context) {
 		return new PeriodSumAggregator(getColumn());
 	}
