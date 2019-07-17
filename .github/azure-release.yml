@@ -1,8 +1,8 @@
+pr: none
 trigger:
   tags:
     include:
       - '*'
-pr: none
 
 variables:
   EXCLUDE_SOURCE_MAPS: true
