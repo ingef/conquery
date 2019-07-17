@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -68,7 +69,8 @@ public class CQExternal implements CQElement {
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
 		IdAccessor idAccessor = mapping.mappingFromCsvHeader(values[0], context.getNamespace().getStorage());
-
+		List<List<String>> nonResolved = new ArrayList<>();
+		
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
@@ -87,13 +89,30 @@ public class CQExternal implements CQElement {
 					}
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				includedEntities.put(primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
-					Objects.requireNonNull(dates));
+				int resolvedId = primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId());
+				if(resolvedId != -1) {
+					includedEntities.put(
+						resolvedId,
+						Objects.requireNonNull(dates)
+					);
+				}
+				else {
+					nonResolved.add(Arrays.asList(row));
+				}
 			}
 			catch (Exception e) {
 				log.warn("failed to parse dates from " + Arrays.toString(row), e);
 			}
 		}
+		if(!nonResolved.isEmpty()) {
+			log.warn(
+				"Could not resolve {} of the {} rows. Not resolved: {}",
+				nonResolved.size(),
+				values.length-1,
+				nonResolved
+			);
+		}
+		
 		return new CQExternalResolved(includedEntities);
 	}
 

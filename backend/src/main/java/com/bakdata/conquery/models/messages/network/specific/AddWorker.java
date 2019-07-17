@@ -53,7 +53,7 @@ public class AddWorker extends SlaveMessage.Slow {
 	}
 
 	private File createWorkerName(Slave context) {
-		String name = "worker_"+UUID.randomUUID().toString();
+		String name = "worker_"+dataset.getName()+"_"+UUID.randomUUID().toString();
 		return new File(context.getConfig().getStorage().getDirectory(), name);
 	}
 }

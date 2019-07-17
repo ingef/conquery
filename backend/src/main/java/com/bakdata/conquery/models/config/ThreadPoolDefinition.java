@@ -17,7 +17,7 @@ import lombok.ToString;
 @Getter @Setter @ToString
 public class ThreadPoolDefinition {
 	@Min(0)
-	private int minThreads = 0;
+	private int minThreads = Runtime.getRuntime().availableProcessors();
 	@Min(1)
 	private int maxThreads = Runtime.getRuntime().availableProcessors();
 	private boolean allowCoreThreadTimeOut = false;
