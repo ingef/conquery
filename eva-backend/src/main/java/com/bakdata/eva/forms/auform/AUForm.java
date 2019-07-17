@@ -37,6 +37,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
+import com.bakdata.conquery.models.query.concept.filter.CQTable.ValidityDateColumn;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQMultiSelectFilter;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQNegation;
@@ -344,7 +345,7 @@ public class AUForm extends StatisticForm {
 				ValidityDateId dateColumn = createValidityDateId(namespaces.resolve(table.getId()));
 				if (table.getFilters() == null || table.getFilters().isEmpty())
 					table.setFilters(new ArrayList<>());
-				table.setDateColumn(dateColumn);
+				table.setDateColumn(new ValidityDateColumn(dateColumn));
 			});
 		}
 		
@@ -467,7 +468,7 @@ public class AUForm extends StatisticForm {
 		t.setId(new ConnectorId(new ConceptId(miscellaneousConceptNames.get(0).getDataset(), "icd"), "au_fall"));
 		t.setConcept(concept);
 
-		t.setDateColumn(DefaultDateSelection.createValidityDateId(namespaces.resolve(t.getId())));
+		t.setDateColumn(new ValidityDateColumn(DefaultDateSelection.createValidityDateId(namespaces.resolve(t.getId()))));
 		concept.setTables(Arrays.asList(t));
 		new SelectSetter(namespaces).accept(concept);
 
