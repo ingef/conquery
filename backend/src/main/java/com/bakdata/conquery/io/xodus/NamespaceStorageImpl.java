@@ -44,6 +44,7 @@ public class NamespaceStorageImpl extends NamespacedStorageImpl implements Names
 	}
 
 	
+	@Override
 	protected void createStores(Collector<KeyIncludingStore<?, ?>> collector) {
 		super.createStores(collector);
 		structure = StoreInfo.STRUCTURE.singleton(this, new SingletonNamespaceCollection(centralRegistry));

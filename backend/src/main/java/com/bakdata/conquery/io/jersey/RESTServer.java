@@ -28,7 +28,7 @@ public class RESTServer {
 		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
 		// Register custom mapper
 		jersey.register(new AuthorizationExceptionMapper());
-		jersey.register(new JsonValidationExceptionMapper());
+		jersey.register(JsonValidationExceptionMapper.class);
 		// default Dropwizard's exception mappers
 		jersey.register(new LoggingExceptionMapper<Throwable>() {});
 		jersey.register(ConqueryJsonExceptionMapper.class);

@@ -6,7 +6,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
 /**
- * Entity is included when the number of values for a specified column are within a given range.
+ * Single events are filtered, and included if they start with a given prefix. Entity is only included if it has any event with prefix.
  */
 public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 

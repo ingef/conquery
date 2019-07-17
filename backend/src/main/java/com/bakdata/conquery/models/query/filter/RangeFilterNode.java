@@ -4,13 +4,10 @@ import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-import lombok.extern.slf4j.Slf4j;
-
 /**
- * Includes entities when the specified column is one of many values.
+ * Entity is included, when the result of the aggregator is contained in the range.
  */
-@Slf4j
-public class RangeFilterNode<TYPE extends Comparable> extends AggregationResultFilterNode<Aggregator<TYPE>, IRange<TYPE, ?>> {
+public class RangeFilterNode<TYPE extends Comparable<?>> extends AggregationResultFilterNode<Aggregator<TYPE>, IRange<TYPE, ?>> {
 
 
 	public RangeFilterNode(IRange<TYPE, ?> filterValue, Aggregator<TYPE> aggregator) {
@@ -18,8 +15,8 @@ public class RangeFilterNode<TYPE extends Comparable> extends AggregationResultF
 	}
 
 	@Override
-	public RangeFilterNode doClone(CloneContext context) {
-		return new RangeFilterNode(filterValue, getAggregator().doClone(context));
+	public RangeFilterNode<TYPE> doClone(CloneContext context) {
+		return new RangeFilterNode<>(filterValue, getAggregator().doClone(context));
 	}
 
 	@Override

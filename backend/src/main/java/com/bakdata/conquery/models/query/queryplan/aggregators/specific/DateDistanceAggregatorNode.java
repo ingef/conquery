@@ -13,7 +13,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
- * Entity is included as long as Dates are within a certain range.
+ * Aggregator, returning the min duration in the column, relative to the end of date restriction.
  */
 public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 
@@ -21,6 +21,7 @@ public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 	private ChronoUnit unit;
 
 	private long result = Long.MAX_VALUE;
+	private boolean hit;
 
 	public DateDistanceAggregatorNode(Column column, ChronoUnit unit) {
 		super(column);
@@ -44,7 +45,7 @@ public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 
 	@Override
 	public Long getAggregationResult() {
-		return result == Long.MAX_VALUE ? null : result;
+		return result != Long.MAX_VALUE || hit ? result : null;
 	}
 
 	@Override
@@ -56,6 +57,8 @@ public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 		if(!bucket.has(event, getColumn())) {
 			return;
 		}
+
+		hit = true;
 
 		LocalDate date = CDate.toLocalDate(bucket.getDate(event, getColumn()));
 

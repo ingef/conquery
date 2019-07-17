@@ -7,9 +7,10 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.types.specific.AStringType;
 
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+/**
+ * Aggregator counting the number of occurrences of a selected value in a column.
+ */
 public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	private final String selected;
@@ -45,7 +46,7 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public Long getAggregationResult() {
-		return hits;
+		return hits > 0 ? hits : null;
 	}
 
 	@Override
@@ -56,5 +57,11 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
+	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return super.isOfInterest(bucket) &&
+			   ((AStringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) != -1;
 	}
 }

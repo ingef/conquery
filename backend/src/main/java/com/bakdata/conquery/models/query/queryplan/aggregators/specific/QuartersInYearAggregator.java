@@ -17,8 +17,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 
 /**
- * Entity is included when the the number of quarters with events is within a
- * specified range.
+ * Aggregator counting the number of quarters in a year, returning the maximum number of quarters present.
  */
 public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
@@ -57,7 +56,6 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 			if (cardinality > max) {
 				max = cardinality;
 			}
-
 		}
 
 		return max;

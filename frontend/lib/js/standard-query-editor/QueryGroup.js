@@ -38,7 +38,7 @@ const Group = styled("div")`
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.12);
   text-align: center;
   border-radius: ${({ theme }) => theme.borderRadius};
-  min-width: 240px;
+  width: 220px;
 `;
 
 const QueryOrConnector = styled("p")`

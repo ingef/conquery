@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.concepts;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 
 import javax.validation.Valid;
@@ -42,7 +43,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 				.stream()
 				.filter(n->n.getName().equals(connector))
 				.findAny()
-				.orElseThrow(() -> new IllegalArgumentException("Connector not found: " + connector));
+				.orElseThrow(() -> new NoSuchElementException("Connector not found: " + connector));
 	}
 
 	public abstract List<? extends Select> getSelects();

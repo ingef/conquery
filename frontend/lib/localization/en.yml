@@ -105,6 +105,7 @@ common:
   description: "Description"
   clearAll: "Clear all"
   clearValue: "Clear value"
+  closeEsc: "Close (ESC)"
 
 tooltip:
   headline: "Info"
@@ -152,6 +153,7 @@ previousQueries:
   noQueriesFound: "No queries found"
 
 previousQuery:
+  notExecuted: "Not executed yet"
   addTag: "Add Tag"
   share: "Share"
   shared: "Shared"
@@ -229,6 +231,10 @@ uploadQueryResultsModal:
 
 csvColumnPicker:
   loading: "Reading data ..."
+  delimiter: "Delimiter"
+  semicolon: "Semicolon"
+  colon: "Colon"
+  comma: "Comma"
 
 uploadConceptListModal:
   headline: "Upload concepts"

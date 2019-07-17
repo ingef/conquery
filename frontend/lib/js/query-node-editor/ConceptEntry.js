@@ -17,6 +17,7 @@ const Concept = styled("div")`
   align-items: center;
   margin-top: 5px;
 `;
+
 const ConceptContainer = styled("div")`
   flex-grow: 1;
 `;
@@ -34,6 +35,10 @@ const ConceptEntryDescription = styled("p")`
 
 const NotFound = styled(ConceptEntryHeadline)`
   color: ${({ theme }) => theme.col.red};
+`;
+
+const SxIconButton = styled(IconButton)`
+  flex-shrink: 0;
 `;
 
 const ConceptEntry = AdditionalInfoHoverable(
@@ -55,7 +60,7 @@ const ConceptEntry = AdditionalInfoHoverable(
           )}
         </ConceptContainer>
         {canRemoveConcepts && (
-          <IconButton
+          <SxIconButton
             onClick={() => onRemoveConcept(conceptId)}
             tiny
             regular

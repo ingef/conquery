@@ -14,7 +14,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
-
+/**
+ * Defines an aggregator over just a single column.
+ */
 @AllArgsConstructor
 public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 
@@ -26,12 +28,12 @@ public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 	protected Column column;
 
 	@Override
-	public Column[] getRequiredColumns() {
+	public final Column[] getRequiredColumns() {
 		return new Column[] { getColumn() };
 	}
 
 	@Override
-	public void collectRequiredTables(Set<TableId> out) {
+	public final void collectRequiredTables(Set<TableId> out) {
 		out.add(getColumn().getTable().getId());
 	}
 

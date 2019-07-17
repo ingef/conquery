@@ -10,7 +10,9 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.types.specific.AStringType;
 
-
+/**
+ * Aggregator counting the occurrence of multiple values.
+ */
 public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, Integer>> {
 
 	private final String[] selection;
@@ -71,5 +73,16 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 	@Override
 	public ResultType getResultType() {
 		return ResultType.STRING;
+	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		for (String selected : selection) {
+			if(((AStringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) == -1) {
+				return false;
+			}
+		}
+
+		return super.isOfInterest(bucket);
 	}
 }

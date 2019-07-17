@@ -11,6 +11,11 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.Getter;
 
+/**
+ * Abstract class for filter nodes acting on aggregation results.
+ * @param <AGGREGATOR> Type of the Aggregator
+ * @param <FILTER_VALUE> Type of the used FilterValue
+ */
 public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
 
 	@Getter
@@ -49,5 +54,10 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	@Override
 	public String toString() {
 		return getClass().getSimpleName();
+	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return aggregator.isOfInterest(bucket);
 	}
 }

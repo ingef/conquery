@@ -7,8 +7,7 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
- * Entity is included when number of events with non null values is within a
- * given range.
+ * Aggregator counting the number of present values in a column.
  */
 public class CountAggregator extends SingleColumnAggregator<Long> {
 

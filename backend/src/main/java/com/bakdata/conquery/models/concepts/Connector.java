@@ -64,6 +64,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 					ValidityDate sd = new ValidityDate();
 					sd.setColumn(c);
 					sd.setName(c.getName());
+					sd.setConnector(this);
 					return sd;
 				})
 				.collect(Collectors.toList())

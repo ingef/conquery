@@ -14,7 +14,7 @@ import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthCookieFilter;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
-import com.bakdata.conquery.resources.admin.rest.DatasetsResource;
+import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
@@ -64,7 +64,7 @@ public class AdminServlet {
 		
 		//register root resources
 		jerseyConfig.register(AdminResource.class);
-		jerseyConfig.register(DatasetsResource.class);
+		jerseyConfig.register(AdminDatasetResource.class);
 		jerseyConfig.register(AdminUIResource.class);
 		jerseyConfig.register(DatasetsUIResource.class);		
 		jerseyConfig.register(TablesUIResource.class);

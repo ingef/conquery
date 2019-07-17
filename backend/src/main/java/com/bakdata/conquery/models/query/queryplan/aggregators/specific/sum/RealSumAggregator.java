@@ -6,14 +6,16 @@ import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator implementing a sum over {@code column}, for real columns.
+ */
 public class RealSumAggregator extends SingleColumnAggregator<Double> {
 
-
-	private double sum;
+	private boolean hit = false;
+	private double sum = 0d;
 
 	public RealSumAggregator(Column column) {
 		super(column);
-		this.sum = 0d;
 	}
 
 	@Override
@@ -27,6 +29,8 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 			return;
 		}
 
+		hit = true;
+
 		double addend = bucket.getReal(event, getColumn());
 
 		sum += addend;
@@ -34,7 +38,7 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
-		return sum;
+		return hit ? sum : null;
 	}
 	
 	@Override

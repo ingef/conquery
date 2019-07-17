@@ -10,6 +10,9 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Helper Aggregator, returning if it was used at least once.
+ */
 @RequiredArgsConstructor
 public class ExistsAggregator implements Aggregator<Boolean> {
 

@@ -34,7 +34,7 @@ export const Icon = styled(FontAwesomeIcon, { shouldForwardProp })`
   width: initial !important;
 `;
 
-const FaIcon = ({ icon, regular, className, main, ...restProps }) => {
+const FaIcon = ({ icon, regular, className, ...restProps }) => {
   return (
     <Icon
       className={`fa-fw ${className}`}

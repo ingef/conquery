@@ -5,6 +5,11 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
+/**
+ * Abstract class, filtering single events to be in a specified range. Entity is only included if a single event is in range.
+ * There exist type specific implementations.
+ * @param <RANGE> Range Type for inclusion test.
+ */
 public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends SingleColumnFilterNode<RANGE> {
 
 	private boolean hit;

@@ -44,9 +44,7 @@ queryEditor:
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
-  details: "Details"
   previousQuery: "Anfrage"
-  conceptList: "Konzeptliste"
   loadingPreviousQuery: "Lade Anfragedetails"
 
 dropzone:
@@ -107,6 +105,7 @@ common:
   description: "Beschreibung"
   clearAll: "Alle entfernen"
   clearValue: "Wert entfernen"
+  closeEsc: "Schließen (ESC)"
 
 tooltip:
   headline: "Info"
@@ -154,6 +153,7 @@ previousQueries:
   noQueriesFound: "Keine Anfragen gefunden"
 
 previousQuery:
+  notExecuted: "Noch nicht ausgeführt"
   addTag: "Schlagwort hinzufügen"
   share: "Freigeben"
   shared: "Freigegeben"
@@ -231,6 +231,10 @@ uploadQueryResultsModal:
 
 csvColumnPicker:
   loading: "Lese Daten ..."
+  delimiter: "Trennzeichen"
+  semicolon: "Semikolon"
+  colon: "Doppelpunkt"
+  comma: "Komma"
 
 uploadConceptListModal:
   headline: "Konzepte aus Liste einfügen"
