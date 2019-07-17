@@ -375,7 +375,7 @@ const config: Forms = [
                 }
               },
               {
-                name: "outcomes",
+                name: "features",
                 type: "CONCEPT_LIST",
                 label: {
                   de: "Konzepte"
