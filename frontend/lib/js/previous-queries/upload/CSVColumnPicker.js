@@ -75,27 +75,27 @@ const SxInputSelect = styled(InputSelect)`
   display: inline-block;
 `;
 
-// Theoretically possible in the backend:
-// ID (some string)
-// EVENT_DATE (a single day),
-// START_DATE (a starting day),
-// END_DATE (and end day,
-// DATE_RANGE (two days),
-// DATE_SET (a set of date ranges),
-// IGNORE (ignore this column);
-const SELECT_OPTIONS = [
-  { label: "ID", value: "ID" },
-  { label: "DATE_SET", value: "DATE_SET" },
-  { label: "START_DATE", value: "START_DATE" },
-  { label: "END_DATE", value: "END_DATE" },
-  { label: "IGNORE", value: "IGNORE" }
-];
-
 export default ({ file, loading, onUpload, onReset }: PropsT) => {
   const [csv, setCSV] = React.useState([]);
   const [delimiter, setDelimiter] = React.useState(";");
   const [csvHeader, setCSVHeader] = React.useState([]);
   const [csvLoading, setCSVLoading] = React.useState(false);
+
+  // Theoretically possible in the backend:
+  // ID (some string)
+  // EVENT_DATE (a single day),
+  // START_DATE (a starting day),
+  // END_DATE (and end day,
+  // DATE_RANGE (two days),
+  // DATE_SET (a set of date ranges),
+  // IGNORE (ignore this column);
+  const SELECT_OPTIONS = [
+    { label: T.translate("csvColumnPicker.id"), value: "ID" },
+    { label: T.translate("csvColumnPicker.dateSet"), value: "DATE_SET" },
+    { label: T.translate("csvColumnPicker.startDate"), value: "START_DATE" },
+    { label: T.translate("csvColumnPicker.endDate"), value: "END_DATE" },
+    { label: T.translate("csvColumnPicker.ignore"), value: "IGNORE" }
+  ];
 
   const DELIMITER_OPTIONS = [
     { label: T.translate("csvColumnPicker.semicolon") + " ( ; )", value: ";" },
