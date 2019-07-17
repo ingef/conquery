@@ -57,7 +57,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	protected transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
-	protected transient CountDownLatch execution;
+	private final transient CountDownLatch execution = new CountDownLatch(1);
 	@JsonIgnore
 	protected transient LocalDateTime startTime = LocalDateTime.now();
 	@JsonIgnore
@@ -72,7 +72,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	public void initExecutable(@NonNull Namespace namespace) {
 		this.namespace = namespace;
-		this.execution = new CountDownLatch(1);
 		this.dataset = namespace.getStorage().getDataset().getId();
 	}
 
@@ -105,7 +104,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
-		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		if(state == ExecutionState.RUNNING) {
+			Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		}
 	}
 	
 	public ExecutionStatus buildStatus(URLBuilder url) {

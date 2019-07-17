@@ -73,7 +73,7 @@ public class ManagedQuery extends ManagedExecution {
 				log.error("Failed query {} at least for the entity {} with:\n{}", queryId, failed.getEntityId(), failed.getExceptionStackTrace());
 			}
 		}
-		synchronized (execution) {
+		synchronized (getExecution()) {
 			executingThreads--;
 			results.addAll(result.getResults());
 			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
@@ -102,7 +102,6 @@ public class ManagedQuery extends ManagedExecution {
 		ExecutionStatus status = super.buildStatus(url);
 		status.setTags(tags);
 		status.setQuery(query);
-		Long numberOfResults = Long.valueOf(fetchContainedEntityResult().count());
 		status.setNumberOfResults(lastResultCount);
 		status.setShared(shared);
 		return status;
