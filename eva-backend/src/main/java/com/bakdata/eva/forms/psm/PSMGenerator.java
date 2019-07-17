@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -55,6 +56,8 @@ public class PSMGenerator {
 			.get(group.resolveDatasetId())
 			.getStorage()
 			.getDataset();
+		
+		group.setId(new ManagedExecutionId(target.getId(), group.getId().getExecution()));
 
 		ExportForm result = new ExportForm();
 		result.setColumns(form.getColumns());
@@ -76,7 +79,7 @@ public class PSMGenerator {
 		}
 		return result;
 	}
-
+	
 	private CQOr translate(CQOr feature, Dataset target) throws IOException {
 		String value = Jackson.MAPPER.writeValueAsString(feature);
 
