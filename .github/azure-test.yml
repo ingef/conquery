@@ -6,7 +6,7 @@ variables:
   IMAGE: ubuntu-16.04
   EXCLUDE_SOURCE_MAPS: true
   CACHE_DIR: $(Pipeline.Workspace)/cache
-  MAVEN_OPTS: -Xmx1G -B -V -Dmaven.repo.local=$(CACHE_DIR)/.m2
+  MVN: -B -V -Dmaven.repo.local=$(CACHE_DIR)/.m2
   YARN_CACHE_FOLDER: $(CACHE_DIR)/yarn/
 
 
@@ -28,9 +28,8 @@ jobs:
     displayName: frontend tests
     inputs:
       jdkVersion: '1.11'
-      mavenOpts: $(MAVEN_OPTS)
       goals: package
-      options: -pl eva-frontend-resources
+      options: $(MVN) -pl eva-frontend-resources
 
 - job: tests_backend
   displayName: Backend Tests
@@ -51,39 +50,34 @@ jobs:
     displayName: build conquery
     inputs:
       jdkVersion: '1.11'
-      mavenOpts: $(MAVEN_OPTS)
       goals: install
-      options: -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
+      options: $(MVN) -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
 
   - task: Maven@3
     displayName: build root
     inputs:
       jdkVersion: '1.11'
-      mavenOpts: $(MAVEN_OPTS)
       goals: install
-      options: -T 1C -N
+      options: $(MVN) -T 1C -N
 
   - task: Maven@3
     displayName: unit tests
     inputs:
       jdkVersion: '1.11'
-      mavenOpts: $(MAVEN_OPTS)
       goals: install
-      options: -T 1C -pl eva-backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+      options: $(MVN) -T 1C -pl eva-backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
   - task: Maven@3
     displayName: programmatic integration tests
     inputs:
       jdkVersion: '1.11'
-      mavenOpts: $(MAVEN_OPTS)
-      options: -T 1C -pl eva-backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+      options: $(MVN) -T 1C -pl eva-backend -Dgroups="INTEGRATION_PROGRAMMATIC"
 
   - task: Maven@3
     displayName: json integration tests
     inputs:
       jdkVersion: '1.11'
-      mavenOpts: $(MAVEN_OPTS)
-      options: -T 1C -pl eva-backend -Dgroups="INTEGRATION_JSON"
+      options: $(MVN) -T 1C -pl eva-backend -Dgroups="INTEGRATION_JSON"
 
   - task: DeleteFiles@1
     displayName: prepare cache
