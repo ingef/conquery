@@ -63,7 +63,7 @@ public class ResultCSVResource {
 
 		try {
 			ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
-			Stream<String> csv = new QueryToCSVRenderer(exec.getNamespace()).toCSV(PRINT_SETTINGS, exec.toResultQuery());
+			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery());
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
