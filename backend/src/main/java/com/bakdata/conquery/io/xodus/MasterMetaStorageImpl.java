@@ -22,9 +22,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
 
 import lombok.Getter;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {
 	
 	private SingletonStore<Namespaces> meta;
@@ -108,38 +106,47 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		*/
 	//}
 	
+	@Override
 	public void addPermission(ConqueryPermission permission) throws JSONException {
 		authPermissions.add(permission);
 	}
 	
+	@Override
 	public Collection<ConqueryPermission> getAllPermissions() {
 		return authPermissions.getAll();
 	}
 	
+	@Override
 	public void removePermission(PermissionId permissionId) {
 		authPermissions.remove(permissionId);
 	}
 	
+	@Override
 	public void addUser(User user) throws JSONException {
 		authUser.add(user);
 	}
 	
+	@Override
 	public User getUser(UserId userId) {
 		return authUser.get(userId);
 	}
 	
+	@Override
 	public Collection<User> getAllUsers() {
 		return authUser.getAll();
 	}
 	
+	@Override
 	public void removeUser(UserId userId) {
 		authUser.remove(userId);
 	}
 
+	@Override
 	public void addMandator(Mandator mandator) throws JSONException {
 		authMandator.add(mandator);
 	}
 	
+	@Override
 	public Mandator getMandator(MandatorId mandatorId) {
 		return authMandator.get(mandatorId);
 	}
@@ -149,6 +156,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		return authMandator.getAll();
 	}
 	
+	@Override
 	public void removeMandator(MandatorId mandatorId)  {
 		authMandator.remove(mandatorId);
 	}
