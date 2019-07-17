@@ -3,6 +3,7 @@ trigger:
 - develop
 
 variables:
+  IMAGE: ubuntu-16.04
   EXCLUDE_SOURCE_MAPS: true
   MVN_CFG: -B -V -Dmaven.repo.local=$(Build.Repository.LocalPath)/cache/.m2
   YARN_CACHE_FOLDER: $(Build.Repository.LocalPath)/cache/yarn/
@@ -12,7 +13,7 @@ jobs:
 - job: tests_frontend
   displayName: Frontend Tests
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: $(IMAGE)
   steps:
   - task: Maven@3
     displayName: frontend tests
@@ -25,7 +26,7 @@ jobs:
   displayName: Backend Tests
   timeoutInMinutes: 15
   pool:
-    vmImage: ubuntu-16.04
+    vmImage: $(IMAGE)
   steps:
   - task: Maven@3
     displayName: build conquery
