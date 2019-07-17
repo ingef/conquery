@@ -90,20 +90,19 @@ public class ConceptsProcessor {
 			.collect(Collectors.toList());
 	}
 
-	public ResolvedConceptsResult resolveFilterValues(Filter<?> filter, List<String> values) {
-		ResolvedFilter rf = createResolvedFilter(filter);
+	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> values) {
 
 		List<FEValue> filterValues = new LinkedList<>();
-		QuickSearch<FilterSearchItem> search = rf.getSourceSearch();
+		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 		if (search != null) {
 			filterValues.addAll(createSourceSearchResult(search, values.toArray(new String[values.size()])));
 		}
 		
-		if (rf.getRealLabels() != null) {
-			List<String> resolveFilterValues = new ArrayList<>(rf.getRealLabels().values());
+		if (filter.getRealLabels() != null) {
+			List<String> resolveFilterValues = new ArrayList<>(filter.getRealLabels().values());
 			List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
 			resolveFilterValues.removeIf(fv -> !toRemove.contains(fv) && !values.contains(fv));
-			filterValues = resolveFilterValues.stream().map(v -> new FEValue(rf.getRealLabels().get(v), v)).collect(Collectors.toList());
+			filterValues = resolveFilterValues.stream().map(v -> new FEValue(filter.getRealLabels().get(v), v)).collect(Collectors.toList());
 			values.removeAll(resolveFilterValues);
 		}
 
@@ -129,31 +128,6 @@ public class ConceptsProcessor {
 		}
 
 		// see https://github.com/bakdata/conquery/issues/235
-		return result;
-	}
-	
-	private ResolvedFilter createResolvedFilter(Filter<?> filter) {
-		ResolvedFilter result = new ResolvedFilter();
-
-		if (filter instanceof BigMultiSelectFilter) {
-			BigMultiSelectFilter bmsf = (BigMultiSelectFilter) filter;
-			result.setColumn(bmsf.getColumn());
-			result.setRealLabels(bmsf.getRealLabels());
-			result.setSourceSearch(bmsf.getSourceSearch());
-		} else if (filter instanceof MultiSelectFilter) {
-			MultiSelectFilter msf = (MultiSelectFilter) filter;
-			result.setColumn(msf.getColumn());
-			result.setRealLabels(msf.getRealLabels());
-			result.setSourceSearch(msf.getSourceSearch());
-		} else {
-			try {
-				throw new WebApplicationException(String.format("Could not resolved Filter values for this Type. Filter: %s", filter.getName()));
-			} catch (WebApplicationException ex) {
-				log.error(ex.getMessage());
-			}
-		}
-		
-
 		return result;
 	}
 	
