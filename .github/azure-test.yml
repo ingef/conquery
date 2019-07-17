@@ -6,7 +6,7 @@ variables:
   IMAGE: ubuntu-16.04
   EXCLUDE_SOURCE_MAPS: true
   CACHE_DIR: $(Pipeline.Workspace)/cache
-  MAVEN_OPTS: -B -V -Dmaven.repo.local=$(CACHE_DIR)/.m2
+  MAVEN_OPTS: -Xmx1G -B -V -Dmaven.repo.local=$(CACHE_DIR)/.m2
   YARN_CACHE_FOLDER: $(CACHE_DIR)/yarn/
 
 
@@ -23,11 +23,12 @@ jobs:
         $(Build.SourcesDirectory)/pom.xml
         $(Build.SourcesDirectory)/eva-frontend-resources/pom.xml
         $(Build.SourcesDirectory)/eva-frontend/yarn.lock
-      path: CACHE_DIR
+      path: $(CACHE_DIR)
   - task: Maven@3
     displayName: frontend tests
     inputs:
-      jdkVersionOption: '1.11'
+      jdkVersion: '1.11'
+      mavenOpts: $(MAVEN_OPTS)
       goals: package
       options: -pl eva-frontend-resources
 
@@ -49,36 +50,39 @@ jobs:
   - task: Maven@3
     displayName: build conquery
     inputs:
-      jdkVersionOption: '1.11'
+      jdkVersion: '1.11'
+      mavenOpts: $(MAVEN_OPTS)
       goals: install
       options: -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
 
   - task: Maven@3
     displayName: build root
     inputs:
-      jdkVersionOption: '1.11'
+      jdkVersion: '1.11'
+      mavenOpts: $(MAVEN_OPTS)
       goals: install
       options: -T 1C -N
 
   - task: Maven@3
     displayName: unit tests
     inputs:
-      jdkVersionOption: '1.11'
+      jdkVersion: '1.11'
+      mavenOpts: $(MAVEN_OPTS)
       goals: install
       options: -T 1C -pl eva-backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
   - task: Maven@3
     displayName: programmatic integration tests
     inputs:
-      jdkVersionOption: '1.11'
-      goals: test
+      jdkVersion: '1.11'
+      mavenOpts: $(MAVEN_OPTS)
       options: -T 1C -pl eva-backend -Dgroups="INTEGRATION_PROGRAMMATIC"
 
   - task: Maven@3
     displayName: json integration tests
     inputs:
-      jdkVersionOption: '1.11'
-      goals: test
+      jdkVersion: '1.11'
+      mavenOpts: $(MAVEN_OPTS)
       options: -T 1C -pl eva-backend -Dgroups="INTEGRATION_JSON"
 
   - task: DeleteFiles@1
