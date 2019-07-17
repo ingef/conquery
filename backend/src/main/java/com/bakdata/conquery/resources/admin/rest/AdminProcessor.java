@@ -96,7 +96,7 @@ public class AdminProcessor {
 		// see #144 check duplicate names
 	}
 
-	public void addDataset(String name) throws JSONException {
+	public Dataset addDataset(String name) throws JSONException {
 		// create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
@@ -133,6 +133,7 @@ public class AdminProcessor {
 		namespaces.getSlaves().values().forEach((slave) -> {
 			this.addWorker(slave, dataset);
 		});
+		return dataset;
 	}
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
