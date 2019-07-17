@@ -1,6 +1,7 @@
 package com.bakdata.conquery;
 
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.externalservice.ResultType;
@@ -18,7 +19,7 @@ public class ConqueryConstants {
 	public static final String ALL_IDS_TABLE = "ALL_IDS_TABLE";
 	public static final String ALL_IDS_TABLE___ID = "id";
 	public static final String DATES = "dates";
-	public static final ResultInfo DATES_INFO = new ResultInfo("dates", ResultType.STRING, 0, 0);
+	public static final ResultInfo DATES_INFO = new ResultInfo("dates", ResultType.STRING, new AtomicInteger(0), 0);
 
 	public static class AuthenticationUtil {
 		public static final String REALM_NAME = "CONQUERY";

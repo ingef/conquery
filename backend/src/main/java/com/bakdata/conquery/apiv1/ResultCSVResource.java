@@ -49,10 +49,11 @@ public class ResultCSVResource {
 	private static final PrintSettings PRINT_SETTINGS = PrintSettings
 		.builder()
 		.prettyPrint(true)
-		.nameExtractor(
-			sd -> ConqueryEscape.unescape(sd.getCqConcept().getIds().get(0).toStringWithoutDataset())
-				+ "_"
-				+ ConqueryEscape.unescape(sd.getSelect().getId().toStringWithoutDataset()))
+		.nameExtractor(sd ->
+			sd.getCqConcept().getIds().get(0).toStringWithoutDataset()
+			+ "_"
+			+ sd.getSelect().getId().toStringWithoutDataset()
+		)
 		.build();
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;

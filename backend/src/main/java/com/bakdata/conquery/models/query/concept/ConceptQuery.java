@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -62,7 +63,7 @@ public class ConceptQuery implements IQuery {
 	
 	
 	public static List<ResultInfo> collectResultInfos(List<SelectDescriptor> selects, List<ResultInfo> header, PrintSettings config) {
-		HashMap<String, Integer> ocurrences = new HashMap<>();
+		HashMap<String, AtomicInteger> ocurrences = new HashMap<>();
 		/*
 		 * Column name is constructed from the most specific concept id the CQConcept
 		 * has and the selector.
@@ -70,11 +71,9 @@ public class ConceptQuery implements IQuery {
 		for (SelectDescriptor selectDescriptor : selects) {
 			Select select = selectDescriptor.getSelect();
 			String columnName = config.getNameExtractor().apply(selectDescriptor);
-			// Start at -1. It is incremented in the next step, so we don't need special handling
-			Integer occurence = ocurrences.computeIfAbsent(columnName, str -> Integer.valueOf(-1));
-			occurence++;
+			AtomicInteger occurence = ocurrences.computeIfAbsent(columnName, str -> new AtomicInteger(0));
 
-			header.add(new SelectResultInfo(columnName, select.getResultType(), occurence, occurence.intValue(), select));
+			header.add(new SelectResultInfo(columnName, select.getResultType(), occurence, occurence.getAndIncrement(), select));
 		}
 		return header;
 	}
