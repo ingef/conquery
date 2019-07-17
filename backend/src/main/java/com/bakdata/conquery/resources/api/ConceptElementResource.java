@@ -1,5 +1,8 @@
 package com.bakdata.conquery.resources.api;
 
+import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -20,6 +23,7 @@ import lombok.Setter;
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
+@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
 public class ConceptElementResource extends HConceptElements {
 	
 	@Inject

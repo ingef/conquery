@@ -1,5 +1,8 @@
 package com.bakdata.conquery.resources.api;
 
+import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -15,13 +18,13 @@ import lombok.Setter;
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
+@Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
 public class DatasetResource extends HConcepts {
 	
 	@Inject
 	protected ConceptsProcessor processor;
 
 	@GET
-	@Path("concepts")
 	public FERoot getRoot() {
 		return processor.getRoot(namespace.getStorage());
 	}
