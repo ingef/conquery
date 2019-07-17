@@ -4,7 +4,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 @ToString
-public class DefaultIdMappingAccessor implements IdMappingAccessor {
+public abstract class DefaultIdMappingAccessor implements IdMappingAccessor {
 
 	@Getter
 	private final int[] idsUsed;

@@ -15,14 +15,18 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import lombok.AllArgsConstructor;
+import lombok.Data;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter @Setter
 public class CQTable {
 	@Valid @NotNull
 	private ConnectorId id;
-	private ValidityDateId dateColumn;
+	@Valid
+	private ValidityDateColumn dateColumn;
 	@Valid @NotNull
 	private List<FilterValue<?>> filters = Collections.emptyList();
 
@@ -34,4 +38,9 @@ public class CQTable {
 
 	@JsonIgnore
 	private Connector resolvedConnector;
+	
+	@Data @AllArgsConstructor @NoArgsConstructor
+	public static class ValidityDateColumn {
+		private ValidityDateId value;
+	}
 }

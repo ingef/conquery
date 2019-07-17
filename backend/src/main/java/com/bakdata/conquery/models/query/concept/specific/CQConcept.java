@@ -148,7 +148,7 @@ public class CQConcept implements CQElement {
 		if(t.getDateColumn() != null) {
 			return t
 				.getResolvedConnector()
-				.getValidityDateColumn(t.getDateColumn().getValidityDate());
+				.getValidityDateColumn(t.getDateColumn().getValue().getValidityDate());
 		}
 
 		//else use this first defined validity date column

@@ -58,4 +58,6 @@ public interface IdMappingAccessor {
 				.put(new SufficientExternalEntityId(extract(entry.getValue().getExternalId())), entry.getKey());
 		}
 	}
+
+	CsvEntityId getFallbackCsvId(String[] reorderedCsvLine);
 }
