@@ -4,6 +4,8 @@ import React from "react";
 import styled from "@emotion/styled";
 import Hotkeys from "react-hot-keys";
 
+import Preview from "../preview/Preview";
+
 import QueryResults from "./QueryResults";
 import QueryRunningSpinner from "./QueryRunningSpinner";
 import QueryRunnerInfo from "./QueryRunnerInfo";
@@ -62,6 +64,7 @@ const QueryRunner = (props: PropsType) => {
           if (isButtonEnabled) btnAction();
         }}
       />
+      <Preview />
       <Left>
         <QueryRunnerButton
           onClick={btnAction}

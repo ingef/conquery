@@ -7,7 +7,8 @@ import {
   lastDayOfQuarter,
   addMonths,
   endOfMonth,
-  isValid
+  isValid,
+  differenceInCalendarDays
 } from "date-fns";
 
 // To save the date in this format in the state
@@ -37,6 +38,10 @@ export const parseDate = (dateString: string, dateFormat: string) => {
   const date = parse(dateString, dateFormat, new Date());
 
   return isValid(date) ? date : null;
+};
+
+export const parseStdDate = dateString => {
+  return parseDate(dateString, DATE_FORMAT);
 };
 
 const DATE_PATTERN = {
@@ -137,3 +142,10 @@ export const testRegexes = (
       return { min: null, max: null };
   }
 };
+
+export function getDiffInDays(dateStr1: string, dateStr2: string) {
+  const date1 = parseDate(dateStr1, DATE_FORMAT);
+  const date2 = parseDate(dateStr2, DATE_FORMAT);
+
+  return differenceInCalendarDays(date1, date2);
+}
