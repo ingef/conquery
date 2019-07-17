@@ -235,6 +235,11 @@ csvColumnPicker:
   semicolon: "Semikolon"
   colon: "Doppelpunkt"
   comma: "Komma"
+  id: "ID"
+  dateSet: "DATUMSBEREICH"
+  startDate: "START_DATUM"
+  endDate: "END_DATUM"
+  ignore: "IGNORIEREN"
 
 uploadConceptListModal:
   headline: "Konzepte aus Liste einfügen"

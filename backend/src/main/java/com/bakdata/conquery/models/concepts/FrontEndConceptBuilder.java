@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.concepts;
 
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -13,6 +14,7 @@ import com.bakdata.conquery.models.api.description.FENode;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FESelect;
 import com.bakdata.conquery.models.api.description.FETable;
+import com.bakdata.conquery.models.api.description.FEValidityDate;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
@@ -164,15 +166,22 @@ public class FrontEndConceptBuilder {
 				.collect(Collectors.toList())
 			).build();
 		
-		if(con.getValidityDates().size() > 0) {
-			result.setValidityDateSelection(
-				FEValue.fromLabels(
-					con
-					.getValidityDates()
-					.stream()
-					.collect(Collectors.toMap(vd->vd.getId().toString(), ValidityDate::getLabel))
+		if(con.getValidityDates().size() > 1) {
+			result.setDateColumn(
+				new FEValidityDate(
+					null,
+					FEValue.fromLabels(
+						con
+						.getValidityDates()
+						.stream()
+						.collect(Collectors.toMap(vd->vd.getId().toString(), ValidityDate::getLabel))
+					)
 				)
 			);
+			
+			if(!result.getDateColumn().getOptions().isEmpty()) {
+				result.getDateColumn().setDefaultValue(result.getDateColumn().getOptions().get(0).getValue());
+			}
 		}
 		
 		return result;

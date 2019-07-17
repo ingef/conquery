@@ -22,6 +22,10 @@ public class DatasetPermission extends IdentifiableInstancePermission<DatasetId>
 	public DatasetPermission(PermissionOwner<?> owner, Set<Ability> abilities, DatasetId instanceId) {
 		super(owner.getId(), abilities, instanceId);
 	}
+	
+	public DatasetPermission(Set<Ability> abilities, DatasetId instanceId) {
+		super(null, abilities, instanceId);
+	}
 
 	@JsonCreator
 	public DatasetPermission(PermissionOwnerId<?> ownerId, Set<Ability> abilities, DatasetId instanceId, UUID jsonId) {

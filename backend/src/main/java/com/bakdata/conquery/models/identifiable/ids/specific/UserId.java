@@ -30,7 +30,7 @@ public class UserId extends PermissionOwnerId<User> {
 		components.add(email);
 	}
 
-	enum Parser implements IId.Parser<UserId> {
+	public enum Parser implements IId.Parser<UserId> {
 		INSTANCE;
 		
 		@Override
