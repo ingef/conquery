@@ -5,8 +5,8 @@ trigger:
 variables:
   IMAGE: ubuntu-16.04
   EXCLUDE_SOURCE_MAPS: true
-  MVN_CFG: -B -V -Dmaven.repo.local=$(Build.Repository.LocalPath)/cache/.m2
-  YARN_CACHE_FOLDER: $(Build.Repository.LocalPath)/cache/yarn/
+  MAVEN_OPTS: -B -V -Dmaven.repo.local=$(Pipeline.Workspace)/cache/.m2
+  YARN_CACHE_FOLDER: $(Pipeline.Workspace)/cache/yarn/
 
 
 jobs:
@@ -15,12 +15,19 @@ jobs:
   pool:
     vmImage: $(IMAGE)
   steps:
+  - task: CacheBeta@0
+    inputs:
+      key: |
+        yarn
+        $(Build.SourcesDirectory)/eva-frontend-resources/pom.xml
+        $(Build.SourcesDirectory)/eva-frontend/yarn.lock
+      path: $(Pipeline.Workspace)/cache
   - task: Maven@3
     displayName: frontend tests
     inputs:
       jdkVersionOption: '1.11'
-      goals: install
-      options: $(MVN_CFG) -pl eva-frontend-resources
+      goals: package
+      options: -pl eva-frontend-resources
 
 - job: tests_backend
   displayName: Backend Tests
@@ -33,32 +40,32 @@ jobs:
     inputs:
       jdkVersionOption: '1.11'
       goals: install
-      options: $(MVN_CFG) -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
+      options: -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
 
   - task: Maven@3
     displayName: build root
     inputs:
       jdkVersionOption: '1.11'
       goals: install
-      options: $(MVN_CFG) -T 1C -N
+      options: -T 1C -N
 
   - task: Maven@3
     displayName: unit tests
     inputs:
       jdkVersionOption: '1.11'
       goals: install
-      options: $(MVN_CFG) -T 1C -pl eva-backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
+      options: -T 1C -pl eva-backend -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
 
   - task: Maven@3
     displayName: programmatic integration tests
     inputs:
       jdkVersionOption: '1.11'
       goals: test
-      options: $(MVN_CFG) -T 1C -pl eva-backend -Dgroups="INTEGRATION_PROGRAMMATIC"
+      options: -T 1C -pl eva-backend -Dgroups="INTEGRATION_PROGRAMMATIC"
 
   - task: Maven@3
     displayName: json integration tests
     inputs:
       jdkVersionOption: '1.11'
       goals: test
-      options: $(MVN_CFG) -T 1C -pl eva-backend -Dgroups="INTEGRATION_JSON"
+      options: -T 1C -pl eva-backend -Dgroups="INTEGRATION_JSON"
