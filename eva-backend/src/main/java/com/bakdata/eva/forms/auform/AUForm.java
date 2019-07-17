@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -34,12 +33,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ValidityDateId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
+import com.bakdata.conquery.models.query.concept.filter.CQTable.ValidityDateColumn;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQMultiSelectFilter;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQNegation;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
@@ -350,20 +349,19 @@ public class AUForm extends StatisticForm {
 		@Override
 		public void accept(CQConcept concept) {
 			concept.getTables().stream().forEach(table -> {
-				CQSelectFilter dateFilter = createDateSelectionFilter(namespaces.resolve(table.getId()));
+				ValidityDateId dateColumn = createValidityDateId(namespaces.resolve(table.getId()));
 				if (table.getFilters() == null || table.getFilters().isEmpty())
 					table.setFilters(new ArrayList<>());
-				table.getFilters().add(dateFilter);
+				table.setDateColumn(new ValidityDateColumn(dateColumn));
 			});
 		}
 		
-		private static CQSelectFilter createDateSelectionFilter(Connector connector) {
+		private static ValidityDateId createValidityDateId(Connector connector) {
 			if (connector.getValidityDates().size() > 1) {
-				CQSelectFilter dateFilter = new CQSelectFilter();
-				dateFilter.setValue(DISABILITY_DATE_TYPE);
-				dateFilter
-					.setFilter(connector.getFilter(new FilterId(connector.getId(), ConqueryConstants.VALIDITY_DATE_SELECTION_FILTER_NAME)));
-				return dateFilter;
+				return new ValidityDateId (
+					connector.getId(),
+					DISABILITY_DATE_TYPE
+				);
 			}
 			return null;
 		}
@@ -480,9 +478,7 @@ public class AUForm extends StatisticForm {
 		t.setId(new ConnectorId(new ConceptId(miscellaneousConceptNames.get(0).getDataset(), "icd"), "au_fall"));
 		t.setConcept(concept);
 
-		List<FilterValue<?>> filters = new ArrayList<>();
-		filters.add(DefaultDateSelection.createDateSelectionFilter(namespaces.resolve(t.getId())));
-		t.setFilters(filters);
+		t.setDateColumn(new ValidityDateColumn(DefaultDateSelection.createValidityDateId(namespaces.resolve(t.getId()))));
 		concept.setTables(Arrays.asList(t));
 		new SelectSetter(namespaces).accept(concept);
 

@@ -39,6 +39,9 @@ public class ExportGenerator {
 			queryManager
 				.reexecuteQuery(prerequisite)
 				.awaitDone(1, TimeUnit.HOURS);
+			if(prerequisite.getState() != ExecutionState.DONE) {
+				throw new IllegalStateException("prerequisite query could not be executed");
+			}
 		}
 		
 		List<FormQuery> queries = new ArrayList<>();

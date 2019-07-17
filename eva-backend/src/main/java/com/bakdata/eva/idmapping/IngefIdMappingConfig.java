@@ -42,6 +42,11 @@ public class IngefIdMappingConfig extends IdMappingConfig {
 			}
 		}
 		String[] parts = StringUtils.split(csvEntityId.getCsvId(), "|");
-		return new ExternalEntityId(new String[] {null,null,parts[1],parts[0]});
+		if(parts.length == 2) {
+			return new ExternalEntityId(new String[] {null,null,parts[1],parts[0]});
+		}
+		else {
+			return new ExternalEntityId(new String[] {null,null,csvEntityId.getCsvId(),""});
+		}
 	}
 }

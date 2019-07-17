@@ -1,0 +1,11 @@
+{
+  "version": "",
+  "production": true,
+  "currency": {
+    "factor": 1,
+    "prefix": "€",
+    "thousandSeparator": ".",
+    "decimalSeparator": ",",
+    "decimalScale": 2
+  }
+}

@@ -30,6 +30,7 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 
 	private long nQuarters;
 	private boolean odd;
+	private boolean hit = false;
 
 	public PeriodSumAggregator(@NsIdRef Column column) {
 		super(column);
@@ -37,7 +38,8 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 
 	@Override
 	public Double getAggregationResult() {
-		if (nQuarters < 4) {
+
+		if (!hit || nQuarters < 4) {
 			return null;
 		}
 
@@ -70,6 +72,8 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 			return;
 		}
 
+		hit = true;
+
 		final LocalDate date = bucket.getAsDateRange(event, getValidityDate()).getMin();
 		final double value = bucket.getReal(event, getColumn());
 
@@ -84,11 +88,6 @@ public class PeriodSumAggregator extends SingleColumnAggregator<Double> {
 		else if (odd && quartersToEnd == 4) {
 			sum += value * (nQuarters - Math.floor(nQuarters / 4d) * 4d) / 4d;
 		}
-	}
-
-	@Override
-	public Column[] getRequiredColumns() {
-		return new Column[] { getColumn() };
 	}
 
 	@Override

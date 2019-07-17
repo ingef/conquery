@@ -1,0 +1,83 @@
+{
+	"type": "QUERY_TEST",
+	"label": "ABS_EXPORT Test",
+	"expectedCsv": "eva-tests/query/ABS_EXPORT/expected.csv",
+	"query": {
+		"type": "FORM_QUERY",
+		"includedEntities": {
+			"0": [
+				{"dateRange":"2000-01-01/2002-12-31"},
+				{"dateRange":"2000-01-01/2000-12-31", "index": 0},
+				{"dateRange":"2001-01-01/2001-12-31", "index": 1},
+				{"dateRange":"2002-01-01/2002-12-31", "index": 2}
+			]
+		},
+		"root": {
+			"type": "CONCEPT",
+			"ids": [
+			  "${dataset}.test_tree.test_child1"
+			],
+			"selects": ["${dataset}.test_tree.exists"],
+			"tables": [
+				{
+				  "id": "${dataset}.test_tree.test_column",
+				   "filters": []
+				}
+			]
+		}
+	},
+	"concepts": [
+		{
+			"label": "test_tree",
+			"type":"TREE",
+			"connectors": {
+			  "label": "tree_label",
+			  "name": "test_column",
+			  "column": "test_table.test_column",
+			  "validityDates": {"label": "datum" ,"column": "test_table.datum"}
+			},
+			"selects": [
+				{
+					"type": "EXISTS",
+					"name": "exists"
+				}
+			],
+			"children": [
+				{
+					"label": "test_child1",
+					"description": " ",
+					"condition": {"type": "PREFIX_LIST", "prefixes": "A1"},
+					"children": []
+				},
+				{
+					"label": "test_child2",
+					"description": " ",
+					"condition": {"type": "PREFIX_LIST", "prefixes": "B2"},
+					"children": []
+				}
+			]
+		}
+	],
+	"content": {
+		"tables": [
+			{
+				"csv": "eva-tests/query/ABS_EXPORT/content.csv",
+				"name": "test_table",
+				"primaryColumn" : {
+					"name": "pid",
+					"type": "STRING"
+				},
+				"columns": [
+					{
+						"name": "datum",
+						"type": "DATE"
+					},
+					{
+						"name": "test_column",
+						"type": "STRING"
+					}
+				]
+			}
+		]
+	}
+}
