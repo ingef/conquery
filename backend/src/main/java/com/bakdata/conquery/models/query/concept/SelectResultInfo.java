@@ -17,6 +17,7 @@ public class SelectResultInfo extends ResultInfo {
 		this.select = select;
 	}
 	
+	@Override
 	public SelectResultInfo withName(@NonNull String name) {
 		return this.getName() == name ? this : new SelectResultInfo(name, this.getType(), this.getSameNameOcurrences(), this.getPostfix(), this.getSelect());
 	}

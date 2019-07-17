@@ -23,6 +23,6 @@ public class ResultInfo {
 	private final int postfix;
 	
 	public String getUniqueName() {
-		return (sameNameOcurrences != null && sameNameOcurrences.get() > 0) ? name + "_" + postfix : name;
+		return (sameNameOcurrences != null && sameNameOcurrences.get() > 1) ? name + "_" + postfix : name;
 	}
 }
