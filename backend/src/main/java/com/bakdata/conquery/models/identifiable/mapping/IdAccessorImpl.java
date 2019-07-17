@@ -52,15 +52,6 @@ public class IdAccessorImpl implements IdAccessor {
 		return result.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
 	}
 
-	/**
-	 * If not real mapping is possible we use this fallback CsvId and join the id Parts together.
-	 * @param idPart all required Parts of the id.
-	 * @return all Parts of the concatenated by a pipe.
-	 */
-	public static CsvEntityId getFallbackCsvId(String[] idPart) {
-		return new CsvEntityId(String.join("|", idPart));
-	}
-
 	@Override
 	public CsvEntityId getCsvEntityId(String[] csvLine) {
 		String[] reorderedCsvLine = reorder(csvLine);
@@ -69,7 +60,7 @@ public class IdAccessorImpl implements IdAccessor {
 			.map(PersistentIdMap::getExternalIdPartCsvIdMap)
 			.map(m->m.get(new SufficientExternalEntityId(reorderedCsvLine)))
 			// fallback: we join everything relevant together
-			.orElseGet(()->getFallbackCsvId(reorderedCsvLine));
+			.orElseGet(()->accessor.getFallbackCsvId(reorderedCsvLine));
 	}
 
 	/**
