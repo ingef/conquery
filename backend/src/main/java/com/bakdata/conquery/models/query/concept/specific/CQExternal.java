@@ -17,6 +17,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
+import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessorImpl;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
@@ -89,8 +90,10 @@ public class CQExternal implements CQElement {
 					}
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				int resolvedId = primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId());
-				if(resolvedId != -1) {
+				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format));
+				
+				int resolvedId;
+				if(id!=null && (resolvedId=primary.getId(id.getCsvId())) != -1) {
 					includedEntities.put(
 						resolvedId,
 						Objects.requireNonNull(dates)
@@ -101,7 +104,7 @@ public class CQExternal implements CQElement {
 				}
 			}
 			catch (Exception e) {
-				log.warn("failed to parse dates from " + Arrays.toString(row), e);
+				log.warn("failed to parse id from " + Arrays.toString(row), e);
 			}
 		}
 		if(!nonResolved.isEmpty()) {
@@ -109,7 +112,7 @@ public class CQExternal implements CQElement {
 				"Could not resolve {} of the {} rows. Not resolved: {}",
 				nonResolved.size(),
 				values.length-1,
-				nonResolved
+				nonResolved.subList(0, 10)
 			);
 		}
 		
