@@ -4,11 +4,11 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import { components } from "react-select";
-import { type FieldPropsType } from "redux-form";
+import type { FieldPropsType } from "redux-form";
 import Markdown from "react-markdown";
 import Mustache from "mustache";
 
-import { type SelectOptionsType } from "../common/types/backend";
+import type { SelectOptionsT } from "../api/types";
 import { isEmpty } from "../common/helpers";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
@@ -19,7 +19,7 @@ import Labeled from "./Labeled";
 
 type PropsType = FieldPropsType & {
   label?: string,
-  options: SelectOptionsType,
+  options: SelectOptionsT,
   disabled?: ?boolean,
   tooltip?: string,
   onInputChange?: Function,

@@ -20,6 +20,7 @@ public interface ConceptTreeNode<ID extends ConceptElementId<? extends ConceptEl
 	ConceptTreeNode getParent();
 	void setLocalId(int size);
 	void setDepth(int i);
+	long calculateBitMask();
 
 	TreeChildPrefixIndex getChildIndex();
 	void setChildIndex(TreeChildPrefixIndex childIndex);

@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.filter;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -11,6 +11,11 @@ import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
 import lombok.Getter;
 
+/**
+ * Abstract class for filter nodes acting on aggregation results.
+ * @param <AGGREGATOR> Type of the Aggregator
+ * @param <FILTER_VALUE> Type of the used FilterValue
+ */
 public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<?>, FILTER_VALUE> extends FilterNode<FILTER_VALUE> {
 
 	@Getter
@@ -33,14 +38,14 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	}
 
 	@Override
-	public void nextBlock(Block block) {
-		super.nextBlock(block);
-		aggregator.nextBlock(block);
+	public void nextBlock(Bucket bucket) {
+		super.nextBlock(bucket);
+		aggregator.nextBlock(bucket);
 	}
 
 	@Override
-	public void acceptEvent(Block block, int event) {
-		aggregator.aggregateEvent(block, event);
+	public void acceptEvent(Bucket bucket, int event) {
+		aggregator.aggregateEvent(bucket, event);
 	}
 
 	@Override
@@ -49,5 +54,10 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	@Override
 	public String toString() {
 		return getClass().getSimpleName();
+	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return aggregator.isOfInterest(bucket);
 	}
 }

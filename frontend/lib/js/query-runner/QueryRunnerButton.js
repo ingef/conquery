@@ -36,7 +36,7 @@ const Label = styled("span")`
 const StyledBasicButton = styled(BasicButton)`
   outline: none;
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   overflow: hidden;
   padding: 0;
   margin: 0;

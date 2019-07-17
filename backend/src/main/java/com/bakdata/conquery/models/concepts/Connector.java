@@ -9,17 +9,12 @@ import java.util.stream.Collectors;
 import javax.validation.ConstraintValidatorContext;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang3.NotImplementedException;
-
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid;
 import com.bakdata.conquery.models.exceptions.validators.DetailedValid.ValidationMethod2;
 import com.bakdata.conquery.models.identifiable.IdMap;
@@ -45,15 +40,11 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 
 	private static final long serialVersionUID = 1L;
 
-	@NotNull
+	@NotNull @JsonManagedReference
 	private List<ValidityDate> validityDates = new ArrayList<>();
-	@JsonManagedReference
-	private ValidityDateSelectionFilter dateSelectionFilter;
-
 	@JsonBackReference
 	private Concept<?> concept;
-
-	@JsonIgnore @Getter(AccessLevel.NONE)
+	@JsonIgnore @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
 	@NotNull @Getter @Setter @JsonManagedReference
@@ -73,6 +64,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 					ValidityDate sd = new ValidityDate();
 					sd.setColumn(c);
 					sd.setName(c.getName());
+					sd.setConnector(this);
 					return sd;
 				})
 				.collect(Collectors.toList())
@@ -94,19 +86,6 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 						.map(ValidityDate::getColumn)
 						.findAny()
 						.orElseThrow(() -> new IllegalArgumentException("Unable to find date " + name));
-	}
-
-	public CDateRange extractValidityDates(Block block, int event) {
-		throw new NotImplementedException("extractValidityDates");
-		/*validityDates.stream()
-				.map(ValidityDate::getColumn)
-				.map(record::get)
-				.flatMap(DateHelper::streamDatesOfDateObject)
-				.map(Range::singleton)
-				.reduce(Range::span)
-				.orElse(null);
-				*/
-		//see #157
 	}
 
 	@ValidationMethod2

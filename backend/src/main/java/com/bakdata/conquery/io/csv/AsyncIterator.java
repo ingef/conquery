@@ -14,7 +14,7 @@ import lombok.extern.slf4j.Slf4j;
 public class AsyncIterator<T> extends AbstractIterator<T> implements Closeable {
 
 	private final Iterator<T> iterator;
-	private final BlockingQueue<Object> queue = new ArrayBlockingQueue<>(100);
+	private final BlockingQueue<Object> queue = new ArrayBlockingQueue<>(10000);
 	private final Object marker = new Object();
 	private final Thread thread;
 	

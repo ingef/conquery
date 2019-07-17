@@ -8,8 +8,8 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -26,7 +26,7 @@ public class CopyOutput extends Output {
 	private MajorTypeId inputType;
 
 	@Override
-	public List<Object> createOutput(CType<?,?> type, String[] row, int source, long sourceLine) throws ParsingException {
+	public List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException {
 		if(row[inputColumn]==null) {
 			return NULL;
 		}

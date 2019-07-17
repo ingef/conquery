@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.api.description.FEValue;
@@ -15,7 +16,7 @@ import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.Sets;
 import com.zigurs.karlis.utils.search.QuickSearch;
@@ -39,7 +40,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	@JsonIgnore
 	protected Map<String, String> labelsToRealLabels;
 	@JsonIgnore
-	protected transient QuickSearch sourceSearch;
+	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
 	@JsonIgnore
 	private final int maximumSize;
@@ -84,6 +85,6 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		if (values == null) {
 			values = new HashSet<>();
 		}
-		values.addAll(Sets.newHashSet(((IStringType) getColumn().getTypeFor(imp)).iterator()));
+		values.addAll(Sets.newHashSet(((AStringType) getColumn().getTypeFor(imp)).iterator()));
 	}
 }

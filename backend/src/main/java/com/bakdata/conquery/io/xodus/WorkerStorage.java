@@ -2,16 +2,15 @@ package com.bakdata.conquery.io.xodus;
 
 import java.io.File;
 import java.util.Collection;
-import java.util.List;
 
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.events.Block;
 import com.bakdata.conquery.models.events.BlockManager;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.BlockId;
+import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 
@@ -24,10 +23,10 @@ public interface WorkerStorage extends NamespacedStorage {
 	void setWorker(WorkerInformation worker) throws JSONException;
 	void updateWorker(WorkerInformation worker) throws JSONException;
 	
-	void addBlocks(List<Block> newBlocks) throws JSONException;
-	Block getBlock(BlockId id);
-	void removeBlock(BlockId id);
-	Collection<Block> getAllBlocks();
+	void addBucket(Bucket bucket) throws JSONException;
+	Bucket getBucket(BucketId id);
+	void removeBucket(BucketId id);
+	Collection<Bucket> getAllBuckets();
 	
 	void addCBlock(CBlock cBlock) throws JSONException;
 	CBlock getCBlock(CBlockId id);

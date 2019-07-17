@@ -6,13 +6,14 @@ import difference from "lodash.difference";
 import {
   getConceptsByIdsWithTablesAndSelects,
   getConceptById
-} from "../category-trees/globalTreeStoreHelper";
+} from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
-import { type DateRangeType } from "../common/types/backend";
+import type { DateRangeT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
+import { selectsWithDefaults } from "../model/select";
 
 import {
   QUERY_GROUP_MODAL_SET_DATE,
@@ -61,12 +62,12 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
-  TOGGLE_INCLUDE_SUBNODES
+  TOGGLE_INCLUDE_SUBNODES,
+  SET_DATE_COLUMN
 } from "./actionTypes";
 
 import type {
   QueryNodeType,
-  QueryGroupType,
   StandardQueryType,
   DraggedNodeType,
   DraggedQueryType
@@ -74,31 +75,22 @@ import type {
 
 const initialState: StandardQueryType = [];
 
-export const withDefaultValues = arr => {
-  if (!arr) return arr;
-
-  return arr.map(obj => {
-    // Tables passed
-    if (obj.selects) return { ...obj, selects: withDefaultValues(obj.selects) };
-
-    // Selects passed
-    return { ...obj, selected: !!obj.default };
-  });
-};
-
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
 ): QueryNodeType => {
   // This sort of mapping might be a problem when adding new optional properties to
   // either Nodes or Queries: Flow won't complain when we omit those optional
   // properties here. But we can't use a spread operator either...
+  const baseItem = {
+    label: item.label,
+    excludeTimestamps: item.excludeTimestamps,
+    loading: item.loading,
+    error: item.error
+  };
 
   if (item.isPreviousQuery)
     return {
-      label: item.label,
-      excludeTimestamps: item.excludeTimestamps,
-      loading: item.loading,
-      error: item.error,
+      ...baseItem,
 
       id: item.id,
       // eslint-disable-next-line no-use-before-define
@@ -107,16 +99,13 @@ const filterItem = (
     };
   else
     return {
+      ...baseItem,
+
       ids: item.ids,
       description: item.description,
-      tables: withDefaultValues(item.tables),
-      selects: withDefaultValues(item.selects),
+      tables: item.tables,
+      selects: item.selects,
       tree: item.tree,
-
-      label: item.label,
-      excludeTimestamps: item.excludeTimestamps,
-      loading: item.loading,
-      error: item.error,
 
       additionalInfos: item.additionalInfos,
       matchingEntries: item.matchingEntries,
@@ -167,7 +156,7 @@ const dropAndNode = (
   action: {
     payload: {
       item: DraggedNodeType | DraggedQueryType,
-      dateRange?: DateRangeType
+      dateRange?: DateRangeT
     }
   }
 ) => {
@@ -344,14 +333,9 @@ const setNodeFilterProperties = (state, action, properties) => {
 };
 
 const setNodeFilterValue = (state, action) => {
-  const { value, formattedValue } = action.payload;
+  const { value } = action.payload;
 
-  // "action" is weirdly split if half here.
-  // Check if formattedValue is actually needed and refactor.
-  return setNodeFilterProperties(state, action, {
-    value,
-    formattedValue
-  });
+  return setNodeFilterProperties(state, action, { value });
 };
 
 const setNodeTableSelects = (state, action) => {
@@ -367,6 +351,24 @@ const setNodeTableSelects = (state, action) => {
       ...select,
       selected: !!value.find(selectedValue => selectedValue.value === select.id)
     }))
+  };
+
+  return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
+};
+
+const setNodeTableDateColumn = (state, action) => {
+  const { tableIdx, value } = action.payload;
+  const { andIdx, orIdx } = selectEditedNode(state);
+  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const { dateColumn } = table;
+
+  // value contains the selects that have now been selected
+  const newTable = {
+    ...table,
+    dateColumn: {
+      ...dateColumn,
+      value
+    }
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
@@ -390,8 +392,7 @@ const switchNodeFilterMode = (state, action) => {
 
   return setNodeFilterProperties(state, action, {
     mode,
-    value: null,
-    formattedValue: null
+    value: null
   });
 };
 
@@ -404,12 +405,7 @@ const resetNodeAllFilters = (state, action) => {
 
   const newState = setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: false,
-    selects: node.selects
-      ? node.selects.map(select => ({
-          ...select,
-          selected: false
-        }))
-      : null
+    selects: selectsWithDefaults(node.selects)
   });
 
   if (!node.tables) return newState;
@@ -434,7 +430,7 @@ const resetGroupDates = (state, action) => {
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
-// since `savedTables` comes from a `savedConcept` in a `categoryTree`. Such a
+// since `savedTables` comes from a `savedConcept` in a `conceptTree`. Such a
 // `savedConcept` is never modified and only declares possible filters.
 // Since `table` comes from a previous query, it may have set filter values
 // if so, we will need to merge them in.
@@ -530,7 +526,6 @@ const expandNode = (rootConcepts, node) => {
       return {
         ...node,
         id: node.query,
-        query: node.resolvedQuery,
         isPreviousQuery: true
       };
     case "DATE_RESTRICTION":
@@ -558,30 +553,27 @@ const expandNode = (rootConcepts, node) => {
 
       const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
       const label = node.label || lookupResult.concepts[0].label;
+      const description =
+        node.description || lookupResult.concepts[0].description;
 
       return {
         ...node,
         label,
+        description,
         tables,
         selects,
+        excludeTimestamps: node.excludeFromTimeAggregation,
         tree: lookupResult.root
       };
   }
 };
 
 // Completely override all groups in the editor with the previous groups, but
-// a) merge elements with concept data from category trees (esp. "tables")
+// a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
-const expandPreviousQuery = (
-  state,
-  action: { payload: { groups: QueryGroupType[] } }
-) => {
+const expandPreviousQuery = (state, action) => {
   const { rootConcepts, query } = action.payload;
-
-  if (!query.root || query.root.type !== "AND") {
-    throw new Error("Cant expand query, because root is not AND");
-  }
 
   return query.root.children.map(child => expandNode(rootConcepts, child));
 };
@@ -643,7 +635,7 @@ const loadPreviousQuerySuccess = (state, action) => {
     ...label,
     id: action.payload.data.id,
     loading: false,
-    query: action.payload.data.query.query // TODO: Backend bug, here should be only "query"
+    query: action.payload.data.query
   });
 };
 const loadPreviousQueryError = (state, action) => {
@@ -739,10 +731,6 @@ const insertUploadedConceptList = (state, action) => {
 
 const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
-};
-
-const deselectNode = (state, action) => {
-  return setAllElementsProperties(state, { isEditing: false });
 };
 
 const updateNodeLabel = (state, action) => {
@@ -905,7 +893,7 @@ const query = (
     case SELECT_NODE_FOR_EDITING:
       return selectNodeForEditing(state, action);
     case DESELECT_NODE:
-      return deselectNode(state, action);
+      return setAllElementsProperties(state, { isEditing: false });
     case UPDATE_NODE_LABEL:
       return updateNodeLabel(state, action);
     case ADD_CONCEPT_TO_NODE:
@@ -952,6 +940,8 @@ const query = (
       return setResolvedFilterValues(state, action);
     case TOGGLE_INCLUDE_SUBNODES:
       return toggleIncludeSubnodes(state, action);
+    case SET_DATE_COLUMN:
+      return setNodeTableDateColumn(state, action);
     default:
       return state;
   }

@@ -2,7 +2,7 @@ locale: "de"
 
 headline: "Anfragen und Analyse"
 leftPane:
-  categoryTrees: "Konzeptbäume"
+  conceptTrees: "Konzeptbäume"
   previousQueries: "Anfragen"
 
 rightPane:
@@ -10,7 +10,7 @@ rightPane:
   timebasedQueryEditor: "Zeit-Editor"
   externalForms: "Formulare"
 
-categoryTreeList:
+conceptTreeList:
   loading: "Lade Konzeptbäume"
   loadingTree: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
@@ -36,7 +36,6 @@ queryRunner:
   resultCount: "{count} Ergebnisse"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
-  downloadResults: "CSV"
 
 queryEditor:
   couldNotExpandNode: "Konzept nicht gefunden"
@@ -45,9 +44,7 @@ queryEditor:
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
-  details: "Details"
   previousQuery: "Anfrage"
-  conceptList: "Konzeptliste"
   loadingPreviousQuery: "Lade Anfragedetails"
 
 dropzone:
@@ -83,6 +80,8 @@ queryNodeEditor:
   filters: "Filter"
   selects: "Zusatzwerte"
   nodeNotFound: "Konzept nicht gefunden"
+  selectValidityDate: "Relevanter Zeitraum"
+  dateColumn: "Datumsspalte"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
@@ -106,6 +105,7 @@ common:
   description: "Beschreibung"
   clearAll: "Alle entfernen"
   clearValue: "Wert entfernen"
+  closeEsc: "Schließen (ESC)"
 
 tooltip:
   headline: "Info"
@@ -153,6 +153,7 @@ previousQueries:
   noQueriesFound: "Keine Anfragen gefunden"
 
 previousQuery:
+  notExecuted: "Noch nicht ausgeführt"
   addTag: "Schlagwort hinzufügen"
   share: "Freigeben"
   shared: "Freigegeben"
@@ -226,10 +227,22 @@ uploadQueryResultsModal:
   uploadFailedSub: "Bitte überprüfen Sie das Format und die Netzwerkverbindung"
   uploadSucceeded: "Ergebnisliste hochladen erfolgreich"
   formatInfo:
-    text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
+    text: "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
+
+csvColumnPicker:
+  loading: "Lese Daten ..."
+  delimiter: "Trennzeichen"
+  semicolon: "Semikolon"
+  colon: "Doppelpunkt"
+  comma: "Komma"
+  id: "ID"
+  dateSet: "DATUMSBEREICH"
+  startDate: "START_DATUM"
+  endDate: "END_DATUM"
+  ignore: "IGNORIEREN"
 
 uploadConceptListModal:
-  headline: "Konzeptliste hochladen"
+  headline: "Konzepte aus Liste einfügen"
   label: "Name der Liste"
   selectConceptRootNode: "Konzeptbaum-Wurzel auswählen"
   insertNode: "Jetzt einfügen"
@@ -243,7 +256,7 @@ uploadConceptListModal:
   error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
 
 uploadFilterListModal:
-  headline: "Filter-Werte hochladen"
+  headline: "Filter-Werte aus Liste einfügen"
 
 conceptListDetailsModal:
   conceptTreeRoot: "Konzeptbaum"

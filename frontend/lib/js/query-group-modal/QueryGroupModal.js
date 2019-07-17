@@ -36,7 +36,7 @@ const ResetAll = styled(IconButton)`
 type PropsType = {
   group: Object,
   andIdx: number,
-  onCloseModal: () => void,
+  onClose: () => void,
   onSetDate: any => void,
   onResetAllDates: () => void
 };
@@ -53,7 +53,7 @@ const QueryGroupModal = (props: PropsType) => {
   const { onSetDate } = props;
 
   return (
-    <Modal closeModal={props.onCloseModal} doneButton tabIndex={3}>
+    <Modal onClose={props.onClose} doneButton tabIndex={3}>
       <Root>
         <Headline>
           {props.group.elements.reduce(
@@ -76,6 +76,8 @@ const QueryGroupModal = (props: PropsType) => {
           )}
         </Headline>
         <InputDateRange
+          large
+          inline
           label={T.translate("queryGroupModal.explanation")}
           labelSuffix={
             <>
@@ -86,7 +88,6 @@ const QueryGroupModal = (props: PropsType) => {
               )}
             </>
           }
-          inline
           input={{
             onChange: onSetDate,
             value: dateRange
@@ -104,15 +105,12 @@ function findGroup(query, andIdx) {
 }
 
 const mapStateToProps = state => ({
-  group: findGroup(
-    state.panes.right.tabs.queryEditor.query,
-    state.queryGroupModal.andIdx
-  ),
+  group: findGroup(state.queryEditor.query, state.queryGroupModal.andIdx),
   andIdx: state.queryGroupModal.andIdx
 });
 
 const mapDispatchToProps = (dispatch: any) => ({
-  onCloseModal: () => dispatch(queryGroupModalClearNode()),
+  onClose: () => dispatch(queryGroupModalClearNode()),
   onSetDate: (andIdx, date) => dispatch(queryGroupModalSetDate(andIdx, date)),
   onResetAllDates: andIdx => dispatch(queryGroupModalResetAllDates(andIdx))
 });

@@ -31,13 +31,8 @@ const Message = styled("p")`
   font-weight: 400;
 `;
 
-const SubMessage = styled("p")`
-  font-size: ${({ theme }) => theme.font.md};
-  margin: 0 0 10px;
-`;
-
 const Preview = styled("div")`
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
   background-color: ${({ theme }) => theme.col.grayVeryLight};
   width: 100%;
   height: ${({ large }) => (large ? "100px" : "70px")};

@@ -1,6 +1,6 @@
 // @flow
 
-import type { ConceptListResolutionResultType } from "../common/types/backend";
+import type { PostConceptResolveResponseT } from "../api/types";
 import { stripFilename } from "../common/helpers/fileHelper";
 
 import {
@@ -19,7 +19,7 @@ export type StateType = {
   conceptCodesFromFile: string[],
   selectedConceptRootNode: string,
   loading: boolean,
-  resolved: ConceptListResolutionResultType,
+  resolved: PostConceptResolveResponseT,
   error: ?Error
 };
 

@@ -3,7 +3,7 @@
 import { connect } from "react-redux";
 import { type Dispatch } from "redux-thunk";
 
-import type { DateRangeType, InfoType } from "../common/types/backend";
+import type { DateRangeT, InfoT } from "../api/types";
 
 import { isEmpty } from "../common/helpers";
 import { toggleAdditionalInfos, displayAdditionalInfos } from "./actions";
@@ -14,8 +14,8 @@ export type AdditionalInfoHoverableNodeType = {
   description: string,
   children?: Array<string>,
   matchingEntries: number,
-  dateRange: DateRangeType,
-  additionalInfos: Array<InfoType>
+  dateRange: DateRangeT,
+  additionalInfos: InfoT[]
 };
 
 // Whitelist the data we pass (especially: don't pass all children)

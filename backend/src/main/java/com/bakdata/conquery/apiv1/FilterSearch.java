@@ -4,12 +4,13 @@ import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTIO
 import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -21,18 +22,20 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class FilterSearch {
 
-	private static Map<String, QuickSearch> search = new HashMap<>();
+	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
 	public static void init(Collection<Dataset> datasets) {
+		ExecutorService executor = Executors.newSingleThreadExecutor();
 		datasets
 			.stream()
 			.flatMap(ds -> ConceptsUtils.getAllConnectors(ds.getConcepts()).stream())
 			.flatMap(co -> co.collectAllFilters().stream())
 			.filter(f -> f instanceof AbstractSelectFilter && f.getTemplate() != null)
-			.forEach(f -> createSourceSearch((AbstractSelectFilter) f));
+			.forEach(f -> executor.submit(()->createSourceSearch((AbstractSelectFilter<?>) f)));
+		executor.shutdown();
 	}
 
-	private static void createSourceSearch(AbstractSelectFilter filter) {
+	private static void createSourceSearch(AbstractSelectFilter<?> filter) {
 		FilterTemplate template = filter.getTemplate();
 
 		List<String> columns = template.getColumns();
@@ -41,14 +44,14 @@ public class FilterSearch {
 		File file = new File(template.getFilePath());
 		String key = String.join("_", columns) + "_" + file.getName();
 
-		QuickSearch quick = search.get(key);
+		QuickSearch<FilterSearchItem> quick = search.get(key);
 		if (quick != null) {
-			log.info("Reference List '{}' is already exists ...", file.getAbsolutePath());
+			log.info("Reference list '{}' already exists ...", file.getAbsolutePath());
 			filter.setSourceSearch(quick);
 			return;
 		}
 
-		log.info("Processing Reference List '{}' ...", file.getAbsolutePath());
+		log.info("Processing reference list '{}' ...", file.getAbsolutePath());
 		long time = System.currentTimeMillis();
 
 		quick = new QuickSearch.QuickSearchBuilder()
@@ -81,9 +84,9 @@ public class FilterSearch {
 
 			filter.setSourceSearch(quick);
 			search.put(key, quick);
-			log.info("Processed Reference List '{}' in {} ms", file.getAbsolutePath(), System.currentTimeMillis() - time);
-		} catch (IOException ex) {
-			log.error(ex.getMessage());
+			log.info("Processed reference list '{}' in {} ms", file.getAbsolutePath(), System.currentTimeMillis() - time);
+		} catch (Exception e) {
+			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);
 		}
 	}
 }

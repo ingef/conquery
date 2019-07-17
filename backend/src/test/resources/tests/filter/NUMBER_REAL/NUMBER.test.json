@@ -1,0 +1,41 @@
+{
+  "type": "FILTER_TEST",
+  "label": "NUMBER_REAL Test",
+  "expectedCsv": "tests/filter/NUMBER_REAL/expected_NUMBER_Filter.csv",
+  "content": {
+    "tables": {
+      "csv": "tests/filter/NUMBER_REAL/content_NUMBER_Filter.csv",
+      "primaryColumn": {
+        "name": "pid",
+        "type": "STRING"
+      },
+      "columns": [
+        {
+          "name": "nr",
+          "type": "REAL"
+        },
+        {
+          "name": "datum",
+          "type": "DATE"
+        }
+      ]
+    }
+  },
+  "connector": {
+    "validityDates": {
+      "label": "Datum",
+      "column": "table.datum"
+    },
+    "filter": {
+      "column": "table.nr",
+      "type": "NUMBER"
+    }
+  },
+  "filterValue": {
+    "type": "REAL_RANGE",
+    "value": {
+      "min": 100,
+      "max": 200
+    }
+  }
+}

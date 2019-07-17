@@ -1,38 +1,22 @@
-import React from "react";
+import { combineReducers } from "redux";
 
-import { type TabPropsType } from "../pane";
+import type { TabT } from "../pane/types";
 import { createQueryRunnerReducer } from "../query-runner";
-
 import { default as timebasedQueryReducer } from "./reducer";
-
-import TimebasedQueryEditor from "./TimebasedQueryEditor";
-import TimebasedQueryClearButton from "./TimebasedQueryClearButton";
-import TimebasedQueryRunner from "./TimebasedQueryRunner";
+import TimebasedQueryEditorTab from "./TimebasedQueryEditorTab";
 
 const timebasedQueryRunnerReducer = createQueryRunnerReducer("timebased");
 
-const timebasedQueryEditorTabDescription = {
-  key: "timebasedQueryEditor",
-  label: "rightPane.timebasedQueryEditor"
-};
-
-export const TimebasedQueryEditorTab = {
-  description: timebasedQueryEditorTabDescription,
-  reducer: (state = timebasedQueryEditorTabDescription, action) => ({
-    ...state,
-    timebasedQuery: timebasedQueryReducer(state.timebasedQuery, action),
-    timebasedQueryRunner: timebasedQueryRunnerReducer(
-      state.timebasedQueryRunner,
-      action
-    )
-  }),
-  component: (props: TabPropsType) => (
-    <>
-      <TimebasedQueryClearButton />
-      <TimebasedQueryEditor />
-      <TimebasedQueryRunner datasetId={props.selectedDatasetId} />
-    </>
-  )
-};
-
 export * as actions from "./actions";
+
+const Tab: TabT = {
+  key: "timebasedQueryEditor",
+  label: "rightPane.timebasedQueryEditor",
+  reducer: combineReducers({
+    timebasedQuery: timebasedQueryReducer,
+    timebasedQueryRunner: timebasedQueryRunnerReducer
+  }),
+  component: TimebasedQueryEditorTab
+};
+
+export default Tab;

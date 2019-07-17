@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.util.IdentifierGenerator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;
@@ -31,7 +32,7 @@ public class AddWorker extends SlaveMessage.Slow {
 	public void react(Slave context) throws Exception {
 		log.info("creating a new worker for {}", dataset);
 		ConqueryConfig config = context.getConfig();
-		File dir = createWorkerName(config);
+		File dir = createWorkerName(context);
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
 		info.setIncludedBuckets(new IntArrayList());
@@ -51,8 +52,8 @@ public class AddWorker extends SlaveMessage.Slow {
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
 
-	private File createWorkerName(ConqueryConfig config) {
-		String name = "worker_"+dataset.getId()+"_"+UUID.randomUUID();
-		return new File(config.getStorage().getDirectory(), name);
+	private File createWorkerName(Slave context) {
+		String name = "worker_"+dataset.getName()+"_"+UUID.randomUUID().toString();
+		return new File(context.getConfig().getStorage().getDirectory(), name);
 	}
 }

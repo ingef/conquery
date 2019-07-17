@@ -5,8 +5,8 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
-import javax.annotation.security.PermitAll;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -23,9 +23,11 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedQueryId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 
@@ -34,7 +36,7 @@ import io.dropwizard.auth.Auth;
 @Path("datasets/{" + DATASET + "}/queries")
 @Consumes(AdditionalMediaTypes.JSON)
 @Produces(AdditionalMediaTypes.JSON)
-@PermitAll
+
 public class QueryResource {
 
 	private final QueryProcessor processor;
@@ -46,10 +48,10 @@ public class QueryResource {
 	}
 
 	@POST
-	public SQStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
+	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 		// Check reused query
-		for (ManagedQueryId requiredQueryId : query.collectRequiredQueries()) {
+		for (ManagedExecutionId requiredQueryId : query.collectRequiredQueries()) {
 			authorize(user, requiredQueryId, Ability.READ);
 		}
 
@@ -58,7 +60,7 @@ public class QueryResource {
 
 	@DELETE
 	@Path("{" + QUERY + "}")
-	public SQStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws SQLException {
+	public ExecutionStatus cancel(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws SQLException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
@@ -67,10 +69,11 @@ public class QueryResource {
 
 	@GET
 	@Path("{" + QUERY + "}")
-	public SQStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedQueryId queryId, @Context HttpServletRequest req) throws InterruptedException {
+	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-
-		return processor.getStatus(dsUtil.getDataset(datasetId), dsUtil.getManagedQuery(datasetId, queryId), URLBuilder.fromRequest(req));
+		ManagedQuery query = dsUtil.getManagedQuery(datasetId, queryId);
+		query.awaitDone(10, TimeUnit.SECONDS);
+		return processor.getStatus(dsUtil.getDataset(datasetId), query, URLBuilder.fromRequest(req));
 	}
 }

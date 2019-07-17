@@ -9,7 +9,7 @@ import T from "i18n-react";
 
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
-import type { DateRangeType } from "../common/types/backend";
+import type { DateRangeT } from "../api/types";
 
 import {
   dropAndNode,
@@ -33,7 +33,7 @@ import QueryGroup from "./QueryGroup";
 type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
-  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
+  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeT) => void,
   dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
   deleteNode: Function,
   deleteGroup: Function,
@@ -117,11 +117,11 @@ const Query = (props: PropsType) => {
 
 function mapStateToProps(state) {
   return {
-    query: state.panes.right.tabs.queryEditor.query,
-    isEmptyQuery: state.panes.right.tabs.queryEditor.query.length === 0,
+    query: state.queryEditor.query,
+    isEmptyQuery: state.queryEditor.query.length === 0,
 
     // only used by other actions
-    rootConcepts: state.categoryTrees.trees
+    rootConcepts: state.conceptTrees.trees
   };
 }
 
@@ -138,8 +138,8 @@ const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   selectNodeForEditing: (andIdx, orIdx) =>
     dispatch(selectNodeForEditing(andIdx, orIdx)),
   queryGroupModalSetNode: andIdx => dispatch(queryGroupModalSetNode(andIdx)),
-  expandPreviousQuery: (rootConcepts, query) =>
-    dispatch(expandPreviousQuery(rootConcepts, query)),
+  expandPreviousQuery: (datasetId, rootConcepts, queryId) =>
+    dispatch(expandPreviousQuery(datasetId, rootConcepts, queryId)),
   loadPreviousQuery: (datasetId, queryId) =>
     dispatch(loadPreviousQuery(datasetId, queryId))
 });
@@ -150,8 +150,12 @@ const mergeProps = (stateProps, dispatchProps, ownProps) => ({
   ...ownProps,
   loadPreviousQuery: queryId =>
     dispatchProps.loadPreviousQuery(ownProps.selectedDatasetId, queryId),
-  expandPreviousQuery: query =>
-    dispatchProps.expandPreviousQuery(stateProps.rootConcepts, query)
+  expandPreviousQuery: queryId =>
+    dispatchProps.expandPreviousQuery(
+      ownProps.selectedDatasetId,
+      stateProps.rootConcepts,
+      queryId
+    )
 });
 
 export default connect(

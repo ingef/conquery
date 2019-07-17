@@ -8,15 +8,14 @@ import com.bakdata.conquery.models.messages.network.NetworkMessage;
 import com.bakdata.conquery.models.messages.network.NetworkMessageContext.Master;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.google.common.util.concurrent.Uninterruptibles;
+import com.bakdata.conquery.util.Wait;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="UPDATE_SLAVE_IDENTITY", base=NetworkMessage.class) @Slf4j
+@CPSType(id="UPDATE_SLAVE_IDENTITY", base=NetworkMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter
 public class RegisterWorker extends MasterMessage {
 
@@ -25,10 +24,13 @@ public class RegisterWorker extends MasterMessage {
 	@Override
 	public void react(Master context) throws Exception {
 		SlaveInformation slave = getSlave(context);
-		for(int attempt = 0; attempt < 6 && slave == null; attempt++) {
-			Uninterruptibles.sleepUninterruptibly(1, TimeUnit.SECONDS);
-			slave = getSlave(context);
-		}
+		Wait
+			.builder()
+			.attempts(6)
+			.stepTime(1)
+			.stepUnit(TimeUnit.SECONDS)
+			.build()
+			.until(()->getSlave(context));
 		
 		if(slave == null) {
 			throw new IllegalStateException("Could not find the slave "+context.getRemoteAddress()+" to register worker "+info.getId());

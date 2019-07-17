@@ -1,11 +1,11 @@
 // @flow
 
-import "./fixEdge";
+import "./browserShimsAndPolyfills";
 
 import React from "react";
 import ReactDOM from "react-dom";
 import { ThemeProvider } from "emotion-theming";
-import createHistory from "history/createBrowserHistory";
+import { createBrowserHistory } from "history";
 
 import "./app/actions"; //  To initialize parameterized actions
 import { makeStore } from "./store";
@@ -16,8 +16,6 @@ import {
   type Environment,
   basename
 } from "./environment";
-
-require("es6-promise").polyfill();
 
 // TODO: OG image required?
 // require('../../images/og.png');
@@ -31,14 +29,14 @@ const initialState = {};
 const renderRoot = (tabs: Object, theme) => {
   browserHistory =
     browserHistory ||
-    createHistory({
+    createBrowserHistory({
       basename: basename()
     });
   store = store || makeStore(initialState, browserHistory, tabs);
 
   ReactDOM.render(
     <ThemeProvider theme={theme}>
-      <AppRoot store={store} browserHistory={browserHistory} />
+      <AppRoot store={store} browserHistory={browserHistory} rightTabs={tabs} />
     </ThemeProvider>,
     document.getElementById("root")
   );

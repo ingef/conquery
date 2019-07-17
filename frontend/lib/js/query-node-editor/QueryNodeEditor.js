@@ -7,18 +7,18 @@ import { connect } from "react-redux";
 import T from "i18n-react";
 
 import { type QueryNodeType } from "../standard-query-editor/types";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import TransparentButton from "../button/TransparentButton";
-import EscAble from "../common/components/EscAble";
+import useEscPress from "../hooks/useEscPress";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
 import TableView from "./TableView";
-import DescriptionColumn from "./DescriptionColumn";
 
 import { createQueryNodeEditorActions } from "./actions";
 
-const StyledEscAble = styled(EscAble)`
+const Root = styled("div")`
   padding: 0 10px;
   left: 0;
   top: 0;
@@ -37,14 +37,17 @@ const Wrapper = styled("div")`
   width: 100%;
   height: 100%;
   overflow: auto;
-  border-radius: 3px;
+  border-radius: ${({ theme }) => theme.borderRadius};
+`;
+
+const SxWithTooltip = styled(WithTooltip)`
+  position: absolute;
+  bottom: 10px;
+  right: 20px;
 `;
 
 const CloseButton = styled(TransparentButton)`
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
-  position: absolute;
-  bottom: 10px;
-  right: 20px;
 `;
 
 type QueryNodeEditorState = {
@@ -52,6 +55,7 @@ type QueryNodeEditorState = {
   selectedInputTableIdx: number,
   selectedInput: number,
   editingLabel: boolean,
+
   onSelectDetailsView: Function,
   onSelectInputTableView: Function,
   onShowDescription: Function,
@@ -65,6 +69,11 @@ export type PropsType = {
   node: QueryNodeType,
   showTables: boolean,
   isExcludeTimestampsPossible: boolean,
+  datasetId: number,
+  suggestions: ?Object,
+  whitelistedTables?: string[],
+  blacklistedTables?: string[],
+
   onCloseModal: Function,
   onUpdateLabel: Function,
   onDropConcept: Function,
@@ -78,13 +87,19 @@ export type PropsType = {
   onLoadFilterSuggestions: Function,
   onSelectSelects: Function,
   onSelectTableSelects: Function,
-  datasetId: number,
-  suggestions: ?Object,
-  onToggleIncludeSubnodes: Function
+  onToggleIncludeSubnodes: Function,
+  onSetDateColumn: Function
 };
 
 const QueryNodeEditor = (props: PropsType) => {
   const { node, editorState } = props;
+
+  function close() {
+    props.onCloseModal();
+    editorState.onReset();
+  }
+
+  useEscPress(close);
 
   if (!node) return null;
 
@@ -93,25 +108,21 @@ const QueryNodeEditor = (props: PropsType) => {
       ? node.tables[editorState.selectedInputTableIdx]
       : null;
 
-  function close() {
-    editorState.onReset();
-    props.onCloseModal();
-  }
-
   return (
-    <StyledEscAble onEscPressed={close}>
+    <Root>
       <Wrapper>
         <MenuColumn {...props} />
         {editorState.detailsViewActive && <NodeDetailsView {...props} />}
         {!editorState.detailsViewActive && selectedTable != null && (
           <TableView {...props} />
         )}
-        {!editorState.detailsViewActive && <DescriptionColumn {...props} />}
-        <CloseButton small onClick={close}>
-          {T.translate("common.done")}
-        </CloseButton>
+        <SxWithTooltip text={T.translate("common.closeEsc")}>
+          <CloseButton small onClick={close}>
+            {T.translate("common.done")}
+          </CloseButton>
+        </SxWithTooltip>
       </Wrapper>
-    </StyledEscAble>
+    </Root>
   );
 };
 
@@ -131,7 +142,7 @@ export const createConnectedQueryNodeEditor = (
       setInputTableViewActive,
       setFocusedInput,
       reset
-    } = createQueryNodeEditorActions(ownProps.type);
+    } = createQueryNodeEditorActions(ownProps.name);
 
     return {
       ...externalDispatchProps,

@@ -4,16 +4,19 @@ import type { Dispatch, getState } from "redux-thunk";
 import { reset } from "redux-form";
 
 import api from "../api";
+import type { DatasetIdT } from "../api/types";
 
 import { isEmpty } from "../common/helpers";
 
 import { defaultError, defaultSuccess } from "../common/actions";
-import { loadTrees } from "../category-trees/actions";
+import { loadTrees } from "../concept-trees/actions";
 import { loadPreviousQueries } from "../previous-queries/list/actions";
 import { loadQuery, clearQuery } from "../standard-query-editor/actions";
 import { setMessage } from "../snack-message/actions";
 
 import { type StandardQueryType } from "../standard-query-editor/types";
+
+import { setDatasetId } from "./globalDatasetHelper";
 
 import {
   LOAD_DATASETS_START,
@@ -23,7 +26,7 @@ import {
   SAVE_QUERY
 } from "./actionTypes";
 
-import { type DatasetType, type DatasetIdType } from "./reducer";
+import type { DatasetT } from "./reducer";
 
 export const loadDatasetsStart = () => ({ type: LOAD_DATASETS_START });
 export const loadDatasetsError = (err: any) =>
@@ -45,7 +48,11 @@ export const loadDatasets = () => {
 
       dispatch(loadDatasetsSuccess(datasets));
 
-      return dispatch(loadTrees(datasets[0].id));
+      const defaultId = datasets[0].id;
+
+      setDatasetId(defaultId);
+
+      return dispatch(loadTrees(defaultId));
     } catch (e) {
       dispatch(setMessage("datasetSelector.error"));
       dispatch(loadDatasetsError(e));
@@ -53,7 +60,7 @@ export const loadDatasets = () => {
   };
 };
 
-export const selectDatasetInput = (id: ?DatasetIdType) => {
+export const selectDatasetInput = (id: ?DatasetIdT) => {
   return {
     type: SELECT_DATASET,
     payload: { id }
@@ -62,20 +69,23 @@ export const selectDatasetInput = (id: ?DatasetIdType) => {
 
 export const saveQuery = (
   query: StandardQueryType,
-  previouslySelectedDatasetId: DatasetIdType
+  previouslySelectedDatasetId: DatasetIdT
 ) => {
   return { type: SAVE_QUERY, payload: { query, previouslySelectedDatasetId } };
 };
 
 export const selectDataset = (
-  datasets: DatasetType[],
-  datasetId: DatasetIdType,
-  previouslySelectedDatasetId: DatasetIdType,
+  datasets: DatasetT[],
+  datasetId: DatasetIdT,
+  previouslySelectedDatasetId: DatasetIdT,
   query: StandardQueryType
 ) => {
   return (dispatch: Dispatch, state: getState) => {
     dispatch(saveQuery(query, previouslySelectedDatasetId));
     dispatch(selectDatasetInput(datasetId));
+
+    // To allow loading trees to check whether they should abort or not
+    setDatasetId(datasetId);
 
     // Load query if available, else clear
     if (isEmpty(datasetId)) {

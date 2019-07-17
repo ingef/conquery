@@ -17,7 +17,8 @@ import java.util.stream.Collectors;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.CDateSetSerializer;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.google.common.base.Joiner;
@@ -291,13 +292,21 @@ public class CDateSet {
 		sb.append('}');
 		return sb.toString();
 	}
+	
+	@JsonIgnore
+	public boolean isAll() {
+		if(this.rangesByLowerBound.isEmpty()) {
+			return false;
+		}
+		return this.rangesByLowerBound.values().iterator().next().isAll();
+	}
 
 	public void retainAll(CDateSet retained) {
 		if(retained.isEmpty()) {
 			this.clear();
 			return;
 		}
-		if(retained.asRanges().iterator().next().isAll()) {
+		if(retained.isAll()) {
 			return;
 		}
 
@@ -368,7 +377,7 @@ public class CDateSet {
 			.results()
 			.map(mr -> {
 				try {
-					return DateRangeType.parseISORange(mr.group(2));
+					return DateRangeParser.parseISORange(mr.group(2));
 				}
 				catch(Exception e) {
 					throw new RuntimeException(e);

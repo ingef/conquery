@@ -7,6 +7,7 @@ import T from "i18n-react";
 import TableFilters from "./TableFilters";
 import TableSelects from "./TableSelects";
 import ContentCell from "./ContentCell";
+import DateColumnSelect from "./DateColumnSelect";
 import type { PropsType } from "./QueryNodeEditor";
 
 const Column = styled("div")`
@@ -26,6 +27,7 @@ const TableView = (props: PropsType) => {
     datasetId,
 
     onSelectTableSelects,
+    onSetDateColumn,
 
     onDropFilterValuesFile,
     onSetFilterValue,
@@ -47,16 +49,29 @@ const TableView = (props: PropsType) => {
           />
         </ContentCell>
       )}
+      {!!selectedTable.dateColumn &&
+        !!selectedTable.dateColumn.options &&
+        selectedTable.dateColumn.options.length > 0 && (
+          <ContentCell
+            headline={T.translate("queryNodeEditor.selectValidityDate")}
+          >
+            <DateColumnSelect
+              dateColumn={selectedTable.dateColumn}
+              onSelectDateColumn={value =>
+                onSetDateColumn(editorState.selectedInputTableIdx, value)
+              }
+            />
+          </ContentCell>
+        )}
       <MaximizedCell headline={T.translate("queryNodeEditor.filters")}>
         <TableFilters
           key={editorState.selectedInputTableIdx}
           filters={selectedTable.filters}
-          onSetFilterValue={(filterIdx, value, formattedValue) =>
+          onSetFilterValue={(filterIdx, value) =>
             onSetFilterValue(
               editorState.selectedInputTableIdx,
               filterIdx,
-              value,
-              formattedValue
+              value
             )
           }
           onSwitchFilterMode={(filterIdx, mode) =>

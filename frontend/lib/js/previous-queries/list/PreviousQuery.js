@@ -8,14 +8,14 @@ import { css } from "@emotion/core";
 import T from "i18n-react";
 import { DragSource } from "react-dnd";
 import { connect } from "react-redux";
-import formatDistance from "date-fns/formatDistance";
-import parseISO from "date-fns/parseISO";
+import { parseISO, formatDistance } from "date-fns";
 
 import { getDateLocale } from "../../localization";
 
 import { ErrorMessage } from "../../error-message";
 import { dndTypes } from "../../common/constants";
 import { SelectableLabel } from "../../selectable-label";
+import { isEmpty } from "../../common/helpers/commonHelper";
 
 import DownloadButton from "../../button/DownloadButton";
 import IconButton from "../../button/IconButton";
@@ -169,9 +169,9 @@ class PreviousQuery extends React.Component {
       onToggleSharePreviousQuery
     } = this.props;
 
-    const peopleFound = `${query.numberOfResults} ${T.translate(
-      "previousQueries.results"
-    )}`;
+    const peopleFound = isEmpty(query.numberOfResults)
+      ? T.translate("previousQuery.notExecuted")
+      : `${query.numberOfResults} ${T.translate("previousQueries.results")}`;
     const dateLocale = getDateLocale();
     const executedAt = formatDistance(parseISO(query.createdAt), new Date(), {
       locale: dateLocale,
@@ -334,10 +334,8 @@ const mapProps = (stateProps, dispatchProps, ownProps) => ({
     dispatchProps.onToggleEditPreviousQueryTags(ownProps.query.id)
 });
 
-export default DragSource(dndTypes.PREVIOUS_QUERY, nodeSource, collect)(
-  connect(
-    mapStateToProps,
-    mapDispatchToProps,
-    mapProps
-  )(PreviousQuery)
-);
+export default connect(
+  mapStateToProps,
+  mapDispatchToProps,
+  mapProps
+)(DragSource(dndTypes.PREVIOUS_QUERY, nodeSource, collect)(PreviousQuery));

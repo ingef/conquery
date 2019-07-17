@@ -7,7 +7,7 @@
 // to support asynchronous calls, e.g. API calls.
 
 import * as genericActions from "../common/actions";
-import * as categoryTreeActions from "../category-trees/actions";
+import * as conceptTreeActions from "../concept-trees/actions";
 import * as datasetSelectorActions from "../dataset/actions";
 import * as queryGroupModalActions from "../query-group-modal/actions";
 import * as additionalInfosActions from "../tooltip/actions";
@@ -23,10 +23,11 @@ import createQueryRunnerActions from "../query-runner/actions";
 
 const standardQueryRunnerActions = createQueryRunnerActions("standard");
 const timebasedQueryRunnerActions = createQueryRunnerActions("timebased");
+const externalQueryRunnerActions = createQueryRunnerActions("external");
 
 export default {
   ...genericActions,
-  ...categoryTreeActions,
+  ...conceptTreeActions,
   ...queryEditorActions,
   ...standardQueryRunnerActions,
   ...timebasedQueryRunnerActions,
@@ -38,5 +39,6 @@ export default {
   ...previousQueriesSearchActions,
   ...previousQueriesFilterActions,
   ...deletePreviousQueryModalActions,
-  ...timebasedQueryEditorActions
+  ...timebasedQueryEditorActions,
+  ...externalQueryRunnerActions
 };

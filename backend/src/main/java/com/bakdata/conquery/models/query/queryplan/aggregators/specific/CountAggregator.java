@@ -1,14 +1,13 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
- * Entity is included when number of events with non null values is within a
- * given range.
+ * Aggregator counting the number of present values in a column.
  */
 public class CountAggregator extends SingleColumnAggregator<Long> {
 
@@ -19,8 +18,8 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (block.has(event, getColumn())) {
+	public void aggregateEvent(Bucket bucket, int event) {
+		if (bucket.has(event, getColumn())) {
 			count++;
 		}
 	}

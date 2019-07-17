@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
@@ -59,9 +59,9 @@ public class ExternalNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextEvent(Block block, int event) {
+	public void nextEvent(Bucket bucket, int event) {
 		if(contained != null) {
-			getChild().nextEvent(block, event);
+			getChild().nextEvent(bucket, event);
 		}
 	}
 	

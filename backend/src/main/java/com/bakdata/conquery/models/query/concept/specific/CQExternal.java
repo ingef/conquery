@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -13,7 +14,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessor;
@@ -25,7 +26,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.types.specific.DateRangeType;
+import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.MoreCollectors;
 
@@ -55,7 +56,7 @@ public class CQExternal implements CQElement {
 
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
-		Dictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
+		DirectDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
 		Optional<DateFormat> dateFormat = format.stream()
 			.map(FormatColumn::getDateFormat)
 			.filter(Objects::nonNull)
@@ -68,7 +69,8 @@ public class CQExternal implements CQElement {
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
 		IdAccessor idAccessor = mapping.mappingFromCsvHeader(values[0], context.getNamespace().getStorage());
-
+		List<List<String>> nonResolved = new ArrayList<>();
+		
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
@@ -87,13 +89,30 @@ public class CQExternal implements CQElement {
 					}
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				includedEntities.put(primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
-					Objects.requireNonNull(dates));
+				int resolvedId = primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId());
+				if(resolvedId != -1) {
+					includedEntities.put(
+						resolvedId,
+						Objects.requireNonNull(dates)
+					);
+				}
+				else {
+					nonResolved.add(Arrays.asList(row));
+				}
 			}
 			catch (Exception e) {
 				log.warn("failed to parse dates from " + Arrays.toString(row), e);
 			}
 		}
+		if(!nonResolved.isEmpty()) {
+			log.warn(
+				"Could not resolve {} of the {} rows. Not resolved: {}",
+				nonResolved.size(),
+				values.length-1,
+				nonResolved
+			);
+		}
+		
 		return new CQExternalResolved(includedEntities);
 	}
 
@@ -133,7 +152,7 @@ public class CQExternal implements CQElement {
 		DATE_RANGE {
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(DateRangeType.parseISORange(row[dateIndices[0]])));
+				return CDateSet.create(Collections.singleton(DateRangeParser.parseISORange(row[dateIndices[0]])));
 			}
 		},
 		DATE_SET {

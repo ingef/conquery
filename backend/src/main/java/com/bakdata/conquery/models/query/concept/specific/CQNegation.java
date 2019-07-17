@@ -29,7 +29,7 @@ public class CQNegation implements CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
-		return new NegatingNode(child.createQueryPlan(context, plan));
+		return new NegatingNode(child.createQueryPlan(context.withGenerateSpecialDateUnion(false), plan));
 	}
 
 	@Override

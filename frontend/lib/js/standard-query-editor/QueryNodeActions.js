@@ -27,8 +27,9 @@ const Actions = styled("div")`
 `;
 
 const StyledFaIcon = styled(FaIcon)`
-  padding: 4px 6px;
+  margin: 7px 6px 4px;
 `;
+
 const StyledIconButton = styled(IconButton)`
   padding: 4px 6px;
 `;

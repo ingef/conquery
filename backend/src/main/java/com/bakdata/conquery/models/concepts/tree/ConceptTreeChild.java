@@ -80,4 +80,14 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return conceptPrefix.length > depth && conceptPrefix[depth] == localId;
 	}
+	
+	@Override
+	public long calculateBitMask() {
+		if(getLocalId() < 64) {
+			return 1L << getLocalId();
+		}
+		else {
+			return getParent().calculateBitMask();
+		}
+	}
 }

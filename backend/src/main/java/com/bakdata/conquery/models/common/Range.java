@@ -170,11 +170,11 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 
 		@Override
 		public boolean contains(Integer value) {
-			return contains(value.intValue());
+			return value != null && contains(value.intValue());
 		}
 
 		public boolean contains(Number value) {
-			return contains(value.intValue());
+			return value != null && contains(value.intValue());
 		}
 
 		public boolean contains(int value) {
@@ -199,11 +199,11 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 
 		@Override
 		public boolean contains(Long value) {
-			return contains(value.longValue());
+			return value != null && contains(value.longValue());
 		}
 
 		public boolean contains(Number value) {
-			return contains(value.longValue());
+			return value != null && contains(value.longValue());
 		}
 
 		public boolean contains(long value) {
@@ -228,11 +228,11 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 
 		@Override
 		public boolean contains(Float value) {
-			return contains(value.floatValue());
+			return value != null && contains(value.floatValue());
 		}
 
 		public boolean contains(Number value) {
-			return contains(value.floatValue());
+			return value != null && contains(value.floatValue());
 		}
 
 		public boolean contains(float value) {
@@ -260,11 +260,11 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 
 		@Override
 		public boolean contains(Double value) {
-			return contains(value.doubleValue());
+			return value != null && contains(value.doubleValue());
 		}
 
 		public boolean contains(Number value) {
-			return contains(value.doubleValue());
+			return value != null && contains(value.doubleValue());
 		}
 
 		public boolean contains(double value) {

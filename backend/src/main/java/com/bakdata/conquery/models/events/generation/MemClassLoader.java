@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.events.generation;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.stream.Collectors;
 
 public class MemClassLoader extends ClassLoader {
 	private final Map<String, MemJavaFileObject> classFiles = new HashMap<String, MemJavaFileObject>();
@@ -24,5 +26,15 @@ public class MemClassLoader extends ClassLoader {
 		}
 
 		return super.findClass(name);
+	}
+
+	public Map<String, byte[]> getClasses() {
+		return classFiles
+			.entrySet()
+			.stream()
+			.collect(Collectors.toMap(
+				Entry::getKey,
+				e->e.getValue().getClassBytes()
+			));
 	}
 }

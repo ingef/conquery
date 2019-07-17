@@ -6,16 +6,26 @@ import {
   LOAD_CONFIG_SUCCESS
 } from "./actionTypes";
 
+import type { GetFrontendConfigResponseT } from "../api/types";
+
 export type StateType = {
   loading: boolean,
   error: ?string,
-  config: Object
+  config: GetFrontendConfigResponseT
 };
 
 const initialState: StateType = {
   loading: false,
   error: null,
-  config: {}
+  config: {
+    version: "No version loaded",
+    currency: {
+      prefix: "€",
+      thousandSeparator: ".",
+      decimalSeparator: ",",
+      decimalScale: 2
+    }
+  }
 };
 
 const startup = (

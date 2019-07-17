@@ -2,6 +2,7 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -77,14 +78,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 				.build();
 		}
 		
-		scheduler.scheduleAtFixedRate(
-			() -> {
-				if(context.isConnected()) {
-					context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
-				}
-			},
-			30, 5, TimeUnit.SECONDS
-		);
+		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 
 		this.config = config;
@@ -190,7 +184,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			try {
 				log.info("Trying to connect to {}", address);
 				ConnectFuture future = connector.connect(address);
-				future.awaitUninterruptibly();
+				future.awaitUninterruptibly(1, TimeUnit.MINUTES);
 
 				break;
 			} catch(RuntimeIoException e) {
@@ -201,7 +195,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 
 	@Override
 	public void stop() throws Exception {
-		for(Worker w : workers.getWorkers().values()) {
+		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
 				w.close();
 			} catch(Exception e) {
@@ -214,5 +208,15 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		}
 		log.info("Connection was closed by master");
 		connector.dispose();
+	}
+	
+	private void reportJobManagerStatus() {
+		try {
+			if(context!= null && context.isConnected()) {
+				context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
+			}
+		} catch(Exception e) {
+			log.warn("Failed to report job manager status", e);
+		}
 	}
 }

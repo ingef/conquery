@@ -2,7 +2,7 @@ locale: "en"
 
 headline: "Queries and Analyses"
 leftPane:
-  categoryTrees: "Concepts"
+  conceptTrees: "Concepts"
   previousQueries: "Queries"
 
 rightPane:
@@ -10,7 +10,7 @@ rightPane:
   timebasedQueryEditor: "Timebased Editor"
   externalForms: "Forms"
 
-categoryTreeList:
+conceptTreeList:
   loading: "Loading concept trees"
   loadingTree: "Loading concept: {tree}"
   error: "Could not load concept: {tree}."
@@ -36,7 +36,6 @@ queryRunner:
   resultCount: "{count} results"
   queryFailed: "The query failed."
   queryCanceled: "The query was canceled."
-  downloadResults: "CSV"
 
 queryEditor:
   couldNotExpandNode: "Concept not found"
@@ -81,6 +80,8 @@ queryNodeEditor:
   filters: "Filters"
   selects: "More values"
   nodeNotFound: "Concept not found"
+  selectValidityDate: "Relevant date interval"
+  dateColumn: "Date column"
 
 queryGroupModal:
   explanation: "Set time frame"
@@ -104,6 +105,7 @@ common:
   description: "Description"
   clearAll: "Clear all"
   clearValue: "Clear value"
+  closeEsc: "Close (ESC)"
 
 tooltip:
   headline: "Info"
@@ -151,6 +153,7 @@ previousQueries:
   noQueriesFound: "No queries found"
 
 previousQuery:
+  notExecuted: "Not executed yet"
   addTag: "Add Tag"
   share: "Share"
   shared: "Shared"
@@ -224,7 +227,19 @@ uploadQueryResultsModal:
   uploadFailedSub: "Please check the file format and your network connection"
   uploadSucceeded: "Result list was successfully uploaded"
   formatInfo:
-    text: "File should contain one result per row with comma-separated values"
+    text: "File should contain one result per row, separated by ; (semicolon)"
+
+csvColumnPicker:
+  loading: "Reading data ..."
+  delimiter: "Delimiter"
+  semicolon: "Semicolon"
+  colon: "Colon"
+  comma: "Comma"
+  id: "ID"
+  dateSet: "DATE_SET"
+  startDate: "START_DATE"
+  endDate: "END_DATE"
+  ignore: "IGNORE"
 
 uploadConceptListModal:
   headline: "Upload concepts"

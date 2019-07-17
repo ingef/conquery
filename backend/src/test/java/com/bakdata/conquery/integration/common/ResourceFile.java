@@ -20,9 +20,9 @@ public class ResourceFile {
 	
 	@JsonCreator
 	public ResourceFile(String path) {
-		this.path = path;
-		assertThat(ResourceFile.class.getResource(StringUtils.prependIfMissing(path, "/")))
-			.as("Resource "+path+" does not exist")
+		this.path = StringUtils.prependIfMissing(path, "/");
+		assertThat(ResourceFile.class.getResource(this.path))
+			.as("Resource "+this.path+" does not exist")
 			.isNotNull();
 	}
 
@@ -31,6 +31,6 @@ public class ResourceFile {
 	}
 
 	public InputStream stream() throws IOException {
-		return In.resource(StringUtils.prependIfMissing(path, "/")).asStream();
+		return In.resource(path).asStream();
 	}
 }

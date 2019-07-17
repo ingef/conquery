@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -8,6 +8,9 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Helper Aggregator, returning a constant value passed in the constructor.
+ */
 @Getter
 @RequiredArgsConstructor
 public class ConstantValueAggregator implements Aggregator<Object> {
@@ -26,7 +29,7 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {}
+	public void aggregateEvent(Bucket bucket, int event) {}
 	
 	@Override
 	public ResultType getResultType() {

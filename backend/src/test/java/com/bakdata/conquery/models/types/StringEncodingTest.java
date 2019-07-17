@@ -3,21 +3,16 @@ package com.bakdata.conquery.models.types;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
-import org.junit.jupiter.api.parallel.Execution;
-import org.junit.jupiter.api.parallel.ExecutionMode;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.specific.StringType;
+import com.bakdata.conquery.models.types.parser.specific.StringParser;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 
 import lombok.extern.slf4j.Slf4j;
@@ -53,62 +48,25 @@ public class StringEncodingTest {
 				.limit(100);
 	}
 
-	@TestFactory @Execution(ExecutionMode.SAME_THREAD)
-	public Stream<DynamicTest> testHexType() throws ParsingException {
-		StringType stringType = new StringType();
-
-		StringTypeEncoded type = new StringTypeEncoded(StringTypeEncoded.Encoding.Base16LowerCase, 0, 0);
-
-		Random random = new Random(SEED);
-
-		Map<Integer, String> parsed = Stream.generate(() -> randomUUID(random).toString().replace("-", ""))
-											.limit(100)
-											.collect(Collectors.toMap(
-													v -> {
-														try {
-															return stringType.parse(v);
-														} catch (ParsingException e) {
-															return -1;
-														}
-													}
-													, Function.identity()));
-
-		stringType.getDictionary().tryCompress();
-
-		return parsed.keySet().stream()
-			.map(parsedId -> DynamicTest.dynamicTest(parsed.get(parsedId), () -> {
-
-			String unparsed = stringType.createScriptValue(
-				type.transformFromMajorType(stringType, parsedId)
-			);
-
-			assertThat(unparsed)
-				.isNotNull()
-				.isNotEmpty()
-				.isEqualTo(parsed.get(parsedId));
-			}))
-			.limit(100);
-	}
-
 	@Test
 	public void testHexStreamStringType() {
-		StringType stringType = new StringType();
+		StringParser parser = new StringParser();
 
 		Stream
 				.generate(() -> UUID.randomUUID().toString().replace("-", ""))
 				.map(String::toUpperCase)
 				.mapToInt(v -> {
 					try {
-						return stringType.parse(v);
+						return parser.parse(v);
 					} catch (ParsingException e) {
-						return 0; // We know that StringType is able to parse our strings.
+						return 0; // We know that StringTypeVarInt is able to parse our strings.
 					}
 				})
 				.limit(100)
-				.forEach(stringType::addLine);
+				.forEach(parser::addLine);
 
 
-		StringTypeEncoded subType = (StringTypeEncoded) stringType.bestSubType();
+		StringTypeEncoded subType = (StringTypeEncoded) parser.findBestType().getType();
 
 		assertThat(subType)
 				.isInstanceOf(StringTypeEncoded.class);

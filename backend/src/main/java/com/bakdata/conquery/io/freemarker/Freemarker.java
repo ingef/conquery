@@ -1,6 +1,7 @@
 package com.bakdata.conquery.io.freemarker;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 import com.bakdata.conquery.models.events.generation.ClassGenerator;
 
@@ -16,7 +17,8 @@ public class Freemarker {
 		cfg.setLocalizedLookup(false);
 		cfg.setClassForTemplateLoading(ClassGenerator.class, "/");
 		cfg.setWhitespaceStripping(true);
+		cfg.setNumberFormat("computer");
+		cfg.setLocale(Locale.ROOT);
 		return cfg;
 	}
-
 }

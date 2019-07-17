@@ -72,8 +72,7 @@ public class NsIdReferenceDeserializer<ID extends NamespacedId&IId<T>, T extends
 				return result.get();
 			}
 			catch(Exception e) {
-				log.error("Error while resolving entry "+text+" of type "+type, e);
-				throw e;
+				throw new RuntimeException("Error while resolving entry "+text+" of type "+type, e);
 			}
 		}
 		else {

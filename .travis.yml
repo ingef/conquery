@@ -1,99 +1,26 @@
 dist: xenial
-
 language: java
 os:
   - linux
-
 jdk:
   - openjdk11
 
-before_install: mvn initialize -P setVersion
+before_install: mvn -B -V initialize -P setVersion
+
+stages:
+  - name: Prerelease
+    if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
+  - name: Release
+    if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
 
 jobs:
   include:
-    - stage: "Tests"
-      
-    #test frontend
-      name: "Frontend Tests"
-      install: skip
-      script:
-        - mvn -B -V install -N
-        - mvn -B -V install -pl frontend-resources
-        - mvn -B -V install -pl backend -DskipTests
-        - mvn -B -V package -pl executable 
+    # ------------------------------
+    # Release stages
+    # ------------------------------
 
-    #build backend and run all non-integration tests
-    - name: "Unit Tests"
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -DexcludedGroups="INTEGRATION_PROGRAMMATIC, INTEGRATION_JSON"
-
-    #build and test only INTEGRATION_PROGRAMMATIC
-    - name: "Programmatic Integration Tests"
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_PROGRAMMATIC"
-
-    #build and test only INTEGRATION_JSONs
-    - name: "Integration Tests: Authentication Tests"
-      env:
-        - CONQUERY_TEST_DIRECTORY=tests/auth
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
-
-    - name: "Integration Tests: Filter Tests"
-      env:
-        - CONQUERY_TEST_DIRECTORY=tests/filter
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
-
-    - name: "Integration Tests: Query Tests"
-      env:
-        - CONQUERY_TEST_DIRECTORY=tests/query
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
-
-    - name: "Integration Tests: Aggregator Tests"
-      env:
-        - CONQUERY_TEST_DIRECTORY=tests/aggregator
-      install:
-        - cd backend
-        - mvn -B -V -T 1C install -DskipTests
-      script: mvn -B test -Dgroups="INTEGRATION_JSON"
-  
-
-    #Deploy
-    - stage: "Deploy Develop to Heroku"
-      if: branch = develop AND type = push
-      before_install: mvn initialize -P setVersion
-      install: 
-        - mvn -B -V -T 1C install -DskipTests
-        - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
-      script: bash frontend/scripts/deploy-heroku-docker.sh conquery-dev
-
-    - stage: "Deploy Master to Heroku"
-      if: branch = master AND type = push
-      install: 
-        - mvn -B -V -T 1C install -DskipTests
-        - curl https://cli-assets.heroku.com/install-ubuntu.sh | sh
-      script: bash frontend/scripts/deploy-heroku-docker.sh conquery
-
-
-
-
-
-    - stage: "Releases"
-      name: "Prerelease"
-      if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?-.*$
-      install: mvn -B -V -T 1C package -DskipTests
+    - stage: Prerelease
+      install: mvn -B -V package -DskipTests
       script: skip
       deploy:
         provider: releases
@@ -110,9 +37,8 @@ jobs:
         on:
           all_branches: true
 
-    - name: "Release"
-      if: type = push AND tag IS present AND tag =~ ^v\d+\.\d+(\.\d+)?$
-      install: mvn -B -V -T 1C package -DskipTests
+    - stage: Release
+      install: mvn -B -V package -DskipTests
       script: skip
       deploy:
         provider: releases

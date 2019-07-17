@@ -77,7 +77,7 @@ class Header extends React.Component<PropsType> {
 
 const mapStateToProps = (state, ownProps) => {
   return {
-    version: state.startup.config.version || "",
+    version: state.startup.config.version,
     isDevelopment: !state.startup.config.production || false
   };
 };

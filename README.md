@@ -2,13 +2,15 @@
 *fast & efficient analysis*
 
 [![Last Release](https://img.shields.io/github/release-date/bakdata/conquery.svg?logo=github)](https://github.com/bakdata/conquery/releases/latest)
-[![Build Status](https://img.shields.io/travis/bakdata/conquery/develop.svg?logo=travis)](https://travis-ci.org/bakdata/conquery)
+[![Build Status](https://dev.azure.com/bakdata/public/_apis/build/status/Conquery%20CI?branchName=develop)](https://dev.azure.com/bakdata/public/_build/latest?definitionId=7&branchName=develop)
 [![CodeFactor](https://www.codefactor.io/repository/github/bakdata/conquery/badge/develop)](https://www.codefactor.io/repository/github/bakdata/conquery)
-[![Heroku](https://heroku-badge.herokuapp.com/?app=conquery-dev&svg=1)](https://conquery-dev.herokuapp.com/)
+![Heroku](https://heroku-badge.herokuapp.com/?app=conquery&svg=1)
 ![Code Size](https://img.shields.io/github/languages/code-size/bakdata/conquery.svg)
 [![License](https://img.shields.io/github/license/bakdata/conquery.svg)](https://github.com/bakdata/conquery/blob/develop/LICENSE)
 
-![conquery Screenshot](images/screenshot-v2.png)
+[Live-Demo](https://conquery.herokuapp.com/app/static) 
+
+![conquery Screenshot](images/screenshot-v3.png)
 
 Conquery is a powerful web-based tool to compose and execute queries against large event-like data sets.
 

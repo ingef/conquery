@@ -4,7 +4,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import { CATEGORY_TREE_NODE } from "../common/constants/dndTypes";
+import { CONCEPT_TREE_NODE } from "../common/constants/dndTypes";
 import Dropzone from "../form-components/Dropzone";
 import { type QueryNodeType } from "../standard-query-editor/types";
 
@@ -12,7 +12,7 @@ const StyledDropzone = styled(Dropzone)`
   width: 100%;
 `;
 
-const DROP_TYPES = [CATEGORY_TREE_NODE];
+const DROP_TYPES = [CONCEPT_TREE_NODE];
 
 type PropsType = {
   node: QueryNodeType,

@@ -22,6 +22,7 @@ import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
+import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 
 import lombok.Getter;
@@ -56,6 +57,9 @@ public class CQDateRestriction implements CQElement {
 					CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
 					validityDateNode.getChild()
 				));
+			}
+			else if(current instanceof NegatingNode) {
+				//we can't push date restrictions past negations
 			}
 			else {
 				openList.addAll(current.getChildren());

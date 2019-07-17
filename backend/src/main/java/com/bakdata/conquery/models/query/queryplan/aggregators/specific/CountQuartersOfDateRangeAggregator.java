@@ -8,7 +8,7 @@ import java.time.temporal.TemporalAdjuster;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -17,8 +17,7 @@ import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 
 /**
- * Entity is included when the number of distinct quarters for all events is
- * within a given range. Implementation is specific for DateRanges
+ * Count the number of distinct quarters for all events. Implementation is specific for DateRanges
  */
 public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<Long> {
 
@@ -37,12 +36,12 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public void aggregateEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
-		CDateRange dateRange = block.getDateRange(event, getColumn());
+		CDateRange dateRange = bucket.getDateRange(event, getColumn());
 
 		if (dateRange.isOpen()) {
 			return;

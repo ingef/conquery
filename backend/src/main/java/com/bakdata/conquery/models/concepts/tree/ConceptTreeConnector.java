@@ -37,10 +37,7 @@ public class ConceptTreeConnector extends Connector {
 
 	@Override
 	public List<Filter<?>> collectAllFilters() {
-		List<Filter<?>> l = new ArrayList<>(filters.size()+1);
-		CollectionUtils.addIgnoreNull(l, getDateSelectionFilter());
-		l.addAll(filters);
-		return l;
+		return filters;
 	}
 
 	@Override

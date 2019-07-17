@@ -40,6 +40,12 @@
 						<goals>
 							<goal>test-jar</goal>
 						</goals>
+						<configuration>
+							<excludes>
+								<exclude>tests/**/*</exclude>
+								<exclude>com/bakdata/conquery/integration/ConqueryIntegrationTests</exclude>
+							</excludes>
+						</configuration>
 					</execution>
 				</executions>
 			</plugin>
@@ -64,19 +70,8 @@
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard</groupId>
-			<artifactId>dropwizard-db</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.dropwizard</groupId>
-			<artifactId>dropwizard-jersey</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.dropwizard</groupId>
-			<artifactId>dropwizard-jdbi</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>io.dropwizard</groupId>
 			<artifactId>dropwizard-client</artifactId>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>io.dropwizard</groupId>
@@ -114,17 +109,17 @@
 		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-collections4</artifactId>
-			<version>4.3</version>
+			<version>4.4</version>
 		</dependency>
 		<dependency>
 			<groupId>it.unimi.dsi</groupId>
 			<artifactId>fastutil</artifactId>
-			<version>8.2.2</version>
+			<version>8.2.3</version>
 		</dependency>
 		<dependency>
 			<groupId>io.github.classgraph</groupId>
 			<artifactId>classgraph</artifactId>
-			<version>4.8.36</version>
+			<version>4.8.43</version>
 		</dependency>
 		<dependency>
 			<groupId>org.glassfish.jersey.media</groupId>
@@ -163,14 +158,9 @@
 			<artifactId>dropwizard-views-freemarker</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-pool2</artifactId>
-			<version>2.6.2</version>
-		</dependency>
-		<dependency>
 			<groupId>org.jetbrains.xodus</groupId>
 			<artifactId>xodus-environment</artifactId>
-			<version>1.3.0</version>
+			<version>1.3.91</version>
 		</dependency>
 		<dependency>
 			<groupId>com.tomgibara.bits</groupId>
@@ -180,11 +170,6 @@
 		<dependency>
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-smile</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.commons</groupId>
-			<artifactId>commons-math3</artifactId>
-			<version>3.6.1</version>
 		</dependency>
 		<dependency>
 			<groupId>com.zigurs.karlis.utils.search</groupId>

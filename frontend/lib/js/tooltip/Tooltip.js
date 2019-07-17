@@ -10,7 +10,7 @@ import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
-import type { SearchType } from "../category-trees/reducer";
+import type { SearchType } from "../concept-trees/reducer";
 
 import ActivateTooltip from "./ActivateTooltip";
 import {
@@ -223,7 +223,7 @@ const mapStateToProps = state => {
     additionalInfos: state.tooltip.additionalInfos,
     displayTooltip: state.tooltip.displayTooltip,
     toggleAdditionalInfos: state.tooltip.toggleAdditionalInfos,
-    search: state.categoryTrees.search
+    search: state.conceptTrees.search
   };
 };
 

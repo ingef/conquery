@@ -14,7 +14,7 @@ import PrimaryButton from "../button/PrimaryButton";
 import FaIcon from "../icon/FaIcon";
 
 import type { StateType } from "../app/reducers";
-import type { DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdT } from "../api/types";
 
 import {
   uploadConceptListModalUpdateLabel,
@@ -63,14 +63,14 @@ type PropsType = {
   label: String,
   availableConceptRootNodes: Object[],
   selectedConceptRootNode: Object,
-  selectedDatasetId: DatasetIdType,
+  selectedDatasetId: DatasetIdT,
   conceptCodesFromFile: Array<string>,
   resolved: Object,
   resolvedItemsCount: number,
   unresolvedItemsCount: number,
   error: Object,
 
-  onCloseModal: Function,
+  onClose: Function,
   onAccept: Function,
   onUpdateLabel: Function,
   onSelectConceptRootNode: Function
@@ -93,7 +93,7 @@ const UploadConceptListModal = (props: PropsType) => {
 
     onAccept,
     onUpdateLabel,
-    onCloseModal,
+    onClose,
     onSelectConceptRootNode
   } = props;
 
@@ -102,7 +102,7 @@ const UploadConceptListModal = (props: PropsType) => {
 
   return (
     <Modal
-      closeModal={onCloseModal}
+      onClose={onClose}
       doneButton
       headline={T.translate("uploadConceptListModal.headline")}
     >
@@ -206,7 +206,7 @@ const selectResolvedItemsCount = state => {
 };
 
 const selectAvailableConceptRootNodes = state => {
-  const { trees } = state.categoryTrees;
+  const { trees } = state.conceptTrees;
 
   if (!trees) return null;
 
@@ -228,12 +228,12 @@ const mapStateToProps = (state: StateType) => ({
   resolved: state.uploadConceptListModal.resolved,
   resolvedItemsCount: selectResolvedItemsCount(state),
   unresolvedItemsCount: selectUnresolvedItemsCount(state),
-  rootConcepts: state.categoryTrees.trees,
+  rootConcepts: state.conceptTrees.trees,
   error: state.uploadConceptListModal.error
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onCloseModal: () => dispatch(uploadConceptListModalClose()),
+  onClose: () => dispatch(uploadConceptListModalClose()),
   onUpdateLabel: label => dispatch(uploadConceptListModalUpdateLabel(label)),
   onAccept: (...params) =>
     dispatch(acceptAndCloseUploadConceptListModal(...params)),

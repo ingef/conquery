@@ -3,14 +3,14 @@ package com.bakdata.conquery.util.dict;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
 import org.apache.mina.core.buffer.IoBuffer;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.dictionary.StringMap;
+import com.bakdata.conquery.models.dictionary.Dictionary;
+import com.bakdata.conquery.models.dictionary.DictionaryEntry;
 import com.bakdata.conquery.util.BufferUtil;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -23,8 +23,8 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id="SUCCINCT_TRIE", base=StringMap.class)
-public class SuccinctTrie implements StringMap {
+@CPSType(id="SUCCINCT_TRIE", base=Dictionary.class)
+public class SuccinctTrie extends Dictionary {
 
 	@Getter
 	private int nodeCount;
@@ -61,6 +61,8 @@ public class SuccinctTrie implements StringMap {
 	@JsonCreator
 	public static SuccinctTrie fromSerialized(SerializedSuccinctTrie serialized) {
 		SuccinctTrie trie = new SuccinctTrie();
+		trie.setName(serialized.getName());
+		trie.setDataset(serialized.getDataset());
 		trie.nodeCount = serialized.getNodeCount();
 		trie.entryCount = serialized.getEntryCount();
 		trie.reverseLookup = serialized.getReverseLookup();
@@ -78,11 +80,30 @@ public class SuccinctTrie implements StringMap {
 
 	@Override
 	public int add(byte[] bytes) {
-		return put(bytes,entryCount,false);
+		return put(bytes,entryCount,true);
 	}
 
+	@Override
 	public int put(byte[] key) {
-		return put(key, entryCount, true);
+		return put(key, entryCount, false);
+	}
+	
+	public void checkCompressed(String errorMessage) {
+		if (!isCompressed()) {
+			throw new IllegalStateException(errorMessage);
+		}
+	}
+	
+	public void checkUncompressed(String errorMessage) {
+		if (isCompressed()) {
+			throw new IllegalStateException(errorMessage);
+		}
+	}
+	
+	public void tryCompress() {
+		if(!isCompressed()) {
+			this.compress();
+		}
 	}
 
 	private int put(byte[] key, int value, boolean failOnDuplicate) {
@@ -124,7 +145,6 @@ public class SuccinctTrie implements StringMap {
 	 * select0(n) - returns the position of the nth 0 in the bit store.
 	 */
 
-	@Override
 	public void compress() {
 		checkUncompressed("compress is only allowed once");
 
@@ -191,7 +211,7 @@ public class SuccinctTrie implements StringMap {
 
 	@Override
 	@JsonIgnore
-	public int get(byte[] value) {
+	public int getId(byte[] value) {
 		if (!compressed) {
 			HelpNode node = root;
 			for (byte val : value) {
@@ -275,20 +295,6 @@ public class SuccinctTrie implements StringMap {
 		return entryCount == 0;
 	}
 
-	@Override
-	public List<String> getValues() {
-		List<String> values = new ArrayList<>();
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		for (int i = 0; i < entryCount; i++) {
-			getReverse(i, buffer);
-			values.add(BufferUtil.toUtf8String(buffer));
-			buffer.clear();
-		}
-		buffer.free();
-		return values;
-	}
-
 	public List<byte[]> getValuesBytes() {
 		List<byte[]> valuesBytes = new ArrayList<>();
 		IoBuffer buffer = IoBuffer.allocate(512);
@@ -304,17 +310,6 @@ public class SuccinctTrie implements StringMap {
 		return valuesBytes;
 	}
 
-	public Collection<Entry> getEntries() {
-		int i = 0;
-		Collection<Entry> entries = new ArrayList<Entry>(getValues().size());
-
-		for(String val: getValues()) {
-			entries.add(new Entry(i, val));
-			i++;
-		}
-		return entries;
-	}
-
 	@Data @RequiredArgsConstructor
 	public static class Entry {
 		private final int key;
@@ -322,23 +317,23 @@ public class SuccinctTrie implements StringMap {
 	}
 
 	@Override
-	public Iterator<String> iterator() {
+	public Iterator<DictionaryEntry> iterator() {
 		IoBuffer buffer = IoBuffer.allocate(512);
 		buffer.setAutoExpand(true);
-		return new AbstractIterator<String>() {
+		return new AbstractIterator<DictionaryEntry>() {
 
 			private int index = 0;
 
 			@Override
-			protected String computeNext() {
+			protected DictionaryEntry computeNext() {
 				if (index == entryCount) {
 					buffer.free();
 					return endOfData();
 				}
 				getReverse(index++, buffer);
-				String result = BufferUtil.toUtf8String(buffer);
+				byte[] result = BufferUtil.toBytes(buffer);
 				buffer.clear();
-				return result;
+				return new DictionaryEntry(index, result);
 			}
 		};
 	}
@@ -346,7 +341,7 @@ public class SuccinctTrie implements StringMap {
 	@JsonValue
 	public SerializedSuccinctTrie toSerialized() {
 		checkCompressed("no serialisation allowed before compressing the trie");
-		return new SerializedSuccinctTrie(nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache, totalBytesStored);
+		return new SerializedSuccinctTrie(getName(), getDataset(), nodeCount, entryCount, reverseLookup, parentIndex, lookup, keyPartArray, selectZeroCache, totalBytesStored);
 	}
 
 	@Data
@@ -369,7 +364,6 @@ public class SuccinctTrie implements StringMap {
 
 	}
 
-	@Override
 	public SuccinctTrie uncompress() {
 		checkCompressed("Constructor only works for compressed tries");
 
@@ -381,17 +375,7 @@ public class SuccinctTrie implements StringMap {
 	}
 
 	@Override
-	public String getElement(int id) {
-		IoBuffer buffer = IoBuffer.allocate(512);
-		buffer.setAutoExpand(true);
-		getReverse(id, buffer);
-		String str = BufferUtil.toUtf8String(buffer);
-		buffer.free();
-		return str;
-	}
-
-	@Override
-	public byte[] getElementBytes(int id) {
+	public byte[] getElement(int id) {
 		IoBuffer buffer = IoBuffer.allocate(512);
 		buffer.setAutoExpand(true);
 		getReverse(id, buffer);
@@ -402,8 +386,7 @@ public class SuccinctTrie implements StringMap {
 	}
 
 	@Override
-	public int add(String element) {
-		byte[] bytes = element.getBytes(StandardCharsets.UTF_8);
-		return add(bytes);
+	public long estimateMemoryConsumption() {
+		return 13L*getNodeCount() + 4L*size();
 	}
 }

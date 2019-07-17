@@ -3,12 +3,15 @@ package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Aggregator, counting the number of days present.
+ */
 public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 
 	private CDateSet set = CDateSet.create();
@@ -24,18 +27,18 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public void aggregateEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return;
 		}
 
 		//otherwise the result would be something weird
-		if(block.getAsDateRange(event, getColumn()).isOpen()) {
+		if(bucket.getAsDateRange(event, getColumn()).isOpen()) {
 			return;
 		}
 
 		CDateSet range = CDateSet.create();
-		range.add(block.getAsDateRange(event, getColumn()));
+		range.add(bucket.getAsDateRange(event, getColumn()));
 
 		range.retainAll(dateRestriction);
 

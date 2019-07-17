@@ -2,7 +2,6 @@ package com.bakdata.conquery.util.io;
 
 import java.io.IOException;
 import java.io.OutputStream;
-import java.util.Arrays;
 
 public class SmallOut extends OutputStream implements AutoCloseable {
 

@@ -5,7 +5,7 @@ import type { Dispatch } from "redux";
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
 import { isEmpty } from "../common/helpers";
-import type { TreeNodeIdType } from "../common/types/backend";
+import type { ConceptIdT } from "../api/types";
 
 import {
   UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
@@ -24,7 +24,7 @@ export const resolveConceptsSuccess = (res: any, payload?: Object) =>
 export const resolveConceptsError = (err: any) =>
   defaultError(RESOLVE_CONCEPTS_ERROR, err);
 
-export const selectConceptRootNode = (conceptId: TreeNodeIdType) => ({
+export const selectConceptRootNode = (conceptId: ConceptIdT) => ({
   type: SELECT_CONCEPT_ROOT_NODE,
   conceptId
 });

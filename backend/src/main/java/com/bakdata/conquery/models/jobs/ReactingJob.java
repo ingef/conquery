@@ -24,6 +24,6 @@ public class ReactingJob<MESSAGE extends NetworkMessage<CTX>, CTX extends Networ
 
 	@Override
 	public String getLabel() {
-		return toString();
+		return "reacting to "+message;
 	}
 }

@@ -56,7 +56,7 @@ const Row = styled("div")`
 type PropsType = {
   // TODO: Disentangle Concept search from PreviousQuery search
   search: string[] | Object,
-  onSearch: string => void,
+  onSearch: (value: string | string[]) => void,
   onChange: () => void,
   onClearQuery: () => void,
   options: string[],
@@ -88,7 +88,7 @@ const SearchBox = (props: PropsType) => {
           name="input"
           value={search.map(t => ({ label: t, value: t }))}
           options={options ? options.map(t => ({ label: t, value: t })) : []}
-          onChange={values => onSearch(values.map(v => v.value))}
+          onChange={values => onSearch(values ? values.map(v => v.value) : [])}
           placeholder={
             placeholder || T.translate("reactSelect.searchPlaceholder")
           }

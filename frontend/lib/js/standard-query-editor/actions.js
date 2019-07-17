@@ -3,11 +3,14 @@
 import { type Dispatch } from "redux-thunk";
 
 import api from "../api";
-import { type DateRangeType } from "../common/types/backend";
+import { flatmap } from "../common/helpers/commonHelper";
+import type { DateRangeT } from "../api/types";
 import { getFileRows } from "../common/helpers/fileHelper";
+
+import { defaultSuccess, defaultError } from "../common/actions";
 import { resolveFilterValues } from "../upload-filter-list-modal/actions";
 import { uploadConceptListModalOpen } from "../upload-concept-list-modal/actions";
-import { defaultSuccess, defaultError } from "../common/actions";
+import { loadPreviousQuery } from "../previous-queries/list/actions";
 
 import type { DraggedNodeType, DraggedQueryType } from "./types";
 import {
@@ -35,12 +38,13 @@ import {
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
-  TOGGLE_INCLUDE_SUBNODES
+  TOGGLE_INCLUDE_SUBNODES,
+  SET_DATE_COLUMN
 } from "./actionTypes";
 
 export const dropAndNode = (
   item: DraggedNodeType | DraggedQueryType,
-  dateRange: ?DateRangeType
+  dateRange: ?DateRangeT
 ) => ({
   type: DROP_AND_NODE,
   payload: { item, dateRange }
@@ -76,10 +80,45 @@ export const loadQuery = query => ({
 
 export const clearQuery = () => ({ type: CLEAR_QUERY });
 
-export const expandPreviousQuery = (rootConcepts, query) => ({
-  type: EXPAND_PREVIOUS_QUERY,
-  payload: { rootConcepts, query }
-});
+const findPreviousQueryIds = (node, queries = []) => {
+  switch (node.type) {
+    case "SAVED_QUERY":
+      return [...queries, node.query];
+    case "NEGATION":
+    case "DATE_RESTRICTION":
+      return findPreviousQueryIds(node.child, queries);
+    case "AND":
+    case "OR":
+      return [
+        ...queries,
+        ...flatmap(node.children, child => findPreviousQueryIds(child, []))
+      ];
+    default:
+      return queries;
+  }
+};
+
+/*
+  1) Expands previous query in the editor
+  2) Triggers a load for all nested queries
+*/
+export const expandPreviousQuery = (datasetId, rootConcepts, query) => {
+  if (!query.root || query.root.type !== "AND") {
+    throw new Error("Cant expand query, because root is not AND");
+  }
+
+  const nestedPreviousQueryIds = findPreviousQueryIds(query.root);
+
+  return [
+    {
+      type: EXPAND_PREVIOUS_QUERY,
+      payload: { rootConcepts, query }
+    },
+    ...nestedPreviousQueryIds.map(queryId =>
+      loadPreviousQuery(datasetId, queryId)
+    )
+  ];
+};
 
 export const selectNodeForEditing = (andIdx: number, orIdx: number) => ({
   type: SELECT_NODE_FOR_EDITING,
@@ -106,9 +145,9 @@ export const toggleTable = (tableIdx, isExcluded) => ({
   payload: { tableIdx, isExcluded }
 });
 
-export const setFilterValue = (tableIdx, filterIdx, value, formattedValue) => ({
+export const setFilterValue = (tableIdx, filterIdx, value) => ({
   type: SET_FILTER_VALUE,
-  payload: { tableIdx, filterIdx, value, formattedValue }
+  payload: { tableIdx, filterIdx, value }
 });
 
 export const setTableSelects = (tableIdx, value) => ({
@@ -118,6 +157,11 @@ export const setTableSelects = (tableIdx, value) => ({
 export const setSelects = value => ({
   type: SET_SELECTS,
   payload: { value }
+});
+
+export const setDateColumn = (tableIdx, value) => ({
+  type: SET_DATE_COLUMN,
+  payload: { tableIdx, value }
 });
 
 export const resetAllFilters = (andIdx: number, orIdx: number) => ({

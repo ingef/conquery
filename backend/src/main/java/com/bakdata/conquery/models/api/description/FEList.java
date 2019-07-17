@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.api.description;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 import javax.ws.rs.core.EntityTag;
 
@@ -20,7 +19,7 @@ import lombok.Getter;
 public class FEList implements JsonSerializable {
 
 	private final List<Pair<ConceptElementId<?>, FENode>> content = new ArrayList<>();
-	@Getter
+	@Getter(lazy = true)
 	private final EntityTag cacheId = new EntityTag(Integer.toString(content.hashCode()));
 	
 

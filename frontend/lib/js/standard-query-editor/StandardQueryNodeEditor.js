@@ -3,7 +3,9 @@
 import React from "react";
 
 import { createConnectedQueryNodeEditor } from "../query-node-editor";
-import { hasConceptChildren } from "../category-trees/globalTreeStoreHelper";
+import { hasConceptChildren } from "../concept-trees/globalTreeStoreHelper";
+
+import type { PropsType } from "../query-node-editor/QueryNodeEditor";
 
 import {
   deselectNode,
@@ -19,7 +21,8 @@ import {
   dropFilterValuesFile,
   toggleIncludeSubnodes,
   setSelects,
-  setTableSelects
+  setTableSelects,
+  setDateColumn
 } from "./actions";
 
 const findNodeBeingEdited = query =>
@@ -28,7 +31,7 @@ const findNodeBeingEdited = query =>
     .find(element => element.isEditing);
 
 const mapStateToProps = state => {
-  const node = findNodeBeingEdited(state.panes.right.tabs.queryEditor.query);
+  const node = findNodeBeingEdited(state.queryEditor.query);
 
   const showTables =
     node &&
@@ -55,8 +58,8 @@ const mapDispatchToProps = dispatch => ({
   onSelectSelects: value => dispatch(setSelects(value)),
   onSelectTableSelects: (tableIdx, value) =>
     dispatch(setTableSelects(tableIdx, value)),
-  onSetFilterValue: (tableIdx, filterIdx, value, formattedValue) =>
-    dispatch(setFilterValue(tableIdx, filterIdx, value, formattedValue)),
+  onSetFilterValue: (tableIdx, filterIdx, value) =>
+    dispatch(setFilterValue(tableIdx, filterIdx, value)),
   onSwitchFilterMode: (tableIdx, filterIdx, mode) =>
     dispatch(switchFilterMode(tableIdx, filterIdx, mode)),
   onResetAllFilters: (andIdx, orIdx) =>
@@ -67,7 +70,8 @@ const mapDispatchToProps = dispatch => ({
   onDropFilterValuesFile: (...params) =>
     dispatch(dropFilterValuesFile(...params)),
   onToggleIncludeSubnodes: isIncludeSubNodes =>
-    dispatch(toggleIncludeSubnodes(isIncludeSubNodes))
+    dispatch(toggleIncludeSubnodes(isIncludeSubNodes)),
+  onSetDateColumn: (tableIdx, value) => dispatch(setDateColumn(tableIdx, value))
 });
 
 const QueryNodeEditor = createConnectedQueryNodeEditor(
@@ -75,4 +79,6 @@ const QueryNodeEditor = createConnectedQueryNodeEditor(
   mapDispatchToProps
 );
 
-export default props => <QueryNodeEditor type="standard" {...props} />;
+export default (props: PropsType) => (
+  <QueryNodeEditor name="standard" {...props} />
+);

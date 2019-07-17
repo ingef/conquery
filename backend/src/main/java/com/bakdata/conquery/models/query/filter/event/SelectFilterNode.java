@@ -1,14 +1,15 @@
 package com.bakdata.conquery.models.query.filter.event;
 
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
-import com.bakdata.conquery.models.types.specific.IStringType;
+import com.bakdata.conquery.models.types.specific.AStringType;
 
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+/**
+ * Single events are filtered, and included if they have a selected value. Entity is only included if it has any event with selected value.
+ */
 public class SelectFilterNode extends SingleColumnFilterNode<String> {
 
 	private int selectedId = -1;
@@ -19,9 +20,9 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public void nextBlock(Block block) {
+	public void nextBlock(Bucket bucket) {
 		//you can then also skip the block if the id is -1
-		selectedId = ((IStringType) getColumn().getTypeFor(block)).getStringId(filterValue);
+		selectedId = ((AStringType) getColumn().getTypeFor(bucket)).getId(filterValue);
 	}
 
 	@Override
@@ -30,23 +31,29 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 	}
 
 	@Override
-	public boolean checkEvent(Block block, int event) {
-		if (selectedId == -1 || !block.has(event, getColumn())) {
+	public boolean checkEvent(Bucket bucket, int event) {
+		if (selectedId == -1 || !bucket.has(event, getColumn())) {
 			return false;
 		}
 
-		int value = block.getString(event, getColumn());
+		int value = bucket.getString(event, getColumn());
 
 		return value == selectedId;
 	}
 
 	@Override
-	public void acceptEvent(Block block, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		this.hit = true;
 	}
 
 	@Override
 	public boolean isContained() {
 		return hit;
+	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return super.isOfInterest(bucket) &&
+			   ((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
 	}
 }

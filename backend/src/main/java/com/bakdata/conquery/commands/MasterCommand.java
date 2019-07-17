@@ -3,6 +3,8 @@ package com.bakdata.conquery.commands;
 import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ScheduledExecutorService;
 
 import javax.validation.Validator;
@@ -25,8 +27,10 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.DefaultAuthFilter;
+import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -37,11 +41,11 @@ import com.bakdata.conquery.models.worker.NamespaceCollection;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.ResourcesProvider;
-import com.bakdata.conquery.resources.admin.AdminUIServlet;
+import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 
-import io.dropwizard.auth.AuthDynamicFeature;
+import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -56,11 +60,12 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private JobManager jobManager;
 	private Validator validator;
 	private ConqueryConfig config;
-	private AdminUIServlet admin;
+	private AdminServlet admin;
 	private ScheduledExecutorService maintenanceService;
 	private Namespaces namespaces = new Namespaces();
 	private Environment environment;
-	private AuthDynamicFeature authDynamicFeature;
+	private AuthFilter<?, User> authDynamicFeature;
+	private List<ResourcesProvider> providers = new ArrayList<>();
 
 	public void run(ConqueryConfig config, Environment environment) throws IOException, JSONException {
 		//inject namespaces into the objectmapper
@@ -109,15 +114,17 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(storage, config.getAuthentication());
 
 		log.info("Registering ResourcesProvider");
-		for (Class<?> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
+		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
 			try {
-				((ResourcesProvider) resourceProvider.getConstructor().newInstance()).registerResources(this);
+				ResourcesProvider provider = resourceProvider.getConstructor().newInstance();
+				provider.registerResources(this);
+				providers .add(provider);
 			} catch (Exception e) {
 				log.error("Failed to register Resource {}", e);
 			}
 		}
 
-		admin = new AdminUIServlet();
+		admin = new AdminServlet();
 		admin.register(this);
 
 		ShutdownTask shutdown = new ShutdownTask();
@@ -191,6 +198,14 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 				namespace.getStorage().close();
 			} catch (Exception e) {
 				log.error(namespace + " could not be closed", e);
+			}
+
+		}
+		for (ResourcesProvider provider : providers) {
+			try {
+				provider.close();
+			} catch (Exception e) {
+				log.error(provider + " could not be closed", e);
 			}
 
 		}

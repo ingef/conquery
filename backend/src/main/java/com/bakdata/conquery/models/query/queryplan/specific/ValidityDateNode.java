@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -14,22 +14,28 @@ import lombok.ToString;
 public class ValidityDateNode extends QPChainNode {
 
 	private final Column validityDateColumn;
+	private transient boolean noRestriction;
 	
 	public ValidityDateNode(Column validityDateColumn, QPNode child) {
 		super(child);
 		this.validityDateColumn = validityDateColumn;
 	}
-
+	
 	@Override
-	public void nextEvent(Block block, int event) {
-		//if validity date is null return
-		if(validityDateColumn != null && !block.has(event, validityDateColumn)) {
+	public void nextEvent(Bucket bucket, int event) {
+		//if table without validity columns we continue always
+		if(validityDateColumn == null) {
+			getChild().nextEvent(bucket, event);
+		}
+
+		//if event has null validityDate cancel
+		if(!bucket.has(event, validityDateColumn)) {
 			return;
 		}
-		else {
-			if(validityDateColumn == null || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
-				getChild().nextEvent(block, event);
-			}
+
+		//no dateRestriction or event is in date restriction
+		if(noRestriction || bucket.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
+			getChild().nextEvent(bucket, event);
 		}
 	}
 	
@@ -46,5 +52,6 @@ public class ValidityDateNode extends QPChainNode {
 	@Override
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
+		noRestriction = ctx.getDateRestriction().isAll();
 	}
 }

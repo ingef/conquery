@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.common.daterange;
 
 import lombok.AccessLevel;
-import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.experimental.Wither;
 
