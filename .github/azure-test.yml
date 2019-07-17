@@ -37,6 +37,15 @@ jobs:
   pool:
     vmImage: $(IMAGE)
   steps:
+  - task: CacheBeta@0
+    inputs:
+      key: |
+        maven
+        $(Build.SourcesDirectory)/pom.xml
+        $(Build.SourcesDirectory)/eva-backend/pom.xml
+        $(Build.SourcesDirectory)/eva-executable/pom.xml
+      path: $(CACHE_DIR)
+
   - task: Maven@3
     displayName: build conquery
     inputs:
@@ -77,11 +86,3 @@ jobs:
     inputs:
       sourceFolder: CACHE_DIR/.m2/repository/com/bakdata
       contents: '**'
-  - task: CacheBeta@0
-    inputs:
-      key: |
-        maven
-        $(Build.SourcesDirectory)/pom.xml
-        $(Build.SourcesDirectory)/eva-backend/pom.xml
-        $(Build.SourcesDirectory)/eva-executable/pom.xml
-      path: CACHE_DIR
