@@ -57,7 +57,7 @@ steps:
   inputs:
     gitHubConnection: eva-bot
     action: edit
-    tagPattern: v\d+\.\d+(\.\d+)?$
+    tagPattern: v\d+\.\d+(\.\d+)?
     tag: $(TAG)
     assets: eva-executable/target/eva-executable-*.jar
     isPreRelease: false
