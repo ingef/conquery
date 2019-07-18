@@ -30,7 +30,7 @@ steps:
     jdkVersionOption: '1.11'
     options: $(MVN) -T 1C -DskipTests
 - task: GitHubRelease@0
-  dispayName: create prerelease
+  displayName: create prerelease
   inputs:
     gitHubConnection: public
     action: edit
