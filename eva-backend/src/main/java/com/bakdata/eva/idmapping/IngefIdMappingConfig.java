@@ -16,9 +16,24 @@ public class IngefIdMappingConfig extends IdMappingConfig {
 	@Override
 	public IdMappingAccessor[] getIdAccessors() {
 		return new IdMappingAccessor[]{
-			new DefaultIdMappingAccessor(this, new int[]{0,3}),
-			new DefaultIdMappingAccessor(this, new int[]{1,3}),
-			new DefaultIdMappingAccessor(this, new int[]{2,3}),
+			new DefaultIdMappingAccessor(this, new int[]{0,3}) {
+				@Override
+				public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
+					return null;
+				}
+			},
+			new DefaultIdMappingAccessor(this, new int[]{1,3}) {
+				@Override
+				public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
+					return null;
+				}
+			},
+			new DefaultIdMappingAccessor(this, new int[]{2,3}) {
+				@Override
+				public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
+					return new CsvEntityId(reorderedCsvLine[1]+"|"+reorderedCsvLine[0]);
+				}
+			},
 		};
 	}
 
