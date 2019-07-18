@@ -47,3 +47,8 @@ steps:
     assets: executable/target/executable-*.jar
     isPreRelease: true
     addChangeLog: false
+- task: DeleteFiles@1
+  displayName: prepare cache
+  inputs:
+    sourceFolder: cache/.m2/repository/com/bakdata
+    contents: '**'

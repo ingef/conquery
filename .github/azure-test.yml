@@ -26,6 +26,11 @@ jobs:
       jdkVersionOption: '1.11'
       goals: install
       options: $(MVN) -pl frontend-resources
+  - task: DeleteFiles@1
+    displayName: prepare cache
+    inputs:
+      sourceFolder: cache/.m2/repository/com/bakdata
+      contents: '**'
 
 - job: tests_backend
   displayName: Backend Tests
