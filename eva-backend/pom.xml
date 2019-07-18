@@ -68,6 +68,8 @@
 			<groupId>com.konghq</groupId>
 			<artifactId>unirest-java</artifactId>
 			<version>2.3.10</version>
+			<!-- until apache http version conflict with dropwizard is removed -->
+			<classifier>standalone</classifier>
 		</dependency>
 	</dependencies>
 </project>
