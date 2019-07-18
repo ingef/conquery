@@ -2,6 +2,7 @@ package com.bakdata.eva.forms.queries;
 
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.constraints.NotNull;
 
@@ -45,7 +46,7 @@ public class PSMFormQuery implements IQuery {
 	@Override
 	public List<ResultInfo> collectResultInfos(PrintSettings config) {
 		List<ResultInfo> header = group.collectResultInfos(config);
-		header.add(0,new ResultInfo(EvaConstants.GROUP, ResultType.BOOLEAN, 0, 0));
+		header.add(0,new ResultInfo(EvaConstants.GROUP, ResultType.BOOLEAN, new AtomicInteger(0), 0));
 		return header;
 	}
 

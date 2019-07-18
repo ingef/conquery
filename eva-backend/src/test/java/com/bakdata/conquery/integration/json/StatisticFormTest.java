@@ -104,7 +104,7 @@ public class StatisticFormTest extends ConqueryTestSpec {
 		}
 		log.info("{} QUERIES EXECUTED", getLabel());
 
-		QueryToCSVRenderer renderer = new QueryToCSVRenderer(support.getNamespace());
+		QueryToCSVRenderer renderer = new QueryToCSVRenderer();
 		PrintSettings settings = PrintSettings.builder().prettyPrint(false).nameExtractor(form.getColumnNamer().getNamer()).build();
 		List<String> actual = renderer
 			.toCSV(settings, managed)
