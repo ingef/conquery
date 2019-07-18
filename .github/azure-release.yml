@@ -38,16 +38,10 @@ steps:
     goals: initialize
     options: $(MVN) -P setEvaVersion
 - task: Maven@3
-  displayName: build conquery
-  inputs:
-    jdkVersionOption: '1.11'
-    goals: install
-    options: $(MVN) -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
-- task: Maven@3
   displayName: build eva
   inputs:
     jdkVersionOption: '1.11'
-    options: $(MVN) -T 1C -DskipTests
+    options: $(MVN) -DskipTests
 - task: GitHubRelease@0
   displayName: create prerelease
   inputs:
