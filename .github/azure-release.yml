@@ -1,0 +1,74 @@
+pr: none
+trigger:
+  tags:
+    include:
+      - '*'
+
+variables:
+- group: ConqueryConstants
+- name: TAG
+  value: $(Build.SourceBranch)
+
+pool:
+  vmImage: $(IMAGE)
+steps:
+- bash: |
+    echo "trying to extract tag from $(TAG)"
+    echo "TAG=${TAG#refs/tags/}"
+    echo "##vso[task.setvariable variable=TAG]${TAG#refs/tags/}"
+- task: CacheBeta@0
+  inputs:
+    key: |
+      release
+      $(Build.SourcesDirectory)/pom.xml
+      $(Build.SourcesDirectory)/eva-frontend-resources/pom.xml
+      $(Build.SourcesDirectory)/eva-backend/pom.xml
+      $(Build.SourcesDirectory)/eva-executable/pom.xml
+      $(Build.SourcesDirectory)/eva-frontend/yarn.lock
+      $(Build.SourcesDirectory)/eva-frontend/conquery/pom.xml
+      $(Build.SourcesDirectory)/eva-frontend/conquery/frontend-resources/pom.xml
+      $(Build.SourcesDirectory)/eva-frontend/conquery/backend/pom.xml
+      $(Build.SourcesDirectory)/eva-frontend/conquery/executable/pom.xml
+      $(Build.SourcesDirectory)/eva-frontend/conquery/frontend/yarn.lock
+    path: $(CACHE_DIR)
+- task: Maven@3
+  displayName: set version
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: initialize
+    options: $(MVN) -P setEvaVersion
+- task: Maven@3
+  displayName: build conquery
+  inputs:
+    jdkVersionOption: '1.11'
+    options: $(MVN) -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
+- task: Maven@3
+  displayName: build eva
+  inputs:
+    jdkVersionOption: '1.11'
+    options: $(MVN) -T 1C -DskipTests
+- task: GitHubRelease@0
+  displayName: create prerelease
+  inputs:
+    gitHubConnection: bot
+    action: edit
+    tagPattern: v\d+\.\d+(\.\d+)?-.*
+    tag: $(TAG)
+    assets: eva-executable/target/eva-executable-*.jar
+    isPreRelease: true
+    addChangeLog: false
+- task: GitHubRelease@0
+  displayName: create release
+  inputs:
+    gitHubConnection: bot
+    action: edit
+    tagPattern: v\d+\.\d+(\.\d+)?$
+    tag: $(TAG)
+    assets: eva-executable/target/eva-executable-*.jar
+    isPreRelease: false
+    addChangeLog: false
+- task: DeleteFiles@1
+  displayName: prepare cache
+  inputs:
+    sourceFolder: cache/.m2/repository/com/bakdata
+    contents: '**'

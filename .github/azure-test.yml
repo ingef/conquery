@@ -26,6 +26,11 @@ jobs:
       jdkVersion: '1.11'
       goals: package
       options: $(MVN) -pl eva-frontend-resources
+  - task: DeleteFiles@1
+    displayName: prepare cache
+    inputs:
+      sourceFolder: CACHE_DIR/.m2/repository/com/bakdata
+      contents: '**'
 
 
 
