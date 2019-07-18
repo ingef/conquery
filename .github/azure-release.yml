@@ -47,6 +47,16 @@ steps:
     assets: executable/target/executable-*.jar
     isPreRelease: true
     addChangeLog: false
+- task: GitHubRelease@0
+  displayName: create release
+  inputs:
+    gitHubConnection: bot
+    action: edit
+    tagPattern: v\d+\.\d+(\.\d+)?$
+    tag: $(TAG)
+    assets: executable/target/executable-*.jar
+    isPreRelease: false
+    addChangeLog: false
 - task: DeleteFiles@1
   displayName: prepare cache
   inputs:
