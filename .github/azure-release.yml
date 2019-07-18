@@ -12,8 +12,8 @@ pool:
 steps:
 - bash: |
     echo "trying to extract tag from $(Build.SourceBranch)"
-    echo "TAG= ${$(Build.SourceBranch):11}"
-    echo "##vso[task.setvariable variable=TAG]${$(Build.SourceBranch):11}"
+    echo "TAG= ${Build.SourceBranch#refs/tags/}"
+    echo "##vso[task.setvariable variable=TAG]${Build.SourceBranch#refs/tags/}"
 - task: CacheBeta@0
   inputs:
     key: |
