@@ -1,0 +1,41 @@
+pr: none
+trigger:
+  tags:
+    include:
+      - '*'
+
+variables:
+- group: ConqueryConstants
+- name: TAG
+  value: ${{substring(Build.SourceBranch,11,sub(length(Build.SourceBranch),10))}}
+
+pool:
+  vmImage: $(IMAGE)
+steps:
+- task: Maven@3
+  displayName: set version
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: initialize
+    options: $(MVN) -P setEvaVersion
+- task: Maven@3
+  displayName: build conquery
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: install
+    options: $(MVN) -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
+- task: Maven@3
+  displayName: build eva
+  inputs:
+    jdkVersionOption: '1.11'
+    options: $(MVN) -T 1C -DskipTests
+- task: GitHubRelease@0
+  dispayName: create prerelease
+  inputs:
+    gitHubConnection: public
+    action: edit
+    tagPattern: v\d+\.\d+(\.\d+)?-.*
+    tag: $(TAG)
+    assets: eva-executable/target/eva-executable-*.jar
+    isPreRelease: true
+    addChangeLog: false
