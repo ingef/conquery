@@ -34,9 +34,9 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import com.bakdata.eva.forms.common.Form;
 import com.bakdata.eva.forms.managed.ManagedForm;
-import com.mashape.unirest.http.exceptions.UnirestException;
 
 import io.dropwizard.auth.Auth;
+import kong.unirest.UnirestException;
 import lombok.extern.slf4j.Slf4j;
 
 @Path("datasets/{" + DATASET + "}/form-queries")
