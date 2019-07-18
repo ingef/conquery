@@ -3,12 +3,7 @@ trigger:
 - develop
 
 variables:
-  IMAGE: ubuntu-16.04
-  EXCLUDE_SOURCE_MAPS: true
-  CACHE_DIR: $(Pipeline.Workspace)/cache
-  MVN: -B -V -Dmaven.repo.local=$(CACHE_DIR)/.m2
-  YARN_CACHE_FOLDER: $(CACHE_DIR)/yarn/
-
+- group: ConqueryConstants
 
 jobs:
 ############### Frontend Tests
