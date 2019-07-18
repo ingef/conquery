@@ -41,6 +41,7 @@ steps:
   displayName: build conquery
   inputs:
     jdkVersionOption: '1.11'
+    goals: install
     options: $(MVN) -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
 - task: Maven@3
   displayName: build eva
