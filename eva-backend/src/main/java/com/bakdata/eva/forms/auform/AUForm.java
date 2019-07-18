@@ -136,7 +136,7 @@ public class AUForm extends StatisticForm {
 			.map(c -> c.getIds().get(0).findConcept())
 			.filter(id -> id.equals(icdId)).count();
 		if(icdConceptCount != features.size()) {
-			throw new IllegalArgumentException("Only "+icdConceptCount+" of "+features.size()+" concepts belong to "+ icdId+". However, all need to stem form there at the moment");
+			throw new IllegalArgumentException("Only "+icdConceptCount+" of "+features.size()+" concepts belong to "+ icdId+". However, all need to stem from there at the moment");
 		}
 
 		// CNS and sensory organs group
@@ -263,21 +263,28 @@ public class AUForm extends StatisticForm {
 			CQConcept concept = new CQConcept();
 			concept.setLabel(label.isEmpty() ? conceptElement.getName() : label);
 			concept.setIds(Arrays.asList(conceptElement.getId()));
+			
+			// Filter and collect tables 
+			List<CQTable> tables = conceptElement
+			.getConcept()
+			.getConnectors()
+			.stream()
+			.filter(connector -> connector.getName().toLowerCase().startsWith("au_fall"))
+			.map(connector -> {
+				CQTable table = new CQTable();
+				table.setId(connector.getId());
+				table.setConcept(concept);
+				table.setFilters(new ArrayList<>());
+				return table;
+			})
+			.collect(Collectors.toList());
+			
+			if(tables.isEmpty()) {
+				throw new IllegalStateException("After filtering " + conceptElement.toString() + " the concept does not hold any connection to a table anymore.");
+			}
+			
 			concept
-				.setTables(
-					conceptElement
-						.getConcept()
-						.getConnectors()
-						.stream()
-						.filter(connector -> connector.getName().equalsIgnoreCase("au_fall"))
-						.map(connector -> {
-							CQTable table = new CQTable();
-							table.setId(connector.getId());
-							table.setConcept(concept);
-							table.setFilters(new ArrayList<>());
-							return table;
-						})
-						.collect(Collectors.toList()));
+				.setTables(tables);
 			column.getConceptConfiguration().accept(concept);
 			elements.add(concept);
 		}
@@ -398,10 +405,13 @@ public class AUForm extends StatisticForm {
 		@Override
 		public void accept(CQConcept concept) {
 			concept.getTables().removeIf(DisabilityTableFilter::isNotDisabilityTable);
+			if(concept.getTables().isEmpty()) {
+				throw new IllegalStateException("After filtering " + concept.toString() + " the concept does not hold any connection to a table anymore.");
+			}
 		}
 
 		private static boolean isNotDisabilityTable(CQTable table) {
-			return !table.getId().getConnector().equalsIgnoreCase("au_fall");
+			return !table.getId().getConnector().toLowerCase().startsWith("au_fall");
 		}
 	}
 	

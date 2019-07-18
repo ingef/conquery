@@ -218,16 +218,16 @@
             },
             {
                 "label": "Sonstiges",
-                "description": "Tuberkulose or Bestimmte bakterielle Zoonosen or Sonstige bakterielle Krankheiten or Infektionen, die vorwiegend durch Geschlechtsverkehr ?bertragen werden or Sonstige Spiroch?tenkrankheiten or Sonstige Krankheiten durch Chlamydien or Rickettsiosen or Virusinfektionen des Zentralnervensystems or Dengue-Fieber [Klassische Dengue] or H?morrhagisches Dengue-Fieber or Durch Arthropoden ?bertragene Viruskrankheiten und virale h?morrhagische Fieber or Virusinfektionen, die durch Haut- und Schleimhautl?sionen gekennzeichnet sind or Virushepatitis or HIV-Krankheit [Humane Immundefizienz-Viruskrankheit] or Sonstige Viruskrankheiten or Mykosen or Protozoenkrankheiten or Helminthosen or Pedikulose [L?usebefall], Akarinose [Milbenbefall] und sonstiger Parasitenbefall der Haut or Folgezust?nde von infekti?sen und parasit?ren Krankheiten or Bakterien, Viren und sonstige Infektionserreger als Ursache von Krankheiten, die in anderen Kapiteln klassifiziert sind or Sonstige Infektionskrankheiten or Neubildungen or Krankheiten des Blutes und der blutbildenden Organe sowie bestimmte St?rungen mit Beteiligung des Immunsystems or Endokrine, Ern?hrungs- und Stoffwechselkrankheiten or Krankheiten des Urogenitalsystems or Schwangerschaft, Geburt und Wochenbett or Bestimmte Zust?nde, die ihren Ursprung in der Perinatalperiode haben or Angeborene Fehlbildungen, Deformit?ten und Chromosomenanomalien or Schl?sselnummern f?r besondere Zwecke or ?u?ere Ursachen von Morbidit?t und Mortalit?t or Faktoren, die den Gesundheitszustand beeinflussen und zur Inanspruchnahme des Gesundheitswesens f?hren",
-                "column": "a15_a19_26",
+                "description": "Neubildungen",
+                "column": "c00_d48_26",
                 "type": "BOOLEAN",
                 "rootConcept": "ICD",
                 "baseCondition": false
             },
             {
                 "label": "Sonstiges",
-                "description": "Tuberkulose or Bestimmte bakterielle Zoonosen or Sonstige bakterielle Krankheiten or Infektionen, die vorwiegend durch Geschlechtsverkehr ?bertragen werden or Sonstige Spiroch?tenkrankheiten or Sonstige Krankheiten durch Chlamydien or Rickettsiosen or Virusinfektionen des Zentralnervensystems or Dengue-Fieber [Klassische Dengue] or H?morrhagisches Dengue-Fieber or Durch Arthropoden ?bertragene Viruskrankheiten und virale h?morrhagische Fieber or Virusinfektionen, die durch Haut- und Schleimhautl?sionen gekennzeichnet sind or Virushepatitis or HIV-Krankheit [Humane Immundefizienz-Viruskrankheit] or Sonstige Viruskrankheiten or Mykosen or Protozoenkrankheiten or Helminthosen or Pedikulose [L?usebefall], Akarinose [Milbenbefall] und sonstiger Parasitenbefall der Haut or Folgezust?nde von infekti?sen und parasit?ren Krankheiten or Bakterien, Viren und sonstige Infektionserreger als Ursache von Krankheiten, die in anderen Kapiteln klassifiziert sind or Sonstige Infektionskrankheiten or Neubildungen or Krankheiten des Blutes und der blutbildenden Organe sowie bestimmte St?rungen mit Beteiligung des Immunsystems or Endokrine, Ern?hrungs- und Stoffwechselkrankheiten or Krankheiten des Urogenitalsystems or Schwangerschaft, Geburt und Wochenbett or Bestimmte Zust?nde, die ihren Ursprung in der Perinatalperiode haben or Angeborene Fehlbildungen, Deformit?ten und Chromosomenanomalien or Schl?sselnummern f?r besondere Zwecke or ?u?ere Ursachen von Morbidit?t und Mortalit?t or Faktoren, die den Gesundheitszustand beeinflussen und zur Inanspruchnahme des Gesundheitswesens f?hren",
-                "column": "a15_a19_27",
+                "description": "Neubildungen",
+                "column": "c00_d48_27",
                 "type": "INTEGER",
                 "rootConcept": "ICD",
                 "baseCondition": false
