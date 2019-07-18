@@ -41,14 +41,23 @@ public class PSMGenerator {
 	}
 
 	public List<ManagedQuery> execute(PSMForm form) throws JSONException, IOException {
-		ExportGenerator generator = new ExportGenerator(dataset, user, namespaces);
-		RelativeFormQuery a = generator.generate(transformForm(form, form.getControlGroup()));
-		RelativeFormQuery b = generator.generate(transformForm(form, form.getFeatureGroup()));
-
-		return Arrays.asList(
-			namespaces.get(form.getControlGroup().resolveDatasetId()).getQueryManager().createQuery(new PSMFormQuery(a, true), user),
-			namespaces.get(form.getFeatureGroup().resolveDatasetId()).getQueryManager().createQuery(new PSMFormQuery(b, false), user)
-		);
+		List<ManagedQuery> result = new ArrayList<>(2);
+		
+		for(TimeAccessedResult group : Arrays.asList(form.getControlGroup(), form.getFeatureGroup())) {
+			ExportForm transformed = transformForm(form, group);
+			DatasetId target = transformed.getQueryGroup().getId().getDataset();
+			RelativeFormQuery query = new ExportGenerator(namespaces.get(target).getDataset(), user, namespaces)
+				.generate(transformed);
+			
+			result.add(
+				namespaces
+					.get(target)
+					.getQueryManager()
+					.createQuery(new PSMFormQuery(query, group==form.getControlGroup()), user)
+			);
+		}
+		
+		return result;
 	}
 
 	private ExportForm transformForm(PSMForm form, TimeAccessedResult group) throws IOException {
