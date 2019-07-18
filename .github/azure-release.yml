@@ -50,7 +50,7 @@ steps:
 - task: GitHubRelease@0
   displayName: create prerelease
   inputs:
-    gitHubConnection: eva
+    gitHubConnection: eva-bot
     action: edit
     tagPattern: v\d+\.\d+(\.\d+)?-.*
     tag: $(TAG)
@@ -60,7 +60,7 @@ steps:
 - task: GitHubRelease@0
   displayName: create release
   inputs:
-    gitHubConnection: eva
+    gitHubConnection: eva-bot
     action: edit
     tagPattern: v\d+\.\d+(\.\d+)?$
     tag: $(TAG)
