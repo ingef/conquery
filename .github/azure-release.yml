@@ -6,12 +6,13 @@ trigger:
 
 variables:
 - group: ConqueryConstants
-- name: TAG
-  value: ${{substring(Build.SourceBranch,11,sub(length(Build.SourceBranch),10))}}
 
 pool:
   vmImage: $(IMAGE)
 steps:
+- bash: |
+    echo "setting TAG= ${$(Build.SourceBranch):11}"
+    echo "##vso[task.setvariable variable=TAG]${$(Build.SourceBranch):11}"
 - task: Maven@3
   displayName: set version
   inputs:
@@ -22,20 +23,14 @@ steps:
   displayName: build conquery
   inputs:
     jdkVersionOption: '1.11'
-    goals: install
-    options: $(MVN) -T 1C -pl eva-frontend/conquery,eva-frontend/conquery/backend -DskipTests
-- task: Maven@3
-  displayName: build eva
-  inputs:
-    jdkVersionOption: '1.11'
     options: $(MVN) -T 1C -DskipTests
 - task: GitHubRelease@0
   displayName: create prerelease
   inputs:
-    gitHubConnection: public
+    gitHubConnection: bot
     action: edit
     tagPattern: v\d+\.\d+(\.\d+)?-.*
     tag: $(TAG)
-    assets: eva-executable/target/eva-executable-*.jar
+    assets: executable/target/executable-*.jar
     isPreRelease: true
     addChangeLog: false
