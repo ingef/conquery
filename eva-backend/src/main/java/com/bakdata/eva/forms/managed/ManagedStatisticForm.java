@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
-import org.apache.http.entity.ContentType;
 
 import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.URLBuilder;
@@ -31,10 +30,11 @@ import com.bakdata.eva.forms.common.StatisticForm;
 import com.bakdata.eva.forms.resources.StatisticResultResource;
 import com.bakdata.eva.models.config.StatisticConfig;
 import com.fasterxml.jackson.databind.ObjectReader;
-import com.mashape.unirest.http.HttpResponse;
-import com.mashape.unirest.http.Unirest;
-import com.mashape.unirest.http.exceptions.UnirestException;
 
+import kong.unirest.ContentType;
+import kong.unirest.HttpResponse;
+import kong.unirest.Unirest;
+import kong.unirest.UnirestException;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -49,8 +49,8 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(base = ManagedExecution.class, id = "MANAGED_STATISTIC_FORM")
 public class ManagedStatisticForm extends ManagedForm {
 
-	private static final ContentType JSON_CT = ContentType.create("application/json", "utf-8");
-	private static final ContentType CSV_CT = ContentType.create("text/csv", "utf-8");
+	private static final ContentType JSON_CT = ContentType.create("application/json", StandardCharsets.UTF_8);
+	private static final ContentType CSV_CT = ContentType.create("text/csv", StandardCharsets.UTF_8);
 	private static final ObjectReader ANSWER_READER = Jackson.MAPPER.readerFor(FormAnswer.class);
 	
 	private FormAnswer result;
@@ -110,7 +110,6 @@ public class ManagedStatisticForm extends ManagedForm {
 				.field("description", IOUtils.toInputStream(json, StandardCharsets.UTF_8), JSON_CT, "description.json")
 				.field("matrix", new ByteArrayInputStream(matrix), CSV_CT, "matrix.csv")
 				.asString();
-			
 			String answer = response.getBody();
 			if (response.getStatus() > 299) {
 				log.error("Respone of R-End for {}: {}({}): {}", getId(), response.getStatus(), response.getStatusText(), answer);

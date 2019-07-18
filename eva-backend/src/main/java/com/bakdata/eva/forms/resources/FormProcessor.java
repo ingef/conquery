@@ -23,8 +23,8 @@ import com.bakdata.eva.forms.common.StatisticForm;
 import com.bakdata.eva.forms.managed.ManagedForm;
 import com.bakdata.eva.forms.managed.ManagedStatisticForm;
 import com.google.common.util.concurrent.ListeningExecutorService;
-import com.mashape.unirest.http.exceptions.UnirestException;
 
+import kong.unirest.UnirestException;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
