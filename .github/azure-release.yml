@@ -52,7 +52,7 @@ steps:
   inputs:
     gitHubConnection: bot
     action: edit
-    tagPattern: v\d+\.\d+(\.\d+)?$
+    tagPattern: v\d+\.\d+(\.\d+)?
     tag: $(TAG)
     assets: executable/target/executable-*.jar
     isPreRelease: false
