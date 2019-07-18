@@ -62,3 +62,4 @@ steps:
   inputs:
     sourceFolder: cache/.m2/repository/com/bakdata
     contents: '**'
+- bash: git reset --hard
