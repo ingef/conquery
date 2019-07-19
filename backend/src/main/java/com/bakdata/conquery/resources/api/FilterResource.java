@@ -41,7 +41,7 @@ public class FilterResource extends HFilters {
 	@POST
 	@Path("resolve")
 	public ResolvedConceptsResult resolveFilterValues(FilterValues filterValues) {
-		return processor.resolveFilterValues(filter, filterValues.getValues());
+		return processor.resolveFilterValues((AbstractSelectFilter<?>)filter, filterValues.getValues());
 	}
 	
 	@POST

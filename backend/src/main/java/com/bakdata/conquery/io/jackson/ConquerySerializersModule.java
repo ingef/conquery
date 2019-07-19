@@ -10,6 +10,8 @@ import com.bakdata.conquery.io.jackson.serializer.IdKeyDeserializer;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.datatype.joda.PackageVersion;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -24,6 +26,7 @@ public class ConquerySerializersModule extends SimpleModule {
 		addDeserializer(Currency.class, new CurrencyUnitDeserializer());
 		addSerializer(Currency.class, new CurrencyUnitSerializer());
 		addAbstractTypeMapping(Int2ObjectMap.class, Int2ObjectOpenHashMap.class);
+		addAbstractTypeMapping(BiMap.class, HashBiMap.class);
 
 		//register IdKeySerializer for all id types
 		List<Class<?>> idTypes = CPSTypeIdResolver
