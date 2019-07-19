@@ -21,11 +21,11 @@ public interface IId<TYPE> {
 	char JOIN_CHAR = '.';
 	Joiner JOINER = Joiner.on(JOIN_CHAR);
 	Map<Class<?>, Class<?>> CLASS_TO_ID_MAP = new ConcurrentHashMap<>();
-	Map<List<String>, IId<?>> INTERNED_IDS = new ConcurrentHashMap<>();
 	
 	List<String> collectComponents();
 	static <ID extends IId<?>> ID intern(ID id) {
-		ID old = (ID) INTERNED_IDS.putIfAbsent(id.collectComponents(), id);
+		@SuppressWarnings("unchecked")
+		ID old = IIdInterner.<ID>forParser((Parser<ID>)createParser(id.getClass())).putIfAbsent(id.collectComponents(), id);
 		if(old == null) {
 			return id;
 		}
@@ -50,14 +50,13 @@ public interface IId<TYPE> {
 			return parse(Arrays.asList(split(id)));
 		}
 		
-		@SuppressWarnings("unchecked")
 		default ID parse(List<String> parts) {
 			//first check if we get the result with the list (which might be a sublist)
-			ID result = (ID) INTERNED_IDS.get(parts);
+			ID result = IIdInterner.forParser(this).get(parts);
 			if(result == null) {
 				result = createId(parts);
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
-				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(parts), result);
+				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(parts), result);
 				if(secondResult != null) {
 					checkConflict(result, secondResult);
 					return secondResult;
@@ -66,16 +65,15 @@ public interface IId<TYPE> {
 			return result;
 		}
 		
-		@SuppressWarnings("unchecked")
 		default ID parse(IdIterator parts) {
 			//first check if we get the result with the list (which might be a sublist)
 			List<String> input = parts.getRemaining();
-			ID result = (ID) INTERNED_IDS.get(input);
+			ID result = IIdInterner.forParser(this).get(input);
 			if(result == null) {
 				parts.internNext();
 				result = parseInternally(parts);
 				//if not make a minimal list and use that to compute so that we do not keep the sublist
-				ID secondResult = (ID) INTERNED_IDS.putIfAbsent(ImmutableList.copyOf(input), result);
+				ID secondResult = IIdInterner.forParser(this).putIfAbsent(ImmutableList.copyOf(input), result);
 				if(secondResult != null) {
 					checkConflict(result, secondResult);
 					return secondResult;
