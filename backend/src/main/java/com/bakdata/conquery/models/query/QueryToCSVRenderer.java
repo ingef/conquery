@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -26,8 +27,6 @@ public class QueryToCSVRenderer {
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
 	private static final Joiner JOINER = Joiner.on(DELIMETER).useForNull("");
 	private static final String HEADER = JOINER.join(ID_MAPPING.getPrintIdFields());
-
-	private final Namespace namespace;
 
 	public Stream<String> toCSV(ManagedQuery query) {
 		return toCSV(new PrintSettings(), query);
@@ -57,15 +56,16 @@ public class QueryToCSVRenderer {
 	}
 
 	private Stream<String> createCSVBody(PrintSettings cfg, List<ResultInfo> infos, ManagedQuery query) {
+		Namespace namespace = Objects.requireNonNull(query.getNamespace());
 		return query.getResults()
 			.stream()
 			.flatMap(ContainedEntityResult::filterCast)
-			.map(result -> Pair.of(createId(result), result))
+			.map(result -> Pair.of(createId(namespace, result), result))
 			.sorted(Comparator.comparing(Pair::getKey))
 			.flatMap(res -> createCSVLine(cfg, infos, res));
 	}
 
-	private String createId(ContainedEntityResult cer) {
+	private String createId(Namespace namespace, ContainedEntityResult cer) {
 		DirectDictionary dict = namespace.getStorage().getPrimaryDictionary();
 		return JOINER.join(
 			ID_MAPPING

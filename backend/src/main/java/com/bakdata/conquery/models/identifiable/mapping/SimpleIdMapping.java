@@ -7,7 +7,12 @@ public class SimpleIdMapping extends IdMappingConfig {
 
 	@Override
 	public IdMappingAccessor[] getIdAccessors() {
-		return new IdMappingAccessor[]{new DefaultIdMappingAccessor(this, new int[]{0})};
+		return new IdMappingAccessor[]{new DefaultIdMappingAccessor(this, new int[]{0}) {
+			@Override
+			public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
+				return new CsvEntityId(reorderedCsvLine[0]);
+			}
+		}};
 	}
 
 	@Override

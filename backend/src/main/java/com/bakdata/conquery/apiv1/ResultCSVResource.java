@@ -33,6 +33,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.ConqueryEscape;
 
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
@@ -48,8 +49,11 @@ public class ResultCSVResource {
 	private static final PrintSettings PRINT_SETTINGS = PrintSettings
 		.builder()
 		.prettyPrint(true)
-		.nameExtractor(
-			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
+		.nameExtractor(sd ->
+			sd.getCqConcept().getIds().get(0).toStringWithoutDataset()
+			+ "_"
+			+ sd.getSelect().getId().toStringWithoutDataset()
+		)
 		.build();
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
@@ -63,7 +67,7 @@ public class ResultCSVResource {
 
 		try {
 			ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
-			Stream<String> csv = new QueryToCSVRenderer(exec.getNamespace()).toCSV(PRINT_SETTINGS, exec.toResultQuery());
+			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery());
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {

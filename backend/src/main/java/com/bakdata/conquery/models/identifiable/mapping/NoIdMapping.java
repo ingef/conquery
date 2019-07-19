@@ -48,6 +48,11 @@ public class NoIdMapping extends IdMappingConfig {
 		public String[] extract(String[] dataLine) {
 			return new String[]{dataLine[0]};
 		}
+		
+		@Override
+		public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
+			return new CsvEntityId(reorderedCsvLine[0]);
+		}
 	}
 
 	@RequiredArgsConstructor
