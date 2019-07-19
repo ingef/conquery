@@ -24,15 +24,17 @@ public class FilterSearch {
 
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
-	public static void init(Collection<Dataset> datasets) {
+	public static ExecutorService init(Collection<Dataset> datasets) {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		datasets
 			.stream()
-			.flatMap(ds -> ConceptsUtils.getAllConnectors(ds.getConcepts()).stream())
+			.flatMap(ds -> ds.getConcepts().stream())
+			.flatMap(c -> c.getConnectors().stream())
 			.flatMap(co -> co.collectAllFilters().stream())
 			.filter(f -> f instanceof AbstractSelectFilter && f.getTemplate() != null)
 			.forEach(f -> executor.submit(()->createSourceSearch((AbstractSelectFilter<?>) f)));
 		executor.shutdown();
+		return executor;
 	}
 
 	private static void createSourceSearch(AbstractSelectFilter<?> filter) {
