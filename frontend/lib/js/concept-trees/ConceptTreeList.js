@@ -53,6 +53,7 @@ const ConceptTreeList = ({
   search,
   activeTab,
   areTreesAvailable,
+  areDatasetsPristineOrLoading,
   onLoadTree
 }: PropsT) => {
   if (search.loading) return null;
@@ -64,7 +65,9 @@ const ConceptTreeList = ({
   return (
     <Root show={activeTab === "conceptTrees"}>
       {loading && <ConceptTreesLoading />}
-      {!loading && !areTreesAvailable && <EmptyConceptTreeList />}
+      {!loading && !areTreesAvailable && !areDatasetsPristineOrLoading && (
+        <EmptyConceptTreeList />
+      )}
       {!!anyTreeLoading && <ProgressBar trees={trees} />}
       {!anyTreeLoading &&
         Object.keys(trees)
@@ -89,6 +92,8 @@ export default connect(
     trees: state.conceptTrees.trees,
     loading: state.conceptTrees.loading,
     areTreesAvailable: getAreTreesAvailable(state),
+    areDatasetsPristineOrLoading:
+      state.datasets.pristine || state.datasets.loading,
     activeTab: state.panes.left.activeTab,
     search: state.conceptTrees.search
   }),
