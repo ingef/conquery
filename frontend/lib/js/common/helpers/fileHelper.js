@@ -22,10 +22,6 @@ export const stripFilename = (fileName: string) => {
 };
 
 export async function getFileRows(file: File) {
-  if (file.type !== "text/plain") {
-    throw new Error("Invalid file type dropped");
-  }
-
   const text = await readFileAsText(file);
 
   const rows = cleanFileContent(text);
