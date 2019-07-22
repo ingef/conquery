@@ -17,11 +17,12 @@ import {
   CHANGE_SEARCH_QUERY,
   TOGGLE_SHOW_MISMATCHES
 } from "./actionTypes";
+
 import { setTree } from "./globalTreeStoreHelper";
 
 export type TreesT = { [treeId: string]: ConceptT };
 
-export type SearchType = {
+export type SearchT = {
   allOpen: boolean,
   showMismatches: boolean,
   loading: boolean,
@@ -36,7 +37,7 @@ export type StateType = {
   loading: boolean,
   version: any,
   trees: TreesT,
-  search: SearchType
+  search: SearchT
 };
 
 const initialSearch = {

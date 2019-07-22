@@ -9,6 +9,7 @@ const Root = styled("div")`
   display: flex;
   width: 100%;
   flex-direction: column;
+  margin-left: 10px;
 `;
 
 const MsgContainer = styled("div")`

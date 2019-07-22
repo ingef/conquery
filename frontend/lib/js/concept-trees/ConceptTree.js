@@ -10,7 +10,7 @@ import IconButton from "../button/IconButton";
 
 import ConceptTreeNode from "./ConceptTreeNode";
 import ConceptTreeNodeText from "./ConceptTreeNodeText";
-import { type SearchType } from "./reducer";
+import type { SearchT } from "./reducer";
 
 type PropsType = {
   id: ConceptIdT,
@@ -21,7 +21,7 @@ type PropsType = {
   depth: number,
   loading: boolean,
   error: ?string,
-  search?: SearchType
+  search?: SearchT
 };
 
 const LoadingTree = styled("p")`
@@ -78,5 +78,7 @@ export default (props: PropsType) => {
       />
     );
   else
-    return <ConceptTreeNodeText disabled label={props.label} depth={props.depth} />;
+    return (
+      <ConceptTreeNodeText disabled label={props.label} depth={props.depth} />
+    );
 };

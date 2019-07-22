@@ -10,7 +10,7 @@ import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
-import type { SearchType } from "../concept-trees/reducer";
+import type { SearchT } from "../concept-trees/reducer";
 
 import ActivateTooltip from "./ActivateTooltip";
 import {
@@ -137,7 +137,7 @@ type PropsType = {
   toggleAdditionalInfos: boolean,
   onToggleDisplayTooltip: Function,
   onToggleAdditionalInfos: Function,
-  search: SearchType
+  search: SearchT
 };
 
 const Tooltip = (props: PropsType) => {
