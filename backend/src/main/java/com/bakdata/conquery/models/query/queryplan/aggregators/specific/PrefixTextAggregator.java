@@ -42,7 +42,7 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 
 	@Override
 	public Set<String> getAggregationResult() {
-		return entries;
+		return entries.isEmpty() ? null : entries;
 	}
 
 	@Override

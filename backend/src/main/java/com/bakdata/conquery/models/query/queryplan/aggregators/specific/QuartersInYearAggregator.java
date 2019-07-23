@@ -49,6 +49,10 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 
 	@Override
 	public Long getAggregationResult() {
+		if(quartersInYear.isEmpty()) {
+			return null;
+		}
+
 		long max = 0;
 
 		for (EnumSet<Month> months : quartersInYear.values()) {
