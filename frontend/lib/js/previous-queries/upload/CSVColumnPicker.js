@@ -4,7 +4,7 @@ import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import parseCSV from "../../file/parseCSV";
+import { parseCSV } from "../../file/csv";
 
 import PrimaryButton from "../../button/PrimaryButton";
 import IconButton from "../../button/IconButton";
@@ -108,7 +108,8 @@ export default ({ file, loading, onUpload, onReset }: PropsT) => {
       try {
         setCSVLoading(true);
 
-        const result = await parseCSV(f, d);
+        const parsed = await parseCSV(f, d);
+        const { result } = parsed;
 
         setCSVLoading(false);
 

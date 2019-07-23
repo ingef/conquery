@@ -271,3 +271,6 @@ authorization:
 search:
   placeholder: "Suchen ..."
   resultLabel: "{totalResults} Ergebnisse ({duration} s)"
+
+preview:
+  preview: "Vorschau"
