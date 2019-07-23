@@ -112,7 +112,7 @@ public class CQExternal implements CQElement {
 				"Could not resolve {} of the {} rows. Not resolved: {}",
 				nonResolved.size(),
 				values.length-1,
-				nonResolved.subList(0, 10)
+				nonResolved.subList(0, Math.min(nonResolved.size(), 10))
 			);
 		}
 		
