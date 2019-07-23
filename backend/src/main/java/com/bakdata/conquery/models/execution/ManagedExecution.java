@@ -123,7 +123,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			.owner(Optional.ofNullable(owner).orElse(null))
 			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user)).map(User::getLabel).orElse(null))
 			.resultUrl(
-				url != null
+				url != null && state != ExecutionState.NEW
 				? url
 					.set(ResourceConstants.DATASET, dataset.getName())
 					.set(ResourceConstants.QUERY, getId().toString())
