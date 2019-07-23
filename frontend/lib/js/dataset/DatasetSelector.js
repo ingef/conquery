@@ -14,7 +14,7 @@ import { selectDataset } from "./actions";
 
 const Root = styled("div")`
   min-width: 300px;
-  padding: 0px 10px 0 20px;
+  padding: 0px 0 0 20px;
   color: ${({ theme }) => theme.col.black};
 `;
 
