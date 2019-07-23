@@ -62,7 +62,7 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 			}
 		}
 
-		return out;
+		return out.isEmpty() ? null : out;
 	}
 
 	@Override
