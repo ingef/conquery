@@ -220,7 +220,7 @@ export default connect(
           <List
             height={height}
             width={width}
-            itemCount={slice.length}
+            itemCount={slice.length - 1}
             itemSize={10}
           >
             {Row}
