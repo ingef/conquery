@@ -22,6 +22,7 @@ export function loadCSV(url: String) {
     Papa.parse(url, {
       download: true,
       delimiter: ";",
+      skipEmptyLines: true,
       complete: (results, file) =>
         resolve({
           result: results,

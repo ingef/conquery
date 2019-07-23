@@ -25,7 +25,7 @@ const StyledDownloadButton = styled(DownloadButton)`
 `;
 
 const SxPreviewButton = styled(PreviewButton)`
-  margin-left: 10px;
+  margin-right: 10px;
 `;
 
 type PropsType = {
@@ -44,6 +44,7 @@ const QueryResults = (props: PropsType) => {
       <Text>
         {T.translate("queryRunner.resultCount", { count: props.resultCount })}
       </Text>
+      {ending === "csv" && <SxPreviewButton url={props.resultUrl} />}
       {isDownload && (
         <StyledDownloadButton
           frame
@@ -54,7 +55,6 @@ const QueryResults = (props: PropsType) => {
           {ending.toUpperCase()}
         </StyledDownloadButton>
       )}
-      {ending === "csv" && <PreviewButton url={props.resultUrl} />}
     </Root>
   );
 };

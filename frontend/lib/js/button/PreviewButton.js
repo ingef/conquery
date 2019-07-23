@@ -11,12 +11,14 @@ import IconButton from "./IconButton";
 
 type PropsType = {
   url: string,
+  isLoading: boolean,
   onOpenPreview: (url: string) => void,
   className?: string
 };
 
 const PreviewButton = ({
   url,
+  isLoading,
   onOpenPreview,
   className,
   ...restProps
@@ -27,7 +29,7 @@ const PreviewButton = ({
 
   return (
     <IconButton
-      icon="search"
+      icon={isLoading ? "spinner" : "search"}
       onClick={() => onOpenPreview(href)}
       {...restProps}
     >
@@ -37,7 +39,9 @@ const PreviewButton = ({
 };
 
 export default connect(
-  null,
+  state => ({
+    isLoading: state.preview.isLoading
+  }),
   dispatch => ({
     onOpenPreview: (url: string) => dispatch(openPreview(url))
   })

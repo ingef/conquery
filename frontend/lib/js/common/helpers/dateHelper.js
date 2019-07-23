@@ -14,6 +14,10 @@ import {
 // To save the date in this format in the state
 const DATE_FORMAT = "yyyy-MM-dd";
 
+export const formatStdDate = (date: Date) => {
+  return formatDate(date, DATE_FORMAT);
+};
+
 export const formatDate = (date: Date, dateFormat: string) => {
   return date ? format(date, dateFormat) : "";
 };
@@ -143,9 +147,6 @@ export const testRegexes = (
   }
 };
 
-export function getDiffInDays(dateStr1: string, dateStr2: string) {
-  const date1 = parseDate(dateStr1, DATE_FORMAT);
-  const date2 = parseDate(dateStr2, DATE_FORMAT);
-
-  return differenceInCalendarDays(date1, date2);
+export function getDiffInDays(d1: Date, d2: Date) {
+  return differenceInCalendarDays(d1, d2);
 }
