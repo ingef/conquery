@@ -117,8 +117,8 @@ public class AdminUIResource {
 	@Path("/mandators")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	public Response postMandator(
-		@NotEmpty @FormDataParam("mandantor_name") String name,
-		@NotEmpty @FormDataParam("mandantor_id") String idString) throws JSONException {
+		@NotEmpty @FormDataParam("mandator_name") String name,
+		@NotEmpty @FormDataParam("mandator_id") String idString) throws JSONException {
 		processor.createMandator(name, idString);
 		return Response.ok().build();
 	}
