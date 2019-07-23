@@ -33,6 +33,7 @@ import { reducer as uploadQueryResults } from "../previous-queries/upload";
 import { reducer as deletePreviousQueryModal } from "../previous-queries/delete-modal";
 import { reducer as uploadFilterListModal } from "../upload-filter-list-modal";
 import { reducer as snackMessage } from "../snack-message";
+import { reducer as preview } from "../preview";
 
 import { createQueryNodeEditorReducer } from "../query-node-editor";
 
@@ -62,6 +63,7 @@ const buildAppReducer = (tabs: TabT[]) => {
     uploadQueryResults,
     deletePreviousQueryModal,
     snackMessage,
+    preview,
     ...tabs.reduce((all, tab) => {
       all[tab.key] = tab.reducer;
       return all;

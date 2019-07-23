@@ -349,7 +349,9 @@ const setNodeTableSelects = (state, action) => {
     ...table,
     selects: selects.map(select => ({
       ...select,
-      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+      selected:
+        !!value &&
+        !!value.find(selectedValue => selectedValue.value === select.id)
     }))
   };
 
@@ -382,7 +384,9 @@ const setNodeSelects = (state, action) => {
   return setElementProperties(state, andIdx, orIdx, {
     selects: selects.map(select => ({
       ...select,
-      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+      selected:
+        !!value &&
+        !!value.find(selectedValue => selectedValue.value === select.id)
     }))
   });
 };
