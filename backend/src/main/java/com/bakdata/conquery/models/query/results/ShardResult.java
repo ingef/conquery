@@ -17,15 +17,19 @@ import com.google.common.util.concurrent.Uninterruptibles;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
-@Getter @Setter @Slf4j
+@Getter @Setter @Slf4j @ToString(onlyExplicitlyIncluded = true)
 public class ShardResult {
 
+	@ToString.Include
 	private ManagedExecutionId queryId;
 	private IQuery query;
 	private List<EntityResult> results = new ArrayList<>();
+	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();
+	@ToString.Include
 	private LocalDateTime finishTime;
 	@JsonIgnore
 	private ListenableFuture<List<EntityResult>> future;

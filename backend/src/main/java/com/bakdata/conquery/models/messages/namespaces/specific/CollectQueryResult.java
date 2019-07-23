@@ -10,11 +10,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 
-@CPSType(id="COLLECT_QUERY_RESULT", base=NamespacedMessage.class) @Slf4j
-@AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)
+@CPSType(id="COLLECT_QUERY_RESULT", base=NamespacedMessage.class)
+@AllArgsConstructor @NoArgsConstructor @Getter @Setter
 public class CollectQueryResult extends NamespaceMessage.Slow {
 
 	private ShardResult result;
@@ -22,5 +20,10 @@ public class CollectQueryResult extends NamespaceMessage.Slow {
 	@Override
 	public void react(Namespace context) throws Exception {
 		context.getQueryManager().addQueryResult(result);
+	}
+	
+	@Override
+	public String toString() {
+		return "CollectQueryResult("+result.toString()+")";
 	}
 }

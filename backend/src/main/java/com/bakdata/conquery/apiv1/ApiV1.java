@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.api.APIResource;
-import com.bakdata.conquery.resources.api.ConceptElementResource;
 import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.DatasetResource;
@@ -51,7 +50,6 @@ public class ApiV1 implements ResourcesProvider {
 			}
 		});
 		environment.register(APIResource.class);
-		environment.register(ConceptElementResource.class);
 		environment.register(ConceptResource.class);
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);

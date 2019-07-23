@@ -1,15 +1,17 @@
 package com.bakdata.conquery.resources.api;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
-
-import javax.ws.rs.WebApplicationException;
 
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -25,16 +27,14 @@ import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
-import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
-import com.bakdata.conquery.models.concepts.filters.specific.BigMultiSelectFilter;
-import com.bakdata.conquery.models.concepts.filters.specific.MultiSelectFilter;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -49,6 +49,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 @Getter
@@ -90,28 +91,46 @@ public class ConceptsProcessor {
 			.collect(Collectors.toList());
 	}
 
-	public ResolvedConceptsResult resolveFilterValues(Filter<?> filter, List<String> values) {
-		ResolvedFilter rf = createResolvedFilter(filter);
-
-		List<FEValue> filterValues = new LinkedList<>();
-		QuickSearch<FilterSearchItem> search = rf.getSourceSearch();
-		if (search != null) {
-			filterValues.addAll(createSourceSearchResult(search, values.toArray(new String[values.size()])));
-		}
+	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
+		Set<String> openSearchTerms = new HashSet<>(searchTerms);
 		
-		if (rf.getRealLabels() != null) {
-			List<String> resolveFilterValues = new ArrayList<>(rf.getRealLabels().values());
-			List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
-			resolveFilterValues.removeIf(fv -> !toRemove.contains(fv) && !values.contains(fv));
-			filterValues = resolveFilterValues.stream().map(v -> new FEValue(rf.getRealLabels().get(v), v)).collect(Collectors.toList());
-			values.removeAll(resolveFilterValues);
+		//search in the full text engine
+		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), openSearchTerms.toArray(new String[openSearchTerms.size()]))
+			.stream()
+			.map(FEValue::getValue)
+			.collect(Collectors.toSet());
+
+		openSearchTerms.removeAll(searchResult);
+		
+		//check the values and label
+		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext();) {
+			String searchTerm = (String) it.next();
+			if(filter.getValues().contains(searchTerm)) {
+				searchResult.add(searchTerm);
+				it.remove();
+			}
+			else {
+				String matchingValue = filter.getLabels().inverse().get(searchTerm);
+				if(matchingValue != null) {
+					searchResult.add(matchingValue);
+					it.remove();
+				}
+			}
 		}
 
 		// see https://github.com/bakdata/conquery/issues/251
 		return new ResolvedConceptsResult(
 			null,
-			new ResolvedFilterResult(filter.getConnector().getId(), filter.getId(), filterValues),
-			values);
+			new ResolvedFilterResult(
+				filter.getConnector().getId(),
+				filter.getId(),
+				searchResult
+					.stream()
+					.map(v->new FEValue(filter.getLabelFor(v),v))
+					.collect(Collectors.toList())
+			),
+			new ArrayList<>(openSearchTerms)
+		);
 	}
 	
 	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
@@ -122,42 +141,19 @@ public class ConceptsProcessor {
 			result = createSourceSearchResult(filter.getSourceSearch(), text);
 		}
 		
-		if (filter.getRealLabels() != null) {
-			result.addAll(filter.getRealLabels().entrySet().stream()
-				.filter(r -> r.getValue().equalsIgnoreCase(text))
-				.map(r -> new FEValue(r.getKey(), r.getValue())).collect(Collectors.toList()));
+		String value = filter.getValueFor(text);
+		if(value != null) {
+			result.add(new FEValue(text, value));
 		}
-
-		// see https://github.com/bakdata/conquery/issues/235
-		return result;
-	}
-	
-	private ResolvedFilter createResolvedFilter(Filter<?> filter) {
-		ResolvedFilter result = new ResolvedFilter();
-
-		if (filter instanceof BigMultiSelectFilter) {
-			BigMultiSelectFilter bmsf = (BigMultiSelectFilter) filter;
-			result.setColumn(bmsf.getColumn());
-			result.setRealLabels(bmsf.getRealLabels());
-			result.setSourceSearch(bmsf.getSourceSearch());
-		} else if (filter instanceof MultiSelectFilter) {
-			MultiSelectFilter msf = (MultiSelectFilter) filter;
-			result.setColumn(msf.getColumn());
-			result.setRealLabels(msf.getRealLabels());
-			result.setSourceSearch(msf.getSourceSearch());
-		} else {
-			try {
-				throw new WebApplicationException(String.format("Could not resolved Filter values for this Type. Filter: %s", filter.getName()));
-			} catch (WebApplicationException ex) {
-				log.error(ex.getMessage());
-			}
-		}
-		
 
 		return result;
 	}
 	
 	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, String... values) {
+		if(search == null) {
+			return Collections.emptyList();
+		}
+
 		List<FilterSearchItem> result = new LinkedList<>();
 		for (String value : values) {
 			result.addAll(search.findItems(value, 50));
@@ -169,68 +165,29 @@ public class ConceptsProcessor {
 			.collect(Collectors.toList());
 	}
 	
-	public ResolvedConceptsResult resolve(ConceptElement<?> conceptElement, List<String> conceptCodes) {
-		List<String> resolvedCodes = new ArrayList<>(), unknownCodes = new ArrayList<>();
+	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
+		List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
+		List<String> unknownCodes = new ArrayList<>();
 
-		if (conceptElement.getConcept() instanceof TreeConcept) {
-			TreeConcept tree = (TreeConcept) conceptElement.getConcept();
+		if (concept instanceof TreeConcept) {
+			TreeConcept tree = (TreeConcept) concept;
 
 			for (String conceptCode : conceptCodes) {
 				ConceptTreeChild child;
 				try {
 					child = tree.findMostSpecificChild(conceptCode, new CalculatedValue<>(() -> new HashMap<>()));
 					if (child != null) {
-						resolvedCodes.add(child.getId().toString());
+						resolvedCodes.add(child.getId());
 					}
 					else {
 						unknownCodes.add(conceptCode);
 					}
 				}
 				catch (ConceptConfigurationException e) {
-					log.error("", e);
+					log.error("Error while trying to resolve "+conceptCode, e);
 				}
 			}
 			return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
-		}
-
-		if (conceptElement.getConcept() instanceof VirtualConcept) {
-			VirtualConcept virtualConcept = (VirtualConcept) conceptElement.getConcept();
-
-			for (VirtualConceptConnector connector : virtualConcept.getConnectors()) {
-				// A virtual concept by definition has only one concept connector
-				if (connector.getFilter() instanceof AbstractSelectFilter) {
-					AbstractSelectFilter<?> selectFilter = (AbstractSelectFilter<?>) connector.getFilter();
-					for (String conceptCode : conceptCodes) {
-						String resolved = selectFilter.resolveValueToRealValue(conceptCode);
-						if (resolved != null) {
-							resolvedCodes.add(resolved);
-						}
-						else {
-							unknownCodes.add(conceptCode);
-						}
-					}
-
-					List<FEValue> filterValues = new LinkedList<>();
-					QuickSearch<FilterSearchItem> search = selectFilter.getSourceSearch();
-					if (search != null) {
-						filterValues.addAll(createSourceSearchResult(search, conceptCodes.toArray(ArrayUtils.EMPTY_STRING_ARRAY)));
-					}
-
-					List<String> toRemove = filterValues.stream().map(v -> v.getValue()).collect(Collectors.toList());
-					filterValues
-						.addAll(
-							resolvedCodes
-								.stream()
-								.filter(v -> !toRemove.contains(v))
-								.map(v -> new FEValue(selectFilter.getRealLabels().get(v), v))
-								.collect(Collectors.toList()));
-
-					return new ResolvedConceptsResult(
-						null,
-						new ResolvedFilterResult(connector.getId(), selectFilter.getId(), filterValues),
-						unknownCodes);
-				}
-			}
 		}
 		return new ResolvedConceptsResult(null, null, conceptCodes);
 	}
@@ -238,6 +195,7 @@ public class ConceptsProcessor {
 	@Getter
 	@Setter
 	@AllArgsConstructor
+	@ToString
 	public static class ResolvedFilterResult {
 		private ConnectorId tableId;
 		private FilterId filterId;
@@ -257,8 +215,9 @@ public class ConceptsProcessor {
 	@Getter
 	@Setter
 	@AllArgsConstructor
+	@ToString
 	public static class ResolvedConceptsResult {
-		private List<String> resolvedConcepts;
+		private List<ConceptElementId<?>> resolvedConcepts;
 		private ResolvedFilterResult resolvedFilter;
 		private List<String> unknownCodes;
 	}

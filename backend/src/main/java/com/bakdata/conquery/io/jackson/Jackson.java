@@ -28,7 +28,6 @@ public class Jackson {
 	
 	@SuppressWarnings("unchecked")
 	public static <T extends ObjectMapper> T configure(T objectMapper) {
-		SimpleModule serializers = new SimpleModule();
 		
 		objectMapper
 			.enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
@@ -48,7 +47,6 @@ public class Jackson {
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.setLocale(Locale.ROOT)
 			.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
-			.registerModule(serializers)
 			.registerModule(new JavaTimeModule())
 			.registerModule(new ParameterNamesModule())
 			.registerModule(new GuavaModule())
