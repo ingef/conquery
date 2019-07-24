@@ -182,7 +182,7 @@ public class AdminProcessor {
 	 * Deletes the mandator, that is identified by the id.
 	 * Its references are removed from the users and from the storage.
 	 * @param mandatorId The id belonging to the mandator
-	 * @throws JSONException 
+	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
 	public void deleteMandator(MandatorId mandatorId) throws JSONException {
 		log.info("Deleting mandator: {}", mandatorId);
