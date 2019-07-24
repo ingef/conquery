@@ -180,10 +180,16 @@ public class AdminProcessor {
 
 	/**
 	 * Deletes the mandator, that is identified by the id.
+	 * Its references are removed from the users and from the storage.
 	 * @param mandatorId The id belonging to the mandator
+	 * @throws JSONException 
 	 */
-	public void deleteMandator(MandatorId mandatorId) {
+	public void deleteMandator(MandatorId mandatorId) throws JSONException {
 		log.info("Deleting mandator: {}", mandatorId);
+		Mandator mandator = storage.getMandator(mandatorId);
+		for(User user : storage.getAllUsers()) {
+			user.removeMandator(storage, mandator);
+		}
 		storage.removeMandator(mandatorId);
 	}
 

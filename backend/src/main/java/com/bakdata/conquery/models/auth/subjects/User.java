@@ -87,7 +87,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		}
 	}
 	
-	public void removeMandatorLocal(MasterMetaStorage storage, Mandator mandator) throws JSONException {
+	public void removeMandator(MasterMetaStorage storage, Mandator mandator) throws JSONException {
 		if(roles.contains(mandator)) {
 			roles.remove(mandator);
 			storage.updateUser(this);
