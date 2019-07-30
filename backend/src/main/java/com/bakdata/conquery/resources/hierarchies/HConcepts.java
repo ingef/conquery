@@ -34,7 +34,8 @@ public abstract class HConcepts extends HDatasets {
 			if(this.concept == null) {
 				throw new WebApplicationException("Could not find concept "+conceptId, Status.NOT_FOUND);
 			}
-		}catch (NoSuchElementException e) {
+		}
+		catch (NoSuchElementException e) {
 			throw new WebApplicationException("Could not find concept "+conceptId, Status.NOT_FOUND);
 		}
 
