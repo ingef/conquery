@@ -83,7 +83,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 				name+="["+count+"]";
 			}
 			DatasetId datasetId = new DatasetId(name);
-			standaloneCommand.getMaster().getAdmin().getAdminProcessor().addDataset(name);
+			standaloneCommand.getMaster().getAdmin().getAdminProcessor().addDataset(name, null);
 			return createSupport(datasetId, name);
 		}
 		catch(Exception e) {

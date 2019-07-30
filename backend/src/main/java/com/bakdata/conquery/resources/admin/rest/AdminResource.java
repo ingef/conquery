@@ -9,6 +9,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.text.StringEscapeUtils;
+import org.apache.mina.proxy.utils.StringUtilities;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -37,8 +40,10 @@ public class AdminResource extends HAuthorized {
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Path("datasets")
-	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
-		Dataset dataset = processor.addDataset(name);
+	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name, @FormDataParam("dataset_label") String label) throws JSONException {
+
+		Dataset dataset = processor.addDataset(name, StringEscapeUtils.escapeHtml4(label));
+
 		user.addPermission(
 			processor.getStorage(),
 			new DatasetPermission(

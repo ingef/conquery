@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
@@ -54,6 +55,7 @@ import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.ui.model.FEMandatorContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 
+import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -98,10 +100,19 @@ public class AdminProcessor {
 		// see #144 check duplicate names
 	}
 
-	public Dataset addDataset(String name) throws JSONException {
+	public Dataset addDataset(String name, String label) throws JSONException {
+
+		// verify if dataset is new.
+		if(namespaces.get(new DatasetId(name)) != null) {
+			throw new IllegalArgumentException(String.format("Dataset %s does already exist.", name));
+		}
+
 		// create dataset
 		Dataset dataset = new Dataset();
 		dataset.setName(name);
+
+		if (!Strings.isNullOrEmpty(label))
+			dataset.setLabel(label);
 
 		// add allIds table
 		Table allIdsTable = new Table();
@@ -243,7 +254,7 @@ public class AdminProcessor {
 
 	/**
 	 * Handles deletion of permissions.
-	 * @param permission The permission to delete.
+	 * @param permissionId The permission to delete.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
 	public void deletePermission(PermissionId permissionId) throws JSONException {
