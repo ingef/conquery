@@ -15,6 +15,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.NoSuchElementException;
+
 @Getter @Setter
 @Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
 public abstract class HConcepts extends HDatasets {
@@ -27,9 +29,14 @@ public abstract class HConcepts extends HDatasets {
 	@Override
 	public void init() {
 		super.init();
-		this.concept = namespace.getStorage().getConcept(conceptId);
-		if(this.concept == null) {
+		try {
+			this.concept = namespace.getStorage().getConcept(conceptId);
+			if(this.concept == null) {
+				throw new WebApplicationException("Could not find concept "+conceptId, Status.NOT_FOUND);
+			}
+		}catch (NoSuchElementException e) {
 			throw new WebApplicationException("Could not find concept "+conceptId, Status.NOT_FOUND);
 		}
+
 	}
 }

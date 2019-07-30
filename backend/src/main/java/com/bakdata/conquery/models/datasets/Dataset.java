@@ -1,7 +1,11 @@
 package com.bakdata.conquery.models.datasets;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.Valid;
 
@@ -10,6 +14,7 @@ import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.Labeled;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,8 +30,11 @@ public class Dataset extends Labeled<DatasetId> implements Injectable {
 	private IdMap<TableId, Table> tables = new IdMap<>();
 	
 	@JsonIgnore @Valid
-	private List<Concept<?>> concepts = new ArrayList<>();
-	
+	private IdMap<ConceptId, Concept<?>> concepts = new IdMap<>();
+
+	public Collection<Concept<?>> getValues() {
+		return concepts != null ? concepts.values() : null;
+	}
 	
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues mutableInjectableValues) {
