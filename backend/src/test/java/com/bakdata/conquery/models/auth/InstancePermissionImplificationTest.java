@@ -8,12 +8,8 @@ import org.junit.jupiter.api.Test;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 
 public class InstancePermissionImplificationTest {
-	
-	private static final String USERPROP1 = "user1@test";
-	private static final String USERPROP2 = "user2@test";
 	
 	private static final String DATASET1 = "dataset1";
 	private static final String DATASET2 = "dataset2";

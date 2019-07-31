@@ -38,7 +38,7 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 		user1.addPermission(storage, datasetPermission1);
 		mandator1.addPermission(storage, datasetPermission2);
 		
-		assertThat(user1.isPermitted(datasetPermission1));	
+		assertThat(user1.isPermitted(datasetPermission1));
 		assertThat(user1.isPermitted(datasetPermission2));
 	}
 

@@ -10,8 +10,8 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.resources.hierarchies.HPermissions;
 
-@Consumes({ExtraMimeTypes.JSON_STRING})
-public class PermissionResource extends HPermissions{
+@Consumes(ExtraMimeTypes.JSON_STRING)
+public class PermissionResource extends HPermissions {
 
 	
 	@POST

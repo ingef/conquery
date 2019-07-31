@@ -38,7 +38,7 @@ import lombok.extern.slf4j.Slf4j;
  *            The id type by which an instance is identified
  */
 @Slf4j
-@JsonIgnoreProperties( { "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
+@JsonIgnoreProperties({ "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Subject {
 
 	@Getter
@@ -233,14 +233,16 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 				permission = reducedPermission.get(0);
 			}
 		}
-		
+
 		permissions.add(permission);
-		
-		if(this instanceof User) {
+
+		if (this instanceof User) {
 			storage.updateUser((User) this);
-		} else if(this instanceof Mandator) {
+		}
+		else if (this instanceof Mandator) {
 			storage.updateMandator((Mandator) this);
-		} else {
+		}
+		else {
 			throw new IllegalStateException(String.format("The type %s is not handled.", this.getClass()));
 		}
 		return permission;

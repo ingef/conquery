@@ -26,7 +26,7 @@ import lombok.ToString;
 @Getter
 @ToString
 @EqualsAndHashCode(callSuper=false)
-public abstract class ConqueryPermission implements Permission , HasTarget{
+public abstract class ConqueryPermission implements Permission , HasTarget {
 	protected final EnumSet<Ability> abilities = EnumSet.noneOf(Ability.class);
 	
 	private List<Object> classifier() {
