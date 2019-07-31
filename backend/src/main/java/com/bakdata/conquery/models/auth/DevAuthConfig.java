@@ -32,11 +32,6 @@ public class DevAuthConfig extends AuthConfig {
 	 */
 	public static final User USER = new User(EMAIL, LABEL);
 
-	/**
-	 * Handler for valid credentials that do not match any user.
-	 */
-	private static final UnknownUserHandler U_U_HANDLER = new DefaultUnknownUserHandler();
-
 	
 	@Getter
 	@JsonIgnore
@@ -45,11 +40,6 @@ public class DevAuthConfig extends AuthConfig {
 	@Override
 	public AuthorizingRealm getRealm(MasterMetaStorage storage) {
 		return new AllGrantedRealm();
-	}
-
-	@Override
-	public UnknownUserHandler getUnknownUserHandler(MasterMetaStorage storage) {
-		return U_U_HANDLER;
 	}
 
 	@Override
