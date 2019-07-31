@@ -24,10 +24,8 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 		Mandator mandator1 = new Mandator("company", "company");
 		storage.addMandator(mandator1);
 		
-		DatasetPermission datasetPermission1 = new DatasetPermission(mandator1.getId(), Ability.READ.asSet(), dataset1.getId());
-		assertThat(mandator1.addPermission(storage, datasetPermission1).getId()).isEqualTo(datasetPermission1.getId());
-		DatasetPermission datasetPermission2 = new DatasetPermission(mandator1.getId(), Ability.DELETE.asSet(), dataset1.getId());
-		assertThat(mandator1.addPermission(storage, datasetPermission2).getId()).isNotEqualTo(datasetPermission2.getId());
+		DatasetPermission datasetPermission1 = new DatasetPermission(Ability.READ.asSet(), dataset1.getId());
+		DatasetPermission datasetPermission2 = new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId());
 		
 		// setup user
 		User user1  = new User("user", "user");
@@ -36,6 +34,12 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 		user1.addMandator(storage, mandator1);
 		user1.addMandator(storage, mandator1);
 		assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1);
+
+		user1.addPermission(storage, datasetPermission1);
+		mandator1.addPermission(storage, datasetPermission2);
+		
+		assertThat(user1.isPermitted(datasetPermission1));	
+		assertThat(user1.isPermitted(datasetPermission2));
 	}
 
 }

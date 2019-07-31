@@ -5,7 +5,7 @@
 		<div class="col">
 		<h2>${c.self.label}</h2>
 		<h3>Dataset Permissions</h3>
-		<@permissionTable.permissionTable permissions=c.datasetPermissions/>
+		<@permissionTable.permissionTable ownerId=c.self.getId() permissions=c.datasetPermissions/>
 		
 		<form method="POST" enctype="multipart/form-data">
 			<h4>New Dataset Permission</h4>
@@ -33,13 +33,13 @@
 						</#list>
 					</select>
 				</div>
-				<input class="btn btn-primary" type="submit" onclick="event.preventDefault(); fetch('/admin/permissions', {method: 'post', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({type: 'DATASET_PERMISSION', ownerId: document.getElementById('permissionowner_id').value, abilities: document.getElementById('abilitySet').value, instanceId:document.getElementById('dataset_id').value})}).then(function(){location.reload()})"/>
+				<input class="btn btn-primary" type="submit" onclick="event.preventDefault(); fetch('/admin/permissions/${c.self.getId()}', {method: 'post', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({type: 'DATASET_PERMISSION', abilities: document.getElementById('abilitySet').value, instanceId:document.getElementById('dataset_id').value})}).then(function(){location.reload()})"/>
 			</div> 
 		</form>
 		<h3>Query Permissions</h3>
-		<@permissionTable.permissionTable permissions=c.queryPermissions/>
+		<@permissionTable.permissionTable ownerId=c.self.getId() permissions=c.queryPermissions/>
 		<h3>Other Permissions</h3>
-		<@permissionTable.permissionTable permissions=c.otherPermissions/>
+		<@permissionTable.permissionTable ownerId=c.self.getId() permissions=c.otherPermissions/>
 		</div>
 	</div>
 	<div class="row">

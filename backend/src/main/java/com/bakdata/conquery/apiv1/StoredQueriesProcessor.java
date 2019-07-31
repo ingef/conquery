@@ -96,11 +96,11 @@ public class StoredQueriesProcessor {
 		authorize(user, query, requiredAbility);
 		
 		for(Namespace ns : namespaces.getNamespaces()) {
-			if(user.isPermitted(new DatasetPermission(user, Ability.READ.asSet(), ns.getDataset().getId()))) {
+			if(user.isPermitted(new DatasetPermission(Ability.READ.asSet(), ns.getDataset().getId()))) {
 				ManagedExecutionId id = new ManagedExecutionId(ns.getDataset().getId(), query.getQueryId());
 				ManagedQuery exec = (ManagedQuery)namespaces.getMetaStorage().getExecution(id);
 				if(exec != null) {
-					if(user.isPermitted(new QueryPermission(user.getId(), requiredAbility.asSet(), id))) {
+					if(user.isPermitted(new QueryPermission(requiredAbility.asSet(), id))) {
 						updater.accept(exec);
 						namespaces.getMetaStorage().updateExecution(exec);
 					}

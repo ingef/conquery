@@ -19,6 +19,7 @@ import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
+import com.bakdata.conquery.resources.api.PermissionResource;
 
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
@@ -69,6 +70,7 @@ public class AdminServlet {
 		jerseyConfig.register(DatasetsUIResource.class);		
 		jerseyConfig.register(TablesUIResource.class);
 		jerseyConfig.register(ConceptsUIResource.class);
+		jerseyConfig.register(PermissionResource.class);
 		
 		//register features
 		jerseyConfig.register(new MultiPartFeature());

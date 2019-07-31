@@ -8,7 +8,6 @@ import javax.validation.Validator;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.StorageConfig;
@@ -16,7 +15,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
@@ -28,7 +26,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedExecution> executions;
 	private IdentifiableStore<User> authUser;
-	private IdentifiableStore<ConqueryPermission> authPermissions;
 	private IdentifiableStore<Mandator> authMandator;
 	
 	@Getter
@@ -52,16 +49,13 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		MasterMetaStorage storage = this;
 		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage);
 		this.authUser = StoreInfo.AUTH_USER.<User>identifiable(storage);
-		this.authPermissions = StoreInfo.AUTH_PERMISSIONS.<ConqueryPermission>identifiable(storage)
-			.onAdd(value->		value.getOwnerId().getOwner(storage).addPermissionLocal(value));
 		
 		collector
 			.collect(meta)
 			.collect(authMandator)
 			//load users before queries
 			.collect(authUser)
-			.collect(executions)
-			.collect(authPermissions);
+			.collect(executions);
 	}
 
 	@Override
@@ -87,38 +81,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Override
 	public void removeExecution(ManagedExecutionId id) {
 		executions.remove(id);
-	}
-	
-	/*
-	@Override
-	public Namespaces getMeta() {
-		return meta.get();
-	}
-
-	@Override
-	public void updateMeta(Namespaces meta) throws JSONException {
-		this.meta.update(meta);
-		//see #147 ?
-		/*
-		if(blockManager != null) {
-			blockManager.init(slaveInfo);
-		}
-		*/
-	//}
-	
-	@Override
-	public void addPermission(ConqueryPermission permission) throws JSONException {
-		authPermissions.add(permission);
-	}
-	
-	@Override
-	public Collection<ConqueryPermission> getAllPermissions() {
-		return authPermissions.getAll();
-	}
-	
-	@Override
-	public void removePermission(PermissionId permissionId) {
-		authPermissions.remove(permissionId);
 	}
 	
 	@Override
@@ -164,11 +126,6 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Override
 	public void updateUser(User user) throws JSONException {
 		authUser.update(user);
-	}
-
-	@Override
-	public ConqueryPermission getPermission(PermissionId id) {
-		return authPermissions.get(id);
 	}
 
 	@Override

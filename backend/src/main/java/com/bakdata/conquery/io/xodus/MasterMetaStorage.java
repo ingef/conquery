@@ -2,14 +2,12 @@ package com.bakdata.conquery.io.xodus;
 
 import java.util.Collection;
 
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.Namespaces;
 
@@ -20,34 +18,6 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	Collection<ManagedExecution> getAllExecutions();
 	void updateExecution(ManagedExecution query) throws JSONException;
 	void removeExecution(ManagedExecutionId id);
-	
-
-	/**
-	 * Adds a permission to the storage.
-	 * @param permission The permission to add.
-	 * @throws JSONException Is throw on a JSON related failure.
-	 */
-	void addPermission(ConqueryPermission permission) throws JSONException;
-	
-	/**
-	 * Gets all permissions saved in the storage.
-	 * @return A collection of the stored permissions
-	 */
-	Collection<ConqueryPermission> getAllPermissions();
-	
-	/**
-	 * Removes a permission from the storage that has the given id.
-	 * @param id The id of the permission that will be deleted.
-	 */
-	void removePermission(PermissionId id);
-	
-	/**
-	 * Gets the permission with the specified id from the storage.
-	 * @param id The id of the permission to be retrieved.
-	 * @return The permission with the specified id.
-	 */
-	ConqueryPermission getPermission(PermissionId id);
-	
 	
 	/**
 	 * Adds a user to the storage.

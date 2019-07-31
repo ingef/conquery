@@ -1,41 +1,45 @@
 {
     "type": "PERMISSION_STORAGE_SERIALIZATION_TEST",
     "label": "PERMISSION_STORAGE_SERIALIZATION_TEST",
-    "roles":[
+    "roles": [
         {
-            "label" : "testCompany",
-            "name" : "testCompany"
+            "label": "testCompany",
+            "name": "testCompany",
+            "permissions": [
+                {
+                    "type": "DATASET_PERMISSION",
+                    "abilities": [
+                        "READ"
+                    ],
+                    "instanceId": "testDataset"
+                }
+            ]
         }
     ],
     "users": [
         {
-            "user" : {
-                "label" : "unused",
-                "email" : "user1"
+            "user": {
+                "label": "unused",
+                "email": "user1",
+                "permissions": [
+                    {
+                        "type": "DATASET_PERMISSION",
+                        "abilities": [
+                            "DELETE"
+                        ],
+                        "instanceId": "testDataset"
+                    }
+                ]
             },
             "rolesInjected": [
                 "mandator.testCompany"
             ]
         },
         {
-            "user" : {
-                "label" : "unused",
-                "email" : "user2"
+            "user": {
+                "label": "unused",
+                "email": "user2"
             }
-        }
-    ],
-    "permissions": [
-        {
-            "type": "DATASET_PERMISSION",
-            "ownerId": "user.user1",
-            "abilities": ["DELETE"],
-            "instanceId": "testDataset"
-        },
-        {
-            "type": "DATASET_PERMISSION",
-            "ownerId": "mandator.testCompany",
-            "abilities": ["READ"],
-            "instanceId": "testDataset"
         }
     ]
 }

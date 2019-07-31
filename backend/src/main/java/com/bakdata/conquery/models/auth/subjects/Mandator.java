@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.auth.subjects;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import javax.validation.constraints.NotNull;
 
@@ -39,10 +38,7 @@ public class Mandator extends PermissionOwner<MandatorId> {
 
 	@Override
 	public boolean[] isPermitted(List<Permission> permissions) {
-		List<Permission> mandatorPermission = permissions.stream()
-				.map(p -> ((ConqueryPermission)p).withOwner(this.getId()))
-				.collect(Collectors.toList());
-		return  SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), mandatorPermission);
+		return  SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permissions);
 	}
 
 	@Override
