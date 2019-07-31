@@ -10,6 +10,7 @@ import org.apache.shiro.realm.Realm;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 
 import io.dropwizard.auth.AuthenticationException;
@@ -40,7 +41,9 @@ public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>
 	public Optional<User> authenticate(ConqueryToken token) throws AuthenticationException {
 		
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
-		User user = (User)info.getPrincipals().getPrimaryPrincipal();
+		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
+
+		User user = storage.getUser(userId);
 		
 		ConqueryMDC.setLocation(user.getId().toString());
 		return Optional.ofNullable(user);
