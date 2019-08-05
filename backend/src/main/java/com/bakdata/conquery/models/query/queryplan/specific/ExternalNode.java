@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
+import java.util.Collections;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.hibernate.validator.constraints.NotEmpty;
@@ -30,7 +32,10 @@ public class ExternalNode extends QPChainNode {
 	public ExternalNode(QPNode child, DatasetId dataset, Map<Integer, CDateSet> includedEntities) {
 		super(child);
 		this.dataset = dataset;
-		this.includedEntities = includedEntities;
+		this.includedEntities = Objects.requireNonNullElse(
+			includedEntities,
+			Collections.emptyMap()
+		);
 	}
 
 	@Override
