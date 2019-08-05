@@ -52,11 +52,11 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
 		f.setType(filterType);
 
-		if (maximumSize != -1 && values.size() > maximumSize) {
-			throw new ConceptConfigurationException(getConnector(),
-				String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
-		}
 		if (values != null) {
+			if (maximumSize != -1 && values.size() > maximumSize) {
+				throw new ConceptConfigurationException(getConnector(),
+					String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
+			}
 			f.setOptions(
 				values
 					.stream()
