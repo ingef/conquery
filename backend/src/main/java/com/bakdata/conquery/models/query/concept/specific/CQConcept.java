@@ -145,10 +145,10 @@ public class CQConcept implements CQElement {
 	}
 
 	private Column selectValidityDateColumn(CQTable t) {
-		if(t.getDateColumn() != null) {
+		if(t.selectedValidityDate() != null) {
 			return t
 				.getResolvedConnector()
-				.getValidityDateColumn(t.getDateColumn().getValue().getValidityDate());
+				.getValidityDateColumn(t.selectedValidityDate());
 		}
 
 		//else use this first defined validity date column
