@@ -90,7 +90,7 @@ public class ImportJob extends Job {
 			namespace.checkConnections();
 
 			//update primary dictionary
-			createMappings(header);
+			boolean mappingRequired = createMappings(header);
 			this.progressReporter.report(1);
 			DictionaryMapping primaryMapping = header.getPrimaryColumn().getValueMapping();
 
@@ -119,7 +119,8 @@ public class ImportJob extends Job {
 
 			//create data import and store/send it
 			log.info("\tupdating import information");
-			Import outImport = createImport(header, false);
+			//if mapping is not required we can also use the old infos here
+			Import outImport = createImport(header, !mappingRequired);
 			Import inImport = createImport(header, true);
 			namespace.getStorage().updateImport(outImport);
 			namespace.sendToAll(new AddImport(outImport));
@@ -174,15 +175,17 @@ public class ImportJob extends Job {
 						.computeIfAbsent(bucketNumber, b->new ImportBucket(new BucketId(outImport.getId(), b)));
 					
 					byte[] data = in.readBytes(size);
-					try(InputStream bounded = new ByteArrayInputStream(data);
-						ByteArrayOutputStream out = new ByteArrayOutputStream(data.length+16)) {
-						
-						Bucket value = inImport.getBlockFactory().readSingleValue(bucketNumber, inImport, bounded);
-						Bucket result = outImport.getBlockFactory().adaptValuesFrom(bucketNumber, outImport, value, header);
-						try(SmallOut sOut = new SmallOut(out)) {
-							result.writeContent(sOut);
+					if(mappingRequired) {
+						try(InputStream bounded = new ByteArrayInputStream(data);
+							ByteArrayOutputStream out = new ByteArrayOutputStream(data.length+16)) {
+							
+							Bucket value = inImport.getBlockFactory().readSingleValue(bucketNumber, inImport, bounded);
+							Bucket result = outImport.getBlockFactory().adaptValuesFrom(bucketNumber, outImport, value, header);
+							try(SmallOut sOut = new SmallOut(out)) {
+								result.writeContent(sOut);
+							}
+							data = out.toByteArray();
 						}
-						data = out.toByteArray();
 					}
 					
 						
@@ -206,7 +209,9 @@ public class ImportJob extends Job {
 		imp.setName(header.getName());
 		imp.setTable(table);
 		imp.setNumberOfEntries(header.getRows());
-		imp.setClasses(header.getClasses());
+		if(useOldType) {
+			imp.setClasses(header.getClasses());
+		}
 		imp.setSuffix(header.getSuffix());
 		imp.setColumns(new ImportColumn[header.getColumns().length]);
 		for (int i = 0; i < header.getColumns().length; i++) {
@@ -249,7 +254,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private void createMappings(PPHeader header) throws JSONException {
+	private boolean createMappings(PPHeader header) throws JSONException {
 		log.debug("\tupdating primary dictionary");
 		Dictionary entities = ((StringTypeEncoded)header.getPrimaryColumn().getType()).getSubType().getDictionary();
 		this.progressReporter.report(1);
@@ -277,6 +282,7 @@ public class ImportJob extends Job {
 			this.progressReporter.report(1);
 		}
 		
+		boolean mappingRequired = false;
 		log.debug("\tsending secondary dictionaries");
 		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
 		for(int colPos = 0; colPos<header.getColumns().length; colPos++) {
@@ -284,7 +290,7 @@ public class ImportJob extends Job {
 			Column tableCol = table.getColumns()[colPos];
 			//if the column uses a shared dictionary we have to merge the existing dictionary into that
 			if(tableCol.getType() == MajorTypeId.STRING && tableCol.getSharedDictionary() != null) {
-				createSharedDictionary(col, tableCol);
+				mappingRequired |= createSharedDictionary(col, tableCol);
 			}
 
 			//store external infos into master and slaves
@@ -300,14 +306,15 @@ public class ImportJob extends Job {
 			);
 		}
 		header.getPrimaryColumn().setValueMapping(primaryMapping);
+		return mappingRequired;
 	}
 
-	private void createSharedDictionary(PPColumn col, Column tableCol) throws JSONException {
+	private boolean createSharedDictionary(PPColumn col, Column tableCol) throws JSONException {
 		AStringType<?> oldType = (AStringType<?>) col.getType();
 		Dictionary source = oldType.getUnderlyingDictionary();
 		//could be null if the strin column has no (or too few) values
 		if(source == null) {
-			return;
+			return false;
 		}
 		DictionaryId sharedId = new DictionaryId(namespace.getDataset().getId(), tableCol.getSharedDictionary());
 		log.info("\t\tmerging {} into shared dictionary {}", col.getName(), sharedId);
@@ -335,6 +342,7 @@ public class ImportJob extends Job {
 		col.setTransformer(decision.getTransformer());
 		col.setValueMapping(mapping);
 		col.setType(newType);
+		return true;
 	}
 
 	private PPHeader readHeader(HCFile file) throws JsonParseException, IOException {
