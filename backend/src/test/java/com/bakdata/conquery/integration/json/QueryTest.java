@@ -42,7 +42,7 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
-import com.bakdata.conquery.util.io.ConfigCloner;
+import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -104,7 +104,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		int id = 1;
 		for(ResourceFile queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
-			ConqueryConfig config = ConfigCloner.clone(support.getConfig());
+			ConqueryConfig config = Cloner.clone(support.getConfig());
 			config.getCsv().setSkipHeader(false);
 			String[][] data = CSV.streamContent(config.getCsv(), queryResults.stream())
 				.toArray(String[][]::new);

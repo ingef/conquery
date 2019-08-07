@@ -1,16 +1,21 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.datasets.Table;
@@ -20,6 +25,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.AddImport;
@@ -29,16 +35,23 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBuck
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.preproc.PPHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
+import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Decision;
+import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
+import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
+import com.bakdata.conquery.models.types.specific.VarIntType;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
+import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.SmallIn;
 import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
+import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
 
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
@@ -77,8 +90,9 @@ public class ImportJob extends Job {
 			namespace.checkConnections();
 
 			//update primary dictionary
-			DictionaryMapping primaryMapping = createPrimaryMapping(header);
+			createMappings(header);
 			this.progressReporter.report(1);
+			DictionaryMapping primaryMapping = header.getPrimaryColumn().getValueMapping();
 
 			//partition the new IDs between the slaves
 			log.debug("\tpartition new IDs");
@@ -105,24 +119,10 @@ public class ImportJob extends Job {
 
 			//create data import and store/send it
 			log.info("\tupdating import information");
-			Import imp = new Import();
-			imp.setName(header.getName());
-			imp.setTable(table);
-			imp.setNumberOfEntries(header.getRows());
-			imp.setClasses(header.getClasses());
-			imp.setSuffix(header.getSuffix());
-			imp.setColumns(new ImportColumn[header.getColumns().length]);
-			for (int i = 0; i < header.getColumns().length; i++) {
-				PPColumn src = header.getColumns()[i];
-				ImportColumn col = new ImportColumn();
-				col.setName(src.getName());
-				col.setType(src.getType());
-				col.setParent(imp);
-				col.setPosition(i);
-				imp.getColumns()[i] = col;
-			}
-			namespace.getStorage().updateImport(imp);
-			namespace.sendToAll(new AddImport(imp));
+			Import outImport = createImport(header, false);
+			Import inImport = createImport(header, true);
+			namespace.getStorage().updateImport(outImport);
+			namespace.sendToAll(new AddImport(outImport));
 
 			this.progressReporter.report(1);
 			int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
@@ -171,13 +171,26 @@ public class ImportJob extends Job {
 					int size = in.readInt(true);
 					int bucketNumber = Entity.getBucket(entityId, bucketSize);
 					ImportBucket bucket = buckets
-						.computeIfAbsent(bucketNumber, b->new ImportBucket(new BucketId(imp.getId(), b)));
+						.computeIfAbsent(bucketNumber, b->new ImportBucket(new BucketId(outImport.getId(), b)));
+					
+					byte[] data = in.readBytes(size);
+					try(InputStream bounded = new ByteArrayInputStream(data);
+						ByteArrayOutputStream out = new ByteArrayOutputStream(data.length+16)) {
+						
+						Bucket value = inImport.getBlockFactory().readSingleValue(bucketNumber, inImport, bounded);
+						Bucket result = outImport.getBlockFactory().adaptValuesFrom(bucketNumber, outImport, value, header);
+						try(SmallOut sOut = new SmallOut(out)) {
+							result.writeContent(sOut);
+						}
+						data = out.toByteArray();
+					}
+					
 						
 					bucket.getIncludedEntities().add(entityId);
 					
 					bytes
 						.computeIfAbsent(bucketNumber, i->new ArrayList<>())
-						.add(in.readBytes(size));
+						.add(data);
 					
 					child.report(1);
 				}
@@ -188,6 +201,31 @@ public class ImportJob extends Job {
 		}
 	}
 	
+	private Import createImport(PPHeader header, boolean useOldType) {
+		Import imp = new Import();
+		imp.setName(header.getName());
+		imp.setTable(table);
+		imp.setNumberOfEntries(header.getRows());
+		imp.setClasses(header.getClasses());
+		imp.setSuffix(header.getSuffix());
+		imp.setColumns(new ImportColumn[header.getColumns().length]);
+		for (int i = 0; i < header.getColumns().length; i++) {
+			PPColumn src = header.getColumns()[i];
+			ImportColumn col = new ImportColumn();
+			col.setName(src.getName());
+			col.setType(
+				useOldType?
+					Objects.requireNonNullElse(src.getOldType(), src.getType())
+					:
+					src.getType()
+			);
+			col.setParent(imp);
+			col.setPosition(i);
+			imp.getColumns()[i] = col;
+		}
+		return imp;
+	}
+
 	private void sendBuckets(DictionaryMapping primaryMapping, Int2ObjectMap<ImportBucket> buckets, Int2ObjectMap<List<byte[]>> bytes) {
 		for(int bucketNumber : primaryMapping.getUsedBuckets()) {
 			ImportBucket bucket = buckets.get(bucketNumber);
@@ -211,7 +249,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private DictionaryMapping createPrimaryMapping(PPHeader header) throws JSONException {
+	private void createMappings(PPHeader header) throws JSONException {
 		log.debug("\tupdating primary dictionary");
 		Dictionary entities = ((StringTypeEncoded)header.getPrimaryColumn().getType()).getSubType().getDictionary();
 		this.progressReporter.report(1);
@@ -240,11 +278,20 @@ public class ImportJob extends Job {
 		}
 		
 		log.debug("\tsending secondary dictionaries");
-		for(PPColumn col:header.getColumns()) {
+		Table table = namespace.getStorage().getDataset().getTables().get(this.table);
+		for(int colPos = 0; colPos<header.getColumns().length; colPos++) {
+			PPColumn col = header.getColumns()[colPos];
+			Column tableCol = table.getColumns()[colPos];
+			//if the column uses a shared dictionary we have to merge the existing dictionary into that
+			if(tableCol.getType() == MajorTypeId.STRING && tableCol.getSharedDictionary() != null) {
+				createSharedDictionary(col, tableCol);
+			}
+
+			//store external infos into master and slaves
 			col.getType().storeExternalInfos(namespace.getStorage(),
 				(Consumer<Dictionary>)(dict -> {
 					try {
-						namespace.getStorage().addDictionary(dict);
+						namespace.getStorage().updateDictionary(dict);
 						namespace.sendToAll(new UpdateDictionary(dict));
 					} catch(Exception e) {
 						throw new RuntimeException("Failed to store dictionary "+dict, e);
@@ -252,7 +299,42 @@ public class ImportJob extends Job {
 				})
 			);
 		}
-		return primaryMapping;
+		header.getPrimaryColumn().setValueMapping(primaryMapping);
+	}
+
+	private void createSharedDictionary(PPColumn col, Column tableCol) throws JSONException {
+		AStringType<?> oldType = (AStringType<?>) col.getType();
+		Dictionary source = oldType.getUnderlyingDictionary();
+		//could be null if the strin column has no (or too few) values
+		if(source == null) {
+			return;
+		}
+		DictionaryId sharedId = new DictionaryId(namespace.getDataset().getId(), tableCol.getSharedDictionary());
+		log.info("\t\tmerging {} into shared dictionary {}", col.getName(), sharedId);
+		
+		Dictionary shared = namespace.getStorage().computeDictionary(sharedId);
+		DictionaryMapping mapping = DictionaryMapping.create(
+			source,
+			shared,
+			namespace
+		);
+		
+		AStringType<?> newType = Cloner.clone(oldType);
+		//find the new number type to represent the ids
+		int minTargetId = Ints.min(mapping.getSource2TargetMap());
+		int maxTargetId = Ints.max(mapping.getSource2TargetMap());
+		VarIntParser numberParser = new VarIntParser();
+		numberParser.registerValue(minTargetId);
+		numberParser.registerValue(maxTargetId);
+		numberParser.setLines(oldType.getLines());
+		numberParser.setNullLines(oldType.getNullLines());
+		Decision<Integer, Number, VarIntType> decision = numberParser.findBestType();
+		
+		newType.adaptUnderlyingDictionary(shared, decision.getType());
+		col.setOldType(oldType);
+		col.setTransformer(decision.getTransformer());
+		col.setValueMapping(mapping);
+		col.setType(newType);
 	}
 
 	private PPHeader readHeader(HCFile file) throws JsonParseException, IOException {
