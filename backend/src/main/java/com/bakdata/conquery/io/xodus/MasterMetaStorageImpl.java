@@ -16,6 +16,10 @@ import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
 

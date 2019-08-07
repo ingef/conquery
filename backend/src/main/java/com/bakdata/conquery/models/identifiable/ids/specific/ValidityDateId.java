@@ -2,6 +2,8 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -14,7 +16,6 @@ import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
 public class ValidityDateId extends AId<ValidityDate> implements NamespacedId {
-
 	private final ConnectorId connector;
 	private final String validityDate;
 	

@@ -69,7 +69,10 @@ public class CQExternal implements CQElement {
 
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
-		IdAccessor idAccessor = mapping.mappingFromCsvHeader(values[0], context.getNamespace().getStorage());
+		IdAccessor idAccessor = mapping.mappingFromCsvHeader(
+			IdAccessorImpl.removeNonIdFields(values[0], format),
+			context.getNamespace().getStorage()
+		);
 		List<List<String>> nonResolved = new ArrayList<>();
 		
 		// ignore the first row, because this is the header
@@ -112,7 +115,7 @@ public class CQExternal implements CQElement {
 				"Could not resolve {} of the {} rows. Not resolved: {}",
 				nonResolved.size(),
 				values.length-1,
-				nonResolved.subList(0, 10)
+				nonResolved.subList(0, Math.min(nonResolved.size(), 10))
 			);
 		}
 		

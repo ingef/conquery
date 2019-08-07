@@ -43,4 +43,11 @@ public class CQTable {
 	public static class ValidityDateColumn {
 		private ValidityDateId value;
 	}
+
+	public String selectedValidityDate() {
+		if(dateColumn == null || dateColumn.getValue() == null) {
+			return null;
+		}
+		return dateColumn.getValue().getValidityDate();
+	}
 }

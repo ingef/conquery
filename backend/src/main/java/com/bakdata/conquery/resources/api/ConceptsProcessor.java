@@ -13,8 +13,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -25,13 +23,10 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -88,6 +83,7 @@ public class ConceptsProcessor {
 			.stream()
 			.filter(d -> user.isPermitted(new DatasetPermission(Ability.READ.asSet(), d.getId())))
 			.map(d -> new IdLabel(d.getLabel(), d.getId().toString()))
+			.sorted()
 			.collect(Collectors.toList());
 	}
 
