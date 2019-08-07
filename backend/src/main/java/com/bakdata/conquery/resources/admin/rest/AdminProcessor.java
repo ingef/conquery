@@ -36,6 +36,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
@@ -256,5 +257,9 @@ public class AdminProcessor {
 
 	public UIContext getUIContext() {
 		return new UIContext(namespaces);
+	}
+
+	public void deleteUser(UserId id) {
+		storage.removeUser(id);
 	}
 }
