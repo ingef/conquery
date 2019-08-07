@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
-import com.bakdata.conquery.util.io.ConfigCloner;
+import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.io.Files;
 
 import io.dropwizard.client.JerseyClientBuilder;
@@ -101,7 +101,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		//make tmp subdir and change cfg accordingly
 		File localTmpDir = new File(tmpDir, "tmp_"+name);
 		localTmpDir.mkdir();
-		ConqueryConfig localCfg = ConfigCloner.clone(config);
+		ConqueryConfig localCfg = Cloner.clone(config);
 		localCfg.getPreprocessor().setDirectories(
 			new PreprocessingDirectories[]{
 				new PreprocessingDirectories(localTmpDir, localTmpDir, localTmpDir)

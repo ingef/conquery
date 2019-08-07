@@ -105,4 +105,10 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 	public long estimateTypeSize() {
 		return dictionary.estimateMemoryConsumption();
 	}
+
+	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+		dictionaryId = newDict.getId();
+		dictionary = newDict;
+		numberType = newNumberType;
+	}
 }

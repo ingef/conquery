@@ -12,7 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.util.io.ConfigCloner;
+import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
@@ -56,7 +56,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		// start master
 		ConqueryMDC.setLocation("Master");
 		log.debug("Starting Master");
-		ConqueryConfig masterConfig = ConfigCloner.clone(config);
+		ConqueryConfig masterConfig = Cloner.clone(config);
 		masterConfig.getStorage().setDirectory(new File(masterConfig.getStorage().getDirectory(), "master"));
 		masterConfig.getStorage().getDirectory().mkdir();
 		conquery.run(masterConfig, environment);
@@ -78,7 +78,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 			final int id = i;
 			tasks.add(starterPool.submit(() -> {
 				ConqueryMDC.setLocation("Slave " + id);
-				ConqueryConfig clone = ConfigCloner.clone(config);
+				ConqueryConfig clone = Cloner.clone(config);
 				clone.getStorage().setDirectory(new File(clone.getStorage().getDirectory(), "slave_" + id));
 				clone.getStorage().getDirectory().mkdir();
 

@@ -111,10 +111,6 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 		gen.writeEndObject();
 	}
 	
-	public boolean has(int event, Column column) {
-		return has(event, column.getPosition());
-	}
-	
 	public Iterable<BucketEntry> entries() {
 		return ()->IntStream
 			.range(0,getBucketSize())
@@ -129,7 +125,10 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 
 	public abstract int getBucketSize();
 	
-	protected abstract boolean has(int event, int columnPosition);
+	public boolean has(int event, Column column) {
+		return has(event, column.getPosition());
+	}
+	public abstract boolean has(int event, int columnPosition);
 
 	public abstract int getString(int event, Column column);
 	public abstract long getInteger(int event, Column column);
@@ -139,8 +138,14 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	public abstract long getMoney(int event, Column column);
 	public abstract int getDate(int event, Column column);
 	public abstract CDateRange getDateRange(int event, Column column);
-	public abstract Object getRaw(int event, Column column);
-	public abstract Object getAsObject(int event, Column column);
+	public Object getRaw(int event, Column column) {
+		return getRaw(event, column.getPosition());
+	}
+	public abstract Object getRaw(int event, int columnPosition);
+	public Object getAsObject(int event, Column column) {
+		return getAsObject(event, column.getPosition());
+	}
+	public abstract Object getAsObject(int event, int columnPosition);
 
 	public abstract boolean eventIsContainedIn(int event, Column column, CDateRange dateRange);
 	public abstract boolean eventIsContainedIn(int event, Column column, CDateSet dateRanges);

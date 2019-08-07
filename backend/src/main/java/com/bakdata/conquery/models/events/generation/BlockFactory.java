@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.preproc.PPHeader;
 import com.bakdata.conquery.util.io.SmallIn;
 
 import it.unimi.dsi.fastutil.ints.IntList;
@@ -23,6 +24,8 @@ public abstract class BlockFactory {
 			return bucket;
 		}
 	}
+	
+	public abstract Bucket adaptValuesFrom(int bucketNumber, Import outImport, Bucket value, PPHeader header);
 
 	public abstract Bucket combine(IntList includedEntities, Bucket[] buckets);
 }
