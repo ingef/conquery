@@ -38,7 +38,7 @@ public class AuthorizationHelper {
 	 * @param ability The kind of ability that is checked.
 	 */
 	public static void authorize(User user, DatasetId dataset, EnumSet<Ability> abilities) {
-		user.checkPermission(new DatasetPermission(user.getId(), abilities, dataset));
+		user.checkPermission(new DatasetPermission(abilities, dataset));
 	}
 	
 	// Query Instances
@@ -59,7 +59,7 @@ public class AuthorizationHelper {
 	 * @param ability The kind of ability that is checked.
 	 */
 	public static void authorize(User user, ManagedExecutionId query, EnumSet<Ability> abilities) {
-		user.checkPermission(new QueryPermission(user.getId(), abilities, query));
+		user.checkPermission(new QueryPermission(abilities, query));
 	}
 	
 	/**
@@ -79,7 +79,7 @@ public class AuthorizationHelper {
 	 * @param ability The kind of ability that is checked.
 	 */
 	public static void authorize(User user, ManagedQuery query, EnumSet<Ability> abilities) {
-		user.checkPermission(new QueryPermission(user.getId(), abilities, query.getId()));
+		user.checkPermission(new QueryPermission(abilities, query.getId()));
 	}
 	
 	/**

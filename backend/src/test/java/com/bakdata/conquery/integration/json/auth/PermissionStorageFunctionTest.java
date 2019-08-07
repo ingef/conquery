@@ -2,7 +2,6 @@ package com.bakdata.conquery.integration.json.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -16,13 +15,11 @@ import com.bakdata.conquery.integration.common.RequiredUser;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -42,8 +39,6 @@ public class PermissionStorageFunctionTest extends ConqueryTestSpec {
 	private Mandator [] roles = new Mandator[0];
 	@Valid @NotNull @JsonProperty("users")
 	private RequiredUser [] rUsers;
-	@Valid @NotNull
-	private ConqueryPermission [] permissions;
 	
 	@JsonIgnore
 	private MasterMetaStorage storage;
@@ -68,19 +63,6 @@ public class PermissionStorageFunctionTest extends ConqueryTestSpec {
 			User user = (User)rUser.getUser();
 			storage.addUser(user);
 		}
-	}
-	
-	public void addPermissions() throws JSONException {
-		for(ConqueryPermission permission: permissions) {
-			permission.getId();
-			PermissionOwnerId<?> ownerId = permission.getOwnerId();
-			PermissionOwner<?> owner = ownerId.getOwner(storage);
-			owner.addPermission(storage, permission);
-		}
-	}
-	
-	public void removePermission(ConqueryPermission permission) throws JSONException {
-		storage.removePermission(permission.getId());
 	}
 	
 	public void updateUsers() throws JSONException {
@@ -139,14 +121,6 @@ public class PermissionStorageFunctionTest extends ConqueryTestSpec {
 				}).map(User.class::cast).collect(Collectors.toList());
 		
 	}
-	
-	public Collection<ConqueryPermission> getPermissionsStored(){
-		return storage.getAllPermissions();
-	}
-	
-	public Collection<ConqueryPermission> getPermissionsExpected(){
-		return Arrays.asList(permissions);
-	}
 
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
@@ -165,21 +139,6 @@ public class PermissionStorageFunctionTest extends ConqueryTestSpec {
 		assertThat(getUsersStored())
 			.containsAll(getUsersUpdatedExpected());
 		
-		// tests adding of permissions
-		addPermissions();
-		assertThat(getPermissionsStored())
-			.containsAll(getPermissionsExpected());
-		
-		// tests removing of permissions
-		List<ConqueryPermission> permissions = new ArrayList<>(Arrays.asList(getPermissions()));
-		Iterator<ConqueryPermission> perIt = permissions.iterator();
-		while(perIt.hasNext()) {
-			ConqueryPermission cp = perIt.next();
-			removePermission(cp);
-			perIt.remove();
-			assertThat(getPermissionsStored()).doesNotContain(cp);
-		}
-
 		// tests removing of users
 		List<User> users = Arrays.asList(getRUsers()).stream().map(RequiredUser::getUser).map(User.class::cast).collect(Collectors.toList());
 		Iterator<User> userIt = users.iterator();

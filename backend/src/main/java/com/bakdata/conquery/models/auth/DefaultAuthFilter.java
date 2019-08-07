@@ -72,12 +72,11 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 
 	public static AuthFilter<ConqueryToken, User> asDropwizardFeature(MasterMetaStorage storage, AuthConfig config) {
 		AuthorizingRealm realm = config.getRealm(storage);
-		UnknownUserHandler uuHandler = config.getUnknownUserHandler(storage);
 
 		DefaultAuthFilterBuilder builder = DefaultAuthFilter.builder();
 		AuthFilter<ConqueryToken, User> authFilter = builder
 			.setTokenExtractor(config.getTokenExtractor())
-			.setAuthenticator(new ConqueryAuthenticator(storage, realm, uuHandler))
+			.setAuthenticator(new ConqueryAuthenticator(storage, realm))
 			.setUnauthorizedHandler(new DefaultUnauthorizedHandler())
 			.buildAuthFilter();
 		return authFilter;

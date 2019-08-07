@@ -2,7 +2,6 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.PERMISSION_ID;
 
 import java.net.SocketAddress;
 import java.time.LocalDate;
@@ -33,13 +32,11 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
@@ -138,21 +135,6 @@ public class AdminUIResource {
 	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
 	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
 		return new UIView<>("mandator.html.ftl", processor.getUIContext(), processor.getMandatorContent(mandatorId));
-	}
-	
-	@POST
-	@Path("/permissions/")
-	@Consumes(ExtraMimeTypes.JSON_STRING)
-	public Response createPermission(ConqueryPermission permission) throws JSONException {
-		processor.createPermission(permission);
-		return Response.ok().build();
-	}
-	
-	@DELETE
-	@Path("/permissions/{"+ PERMISSION_ID +"}")
-	public Response deletePermission(@PathParam(PERMISSION_ID) PermissionId permission) throws JSONException {
-		processor.deletePermission(permission);
-		return Response.ok().build();
 	}
 
 	@POST @Path("/update-matching-stats") @Consumes(MediaType.MULTIPART_FORM_DATA)

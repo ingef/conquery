@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
@@ -35,7 +34,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
@@ -180,10 +178,16 @@ public class AdminProcessor {
 
 	/**
 	 * Deletes the mandator, that is identified by the id.
+	 * Its references are removed from the users and from the storage.
 	 * @param mandatorId The id belonging to the mandator
+	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
-	public void deleteMandator(MandatorId mandatorId) {
+	public void deleteMandator(MandatorId mandatorId) throws JSONException {
 		log.info("Deleting mandator: {}", mandatorId);
+		Mandator mandator = storage.getMandator(mandatorId);
+		for(User user : storage.getAllUsers()) {
+			user.removeMandator(storage, mandator);
+		}
 		storage.removeMandator(mandatorId);
 	}
 
@@ -237,8 +241,8 @@ public class AdminProcessor {
 	 * @param permission The permission to create.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void createPermission(ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.addPermission(getOwnerFromPermission(permission, storage), permission, storage);
+	public void createPermission(PermissionOwnerId<?> ownerId,ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.addPermission(ownerId.getOwner(storage), permission, storage);
 	}
 
 	/**
@@ -246,33 +250,8 @@ public class AdminProcessor {
 	 * @param permission The permission to delete.
 	 * @throws JSONException is thrown upon processing JSONs.
 	 */
-	public void deletePermission(PermissionId permissionId) throws JSONException {
-		ConqueryPermission permission = storage.getPermission(permissionId);
-		if(permission == null) {
-			throw new NoSuchElementException("Permission "+permissionId+" not found in storage");
-		}
-		AuthorizationHelper.removePermission(getOwnerFromPermission(permission, storage), permission, storage);
-	}
-
-	/**
-	 * Retrieves the {@link PermissionOwner} from an permission that should be created or deleted.
-	 * @param permission The permission with an owner.
-	 * @param storage A storage from which the owner is retrieved.
-	 * @return The Owner.
-	 */
-	private static PermissionOwner<?> getOwnerFromPermission(ConqueryPermission permission, MasterMetaStorage storage) {
-		if(permission == null) {
-			throw new IllegalArgumentException("Permission was null");
-		}
-		PermissionOwnerId<?> ownerId = permission.getOwnerId();
-		if(ownerId == null) {
-			throw new IllegalArgumentException("The ownerId is not allowed to be null.");
-		}
-		PermissionOwner<?> owner =  ownerId.getOwner(storage);
-		if(owner == null) {
-			throw new IllegalArgumentException("The provided ownerId belongs to no subject.");
-		}
-		return owner;
+	public void deletePermission(PermissionOwnerId<?> ownerId,ConqueryPermission permission) throws JSONException {
+		AuthorizationHelper.removePermission(ownerId.getOwner(storage), permission, storage);
 	}
 
 	public UIContext getUIContext() {

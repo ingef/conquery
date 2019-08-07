@@ -18,13 +18,11 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.MPStore;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -47,15 +45,11 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	private Mandator [] roles = new Mandator[0];
 	@Valid @NotNull @JsonProperty("users")
 	private RequiredUser [] rUsers;
-	@Valid @NotNull
-	private ConqueryPermission [] permissions;
 	
 	@JsonIgnore
 	private MPStore<MandatorId, Mandator> authMandator;
 	@JsonIgnore
 	private MPStore<UserId, User> authUser;
-	@JsonIgnore
-	private MPStore<PermissionId, ConqueryPermission> authPermissions;
 	@JsonIgnore
 	private File directory;
 	
@@ -68,7 +62,6 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
 		this.authMandator = new MPStore<>(validator, env, StoreInfo.AUTH_MANDATOR);
 		this.authUser = new MPStore<>(validator, env, StoreInfo.AUTH_USER);
-		this.authPermissions = new MPStore<>(validator, env, StoreInfo.AUTH_PERMISSIONS);
 	}
 	
 	/**
@@ -82,9 +75,6 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 		for(RequiredUser rUser : rUsers) {
 			User user = rUser.getUser();
 			authUser.add(user.getId(), user);
-		}
-		for(ConqueryPermission permission : permissions) {
-			authPermissions.add(permission.getId(), permission);
 		}
 	}
 	
@@ -101,9 +91,6 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 		authUser.forEach(e -> storedUser.add(e.getValue()));
 		assertThat(storedUser).containsExactlyInAnyOrderElementsOf(Arrays.stream(rUsers).map(rU -> rU.getUser()).collect(Collectors.toList()));
 		
-		List<ConqueryPermission> storedPermission = new ArrayList<>();
-		authPermissions.forEach(e -> storedPermission.add(e.getValue()));
-		assertThat(storedPermission).containsExactlyInAnyOrderElementsOf(Arrays.asList(permissions));
 	}
 
 	@Override

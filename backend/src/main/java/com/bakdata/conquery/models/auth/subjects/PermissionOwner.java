@@ -38,11 +38,11 @@ import lombok.extern.slf4j.Slf4j;
  *            The id type by which an instance is identified
  */
 @Slf4j
-@JsonIgnoreProperties( { "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
+@JsonIgnoreProperties({ "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Subject {
 
 	@Getter
-	private final transient Set<ConqueryPermission> permissions = new HashSet<>();
+	private final Set<ConqueryPermission> permissions = new HashSet<>();
 
 	@Override
 	public Object getPrincipal() {
@@ -84,8 +84,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		if (!(permission instanceof ConqueryPermission)) {
 			throw new AuthorizationException("Supplied permission " + permission + " is not of Type " + ConqueryPermission.class.getName());
 		}
-		ConqueryPermission owned = ((ConqueryPermission) permission).withOwner(this.getId());
-		SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), owned);
+		SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
 	}
 
 	@Override
@@ -95,8 +94,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 				throw new AuthorizationException(
 					"Supplied permission " + permission + " is not of Type " + ConqueryPermission.class.getName());
 			}
-			ConqueryPermission owned = ((ConqueryPermission) permission).withOwner(this.getId());
-			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), owned);
+			SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
 		}
 	}
 
@@ -201,21 +199,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 
 	/**
-	 * For keeping local permissions in sync with stored permissions.Is used by the
-	 * storage.
-	 *
-	 * @param permission
-	 *            The permission to add.
-	 */
-	public synchronized void addPermissionLocal(ConqueryPermission permission) {
-		ConqueryPermission ownedPermission = permission;
-		if (!permission.getOwnerId().equals(this.getId())) {
-			ownedPermission = permission.withOwner(this.getId());
-		}
-		permissions.add(ownedPermission);
-	}
-
-	/**
 	 * Adds a permission to the storage and to the locally stored permissions by
 	 * calling indirectly {@link #addPermissionLocal(ConqueryPermission)}.
 	 *
@@ -230,33 +213,39 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *             appropriate JSON format.
 	 */
 	public synchronized ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
-		ConqueryPermission ownedPermission = permission;
-		if (!permission.getOwnerId().equals(this.getId())) {
-			ownedPermission = permission.withOwner(this.getId());
-		}
 
-		Optional<ConqueryPermission> sameTarget = ofTarget(ownedPermission);
+		Optional<ConqueryPermission> sameTarget = ofTarget(permission);
 
 		if (sameTarget.isPresent()) {
 			// found permission with the same target
 			ConqueryPermission oldPermission = sameTarget.get();
-			if (oldPermission.equals(ownedPermission)) {
+			if (oldPermission.equals(permission)) {
 				// is actually the same permission
-				log.info("User {} has already permission {}.", this, ownedPermission);
-				return ownedPermission;
+				log.info("User {} has already permission {}.", this, permission);
+				return permission;
 			}
 			else {
 				// new permission has different ability
 				List<ConqueryPermission> reducedPermission = ConqueryPermission
-					.reduceByOwnerAndTarget(Arrays.asList(oldPermission, ownedPermission));
+					.reduceByOwnerAndTarget(Arrays.asList(oldPermission, permission));
 				removePermission(storage, oldPermission);
 				// has only one entry as permissions only differ in the ability
-				ownedPermission = reducedPermission.get(0);
+				permission = reducedPermission.get(0);
 			}
 		}
-		addPermissionLocal(ownedPermission);
-		storage.addPermission(ownedPermission);
-		return ownedPermission;
+
+		permissions.add(permission);
+
+		if (this instanceof User) {
+			storage.updateUser((User) this);
+		}
+		else if (this instanceof Mandator) {
+			storage.updateMandator((Mandator) this);
+		}
+		else {
+			throw new IllegalStateException(String.format("The type %s is not handled.", this.getClass()));
+		}
+		return permission;
 	}
 
 	/**
@@ -270,7 +259,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 */
 	public synchronized void removePermission(MasterMetaStorage storage, ConqueryPermission permission) {
 		permissions.remove(permission);
-		storage.removePermission(permission.getId());
 	}
 
 	private Optional<ConqueryPermission> ofTarget(ConqueryPermission other) {

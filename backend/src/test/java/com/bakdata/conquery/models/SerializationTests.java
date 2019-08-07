@@ -23,7 +23,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 
 public class SerializationTests {
@@ -58,7 +57,7 @@ public class SerializationTests {
 	
 	@Test
 	public void datasetPermission() throws IOException, JSONException{
-		DatasetPermission permission = new DatasetPermission(new UserId("user"), Ability.READ.asSet(), new DatasetId("dataset"));
+		DatasetPermission permission = new DatasetPermission(Ability.READ.asSet(), new DatasetId("dataset"));
 		
 		SerializationTestUtil
 			.forType(DatasetPermission.class)
@@ -67,7 +66,7 @@ public class SerializationTests {
 	
 	@Test
 	public void queryPermission() throws IOException, JSONException{
-		QueryPermission permission = new QueryPermission(new UserId("user"), Ability.READ.asSet(), new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()));
+		QueryPermission permission = new QueryPermission(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()));
 
 		SerializationTestUtil
 			.forType(QueryPermission.class)

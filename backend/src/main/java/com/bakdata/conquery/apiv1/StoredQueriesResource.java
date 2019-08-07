@@ -56,7 +56,7 @@ public class StoredQueriesResource {
 		authorize(user, datasetId, Ability.READ);
 
 		return processor.getAllQueries(dsUtil.getDataset(datasetId), req)
-			.filter(status -> user.isPermitted(new QueryPermission(user.getId(), Ability.READ.asSet(), status.getId())))
+			.filter(status -> user.isPermitted(new QueryPermission(Ability.READ.asSet(), status.getId())))
 			.collect(Collectors.toList());
 	}
 

@@ -33,19 +33,19 @@ public class QueryProcessor {
 		ManagedQuery mq = namespace.getQueryManager().createQuery(query, user);
 		
 		// Set abilities for submitted query
-		user.addPermission(storage, new QueryPermission(null, AbilitySets.QUERY_CREATOR, mq.getId()));
+		user.addPermission(storage, new QueryPermission(AbilitySets.QUERY_CREATOR, mq.getId()));
 		
 		//translate the query for all other datasets of user
 		namespacesLoop:
 		for(Namespace ns : namespaces.getNamespaces()) {
-			if(user.isPermitted(new DatasetPermission(user.getId(), Ability.READ.asSet(), ns.getDataset().getId()))
+			if(user.isPermitted(new DatasetPermission(Ability.READ.asSet(), ns.getDataset().getId()))
 				&& !ns.getDataset().equals(dataset)) {
 				
 				try {
 					IQuery translated = QueryTranslator.translate(namespaces, query, ns.getDataset().getId());
 					
 					for (ManagedExecutionId requiredQueryId : query.collectRequiredQueries()) {
-						if(!user.isPermitted(new QueryPermission(user.getId(), Ability.READ.asSet(), requiredQueryId))) {
+						if(!user.isPermitted(new QueryPermission(Ability.READ.asSet(), requiredQueryId))) {
 							continue namespacesLoop;
 						}
 					}
@@ -53,7 +53,7 @@ public class QueryProcessor {
 					ManagedQuery mTranslated = new ManagedQuery(translated, ns, user.getId());
 					mTranslated.setQueryId(mq.getQueryId());
 					namespace.getStorage().getMetaStorage().addExecution(mTranslated);
-					user.addPermission(storage, new QueryPermission(null, AbilitySets.QUERY_CREATOR, mTranslated.getId()));
+					user.addPermission(storage, new QueryPermission(AbilitySets.QUERY_CREATOR, mTranslated.getId()));
 				}
 				catch(Exception e) {
 					log.trace("Could not translate "+query+" to dataset "+ns.getDataset(), e);
