@@ -122,6 +122,7 @@ public class ImportJob extends Job {
 			//if mapping is not required we can also use the old infos here
 			Import outImport = createImport(header, !mappingRequired);
 			Import inImport = createImport(header, true);
+			inImport.setSuffix(inImport.getSuffix()+"_old");
 			namespace.getStorage().updateImport(outImport);
 			namespace.sendToAll(new AddImport(outImport));
 
@@ -209,9 +210,6 @@ public class ImportJob extends Job {
 		imp.setName(header.getName());
 		imp.setTable(table);
 		imp.setNumberOfEntries(header.getRows());
-		if(useOldType) {
-			imp.setClasses(header.getClasses());
-		}
 		imp.setSuffix(header.getSuffix());
 		imp.setColumns(new ImportColumn[header.getColumns().length]);
 		for (int i = 0; i < header.getColumns().length; i++) {
