@@ -122,7 +122,7 @@ reactSelect:
   placeholder: "Choose ..."
   tagPlaceholder: "Tag ..."
   searchPlaceholder: "Search ..."
-  dndPlaceholder: "Choose or drop File ..."
+  dndPlaceholder: "Choose or drop file ..."
   backspaceToRemove: "Press Backspace to remove"
   noResults: "No values found"
   createTag: "Create tag: {label}"
