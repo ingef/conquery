@@ -1,6 +1,6 @@
 // @flow
 import { includes } from "../common/helpers";
-import type { ConceptT, TableT, ConceptIdT } from "../api/types";
+import type { ConceptT, TableT, SelectorT, ConceptIdT } from "../api/types";
 
 import type { TreesT } from "./reducer";
 
@@ -76,7 +76,8 @@ export const getConceptsByIdsWithTablesAndSelects = (
 ): ?{
   concepts: (ConceptT & { id: ConceptIdT })[],
   root: ConceptIdT,
-  tables: TableT[]
+  tables: TableT[],
+  selects?: SelectorT[]
 } => {
   const concepts = conceptIds
     .map(id => ({ concept: getConceptById(id), id }))

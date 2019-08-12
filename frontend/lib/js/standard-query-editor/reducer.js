@@ -712,7 +712,7 @@ const createQueryNodeFromConceptListUploadResult = (
 };
 
 const insertUploadedConceptList = (state, action) => {
-  const { label, rootConcepts, resolvedConcepts } = action.payload;
+  const { label, rootConcepts, resolvedConcepts, andIdx } = action.payload;
 
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -720,17 +720,15 @@ const insertUploadedConceptList = (state, action) => {
     resolvedConcepts
   );
 
-  // TODO: Re-enable soon
-  // if (parameters.andIdx != null)
-  //   return dropOrNode(state, {
-  //     payload: { item: queryElement, andIdx: parameters.andIdx }
-  //   });
+  if (!queryElement) return state;
 
-  return queryElement
+  return andIdx === null
     ? dropAndNode(state, {
         payload: { item: queryElement }
       })
-    : state;
+    : dropOrNode(state, {
+        payload: { andIdx, item: queryElement }
+      });
 };
 
 const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {

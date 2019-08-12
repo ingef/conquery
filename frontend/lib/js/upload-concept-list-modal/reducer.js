@@ -4,7 +4,6 @@ import type { PostConceptResolveResponseT } from "../api/types";
 import { stripFilename } from "../common/helpers/fileHelper";
 
 import {
-  UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
   SELECT_CONCEPT_ROOT_NODE,
   RESOLVE_CONCEPTS_START,
   RESOLVE_CONCEPTS_SUCCESS,
@@ -14,8 +13,9 @@ import {
 } from "./actionTypes";
 
 export type StateType = {
+  andIdx: ?number,
   isModalOpen: boolean,
-  label: string,
+  filename: ?string,
   conceptCodesFromFile: string[],
   selectedConceptRootNode: string,
   loading: boolean,
@@ -24,8 +24,9 @@ export type StateType = {
 };
 
 const initialState: StateType = {
+  andIdx: null,
   isModalOpen: false,
-  label: "",
+  filename: null,
   conceptCodesFromFile: [],
   selectedConceptRootNode: "",
   loading: false,
@@ -36,20 +37,16 @@ const initialState: StateType = {
 const uploadConcepts = (state: StateType = initialState, action: Object) => {
   switch (action.type) {
     case UPLOAD_CONCEPT_LIST_MODAL_OPEN:
-      const { filename, rows } = action.payload;
+      const { andIdx, filename, rows } = action.payload;
 
       return {
         ...state,
+        andIdx,
         isModalOpen: true,
-        label: stripFilename(filename),
+        filename: stripFilename(filename),
         conceptCodesFromFile: rows,
         selectedConceptRootNode: null,
         resolved: null
-      };
-    case UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL:
-      return {
-        ...state,
-        label: action.label
       };
     case SELECT_CONCEPT_ROOT_NODE:
       return {

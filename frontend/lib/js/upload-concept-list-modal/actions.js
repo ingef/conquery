@@ -8,7 +8,6 @@ import { isEmpty } from "../common/helpers";
 import type { ConceptIdT } from "../api/types";
 
 import {
-  UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
   SELECT_CONCEPT_ROOT_NODE,
   RESOLVE_CONCEPTS_START,
   RESOLVE_CONCEPTS_SUCCESS,
@@ -50,13 +49,11 @@ export const selectConceptRootNodeAndResolveCodes = (
     );
 };
 
-export const uploadConceptListModalUpdateLabel = (label: string) => ({
-  type: UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL,
-  label
-});
-
-export const uploadConceptListModalOpen = (rows, filename) => {
-  return { type: UPLOAD_CONCEPT_LIST_MODAL_OPEN, payload: { rows, filename } };
+export const uploadConceptListModalOpen = (andIdx, rows, filename) => {
+  return {
+    type: UPLOAD_CONCEPT_LIST_MODAL_OPEN,
+    payload: { andIdx, rows, filename }
+  };
 };
 
 export const uploadConceptListModalClose = () => ({
@@ -64,13 +61,14 @@ export const uploadConceptListModalClose = () => ({
 });
 
 export const uploadConceptListModalAccept = (
+  andIdx,
   label,
   rootConcepts,
   resolvedConcepts
 ) => {
   return {
     type: UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
-    payload: { label, rootConcepts, resolvedConcepts }
+    payload: { andIdx, label, rootConcepts, resolvedConcepts }
   };
 };
 
