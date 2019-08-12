@@ -70,8 +70,4 @@ public class ClassGenerator {
 			}
 		}
 	}
-
-	public Map<String, byte[]> getClasses() {
-		return classLoader.getClasses();
-	}
 }

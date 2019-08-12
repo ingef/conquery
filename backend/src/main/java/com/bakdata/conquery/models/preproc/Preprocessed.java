@@ -146,7 +146,6 @@ public class Preprocessed {
 				.columns(columns)
 				.groups(writtenGroups)
 				.validityHash(hash)
-				.classes(imp.getClasses())
 				.suffix(imp.getSuffix())
 				.build();
 		

@@ -19,6 +19,5 @@ public class PPHeader {
 	private CDateRange eventRange;
 	private PPColumn primaryColumn;
 	private PPColumn[] columns;
-	private Map<String, byte[]> classes;
 	private String suffix;
 }

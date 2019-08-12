@@ -139,6 +139,9 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	@Override
 	public void updateDataset(Dataset dataset) throws JSONException {
 		this.dataset.update(dataset);
+		for(Import imp : getAllImports()) {
+			imp.loadExternalInfos(this);
+		}
 	}
 
 	@Override
