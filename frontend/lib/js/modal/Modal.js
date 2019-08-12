@@ -7,6 +7,7 @@ import onClickOutside from "react-onclickoutside";
 
 import useEscPress from "../hooks/useEscPress";
 
+import FaIcon from "../icon/FaIcon";
 import TransparentButton from "../button/TransparentButton";
 import WithTooltip from "../tooltip/WithTooltip";
 
@@ -37,16 +38,16 @@ const Content = styled("div")`
   position: relative;
 `;
 
-const Headline = styled("h3")`
-  margin-top: 20px;
-  font-size: ${({ theme }) => theme.font.md};
-  color: ${({ theme }) => theme.col.blueGrayDark};
+const TopRow = styled("div")`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
 `;
 
-const SxWithTooltip = styled(WithTooltip)`
-  position: absolute;
-  top: 12px;
-  right: 15px;
+const Headline = styled("h3")`
+  margin: 0 10px 15px 0;
+  font-size: ${({ theme }) => theme.font.md};
+  color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
 // https://github.com/Pomax/react-onclickoutside
@@ -71,7 +72,8 @@ type PropsT = {
   className?: string,
   headline?: React.Node,
   doneButton?: boolean,
-  tabIndex: number,
+  closeIcon?: boolean,
+  tabIndex?: number,
   onClose: () => void
 };
 
@@ -85,6 +87,7 @@ const Modal = ({
   headline,
   tabIndex,
   doneButton,
+  closeIcon,
   onClose
 }: PropsT) => {
   useEscPress(onClose);
@@ -92,19 +95,31 @@ const Modal = ({
   return (
     <Root className={className}>
       <ModalContent onClose={onClose}>
-        {doneButton && (
-          <SxWithTooltip text={T.translate("common.closeEsc")}>
-            <TransparentButton
-              small
-              tabIndex={tabIndex || 0}
-              icon="times"
-              onClick={onClose}
-            >
-              {T.translate("common.done")}
-            </TransparentButton>
-          </SxWithTooltip>
-        )}
-        {headline && <Headline>{headline}</Headline>}
+        <TopRow>
+          <Headline>{headline}</Headline>
+          {closeIcon && (
+            <WithTooltip text={T.translate("common.closeEsc")}>
+              <TransparentButton
+                small
+                tabIndex={tabIndex || 0}
+                onClick={onClose}
+              >
+                <FaIcon icon="times" />
+              </TransparentButton>
+            </WithTooltip>
+          )}
+          {doneButton && (
+            <WithTooltip text={T.translate("common.closeEsc")}>
+              <TransparentButton
+                small
+                tabIndex={tabIndex || 0}
+                onClick={onClose}
+              >
+                {T.translate("common.done")}
+              </TransparentButton>
+            </WithTooltip>
+          )}
+        </TopRow>
         {children}
       </ModalContent>
     </Root>
