@@ -32,6 +32,3 @@ export const SET_RESOLVED_FILTER_VALUES =
   "query-editor/SET_RESOLVED_FILTER_VALUES";
 export const TOGGLE_INCLUDE_SUBNODES = "query-editor/TOGGLE_INCLUDE_SUBNODES";
 export const SET_DATE_COLUMN = "query-editor/SET_DATE_COLUMN";
-
-export const QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT =
-  "query-upload-concept-list-modal/accept";

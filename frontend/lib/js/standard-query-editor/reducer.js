@@ -27,6 +27,8 @@ import {
   RENAME_PREVIOUS_QUERY_SUCCESS
 } from "../previous-queries/list/actionTypes";
 
+import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
+
 import {
   INTEGER_RANGE,
   REAL_RANGE,
@@ -61,8 +63,7 @@ import {
   LOAD_FILTER_SUGGESTIONS_ERROR,
   SET_RESOLVED_FILTER_VALUES,
   TOGGLE_INCLUDE_SUBNODES,
-  SET_DATE_COLUMN,
-  QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT
+  SET_DATE_COLUMN
 } from "./actionTypes";
 
 import type {

@@ -56,7 +56,10 @@ export default ({
       <FileInput
         ref={fileInputRef}
         type="file"
-        onChange={e => onSelectFile(e.target.files[0])}
+        onChange={e => {
+          onSelectFile(e.target.files[0]);
+          fileInputRef.current.value = "";
+        }}
       />
       {children}
     </SxDropzone>
