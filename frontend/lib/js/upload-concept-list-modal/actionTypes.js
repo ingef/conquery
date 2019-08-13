@@ -10,9 +10,5 @@ export const RESOLVE_CONCEPTS_SUCCESS =
 export const RESOLVE_CONCEPTS_ERROR =
   "upload-concept-list-modal/RESOLVE_CONCEPTS_ERROR";
 
-export const UPLOAD_CONCEPT_LIST_MODAL_OPEN =
-  "upload-concept-list-modal/UPLOAD_CONCEPT_LIST_MODAL_OPEN";
-export const UPLOAD_CONCEPT_LIST_MODAL_CLOSE =
-  "upload-concept-list-modal/UPLOAD_CONCEPT_LIST_MODAL_CLOSE";
-export const UPLOAD_CONCEPT_LIST_MODAL_ACCEPT =
-  "upload-concept-list-modal/UPLOAD_CONCEPT_LIST_MODAL_ACCEPT";
+export const INIT = "upload-concept-list-modal/init";
+export const RESET = "upload-concept-list-modal/reset";

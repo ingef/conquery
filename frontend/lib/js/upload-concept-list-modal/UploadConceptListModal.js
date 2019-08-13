@@ -62,7 +62,6 @@ const SxPrimaryButton = styled(PrimaryButton)`
 
 type PropsType = {
   loading: boolean,
-  isModalOpen: boolean,
   filename: string,
   availableConceptRootNodes: Object[],
   selectedConceptRootNode: Object,
@@ -72,10 +71,12 @@ type PropsType = {
   resolvedItemsCount: number,
   unresolvedItemsCount: number,
   error: Object,
+  onSelectConceptRootNode: Function,
 
-  onClose: Function,
+  // This really comes from outside container, and depends on the context
+  // in which this modal is opened. (query editor / statistic form field)
   onAccept: Function,
-  onSelectConceptRootNode: Function
+  onClose: Function
 };
 
 const UploadConceptListModal = (props: PropsType) => {
@@ -84,8 +85,6 @@ const UploadConceptListModal = (props: PropsType) => {
   React.useEffect(() => {
     setLabel(props.filename);
   }, [props.filename]);
-
-  if (!props.isModalOpen) return null;
 
   const {
     availableConceptRootNodes,
@@ -97,14 +96,20 @@ const UploadConceptListModal = (props: PropsType) => {
     resolvedItemsCount,
     unresolvedItemsCount,
     error,
+    rootConcepts,
+    onSelectConceptRootNode,
 
     onAccept,
-    onClose,
-    onSelectConceptRootNode
+    onClose
   } = props;
 
   const hasUnresolvedItems = unresolvedItemsCount > 0;
   const hasResolvedItems = resolvedItemsCount > 0;
+
+  const onClick = () => {
+    onAccept(label, rootConcepts, resolved.resolvedConcepts);
+    onClose();
+  };
 
   return (
     <Modal
@@ -160,7 +165,7 @@ const UploadConceptListModal = (props: PropsType) => {
                           onChange: setLabel
                         }}
                       />
-                      <SxPrimaryButton onClick={() => onAccept(label)}>
+                      <SxPrimaryButton onClick={onClick}>
                         {T.translate("uploadConceptListModal.insertNode")}
                       </SxPrimaryButton>
                     </MsgRow>
@@ -224,8 +229,6 @@ const selectAvailableConceptRootNodes = state => {
 };
 
 const mapStateToProps = (state: StateType) => ({
-  andIdx: state.uploadConceptListModal.andIdx,
-  isModalOpen: state.uploadConceptListModal.isModalOpen,
   filename: state.uploadConceptListModal.filename,
   conceptCodesFromFile: state.uploadConceptListModal.conceptCodesFromFile,
   availableConceptRootNodes: selectAvailableConceptRootNodes(state),
@@ -239,28 +242,11 @@ const mapStateToProps = (state: StateType) => ({
 });
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onClose: () => dispatch(uploadConceptListModalClose()),
-  onAccept: (...params) =>
-    dispatch(acceptAndCloseUploadConceptListModal(...params)),
   onSelectConceptRootNode: (...params) =>
     dispatch(selectConceptRootNodeAndResolveCodes(...params))
 });
 
-const mergeProps = (stateProps, dispatchProps, ownProps) => ({
-  ...stateProps,
-  ...dispatchProps,
-  ...ownProps,
-  onAccept: label =>
-    dispatchProps.onAccept(
-      stateProps.andIdx,
-      label,
-      stateProps.rootConcepts,
-      stateProps.resolved.resolvedConcepts
-    )
-});
-
 export default connect(
   mapStateToProps,
-  mapDispatchToProps,
-  mergeProps
+  mapDispatchToProps
 )(UploadConceptListModal);
