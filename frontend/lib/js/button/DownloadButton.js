@@ -14,14 +14,17 @@ type PropsType = {
 };
 
 function getIcon(ending: string) {
-  switch (ending) {
-    case "csv":
-      return "file-csv";
-    case "zip":
-      return "file-archive";
-    default:
-      return "file-alt";
-  }
+  return "download";
+
+  // TODO: RE-Enable this with better icons (maybe "regular style" when we can afford it)
+  // switch (ending) {
+  //   case "csv":
+  //     return "file-csv";
+  //   case "zip":
+  //     return "file-archive";
+  //   default:
+  //     return "file-alt";
+  // }
 }
 
 const DownloadButton = ({

@@ -258,8 +258,8 @@ export const dropFilterValuesFile = (
   return dispatch(setResolvedFilterValues(result, tableIdx, filterIdx));
 };
 
-export const dropConceptListFile = file => async dispatch => {
+export const dropConceptListFile = (file, andIdx = null) => async dispatch => {
   const rows = await getUniqueFileRows(file);
 
-  return dispatch(uploadConceptListModalOpen(rows, file.name));
+  return dispatch(uploadConceptListModalOpen(andIdx, rows, file.name));
 };

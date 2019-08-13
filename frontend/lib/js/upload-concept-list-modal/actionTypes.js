@@ -1,8 +1,5 @@
 // @flow
 
-export const UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL =
-  "upload-concept-list-modal/UPLOAD_CONCEPT_LIST_MODAL_UPDATE_LABEL";
-
 export const SELECT_CONCEPT_ROOT_NODE =
   "upload-concept-list-modal/SELECT_CONCEPT_ROOT_NODE";
 
