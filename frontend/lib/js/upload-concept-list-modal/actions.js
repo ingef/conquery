@@ -4,7 +4,8 @@ import type { Dispatch } from "redux";
 
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
-import { isEmpty } from "../common/helpers";
+import { isEmpty } from "../common/helpers/commonHelper";
+import { getUniqueFileRows } from "../common/helpers/fileHelper";
 import type { ConceptIdT } from "../api/types";
 
 import {
@@ -12,9 +13,8 @@ import {
   RESOLVE_CONCEPTS_START,
   RESOLVE_CONCEPTS_SUCCESS,
   RESOLVE_CONCEPTS_ERROR,
-  UPLOAD_CONCEPT_LIST_MODAL_OPEN,
-  UPLOAD_CONCEPT_LIST_MODAL_CLOSE,
-  UPLOAD_CONCEPT_LIST_MODAL_ACCEPT
+  INIT,
+  RESET
 } from "./actionTypes";
 
 export const resolveConceptsStart = () => ({ type: RESOLVE_CONCEPTS_START });
@@ -49,34 +49,15 @@ export const selectConceptRootNodeAndResolveCodes = (
     );
 };
 
-export const uploadConceptListModalOpen = (andIdx, rows, filename) => {
-  return {
-    type: UPLOAD_CONCEPT_LIST_MODAL_OPEN,
-    payload: { andIdx, rows, filename }
-  };
+export const initUploadConceptListModal = file => async dispatch => {
+  const rows = await getUniqueFileRows(file);
+
+  dispatch({
+    type: INIT,
+    payload: { rows, filename: file.name }
+  });
 };
 
-export const uploadConceptListModalClose = () => ({
-  type: UPLOAD_CONCEPT_LIST_MODAL_CLOSE
+export const resetUploadConceptListModal = () => ({
+  type: RESET
 });
-
-export const uploadConceptListModalAccept = (
-  andIdx,
-  label,
-  rootConcepts,
-  resolvedConcepts
-) => {
-  return {
-    type: UPLOAD_CONCEPT_LIST_MODAL_ACCEPT,
-    payload: { andIdx, label, rootConcepts, resolvedConcepts }
-  };
-};
-
-export const acceptAndCloseUploadConceptListModal = (...params) => {
-  return dispatch => {
-    dispatch([
-      uploadConceptListModalAccept(...params),
-      uploadConceptListModalClose()
-    ]);
-  };
-};

@@ -25,6 +25,14 @@ type PropsT = {
   onSelectFile: File => void
 };
 
+/*
+  Augments a dropzone with file drop support
+
+  - opens file dialog on dropzone click
+  - adds NativeTypes.FILE
+
+  => The "onDrop"-prop needs to handle the file drop itself, though!
+*/
 export default ({
   children,
   onSelectFile,
@@ -48,7 +56,10 @@ export default ({
       <FileInput
         ref={fileInputRef}
         type="file"
-        onChange={e => onSelectFile(e.target.files[0])}
+        onChange={e => {
+          onSelectFile(e.target.files[0]);
+          fileInputRef.current.value = "";
+        }}
       />
       {children}
     </SxDropzone>

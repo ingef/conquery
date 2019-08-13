@@ -27,7 +27,7 @@ import {
   RENAME_PREVIOUS_QUERY_SUCCESS
 } from "../previous-queries/list/actionTypes";
 
-import { UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../upload-concept-list-modal/actionTypes";
+import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
 
 import {
   INTEGER_RANGE,
@@ -936,7 +936,7 @@ const query = (
       return loadFilterSuggestionsSuccess(state, action);
     case LOAD_FILTER_SUGGESTIONS_ERROR:
       return loadFilterSuggestionsError(state, action);
-    case UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
+    case QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
     case SET_RESOLVED_FILTER_VALUES:
       return setResolvedFilterValues(state, action);

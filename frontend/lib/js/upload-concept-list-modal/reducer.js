@@ -8,13 +8,11 @@ import {
   RESOLVE_CONCEPTS_START,
   RESOLVE_CONCEPTS_SUCCESS,
   RESOLVE_CONCEPTS_ERROR,
-  UPLOAD_CONCEPT_LIST_MODAL_OPEN,
-  UPLOAD_CONCEPT_LIST_MODAL_CLOSE
+  INIT,
+  RESET
 } from "./actionTypes";
 
 export type StateType = {
-  andIdx: ?number,
-  isModalOpen: boolean,
   filename: ?string,
   conceptCodesFromFile: string[],
   selectedConceptRootNode: string,
@@ -24,8 +22,6 @@ export type StateType = {
 };
 
 const initialState: StateType = {
-  andIdx: null,
-  isModalOpen: false,
   filename: null,
   conceptCodesFromFile: [],
   selectedConceptRootNode: "",
@@ -36,13 +32,11 @@ const initialState: StateType = {
 
 const uploadConcepts = (state: StateType = initialState, action: Object) => {
   switch (action.type) {
-    case UPLOAD_CONCEPT_LIST_MODAL_OPEN:
-      const { andIdx, filename, rows } = action.payload;
+    case INIT:
+      const { filename, rows } = action.payload;
 
       return {
         ...state,
-        andIdx,
-        isModalOpen: true,
         filename: stripFilename(filename),
         conceptCodesFromFile: rows,
         selectedConceptRootNode: null,
@@ -74,7 +68,7 @@ const uploadConcepts = (state: StateType = initialState, action: Object) => {
         error: null,
         resolved: action.payload.data
       };
-    case UPLOAD_CONCEPT_LIST_MODAL_CLOSE:
+    case RESET:
       return initialState;
     default:
       return state;

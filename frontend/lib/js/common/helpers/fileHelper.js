@@ -32,3 +32,10 @@ export async function getFileRows(file: File) {
 
   return rows;
 }
+
+export async function getUniqueFileRows(file: File) {
+  const rows = await getFileRows(file);
+
+  // Take care of duplicate rows
+  return [...new Set(rows)];
+}
