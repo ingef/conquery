@@ -12,16 +12,22 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * This condition requires each value to be exactly as given in the list.
+ * This condition requires the value of another column to be equal to a given value.
  */
-@CPSType(id="EQUAL", base=CTCondition.class)
-public class EqualCondition implements CTCondition {
+@CPSType(id="COLUMN_EQUAL", base=CTCondition.class)
+public class ColumnEqualCondition implements CTCondition {
 
 	@Setter @Getter @NotEmpty
 	private HashSet<String> values;
+	@NotEmpty
+	private String column;
 
 	@Override
 	public boolean matches(String value, CalculatedValue<Map<String, Object>> rowMap) {
-		return values.contains(value);
+		Object checkedValue = rowMap.getValue().get(column);
+		if(checkedValue == null) {
+			return false;
+		}
+		return values.contains(checkedValue.toString());
 	}
 }
