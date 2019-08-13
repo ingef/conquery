@@ -5,11 +5,10 @@ import { type Dispatch } from "redux-thunk";
 import api from "../api";
 import { flatmap } from "../common/helpers/commonHelper";
 import type { DateRangeT } from "../api/types";
-import { getFileRows } from "../common/helpers/fileHelper";
+import { getUniqueFileRows } from "../common/helpers/fileHelper";
 
 import { defaultSuccess, defaultError } from "../common/actions";
 import { resolveFilterValues } from "../upload-filter-list-modal/actions";
-import { uploadConceptListModalOpen } from "../upload-concept-list-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
 
 import type { DraggedNodeType, DraggedQueryType } from "./types";
@@ -226,13 +225,6 @@ export const loadFilterSuggestions = (
 const setResolvedFilterValues = (res, tableIdx, filterIdx) =>
   defaultSuccess(SET_RESOLVED_FILTER_VALUES, res, { tableIdx, filterIdx });
 
-async function getUniqueFileRows(file) {
-  const rows = await getFileRows(file);
-
-  // Take care of duplicate rows
-  return [...new Set(rows)];
-}
-
 export const dropFilterValuesFile = (
   datasetId,
   treeId,
@@ -256,10 +248,4 @@ export const dropFilterValuesFile = (
   );
 
   return dispatch(setResolvedFilterValues(result, tableIdx, filterIdx));
-};
-
-export const dropConceptListFile = file => async dispatch => {
-  const rows = await getUniqueFileRows(file);
-
-  return dispatch(uploadConceptListModalOpen(rows, file.name));
 };

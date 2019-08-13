@@ -85,7 +85,7 @@ queryNodeEditor:
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
-  headlineStart: "Elemente:"
+  headlineStart: "Konzepte:"
 
 deletePreviousQueryModal:
   areYouSure: "Diese Anfrage wirklich löschen?"
@@ -251,8 +251,8 @@ uploadConceptListModal:
     1: "1 Wert aufgelöst."
     _: "{context} Werte aufgelöst."
   unknownCodes:
-    1: "1 Wert <strong>nicht</strong> aufgelöst"
-    _: "{context} Werte <strong>nicht</strong> aufgelöst"
+    1: "1 Wert nicht aufgelöst"
+    _: "{context} Werte nicht aufgelöst"
   error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
 
 uploadFilterListModal:

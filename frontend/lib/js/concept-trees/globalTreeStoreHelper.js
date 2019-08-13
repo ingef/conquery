@@ -1,8 +1,11 @@
 // @flow
 import { includes } from "../common/helpers";
-import type { ConceptT, TableT, ConceptIdT } from "../api/types";
+import type { ConceptT, TableT, SelectorT, ConceptIdT } from "../api/types";
 
 import type { TreesT } from "./reducer";
+
+import { tablesWithDefaults } from "../model/table";
+import { selectsWithDefaults } from "../model/select";
 
 // Globally store the huge (1-5 MB) trees for read only
 // - keeps the redux store free from huge data
@@ -76,7 +79,8 @@ export const getConceptsByIdsWithTablesAndSelects = (
 ): ?{
   concepts: (ConceptT & { id: ConceptIdT })[],
   root: ConceptIdT,
-  tables: TableT[]
+  tables: TableT[],
+  selects?: SelectorT[]
 } => {
   const concepts = conceptIds
     .map(id => ({ concept: getConceptById(id), id }))
@@ -95,16 +99,21 @@ export const getConceptsByIdsWithTablesAndSelects = (
 
   // There should only be one exact root node that has table information
   // If it's more or less than one, something went wrong
-  if (!rootConceptId) return null;
+  if (!rootConceptId) {
+    console.error("No root concept ID found");
+    return null;
+  }
 
   const rootConcept = rootConcepts[rootConceptId];
 
-  const selects = rootConcept.selects ? { selects: rootConcept.selects } : {};
+  const selects = rootConcept.selects
+    ? { selects: selectsWithDefaults(rootConcept.selects) }
+    : {};
 
   return {
     concepts,
     root: rootConceptId,
-    tables: rootConcept.tables,
+    tables: tablesWithDefaults(rootConcept.tables),
     ...selects
   };
 };

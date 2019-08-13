@@ -27,6 +27,7 @@ type PropsT = {
 
 const Row = styled("div")`
   display: flex;
+  align-items: flex-end;
   justify-content: space-between;
   margin-bottom: 15px;
 `;
@@ -73,6 +74,7 @@ const SxInputSelect = styled(InputSelect)`
   width: 150px;
   text-align: left;
   display: inline-block;
+  margin-left: 15px;
 `;
 
 export default ({ file, loading, onUpload, onReset }: PropsT) => {

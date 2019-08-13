@@ -85,7 +85,7 @@ queryNodeEditor:
 
 queryGroupModal:
   explanation: "Set time frame"
-  headlineStart: "Elements:"
+  headlineStart: "Concepts:"
 
 deletePreviousQueryModal:
   areYouSure: "Should this query be deleted?"
@@ -122,7 +122,7 @@ reactSelect:
   placeholder: "Choose ..."
   tagPlaceholder: "Tag ..."
   searchPlaceholder: "Search ..."
-  dndPlaceholder: "Choose or drop File ..."
+  dndPlaceholder: "Choose or drop file ..."
   backspaceToRemove: "Press Backspace to remove"
   noResults: "No values found"
   createTag: "Create tag: {label}"
@@ -243,16 +243,16 @@ csvColumnPicker:
 
 uploadConceptListModal:
   headline: "Upload concepts"
-  label: "Name of the Concept"
-  selectConceptRootNode: "Choose a Concept Tree root"
+  label: "Name of the concept"
+  selectConceptRootNode: "Choose a concept tree root"
   insertNode: "Insert now"
   result: "Result"
   resolvedCodes:
     1: "1 value resolved."
     _: "{context} values resolved."
   unknownCodes:
-    1: "1 value <strong>not</strong> resolved"
-    _: "{context} values <strong>not</strong> resolved"
+    1: "1 value not resolved"
+    _: "{context} values not resolved"
   error: "An error occurred when resolving the values."
 
 uploadFilterListModal:

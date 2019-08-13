@@ -5,6 +5,7 @@ const Label = styled("span")`
   display: ${({ inline }) => (inline ? "inline-block" : "block")};
   margin: ${({ inline }) => (inline ? "0" : "2px 8px")};
   color: ${({ theme, disabled }) => (disabled ? theme.col.gray : "initial")};
+  width: ${({ fullWidth }) => (fullWidth ? "100%" : "inherit")};
 `;
 
 export default Label;

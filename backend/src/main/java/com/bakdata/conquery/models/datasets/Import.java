@@ -165,4 +165,11 @@ public class Import extends NamedImpl<ImportId> {
 		return imp;
 	}
 	
+	public long estimateMemoryConsumption() {
+		long mem = 0;
+		for(ImportColumn col:columns) {
+			mem+=col.getType().estimateMemoryConsumption();
+		}
+		return mem;
+	}
 }

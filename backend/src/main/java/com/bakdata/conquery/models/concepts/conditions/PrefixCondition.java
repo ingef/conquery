@@ -18,8 +18,6 @@ import lombok.ToString;
 @ToString
 public class PrefixCondition implements CTCondition {
 
-	private static final long serialVersionUID = 1L;
-	
 	@Setter @Getter @NotEmpty
 	private String[] prefixes;
 

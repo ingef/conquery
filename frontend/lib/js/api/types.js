@@ -258,7 +258,7 @@ export type GetStoredQueriesResponseT = GetStoredQueryResponseT[];
 
 export type PostConceptResolveResponseT = {
   resolvedConcepts?: string[],
-  unknownConcepts?: string[]
+  unknownCodes?: string[] // TODO: Use "unknownConcepts"
 };
 
 export type PostFilterResolveResponseT = {
