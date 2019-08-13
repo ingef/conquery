@@ -10,4 +10,6 @@ public class TableStatistics {
 		
 	private final Table table;
 	private final long numberOfEntries;
+	private final long dictionariesSize;
+	private final long size;
 }

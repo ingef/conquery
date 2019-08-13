@@ -1,9 +1,20 @@
 <#import "templates/template.html.ftl" as layout>
 <@layout.layout>
-	<@layout.kid k="Name" v=c.table.id/>
+	<@layout.kid k="ID" v=c.table.id/>
 	<@layout.kv k="Label" v=c.table.label/>
-	<@layout.kv k="Tags" v=c.table.tags?join(", ")/>
-	<@layout.kv k="Entries" v=c.numberOfEntries/>
+	<@layout.kv k="Entries" v=c.numberOfEntries?string.number/>
+	<@layout.kv k="Dictionaries" v=layout.si(c.dictionariesSize)+"B"/>
+	<@layout.kv k="Size" v=layout.si(c.size)+"B"/>
+	<@layout.kc k="Tags">
+		<ul>
+		<#list c.table.tags as tag>
+			<li>
+				<a href="/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${c.table.id}.${tag}">${tag}</a> 
+				<a href="" onclick="event.preventDefault(); rest.delete('/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${c.table.id}.${tag}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+			</li>
+		</#list>
+		</ul>
+	</@layout.kc>
 	<@layout.kc k="Columns">
 		<table class="headed-table">
 			<tr>

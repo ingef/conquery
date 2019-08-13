@@ -14,6 +14,17 @@
 		.headed-table tr th,
 		.headed-table tr td {
 			padding-right:15px;
+			vertical-align:top;
+		}
+		
+		ul {
+			padding-left:0;
+			list-style:"\2023" inside;
+		}
+		
+		h3 {
+			padding-bottom:10px;
+			padding-top:20px;
 		}
 	</style>
 
@@ -23,6 +34,7 @@
   	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/js/bootstrap.min.js" crossorigin="anonymous"></script>
+	<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
 	
 	<nav class="navbar navbar-expand-lg navbar-light bg-light" style="margin-bottom:30px">
 	  <a class="navbar-brand" href="/admin">Conquery Admin</a>
@@ -70,6 +82,14 @@
 	</div>
 	
 	<script type="application/javascript">
+		const rest = axios.create({
+			baseURL: '/admin/',
+			headers: {
+				'Accept': 'application/json',
+				'Content-Type': 'application/json'
+			}
+		});
+	
 		function postFile(event, url) {
 			event.preventDefault();
 			
@@ -125,3 +145,11 @@
 		<div class="col-10"><#nested/></div>
 	</div>
 </#macro>
+<#function si num>
+  <#assign order     = num?round?length />
+  <#assign thousands = ((order - 1) / 3)?floor />
+  <#if (thousands < 0)><#assign thousands = 0 /></#if>
+  <#assign siMap = [ {"factor": 1, "unit": ""}, {"factor": 1000, "unit": "K"}, {"factor": 1000000, "unit": "M"}, {"factor": 1000000000, "unit":"G"}, {"factor": 1000000000000, "unit": "T"} ]/>
+  <#assign siStr = (num / (siMap[thousands].factor))?string("0.# ") + siMap[thousands].unit />
+  <#return siStr />
+</#function>
