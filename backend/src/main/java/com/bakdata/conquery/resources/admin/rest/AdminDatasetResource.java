@@ -28,6 +28,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -35,6 +36,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.bakdata.conquery.resources.api.FilterResource.StringContainer;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -53,6 +55,14 @@ public class AdminDatasetResource extends HDatasets {
 		processor.setIdMapping(data, namespace);
 	}
 
+	@POST
+	@Path("label")
+	public void setlabel(String label) throws IOException, JSONException {
+		Dataset ds = namespace.getDataset();
+		ds.setLabel(label);
+		namespace.getStorage().updateDataset(ds);
+	}
+	
 	@POST
 	@Path("tables")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)

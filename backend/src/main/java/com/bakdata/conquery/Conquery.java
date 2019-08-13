@@ -1,7 +1,9 @@
 package com.bakdata.conquery;
 
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
 import java.util.Locale;
+import java.util.Map;
 
 import javax.tools.ToolProvider;
 
@@ -12,18 +14,21 @@ import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.UrlRewriteBundle;
 
 import ch.qos.logback.classic.Level;
 import io.dropwizard.Application;
+import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
 import io.dropwizard.configuration.JsonConfigurationFactory;
 import io.dropwizard.servlets.assets.AssetServlet;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import io.dropwizard.views.ViewBundle;
+import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,9 +74,6 @@ public class Conquery extends Application<ConqueryConfig> {
 		});
 		//register frontend
 		registerFrontend(bootstrap);
-
-		//freemarker support
-		bootstrap.addBundle(new ViewBundle<>());
 	}
 
 	protected void registerFrontend(Bootstrap<ConqueryConfig> bootstrap) {

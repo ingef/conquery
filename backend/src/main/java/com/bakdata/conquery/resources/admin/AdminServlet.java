@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin;
 
+import java.util.Collections;
 import java.util.ServiceLoader;
 
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
@@ -7,6 +8,7 @@ import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 import com.bakdata.conquery.commands.MasterCommand;
+import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
@@ -26,6 +28,7 @@ import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
 import io.dropwizard.views.ViewMessageBodyWriter;
 import io.dropwizard.views.ViewRenderer;
+import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.Getter;
 
 @Getter
@@ -45,6 +48,15 @@ public class AdminServlet {
 		masterCommand.getEnvironment().admin().addServlet("admin", servletContainerHolder.getContainer()).addMapping("/admin/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(masterCommand.getEnvironment().getObjectMapper()));
+		//freemarker support
+		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer();
+		freemarker.configure(Freemarker.asMap());
+		jerseyConfig.register(
+			new ViewMessageBodyWriter(
+				masterCommand.getEnvironment().metrics(),
+				Collections.singleton(freemarker)
+			)
+		);
 
 		adminProcessor = new AdminProcessor(
 			masterCommand.getConfig(),
