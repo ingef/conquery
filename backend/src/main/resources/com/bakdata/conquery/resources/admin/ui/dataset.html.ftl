@@ -2,8 +2,8 @@
 <@layout.layout>
 	<h3>Dataset ${c.label}</h3>
 	<div class="row">
-		<div class="col">Name / Id</div>
-		<div class="col">${c.id}</div>
+		<div class="col">ID</div>
+		<div class="col"><code>${c.id}</code></div>
 		<div class="col-7"></div>
 	<div class="w-100"></div>
 		<div class="col">Label</div>

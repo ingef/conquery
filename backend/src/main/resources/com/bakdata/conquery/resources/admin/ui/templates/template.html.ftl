@@ -10,6 +10,12 @@
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0/css/bootstrap.min.css" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/solid.css" integrity="sha384-v2Tw72dyUXeU3y4aM2Y0tBJQkGfplr39mxZqlTBDUZAb9BGoC40+rdFCG0m10lXk" crossorigin="anonymous">
 	<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.0.8/css/fontawesome.css" integrity="sha384-q3jl8XQu1OpdLgGFvNRnPdj5VIlCvgsDQTQB6owSOHWlAurxul7f+JpUOVdAiJ5P" crossorigin="anonymous">
+	<style>
+		.headed-table tr th,
+		.headed-table tr td {
+			padding-right:15px;
+		}
+	</style>
 
 	<title>Conquery Admin UI</title>
   </head>
@@ -106,6 +112,11 @@
 <#macro kv k="" v="">
 	<#if v?has_content>
 		<@kc k=k>${v}</@kc>
+	</#if>
+</#macro>
+<#macro kid k="" v="">
+	<#if v?has_content>
+		<@kc k=k><code>${v}</code></@kc>
 	</#if>
 </#macro>
 <#macro kc k="">
