@@ -37,7 +37,7 @@ const Section = styled("div")`
 const Msg = styled("p")`
   margin: 0;
 `;
-const MsgRow = styled(Msg)`
+const MsgRow = styled("div")`
   display: flex;
   align-items: flex-end;
 `;

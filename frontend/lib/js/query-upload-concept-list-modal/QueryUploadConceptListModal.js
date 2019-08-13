@@ -21,7 +21,7 @@ export default connect(
   if (!context.isOpen) return null;
 
   const onAccept = (label, rootConcepts, resolved) =>
-    accept(context, label, rootConcepts, resolved);
+    accept(context.andIdx, label, rootConcepts, resolved);
 
   return <UploadConceptListModal {...props} onAccept={onAccept} />;
 });

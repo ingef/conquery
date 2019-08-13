@@ -6,7 +6,7 @@ import {
 } from "../upload-concept-list-modal/actions";
 import { MODAL_OPEN, MODAL_CLOSE, MODAL_ACCEPT } from "./actionTypes";
 
-const openModal = andIdx => ({
+const openModal = (andIdx = null) => ({
   type: MODAL_OPEN,
   payload: { andIdx }
 });
