@@ -8,6 +8,7 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.concept.ResultInfo;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -26,4 +27,6 @@ public interface IQuery {
 	}
 
 	List<ResultInfo> collectResultInfos(PrintSettings config);
+	
+	void visit(QueryVisitor visitor);
 }

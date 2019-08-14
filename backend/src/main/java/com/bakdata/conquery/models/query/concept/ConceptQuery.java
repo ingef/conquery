@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -76,5 +77,10 @@ public class ConceptQuery implements IQuery {
 			header.add(new SelectResultInfo(columnName, select.getResultType(), occurence, occurence.getAndIncrement(), select));
 		}
 		return header;
+	}
+
+	@Override
+	public void visit(QueryVisitor visitor) {
+		root.visit(visitor);
 	}
 }

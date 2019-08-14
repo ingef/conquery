@@ -47,7 +47,11 @@ public interface IId<TYPE> {
 		}
 
 		default ID parse(String id) {
-			return parse(Arrays.asList(split(id)));
+			return parse(split(id));
+		}
+		
+		default ID parse(String... id) {
+			return parse(Arrays.asList(id));
 		}
 		
 		default ID parse(List<String> parts) {

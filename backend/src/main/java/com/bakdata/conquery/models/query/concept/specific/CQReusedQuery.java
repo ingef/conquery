@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.AllArgsConstructor;
@@ -52,5 +53,12 @@ public class CQReusedQuery implements CQElement {
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		namespacedIds.add(query);
+	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {
+		if(resolvedQuery != null) {
+			resolvedQuery.visit(visitor);
+		}
 	}
 }

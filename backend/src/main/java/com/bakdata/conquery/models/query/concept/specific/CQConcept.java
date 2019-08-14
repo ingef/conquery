@@ -34,6 +34,7 @@ import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Getter;
@@ -48,8 +49,8 @@ public class CQConcept implements CQElement {
 	private List<ConceptElementId<?>> ids;
 	@Valid @NotEmpty @JsonManagedReference
 	private List<CQTable> tables;
-	@Valid @NotNull
 
+	@Valid @NotNull
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
 
@@ -174,5 +175,10 @@ public class CQConcept implements CQElement {
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
 		
+	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {
+		visitor.visitConcept(this);
 	}
 }

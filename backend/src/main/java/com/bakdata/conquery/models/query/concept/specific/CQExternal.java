@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.MoreCollectors;
@@ -54,6 +55,9 @@ public class CQExternal implements CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
 		throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {}
 
 	@Override
 	public CQElement resolve(QueryResolveContext context) {

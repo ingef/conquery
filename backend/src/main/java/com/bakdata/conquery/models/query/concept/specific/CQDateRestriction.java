@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -84,5 +85,10 @@ public class CQDateRestriction implements CQElement {
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		child.collectNamespacedIds(namespacedIds);
+	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {
+		child.visit(visitor);		
 	}
 }
