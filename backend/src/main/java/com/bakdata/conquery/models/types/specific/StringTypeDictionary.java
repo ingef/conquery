@@ -119,5 +119,6 @@ public class StringTypeDictionary extends CTypeVarInt<Integer> {
 			);
 		}
 		numberType = newNumberType;
+		this.setPrimitiveType(newNumberType.getPrimitiveType());
 	}
 }
