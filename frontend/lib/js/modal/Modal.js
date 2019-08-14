@@ -4,8 +4,7 @@ import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import onClickOutside from "react-onclickoutside";
-
-import useEscPress from "../hooks/useEscPress";
+import Hotkeys from "react-hot-keys";
 
 import FaIcon from "../icon/FaIcon";
 import TransparentButton from "../button/TransparentButton";
@@ -90,10 +89,9 @@ const Modal = ({
   closeIcon,
   onClose
 }: PropsT) => {
-  useEscPress(onClose);
-
   return (
     <Root className={className}>
+      <Hotkeys keyName="escape" onKeyDown={onClose} />
       <ModalContent onClose={onClose}>
         <TopRow>
           <Headline>{headline}</Headline>

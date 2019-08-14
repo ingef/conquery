@@ -4,6 +4,7 @@ import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 import { connect } from "react-redux";
+import Hotkeys from "react-hot-keys";
 
 import { FixedSizeList as List } from "react-window";
 import AutoSizer from "react-virtualized-auto-sizer";
@@ -13,7 +14,6 @@ import {
   parseStdDate,
   formatStdDate
 } from "../common/helpers/dateHelper";
-import useEscPress from "../hooks/useEscPress";
 
 import TransparentButton from "../button/TransparentButton";
 
@@ -144,8 +144,6 @@ export default connect(
     onClose: () => dispatch(closePreview())
   })
 )(({ csv, onClose }: PropsT) => {
-  useEscPress(onClose);
-
   if (!csv || csv.length < 2) return null;
 
   const columns = detectColumnsByHeader(csv[0]);
@@ -196,6 +194,7 @@ export default connect(
 
   return (
     <Preview>
+      <Hotkeys keyName="escape" onKeyDown={onClose} />
       <TopRow>
         <StatsRow>
           <Stat>Total: {csv.length}</Stat>
