@@ -75,4 +75,9 @@ public abstract class QPChainNode extends QPNode {
 	public boolean isOfInterest(Bucket bucket) {
 		return child.isOfInterest(bucket);
 	}
+	
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		return true;
+	}
 }

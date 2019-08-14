@@ -43,4 +43,9 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	public ResultType getResultType() {
 		return ResultType.BOOLEAN;
 	}
+	
+	@Override
+	public String toString(){
+		return getClass().getSimpleName();
+	}
 }

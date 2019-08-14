@@ -25,9 +25,9 @@ public class Column extends Labeled<ColumnId> {
 
 	@JsonBackReference
 	@NotNull
+	@ToString.Exclude
 	private Table table;
 	@NotNull
-	@ToString.Include
 	private MajorTypeId type;
 	@JsonIgnore
 	private int position = UNKNOWN_POSITION;

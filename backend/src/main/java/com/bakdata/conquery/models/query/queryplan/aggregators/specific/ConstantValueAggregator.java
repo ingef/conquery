@@ -7,12 +7,14 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.ToString;
 
 /**
  * Helper Aggregator, returning a constant value passed in the constructor.
  */
 @Getter
 @RequiredArgsConstructor
+@ToString
 public class ConstantValueAggregator implements Aggregator<Object> {
 
 	private final Object value;

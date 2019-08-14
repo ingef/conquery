@@ -92,6 +92,15 @@ public abstract class QPParentNode extends QPNode {
 	}
 	
 	@Override
+	public boolean isOfInterest(Entity entity) {
+		boolean interest = false;
+		for(int i=0,size=children.size();i<size;i++) {
+			interest |= children.get(i).isOfInterest(entity);
+		}
+		return interest;
+	}
+	
+	@Override
 	public void nextEvent(Bucket bucket, int event) {
 		for(int i=0,size=currentTableChildren.size();i<size;i++) {
 			currentTableChildren.get(i).nextEvent(bucket, event);

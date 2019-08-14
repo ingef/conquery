@@ -18,7 +18,6 @@ import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -33,8 +32,8 @@ public class ConceptQuery implements IQuery {
 	protected CQElement root;
 
 	@Override
-	public QueryPlan createQueryPlan(QueryPlanContext context) {
-		ConceptQueryPlan qp = ConceptQueryPlan.create();
+	public ConceptQueryPlan createQueryPlan(QueryPlanContext context) {
+		ConceptQueryPlan qp = new ConceptQueryPlan();
 		qp.setChild(root.createQueryPlan(context, qp));
 		return qp;
 	}

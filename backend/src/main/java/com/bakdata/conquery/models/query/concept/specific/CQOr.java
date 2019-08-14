@@ -16,8 +16,8 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.SelectDescriptor;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 
 import lombok.Getter;
@@ -29,7 +29,7 @@ public class CQOr implements CQElement {
 	private List<CQElement> children;
 	
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		QPNode[] aggs = new QPNode[children.size()];
 		for(int i=0;i<aggs.length;i++) {
 			aggs[i] = children.get(i).createQueryPlan(context, plan);

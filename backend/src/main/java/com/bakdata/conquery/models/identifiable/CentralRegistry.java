@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.identifiable;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 public class CentralRegistry implements Injectable {
 	
 	private final IdMap map = new IdMap<>();
-	private final Map<IId<?>, Supplier<Identifiable<?>>> cacheables = new HashMap<>();
+	private final ConcurrentMap<IId<?>, Supplier<Identifiable<?>>> cacheables = new ConcurrentHashMap<>();
 	
 	public synchronized void register(Identifiable<?> ident) {
 		map.add(ident);

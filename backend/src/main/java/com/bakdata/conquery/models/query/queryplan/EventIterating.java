@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 
 public interface EventIterating {
 	
@@ -23,4 +24,6 @@ public interface EventIterating {
 	default void nextBlock(Bucket bucket) {}
 	
 	boolean isOfInterest(Bucket bucket);
+	
+	boolean isOfInterest(Entity entity);
 }

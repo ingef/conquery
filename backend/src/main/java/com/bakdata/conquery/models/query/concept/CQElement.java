@@ -12,8 +12,8 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -24,7 +24,7 @@ public interface CQElement {
 		return this;
 	}
 
-	QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan);
+	QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
 	default void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {}
 	

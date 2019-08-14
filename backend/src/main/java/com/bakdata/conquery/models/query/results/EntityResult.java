@@ -31,6 +31,11 @@ public interface EntityResult {
 		return false;
 	}
 	
+	@JsonIgnore
+	default boolean isContained() {
+		return true;
+	}
+	
 	default FailedEntityResult asFailed() {
 		throw new IllegalStateException("The EntityResult "+this+" is not failed");
 	}
