@@ -11,6 +11,7 @@ import { dndTypes } from "../common/constants";
 import { ErrorMessage } from "../error-message";
 import { nodeHasActiveFilters } from "../model/node";
 import { isQueryExpandable } from "../model/query";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 
 import QueryNodeActions from "./QueryNodeActions";
 
@@ -74,6 +75,15 @@ const StyledErrorMessage = styled(ErrorMessage)`
   margin: 0;
 `;
 
+const RootNode = styled("p")`
+  margin: 0 0 4px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: ${({ theme }) => theme.font.xs};
+  color: ${({ theme }) => theme.col.blueGrayDark};
+`;
+
 type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
@@ -85,6 +95,16 @@ type PropsType = {
   orIdx: number,
   connectDragSource: ConnectDragSource
 };
+
+function getRootNodeLabel(node) {
+  const nodeIsRootNode = !!node.ids && node.ids.indexOf(node.tree) !== -1;
+
+  if (!node.tree || nodeIsRootNode) return null;
+
+  const root = getConceptById(node.tree);
+
+  return !!root ? root.label : null;
+}
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
 class QueryNode extends React.Component {
@@ -102,6 +122,8 @@ class QueryNode extends React.Component {
 
     const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
 
+    const rootNodeLabel = getRootNodeLabel(node);
+
     return (
       <Root
         ref={instance => connectDragSource(instance)}
@@ -118,6 +140,7 @@ class QueryNode extends React.Component {
             <StyledErrorMessage message={node.error} />
           ) : (
             <>
+              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
               <Label>{node.label || node.id}</Label>
               {node.description && (!node.ids || node.ids.length === 1) && (
                 <Description>{node.description}</Description>
