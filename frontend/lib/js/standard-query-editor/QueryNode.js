@@ -11,10 +11,10 @@ import { dndTypes } from "../common/constants";
 import { ErrorMessage } from "../error-message";
 import { nodeHasActiveFilters } from "../model/node";
 import { isQueryExpandable } from "../model/query";
-import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 
 import QueryNodeActions from "./QueryNodeActions";
 
+import { getRootNodeLabel } from "./helper";
 import type { QueryNodeType, DraggedNodeType, DraggedQueryType } from "./types";
 
 const Root = styled("div")`
@@ -95,16 +95,6 @@ type PropsType = {
   orIdx: number,
   connectDragSource: ConnectDragSource
 };
-
-function getRootNodeLabel(node) {
-  const nodeIsRootNode = !!node.ids && node.ids.indexOf(node.tree) !== -1;
-
-  if (!node.tree || nodeIsRootNode) return null;
-
-  const root = getConceptById(node.tree);
-
-  return !!root ? root.label : null;
-}
 
 // Has to be a class because of https://github.com/react-dnd/react-dnd/issues/530
 class QueryNode extends React.Component {
