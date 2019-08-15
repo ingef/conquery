@@ -16,7 +16,6 @@ import lombok.Getter;
 
 /**
  * Helper Aggregator, forwarding only events with distinct values to {@code aggregator}.
- * @param <VALUE>
  */
 public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VALUE> {
 

@@ -64,7 +64,7 @@ public class CountFilter extends Filter<Range.LongRange> {
 								getDistinctByColumn()[0]
 					)
 				);
-			} 
+			}
 			else {
 				return new RangeFilterNode(value, new MultiDistinctValuesWrapperAggregator(new CountAggregator(getColumn()), getDistinctByColumn()));
 			}
