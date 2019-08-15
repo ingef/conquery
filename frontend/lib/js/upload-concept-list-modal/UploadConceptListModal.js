@@ -101,6 +101,10 @@ const UploadConceptListModal = (props: PropsType) => {
     onClose
   } = props;
 
+  if (!conceptCodesFromFile || conceptCodesFromFile.length === 0) {
+    onClose();
+  }
+
   const hasUnresolvedItems = unresolvedItemsCount > 0;
   const hasResolvedItems = resolvedItemsCount > 0;
 
