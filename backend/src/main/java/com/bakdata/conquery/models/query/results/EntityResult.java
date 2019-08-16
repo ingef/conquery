@@ -14,6 +14,16 @@ public interface EntityResult {
 		return new SinglelineContainedEntityResult(entityId, values);
 	}
 	
+	static EntityResult of(int id, List<Object[]> values) {
+		if(values.isEmpty()) {
+			return notContained();
+		}
+		if(values.size() == 1) {
+			return of(id, values.get(0));
+		}
+		return multilineOf(id, values);
+	}
+	
 	static ContainedEntityResult multilineOf(int entityId, List<Object[]> values) {
 		return new MultilineContainedEntityResult(entityId, values);
 	}
