@@ -1,41 +1,56 @@
 package com.bakdata.conquery.models.query.queryplan;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
-import com.google.common.collect.Lists;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
 @Getter @Setter
-@NoArgsConstructor
 @ToString
-public class ConceptQueryPlan extends SimpleQueryPlan {
+public class ConceptQueryPlan implements QueryPlan, EventIterating {
 
+	@Getter @Setter
+	private Set<Table> requiredTables;
 	private QPNode child;
 	@ToString.Exclude
 	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
 	@ToString.Exclude
-	protected final List<Aggregator<?>> aggregators = Lists.newArrayList(specialDateUnion);
+	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
 	private Entity entity;
+	
+	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
+		if(generateSpecialDateUnion) {
+			aggregators.add(specialDateUnion);
+		}
+	}
+	
+	public ConceptQueryPlan(QueryPlanContext ctx) {
+		this(ctx.isGenerateSpecialDateUnion());
+	}
 
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
-		ConceptQueryPlan clone = new ConceptQueryPlan();
+		checkRequiredTables(ctx.getStorage());
+		
+		ConceptQueryPlan clone = new ConceptQueryPlan(false);
 		clone.setChild(child.clone(ctx));
-		clone.aggregators.clear(); //to remove the default specialdateunion
 		for(Aggregator<?> agg:aggregators)
 			clone.aggregators.add(agg.clone(ctx));
 		clone.specialDateUnion = specialDateUnion.clone(ctx);
@@ -43,13 +58,24 @@ public class ConceptQueryPlan extends SimpleQueryPlan {
 		return clone;
 	}
 	
-	@Override
+	private void checkRequiredTables(WorkerStorage storage) {
+		if(requiredTables == null) {
+			synchronized (this) {
+				if(requiredTables == null) {
+					requiredTables = this.collectRequiredTables()
+						.stream()
+						.map(storage.getDataset().getTables()::getOrFail)
+						.collect(Collectors.toSet());
+				}
+			}
+		}
+	}
+
 	public void init(Entity entity) {
 		this.entity = entity;
 		child.init(entity);
 	}
 
-	@Override
 	public void nextEvent(Bucket bucket, int event) {
 		getChild().nextEvent(bucket, event);
 	}
@@ -61,7 +87,6 @@ public class ConceptQueryPlan extends SimpleQueryPlan {
 		return EntityResult.of(entity.getId(), values);
 	}
 
-	@Override
 	public EntityResult createResult() {
 		if(isContained()) {
 			return result();
@@ -69,6 +94,49 @@ public class ConceptQueryPlan extends SimpleQueryPlan {
 		else {
 			return EntityResult.notContained();
 		}
+	}
+	
+	@Override
+	public EntityResult execute(QueryContext ctx, Entity entity) {
+		checkRequiredTables(ctx.getStorage());
+		init(entity);
+		if (requiredTables.isEmpty()) {
+			return EntityResult.notContained();
+		}
+
+		for(Table currentTable : requiredTables) {
+			nextTable(ctx, currentTable);
+			for(Bucket bucket : entity.getBucket(currentTable)) {
+				int localEntity = bucket.toLocal(entity.getId());
+				if(bucket.containsLocalEntity(localEntity)) {
+					if(isOfInterest(bucket)) {
+						nextBlock(bucket);
+						int start = bucket.getFirstEventOfLocal(localEntity);
+						int end = bucket.getLastEventOfLocal(localEntity);
+						for(int event = start; event < end ; event++) {
+							nextEvent(bucket, event);
+						}
+					}
+				}
+			}
+		}
+
+		//ugly workaround which we should find a fix for
+		EntityResult result = createResult();
+		if(result instanceof ContainedEntityResult) {
+			result.asContained().streamValues().forEach(row -> {
+				for(int i=0;i<row.length;i++) {
+					if(row[i] instanceof Double) {
+						double v = (Double) row[i];
+						if(Double.isInfinite(v) || Double.isNaN(v)) {
+							row[i] = null;
+						}
+					}
+				}
+			});
+		}
+		
+		return result;
 	}
 	
 	@Override
@@ -84,16 +152,11 @@ public class ConceptQueryPlan extends SimpleQueryPlan {
 	public void addAggregator(Aggregator<?> aggregator) {
 		aggregators.add(aggregator);
 	}
-	
-	public void addAggregator(int index, Aggregator<?> aggregator) {
-		aggregators.add(index, aggregator);
-	}
 
 	public int getAggregatorSize() {
 		return aggregators.size();
 	}
 
-	@Override
 	public boolean isContained() {
 		return child.isContained();
 	}

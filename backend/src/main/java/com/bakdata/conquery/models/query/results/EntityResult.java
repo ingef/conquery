@@ -39,4 +39,8 @@ public interface EntityResult {
 	default FailedEntityResult asFailed() {
 		throw new IllegalStateException("The EntityResult "+this+" is not failed");
 	}
+	
+	default ContainedEntityResult asContained() {
+		throw new IllegalStateException("The EntityResult "+this+" is not contained");
+	}
 }

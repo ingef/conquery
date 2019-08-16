@@ -78,6 +78,7 @@ public class CalculateCBlocksJob extends Job {
 				this.progressReporter.report(1);
 			}
 		}
+		progressReporter.done();
 	}
 	
 	private void setDateRangeIndex(CBlock cBlock, CalculationInformation info) {

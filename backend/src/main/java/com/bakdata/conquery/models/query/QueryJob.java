@@ -4,6 +4,7 @@ import java.util.concurrent.Callable;
 
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 
 import lombok.RequiredArgsConstructor;
@@ -18,7 +19,8 @@ public class QueryJob implements Callable<EntityResult> {
 	@Override
 	public EntityResult call() throws Exception {
 		try {
-			QueryPlan queryPlan = this.plan.createClone();
+			CloneContext cCtx = new CloneContext(ctx.getStorage());
+			QueryPlan queryPlan = this.plan.clone(cCtx);
 			
 			return queryPlan.execute(ctx, entity);
 		}
