@@ -7,6 +7,7 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.concept.ResultInfo;
+import com.bakdata.conquery.models.query.concept.ResultInfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -25,5 +26,11 @@ public interface IQuery {
 		return set;
 	}
 
-	List<ResultInfo> collectResultInfos(PrintSettings config);
+	default List<ResultInfo> collectResultInfos(PrintSettings config) {
+		ResultInfoCollector collector = new ResultInfoCollector(config);
+		collectResultInfos(collector);
+		return collector.getInfos();
+	}
+	
+	void collectResultInfos(ResultInfoCollector collector);
 }

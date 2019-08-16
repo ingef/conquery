@@ -1,24 +1,19 @@
 package com.bakdata.conquery.models.query.concept;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.concept.ResultInfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -33,8 +28,8 @@ public class ConceptQuery implements IQuery {
 	protected CQElement root;
 
 	@Override
-	public QueryPlan createQueryPlan(QueryPlanContext context) {
-		ConceptQueryPlan qp = ConceptQueryPlan.create();
+	public ConceptQueryPlan createQueryPlan(QueryPlanContext context) {
+		ConceptQueryPlan qp = new ConceptQueryPlan(context);
 		qp.setChild(root.createQueryPlan(context, qp));
 		return qp;
 	}
@@ -53,28 +48,12 @@ public class ConceptQuery implements IQuery {
 	public List<SelectDescriptor> collectSelects() {
 		return root.collectSelects();
 	}
-
+	
 	@Override
-	public List<ResultInfo> collectResultInfos(PrintSettings config) {
-		List<ResultInfo> header = new ArrayList<>();
-		header.add(ConqueryConstants.DATES_INFO);
-		return collectResultInfos(this.collectSelects(), header, config);
-	}
-	
-	
-	public static List<ResultInfo> collectResultInfos(List<SelectDescriptor> selects, List<ResultInfo> header, PrintSettings config) {
-		HashMap<String, AtomicInteger> ocurrences = new HashMap<>();
-		/*
-		 * Column name is constructed from the most specific concept id the CQConcept
-		 * has and the selector.
-		 */
-		for (SelectDescriptor selectDescriptor : selects) {
-			Select select = selectDescriptor.getSelect();
-			String columnName = config.getNameExtractor().apply(selectDescriptor);
-			AtomicInteger occurence = ocurrences.computeIfAbsent(columnName, str -> new AtomicInteger(0));
-
-			header.add(new SelectResultInfo(columnName, select.getResultType(), occurence, occurence.getAndIncrement(), select));
+	public void collectResultInfos(ResultInfoCollector collector) {
+		collector.add(ConqueryConstants.DATES_INFO);
+		for (SelectDescriptor selectDescriptor : collectSelects()) {
+			collector.add(selectDescriptor);
 		}
-		return header;
 	}
 }

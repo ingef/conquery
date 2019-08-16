@@ -155,4 +155,13 @@ public class TemporalQueryNode extends QPNode {
 			preceding.getChild().isOfInterest(bucket)
 		;
 	}
+	
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		return 
+			reference.getChild().isOfInterest(entity)
+			| //call isOfInterest on both children because some nodes use it for initialization 
+			preceding.getChild().isOfInterest(entity)
+		;
+	}
 }

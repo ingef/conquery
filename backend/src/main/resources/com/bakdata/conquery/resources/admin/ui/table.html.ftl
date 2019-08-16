@@ -9,7 +9,7 @@
 		<ul>
 		<#list c.table.tags as tag>
 			<li>
-				<a href="/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${c.table.id}.${tag}">${tag}</a> 
+				<a href="/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${c.table.id}.${tag?replace(".", "$2e")?replace("$", "$24")}">${tag}</a> 
 				<a href="" onclick="event.preventDefault(); rest.delete('/admin/datasets/${c.table.dataset.id}/tables/${c.table.id}/import/${c.table.id}.${tag}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 			</li>
 		</#list>

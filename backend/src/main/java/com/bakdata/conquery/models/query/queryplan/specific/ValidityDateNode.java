@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.ToString;
 
-@ToString
 public class ValidityDateNode extends QPChainNode {
 
 	private final Column validityDateColumn;
@@ -53,5 +52,10 @@ public class ValidityDateNode extends QPChainNode {
 	public void nextTable(QueryContext ctx, Table currentTable) {
 		super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
 		noRestriction = ctx.getDateRestriction().isAll();
+	}
+	
+	@Override
+	public String toString() {
+		return "ValidityDateNode [validityDateColumn=" + validityDateColumn + ", getChild()=" + getChild() + "]";
 	}
 }

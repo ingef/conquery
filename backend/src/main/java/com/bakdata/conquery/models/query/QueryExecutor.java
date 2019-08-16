@@ -52,7 +52,7 @@ public class QueryExecutor implements Closeable {
 		result.setQueryId(queryId);
 		
 		List<ListenableFuture<EntityResult>> futures = plan
-			.execute(context, entries)
+			.executeOn(context, entries)
 			.map(executor::submit)
 			.collect(Collectors.toList());
 		

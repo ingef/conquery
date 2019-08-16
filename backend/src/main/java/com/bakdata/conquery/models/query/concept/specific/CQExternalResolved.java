@@ -11,8 +11,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
 
@@ -32,7 +32,7 @@ public class CQExternalResolved implements CQElement {
 	private Map<Integer, CDateSet> values;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		DatasetId dataset = context.getWorker().getStorage().getDataset().getId();
 		return new ExternalNode(
 			new SpecialDateUnionAggregatorNode(

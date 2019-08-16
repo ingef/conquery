@@ -2,7 +2,15 @@ package com.bakdata.conquery.models.query.queryplan.clone;
 
 import java.util.IdentityHashMap;
 
+import com.bakdata.conquery.io.xodus.WorkerStorage;
+
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+
+@RequiredArgsConstructor
 public class CloneContext {
+	@Getter
+	private final WorkerStorage storage;
 	private final IdentityHashMap<CtxCloneable<?>, CtxCloneable<?>> cloneCache = new IdentityHashMap<>();
 
 	/**
