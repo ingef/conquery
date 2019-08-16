@@ -84,7 +84,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 						: concept.getDataset()
 				);
 				concept.setDataset(ds.getId());
-				ds.addConcept(concept);
 
 				concept.initElements(validator);
 				

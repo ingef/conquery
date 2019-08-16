@@ -14,6 +14,7 @@ import java.util.concurrent.Executors;
 
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ConceptsUtils;
 import com.zigurs.karlis.utils.search.QuickSearch;
 
@@ -24,11 +25,11 @@ public class FilterSearch {
 
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
-	public static ExecutorService init(Collection<Dataset> datasets) {
+	public static ExecutorService init(Namespaces namespaces, Collection<Dataset> datasets) {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
 		datasets
 			.stream()
-			.flatMap(ds -> ds.getConcepts().stream())
+			.flatMap(ds -> namespaces.get(ds.getId()).getStorage().getAllConcepts().stream())
 			.flatMap(c -> c.getConnectors().stream())
 			.flatMap(co -> co.collectAllFilters().stream())
 			.filter(f -> f instanceof AbstractSelectFilter && f.getTemplate() != null)

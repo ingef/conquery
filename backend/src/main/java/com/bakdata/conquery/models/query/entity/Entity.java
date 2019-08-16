@@ -40,9 +40,7 @@ public class Entity {
 	}
 
 	public void removeCBlock(ConnectorId connector, BucketId bucket) {
-		if(cBlocks.remove(connector, bucket) == null) {
-			return;
-		}
+		cBlocks.remove(connector, bucket);
 	}
 
 	public static int getBucket(int entityId, int entityBucketSize) {

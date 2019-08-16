@@ -36,7 +36,7 @@ public class ConceptResolutionTest implements ProgrammaticIntegrationTest, Integ
 		
 		test.importRequiredData(conquery);
 		FilterSearch
-			.init(Collections.singleton(conquery.getNamespace().getDataset()))
+			.init(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()))
 			.awaitTermination(1, TimeUnit.MINUTES);
 
 		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());

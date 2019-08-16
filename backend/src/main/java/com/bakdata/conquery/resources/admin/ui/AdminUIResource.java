@@ -144,7 +144,7 @@ public class AdminUIResource {
 			.getNamespaces()
 			.forEach(ns -> ns.sendToAll(new UpdateMatchingStatsMessage()));
 
-		FilterSearch.init(processor.getNamespaces().getAllDatasets());
+		FilterSearch.init(processor.getNamespaces(), processor.getNamespaces().getAllDatasets());
 		
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())

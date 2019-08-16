@@ -30,6 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public class RestartTest implements ProgrammaticIntegrationTest {
 
 	private Mandator mandator = new Mandator("99999998", "MANDATOR_LABEL");
+	private Mandator deleteMandator = new Mandator("99999997", "SHOULD_BE_DELETED_MANDATOR");
 	private User user = new User("user@test.email", "USER_LABEL");
 
 	@Override
@@ -56,6 +57,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			// Auth testing
 			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
 			storage.addMandator(mandator);
+			storage.addMandator(deleteMandator);
+			storage.removeMandator(deleteMandator.getId());
 
 			// IDMapping Testing
 			NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
@@ -81,6 +84,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			Mandator mandatorStored = storage.getMandator(mandator.getId());
 			Mandator userRefMand = userStored.getRoles().iterator().next();
 			assertThat(mandatorStored).isSameAs(userRefMand);
+			assertThat(storage.getMandator(deleteMandator.getId())).as("deleted mandator should stay deleted").isNull();
 			PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
 				.getMaster()
 				.getNamespaces()
