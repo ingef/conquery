@@ -65,7 +65,7 @@ class Header extends React.Component<PropsType> {
     return (
       <Root>
         <OverflowHidden>
-          <Logo title={"Conquery " + this.props.version} />
+          <Logo title={this.props.version} />
           <Spacer />
           <Headline>{T.translate("headline")}</Headline>
         </OverflowHidden>

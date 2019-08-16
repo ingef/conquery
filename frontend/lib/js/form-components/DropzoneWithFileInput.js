@@ -58,7 +58,7 @@ export default ({
         type="file"
         onChange={e => {
           onSelectFile(e.target.files[0]);
-          fileInputRef.current.value = "";
+          fileInputRef.current.value = null;
         }}
       />
       {children}
