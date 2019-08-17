@@ -38,7 +38,7 @@ public class FilterResolutionTest implements ProgrammaticIntegrationTest, Integr
 		
 		test.importRequiredData(conquery);
 		FilterSearch
-			.init(Collections.singleton(conquery.getNamespace().getDataset()))
+			.init(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()))
 			.awaitTermination(1, TimeUnit.MINUTES);
 
 		

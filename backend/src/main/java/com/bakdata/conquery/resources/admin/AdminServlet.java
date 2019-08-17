@@ -16,6 +16,7 @@ import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthCookieFilter;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
+import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
@@ -76,20 +77,23 @@ public class AdminServlet {
 		});
 		
 		//register root resources
-		jerseyConfig.register(AdminResource.class);
-		jerseyConfig.register(AdminDatasetResource.class);
-		jerseyConfig.register(AdminUIResource.class);
-		jerseyConfig.register(DatasetsUIResource.class);		
-		jerseyConfig.register(TablesUIResource.class);
-		jerseyConfig.register(ConceptsUIResource.class);
-		jerseyConfig.register(PermissionResource.class);
+		jerseyConfig
+			.register(AdminResource.class)
+			.register(AdminDatasetResource.class)
+			.register(AdminConceptsResource.class)
+			.register(AdminUIResource.class)
+			.register(DatasetsUIResource.class)		
+			.register(TablesUIResource.class)
+			.register(ConceptsUIResource.class)
+			.register(PermissionResource.class);
 		
 		//register features
-		jerseyConfig.register(new MultiPartFeature());
-		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)));
-		jerseyConfig.register(masterCommand.getAuthDynamicFeature());
-		jerseyConfig.register(IdParamConverter.Provider.INSTANCE);
-		jerseyConfig.register(CORSResponseFilter.class);
-		jerseyConfig.register(AuthCookieFilter.class);
+		jerseyConfig
+			.register(new MultiPartFeature())
+			.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)))
+			.register(masterCommand.getAuthDynamicFeature())
+			.register(IdParamConverter.Provider.INSTANCE)
+			.register(CORSResponseFilter.class)
+			.register(AuthCookieFilter.class);
 	}
 }

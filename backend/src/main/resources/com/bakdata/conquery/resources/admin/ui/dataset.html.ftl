@@ -24,10 +24,10 @@
 	</@layout.kc>
 	<@layout.kc k="Concepts">
 		<ul>
-		<#list c.ds.concepts?sort_by("label") as concept>
+		<#list c.concepts?sort_by("label") as concept>
 			<li>
 				<a href="/admin/datasets/${c.ds.id}/concepts/${concept.id}">${concept.label}</a>
-				<a href="" onclick="event.preventDefault(); rest.delete('/admin/datasets/${c.ds.id}/concepts/${concept.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+				<a href="" onclick="event.preventDefault(); rest.delete('/datasets/${c.ds.id}/concepts/${concept.id}').then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 			</li>
 		</#list>
 		</ul>

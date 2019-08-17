@@ -42,8 +42,10 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	private Import imp;
 	@Min(0)
 	private int numberOfEvents;
+	@ToString.Exclude
 	private int[] offsets;
 	@NotNull @Setter
+	@ToString.Exclude
 	protected BitStore nullBits;
 	
 	public Bucket(int bucket, Import imp, int[] offsets) {
