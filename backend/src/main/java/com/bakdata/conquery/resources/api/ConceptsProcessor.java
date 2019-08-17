@@ -26,7 +26,6 @@ import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.FrontEndConceptBuilder;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
@@ -53,12 +52,12 @@ import lombok.extern.slf4j.Slf4j;
 public class ConceptsProcessor {
 	
 	private final Namespaces namespaces;
-	private final LoadingCache<Concept<?>, FEList> nodeCache = CacheBuilder.newBuilder()
+	private final LoadingCache<Concept, FEList> nodeCache = CacheBuilder.newBuilder()
 		.softValues()
 		.expireAfterWrite(10, TimeUnit.MINUTES)
-		.build(new CacheLoader<Concept<?>, FEList>() {
+		.build(new CacheLoader<Concept, FEList>() {
 			@Override
-			public FEList load(Concept<?> concept) throws Exception {
+			public FEList load(Concept concept) throws Exception {
 				return FrontEndConceptBuilder.createTreeMap(concept);
 			};
 		});
@@ -68,7 +67,7 @@ public class ConceptsProcessor {
 		return FrontEndConceptBuilder.createRoot(storage);
 	}
 	
-	public FEList getNode(Concept<?> concept) {
+	public FEList getNode(Concept concept) {
 		try {
 			return nodeCache.get(concept);
 		}
@@ -161,31 +160,27 @@ public class ConceptsProcessor {
 			.collect(Collectors.toList());
 	}
 	
-	public ResolvedConceptsResult resolveConceptElements(TreeConcept concept, List<String> conceptCodes) {
+	public ResolvedConceptsResult resolveConceptElements(Concept concept, List<String> conceptCodes) {
 		List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
 		List<String> unknownCodes = new ArrayList<>();
 
-		if (concept instanceof TreeConcept) {
-			TreeConcept tree = (TreeConcept) concept;
 
-			for (String conceptCode : conceptCodes) {
-				ConceptTreeChild child;
-				try {
-					child = tree.findMostSpecificChild(conceptCode, new CalculatedValue<>(() -> new HashMap<>()));
-					if (child != null) {
-						resolvedCodes.add(child.getId());
-					}
-					else {
-						unknownCodes.add(conceptCode);
-					}
+		for (String conceptCode : conceptCodes) {
+			ConceptTreeChild child;
+			try {
+				child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(() -> new HashMap<>()));
+				if (child != null) {
+					resolvedCodes.add(child.getId());
 				}
-				catch (ConceptConfigurationException e) {
-					log.error("Error while trying to resolve "+conceptCode, e);
+				else {
+					unknownCodes.add(conceptCode);
 				}
 			}
-			return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
+			catch (ConceptConfigurationException e) {
+				log.error("Error while trying to resolve "+conceptCode, e);
+			}
 		}
-		return new ResolvedConceptsResult(null, null, conceptCodes);
+		return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
 	}
 	
 	@Getter

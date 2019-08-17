@@ -87,7 +87,7 @@ public class AdminProcessor {
 		// see #143 check duplicate names
 	}
 
-	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
+	public void addConcept(Dataset dataset, Concept c) throws JSONException, ConfigurationException {
 		c.setDataset(dataset.getId());
 		jobManager
 			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));

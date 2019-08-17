@@ -15,7 +15,7 @@ public class FilterDescription<FE_TYPE extends FilterValue<?>> {
 
 	@NotNull
 	@Valid
-	private List<Concept<?>> concepts;
+	private List<Concept> concepts;
 
 	//	@NotNull @Valid
 	//	private VirtualConceptConnector connector;

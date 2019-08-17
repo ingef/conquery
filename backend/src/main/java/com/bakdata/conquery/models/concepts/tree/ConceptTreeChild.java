@@ -6,6 +6,7 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
@@ -17,7 +18,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Getter;
 import lombok.Setter;
 
-public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> implements ConceptTreeNode<ConceptTreeChildId> {
+public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> {
 
 	@JsonIgnore
 	private transient int[] prefix;
@@ -27,7 +28,7 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	@JsonIgnore @Getter @Setter
 	private int localId;
 	@JsonBackReference @Getter @Setter
-	private ConceptTreeNode<?> parent;
+	private ConceptElement<?> parent;
 	@JsonIgnore @Getter @Setter
 	private int depth=-1;
 	@Getter @NotNull @Setter
@@ -65,11 +66,11 @@ public class ConceptTreeChild extends ConceptElement<ConceptTreeChildId> impleme
 	}
 
 	@Override @JsonIgnore
-	public TreeConcept getConcept() {
-		ConceptTreeNode<?> n = this;
+	public Concept getConcept() {
+		ConceptElement<?> n = this;
 		while(n!=null) {
-			if(n instanceof TreeConcept) {
-				return (TreeConcept)n;
+			if(n instanceof Concept) {
+				return (Concept)n;
 			}
 			n = n.getParent();
 		}

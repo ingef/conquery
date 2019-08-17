@@ -21,9 +21,8 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -80,7 +79,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 	@JsonIgnore
 	private Connector connector;
-	private VirtualConcept concept;
+	private Concept concept;
 
 	@Override
 	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
@@ -153,7 +152,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
 		Dataset dataset = support.getDataset();
 
-		concept = new VirtualConcept();
+		concept = new Concept();
 		concept.setLabel("concept");
 		support.getDatasetsProcessor().addConcept(dataset, concept);
 
@@ -167,11 +166,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 		connector = parseSubTree(
 				support,
 				rawConnector,
-				VirtualConceptConnector.class,
+				Connector.class,
 				conn -> conn.setConcept(concept)
 		);
 
-		concept.setConnectors(Collections.singletonList((VirtualConceptConnector) connector));
+		concept.setConnectors(Collections.singletonList(connector));
 		support.getDatasetsProcessor().addConcept(dataset, concept);
 	}
 

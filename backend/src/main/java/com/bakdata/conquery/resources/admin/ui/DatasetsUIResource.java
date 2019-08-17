@@ -72,7 +72,7 @@ public class DatasetsUIResource extends HDatasets {
 	@Data @AllArgsConstructor
 	public static class DatasetInfos {
 		private Dataset ds;
-		private Collection<? extends Concept<?>> concepts;
+		private Collection<Concept> concepts;
 		private long dictionariesSize;
 		private long size;
 	}

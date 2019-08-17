@@ -5,7 +5,6 @@ import java.util.Optional;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.worker.NamespaceCollection;
 import com.fasterxml.jackson.core.JsonParser;
@@ -33,11 +32,8 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 		CBlock block = beanDeserializer.deserialize(p, ctxt);
 		
 		Connector con = NamespaceCollection.get(ctxt).getOptional(block.getConnector()).get();
-		Concept<?> concept = con.getConcept();
-		if(concept instanceof TreeConcept) {
-			TreeConcept tree = (TreeConcept) concept;
-			block.getMostSpecificChildren().replaceAll(c->c==null?c:tree.getElementByLocalId(c).getPrefix());
-		}
+		Concept concept = con.getConcept();
+		block.getMostSpecificChildren().replaceAll(c->c==null?c:concept.getElementByLocalId(c).getPrefix());
 		return block;
 	}
 	

@@ -30,8 +30,8 @@ public interface NamespacedStorage extends ConqueryStorage {
 	Dataset getDataset();
 	void updateDataset(Dataset dataset) throws JSONException;
 	
-	Concept<?> getConcept(ConceptId id);
-	void updateConcept(Concept<?> concept) throws JSONException;
+	Concept getConcept(ConceptId id);
+	void updateConcept(Concept concept) throws JSONException;
 	void removeConcept(ConceptId id);
-	Collection<? extends Concept<?>> getAllConcepts();
+	Collection<Concept> getAllConcepts();
 }

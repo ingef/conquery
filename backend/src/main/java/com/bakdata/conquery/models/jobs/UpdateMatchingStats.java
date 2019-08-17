@@ -5,9 +5,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.MatchingStats;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
@@ -48,16 +47,16 @@ public class UpdateMatchingStats extends Job {
 				return;
 			}
 
-			Concept<?> concept = worker.getStorage().getConcept(cBlock.getConnector().getConcept());
+			Concept concept = worker.getStorage().getConcept(cBlock.getConnector().getConcept());
 			try {
 				Bucket bucket = worker.getStorage().getBucket(cBlock.getBucket());
 				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
 				
 				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
-					if (concept instanceof TreeConcept) {
+					if (concept.isTreeConcept()) {
 						int[] localIds = cBlock.getMostSpecificChildren().get(event);
 						if (localIds != null) {
-							ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
+							ConceptElement<?> e = concept.getElementByLocalId(localIds);
 	
 							while (e != null) {
 								messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())

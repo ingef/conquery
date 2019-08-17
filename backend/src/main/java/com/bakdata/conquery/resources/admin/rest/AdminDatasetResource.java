@@ -88,7 +88,7 @@ public class AdminDatasetResource extends HDatasets {
 	
 	@POST
 	@Path("concepts")
-	public void addConcept(Concept<?> concept) throws IOException, JSONException, ConfigurationException {
+	public void addConcept(Concept concept) throws IOException, JSONException, ConfigurationException {
 		processor.addConcept(namespace.getDataset(), concept);
 	}
 	

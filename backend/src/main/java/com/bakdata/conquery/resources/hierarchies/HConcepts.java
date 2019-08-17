@@ -21,7 +21,7 @@ public abstract class HConcepts extends HDatasets {
 	
 	@PathParam(CONCEPT_NAME)
 	protected ConceptId conceptId;
-	protected Concept<?> concept;
+	protected Concept concept;
 	
 	@PostConstruct
 	@Override

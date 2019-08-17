@@ -38,7 +38,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected SingletonStore<Dataset> dataset;
 	protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries;
 	protected IdentifiableStore<Import> imports;
-	protected IdentifiableStore<Concept<?>> concepts;
+	protected IdentifiableStore<Concept> concepts;
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(
@@ -76,7 +76,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 			this.dictionaries =	StoreInfo.DICTIONARIES.big(this);
 		}
 		
-		this.concepts =	StoreInfo.CONCEPTS.<Concept<?>>identifiable(this)
+		this.concepts =	StoreInfo.CONCEPTS.<Concept>identifiable(this)
 			.onAdd(concept -> {
 				Dataset ds = centralRegistry.resolve(
 					concept.getDataset() == null
@@ -114,7 +114,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		this.imports = StoreInfo.IMPORTS.<Import>identifiable(this)
 			.onAdd(imp-> {
 				imp.loadExternalInfos(this);
-				for(Concept<?> c: getAllConcepts()) {
+				for(Concept c: getAllConcepts()) {
 					for(Connector con : c.getConnectors()) {
 						if(con.getTable().getId().equals(imp.getTable())) {
 							con.addImport(imp);
@@ -204,13 +204,13 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public Concept<?> getConcept(ConceptId id) {
+	public Concept getConcept(ConceptId id) {
 		return Optional.ofNullable(concepts.get(id))
 			.orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
 	}
 
 	@Override
-	public void updateConcept(Concept<?> concept) throws JSONException {
+	public void updateConcept(Concept concept) throws JSONException {
 		concepts.update(concept);
 	}
 
@@ -220,7 +220,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	}
 
 	@Override
-	public Collection<Concept<?>> getAllConcepts() {
+	public Collection<Concept> getAllConcepts() {
 		return concepts.getAll();
 	}
 }

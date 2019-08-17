@@ -10,7 +10,7 @@ import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -40,7 +40,7 @@ public class ConceptResolutionTest implements ProgrammaticIntegrationTest, Integ
 			.awaitTermination(1, TimeUnit.MINUTES);
 
 		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());
-		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		Concept concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 		
 		ResolvedConceptsResult resolved = processor.resolveConceptElements(concept, List.of("A1", "unknown"));
 		

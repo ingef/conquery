@@ -122,7 +122,7 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	
 	//block manager overrides
 	@Override
-	public void updateConcept(Concept<?> concept) throws JSONException {
+	public void updateConcept(Concept concept) throws JSONException {
 		concepts.update(concept);
 		if(blockManager!=null) {
 			blockManager.removeConcept(concept.getId());

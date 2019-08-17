@@ -14,15 +14,12 @@ import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.api.description.FEList;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.resources.hierarchies.HConcepts;
 
@@ -60,13 +57,7 @@ public class ConceptResource extends HConcepts {
 	@Path("resolve")
 	public ResolvedConceptsResult resolve(@NotNull ConceptCodeList conceptCodes) {
 		List<String> codes = conceptCodes.getConcepts().stream().map(String::trim).collect(Collectors.toList());
-
-		if(concept instanceof TreeConcept) {
-			return processor.resolveConceptElements((TreeConcept)concept, codes);
-		}
-		else {
-			throw new WebApplicationException("can only resolved elements on tree concepts", Status.BAD_REQUEST);
-		}
+		return processor.resolveConceptElements(concept, codes);
 	}
 	
 	@Getter

@@ -12,7 +12,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -39,10 +39,10 @@ public class GroovyCondition implements CTCondition {
 	@JsonIgnore
 	private transient ConditionScript compiled;
 	@JsonIgnore
-	private ConceptTreeNode node;
+	private ConceptElement<?> node;
 	
 	@Override
-	public void init(ConceptTreeNode node) throws ConceptConfigurationException {
+	public void init(ConceptElement<?> node) throws ConceptConfigurationException {
 		this.node = node;
 		compile();
 	}
@@ -86,7 +86,7 @@ public class GroovyCondition implements CTCondition {
 		@Getter
 		protected String value;
 		@Setter
-		protected ConceptTreeNode node;
+		protected ConceptElement<?> node;
 		
 		public boolean matches(Map<String, Object> row, String value) throws ConceptConfigurationException {
 			this.row=row;

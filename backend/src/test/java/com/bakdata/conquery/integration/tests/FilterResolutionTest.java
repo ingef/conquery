@@ -11,9 +11,9 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.models.api.description.FEValue;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
@@ -42,9 +42,9 @@ public class FilterResolutionTest implements ProgrammaticIntegrationTest, Integr
 			.awaitTermination(1, TimeUnit.MINUTES);
 
 		
-		VirtualConcept concept = (VirtualConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
-		VirtualConceptConnector connector = concept.getConnectors().iterator().next();
-		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilter();
+		Concept concept = conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
+		Connector connector = concept.getConnectors().iterator().next();
+		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilters().get(0);
 		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());
 		
 		ResolvedConceptsResult resolved = processor.resolveFilterValues(filter, List.of("m", "mf", "unknown"));

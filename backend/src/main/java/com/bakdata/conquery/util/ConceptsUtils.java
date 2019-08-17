@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 
 public class ConceptsUtils {
 
-	public static IdMap<ConnectorId, Connector> getAllConnectors(List<Concept<?>> concepts) {
+	public static IdMap<ConnectorId, Connector> getAllConnectors(List<Concept> concepts) {
 		IdMap<ConnectorId, Connector> result = new IdMap<>();
 
 		for (Concept c : concepts) {

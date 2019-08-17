@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @Getter @AllArgsConstructor @EqualsAndHashCode(callSuper=false)
-public class ConceptId extends ConceptElementId<Concept<?>> implements NamespacedId {
+public class ConceptId extends ConceptElementId<Concept> implements NamespacedId {
 
 	private final DatasetId dataset;
 	private final String name;

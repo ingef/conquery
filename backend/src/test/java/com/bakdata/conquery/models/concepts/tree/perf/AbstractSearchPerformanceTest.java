@@ -18,7 +18,6 @@ import org.junit.jupiter.api.Tag;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.tree.GroovyIndexedTest;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -41,9 +40,9 @@ import lombok.extern.slf4j.Slf4j;
 @Disabled //see #179  Find fix for surefire plugin not understanding tags
 public abstract class AbstractSearchPerformanceTest<QUERY_TYPE>{
 
-	protected TreeConcept referenceConcept;
+	protected Concept referenceConcept;
 
-	protected TreeConcept newConcept;
+	protected Concept newConcept;
 	protected CentralRegistry registry;
 
 	protected ImportId importId;

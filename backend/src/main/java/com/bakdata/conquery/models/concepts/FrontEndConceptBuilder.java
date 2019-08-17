@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.concepts;
 
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -19,9 +18,6 @@ import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -41,7 +37,7 @@ public class FrontEndConceptBuilder {
 		FERoot root = new FERoot();
 		Map<IId<?>, FENode> roots = root.getConcepts();
 		//add all real roots
-		for (Concept<?> c : storage.getAllConcepts()) {
+		for (Concept c : storage.getAllConcepts()) {
 			if(!c.isHidden()) {
 				roots.put(c.getId(), createCTRoot(c, storage.getStructure()));
 			}
@@ -53,7 +49,7 @@ public class FrontEndConceptBuilder {
 		return root;
 	}
 
-	private static FENode createCTRoot(Concept<?> c, StructureNode[] structureNodes) {
+	private static FENode createCTRoot(Concept c, StructureNode[] structureNodes) {
 
 		MatchingStats matchingStats = c.getMatchingStats();
 
@@ -65,14 +61,14 @@ public class FrontEndConceptBuilder {
 			.orElse(null);
 
 		FENode n = FENode.builder()
-				.active(c instanceof VirtualConcept)
+				.active(true)
 				.description(c.getDescription())
 				.label(c.getLabel())
 				.additionalInfos(c.getAdditionalInfos())
 				.matchingEntries(matchingStats.countEvents())
 				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.detailsAvailable(Boolean.TRUE)
-				.codeListResolvable(c instanceof TreeConcept)
+				.codeListResolvable(c.isTreeConcept())
 				.parent(structureParent)
 				.selects(c
 					.getSelects()
@@ -88,11 +84,10 @@ public class FrontEndConceptBuilder {
 				)
 				.build();
 		
-		if(c instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)c;
-			if(tree.getChildren()!=null) {
+		if(c.isTreeConcept()) {
+			if(c.getChildren()!=null) {
 				n.setChildren(
-					tree
+					c
 						.getChildren()
 						.stream()
 						.map(ConceptTreeChild::getId)
@@ -136,14 +131,11 @@ public class FrontEndConceptBuilder {
 				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.build();
 		
-		if(ce instanceof ConceptTreeNode) {
-			ConceptTreeNode<?> tree = (ConceptTreeNode<?>)ce;
-			if(tree.getChildren()!=null) {
-				n.setChildren(tree.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
-			}
-			if (tree.getParent() != null) {
-				n.setParent(tree.getParent().getId());
-			}
+		if(ce.getChildren()!=null) {
+			n.setChildren(ce.getChildren().stream().map(IdentifiableImpl::getId).toArray(ConceptTreeChildId[]::new));
+		}
+		if (ce.getParent() != null) {
+			n.setParent(ce.getParent().getId());
 		}
 		return n;
 	}
@@ -223,7 +215,7 @@ public class FrontEndConceptBuilder {
 					.build();
 	}
 
-	public static FEList createTreeMap(Concept<?> concept) {
+	public static FEList createTreeMap(Concept concept) {
 		FEList map = new FEList();
 		fillTreeMap(concept, map);
 		return map;
@@ -231,8 +223,8 @@ public class FrontEndConceptBuilder {
 
 	private static void fillTreeMap(ConceptElement<?> ce, FEList map) {
 		map.add(ce.getId(), createCTNode(ce));
-		if (ce instanceof ConceptTreeNode && ((ConceptTreeNode<?>) ce).getChildren() != null) {
-			for (ConceptTreeChild c : ((ConceptTreeNode<?>) ce).getChildren()) {
+		if (ce.getChildren() != null) {
+			for (ConceptTreeChild c : ce.getChildren()) {
 				fillTreeMap(c, map);
 			}
 		}

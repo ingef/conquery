@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.concepts.tree;
 
 import java.util.Map;
 
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
@@ -19,7 +20,7 @@ public class ConceptTreeCache {
 	private int misses;
 
 	@JsonIgnore
-	private final TreeConcept treeConcept;
+	private final Concept treeConcept;
 
 	@JsonIgnore
 	private final AStringType type;
@@ -28,7 +29,7 @@ public class ConceptTreeCache {
 	@JsonIgnore
 	private final ConceptTreeChild[] values;
 
-	public ConceptTreeCache(TreeConcept treeConcept, AStringType type) {
+	public ConceptTreeCache(Concept treeConcept, AStringType type) {
 		this.type = type;
 		this.treeConcept = treeConcept;
 		

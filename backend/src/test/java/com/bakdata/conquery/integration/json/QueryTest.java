@@ -179,14 +179,14 @@ public class QueryTest extends AbstractQueryEngineTest {
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
 		Dataset dataset = support.getDataset();
 
-		List<Concept<?>> concepts = parseSubTree(
+		List<Concept> concepts = parseSubTree(
 				support,
 				rawConcepts,
 				Jackson.MAPPER.getTypeFactory().constructParametricType(List.class, Concept.class),
 				list -> list.forEach(c -> c.setDataset(support.getDataset().getId()))
 		);
 
-		for (Concept<?> concept : concepts) {
+		for (Concept concept : concepts) {
 			support.getDatasetsProcessor().addConcept(dataset, concept);
 		}
 	}

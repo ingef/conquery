@@ -61,7 +61,7 @@ public class CQConcept implements CQElement {
 
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
 
-		Concept<?> c = concepts[0].getConcept();
+		Concept c = concepts[0].getConcept();
 
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable t : tables) {

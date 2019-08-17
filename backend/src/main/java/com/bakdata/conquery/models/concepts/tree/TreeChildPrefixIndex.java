@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.conditions.OrCondition;
 import com.bakdata.conquery.models.concepts.conditions.PrefixCondition;
@@ -47,7 +48,7 @@ public class TreeChildPrefixIndex {
 				;
 	}
 
-	public static void putIndexInto(ConceptTreeNode root) {
+	public static void putIndexInto(ConceptElement<?> root) {
 		if(root.getChildIndex() != null) {
 			return;
 		}

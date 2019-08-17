@@ -1,14 +1,15 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.stream.Collectors;
 
 import javax.validation.ConstraintValidatorContext;
+import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdReferenceDeserializer;
 import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
@@ -36,14 +37,16 @@ import lombok.Setter;
  * A connector represents the connection between a column and a concept.
  */
 @Getter @Setter @DetailedValid
-public abstract class Connector extends Labeled<ConnectorId> implements Serializable, SelectHolder<Select> {
+public class Connector extends Labeled<ConnectorId> implements SelectHolder<Select> {
 
-	private static final long serialVersionUID = 1L;
-
+	@NotNull @NsIdRef
+	private Column column;
+	@Valid @JsonManagedReference
+	private List<Filter<?>> filters = new ArrayList<>();
 	@NotNull @JsonManagedReference
 	private List<ValidityDate> validityDates = new ArrayList<>();
 	@JsonBackReference
-	private Concept<?> concept;
+	private Concept concept;
 	@JsonIgnore @Getter(AccessLevel.NONE) @Setter(AccessLevel.NONE)
 	private transient IdMap<FilterId, Filter<?>> allFiltersMap;
 
@@ -51,7 +54,7 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	private List<Select> selects = new ArrayList<>();
 
 	@Override
-	public Concept<?> findConcept() {
+	public Concept findConcept() {
 		return concept;
 	}
 	
@@ -75,8 +78,6 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	public ConnectorId createId() {
 		return new ConnectorId(concept.getId(), getName());
 	}
-
-	public abstract Table getTable();
 
 	@JsonIgnore
 	public Column getSelectableDate(String name) {
@@ -144,7 +145,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 	}
 
 	@JsonIgnore
-	public abstract List<Filter<?>> collectAllFilters();
+	public List<Filter<?>> collectAllFilters() {
+		return filters;
+	}
 
 	public <T extends Filter> T getFilter(FilterId id) {
 		if(allFiltersMap==null) {
@@ -166,6 +169,9 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			f.addImport(imp);
 		}
 	}
-
-	//public abstract EventProcessingResult processEvent(Event r) throws ConceptConfigurationException;
+	
+	@JsonIgnore
+	public Table getTable() {
+		return column.getTable();
+	}
 }

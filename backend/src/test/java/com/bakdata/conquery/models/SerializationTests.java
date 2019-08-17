@@ -13,9 +13,9 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Mandator;
 import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.ValidityDate;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
-import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
@@ -79,7 +79,7 @@ public class SerializationTests {
 		Dataset dataset = new Dataset();
 		dataset.setName("datasetName");
 		
-		TreeConcept concept = new TreeConcept();
+		Concept concept = new Concept();
 		concept.setDataset(dataset.getId());
 		concept.setLabel("conceptLabel");
 		concept.setName("conceptName");
@@ -100,7 +100,7 @@ public class SerializationTests {
 		
 		column.setTable(table);
 		
-		ConceptTreeConnector connector = new ConceptTreeConnector();
+		Connector connector = new Connector();
 		connector.setConcept(concept);
 		connector.setLabel("connLabel");
 		connector.setName("connName");
@@ -125,7 +125,7 @@ public class SerializationTests {
 		registry.register(valDate);
 		
 		SerializationTestUtil
-			.forType(TreeConcept.class)
+			.forType(Concept.class)
 			.registry(registry)
 			.test(concept);
 	}

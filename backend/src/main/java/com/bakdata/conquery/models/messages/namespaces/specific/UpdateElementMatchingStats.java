@@ -5,8 +5,8 @@ import java.util.Map.Entry;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.concepts.MatchingStats;
-import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -32,10 +32,10 @@ public class UpdateElementMatchingStats extends NamespaceMessage.Slow {
 			ConceptElementId<?> target = entry.getKey();
 			MatchingStats.Entry value = entry.getValue();
 			
-			Concept<?> c = context.getStorage().getConcept(target.findConcept());
+			Concept c = context.getStorage().getConcept(target.findConcept());
 			//if a child node
 			if(target instanceof ConceptTreeChildId) {
-				ConceptTreeNode<?> child = c.getChildById((ConceptTreeChildId) target);
+				ConceptElement<?> child = c.getChildById((ConceptTreeChildId) target);
 				child.getMatchingStats().updateEntry(source, value);
 			}
 			//otherwise just update the concept

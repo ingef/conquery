@@ -51,8 +51,8 @@ public class GroovyIndexedTest {
 				.map(v -> Arguments.of(v, rowMap.get()));
 	}
 
-	private static TreeConcept indexedConcept;
-	private static TreeConcept oldConcept;
+	private static Concept indexedConcept;
+	private static Concept oldConcept;
 	private static final String CONCEPT_SOURCE = "groovy.concept.json";
 
 	@BeforeAll

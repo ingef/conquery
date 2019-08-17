@@ -30,7 +30,7 @@ public class BlockManager {
 	private final JobManager jobManager;
 	private final WorkerStorage storage;
 	private final Worker worker;
-	private final IdMap<ConceptId, Concept<?>> concepts = new IdMap<>();
+	private final IdMap<ConceptId, Concept> concepts = new IdMap<>();
 	private final IdMap<BucketId, Bucket> buckets = new IdMap<>();
 	private final IdMap<CBlockId, CBlock> cBlocks = new IdMap<>();
 	@Getter
@@ -48,7 +48,7 @@ public class BlockManager {
 	}
 	
 	private void fullUpdate() {
-		for(Concept<?> c:concepts) {
+		for(Concept c:concepts) {
 			for(Connector con:c.getConnectors()) {
 				try(Locked lock = cBlockLocks.acquire(con.getId())) {
 					Table t = con.getTable();
@@ -114,7 +114,7 @@ public class BlockManager {
 		buckets.add(bucket);
 		registerBucket(bucket);
 		
-		for(Concept<?> c:concepts) {
+		for(Concept c:concepts) {
 			for(Connector con:c.getConnectors()) {
 				try(Locked lock = cBlockLocks.acquire(con.getId())) {
 					CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, con.getTable());
@@ -136,7 +136,7 @@ public class BlockManager {
 		}
 	}
 	
-	public void addConcept(Concept<?> c) {
+	public void addConcept(Concept c) {
 		concepts.add(c);
 		
 		for(Connector con:c.getConnectors()) {
@@ -184,7 +184,7 @@ public class BlockManager {
 		if(bucket!=null) {
 			deregisterBucket(bucket);
 
-			for(Concept<?> c:concepts) {
+			for(Concept c:concepts) {
 				for(Connector con:c.getConnectors()) {
 					try(Locked lock = cBlockLocks.acquire(con.getId())) {
 						if(con.getTable().getId().equals(bucket.getImp().getTable())) {
@@ -204,7 +204,7 @@ public class BlockManager {
 	}
 
 	public void removeConcept(ConceptId conceptId) {
-		Concept<?> c = concepts.remove(conceptId);
+		Concept c = concepts.remove(conceptId);
 
 		if (c == null) {
 			return;

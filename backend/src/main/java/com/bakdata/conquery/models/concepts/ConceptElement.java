@@ -7,10 +7,13 @@ import java.util.Objects;
 
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -48,11 +51,24 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	}
 	
 	@JsonIgnore
-	public abstract Concept<?> getConcept();
+	public abstract Concept getConcept();
 
 	public boolean matchesPrefix(int[] conceptPrefix) {
 		return true;
 	}
 
 	public abstract long calculateBitMask();
+	
+	@JsonManagedReference
+	public abstract List<ConceptTreeChild> getChildren();
+	public abstract int getLocalId();
+	public abstract int getDepth();
+	public abstract int[] getPrefix();
+	@JsonBackReference
+	public abstract ConceptElement<?> getParent();
+	public abstract void setLocalId(int size);
+	public abstract void setDepth(int i);
+
+	public abstract TreeChildPrefixIndex getChildIndex();
+	public abstract void setChildIndex(TreeChildPrefixIndex childIndex);
 }
