@@ -19,7 +19,7 @@ public class ColumnEqualCondition implements CTCondition {
 
 	@Setter @Getter @NotEmpty
 	private HashSet<String> values;
-	@NotEmpty
+	@NotEmpty @Setter @Getter
 	private String column;
 
 	@Override
