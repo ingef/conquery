@@ -20,6 +20,7 @@ import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -37,7 +38,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
+import com.bakdata.conquery.models.types.specific.AStringType;
+import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -51,7 +54,7 @@ public class GenerationTests {
 				Random r = new Random(7);
 				ArrayList<Object[]> arrays = new ArrayList<>();
 				for(int i = 0;i<numberOfValues;i++) {
-					Object[] event = new Object[17];
+					Object[] event = new Object[18];
 					arrays.add(event);
 
 					if(r.nextBoolean()) {
@@ -97,6 +100,9 @@ public class GenerationTests {
 					if(r.nextBoolean()) {
 						event[16] = BigDecimal.valueOf(r.nextInt(4), r.nextInt(120)-60);
 					}
+					if(r.nextBoolean()) {
+						event[17] = Integer.toString(r.nextInt(800));
+					}
 				}
 				arrays.trimToSize();
 
@@ -123,7 +129,8 @@ public class GenerationTests {
 			MajorTypeId.INTEGER.createParser(),
 			MajorTypeId.INTEGER.createParser(),
 			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.DECIMAL.createParser()
+			MajorTypeId.DECIMAL.createParser(),
+			MajorTypeId.STRING.createParser()
 		};
 
 
@@ -191,13 +198,16 @@ public class GenerationTests {
 	@ParameterizedTest(name="{0}")
 	@MethodSource("createRandomContent")
 	public void testSerialization(int numberOfValues, List<Object[]> arrays) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, NoSuchMethodException, SecurityException, JSONException {
+		List<Object[]> originalArrays = new ArrayList<>(arrays);
+		originalArrays.replaceAll(v->Arrays.copyOf(v, v.length));
+		
 		Bucket bucket = generateBucket(arrays);
 		for(int i=0;i<arrays.size();i++) {
 			for(int c=0;c<arrays.get(i).length;c++) {
 				Column fake = new Column();
 				fake.setPosition(c);
 				
-				Object orig = arrays.get(i)[c];
+				Object orig = originalArrays.get(i)[c];
 				String message = "checking "+c+" "+bucket.getImp().getColumns()[c].getType()+":"+i+" = "+orig;
 				
 				if(orig == null) {
@@ -206,6 +216,7 @@ public class GenerationTests {
 						.isFalse();
 				}
 				else {
+					ImportColumn impCol = bucket.getImp().getColumns()[c];
 					assertThat(bucket.has(i, fake))
 						.as(message+" is not null")
 						.isTrue();
@@ -214,6 +225,11 @@ public class GenerationTests {
 						assertThat((BigDecimal)bucket.getAsObject(i, fake))
 							.as(message)
 							.usingComparator(BigDecimal::compareTo)
+							.isEqualTo(orig);
+					}
+					else if(impCol.getType().getTypeId() == MajorTypeId.STRING) {
+						assertThat(((AStringType<?>)impCol.getType()).getElement(bucket.getString(i, fake)))
+							.as(message)
 							.isEqualTo(orig);
 					}
 					else {

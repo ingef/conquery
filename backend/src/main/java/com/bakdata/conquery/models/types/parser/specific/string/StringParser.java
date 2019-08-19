@@ -1,14 +1,17 @@
-package com.bakdata.conquery.models.types.parser.specific;
+package com.bakdata.conquery.models.types.parser.specific.string;
 
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.lang3.StringUtils;
 
-import com.bakdata.conquery.models.dictionary.MapDictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
@@ -16,27 +19,29 @@ import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.Transformer;
+import com.bakdata.conquery.models.types.parser.specific.VarIntParser;
+import com.bakdata.conquery.models.types.parser.specific.string.TypeGuesser.Guess;
 import com.bakdata.conquery.models.types.specific.AStringType;
-import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
-import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.models.types.specific.StringTypePrefix;
 import com.bakdata.conquery.models.types.specific.StringTypeSingleton;
 import com.bakdata.conquery.models.types.specific.StringTypeSuffix;
 import com.bakdata.conquery.models.types.specific.VarIntType;
-import com.bakdata.conquery.util.dict.SuccinctTrie;
 import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
 
+import lombok.Getter;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j @Getter
 public class StringParser extends Parser<Integer> {
 
 	private DictionaryId dictionaryId = new DictionaryId(new DatasetId("null"), UUID.randomUUID().toString());
-	private VarIntParser subType = new VarIntParser(); 
+	private VarIntParser indexType = new VarIntParser(); 
 	private LinkedHashMap<String, Integer> strings = new LinkedHashMap<>();
+	private List<byte[]> decoded;
+	private Encoding encoding;
 	private String prefix = null;
 	private String suffix = null;
 	
@@ -57,13 +62,13 @@ public class StringParser extends Parser<Integer> {
 	@Override
 	public Integer addLine(Integer v) {
 		super.addLine(v);
-		return subType.addLine(v);
+		return indexType.addLine(v);
 	}
 	
-	@SuppressWarnings("unchecked")
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	@Override
 	protected Decision<Integer, ?, ? extends CType<Integer, ?>> decideType() {
-		Decision<Integer, Number, VarIntType> subDecision = subType.findBestType();
+		Decision<Integer, Number, VarIntType> subDecision = indexType.findBestType();
 
 		//check if a singleton type is enough
 		if(strings.size() <= 1) {
@@ -103,13 +108,27 @@ public class StringParser extends Parser<Integer> {
 			}
 		}
 		
-
-		//check if encoding
-		Encoding encoding = findEncoding();
-		log.debug("Chosen encoding is {}", encoding);
+		decode();
 		
-		//create base type
-		AStringType<Number> result = createBaseType(encoding);
+		Guess guess = Stream.of(
+			new TrieTypeGuesser(this),
+			new MapTypeGuesser(this),
+			new NumberTypeGuesser(this)
+		)
+		.map(TypeGuesser::createGuess)
+		.filter(Objects::nonNull)
+		.min(Comparator.naturalOrder())
+		.get();
+		
+		log.info(
+			"\tUsing {}(est. {}) for {}",
+			guess.getGuesser().getClass().getSimpleName(),
+			BinaryByteUnit.format(guess.estimate()),
+			dictionaryId
+		);
+		
+		AStringType<Number> result = guess.getType();
+		//wrap in prefix suffix
 		if(!StringUtils.isEmpty(prefix)) {
 			result = new StringTypePrefix(result, prefix);
 			setLineCounts(result);
@@ -118,45 +137,17 @@ public class StringParser extends Parser<Integer> {
 			result = new StringTypeSuffix(result, suffix);
 			setLineCounts(result);
 		}
-		return new Decision<>(
-			subDecision.getTransformer(),
+		return new Decision(
+			guess.getTransformer(),
 			result
 		);
 	}
-
-	public StringTypeEncoded createBaseType(Encoding encoding) {
-		StringTypeDictionary type = new StringTypeDictionary(subType.decideType().getType());
-		SuccinctTrie trie = new SuccinctTrie();
-		for(String v: strings.keySet()) {
-			trie.add(encoding.decode(v));
-		}
-		long trieSize = trie.estimateMemoryConsumption();
-		long mapSize = MapDictionary.estimateMemoryConsumption(trie.size(), trie.getTotalBytesStored());
-
-		if(trieSize < mapSize) {
-			trie.compress();
-			type.setDictionary(trie);
-		}
-		else {
-			log.debug(
-				"Using MapDictionary(est. {}) instead of Trie(est. {}) for {}",
-				BinaryByteUnit.format((long)mapSize),
-				BinaryByteUnit.format((long)trieSize),
-				dictionaryId
-			);
-			MapDictionary map = new MapDictionary();
-			for(String v : strings.keySet()) {
-				map.add(encoding.decode(v));
-			}
-			type.setDictionary(map);
-		}
-		type.setDictionaryId(dictionaryId);
-		setLineCounts(type);
-		StringTypeEncoded result = new StringTypeEncoded(type, encoding);
-		setLineCounts(result);
-		return result;
-	}
 	
+	private void decode() {
+		encoding = findEncoding();
+		log.info("\tChosen encoding is {} for {}", encoding, dictionaryId);
+		setEncoding(encoding);
+	}
 	private Encoding findEncoding() {
 		EnumSet<Encoding> bases = EnumSet.allOf(Encoding.class);
 		for (String value : strings.keySet()) {
@@ -169,5 +160,15 @@ public class StringParser extends Parser<Integer> {
 		return bases.stream()
 			.min(Encoding::compareTo)
 			.orElseThrow(() -> new IllegalStateException("No valid encoding."));
+		
+	}
+
+	public void setEncoding(Encoding encoding) {
+		this.encoding = encoding;
+		decoded = strings
+			.entrySet()
+			.stream()
+			.map(e->encoding.decode(e.getKey()))
+			.collect(Collectors.toList());
 	}
 }

@@ -12,7 +12,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestFactory;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
 
 import lombok.extern.slf4j.Slf4j;
