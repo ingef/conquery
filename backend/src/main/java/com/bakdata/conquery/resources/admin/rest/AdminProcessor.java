@@ -10,6 +10,9 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CSV;
@@ -89,6 +92,9 @@ public class AdminProcessor {
 
 	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
 		c.setDataset(dataset.getId());
+		if(namespaces.get(dataset.getId()).getStorage().getConcept(c.getId()) != null) {
+			throw new WebApplicationException("Can't replace already existing concept "+c.getId(), Status.BAD_REQUEST);
+		}
 		jobManager
 			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
 		jobManager
