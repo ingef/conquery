@@ -203,12 +203,12 @@ export const loadFilterSuggestionsError = (error, tableIdx, filterIdx) =>
 
 export const loadFilterSuggestions = (
   datasetId,
-  tableIdx,
-  tableId,
   conceptId,
-  filterIdx,
+  tableId,
   filterId,
-  prefix
+  prefix,
+  tableIdx,
+  filterIdx
 ) => {
   return (dispatch: Dispatch) => {
     dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
@@ -227,12 +227,12 @@ const setResolvedFilterValues = (res, tableIdx, filterIdx) =>
 
 export const dropFilterValuesFile = (
   datasetId,
-  treeId,
-  tableIdx,
+  conceptId,
   tableId,
-  filterIdx,
   filterId,
-  file
+  file,
+  tableIdx,
+  filterIdx
 ) => async dispatch => {
   const rows = await getUniqueFileRows(file);
 
@@ -244,7 +244,7 @@ export const dropFilterValuesFile = (
   //   }
   // };
   const result = await dispatch(
-    resolveFilterValues(datasetId, treeId, tableId, filterId, rows)
+    resolveFilterValues(datasetId, conceptId, tableId, filterId, rows)
   );
 
   return dispatch(setResolvedFilterValues(result, tableIdx, filterIdx));

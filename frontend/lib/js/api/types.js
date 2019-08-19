@@ -52,10 +52,23 @@ export type RangeFilterT = FilterBaseT & {
 
 export type MultiSelectFilterValueT = (string | number)[];
 export type MultiSelectFilterT = FilterBaseT & {
-  type: "MULTI_SELECT" | "BIG_MULTI_SELECT",
+  type: "MULTI_SELECT",
   unit?: string,
   options: SelectOptionsT,
   defaultValue: ?MultiSelectFilterValueT
+};
+
+export type BigMultiSelectFilterT = MultiSelectFilterT & {
+  type: "BIG_MULTI_SELECT",
+  allowDropFile: boolean,
+  // Not needed in this format:
+  template: {
+    filePath: string, // "/.../import/stable/Referenzen/example.csv",
+    columns: string[],
+    columnValue: string, // Unclear, what that's even needed for
+    value: string,
+    optionValue: string
+  }
 };
 
 export type SelectFilterValueT = string | number;
@@ -145,6 +158,7 @@ export type FilterConfigT = {
     | RangeFilterValueT
     | SelectFilterValueT
     | MultiSelectFilterValueT
+    | BigMultiSelectFilterValueT
 };
 
 export type TableConfigT = {
