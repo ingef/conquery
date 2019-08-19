@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.types.parser.specific.DecimalParser;
 import com.bakdata.conquery.models.types.parser.specific.IntegerParser;
 import com.bakdata.conquery.models.types.parser.specific.MoneyParser;
 import com.bakdata.conquery.models.types.parser.specific.RealParser;
-import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
