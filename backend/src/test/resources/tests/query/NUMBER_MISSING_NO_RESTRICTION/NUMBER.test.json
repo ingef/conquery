@@ -38,7 +38,7 @@
          "connectors":[  
             {  
                "label":"number_connector",
-               "table":"vers_stamm",
+               "column": "vers_stamm.value",
                "validityDates":{  
                   "label":"datum",
                   "column":"vers_stamm.datum"

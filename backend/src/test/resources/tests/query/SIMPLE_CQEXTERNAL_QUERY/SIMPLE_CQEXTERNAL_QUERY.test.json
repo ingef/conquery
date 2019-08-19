@@ -22,7 +22,7 @@
             "connectors": {
               "label": "tree_label",
               "name": "test_concept",
-              "table": "test_table",
+              "column": "test_table.datum",
               "validityDates": {"label": "datum" ,"column": "test_table.datum"}
             }
         }

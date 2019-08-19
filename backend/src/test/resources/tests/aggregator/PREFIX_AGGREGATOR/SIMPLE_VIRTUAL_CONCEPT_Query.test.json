@@ -26,7 +26,7 @@
       "connectors": [
         {
           "label": "connector",
-          "column": "vers_stamm..geschlecht",
+          "column": "vers_stamm.geschlecht",
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"

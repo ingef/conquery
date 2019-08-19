@@ -38,7 +38,7 @@
       "connectors": [
         {
           "label": "geschlecht_connector",
-          "table": "vers_stamm",
+          "column": "vers_stamm.geburtsdatum",
           "validityDates": {
             "label": "indexdatum",
             "column": "vers_stamm.indexdatum"

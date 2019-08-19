@@ -52,7 +52,7 @@
          "connectors":[  
             {  
                "label":"alterxy",
-               "table":"vers_stamm",
+               "column": "vers_stamm.geburtsdatum",
                "validityDates":{  
                   "label":"versichertenzeit",
                   "column":"vers_stamm.versichertenzeit"

@@ -41,7 +41,7 @@
             "connectors": [
                 {
                     "label": "test_connector",
-                    "table": "test_table",
+                    "column": "test_table.test_column",
                     "validityDates": {"label": "datum" ,"column": "test_table.datum"},
                     "filters": {
                         "label": "test_filter",

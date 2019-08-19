@@ -39,7 +39,7 @@
          "connectors":[  
             {  
                "label":"kg_tage_connector",
-               "table":"vers_stamm",
+               "column": "vers_stamm.datum",
                "validityDates":{  
                   "label":"datum",
                   "column":"vers_stamm.datum"

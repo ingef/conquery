@@ -49,7 +49,7 @@
          "connectors":[  
             {  
                "label":"geschlecht_connector",
-               "table":"vers_stamm",
+               "column": "vers_stamm.geschlecht",
                "validityDates":{  
                   "label":"datum",
                   "column":"vers_stamm.datum"

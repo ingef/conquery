@@ -27,7 +27,7 @@
       "connectors": [
         {
           "label": "connector",
-          "table": "vers_stamm",
+          "column": "vers_stamm.behandlungsdatum",
           "validityDates": {
             "label": "datum",
             "column": "vers_stamm.datum"
