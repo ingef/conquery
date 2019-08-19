@@ -57,12 +57,14 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 				throw new ConceptConfigurationException(getConnector(),
 					String.format("Too many possible values (%d of %d in filter %s).", values.size(), maximumSize, this.getId()));
 			}
-			f.setOptions(
-				values
-					.stream()
-					.map(v->new FEValue(getLabelFor(v), v))
-					.collect(Collectors.toList())
-			);
+			if(this.filterType != FEFilterType.BIG_MULTI_SELECT) {
+				f.setOptions(
+					values
+						.stream()
+						.map(v->new FEValue(getLabelFor(v), v))
+						.collect(Collectors.toList())
+				);
+			}
 		}
 	}
 
