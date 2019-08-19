@@ -23,7 +23,6 @@
   "concepts": [
     {
       "label": "SELECT",
-      "type": "VIRTUAL",
       "connectors": [
         {
           "label": "connector",

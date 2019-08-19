@@ -56,7 +56,6 @@
   "concepts": [
     {
       "label": "geschlecht_select",
-      "type": "VIRTUAL",
       "connectors": [
         {
           "label": "geschlecht_connector",
@@ -65,7 +64,7 @@
             "label": "datum",
             "column": "vers_stamm.datum"
           },
-          "filter": {
+          "filters": {
             "label": "geschlecht",
             "column": "vers_stamm.geschlecht",
             "type": "SINGLE_SELECT"

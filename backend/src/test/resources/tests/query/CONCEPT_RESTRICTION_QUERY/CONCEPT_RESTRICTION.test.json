@@ -15,9 +15,7 @@
 					},
 					"child": {
 						"type": "CONCEPT",
-						"ids": [
-							"${dataset}.icd.f00$2df99.f20$2df29.f20"
-						],
+						"ids": ["${dataset}.icd.f00$2df99.f20$2df29.f20"],
 						"label": "F20",
 						"tables": [
 							{
@@ -33,13 +31,9 @@
 	"concepts": [
 		{
 			"label": "ICD",
-			"type": "TREE",
-			"additionalInfos": [
-				{
-					"key": "ICD-Codes",
-					"value": "Historisierung bis einschließlich des Jahres 2018"
-				}
-			],
+			"additionalInfos": [{
+					"key": "ICD-Codes", "value": "Historisierung bis einschließlich des Jahres 2018"
+				}],
 			"connectors": [
 				{
 					"label": "KH-Diagnose",
@@ -82,9 +76,7 @@
 									"description": "Schizophrenie",
 									"condition": {
 										"type": "PREFIX_LIST",
-										"prefixes": [
-											"F20"
-										]
+										"prefixes": ["F20"]
 									},
 									"children": [
 										{
@@ -98,9 +90,7 @@
 											],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F200"
-												]
+												"prefixes": ["F200"]
 											}
 										},
 										{
@@ -114,25 +104,18 @@
 											],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F201"
-												]
+												"prefixes": ["F201"]
 											}
 										},
 										{
 											"label": "F20.4",
 											"description": "Postschizophrene Depression",
-											"additionalInfos": [
-												{
-													"key": "Stichworte",
-													"value": "Postschizophrene Depression"
-												}
-											],
+											"additionalInfos": [{
+													"key": "Stichworte", "value": "Postschizophrene Depression"
+												}],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F204"
-												]
+												"prefixes": ["F204"]
 											}
 										},
 										{
@@ -146,9 +129,7 @@
 											],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F205"
-												]
+												"prefixes": ["F205"]
 											}
 										},
 										{
@@ -162,9 +143,7 @@
 											],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F206"
-												]
+												"prefixes": ["F206"]
 											}
 										}
 									]
@@ -202,4 +181,4 @@
 			}
 		]
 	}
-} 
+}

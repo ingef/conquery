@@ -41,16 +41,15 @@
    "concepts":[  
       {  
          "label":"geschlecht_select",
-         "type":"VIRTUAL",
          "connectors":[  
             {  
                "label":"geschlecht_connector",
-               "table":"vers_stamm",
+               "column":"vers_stamm.datum",
                "validityDates":{  
                   "label":"datum",
                   "column":"vers_stamm.datum"
                },
-               "filter":{  
+               "filters":{  
                   "label":"geschlecht",
                   "description":"Geschlecht zur gegebenen Datumseinschränkung",
                   "column":"vers_stamm.geschlecht",

@@ -36,7 +36,6 @@
    "concepts":[  
       {  
          "label":"kg_tage_duration_sum",
-         "type":"VIRTUAL",
          "connectors":[  
             {  
                "label":"kg_tage_connector",
@@ -45,7 +44,7 @@
                   "label":"datum",
                   "column":"vers_stamm.datum"
                },
-               "filter":{  
+               "filters": {  
                   "label":"datum",
                   "description":"Zeitraum, der im oben beschriebenen Zeitraum liegen soll",
                   "column":"vers_stamm.datum",

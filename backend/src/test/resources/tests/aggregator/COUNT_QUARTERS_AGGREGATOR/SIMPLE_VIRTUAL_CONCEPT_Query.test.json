@@ -24,7 +24,6 @@
   "concepts": [
     {
       "label": "select",
-      "type": "VIRTUAL",
       "connectors": [
         {
           "label": "connector",

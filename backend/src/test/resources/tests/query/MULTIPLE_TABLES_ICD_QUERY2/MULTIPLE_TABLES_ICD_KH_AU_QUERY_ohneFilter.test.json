@@ -1,49 +1,43 @@
 {
-  "type": "QUERY_TEST",
-  "label": "MULTIPLE_TABLES_ICD_QUERY2 Test",
-  "expectedCsv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/expected-kh-au.csv",
-  "query": {
-    "type": "CONCEPT_QUERY",
-    "root": {
-      "type": "AND",
-      "children": [
-        {
-          "type": "DATE_RESTRICTION",
-          "dateRange": {
-            "min": "2017-01-01",
-            "max": "2017-12-31"
-          },
-          "child": {
-            "type": "CONCEPT",
-            "ids": [
-              "${dataset}.icd.f00$2df99.f20$2df29.f20"
-            ],
-            "label": "F20",
-            "tables": [
-              {
-                "id": "${dataset}.icd.kh_diagnose_icd_code",
-                "filters": []
-              },
-              {
-                "id": "${dataset}.icd.au_fall",
-                "filters": []
-              }
-            ]
-          }
-        }
-      ]
-    }
-  },
+	"type": "QUERY_TEST",
+	"label": "MULTIPLE_TABLES_ICD_QUERY2 Test",
+	"expectedCsv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/expected-kh-au.csv",
+	"query": {
+		"type": "CONCEPT_QUERY",
+		"root": {
+			"type": "AND",
+			"children": [
+				{
+					"type": "DATE_RESTRICTION",
+					"dateRange": {
+						"min": "2017-01-01",
+						"max": "2017-12-31"
+					},
+					"child": {
+						"type": "CONCEPT",
+						"ids": ["${dataset}.icd.f00$2df99.f20$2df29.f20"],
+						"label": "F20",
+						"tables": [
+							{
+								"id": "${dataset}.icd.kh_diagnose_icd_code",
+								"filters": []
+							},
+							{
+								"id": "${dataset}.icd.au_fall",
+								"filters": []
+							}
+						]
+					}
+				}
+			]
+		}
+	},
 	"concepts": [
 		{
 			"label": "ICD",
-			"type": "TREE",
-			"additionalInfos": [
-				{
-					"key": "ICD-Codes",
-					"value": "Historisierung bis einschließlich des Jahres 2018"
-				}
-			],
+			"additionalInfos": [{
+					"key": "ICD-Codes", "value": "Historisierung bis einschließlich des Jahres 2018"
+				}],
 			"connectors": [
 				{
 					"label": "KH-Diagnose",
@@ -85,12 +79,9 @@
 					"label": "Arzt-Diagnose",
 					"name": "arzt_diagnose_icd_code",
 					"column": "arzt_diagnose.icd_code",
-					"validityDates": [
-						{
-							"label": "Behandlungsbeginn Quartal",
-							"column": "arzt_diagnose.behandlungsquartal"
-						}
-					],
+					"validityDates": [{
+							"label": "Behandlungsbeginn Quartal", "column": "arzt_diagnose.behandlungsquartal"
+						}],
 					"filters": []
 				}
 			],
@@ -118,9 +109,7 @@
 									"description": "Schizophrenie",
 									"condition": {
 										"type": "PREFIX_LIST",
-										"prefixes": [
-											"F20"
-										]
+										"prefixes": ["F20"]
 									},
 									"children": [
 										{
@@ -134,9 +123,7 @@
 											],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F200"
-												]
+												"prefixes": ["F200"]
 											}
 										},
 										{
@@ -150,25 +137,18 @@
 											],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F201"
-												]
+												"prefixes": ["F201"]
 											}
 										},
 										{
 											"label": "F20.4",
 											"description": "Postschizophrene Depression",
-											"additionalInfos": [
-												{
-													"key": "Stichworte",
-													"value": "Postschizophrene Depression"
-												}
-											],
+											"additionalInfos": [{
+													"key": "Stichworte", "value": "Postschizophrene Depression"
+												}],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F204"
-												]
+												"prefixes": ["F204"]
 											}
 										},
 										{
@@ -182,9 +162,7 @@
 											],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F205"
-												]
+												"prefixes": ["F205"]
 											}
 										},
 										{
@@ -198,9 +176,7 @@
 											],
 											"condition": {
 												"type": "PREFIX_LIST",
-												"prefixes": [
-													"F206"
-												]
+												"prefixes": ["F206"]
 											}
 										}
 									]
@@ -212,77 +188,77 @@
 			]
 		}
 	],
-  "content": {
-    "tables": [
-      {
-        "csv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/kh-content.csv",
-        "name": "kh_diagnose",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
-        },
-        "columns": [
-          {
-            "name": "icd_code",
-            "type": "STRING",
-            "sharedDictionary": "icd"
-          },
-          {
-            "name": "entlassungsdatum",
-            "type": "DATE"
-          },
-          {
-            "name": "aufnahmedatum",
-            "type": "DATE"
-          }
-        ]
-      },
-      {
-        "csv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/au-content.csv",
-        "name": "au_diagnose",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
-        },
-        "columns": [
-          {
-            "name": "icd_code",
-            "type": "STRING",
-            "sharedDictionary": "icd"
-          },
-          {
-            "name": "au_beginn",
-            "type": "DATE"
-          },
-          {
-            "name": "au_ende",
-            "type": "DATE"
-          },
-          {
-            "name": "au-zeit",
-            "type": "DATE_RANGE"
-          }
-        ]
-      },
-      {
-        "csv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/arzt-content.csv",
-        "name": "arzt_diagnose",
-        "primaryColumn": {
-          "name": "pid",
-          "type": "STRING"
-        },
-        "columns": [
-          {
-            "name": "icd_code",
-            "type": "STRING",
-            "sharedDictionary": "icd"
-          },
-          {
-            "name": "behandlungsquartal",
-            "type": "DATE_RANGE"
-          }
-        ]
-      }
-    ]
-  }
+	"content": {
+		"tables": [
+			{
+				"csv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/kh-content.csv",
+				"name": "kh_diagnose",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},
+				"columns": [
+					{
+						"name": "icd_code",
+						"type": "STRING",
+						"sharedDictionary": "icd"
+					},
+					{
+						"name": "entlassungsdatum",
+						"type": "DATE"
+					},
+					{
+						"name": "aufnahmedatum",
+						"type": "DATE"
+					}
+				]
+			},
+			{
+				"csv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/au-content.csv",
+				"name": "au_diagnose",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},
+				"columns": [
+					{
+						"name": "icd_code",
+						"type": "STRING",
+						"sharedDictionary": "icd"
+					},
+					{
+						"name": "au_beginn",
+						"type": "DATE"
+					},
+					{
+						"name": "au_ende",
+						"type": "DATE"
+					},
+					{
+						"name": "au-zeit",
+						"type": "DATE_RANGE"
+					}
+				]
+			},
+			{
+				"csv": "tests/query/MULTIPLE_TABLES_ICD_QUERY2/arzt-content.csv",
+				"name": "arzt_diagnose",
+				"primaryColumn": {
+					"name": "pid",
+					"type": "STRING"
+				},
+				"columns": [
+					{
+						"name": "icd_code",
+						"type": "STRING",
+						"sharedDictionary": "icd"
+					},
+					{
+						"name": "behandlungsquartal",
+						"type": "DATE_RANGE"
+					}
+				]
+			}
+		]
+	}
 }

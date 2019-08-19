@@ -52,7 +52,6 @@
    "concepts":[  
       {  
          "label":"alter",
-         "type":"VIRTUAL",
          "connectors":[  
             {  
                "label":"alterxy",
@@ -61,7 +60,7 @@
                   "label":"versichertenzeit",
                   "column":"vers_stamm.versichertenzeit"
                },
-               "filter":{  
+               "filters": {  
                   "label":"alterseinschrankung",
                   "description":"Geburtsdatum",
                   "column":"vers_stamm.geburtsdatum",

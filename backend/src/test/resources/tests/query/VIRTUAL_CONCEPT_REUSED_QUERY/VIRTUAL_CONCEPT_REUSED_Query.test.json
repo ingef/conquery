@@ -38,13 +38,12 @@
     "concepts": [
         {
             "label": "test_concept",
-            "type": "VIRTUAL",
             "connectors": [
                 {
                     "label": "test_connector",
                     "table": "test_table",
                     "validityDates": {"label": "datum" ,"column": "test_table.datum"},
-                    "filter": {
+                    "filters": {
                         "label": "test_filter",
                         "description": "Tests a column against a specified value",
                         "column": "test_table.test_column",

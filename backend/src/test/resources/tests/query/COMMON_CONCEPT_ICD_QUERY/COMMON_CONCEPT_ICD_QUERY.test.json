@@ -33,7 +33,6 @@
 	"concepts": [
 		{
 			"label": "ICD",
-			"type": "TREE",
 			"additionalInfos": [
 				{
 					"key": "ICD-Codes",

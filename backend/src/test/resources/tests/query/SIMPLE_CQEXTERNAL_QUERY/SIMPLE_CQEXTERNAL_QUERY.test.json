@@ -19,7 +19,6 @@
     "concepts": [
         {
             "label": "test_tree",
-            "type":"VIRTUAL",
             "connectors": {
               "label": "tree_label",
               "name": "test_concept",

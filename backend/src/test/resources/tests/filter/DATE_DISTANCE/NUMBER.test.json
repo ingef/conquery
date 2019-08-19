@@ -29,7 +29,7 @@
       "label": "Datum",
       "column": "table.validity"
     },
-    "filter": {
+    "filters": {
       "timeUnit" : "DAYS",
       "column": "table.datum",
       "type": "DATE_DISTANCE"

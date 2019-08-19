@@ -159,9 +159,9 @@ public class FilterTest extends AbstractQueryEngineTest {
 		concept.setDataset(support.getDataset().getId());
 
 		rawConnector.put("name", "connector");
-		rawConnector.put("table", "table");
+		rawConnector.put("column", "table.datum");
 
-		((ObjectNode) rawConnector.get("filter")).put("name", "filter");
+		((ObjectNode) rawConnector.get("filters")).put("name", "filter");
 
 		connector = parseSubTree(
 				support,

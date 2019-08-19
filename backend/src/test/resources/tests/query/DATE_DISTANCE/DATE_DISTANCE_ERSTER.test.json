@@ -49,7 +49,6 @@
    "concepts":[  
       {  
          "label":"alter",
-         "type":"VIRTUAL",
          "connectors":[  
             {  
                "label":"alterxy",
@@ -58,7 +57,7 @@
                   "label":"erster",
                   "column":"vers_stamm.erster"
                },
-               "filter":{  
+               "filters": {  
                   "label":"alterseinschrankung",
                   "description":"Geburtsdatum",
                   "column":"vers_stamm.geburtsdatum",

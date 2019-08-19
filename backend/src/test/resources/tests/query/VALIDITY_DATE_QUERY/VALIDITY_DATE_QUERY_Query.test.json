@@ -21,8 +21,7 @@
     },
     "concepts": [
         {
-            "label": "test_tree",
-            "type":"TREE",
+            "label": "test_tree",            
             "connectors": {
                 "label": "tree_label",
                 "name": "test_column",
