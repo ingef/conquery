@@ -208,6 +208,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 		return Optional.ofNullable(concepts.get(id))
 			.orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
 	}
+	
+	@Override
+	public boolean hasConcept(ConceptId id) {
+		return concepts.get(id) != null;
+	}
 
 	@Override
 	public void updateConcept(Concept<?> concept) throws JSONException {
