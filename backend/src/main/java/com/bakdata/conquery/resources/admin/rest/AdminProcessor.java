@@ -93,7 +93,7 @@ public class AdminProcessor {
 	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
 		c.setDataset(dataset.getId());
 		if(namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
-			throw new WebApplicationException("Can't replace already existing concept "+c.getId(), Status.BAD_REQUEST);
+			throw new WebApplicationException("Can't replace already existing concept "+c.getId(), Status.CONFLICT);
 		}
 		jobManager
 			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
