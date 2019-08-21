@@ -10,14 +10,14 @@ import com.bakdata.conquery.models.query.queryplan.aggregators.SingleColumnAggre
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 /**
- * Aggregator, counting the number of days present.
+ * Aggregator, listing all days present.
  */
-public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
+public class DateUnionAggregator extends SingleColumnAggregator<String> {
 
 	private CDateSet set = CDateSet.create();
 	private CDateSet dateRestriction;
 
-	public DurationSumAggregatorNode(Column column) {
+	public DateUnionAggregator(Column column) {
 		super(column);
 	}
 
@@ -46,17 +46,17 @@ public class DurationSumAggregatorNode extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public DurationSumAggregatorNode doClone(CloneContext ctx) {
-		return new DurationSumAggregatorNode(getColumn());
+	public DateUnionAggregator doClone(CloneContext ctx) {
+		return new DateUnionAggregator(getColumn());
 	}
 
 	@Override
-	public Long getAggregationResult() {
-		return set.isEmpty() ? null : set.countDays();
+	public String getAggregationResult() {
+		return set.toString();
 	}
 	
 	@Override
 	public ResultType getResultType() {
-		return ResultType.INTEGER;
+		return ResultType.STRING;
 	}
 }

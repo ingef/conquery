@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 /**
  * Aggregator, returning the min duration in the column, relative to the end of date restriction.
  */
-public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
+public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	private LocalDate reference;
 	private ChronoUnit unit;
@@ -23,7 +23,7 @@ public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 	private long result = Long.MAX_VALUE;
 	private boolean hit;
 
-	public DateDistanceAggregatorNode(Column column, ChronoUnit unit) {
+	public DateDistanceAggregator(Column column, ChronoUnit unit) {
 		super(column);
 		this.unit = unit;
 	}
@@ -39,8 +39,8 @@ public class DateDistanceAggregatorNode extends SingleColumnAggregator<Long> {
 	}
 
 	@Override
-	public DateDistanceAggregatorNode doClone(CloneContext ctx) {
-		return new DateDistanceAggregatorNode(getColumn(), unit);
+	public DateDistanceAggregator doClone(CloneContext ctx) {
+		return new DateDistanceAggregator(getColumn(), unit);
 	}
 
 	@Override
