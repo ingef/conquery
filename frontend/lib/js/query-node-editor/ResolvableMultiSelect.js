@@ -6,47 +6,52 @@ import type { FieldPropsType } from "redux-form";
 import type { SelectOptionsT, FilterIdT } from "../api/types";
 
 import AsyncInputMultiSelect from "../form-components/AsyncInputMultiSelect";
+import InputMultiSelect from "../form-components/InputMultiSelect";
 import { getUniqueFileRows } from "../common/helpers/fileHelper";
 
 import { postFilterValuesResolve } from "../api/api";
 
-import type { FilterContextT } from "./TableFilters";
+import type { FiltersContextT } from "./TableFilters";
 import UploadFilterListModal from "./UploadFilterListModal";
 
-type BigMultiSelectContextT = FilterContextT & {
+type FilterContextT = FiltersContextT & {
   filterId: FilterIdT
 };
 
 type PropsT = FieldPropsType & {
-  context: BigMultiSelectContextT,
+  context: FilterContextT,
 
   label: string,
-  isLoading: boolean,
   options: SelectOptionsT,
   disabled?: ?boolean,
-  startLoadingThreshold: number,
   tooltip?: string,
-  onLoad: Function,
-  onDropFile: Function,
-  allowDropFile?: ?boolean
+  allowDropFile?: ?boolean,
+
+  isLoading?: boolean,
+  onLoad?: Function,
+  startLoadingThreshold: number
 };
 
 export default ({
   context,
+  input,
   label,
   options,
   disabled,
   tooltip,
+  allowDropFile,
+
   startLoadingThreshold,
   onLoad,
-  isLoading,
-  input,
-  allowDropFile
+  isLoading
 }: PropsT) => {
   const [resolved, setResolved] = React.useState(null);
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState(false);
   const [isModalOpen, setIsModalOpen] = React.useState(false);
+
+  // Can be both, an auto-completable (async) multi select or a regular one
+  const Component = !!onLoad ? AsyncInputMultiSelect : InputMultiSelect;
 
   const onDropFile = async file => {
     setLoading(true);
@@ -89,11 +94,11 @@ export default ({
           onClose={() => setIsModalOpen(false)}
         />
       )}
-      <AsyncInputMultiSelect
+      <Component
         input={input}
         label={label}
         options={options}
-        isLoading={isLoading}
+        isLoading={isLoading || loading}
         startLoadingThreshold={startLoadingThreshold}
         disabled={disabled}
         onLoad={onLoad}

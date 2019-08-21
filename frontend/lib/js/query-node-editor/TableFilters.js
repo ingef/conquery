@@ -4,9 +4,10 @@ import React from "react";
 import styled from "@emotion/styled";
 
 import InputSelect from "../form-components/InputSelect";
-import InputMultiSelect from "../form-components/InputMultiSelect";
 import InputRange from "../form-components/InputRange";
 import InputText from "../form-components/InputText";
+
+import ResolvableMultiSelect from "./ResolvableMultiSelect";
 
 import {
   SELECT,
@@ -27,15 +28,14 @@ import type {
   TableIdT
 } from "../api/types";
 
-import BigMultiSelect from "./BigMultiSelect";
-
-export type FilterContextT = {
+export type FiltersContextT = {
   datasetId: DatasetIdT,
   treeId: ConceptIdT,
   tableId: TableIdT
 };
 
 type PropsType = {
+  context: FiltersContextT,
   filters: ?(FilterWithValueType[]),
   className?: string,
   excludeTable: boolean,
@@ -44,9 +44,7 @@ type PropsType = {
   onLoadFilterSuggestions: Function,
   onShowDescription: Function,
   suggestions: ?Object,
-  onDropFilterValuesFile: Function,
-  currencyConfig: CurrencyConfigT,
-  context: FilterContextT
+  currencyConfig: CurrencyConfigT
 };
 
 const Row = styled("div")`
@@ -77,7 +75,8 @@ const TableFilters = (props: PropsType) => {
               );
             case MULTI_SELECT:
               return (
-                <InputMultiSelect
+                <ResolvableMultiSelect
+                  context={{ ...props.context, filterId: filter.id }}
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
@@ -86,15 +85,12 @@ const TableFilters = (props: PropsType) => {
                   label={filter.label}
                   options={filter.options}
                   disabled={props.excludeTable}
-                  onDropFile={file =>
-                    props.onDropFilterValuesFile(filterIdx, filter.id, file)
-                  }
                   allowDropFile={!!filter.allowDropFile}
                 />
               );
             case BIG_MULTI_SELECT:
               return (
-                <BigMultiSelect
+                <ResolvableMultiSelect
                   context={{ ...props.context, filterId: filter.id }}
                   input={{
                     value: filter.value,
@@ -108,6 +104,8 @@ const TableFilters = (props: PropsType) => {
                       props.suggestions[filterIdx] &&
                       props.suggestions[filterIdx].options)
                   }
+                  disabled={!!props.excludeTable}
+                  allowDropFile={!!filter.allowDropFile}
                   isLoading={
                     filter.isLoading ||
                     (props.suggestions &&
@@ -118,8 +116,6 @@ const TableFilters = (props: PropsType) => {
                   onLoad={prefix =>
                     props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)
                   }
-                  allowDropFile={!!filter.allowDropFile}
-                  disabled={!!props.excludeTable}
                 />
               );
             case INTEGER_RANGE:

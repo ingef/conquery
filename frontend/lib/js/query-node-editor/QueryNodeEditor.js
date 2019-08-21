@@ -19,7 +19,7 @@ import TableView from "./TableView";
 import { createQueryNodeEditorActions } from "./actions";
 
 const Root = styled("div")`
-  padding: 0 10px;
+  margin: 0 10px;
   left: 0;
   top: 0;
   right: 0;
@@ -77,7 +77,6 @@ export type PropsType = {
   onCloseModal: Function,
   onUpdateLabel: Function,
   onDropConcept: Function,
-  onDropFilterValuesFile: Function,
   onRemoveConcept: Function,
   onToggleTable: Function,
   onSetFilterValue: Function,

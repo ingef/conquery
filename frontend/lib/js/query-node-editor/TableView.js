@@ -29,7 +29,6 @@ const TableView = (props: PropsType) => {
     onSelectTableSelects,
     onSetDateColumn,
 
-    onDropFilterValuesFile,
     onSetFilterValue,
     onSwitchFilterMode,
     onLoadFilterSuggestions
@@ -102,17 +101,6 @@ const TableView = (props: PropsType) => {
             props.suggestions[editorState.selectedInputTableIdx]
           }
           onShowDescription={editorState.onShowDescription}
-          onDropFilterValuesFile={(filterIdx, filterId, file) =>
-            onDropFilterValuesFile(
-              props.datasetId,
-              node.tree,
-              selectedTable.id,
-              filterId,
-              file,
-              editorState.selectedInputTableIdx,
-              filterIdx
-            )
-          }
           currencyConfig={props.currencyConfig}
         />
       </MaximizedCell>
