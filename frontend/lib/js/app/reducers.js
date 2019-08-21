@@ -31,7 +31,6 @@ import { reducer as previousQueriesSearch } from "../previous-queries/search";
 import { reducer as previousQueriesFilter } from "../previous-queries/filter";
 import { reducer as uploadQueryResults } from "../previous-queries/upload";
 import { reducer as deletePreviousQueryModal } from "../previous-queries/delete-modal";
-import { reducer as uploadFilterListModal } from "../upload-filter-list-modal";
 import { reducer as snackMessage } from "../snack-message";
 import { reducer as preview } from "../preview";
 import { reducer as queryUploadConceptListModal } from "../query-upload-concept-list-modal";
@@ -52,7 +51,6 @@ const buildAppReducer = (tabs: TabT[]) => {
     startup,
     conceptTrees,
     uploadConceptListModal,
-    uploadFilterListModal,
     queryNodeEditor: createQueryNodeEditorReducer("standard"),
     queryGroupModal,
     datasets,

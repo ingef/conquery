@@ -18,7 +18,6 @@ import {
   resetAllFilters,
   toggleTimestamps,
   loadFilterSuggestions,
-  dropFilterValuesFile,
   toggleIncludeSubnodes,
   setSelects,
   setTableSelects,
@@ -67,8 +66,6 @@ const mapDispatchToProps = dispatch => ({
   onToggleTimestamps: () => dispatch(toggleTimestamps(null, null)),
   onLoadFilterSuggestions: (...params) =>
     dispatch(loadFilterSuggestions(...params)),
-  onDropFilterValuesFile: (...params) =>
-    dispatch(dropFilterValuesFile(...params)),
   onToggleIncludeSubnodes: isIncludeSubNodes =>
     dispatch(toggleIncludeSubnodes(isIncludeSubNodes)),
   onSetDateColumn: (tableIdx, value) => dispatch(setDateColumn(tableIdx, value))

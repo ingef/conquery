@@ -61,7 +61,6 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_RESOLVED_FILTER_VALUES,
   TOGGLE_INCLUDE_SUBNODES,
   SET_DATE_COLUMN
 } from "./actionTypes";
@@ -773,29 +772,6 @@ const removeConceptFromNode = (state, action) => {
   });
 };
 
-const setResolvedFilterValues = (state: StateType, action: Object) => {
-  const {
-    tableIdx,
-    filterIdx,
-    data: {
-      resolvedFilter: { value }
-    }
-  } = action.payload;
-
-  return setNodeFilterProperties(
-    state,
-    {
-      payload: {
-        tableIdx,
-        filterIdx
-      }
-    },
-    {
-      value
-    }
-  );
-};
-
 const toggleIncludeSubnodes = (state: StateType, action: Object) => {
   const { includeSubnodes } = action.payload;
 
@@ -938,8 +914,6 @@ const query = (
       return loadFilterSuggestionsError(state, action);
     case QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
-    case SET_RESOLVED_FILTER_VALUES:
-      return setResolvedFilterValues(state, action);
     case TOGGLE_INCLUDE_SUBNODES:
       return toggleIncludeSubnodes(state, action);
     case SET_DATE_COLUMN:
