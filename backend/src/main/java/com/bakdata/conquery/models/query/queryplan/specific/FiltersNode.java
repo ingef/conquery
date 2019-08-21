@@ -14,9 +14,11 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
+import lombok.Getter;
+
 
 public class FiltersNode extends QPChainNode implements EventIterating {
-
+	@Getter
 	private final List<FilterNode<?>> filters;
 
 	public FiltersNode(List<FilterNode<?>> filters, QPNode child) {
@@ -55,6 +57,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 		getChild().nextEvent(bucket, event);
 	}
 
+	@Override
 	public boolean isContained() {
 		for(FilterNode<?> f : filters) {
 			if (!f.isContained()) {
