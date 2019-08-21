@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -46,5 +47,10 @@ public class CQNegation implements CQElement {
 	@Override
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		child.collectNamespacedIds(namespacedIds);
+	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {
+		child.visit(visitor);		
 	}
 }

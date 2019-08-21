@@ -19,6 +19,7 @@ import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -61,6 +62,13 @@ public class CQOr implements CQElement {
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		for(CQElement c:children) {
 			c.collectNamespacedIds(namespacedIds);
+		}
+	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {
+		for(CQElement c:children) {
+			c.visit(visitor);
 		}
 	}
 }

@@ -155,7 +155,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 
 		concept = new VirtualConcept();
 		concept.setLabel("concept");
-		support.getDatasetsProcessor().addConcept(dataset, concept);
 
 		concept.setDataset(support.getDataset().getId());
 

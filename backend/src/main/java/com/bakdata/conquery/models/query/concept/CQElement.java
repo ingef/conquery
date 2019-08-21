@@ -14,6 +14,8 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -50,4 +52,6 @@ public interface CQElement {
 		this.collectSelects(deque);
 		return new ArrayList<>(deque);
 	}
+
+	void visit(QueryVisitor visitor);
 }
