@@ -26,7 +26,7 @@ type PropsType = FieldPropsType & {
   isLoading?: boolean,
   className?: string,
 
-  allowDropFile?: boolean,
+  allowDropFile?: ?boolean,
   onDropFile?: Function
 };
 

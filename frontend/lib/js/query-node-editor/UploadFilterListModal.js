@@ -2,16 +2,11 @@
 
 import React from "react";
 import styled from "@emotion/styled";
-import type { Dispatch } from "redux-thunk";
-import { connect } from "react-redux";
 import T from "i18n-react";
 
 import { Modal } from "../modal";
 import { ScrollableList } from "../scrollable-list";
-import type { StateType } from "../app/reducers";
 import FaIcon from "../icon/FaIcon";
-
-import { uploadFilterListModalClose } from "./actions";
 
 const Root = styled("div")`
   padding: 0 0 10px;
@@ -37,26 +32,30 @@ const CenteredIcon = styled(FaIcon)`
 `;
 
 type PropsType = {
-  unresolvedItemsCount: number,
-  resolvedItemsCount: number,
   loading: boolean,
-  isModalOpen: boolean,
   resolved: Object,
   error: Object,
   onClose: Function
 };
 
-const UploadFilterListModal = (props: PropsType) => {
-  if (!props.isModalOpen) return null;
+const selectResolvedItemsCount = resolved => {
+  return resolved &&
+    resolved.resolvedFilter &&
+    resolved.resolvedFilter.value &&
+    resolved.resolvedFilter.value.length
+    ? resolved.resolvedFilter.value.length
+    : 0;
+};
 
-  const {
-    loading,
-    resolved,
-    unresolvedItemsCount,
-    resolvedItemsCount,
-    error,
-    onClose
-  } = props;
+const selectUnresolvedItemsCount = resolved => {
+  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
+    ? resolved.unknownCodes.length
+    : 0;
+};
+
+export default ({ loading, resolved, error, onClose }: PropsType) => {
+  const resolvedItemsCount = selectResolvedItemsCount(resolved);
+  const unresolvedItemsCount = selectUnresolvedItemsCount(resolved);
 
   const hasUnresolvedItems = unresolvedItemsCount > 0;
   const hasResolvedItems = resolvedItemsCount > 0;
@@ -113,40 +112,3 @@ const UploadFilterListModal = (props: PropsType) => {
     </Modal>
   );
 };
-
-const selectResolvedItemsCount = state => {
-  const { resolved } = state.uploadFilterListModal;
-
-  return resolved &&
-    resolved.resolvedFilter &&
-    resolved.resolvedFilter.value &&
-    resolved.resolvedFilter.value.length
-    ? resolved.resolvedFilter.value.length
-    : 0;
-};
-
-const selectUnresolvedItemsCount = state => {
-  const { resolved } = state.uploadFilterListModal;
-
-  return resolved && resolved.unknownCodes && resolved.unknownCodes.length
-    ? resolved.unknownCodes.length
-    : 0;
-};
-
-const mapStateToProps = (state: StateType) => ({
-  isModalOpen: state.uploadFilterListModal.isModalOpen,
-  loading: state.uploadFilterListModal.loading,
-  resolved: state.uploadFilterListModal.resolved,
-  resolvedItemsCount: selectResolvedItemsCount(state),
-  unresolvedItemsCount: selectUnresolvedItemsCount(state),
-  error: state.uploadFilterListModal.error
-});
-
-const mapDispatchToProps = (dispatch: Dispatch) => ({
-  onClose: () => dispatch(uploadFilterListModalClose())
-});
-
-export default connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(UploadFilterListModal);

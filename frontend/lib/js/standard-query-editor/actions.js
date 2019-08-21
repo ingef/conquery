@@ -5,10 +5,8 @@ import { type Dispatch } from "redux-thunk";
 import api from "../api";
 import { flatmap } from "../common/helpers/commonHelper";
 import type { DateRangeT } from "../api/types";
-import { getUniqueFileRows } from "../common/helpers/fileHelper";
 
 import { defaultSuccess, defaultError } from "../common/actions";
-import { resolveFilterValues } from "../upload-filter-list-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
 
 import type { DraggedNodeType, DraggedQueryType } from "./types";
@@ -36,7 +34,6 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_RESOLVED_FILTER_VALUES,
   TOGGLE_INCLUDE_SUBNODES,
   SET_DATE_COLUMN
 } from "./actionTypes";
@@ -220,32 +217,4 @@ export const loadFilterSuggestions = (
         e => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
       );
   };
-};
-
-const setResolvedFilterValues = (res, tableIdx, filterIdx) =>
-  defaultSuccess(SET_RESOLVED_FILTER_VALUES, res, { tableIdx, filterIdx });
-
-export const dropFilterValuesFile = (
-  datasetId,
-  conceptId,
-  tableId,
-  filterId,
-  file,
-  tableIdx,
-  filterIdx
-) => async dispatch => {
-  const rows = await getUniqueFileRows(file);
-
-  // Result looks something like that:
-  // const result = {
-  //   // unknownCodes: ...
-  //   resolvedFilter: {
-  //     value: rows.map(row => ({ label: row, value: row }))
-  //   }
-  // };
-  const result = await dispatch(
-    resolveFilterValues(datasetId, conceptId, tableId, filterId, rows)
-  );
-
-  return dispatch(setResolvedFilterValues(result, tableIdx, filterIdx));
 };
