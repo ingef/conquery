@@ -8,14 +8,16 @@ import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
-@RequiredArgsConstructor
+@AllArgsConstructor
 public abstract class FilterNode<FILTER_VALUE> implements EventIterating, CtxCloneable<FilterNode<FILTER_VALUE>> {
 
-	@Getter
-	protected final FILTER_VALUE filterValue;
+	@Setter @Getter
+	protected FILTER_VALUE filterValue;
 
 	@Override
 	public abstract void collectRequiredTables(Set<TableId> requiredTables);
