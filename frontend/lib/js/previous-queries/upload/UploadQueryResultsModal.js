@@ -70,7 +70,7 @@ export default ({ loading, success, error, onClose, onUpload }: PropsT) => {
   return (
     <Modal
       onClose={onClose}
-      doneButton
+      closeIcon
       headline={
         <>
           {T.translate("uploadQueryResultsModal.headline")}

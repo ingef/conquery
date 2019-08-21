@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
-import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.util.io.SmallOut;
 
 import io.dropwizard.util.Size;

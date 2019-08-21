@@ -49,4 +49,9 @@ public class SpecialDateUnion implements Aggregator<String> {
 	public ResultType getResultType() {
 		return ResultType.STRING;
 	}
+	
+	@Override
+	public String toString(){
+		return getClass().getSimpleName();
+	}
 }

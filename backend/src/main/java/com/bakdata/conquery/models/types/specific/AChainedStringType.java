@@ -85,5 +85,6 @@ public abstract class AChainedStringType extends AStringType<Number> {
 	@Override
 	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
 		subType.adaptUnderlyingDictionary(newDict, newNumberType);
+		this.setPrimitiveType(newNumberType.getPrimitiveType());
 	}
 }

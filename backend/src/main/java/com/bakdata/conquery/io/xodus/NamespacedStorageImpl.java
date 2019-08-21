@@ -84,7 +84,6 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 						: concept.getDataset()
 				);
 				concept.setDataset(ds.getId());
-				ds.addConcept(concept);
 
 				concept.initElements(validator);
 				
@@ -208,6 +207,11 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	public Concept<?> getConcept(ConceptId id) {
 		return Optional.ofNullable(concepts.get(id))
 			.orElseThrow(() -> new NoSuchElementException("Could not find the concept " + id));
+	}
+	
+	@Override
+	public boolean hasConcept(ConceptId id) {
+		return concepts.get(id) != null;
 	}
 
 	@Override

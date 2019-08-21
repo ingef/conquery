@@ -53,6 +53,7 @@ public class TablesUIResource extends HTables {
 					.flatMap(i->Arrays.stream(i.getColumns()))
 					.filter(c->c.getType().getTypeId()==MajorTypeId.STRING)
 					.map(c->(AStringType)c.getType())
+					.filter(c->c.getUnderlyingDictionary() != null)
 					.collect(Collectors.groupingBy(t->t.getUnderlyingDictionary().getId()))
 					.values()
 					.stream()

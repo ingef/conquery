@@ -15,12 +15,9 @@ import FaIcon from "../icon/FaIcon";
 
 import type { StateType } from "../app/reducers";
 import type { DatasetIdT } from "../api/types";
+import type { TreesT } from "../concept-trees/reducer";
 
-import {
-  selectConceptRootNodeAndResolveCodes,
-  uploadConceptListModalClose,
-  acceptAndCloseUploadConceptListModal
-} from "./actions";
+import { selectConceptRootNodeAndResolveCodes } from "./actions";
 
 const Root = styled("div")`
   padding: 0 0 10px;
@@ -68,6 +65,7 @@ type PropsType = {
   selectedDatasetId: DatasetIdT,
   conceptCodesFromFile: string[],
   resolved: Object,
+  rootConcepts: TreesT,
   resolvedItemsCount: number,
   unresolvedItemsCount: number,
   error: Object,
@@ -102,6 +100,10 @@ const UploadConceptListModal = (props: PropsType) => {
     onAccept,
     onClose
   } = props;
+
+  if (!conceptCodesFromFile || conceptCodesFromFile.length === 0) {
+    onClose();
+  }
 
   const hasUnresolvedItems = unresolvedItemsCount > 0;
   const hasResolvedItems = resolvedItemsCount > 0;

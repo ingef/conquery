@@ -60,7 +60,7 @@ const InputMultiSelect = (props: PropsType) => {
     props.options.slice(0, OPTIONS_LIMIT).map(option => ({
       ...option,
       label:
-        option.optionValue && option.templateValues
+        !!option.optionValue && !!option.templateValues
           ? Mustache.render(option.optionValue, option.templateValues)
           : option.label,
       value: "" + option.value, // convert number to string

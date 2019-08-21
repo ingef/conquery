@@ -52,7 +52,7 @@ export const selectConceptRootNodeAndResolveCodes = (
 export const initUploadConceptListModal = file => async dispatch => {
   const rows = await getUniqueFileRows(file);
 
-  dispatch({
+  return dispatch({
     type: INIT,
     payload: { rows, filename: file.name }
   });

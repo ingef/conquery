@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Uninterruptibles;
 
@@ -72,6 +73,7 @@ public class JobExecutor extends Thread {
 	
 	@Override
 	public void run() {
+		ConqueryMDC.setLocation(this.getName());
 		while(!closed.get()) {
 			Job job;
 			try {
@@ -87,7 +89,9 @@ public class JobExecutor extends Thread {
 						}
 
 						log.trace("{} started job {} with Id {}", this.getName(), job, job.getJobId());
+						ConqueryMDC.setLocation(this.getName());
 						job.execute();
+						ConqueryMDC.setLocation(this.getName());
 						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
 					}
 					catch (Throwable e) {

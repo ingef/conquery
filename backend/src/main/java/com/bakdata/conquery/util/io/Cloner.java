@@ -5,6 +5,7 @@ import java.io.IOException;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.types.specific.AStringType;
 
 public class Cloner {
@@ -32,7 +33,7 @@ public class Cloner {
 			throw new IllegalStateException("Failed to clone a type "+type, e);
 		}
 	}
-	
+
 	@SuppressWarnings("unchecked")
 	public static <T extends IQuery> T clone(T query) {
 		try {
@@ -43,6 +44,19 @@ public class Cloner {
 			return clone;
 		} catch (IOException e) {
 			throw new IllegalStateException("Failed to clone a query "+query, e);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends CQElement> T clone(T element) {
+		try {
+			T clone = (T)Jackson.BINARY_MAPPER.readValue(
+				Jackson.BINARY_MAPPER.writeValueAsBytes(element),
+				CQElement.class
+			);
+			return clone;
+		} catch (IOException e) {
+			throw new IllegalStateException("Failed to clone the CQElement "+element, e);
 		}
 	}
 }

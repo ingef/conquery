@@ -11,8 +11,15 @@ const openModal = (andIdx = null) => ({
   payload: { andIdx }
 });
 
-export const openQueryUploadConceptListModal = (andIdx, file) => dispatch => {
-  return dispatch([initUploadConceptListModal(file), openModal(andIdx)]);
+export const openQueryUploadConceptListModal = (
+  andIdx,
+  file
+) => async dispatch => {
+  // Need to wait until file is processed.
+  // Because if file is empty, modal would close automatically
+  await dispatch(initUploadConceptListModal(file));
+
+  return dispatch(openModal(andIdx));
 };
 
 const closeModal = () => ({

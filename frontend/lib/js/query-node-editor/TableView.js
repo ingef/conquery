@@ -84,16 +84,16 @@ const TableView = (props: PropsType) => {
           onLoadFilterSuggestions={(filterIdx, filterId, prefix) =>
             onLoadFilterSuggestions(
               datasetId,
-              editorState.selectedInputTableIdx,
-              selectedTable.id,
               node.tree,
-              filterIdx,
+              selectedTable.id,
               filterId,
-              prefix
+              prefix,
+              editorState.selectedInputTableIdx,
+              filterIdx
             )
           }
           suggestions={
-            props.suggestions &&
+            !!props.suggestions &&
             props.suggestions[editorState.selectedInputTableIdx]
           }
           onShowDescription={editorState.onShowDescription}
@@ -101,11 +101,11 @@ const TableView = (props: PropsType) => {
             onDropFilterValuesFile(
               props.datasetId,
               node.tree,
-              editorState.selectedInputTableIdx,
               selectedTable.id,
-              filterIdx,
               filterId,
-              file
+              file,
+              editorState.selectedInputTableIdx,
+              filterIdx
             )
           }
           currencyConfig={props.currencyConfig}

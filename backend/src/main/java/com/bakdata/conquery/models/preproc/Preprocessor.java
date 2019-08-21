@@ -28,7 +28,8 @@ import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
+import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
 import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -148,7 +149,9 @@ public class Preprocessor {
 			log.info("finding optimal column types");
 			log.info("\t{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getParser(), result.getPrimaryColumn().getType());
 			
-			result.getPrimaryColumn().setType(((StringParser)result.getPrimaryColumn().getParser()).createBaseType(Encoding.UTF8));
+			StringParser parser = (StringParser)result.getPrimaryColumn().getParser();
+			parser.setEncoding(Encoding.UTF8);
+			result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
 			for(PPColumn c:result.getColumns()) {
 				c.findBestType();
 				log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());

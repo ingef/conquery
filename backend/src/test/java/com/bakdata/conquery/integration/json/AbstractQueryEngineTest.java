@@ -16,6 +16,8 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
+import com.bakdata.conquery.models.query.concept.ResultInfo;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
@@ -62,6 +64,15 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				.forEach(r->log.error("Failure in query {}: {}", managed.getId(), r.getExceptionStackTrace()));
 			fail("Query failed (see above)");
 		}
+		
+		//check result info size
+		List<ResultInfo> resultInfos = managed.getResultInfos(PRINT_SETTINGS);
+		assertThat(
+			managed
+				.fetchContainedEntityResult()
+				.flatMap(ContainedEntityResult::streamValues)
+		)
+		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos));
 
 		List<String> actual = new QueryToCSVRenderer()
 			.toCSV(PRINT_SETTINGS, managed)

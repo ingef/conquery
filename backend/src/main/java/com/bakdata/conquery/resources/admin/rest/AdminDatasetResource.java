@@ -107,16 +107,4 @@ public class AdminDatasetResource extends HDatasets {
 			w.send(new UpdateDataset(namespace.getDataset()));
 		}
 	}
-
-	
-
-	@DELETE
-	@Path("concepts/{" + CONCEPT_NAME + "}")
-	public void removeConcept(@PathParam(CONCEPT_NAME) ConceptId conceptId) throws IOException, JSONException {
-		namespace.getDataset().getConcepts().removeIf(c -> c.getId().equals(conceptId));
-		namespace.getStorage().updateDataset(namespace.getDataset());
-		for (WorkerInformation w : namespace.getWorkers()) {
-			w.send(new UpdateDataset(namespace.getDataset()));
-		}
-	}
 }

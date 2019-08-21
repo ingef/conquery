@@ -3,6 +3,8 @@ package com.bakdata.conquery.resources.admin.ui;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
@@ -12,6 +14,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
@@ -41,6 +44,7 @@ public class DatasetsUIResource extends HDatasets {
 			processor.getUIContext(),
 			new DatasetInfos(
 				namespace.getDataset(),
+				namespace.getStorage().getAllConcepts(),
 				//total size of dictionaries
 				namespace.getStorage()
 					.getAllImports()
@@ -48,6 +52,7 @@ public class DatasetsUIResource extends HDatasets {
 					.flatMap(i->Arrays.stream(i.getColumns()))
 					.filter(c->c.getType().getTypeId()==MajorTypeId.STRING)
 					.map(c->(AStringType)c.getType())
+					.filter(c->c.getUnderlyingDictionary() != null)
 					.collect(Collectors.groupingBy(t->t.getUnderlyingDictionary().getId()))
 					.values()
 					.stream()
@@ -67,6 +72,7 @@ public class DatasetsUIResource extends HDatasets {
 	@Data @AllArgsConstructor
 	public static class DatasetInfos {
 		private Dataset ds;
+		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;
 		private long size;
 	}
