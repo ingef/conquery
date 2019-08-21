@@ -1,7 +1,7 @@
 // @flow
 
 import React from "react";
-import { type FieldPropsType } from "redux-form";
+import type { FieldPropsType } from "redux-form";
 
 import type { SelectOptionsT } from "../api/types";
 import InputMultiSelect from "./InputMultiSelect";

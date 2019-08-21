@@ -67,6 +67,11 @@ const TableView = (props: PropsType) => {
         <TableFilters
           key={editorState.selectedInputTableIdx}
           filters={selectedTable.filters}
+          context={{
+            datasetId,
+            treeId: node.tree,
+            tableId: selectedTable.id
+          }}
           onSetFilterValue={(filterIdx, value) =>
             onSetFilterValue(
               editorState.selectedInputTableIdx,

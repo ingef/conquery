@@ -6,7 +6,6 @@ import styled from "@emotion/styled";
 import InputSelect from "../form-components/InputSelect";
 import InputMultiSelect from "../form-components/InputMultiSelect";
 import InputRange from "../form-components/InputRange";
-import AsyncInputMultiSelect from "../form-components/AsyncInputMultiSelect";
 import InputText from "../form-components/InputText";
 
 import {
@@ -21,7 +20,20 @@ import {
 
 import type { FilterWithValueType } from "../standard-query-editor/types";
 
-import type { CurrencyConfigT } from "../api/types";
+import type {
+  CurrencyConfigT,
+  DatasetIdT,
+  ConceptIdT,
+  TableIdT
+} from "../api/types";
+
+import BigMultiSelect from "./BigMultiSelect";
+
+export type FilterContextT = {
+  datasetId: DatasetIdT,
+  treeId: ConceptIdT,
+  tableId: TableIdT
+};
 
 type PropsType = {
   filters: ?(FilterWithValueType[]),
@@ -33,7 +45,8 @@ type PropsType = {
   onShowDescription: Function,
   suggestions: ?Object,
   onDropFilterValuesFile: Function,
-  currencyConfig: CurrencyConfigT
+  currencyConfig: CurrencyConfigT,
+  context: FilterContextT
 };
 
 const Row = styled("div")`
@@ -81,7 +94,8 @@ const TableFilters = (props: PropsType) => {
               );
             case BIG_MULTI_SELECT:
               return (
-                <AsyncInputMultiSelect
+                <BigMultiSelect
+                  context={{ ...props.context, filterId: filter.id }}
                   input={{
                     value: filter.value,
                     defaultValue: filter.defaultValue,
@@ -103,9 +117,6 @@ const TableFilters = (props: PropsType) => {
                   startLoadingThreshold={filter.threshold || 1}
                   onLoad={prefix =>
                     props.onLoadFilterSuggestions(filterIdx, filter.id, prefix)
-                  }
-                  onDropFile={file =>
-                    props.onDropFilterValuesFile(filterIdx, filter.id, file)
                   }
                   allowDropFile={!!filter.allowDropFile}
                   disabled={!!props.excludeTable}

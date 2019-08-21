@@ -3,7 +3,6 @@ import styled from "@emotion/styled";
 
 import { QueryGroupModal } from "../query-group-modal";
 import QueryUploadConceptListModal from "../query-upload-concept-list-modal/QueryUploadConceptListModal";
-import UploadFilterListModal from "../upload-filter-list-modal/UploadFilterListModal";
 import type { DatasetIdT } from "../api/types";
 
 import Query from "./Query";
@@ -25,7 +24,6 @@ export const QueryEditor = (props: PropsType) => (
     <Query selectedDatasetId={props.selectedDatasetId} />
     <StandardQueryNodeEditor datasetId={props.selectedDatasetId} />
     <QueryUploadConceptListModal selectedDatasetId={props.selectedDatasetId} />
-    <UploadFilterListModal selectedDatasetId={props.selectedDatasetId} />
     <QueryGroupModal />
   </Root>
 );
