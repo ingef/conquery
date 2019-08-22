@@ -33,7 +33,7 @@ public class QueryToCSVRenderer {
 	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
 	
 	public Stream<String> toCSV(ManagedQuery query) {
-		return toCSV(new PrintSettings(), query);
+		return toCSV(new PrintSettings(true), query);
 	}
 	
 	public Stream<String> toCSV(PrintSettings cfg, ManagedQuery query) {

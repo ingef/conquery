@@ -31,6 +31,6 @@ public abstract class ResultInfo {
 	public abstract ResultType getType();
 	
 	public <T> void addAppendix(Class<T> cl, T obj) {
-		appendices.put(cl, obj);
+		appendices.putInstance(cl, obj);
 	}
 }

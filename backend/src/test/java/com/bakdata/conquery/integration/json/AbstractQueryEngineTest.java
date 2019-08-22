@@ -36,12 +36,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	protected abstract ResourceFile getExpectedCsv();
 
 	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = PrintSettings
-		.builder()
-		.prettyPrint(false)
-		.selectNameExtractor(
-			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
-		.build();
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false);
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {

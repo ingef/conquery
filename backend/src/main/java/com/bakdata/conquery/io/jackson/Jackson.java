@@ -19,7 +19,7 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 public class Jackson {
 	public static final ObjectMapper MAPPER;
 	public static final ObjectMapper BINARY_MAPPER;
-
+	
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));

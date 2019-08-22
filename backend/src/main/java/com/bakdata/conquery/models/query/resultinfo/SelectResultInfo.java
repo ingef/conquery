@@ -18,7 +18,7 @@ public class SelectResultInfo extends ResultInfo {
 
 	@Override
 	public String getName(PrintSettings settings) {
-		return settings.getSelectNameExtractor().extract(this);
+		return settings.columnName(this);
 	}
 
 	@Override
