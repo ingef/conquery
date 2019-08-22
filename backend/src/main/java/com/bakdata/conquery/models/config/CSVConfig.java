@@ -7,6 +7,10 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
+import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.csv.CsvWriterSettings;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,4 +28,27 @@ public class CSVConfig {
 	@NotNull
 	private Charset encoding = StandardCharsets.UTF_8;
 	private boolean skipHeader = true;
+	
+	public CsvParserSettings createCsvParserSettings() {
+		CsvParserSettings settings = new CsvParserSettings();
+		settings.setFormat(createCsvFormat());
+		return settings;
+	}
+	
+	public CsvWriterSettings createCsvWriterSettings() {
+		CsvWriterSettings settings = new CsvWriterSettings();
+		settings.setFormat(createCsvFormat());
+		return settings;
+	}
+
+	public CsvFormat createCsvFormat() {
+		CsvFormat format = new CsvFormat();
+		format.setQuoteEscape(getEscape());
+		format.setCharToEscapeQuoteEscaping(getEscape());
+		format.setComment(getComment());
+		format.setDelimiter(getDelimeter());
+		format.setLineSeparator(getLineSeparator());
+		format.setQuote(getQuote());
+		return format;
+	}
 }

@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.ConqueryEscape;
 
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
@@ -49,7 +48,7 @@ public class ResultCSVResource {
 	private static final PrintSettings PRINT_SETTINGS = PrintSettings
 		.builder()
 		.prettyPrint(true)
-		.nameExtractor(sd ->
+		.selectNameExtractor(sd ->
 			sd.getCqConcept().getIds().get(0).toStringWithoutDataset()
 			+ "_"
 			+ sd.getSelect().getId().toStringWithoutDataset()

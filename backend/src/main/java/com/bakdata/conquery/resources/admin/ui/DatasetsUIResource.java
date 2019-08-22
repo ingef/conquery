@@ -4,7 +4,6 @@ import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;

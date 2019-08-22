@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.concept;
 
-import java.util.List;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -12,9 +11,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.concept.ResultInfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.Getter;
@@ -47,16 +45,10 @@ public class ConceptQuery implements IQuery {
 		return this;
 	}
 
-	public List<SelectDescriptor> collectSelects() {
-		return root.collectSelects();
-	}
-	
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		collector.add(ConqueryConstants.DATES_INFO);
-		for (SelectDescriptor selectDescriptor : collectSelects()) {
-			collector.add(selectDescriptor);
-		}
+		root.collectResultInfos(collector);
 	}
 
 	@Override

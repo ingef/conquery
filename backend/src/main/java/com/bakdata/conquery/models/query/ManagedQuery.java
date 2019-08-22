@@ -14,7 +14,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.concept.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
@@ -93,7 +93,7 @@ public class ManagedQuery extends ManagedExecution {
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos(PrintSettings config) {
+	public ResultInfoCollector collectResultInfos(PrintSettings config) {
 		return query.collectResultInfos(config);
 	}
 	

@@ -15,7 +15,6 @@ import java.util.concurrent.Executors;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.ConceptsUtils;
 import com.zigurs.karlis.utils.search.QuickSearch;
 
 import lombok.extern.slf4j.Slf4j;

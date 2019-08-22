@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.query.queryplan.clone.CtxCloneable;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 
 @AllArgsConstructor

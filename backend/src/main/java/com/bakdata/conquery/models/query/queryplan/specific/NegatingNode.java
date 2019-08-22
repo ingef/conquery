@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;

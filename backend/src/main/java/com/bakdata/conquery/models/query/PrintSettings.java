@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.function.Function;
-
-import com.bakdata.conquery.models.query.concept.SelectDescriptor;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -20,5 +18,9 @@ public class PrintSettings {
 	 * Here we use the label of the select as standard.
 	 */
 	@Builder.Default
-	private Function<SelectDescriptor, String> nameExtractor = sd -> sd.getSelect().getLabel();
+	private SelectNameExtractor selectNameExtractor = sd -> sd.getSelect().getLabel();
+	
+	public static interface SelectNameExtractor {
+		String extract(SelectResultInfo descriptor);
+	}
 }
