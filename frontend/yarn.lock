@@ -6595,10 +6595,10 @@ ms@^2.1.1:
   resolved "https://registry.yarnpkg.com/ms/-/ms-2.1.2.tgz#d09d1f357b443f493382a8eb3ccd183872ae6009"
   integrity sha512-sGkPx+VjMtmA6MX27oA4FBFELFCZZ4S4XqeGOXCv68tT+jb3vk/RyaKWP0PTKyWtmLSM0b+adUTEvbs1PEaH2w==
 
-mustache@^2.3.0:
-  version "2.3.2"
-  resolved "https://registry.yarnpkg.com/mustache/-/mustache-2.3.2.tgz#a6d4d9c3f91d13359ab889a812954f9230a3d0c5"
-  integrity sha512-KpMNwdQsYz3O/SBS1qJ/o3sqUJ5wSb8gb0pul8CO0S56b9Y2ALm8zCfsjPXsqGFfoNBkDwZuZIAjhsZI03gYVQ==
+mustache@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/mustache/-/mustache-3.0.2.tgz#35bb886a1e5baad0a8f192258fe9a904f711868c"
+  integrity sha512-64neoEgmozb8e/ecGBOSE+RfnevLSFzCI0UKPcrWmjv953/8fXhYO9+EQFtfbi6hwoFxcTA+Fp5mRiOiI9eTuA==
 
 mute-stream@0.0.7:
   version "0.0.7"
