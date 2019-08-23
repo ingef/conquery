@@ -36,12 +36,14 @@ public class Cloner {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T extends IQuery> T clone(T query) {
+	public static <T extends IQuery> T clone(T query, Injectable injectable) {
 		try {
-			T clone = (T) Jackson.BINARY_MAPPER.readValue(
-				Jackson.BINARY_MAPPER.writeValueAsBytes(query),
-				IQuery.class
-			);
+			T clone = (T) injectable
+				.injectInto(Jackson.BINARY_MAPPER)
+				.readValue(
+					Jackson.BINARY_MAPPER.writeValueAsBytes(query),
+					IQuery.class
+				);
 			return clone;
 		} catch (IOException e) {
 			throw new IllegalStateException("Failed to clone a query "+query, e);
