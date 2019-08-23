@@ -2,6 +2,7 @@ package com.bakdata.conquery.util.io;
 
 import java.io.IOException;
 
+import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.IQuery;
@@ -54,6 +55,21 @@ public class Cloner {
 				Jackson.BINARY_MAPPER.writeValueAsBytes(element),
 				CQElement.class
 			);
+			return clone;
+		} catch (IOException e) {
+			throw new IllegalStateException("Failed to clone the CQElement "+element, e);
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static <T extends CQElement> T clone(T element, Injectable injectable) {
+		try {
+			T clone = (T)injectable
+				.injectInto(Jackson.BINARY_MAPPER)
+				.readValue(
+					Jackson.BINARY_MAPPER.writeValueAsBytes(element),
+					CQElement.class
+				);
 			return clone;
 		} catch (IOException e) {
 			throw new IllegalStateException("Failed to clone the CQElement "+element, e);
