@@ -31,13 +31,22 @@ import net.sourceforge.argparse4j.inf.Namespace;
 @Slf4j
 public class PreprocessorCommand extends ConqueryCommand {
 
+	private ExecutorService pool;
+
 	public PreprocessorCommand() {
+		this(null);
+	}
+	
+	public PreprocessorCommand(ExecutorService pool) {
 		super("preprocess", "Preprocesses all the files in the given input directories. This has to be done only if the model or the files changed.");
+		this.pool = pool;
 	}
 
 	@Override
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		ExecutorService pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+		if(pool == null) {
+			pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
+		}
 		
 		Collection<Preprocessor> jobs = findPreprocessingJobs(config, environment.getValidator());
 		jobs.removeIf(Predicate.not(Preprocessor::requiresProcessing));
