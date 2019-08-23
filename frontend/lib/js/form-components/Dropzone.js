@@ -29,8 +29,8 @@ type InnerZonePropsType = {
   children?: string,
   connectDropTarget: Function,
   isOver: boolean,
-  dropzoneText: string,
-  hasItem: boolean
+  canDrop: boolean,
+  onClick: () => void
 };
 
 export const InnerZone = ({

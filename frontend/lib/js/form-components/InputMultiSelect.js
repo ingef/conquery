@@ -30,8 +30,12 @@ type PropsType = FieldPropsType & {
   onDropFile?: Function
 };
 
-const StyledInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
+const SxInputMultiSelectDropzone = styled(InputMultiSelectDropzone)`
   display: block;
+`;
+
+const SxReactSelect = styled(ReactSelect)`
+  width: 100%;
 `;
 
 const OPTIONS_LIMIT = 50;
@@ -68,7 +72,7 @@ const InputMultiSelect = (props: PropsType) => {
     }));
 
   const Select = (
-    <ReactSelect
+    <SxReactSelect
       creatable
       highlightChanged
       isSearchable
@@ -128,9 +132,9 @@ const InputMultiSelect = (props: PropsType) => {
       )}
       {!hasTooManyValues && !allowDropFile && Select}
       {!hasTooManyValues && allowDropFile && (
-        <StyledInputMultiSelectDropzone onDropFile={props.onDropFile}>
+        <SxInputMultiSelectDropzone onDropFile={props.onDropFile}>
           {Select}
-        </StyledInputMultiSelectDropzone>
+        </SxInputMultiSelectDropzone>
       )}
     </Labeled>
   );
