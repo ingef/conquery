@@ -5,6 +5,18 @@
 	<@layout.kv k="Type" v=c.class.simpleName/>
 	<@layout.kv k="Structure Parent" v=c.structureParent/>
 	<@layout.kv k="Elements" v=c.countElements()?string.number/>
+	<@layout.kc k="Selects">
+			<ul>
+			<#list c.selects as select>
+				<li>
+					<@layout.kid k="ID" v=select.id/>
+					<@layout.kv k="Label" v=select.label/>
+					<@layout.kv k="Type" v=select.class.simpleName/>
+					<@layout.kv k="Description" v=select.description/>
+				</li>
+			</#list>
+			</ul>
+		</@layout.kc>
 	<@layout.kc k="Connectors">
 	<#list c.connectors as connector>
 		<@layout.kid k="ID" v=connector.id/>
