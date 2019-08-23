@@ -4,7 +4,6 @@ import React from "react";
 import styled from "@emotion/styled";
 import { css } from "@emotion/core";
 import T from "i18n-react";
-import { NativeTypes } from "react-dnd-html5-backend";
 
 import DropzoneWithFileInput from "../form-components/DropzoneWithFileInput";
 import FaIcon from "../icon/FaIcon";
