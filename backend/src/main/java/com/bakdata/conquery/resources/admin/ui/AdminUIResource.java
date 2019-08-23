@@ -2,9 +2,11 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 
 import java.net.SocketAddress;
 import java.time.LocalDate;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
@@ -41,6 +43,7 @@ import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
 import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -137,18 +140,13 @@ public class AdminUIResource {
 		return new UIView<>("mandator.html.ftl", processor.getUIContext(), processor.getMandatorContent(mandatorId));
 	}
 
-	@POST @Path("/update-matching-stats") @Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response updateMatchingStats(@Auth User user) throws JSONException {
+	@POST @Path("/update-matching-stats/{"+ DATASET_NAME +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
+	public void updateMatchingStats(@Auth User user, @PathParam(DATASET_NAME)DatasetId datasetId) throws JSONException {
 
-		processor.getNamespaces()
-			.getNamespaces()
-			.forEach(ns -> ns.sendToAll(new UpdateMatchingStatsMessage()));
+		Namespace ns = processor.getNamespaces().get(datasetId);
+		ns.sendToAll(new UpdateMatchingStatsMessage());
 
-		FilterSearch.init(processor.getNamespaces(), processor.getNamespaces().getAllDatasets());
-		
-		return Response
-			.seeOther(UriBuilder.fromPath("/admin/").path(AdminUIResource.class, "getJobs").build())
-			.build();
+		FilterSearch.init(processor.getNamespaces(), Collections.singleton(ns.getDataset()));
 	}
 
 	@POST
