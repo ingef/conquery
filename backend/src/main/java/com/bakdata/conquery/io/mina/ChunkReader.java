@@ -38,7 +38,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 	
 	@Override
 	protected boolean doDecode(IoSession session, IoBuffer in, ProtocolDecoderOutput out) {
-		int pos = in.position();
+		in.mark();
 		if (in.remaining() < ChunkWriter.HEADER_SIZE) {
 			return false;
 		}
@@ -51,7 +51,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 		UUID id = new UUID(in.getLong(), in.getLong());
 		
 		if (in.remaining() < length) {
-			in.position(pos);
+			in.reset();
 			return false;
 		}
 

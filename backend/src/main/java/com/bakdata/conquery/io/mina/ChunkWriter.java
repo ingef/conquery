@@ -25,16 +25,19 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	public static final byte CONTINUED_MESSAGE = 0;
 	
 	@Getter @Setter
-	private int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
+	private static int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
+	private static final IoBuffer buffer = IoBuffer.allocate(bufferSize, false).position(HEADER_SIZE);
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		Chunkable ch = coder.encode(message);
-		try(ChunkOutputStream cos = new ChunkOutputStream(ch.getId(), out)) {
-			ch.writeMessage(cos);
+		synchronized (buffer) {
+			Chunkable ch = coder.encode(message);
+			try(ChunkOutputStream cos = new ChunkOutputStream(ch.getId(), out)) {
+				ch.writeMessage(cos);
+			}
 		}
 	}
 
@@ -42,16 +45,12 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	private class ChunkOutputStream extends OutputStream {
 		private final UUID id;
 		private final ProtocolEncoderOutput out;
-		private IoBuffer buffer = null;
+		
 		private boolean closed = false;
 		
 		private void newBuffer(int required) {
-			if(buffer == null || buffer.remaining()<required) {
-				if(buffer != null) {
-					finishBuffer(false);
-				}
-				buffer = IoBuffer.allocate(bufferSize);
-				buffer.position(HEADER_SIZE);
+			if(buffer.remaining()<required) {
+				finishBuffer(false);
 			}
 		}
 
@@ -65,8 +64,9 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			buffer.putLong(Byte.BYTES+Integer.BYTES, id.getMostSignificantBits());
 			buffer.putLong(Byte.BYTES+Integer.BYTES+Long.BYTES, id.getLeastSignificantBits());
 			out.write(buffer);
-			out.flush();
-			buffer = null;
+			out.flush().awaitUninterruptibly();
+			buffer.clear();
+			buffer.position(HEADER_SIZE);
 		}
 
 		@Override
@@ -92,7 +92,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			}
 			
 			while(len > 0) {
-				if(buffer == null || !buffer.hasRemaining()) {
+				if(!buffer.hasRemaining()) {
 					newBuffer(len);
 				}
 				
@@ -106,7 +106,6 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 		@Override
 		public void close() throws IOException {
 			if(!closed) {
-				newBuffer(0);
 				finishBuffer(true);
 				closed = true;
 			}
