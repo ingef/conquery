@@ -25,8 +25,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	public static final byte CONTINUED_MESSAGE = 0;
 	
 	@Getter @Setter
-	private static int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
-	private static final IoBuffer buffer = IoBuffer.allocate(bufferSize, false).position(HEADER_SIZE);
+	private IoBuffer buffer = IoBuffer.allocate(Ints.checkedCast(Size.megabytes(32).toBytes()), false).position(HEADER_SIZE);
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;
 
