@@ -156,6 +156,7 @@ previousQueries:
   noQueriesFound: "No queries found"
 
 previousQuery:
+  reexecute: "Re-execute"
   notExecuted: "Not executed yet"
   addTag: "Add Tag"
   share: "Share"

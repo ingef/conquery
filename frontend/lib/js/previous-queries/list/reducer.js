@@ -1,3 +1,7 @@
+// @flow
+
+import type { GetStoredQueriesResponseT } from "../../api/types";
+
 import {
   LOAD_PREVIOUS_QUERIES_START,
   LOAD_PREVIOUS_QUERIES_SUCCESS,
@@ -21,8 +25,21 @@ import {
   DELETE_PREVIOUS_QUERY_ERROR
 } from "./actionTypes";
 
-const initialState = {
-  queries: []
+type StateT = {
+  queries: GetStoredQueriesResponseT,
+  loading: boolean,
+  error: ?Error,
+  names: string[],
+  tags: string[]
+};
+
+const initialState: StateT = {
+  queries: [],
+  loading: false,
+  error: null,
+  // TODO: RE-validate whether this is really useful:
+  names: [],
+  tags: []
 };
 
 const findQuery = (queries, queryId) => {

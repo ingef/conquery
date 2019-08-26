@@ -37,6 +37,7 @@ import {
 } from "./actions";
 
 import PreviousQueryTags from "./PreviousQueryTags";
+import ReexecuteButton from "./ReexecuteButton";
 
 const nodeSource = {
   beginDrag(props, monitor, component): DraggedQueryType {
@@ -199,7 +200,9 @@ class PreviousQuery extends React.Component {
                 </DownloadButton>
               </WithTooltip>
             ) : (
-              peopleFound
+              <WithTooltip text={T.translate("previousQuery.reexecute")}>
+                <ReexecuteButton id={query.id}>{peopleFound}</ReexecuteButton>
+              </WithTooltip>
             )}
             {query.own && query.shared && (
               <SharedIndicator

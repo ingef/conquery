@@ -10,7 +10,7 @@ type PropsType = {
   url: string,
   className?: string,
   children?: React.Node,
-  ending: string
+  ending?: string
 };
 
 function getIcon(ending: string) {

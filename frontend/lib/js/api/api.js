@@ -73,6 +73,15 @@ export function getQuery(
   return fetchJson(apiUrl() + `/datasets/${datasetId}/queries/${queryId}`);
 }
 
+export function postReexecuteQuery(
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
+): Promise<PostQueriesResponseT> {
+  return fetchJson(
+    apiUrl() + `/datasets/${datasetId}/queries/${queryId}/reexecute`
+  );
+}
+
 // Same signature as postQueries, plus a form query transformator
 export function postFormQueries(
   datasetId: DatasetIdT,

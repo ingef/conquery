@@ -4,6 +4,7 @@ import api from "../../api";
 import { defaultSuccess, defaultError } from "../../common/actions";
 
 import { setMessage } from "../../snack-message/actions";
+import { QUERY_AGAIN_TIMEOUT } from "../../query-runner/constants";
 
 import {
   LOAD_PREVIOUS_QUERIES_START,
@@ -152,20 +153,22 @@ export const toggleSharePreviousQuerySuccess = (queryId, shared, res) =>
 export const toggleSharePreviousQueryError = (queryId, err) =>
   defaultError(TOGGLE_SHARE_PREVIOUS_QUERY_ERROR, err, { queryId });
 
-export const toggleSharePreviousQuery = (datasetId, queryId, shared) => {
-  return dispatch => {
-    dispatch(toggleSharePreviousQueryStart(queryId));
+export const toggleSharePreviousQuery = (
+  datasetId,
+  queryId,
+  shared
+) => dispatch => {
+  dispatch(toggleSharePreviousQueryStart(queryId));
 
-    return api.patchStoredQuery(datasetId, queryId, { shared: shared }).then(
-      r => dispatch(toggleSharePreviousQuerySuccess(queryId, shared, r)),
-      e =>
-        dispatch(
-          toggleSharePreviousQueryError(queryId, {
-            message: T.translate("previousQuery.shareError")
-          })
-        )
-    );
-  };
+  return api.patchStoredQuery(datasetId, queryId, { shared: shared }).then(
+    r => dispatch(toggleSharePreviousQuerySuccess(queryId, shared, r)),
+    e =>
+      dispatch(
+        toggleSharePreviousQueryError(queryId, {
+          message: T.translate("previousQuery.shareError")
+        })
+      )
+  );
 };
 
 export const deletePreviousQueryStart = queryId => ({
@@ -177,18 +180,58 @@ export const deletePreviousQuerySuccess = (queryId, res) =>
 export const deletePreviousQueryError = (queryId, err) =>
   defaultError(DELETE_PREVIOUS_QUERY_ERROR, err, { queryId });
 
-export const deletePreviousQuery = (datasetId, queryId) => {
-  return dispatch => {
-    dispatch(deletePreviousQueryStart(queryId));
+export const deletePreviousQuery = (datasetId, queryId) => dispatch => {
+  dispatch(deletePreviousQueryStart(queryId));
 
-    return api.deleteStoredQuery(datasetId, queryId).then(
-      r => dispatch(deletePreviousQuerySuccess(queryId, r)),
-      e =>
-        dispatch(
-          deletePreviousQueryError(queryId, {
-            message: T.translate("previousQuery.deleteError")
-          })
-        )
-    );
-  };
+  return api.deleteStoredQuery(datasetId, queryId).then(
+    r => dispatch(deletePreviousQuerySuccess(queryId, r)),
+    e =>
+      dispatch(
+        deletePreviousQueryError(queryId, {
+          message: T.translate("previousQuery.deleteError")
+        })
+      )
+  );
+};
+
+export const pollReexecuteQueryResult = (
+  datasetId,
+  resultId
+) => async dispatch => {
+  // NOTE: We're assuming that a query job id is the same as a previous query id
+  dispatch(loadPreviousQueryStart(resultId));
+
+  try {
+    const result = await api.getQuery(datasetId, resultId);
+
+    if (result.status === "DONE") {
+      dispatch(loadPreviousQuerySuccess(result));
+    } else if (result.status === "CANCELED") {
+    } else if (result.status === "FAILED") {
+      dispatch(loadPreviousQueryError(result));
+    } else {
+      // Try again after a short time:
+      //   Use the "long polling" strategy, where we assume that the
+      //   backend blocks the request for a couple of seconds and waits
+      //   for the query comes back.
+      //   If it doesn't come back the request resolves and
+      //   we - the frontend - try again almost instantly.
+      setTimeout(
+        () => dispatch(pollReexecuteQueryResult(datasetId, resultId)),
+        QUERY_AGAIN_TIMEOUT
+      );
+    }
+  } catch (e) {
+    dispatch(loadPreviousQueryError(resultId));
+  }
+};
+
+export const reexecuteQuery = (datasetId, queryId) => dispatch => {
+  try {
+    const result = api.postReexecuteQuery(datasetId, queryId);
+
+    dispatch(pollReexecuteQueryResult(datasetId, result.id));
+  } catch (e) {
+    dispatch(setMessage("previousQuery.loadError"));
+  }
 };

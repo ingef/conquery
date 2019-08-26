@@ -156,6 +156,7 @@ previousQueries:
   noQueriesFound: "Keine Anfragen gefunden"
 
 previousQuery:
+  reexecute: "Aktualisieren"
   notExecuted: "Noch nicht ausgeführt"
   addTag: "Schlagwort hinzufügen"
   share: "Freigeben"
