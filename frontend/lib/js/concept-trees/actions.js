@@ -126,9 +126,5 @@ export const searchTrees = (datasetId: DatasetIdT, query: string) => {
 };
 
 export const clearSearchQuery = () => ({ type: CLEAR_SEARCH_QUERY });
-export const changeSearchQuery = (query: string) => ({
-  type: CHANGE_SEARCH_QUERY,
-  payload: { query }
-});
 
 export const toggleShowMismatches = () => ({ type: TOGGLE_SHOW_MISMATCHES });

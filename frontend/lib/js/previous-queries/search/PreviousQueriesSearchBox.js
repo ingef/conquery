@@ -1,7 +1,18 @@
-import { connect } from "react-redux";
+// @flow
 
-import { SearchBox } from "../../form-components";
+import * as React from "react";
+import { connect } from "react-redux";
+import T from "i18n-react";
+import styled from "@emotion/styled";
+
+import ReactSelect from "../../form-components/ReactSelect";
+
 import { updatePreviousQueriesSearch } from "./actions";
+
+const Root = styled("div")`
+  margin: 0 10px 5px;
+  position: relative;
+`;
 
 const mapStateToProps = state => ({
   search: state.previousQueriesSearch,
@@ -12,7 +23,28 @@ const mapDispatchToProps = dispatch => ({
   onSearch: values => dispatch(updatePreviousQueriesSearch(values))
 });
 
+type PropsT = {
+  options: string[],
+  search: string[],
+  onSearch: (string[]) => void
+};
+
 export default connect(
   mapStateToProps,
   mapDispatchToProps
-)(SearchBox);
+)(({ search, options, onSearch }: PropsT) => {
+  return (
+    <Root>
+      <ReactSelect
+        creatable
+        isMulti
+        name="input"
+        value={search.map(t => ({ label: t, value: t }))}
+        options={options ? options.map(t => ({ label: t, value: t })) : []}
+        onChange={values => onSearch(values ? values.map(v => v.value) : [])}
+        placeholder={T.translate("reactSelect.searchPlaceholder")}
+        noOptionsMessage={() => T.translate("reactSelect.noResults")}
+      />
+    </Root>
+  );
+});

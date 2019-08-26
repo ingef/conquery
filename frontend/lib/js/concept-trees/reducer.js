@@ -197,14 +197,6 @@ const conceptTrees = (
         ...state,
         search: initialSearch
       };
-    case CHANGE_SEARCH_QUERY:
-      return {
-        ...state,
-        search: {
-          ...state.search,
-          query: action.payload.query
-        }
-      };
     case TOGGLE_SHOW_MISMATCHES:
       return {
         ...state,
