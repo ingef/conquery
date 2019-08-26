@@ -1,11 +1,20 @@
+// @flow
+
 import * as React from "react";
 import { connect } from "react-redux";
-import styled from "@emotion/styled";
-import T from "i18n-react";
 
 import IconButton from "../../button/IconButton";
 
 import { reexecuteQuery } from "./actions";
+
+import type { DatasetIdT, QueryIdT } from "../../api/types";
+
+type PropsT = {
+  previousQueryId: QueryIdT,
+  children: React.Node,
+  datasetId: DatasetIdT,
+  onClick: (datasetId: DatasetIdT, previousQueryId: QueryIdT) => void
+};
 
 export default connect(
   state => ({
@@ -14,7 +23,7 @@ export default connect(
   dispatch => ({
     onClick: (...params) => dispatch(reexecuteQuery(...params))
   })
-)(({ datasetId, previousQueryId, children, onClick }) => {
+)(({ datasetId, previousQueryId, children, onClick }: PropsT) => {
   return (
     <IconButton
       tight
@@ -22,7 +31,7 @@ export default connect(
       icon="undo"
       onClick={() => onClick(datasetId, previousQueryId)}
     >
-      {T.translate("previousQuery.reexecute")} {children}
+      {children}
     </IconButton>
   );
 });

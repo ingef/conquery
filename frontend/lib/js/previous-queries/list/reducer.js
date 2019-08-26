@@ -25,7 +25,7 @@ import {
   DELETE_PREVIOUS_QUERY_ERROR
 } from "./actionTypes";
 
-type StateT = {
+export type StateT = {
   queries: GetStoredQueriesResponseT,
   loading: boolean,
   error: ?Error,
@@ -100,7 +100,7 @@ const findUniqueTags = queries => {
   return Array.from(uniqueTags);
 };
 
-const findNewTags = tags => {
+const findNewTags = (tags: string[]) => {
   if (!tags) return [];
 
   let uniqueTags = new Set();

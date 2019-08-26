@@ -78,7 +78,10 @@ export function postReexecuteQuery(
   queryId: QueryIdT
 ): Promise<PostQueriesResponseT> {
   return fetchJson(
-    apiUrl() + `/datasets/${datasetId}/queries/${queryId}/reexecute`
+    apiUrl() + `/datasets/${datasetId}/queries/${queryId}/reexecute`,
+    {
+      method: "POST"
+    }
   );
 }
 

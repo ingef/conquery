@@ -201,7 +201,9 @@ class PreviousQuery extends React.Component {
               </WithTooltip>
             ) : (
               <WithTooltip text={T.translate("previousQuery.reexecute")}>
-                <ReexecuteButton id={query.id}>{peopleFound}</ReexecuteButton>
+                <ReexecuteButton previousQueryId={query.id}>
+                  {peopleFound}
+                </ReexecuteButton>
               </WithTooltip>
             )}
             {query.own && query.shared && (

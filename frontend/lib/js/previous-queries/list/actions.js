@@ -226,12 +226,12 @@ export const pollReexecuteQueryResult = (
   }
 };
 
-export const reexecuteQuery = (datasetId, queryId) => dispatch => {
+export const reexecuteQuery = (datasetId, queryId) => async dispatch => {
   try {
-    const result = api.postReexecuteQuery(datasetId, queryId);
+    const result = await api.postReexecuteQuery(datasetId, queryId);
 
-    dispatch(pollReexecuteQueryResult(datasetId, result.id));
+    return dispatch(pollReexecuteQueryResult(datasetId, result.id));
   } catch (e) {
-    dispatch(setMessage("previousQuery.loadError"));
+    return dispatch(setMessage("previousQuery.loadError"));
   }
 };
