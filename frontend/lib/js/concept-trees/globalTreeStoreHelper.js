@@ -131,10 +131,12 @@ export const hasConceptChildren = (node: ConceptT): boolean => {
   as there are up to 200k concepts that need to be searched.
 */
 export const search = async (query: string) => {
+  const lowerQuery = query.toLowerCase();
+
   const result = Object.keys(window.conceptTrees).reduce(
     (all, key) => ({
       ...all,
-      ...findConcepts(key, key, window.conceptTrees[key][key], query, {})
+      ...findConcepts(key, key, window.conceptTrees[key][key], lowerQuery)
     }),
     {}
   );
@@ -143,17 +145,15 @@ export const search = async (query: string) => {
 };
 
 const doesQueryMatchNode = (node, query) => {
-  const lowerQuery = query.toLowerCase();
-
   return (
-    node.label.toLowerCase().includes(lowerQuery) ||
-    (node.description && node.description.toLowerCase().includes(lowerQuery)) ||
+    node.label.toLowerCase().includes(query) ||
+    (node.description && node.description.toLowerCase().includes(query)) ||
     (node.additionalInfos &&
       node.additionalInfos
         .map(({ value }) => value)
         .join("")
         .toLowerCase()
-        .includes(lowerQuery))
+        .includes(query))
   );
 };
 
@@ -178,7 +178,7 @@ const findConcepts = (
   nodeId: ConceptIdT,
   node: ConceptT,
   query: string,
-  intermediateResult: { [ConceptIdT]: number }
+  intermediateResult: { [ConceptIdT]: number } = {}
 ) => {
   // !node normall shouldn't happen.
   // It happens when window.conceptTrees doesn't contain a node

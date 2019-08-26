@@ -57,7 +57,7 @@ type PropsType = {
   // TODO: Disentangle Concept search from PreviousQuery search
   search: string[] | Object,
   onSearch: (value: string | string[]) => void,
-  onChange: () => void,
+  onChange: string => void,
   onClearQuery: () => void,
   options: string[],
   textAppend?: React.Node,
