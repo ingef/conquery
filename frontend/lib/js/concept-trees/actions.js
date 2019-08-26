@@ -9,7 +9,7 @@ import { defaultSuccess, defaultError } from "../common/actions";
 import type { ConceptIdT } from "../api/types";
 import { isEmpty } from "../common/helpers";
 
-import { resetAllTrees, search } from "./globalTreeStoreHelper";
+import { resetAllTrees, globalSearch } from "./globalTreeStoreHelper";
 import { getDatasetId } from "../dataset/globalDatasetHelper";
 import {
   LOAD_TREES_START,
@@ -115,7 +115,7 @@ export const searchTrees = (datasetId: DatasetIdT, query: string) => {
     if (isEmpty(query)) return;
 
     try {
-      const result = await search(query);
+      const result = await globalSearch(query);
 
       dispatch(searchTreesSuccess(query, result));
     } catch (e) {
