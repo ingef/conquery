@@ -212,12 +212,12 @@ const findConcepts = (
     sum += result[child] || 0;
   }
 
-  if (sum === 0) {
-    // Leave node out from the result, if it doesn't match itself, and no child matches
-    return intermediateResult;
-  } else {
+  if (sum !== 0) {
     intermediateResult[nodeId] = sum;
-
-    return intermediateResult;
   }
+
+  // If sum === 0, node is left out from the result,
+  // because it doesn't match itself and no child matches
+
+  return intermediateResult;
 };
