@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.Deque;
 import java.util.Set;
 
 import javax.validation.Valid;
@@ -11,10 +10,10 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.Getter;
@@ -40,8 +39,8 @@ public class CQNegation implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<SelectDescriptor> select) {
-		child.collectSelects(select);
+	public void collectResultInfos(ResultInfoCollector collector) {
+		child.collectResultInfos(collector);
 	}
 
 	@Override

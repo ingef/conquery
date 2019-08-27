@@ -14,7 +14,6 @@ import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.util.IdentifierGenerator;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import it.unimi.dsi.fastutil.ints.IntArrayList;

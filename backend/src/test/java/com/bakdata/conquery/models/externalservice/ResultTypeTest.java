@@ -23,8 +23,8 @@ import com.google.common.collect.ImmutableMap;
 @Execution(ExecutionMode.SAME_THREAD)
 public class ResultTypeTest {
 
-	private static final PrintSettings PRETTY = new PrintSettings();
-	private static final PrintSettings PLAIN = PrintSettings.builder().prettyPrint(false).build();
+	private static final PrintSettings PRETTY = new PrintSettings(true);
+	private static final PrintSettings PLAIN = new PrintSettings(false);
 	
 	public static Stream<Arguments> testData() {
 		//init global default config

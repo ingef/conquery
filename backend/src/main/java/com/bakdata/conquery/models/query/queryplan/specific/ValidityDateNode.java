@@ -8,8 +8,6 @@ import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-import lombok.ToString;
-
 public class ValidityDateNode extends QPChainNode {
 
 	private final Column validityDateColumn;
