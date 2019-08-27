@@ -81,6 +81,11 @@ public class GroupHandler {
 		for(var base : group.getBases()) {
 			handleBase(base);
 		}
+		
+		out.subHeading("Other Types");
+		for(var t : group.getOtherClasses().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
+			handleClass(t.getSimpleName(), scan.getClassInfo(t.getName()));
+		}
 	}
 	
 	public void handleBase(Base base) throws IOException {
@@ -92,7 +97,7 @@ public class GroupHandler {
 
 		for(Pair<CPSType, ClassInfo> pair : content.get(base).stream().sorted(Comparator.comparing(p->p.getLeft().id())).collect(Collectors.toList())) {
 			
-			handleClass(base, pair.getLeft(), pair.getRight());
+			handleClass(pair.getLeft(), pair.getRight());
 		}
 			
 		out.line("\n");
@@ -102,9 +107,15 @@ public class GroupHandler {
 		return "Base "+baseClass.getSimpleName();
 	}
 
-	public void handleClass(Base base, CPSType anno, ClassInfo c) throws IOException {
-		String id = anno.id();
-		out.subSubHeading(id);
+	public void handleClass(CPSType anno, ClassInfo c) throws IOException {
+		if(group.getHides().contains(c.loadClass())) {
+			return;
+		}
+		handleClass(anno.id(), c);
+	}
+
+	private void handleClass(String name, ClassInfo c) throws IOException {
+		out.subSubHeading(name);
 		out.paragraph("Java Name: `"+c.getName()+"`");
 		if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 			out.line("The following fields are supported:");
@@ -195,6 +206,10 @@ public class GroupHandler {
 			if(content.keySet().stream().map(Base::getBaseClass).anyMatch(c->c.equals(cl))) {
 				return "["+type.toStringWithSimpleNames()+"]("+anchor(baseTitle(cl))+")";
 			}
+			//another class in the group
+			if(group.getOtherClasses().contains(cl)) {
+				return "["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")";
+			}
 			
 			//ENUM
 			if(Enum.class.isAssignableFrom(cl)) {
@@ -210,6 +225,10 @@ public class GroupHandler {
 			log.warn("Unhandled type {}", type);
 		}
 		return "`"+type.toStringWithSimpleNames()+"`";
+	}
+
+	private String typeTitle(Class<?> cl) {
+		return "Type "+cl.getSimpleName();
 	}
 
 	private String printType(Ctx ctx, TypeArgument type) {

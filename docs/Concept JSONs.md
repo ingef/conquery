@@ -22,12 +22,12 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| connectors | list of `Connector` | 
+| connectors | list of [Connector](#Type-Connector) | 
 | dataset | ID of `Dataset` | 
 | hidden | `boolean` | 
-| additionalInfos | list of `KeyValue` | 
+| additionalInfos | list of [KeyValue](#Type-KeyValue) | 
 | description | `String` | 
-| children | list of `ConceptTreeChild` | 
+| children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | 
 | globalToLocalOffset | `int` | 
 | selects | list of `UniversalSelect` | 
 | label | `String` | 
@@ -40,10 +40,10 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| connectors | list of `Connector` | 
+| connectors | list of [Connector](#Type-Connector) | 
 | dataset | ID of `Dataset` | 
 | hidden | `boolean` | 
-| additionalInfos | list of `KeyValue` | 
+| additionalInfos | list of [KeyValue](#Type-KeyValue) | 
 | description | `String` | 
 | selects | list of [Select](#Base-Select) | 
 | label | `String` | 
@@ -153,7 +153,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | labels | bijective map from `String` to `String` | 
@@ -171,7 +171,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | distinct | `boolean` | 
@@ -189,7 +189,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | label | `String` | 
@@ -205,7 +205,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | timeUnit | one of NANOS, MICROS, MILLIS, SECONDS, MINUTES, HOURS, HALF_DAYS, DAYS, WEEKS, MONTHS, YEARS, DECADES, CENTURIES, MILLENNIA, ERAS, FOREVER | 
@@ -222,7 +222,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | label | `String` | 
@@ -238,7 +238,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | label | `String` | 
@@ -254,7 +254,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | label | `String` | 
@@ -270,7 +270,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | label | `String` | 
@@ -286,7 +286,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | labels | bijective map from `String` to `String` | 
@@ -304,7 +304,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | labels | bijective map from `String` to `String` | 
@@ -322,7 +322,7 @@ The following fields are supported:
 | allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
-| template | `FilterTemplate` | 
+| template | [FilterTemplate](#Type-FilterTemplate) | 
 | unit | `String` | 
 | column | ID of `Column` | 
 | distinct | `boolean` | 
@@ -528,3 +528,67 @@ The following fields are supported:
 | name | `String` | 
 
 
+
+---
+
+## Other Types
+
+### ConceptTreeChild
+Java Name: `com.bakdata.conquery.models.concepts.tree.ConceptTreeChild`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| additionalInfos | list of [KeyValue](#Type-KeyValue) | 
+| description | `String` | 
+| children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | 
+| condition | [CTCondition](#Base-CTCondition) | 
+| label | `String` | 
+| name | `String` | 
+
+### Connector
+Java Name: `com.bakdata.conquery.models.concepts.Connector`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| selects | list of [Select](#Base-Select) | 
+| validityDates | list of [ValidityDate](#Type-ValidityDate) | 
+| label | `String` | 
+| name | `String` | 
+
+### FilterTemplate
+Java Name: `com.bakdata.conquery.apiv1.FilterTemplate`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| columnValue | `String` | 
+| columns | list of `String` | 
+| filePath | `String` | 
+| optionValue | `String` | 
+| value | `String` | 
+
+### KeyValue
+Java Name: `com.bakdata.conquery.models.common.KeyValue`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| key | `String` | 
+| value | `String` | 
+
+### ValidityDate
+Java Name: `com.bakdata.conquery.models.concepts.ValidityDate`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| column | ID of `Column` | 
+| label | `String` | 
+| name | `String` | 

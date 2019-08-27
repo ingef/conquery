@@ -1,6 +1,7 @@
 package com.bakdata.eva.model;
 
 import java.util.List;
+import java.util.Set;
 
 import lombok.Builder;
 import lombok.Getter;
@@ -14,5 +15,7 @@ public class Group {
 	@Singular
 	private List<Base> bases;
 	@Singular
-	private List<Class<?>> classes;
+	private Set<Class<?>> otherClasses;
+	@Singular
+	private List<Class<?>> hides;
 }
