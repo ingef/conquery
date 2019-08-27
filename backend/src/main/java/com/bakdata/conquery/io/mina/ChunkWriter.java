@@ -9,6 +9,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 
+import com.bakdata.conquery.util.SimplePool;
 import com.google.common.primitives.Ints;
 
 import io.dropwizard.util.Size;
@@ -25,18 +26,17 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	public static final byte CONTINUED_MESSAGE = 0;
 	
 	@Getter @Setter
-	private IoBuffer buffer = IoBuffer.allocate(Ints.checkedCast(Size.megabytes(32).toBytes()), false).position(HEADER_SIZE);
+	private int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
+	private SimplePool<IoBuffer> bufferPool = new SimplePool<>(()->IoBuffer.allocate(bufferSize));
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;
 
 	@SuppressWarnings("unchecked")
 	@Override
 	public void encode(IoSession session, Object message, ProtocolEncoderOutput out) throws Exception {
-		synchronized (buffer) {
-			Chunkable ch = coder.encode(message);
-			try(ChunkOutputStream cos = new ChunkOutputStream(ch.getId(), out)) {
-				ch.writeMessage(cos);
-			}
+		Chunkable ch = coder.encode(message);
+		try(ChunkOutputStream cos = new ChunkOutputStream(ch.getId(), out)) {
+			ch.writeMessage(cos);
 		}
 	}
 
@@ -44,12 +44,16 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	private class ChunkOutputStream extends OutputStream {
 		private final UUID id;
 		private final ProtocolEncoderOutput out;
-		
+		private IoBuffer buffer = null;
 		private boolean closed = false;
 		
 		private void newBuffer(int required) {
-			if(buffer.remaining()<required) {
-				finishBuffer(false);
+			if(buffer == null || buffer.remaining()<required) {
+				if(buffer != null) {
+					finishBuffer(false);
+				}
+				buffer = bufferPool.borrow();
+				buffer.position(HEADER_SIZE);
 			}
 		}
 
@@ -63,9 +67,12 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			buffer.putLong(Byte.BYTES+Integer.BYTES, id.getMostSignificantBits());
 			buffer.putLong(Byte.BYTES+Integer.BYTES+Long.BYTES, id.getLeastSignificantBits());
 			out.write(buffer);
-			out.flush().awaitUninterruptibly();
-			buffer.clear();
-			buffer.position(HEADER_SIZE);
+			final IoBuffer currentBuffer = buffer;
+			out.flush().addListener(future-> {
+				currentBuffer.clear();
+				bufferPool.returnValue(currentBuffer);
+			});
+			buffer = null;
 		}
 
 		@Override
@@ -91,7 +98,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			}
 			
 			while(len > 0) {
-				if(!buffer.hasRemaining()) {
+				if(buffer == null || !buffer.hasRemaining()) {
 					newBuffer(len);
 				}
 				
@@ -105,6 +112,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 		@Override
 		public void close() throws IOException {
 			if(!closed) {
+				newBuffer(0);
 				finishBuffer(true);
 				closed = true;
 			}
