@@ -38,7 +38,7 @@ public class CQOr implements CQElement {
 		for(int i=0;i<aggs.length;i++) {
 			aggs[i] = children.get(i).createQueryPlan(context, plan);
 		}
-		return new OrNode(Arrays.asList(aggs));
+		return OrNode.of(Arrays.asList(aggs));
 	}
 	
 	@Override
