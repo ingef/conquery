@@ -1,4 +1,4 @@
-package com.bakdata.eva.handler;
+package com.bakdata.conquery.handler;
 
 import io.github.classgraph.FieldInfo;
 import lombok.AllArgsConstructor;

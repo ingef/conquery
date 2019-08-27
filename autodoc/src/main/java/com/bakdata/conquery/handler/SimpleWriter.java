@@ -1,4 +1,4 @@
-package com.bakdata.eva.handler;
+package com.bakdata.conquery.handler;
 
 import java.io.Closeable;
 import java.io.IOException;

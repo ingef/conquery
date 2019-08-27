@@ -1,4 +1,4 @@
-package com.bakdata.eva;
+package com.bakdata.conquery;
 
 import java.util.Set;
 
@@ -8,6 +8,8 @@ import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
+import com.bakdata.conquery.model.Base;
+import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -21,8 +23,6 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
-import com.bakdata.eva.model.Base;
-import com.bakdata.eva.model.Group;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;

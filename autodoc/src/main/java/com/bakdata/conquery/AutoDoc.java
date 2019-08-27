@@ -1,13 +1,13 @@
-package com.bakdata.eva;
+package com.bakdata.conquery;
 
-import static com.bakdata.eva.Constants.GROUPS;
+import static com.bakdata.conquery.Constants.GROUPS;
 
 import java.io.File;
 import java.io.IOException;
 
-import com.bakdata.eva.handler.GroupHandler;
-import com.bakdata.eva.handler.SimpleWriter;
-import com.bakdata.eva.model.Group;
+import com.bakdata.conquery.handler.GroupHandler;
+import com.bakdata.conquery.handler.SimpleWriter;
+import com.bakdata.conquery.model.Group;
 import com.github.powerlibraries.io.Out;
 
 import io.github.classgraph.ClassGraph;

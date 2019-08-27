@@ -1,4 +1,4 @@
-package com.bakdata.eva.model;
+package com.bakdata.conquery.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

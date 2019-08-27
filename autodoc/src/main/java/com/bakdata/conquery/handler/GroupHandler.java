@@ -1,11 +1,11 @@
-package com.bakdata.eva.handler;
+package com.bakdata.conquery.handler;
 
-import static com.bakdata.eva.Constants.CPS_TYPE;
-import static com.bakdata.eva.Constants.ID_REF;
-import static com.bakdata.eva.Constants.ID_REF_COL;
-import static com.bakdata.eva.Constants.JSON_BACK_REFERENCE;
-import static com.bakdata.eva.Constants.JSON_CREATOR;
-import static com.bakdata.eva.Constants.JSON_IGNORE;
+import static com.bakdata.conquery.Constants.CPS_TYPE;
+import static com.bakdata.conquery.Constants.ID_REF;
+import static com.bakdata.conquery.Constants.ID_REF_COL;
+import static com.bakdata.conquery.Constants.JSON_BACK_REFERENCE;
+import static com.bakdata.conquery.Constants.JSON_CREATOR;
+import static com.bakdata.conquery.Constants.JSON_IGNORE;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -18,9 +18,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.model.Base;
+import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.eva.model.Base;
-import com.bakdata.eva.model.Group;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
