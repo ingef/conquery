@@ -118,16 +118,24 @@ public class GroupHandler {
 		}
 		
 		String name = field.getName();
+		String type = printType(field.getTypeDescriptor());
+		if(ID_REF.stream().anyMatch(field::hasAnnotation)) {
+			type = "ID of "+type;
+		}
+		if(ID_REF_COL.stream().anyMatch(field::hasAnnotation)) {
+			type = "list of ID of "+type;
+		}
+		
 
 		out.table(
 			name,
-			printType(field.getTypeDescriptor())
+			type
 		);
 	}
 
 	private String printType(TypeSignature type) {
 		if(type instanceof ArrayTypeSignature) {
-			return "List of "+printType(((ArrayTypeSignature) type).getElementTypeSignature());
+			return "list of "+printType(((ArrayTypeSignature) type).getElementTypeSignature());
 		}
 		if(type instanceof BaseTypeSignature) {
 			return "`"+type.toString()+"`";

@@ -3,6 +3,10 @@ package com.bakdata.eva;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
+import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
+import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.filters.Filter;
@@ -35,6 +39,8 @@ public class Constants {
 	};
 	
 	public static final String CPS_TYPE = CPSType.class.getName();
+	public static final Set<String> ID_REF = Set.of(NsIdRef.class.getName(), MetaIdRef.class.getName());
+	public static final Set<String> ID_REF_COL = Set.of(NsIdRefCollection.class.getName(), MetaIdRefCollection.class.getName());
 	public static final String JSON_IGNORE = JsonIgnore.class.getName();
 	public static final String JSON_BACK_REFERENCE = JsonBackReference.class.getName();
 }

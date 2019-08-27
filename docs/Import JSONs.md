@@ -20,7 +20,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| inputColumns | List of `int` | 
+| inputColumns | list of `int` | 
 | name | `String` | 
 | required | `boolean` | 
 
@@ -147,7 +147,7 @@ The following fields are supported:
 | name | `String` | 
 | required | `boolean` | 
 | includeNulls | `boolean` | 
-| inputColumns | List of `int` | 
+| inputColumns | list of `int` | 
 | inputType | one of STRING, INTEGER, BOOLEAN, REAL, DECIMAL, MONEY, DATE, DATE_RANGE | 
 
 

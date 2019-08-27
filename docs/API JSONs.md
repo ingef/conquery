@@ -63,7 +63,7 @@ The following fields are supported:
 | excludeFromTimeAggregation | `boolean` | 
 | ids | `List` | 
 | label | `String` | 
-| selects | `List` | 
+| selects | list of ID of `List` | 
 | tables | `List` | 
 
 ### DATE_RESTRICTION
@@ -150,7 +150,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| filter | `Filter` | 
+| filter | ID of `Filter` | 
 | value | `Object` | 
 
 ### INTEGER_RANGE
@@ -160,7 +160,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| filter | `Filter` | 
+| filter | ID of `Filter` | 
 | value | `Object` | 
 
 ### MONEY_RANGE
@@ -170,7 +170,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| filter | `Filter` | 
+| filter | ID of `Filter` | 
 | value | `Object` | 
 
 ### MULTI_SELECT
@@ -180,7 +180,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| filter | `Filter` | 
+| filter | ID of `Filter` | 
 | value | `Object` | 
 
 ### REAL_RANGE
@@ -190,7 +190,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| filter | `Filter` | 
+| filter | ID of `Filter` | 
 | value | `Object` | 
 
 ### SELECT
@@ -200,7 +200,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| filter | `Filter` | 
+| filter | ID of `Filter` | 
 | value | `Object` | 
 
 ### STRING
@@ -210,7 +210,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| filter | `Filter` | 
+| filter | ID of `Filter` | 
 | value | `Object` | 
 
 

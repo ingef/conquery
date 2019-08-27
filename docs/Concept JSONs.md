@@ -119,7 +119,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| prefixes | List of `String` | 
+| prefixes | list of `String` | 
 
 ### PREFIX_RANGE
 Java Name: `com.bakdata.conquery.models.concepts.conditions.PrefixRangeCondition`
@@ -153,7 +153,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | labels | `BiMap` | 
 | values | `Set` | 
 | label | `String` | 
@@ -171,9 +171,9 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | distinct | `boolean` | 
-| distinctByColumn | List of `Column` | 
+| distinctByColumn | list of ID of list of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -189,7 +189,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -205,7 +205,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | timeUnit | one of NANOS, MICROS, MILLIS, SECONDS, MINUTES, HOURS, HALF_DAYS, DAYS, WEEKS, MONTHS, YEARS, DECADES, CENTURIES, MILLENNIA, ERAS, FOREVER | 
 | label | `String` | 
 | name | `String` | 
@@ -222,7 +222,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -238,7 +238,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -254,7 +254,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -270,7 +270,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -286,7 +286,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | labels | `BiMap` | 
 | values | `Set` | 
 | label | `String` | 
@@ -304,7 +304,7 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | labels | `BiMap` | 
 | values | `Set` | 
 | label | `String` | 
@@ -322,10 +322,10 @@ The following fields are supported:
 | pattern | `String` | 
 | template | `FilterTemplate` | 
 | unit | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | distinct | `boolean` | 
-| distinctByColumn | `Column` | 
-| subtractColumn | `Column` | 
+| distinctByColumn | ID of `Column` | 
+| subtractColumn | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -347,9 +347,9 @@ The following fields are supported:
 | Field | Type |
 | --- | --- |
 | description | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | distinct | `boolean` | 
-| distinctByColumn | `Column` | 
+| distinctByColumn | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -362,8 +362,8 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
-| selection | List of `String` | 
+| column | ID of `Column` | 
+| selection | list of `String` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -376,7 +376,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -389,7 +389,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | timeUnit | one of NANOS, MICROS, MILLIS, SECONDS, MINUTES, HOURS, HALF_DAYS, DAYS, WEEKS, MONTHS, YEARS, DECADES, CENTURIES, MILLENNIA, ERAS, FOREVER | 
 | label | `String` | 
 | name | `String` | 
@@ -403,7 +403,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -416,7 +416,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -429,7 +429,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -453,7 +453,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -466,7 +466,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -479,7 +479,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | prefix | `String` | 
 | label | `String` | 
 | name | `String` | 
@@ -493,7 +493,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -506,7 +506,7 @@ The following fields are supported:
 | --- | --- |
 | description | `String` | 
 | categorical | `boolean` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -518,10 +518,10 @@ The following fields are supported:
 | Field | Type |
 | --- | --- |
 | description | `String` | 
-| column | `Column` | 
+| column | ID of `Column` | 
 | distinct | `boolean` | 
-| distinctByColumn | `Column` | 
-| subtractColumn | `Column` | 
+| distinctByColumn | ID of `Column` | 
+| subtractColumn | ID of `Column` | 
 | label | `String` | 
 | name | `String` | 
 
