@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;

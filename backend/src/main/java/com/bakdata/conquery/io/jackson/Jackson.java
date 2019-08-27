@@ -11,7 +11,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
@@ -20,13 +19,12 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 public class Jackson {
 	public static final ObjectMapper MAPPER;
 	public static final ObjectMapper BINARY_MAPPER;
-
+	
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
 	}
 	
-	@SuppressWarnings("unchecked")
 	public static <T extends ObjectMapper> T configure(T objectMapper) {
 		
 		objectMapper

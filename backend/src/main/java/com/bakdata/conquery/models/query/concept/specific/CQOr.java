@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 
@@ -15,15 +15,18 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+@NoArgsConstructor @AllArgsConstructor
 @CPSType(id="OR", base=CQElement.class)
 public class CQOr implements CQElement {
 	@Getter @Setter @NotEmpty @Valid
@@ -35,7 +38,7 @@ public class CQOr implements CQElement {
 		for(int i=0;i<aggs.length;i++) {
 			aggs[i] = children.get(i).createQueryPlan(context, plan);
 		}
-		return new OrNode(Arrays.asList(aggs));
+		return OrNode.of(Arrays.asList(aggs));
 	}
 	
 	@Override
@@ -47,14 +50,15 @@ public class CQOr implements CQElement {
 
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
-		children.replaceAll(c->c.resolve(context));
-		return this;
+		var copy = new ArrayList<>(children);
+		copy.replaceAll(c->c.resolve(context));
+		return new CQOr(copy);
 	}
 	
 	@Override
-	public void collectSelects(Deque<SelectDescriptor> select) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		for(CQElement c:children) {
-			c.collectSelects(select);
+			c.collectResultInfos(collector);
 		}
 	}
 

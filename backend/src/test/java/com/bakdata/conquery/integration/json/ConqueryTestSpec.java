@@ -1,10 +1,13 @@
 package com.bakdata.conquery.integration.json;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -15,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -61,6 +65,41 @@ public abstract class ConqueryTestSpec {
 		}
 
 		ValidatorHelper.failOnError(log, support.getValidator().validate(result));
+		return result;
+	}
+	
+	public <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+		ObjectMapper mapper = support.getDataset().injectInto(
+			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
+				Jackson.MAPPER.copy()
+			)
+		);
+		List<T> result = new ArrayList<>(node.size());
+		for(var child : node) {
+			T value;
+			try {
+				value = mapper.readerFor(expectedType).readValue(child);
+			} catch(Exception e) {
+				if(child.isValueNode()) {
+					String potentialPath = child.textValue();
+					try {
+						value = mapper.readerFor(expectedType).readValue(IntegrationTest.class.getResource(potentialPath));
+					}
+					catch(Exception e2) {
+						throw new RuntimeException("Could not parse value "+potentialPath, e2);
+					}
+				}
+				else {
+					throw e;
+				}
+			}
+			
+			if (modifierBeforeValidation != null) {
+				modifierBeforeValidation.accept(value);
+			}
+			result.add(value);
+			ValidatorHelper.failOnError(log, support.getValidator().validate(value));
+		}
 		return result;
 	}
 }

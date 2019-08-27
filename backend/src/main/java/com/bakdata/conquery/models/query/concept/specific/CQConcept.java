@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.ArrayList;
-import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 
@@ -21,7 +20,6 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -34,6 +32,8 @@ import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
@@ -162,10 +162,10 @@ public class CQConcept implements CQElement {
 	}
 
 	@Override
-	public void collectSelects(Deque<SelectDescriptor> select) {
-		selects.forEach(sel -> select.add(new SelectDescriptor(sel,this)));
+	public void collectResultInfos(ResultInfoCollector collector) {
+		selects.forEach(sel -> collector.add(new SelectResultInfo(sel,this)));
 		for (CQTable table : tables) {
-			table.getSelects().forEach(sel -> select.add(new SelectDescriptor(sel,this)));
+			table.getSelects().forEach(sel -> collector.add(new SelectResultInfo(sel,this)));
 		}
 	}
 

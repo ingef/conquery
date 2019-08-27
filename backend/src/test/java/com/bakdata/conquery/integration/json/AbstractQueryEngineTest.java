@@ -16,7 +16,7 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
-import com.bakdata.conquery.models.query.concept.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
@@ -36,12 +36,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	protected abstract ResourceFile getExpectedCsv();
 
 	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = PrintSettings
-		.builder()
-		.prettyPrint(false)
-		.nameExtractor(
-			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
-		.build();
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false);
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
@@ -66,13 +61,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		}
 		
 		//check result info size
-		List<ResultInfo> resultInfos = managed.getResultInfos(PRINT_SETTINGS);
+		ResultInfoCollector resultInfos = managed.collectResultInfos(PRINT_SETTINGS);
 		assertThat(
 			managed
 				.fetchContainedEntityResult()
 				.flatMap(ContainedEntityResult::streamValues)
 		)
-		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos));
+		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
 
 		List<String> actual = new QueryToCSVRenderer()
 			.toCSV(PRINT_SETTINGS, managed)
