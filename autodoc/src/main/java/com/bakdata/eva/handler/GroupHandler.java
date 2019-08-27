@@ -7,6 +7,7 @@ import java.io.Writer;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.RegExUtils;
@@ -118,7 +119,10 @@ public class GroupHandler {
 		}
 		
 		String name = field.getName();
-		String type = printType(field.getTypeDescriptor());
+		String type = printType(Objects.requireNonNullElse(
+			field.getTypeSignature(),
+			field.getTypeDescriptor()
+		));
 		if(ID_REF.stream().anyMatch(field::hasAnnotation)) {
 			type = "ID of "+type;
 		}
@@ -182,16 +186,15 @@ public class GroupHandler {
 		if(field.getClassInfo().hasMethod("set"+StringUtils.capitalize(field.getName()))) {
 			return true;
 		}
+		//has @JsonCreator
+		for(var method : field.getClassInfo().getMethodAndConstructorInfo()) {
+			if(method.hasAnnotation(JSON_CREATOR)) {
+				if(Arrays.stream(method.getParameterInfo()).anyMatch(param->param.getName().equals(field.getName()))) {
+					return true;
+				}
+			}
+		}
 
 		return false;
 	}
-/*
-	private static void print(ClassInfo c, FieldInfo field) {
-		
-		else {
-			System.out.println("\t\tNO "+field.getName());
-		}
-		
-		
-	}*/
 }

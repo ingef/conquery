@@ -20,14 +20,14 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| connectors | `List` | 
+| connectors | `List<CONNECTOR>` | 
 | dataset | ID of `Dataset` | 
 | hidden | `boolean` | 
-| additionalInfos | `List` | 
+| additionalInfos | `List<KeyValue>` | 
 | description | `String` | 
-| children | `List` | 
+| children | `List<ConceptTreeChild>` | 
 | globalToLocalOffset | `int` | 
-| selects | `List` | 
+| selects | `List<UniversalSelect>` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -38,12 +38,12 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| connectors | `List` | 
+| connectors | `List<CONNECTOR>` | 
 | dataset | ID of `Dataset` | 
 | hidden | `boolean` | 
-| additionalInfos | `List` | 
+| additionalInfos | `List<KeyValue>` | 
 | description | `String` | 
-| selects | `List` | 
+| selects | `List<Select>` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -64,7 +64,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| conditions | `List` | 
+| conditions | `List<CTCondition>` | 
 
 ### COLUMN_EQUAL
 Java Name: `com.bakdata.conquery.models.concepts.conditions.ColumnEqualCondition`
@@ -74,7 +74,7 @@ The following fields are supported:
 | Field | Type |
 | --- | --- |
 | column | `String` | 
-| values | `HashSet` | 
+| values | `HashSet<String>` | 
 
 ### EQUAL
 Java Name: `com.bakdata.conquery.models.concepts.conditions.EqualCondition`
@@ -83,7 +83,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| values | `HashSet` | 
+| values | `HashSet<String>` | 
 
 ### GROOVY
 Java Name: `com.bakdata.conquery.models.concepts.conditions.GroovyCondition`
@@ -110,7 +110,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| conditions | `List` | 
+| conditions | `List<CTCondition>` | 
 
 ### PREFIX_LIST
 Java Name: `com.bakdata.conquery.models.concepts.conditions.PrefixCondition`
@@ -154,8 +154,8 @@ The following fields are supported:
 | template | `FilterTemplate` | 
 | unit | `String` | 
 | column | ID of `Column` | 
-| labels | `BiMap` | 
-| values | `Set` | 
+| labels | `BiMap<String, String>` | 
+| values | `Set<String>` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -287,8 +287,8 @@ The following fields are supported:
 | template | `FilterTemplate` | 
 | unit | `String` | 
 | column | ID of `Column` | 
-| labels | `BiMap` | 
-| values | `Set` | 
+| labels | `BiMap<String, String>` | 
+| values | `Set<String>` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -305,8 +305,8 @@ The following fields are supported:
 | template | `FilterTemplate` | 
 | unit | `String` | 
 | column | ID of `Column` | 
-| labels | `BiMap` | 
-| values | `Set` | 
+| labels | `BiMap<String, String>` | 
+| values | `Set<String>` | 
 | label | `String` | 
 | name | `String` | 
 

@@ -18,6 +18,7 @@ import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.eva.model.Base;
 import com.bakdata.eva.model.Group;
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Constants {
@@ -38,6 +39,7 @@ public class Constants {
 			.build()
 	};
 	
+	public static final String JSON_CREATOR = JsonCreator.class.getName();
 	public static final String CPS_TYPE = CPSType.class.getName();
 	public static final Set<String> ID_REF = Set.of(NsIdRef.class.getName(), MetaIdRef.class.getName());
 	public static final Set<String> ID_REF_COL = Set.of(NsIdRefCollection.class.getName(), MetaIdRefCollection.class.getName());
