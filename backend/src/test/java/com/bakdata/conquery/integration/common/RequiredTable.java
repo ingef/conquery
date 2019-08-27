@@ -2,6 +2,7 @@ package com.bakdata.conquery.integration.common;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Objects;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -45,6 +46,12 @@ public class RequiredTable {
 	
 	@JsonCreator
 	public static RequiredTable fromFile(String fileResource) throws JsonParseException, JsonMappingException, IOException {
-		return Jackson.MAPPER.readValue(IntegrationTest.class.getResourceAsStream(fileResource), RequiredTable.class);
+		return Jackson.MAPPER.readValue(
+			Objects.requireNonNull(
+				IntegrationTest.class.getResourceAsStream(fileResource),
+				fileResource+" not found"
+			),
+			RequiredTable.class
+		);
 	}
 }
