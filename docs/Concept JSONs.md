@@ -20,7 +20,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| connectors | list of `CONNECTOR` | 
+| connectors | list of `Connector` | 
 | dataset | ID of `Dataset` | 
 | hidden | `boolean` | 
 | additionalInfos | list of `KeyValue` | 
@@ -38,7 +38,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| connectors | list of `CONNECTOR` | 
+| connectors | list of `Connector` | 
 | dataset | ID of `Dataset` | 
 | hidden | `boolean` | 
 | additionalInfos | list of `KeyValue` | 
@@ -148,7 +148,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -166,7 +166,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -184,7 +184,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -200,7 +200,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -217,7 +217,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -233,7 +233,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -249,7 +249,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -265,7 +265,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -281,7 +281,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -299,7 +299,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 
@@ -317,7 +317,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| allowDropFile | `Boolean` | 
+| allowDropFile | boolean or null | 
 | description | `String` | 
 | pattern | `String` | 
 | template | `FilterTemplate` | 

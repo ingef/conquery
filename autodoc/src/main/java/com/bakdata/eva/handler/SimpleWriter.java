@@ -6,12 +6,12 @@ import java.io.Writer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.collections4.IterableUtils;
-
 import com.google.common.base.Joiner;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RequiredArgsConstructor
 public class SimpleWriter implements Closeable {
 	private final Writer writer;
@@ -47,6 +47,6 @@ public class SimpleWriter implements Closeable {
 
 	public void line(String str) throws IOException {
 		writer.write(str+"\n");
-		System.out.println(str);
+		log.trace(str);
 	}
 }

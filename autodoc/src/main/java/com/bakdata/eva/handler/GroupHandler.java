@@ -27,6 +27,7 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimap;
+import com.google.common.primitives.Primitives;
 
 import io.github.classgraph.AnnotationClassRef;
 import io.github.classgraph.ArrayTypeSignature;
@@ -36,7 +37,9 @@ import io.github.classgraph.ClassRefTypeSignature;
 import io.github.classgraph.FieldInfo;
 import io.github.classgraph.ScanResult;
 import io.github.classgraph.TypeArgument;
+import io.github.classgraph.TypeParameter;
 import io.github.classgraph.TypeSignature;
+import io.github.classgraph.TypeVariableSignature;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -124,10 +127,13 @@ public class GroupHandler {
 		}
 		
 		String name = field.getName();
-		String type = printType(Objects.requireNonNullElse(
-			field.getTypeSignature(),
-			field.getTypeDescriptor()
-		));
+		String type = printType(
+			field,
+			Objects.requireNonNullElse(
+				field.getTypeSignature(),
+				field.getTypeDescriptor()
+			)
+		);
 		if(ID_REF.stream().anyMatch(field::hasAnnotation)) {
 			type = "ID of "+type;
 		}
@@ -142,9 +148,9 @@ public class GroupHandler {
 		);
 	}
 
-	private String printType(TypeSignature type) {
+	private String printType(FieldInfo source, TypeSignature type) {
 		if(type instanceof ArrayTypeSignature) {
-			return "list of "+printType(((ArrayTypeSignature) type).getElementTypeSignature());
+			return "list of "+printType(source, ((ArrayTypeSignature) type).getElementTypeSignature());
 		}
 		if(type instanceof BaseTypeSignature) {
 			return "`"+type.toString()+"`";
@@ -152,53 +158,78 @@ public class GroupHandler {
 		if(type instanceof ClassRefTypeSignature) {
 			var classRef = (ClassRefTypeSignature) type;
 			Class<?> cl = classRef.loadClass();
+			
+			//ID
 			if(IId.class.isAssignableFrom(cl)) {
 				String name = cl.getSimpleName();
 				return "ID of `"+name.substring(0,name.length()-2)+"`";
 			}
 			
+			//List, Map, ...
 			if(Collection.class.isAssignableFrom(cl)) {
 				if(Iterable.class.isAssignableFrom(cl)) {
 					var param = classRef.getTypeArguments().get(0);
-					return "list of "+printType(param);
+					return "list of "+printType(source, param);
 				}
 				if(Map.class.isAssignableFrom(cl)) {
 					return "map from "
-						+ printType(classRef.getTypeArguments().get(0))
+						+ printType(source, classRef.getTypeArguments().get(0))
 						+ " to "
-						+ printType(classRef.getTypeArguments().get(1));
+						+ printType(source, classRef.getTypeArguments().get(1));
 				}
 				if(BiMap.class.isAssignableFrom(cl)) {
 					return "bijective map from "
-						+ printType(classRef.getTypeArguments().get(0))
+						+ printType(source, classRef.getTypeArguments().get(0))
 						+ " to "
-						+ printType(classRef.getTypeArguments().get(1));
+						+ printType(source, classRef.getTypeArguments().get(1));
 				}
 			}
 
+			//String
 			if(String.class.isAssignableFrom(cl)) {
 				return "`String`";
 			}
 			
+			//another BaseClass
 			if(content.keySet().stream().map(Base::getBaseClass).anyMatch(c->c.equals(cl))) {
 				return "["+type.toStringWithSimpleNames()+"]("+anchor(baseTitle(cl))+")";
 			}
 			
+			//ENUM
 			if(Enum.class.isAssignableFrom(cl)) {
 				return "one of "+Arrays.stream(cl.getEnumConstants()).map(Enum.class::cast).map(Enum::name).collect(Collectors.joining(", "));
 			}
-				
+			
+			if(Primitives.isWrapperType(cl)) {
+				return Primitives.unwrap(cl).getSimpleName()+" or null";
+			}
 		}
 		log.warn("Unhandled type {}", type);
 		return "`"+type.toStringWithSimpleNames()+"`";
 	}
 
-	private String printType(TypeArgument type) {
+	private String printType(FieldInfo source, TypeArgument type) {
 		if(type.getTypeSignature() == null) {
 			return "UNKNWON";
 		}
+		if(type.getTypeSignature() instanceof TypeVariableSignature) {
+			String v = type.getTypeSignature().toString();
+			TypeParameter typeParam = source
+				.getClassInfo()
+				.getTypeSignature()
+				.getTypeParameters()
+				.stream()
+				.filter(tp -> tp.getName().equals(v))
+				.collect(MoreCollectors.onlyElement());
+			if(typeParam.getClassBound()!=null) {
+				return printType(source, typeParam.getClassBound());
+			}
+			else {
+				return printType(source, typeParam.getInterfaceBounds().get(0));
+			}
+		}
 		
-		return printType(type.getTypeSignature());
+		return printType(source, type.getTypeSignature());
 	}
 
 	private String anchor(String str) {
