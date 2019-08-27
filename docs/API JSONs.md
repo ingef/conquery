@@ -105,7 +105,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| values | `Map<Integer, CDateSet>` | 
+| values | map from int or null to `CDateSet` | 
 
 ### NEGATION
 Java Name: `com.bakdata.conquery.models.query.concept.specific.CQNegation`

@@ -10,6 +10,7 @@ import lombok.Singular;
 public class Group {
 
 	private String name;
+	private String description;
 	@Singular
 	private List<Base> bases;
 	@Singular

@@ -4,11 +4,13 @@ This is an automatically created documentation. It is not 100% accurate since th
 
 Instead of a list ConQuery also always accepts a single element.
 
+Each `*.concept.json` has to contain exactly one [Concept](#Concept).
+
 
 ---
 
 ## Base Concept
-
+A concept is collections of filters and selects and their connection to tables.
 
 Different types of Concept can be used by setting `type` to one of the following values:
 
@@ -52,7 +54,7 @@ The following fields are supported:
 ---
 
 ## Base CTCondition
-a condition in a Concept
+These represent guard conditions. A value matches a [ConceptElement](#ConceptElement) if it matches its condition and its parent
 
 Different types of CTCondition can be used by setting `type` to one of the following values:
 
@@ -136,7 +138,7 @@ The following fields are supported:
 ---
 
 ## Base Filter
-
+These are used to define filters, than can be used to reduce the result set.
 
 Different types of Filter can be used by setting `type` to one of the following values:
 
@@ -154,7 +156,7 @@ The following fields are supported:
 | template | `FilterTemplate` | 
 | unit | `String` | 
 | column | ID of `Column` | 
-| labels | `BiMap<String, String>` | 
+| labels | bijective map from `String` to `String` | 
 | values | list of `String` | 
 | label | `String` | 
 | name | `String` | 
@@ -287,7 +289,7 @@ The following fields are supported:
 | template | `FilterTemplate` | 
 | unit | `String` | 
 | column | ID of `Column` | 
-| labels | `BiMap<String, String>` | 
+| labels | bijective map from `String` to `String` | 
 | values | list of `String` | 
 | label | `String` | 
 | name | `String` | 
@@ -305,7 +307,7 @@ The following fields are supported:
 | template | `FilterTemplate` | 
 | unit | `String` | 
 | column | ID of `Column` | 
-| labels | `BiMap<String, String>` | 
+| labels | bijective map from `String` to `String` | 
 | values | list of `String` | 
 | label | `String` | 
 | name | `String` | 
@@ -334,7 +336,7 @@ The following fields are supported:
 ---
 
 ## Base Select
-used to define selects that can be used to create additional CSV columns
+These are used to define selects, that can be used to create additional CSV columns.
 
 Different types of Select can be used by setting `type` to one of the following values:
 

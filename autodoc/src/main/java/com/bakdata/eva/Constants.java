@@ -24,12 +24,14 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Constants {
 	public static final Group[] GROUPS = {
 		Group.builder().name("Concept JSONs")
-			.base(new Base(Concept.class, ""))
-			.base(new Base(CTCondition.class, "a condition in a Concept"))
-			.base(new Base(Filter.class, ""))
-			.base(new Base(Select.class, "used to define selects that can be used to create additional CSV columns"))
+			.description("Each `*.concept.json` has to contain exactly one [Concept](#Concept).")
+			.base(new Base(Concept.class, "A concept is collections of filters and selects and their connection to tables."))
+			.base(new Base(CTCondition.class, "These represent guard conditions. A value matches a [ConceptElement](#ConceptElement) if it matches its condition and its parent"))
+			.base(new Base(Filter.class, "These are used to define filters, than can be used to reduce the result set."))
+			.base(new Base(Select.class, "These are used to define selects, that can be used to create additional CSV columns."))
 			.build(),
 		Group.builder().name("Import JSONs")
+			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#ImportDescriptor).")
 			.base(new Base(Output.class, ""))
 			.build(),
 		Group.builder().name("API JSONs")

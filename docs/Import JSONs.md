@@ -4,6 +4,8 @@ This is an automatically created documentation. It is not 100% accurate since th
 
 Instead of a list ConQuery also always accepts a single element.
 
+Each `*.import.json` has to contain exactly one [ImportDescriptor](#ImportDescriptor).
+
 
 ---
 

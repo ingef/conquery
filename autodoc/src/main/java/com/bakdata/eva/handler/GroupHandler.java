@@ -1,35 +1,33 @@
 package com.bakdata.eva.handler;
 
-import org.apache.commons.lang3.tuple.Pair;
-import java.io.BufferedWriter;
+import static com.bakdata.eva.Constants.CPS_TYPE;
+import static com.bakdata.eva.Constants.ID_REF;
+import static com.bakdata.eva.Constants.ID_REF_COL;
+import static com.bakdata.eva.Constants.JSON_BACK_REFERENCE;
+import static com.bakdata.eva.Constants.JSON_CREATOR;
+import static com.bakdata.eva.Constants.JSON_IGNORE;
+
 import java.io.IOException;
-import java.io.Writer;
-import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
-import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
-import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.eva.model.Base;
 import com.bakdata.eva.model.Group;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.base.Joiner;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
 
-import io.github.classgraph.AnnotationClassRef;
 import io.github.classgraph.ArrayTypeSignature;
 import io.github.classgraph.BaseTypeSignature;
 import io.github.classgraph.ClassInfo;
@@ -40,11 +38,8 @@ import io.github.classgraph.TypeArgument;
 import io.github.classgraph.TypeParameter;
 import io.github.classgraph.TypeSignature;
 import io.github.classgraph.TypeVariableSignature;
-import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import static com.bakdata.eva.Constants.*;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -58,6 +53,9 @@ public class GroupHandler {
 		out.heading(group.getName());
 		out.paragraph("This is an automatically created documentation. It is not 100% accurate since the generator does not handle every edge case.");
 		out.paragraph("Instead of a list ConQuery also always accepts a single element.");
+		if(group.getDescription()!=null) {
+			out.paragraph(group.getDescription());
+		}
 		
 		for(var base : group.getBases()) {
 			content.putAll(
@@ -127,20 +125,22 @@ public class GroupHandler {
 		}
 		
 		String name = field.getName();
-		String type = printType(
-			field,
-			Objects.requireNonNullElse(
-				field.getTypeSignature(),
-				field.getTypeDescriptor()
-			)
+		var typeSignature = Objects.requireNonNullElse(
+			field.getTypeSignature(),
+			field.getTypeDescriptor()
 		);
-		if(ID_REF.stream().anyMatch(field::hasAnnotation)) {
-			type = "ID of "+type;
-		}
-		if(ID_REF_COL.stream().anyMatch(field::hasAnnotation)) {
-			type = "list of ID of "+type;
-		}
+		Ctx ctx = new Ctx().withField(field);
 		
+		String type;
+		if(ID_REF.stream().anyMatch(field::hasAnnotation)) {
+			type = "ID of "+printType(ctx.withIdOf(true), typeSignature);
+		}
+		else if(ID_REF_COL.stream().anyMatch(field::hasAnnotation)) {
+			type = "list of ID of "+printType(ctx.withIdOf(true), typeSignature);
+		}
+		else {
+			type = printType(ctx, typeSignature);
+		}
 
 		out.table(
 			name,
@@ -148,9 +148,9 @@ public class GroupHandler {
 		);
 	}
 
-	private String printType(FieldInfo source, TypeSignature type) {
+	private String printType(Ctx ctx, TypeSignature type) {
 		if(type instanceof ArrayTypeSignature) {
-			return "list of "+printType(source, ((ArrayTypeSignature) type).getElementTypeSignature());
+			return "list of "+printType(ctx, ((ArrayTypeSignature) type).getElementTypeSignature());
 		}
 		if(type instanceof BaseTypeSignature) {
 			return "`"+type.toString()+"`";
@@ -165,25 +165,26 @@ public class GroupHandler {
 				return "ID of `"+name.substring(0,name.length()-2)+"`";
 			}
 			
-			//List, Map, ...
-			if(Collection.class.isAssignableFrom(cl)) {
-				if(Iterable.class.isAssignableFrom(cl)) {
-					var param = classRef.getTypeArguments().get(0);
-					return "list of "+printType(source, param);
-				}
-				if(Map.class.isAssignableFrom(cl)) {
-					return "map from "
-						+ printType(source, classRef.getTypeArguments().get(0))
-						+ " to "
-						+ printType(source, classRef.getTypeArguments().get(1));
-				}
-				if(BiMap.class.isAssignableFrom(cl)) {
-					return "bijective map from "
-						+ printType(source, classRef.getTypeArguments().get(0))
-						+ " to "
-						+ printType(source, classRef.getTypeArguments().get(1));
-				}
+			//Iterable
+			if(Iterable.class.isAssignableFrom(cl)) {
+				var param = classRef.getTypeArguments().get(0);
+				return "list of "+printType(ctx.withGeneric(true), param);
 			}
+			
+			//Map
+			if(BiMap.class.isAssignableFrom(cl)) {
+				return "bijective map from "
+					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(0))
+					+ " to "
+					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(1));
+			}
+			if(Map.class.isAssignableFrom(cl)) {
+				return "map from "
+					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(0))
+					+ " to "
+					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(1));
+			}
+			
 
 			//String
 			if(String.class.isAssignableFrom(cl)) {
@@ -201,20 +202,24 @@ public class GroupHandler {
 			}
 			
 			if(Primitives.isWrapperType(cl)) {
-				return Primitives.unwrap(cl).getSimpleName()+" or null";
+				return Primitives.unwrap(cl).getSimpleName()
+					+ (ctx.isIdOf()?"":" or null");
 			}
 		}
-		log.warn("Unhandled type {}", type);
+		if(!ctx.isIdOf()) {
+			log.warn("Unhandled type {}", type);
+		}
 		return "`"+type.toStringWithSimpleNames()+"`";
 	}
 
-	private String printType(FieldInfo source, TypeArgument type) {
+	private String printType(Ctx ctx, TypeArgument type) {
 		if(type.getTypeSignature() == null) {
 			return "UNKNWON";
 		}
 		if(type.getTypeSignature() instanceof TypeVariableSignature) {
 			String v = type.getTypeSignature().toString();
-			TypeParameter typeParam = source
+			TypeParameter typeParam = ctx
+				.getField()
 				.getClassInfo()
 				.getTypeSignature()
 				.getTypeParameters()
@@ -222,14 +227,14 @@ public class GroupHandler {
 				.filter(tp -> tp.getName().equals(v))
 				.collect(MoreCollectors.onlyElement());
 			if(typeParam.getClassBound()!=null) {
-				return printType(source, typeParam.getClassBound());
+				return printType(ctx, typeParam.getClassBound());
 			}
 			else {
-				return printType(source, typeParam.getInterfaceBounds().get(0));
+				return printType(ctx, typeParam.getInterfaceBounds().get(0));
 			}
 		}
 		
-		return printType(source, type.getTypeSignature());
+		return printType(ctx, type.getTypeSignature());
 	}
 
 	private String anchor(String str) {
