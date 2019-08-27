@@ -14,6 +14,8 @@ jobs:
         java-version: 1.11
     - name: Build with Maven
       run: mvn -B package -DskipTests -pl !frontend-resources,!executable
+    - name: test
+      run: ls
     - name: AutoDoc
       run: cd autodoc && java -jar target/autodoc-0.0.0-SNAPSHOT-jar-with-dependencies.jar
     - name: git status
