@@ -74,7 +74,7 @@ The following fields are supported:
 | Field | Type |
 | --- | --- |
 | column | `String` | 
-| values | `HashSet<String>` | 
+| values | list of `String` | 
 
 ### EQUAL
 Java Name: `com.bakdata.conquery.models.concepts.conditions.EqualCondition`
@@ -83,7 +83,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| values | `HashSet<String>` | 
+| values | list of `String` | 
 
 ### GROOVY
 Java Name: `com.bakdata.conquery.models.concepts.conditions.GroovyCondition`
@@ -155,7 +155,7 @@ The following fields are supported:
 | unit | `String` | 
 | column | ID of `Column` | 
 | labels | `BiMap<String, String>` | 
-| values | `Set<String>` | 
+| values | list of `String` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -288,7 +288,7 @@ The following fields are supported:
 | unit | `String` | 
 | column | ID of `Column` | 
 | labels | `BiMap<String, String>` | 
-| values | `Set<String>` | 
+| values | list of `String` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -306,7 +306,7 @@ The following fields are supported:
 | unit | `String` | 
 | column | ID of `Column` | 
 | labels | `BiMap<String, String>` | 
-| values | `Set<String>` | 
+| values | list of `String` | 
 | label | `String` | 
 | name | `String` | 
 

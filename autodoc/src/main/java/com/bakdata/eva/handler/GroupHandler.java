@@ -9,6 +9,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import com.bakdata.eva.model.Base;
 import com.bakdata.eva.model.Group;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Joiner;
+import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimap;
@@ -156,12 +158,22 @@ public class GroupHandler {
 			}
 			
 			if(Collection.class.isAssignableFrom(cl)) {
-				if(List.class.isAssignableFrom(cl)) {
+				if(Iterable.class.isAssignableFrom(cl)) {
 					var param = classRef.getTypeArguments().get(0);
 					return "list of "+printType(param);
 				}
-				//sadly we do not have all the infos here
-				return "`"+classRef.toStringWithSimpleNames()+"`";
+				if(Map.class.isAssignableFrom(cl)) {
+					return "map from "
+						+ printType(classRef.getTypeArguments().get(0))
+						+ " to "
+						+ printType(classRef.getTypeArguments().get(1));
+				}
+				if(BiMap.class.isAssignableFrom(cl)) {
+					return "bijective map from "
+						+ printType(classRef.getTypeArguments().get(0))
+						+ " to "
+						+ printType(classRef.getTypeArguments().get(1));
+				}
 			}
 
 			if(String.class.isAssignableFrom(cl)) {
