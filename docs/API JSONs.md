@@ -39,7 +39,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| children | `List<CQElement>` | 
+| children | list of [CQElement](#Base-CQElement) | 
 
 ### BEFORE
 Java Name: `com.bakdata.conquery.models.query.concept.specific.temporal.CQBeforeTemporalQuery`
@@ -61,10 +61,10 @@ The following fields are supported:
 | Field | Type |
 | --- | --- |
 | excludeFromTimeAggregation | `boolean` | 
-| ids | `List<ConceptElementId<?>>` | 
+| ids | list of ID of `ConceptElement` | 
 | label | `String` | 
-| selects | list of ID of `List<Select>` | 
-| tables | `List<CQTable>` | 
+| selects | list of ID of list of `Select` | 
+| tables | list of `CQTable` | 
 
 ### DATE_RESTRICTION
 Java Name: `com.bakdata.conquery.models.query.concept.specific.CQDateRestriction`
@@ -95,7 +95,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| format | `List<CQExternal$FormatColumn>` | 
+| format | list of one of ID, EVENT_DATE, START_DATE, END_DATE, DATE_RANGE, DATE_SET, IGNORE | 
 | values | list of `String` | 
 
 ### EXTERNAL_RESOLVED
@@ -123,7 +123,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| children | `List<CQElement>` | 
+| children | list of [CQElement](#Base-CQElement) | 
 
 ### SAME
 Java Name: `com.bakdata.conquery.models.query.concept.specific.temporal.CQSameTemporalQuery`

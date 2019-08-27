@@ -20,14 +20,14 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| connectors | `List<CONNECTOR>` | 
+| connectors | list of `CONNECTOR` | 
 | dataset | ID of `Dataset` | 
 | hidden | `boolean` | 
-| additionalInfos | `List<KeyValue>` | 
+| additionalInfos | list of `KeyValue` | 
 | description | `String` | 
-| children | `List<ConceptTreeChild>` | 
+| children | list of `ConceptTreeChild` | 
 | globalToLocalOffset | `int` | 
-| selects | `List<UniversalSelect>` | 
+| selects | list of `UniversalSelect` | 
 | label | `String` | 
 | name | `String` | 
 
@@ -38,12 +38,12 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| connectors | `List<CONNECTOR>` | 
+| connectors | list of `CONNECTOR` | 
 | dataset | ID of `Dataset` | 
 | hidden | `boolean` | 
-| additionalInfos | `List<KeyValue>` | 
+| additionalInfos | list of `KeyValue` | 
 | description | `String` | 
-| selects | `List<Select>` | 
+| selects | list of [Select](#Base-Select) | 
 | label | `String` | 
 | name | `String` | 
 
@@ -64,7 +64,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| conditions | `List<CTCondition>` | 
+| conditions | list of [CTCondition](#Base-CTCondition) | 
 
 ### COLUMN_EQUAL
 Java Name: `com.bakdata.conquery.models.concepts.conditions.ColumnEqualCondition`
@@ -110,7 +110,7 @@ The following fields are supported:
 
 | Field | Type |
 | --- | --- |
-| conditions | `List<CTCondition>` | 
+| conditions | list of [CTCondition](#Base-CTCondition) | 
 
 ### PREFIX_LIST
 Java Name: `com.bakdata.conquery.models.concepts.conditions.PrefixCondition`

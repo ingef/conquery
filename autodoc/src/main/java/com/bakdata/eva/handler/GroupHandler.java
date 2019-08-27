@@ -4,9 +4,11 @@ import org.apache.commons.lang3.tuple.Pair;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.Writer;
+import java.lang.reflect.TypeVariable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Comparator;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -31,6 +33,7 @@ import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassRefTypeSignature;
 import io.github.classgraph.FieldInfo;
 import io.github.classgraph.ScanResult;
+import io.github.classgraph.TypeArgument;
 import io.github.classgraph.TypeSignature;
 import lombok.AllArgsConstructor;
 import lombok.RequiredArgsConstructor;
@@ -153,6 +156,10 @@ public class GroupHandler {
 			}
 			
 			if(Collection.class.isAssignableFrom(cl)) {
+				if(List.class.isAssignableFrom(cl)) {
+					var param = classRef.getTypeArguments().get(0);
+					return "list of "+printType(param);
+				}
 				//sadly we do not have all the infos here
 				return "`"+classRef.toStringWithSimpleNames()+"`";
 			}
@@ -172,6 +179,14 @@ public class GroupHandler {
 		}
 		log.warn("Unhandled type {}", type);
 		return "`"+type.toStringWithSimpleNames()+"`";
+	}
+
+	private String printType(TypeArgument type) {
+		if(type.getTypeSignature() == null) {
+			return "UNKNWON";
+		}
+		
+		return printType(type.getTypeSignature());
 	}
 
 	private String anchor(String str) {
