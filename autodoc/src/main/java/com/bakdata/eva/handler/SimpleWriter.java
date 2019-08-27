@@ -26,11 +26,11 @@ public class SimpleWriter implements Closeable {
 	}
 	
 	public void subHeading(String str) throws IOException {
-		line("\n### "+str);
+		line("\n---\n\n## "+str);
 	}
 	
 	public void subSubHeading(String str) throws IOException {
-		line("\n##### "+str);
+		line("\n### "+str);
 	}
 	
 	public void tableHeader(String... header) throws IOException {
