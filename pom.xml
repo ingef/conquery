@@ -22,6 +22,7 @@
 		<module>frontend-resources</module>
 		<module>backend</module>
 		<module>executable</module>
+		<module>autodoc</module>
 	</modules>
 
 	<dependencyManagement>
