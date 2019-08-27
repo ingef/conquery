@@ -15,6 +15,7 @@ Different types of Output can be used by setting `operation` to one of the follo
 Java Name: `com.bakdata.conquery.models.preproc.outputs.ConcatOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | inputColumns | List of `int` | 
@@ -25,6 +26,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.CopyOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | inputColumn | `int` | 
@@ -36,6 +38,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.DateRangeOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | endColumn | `int` | 
@@ -47,6 +50,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.EpochOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | column | `int` | 
@@ -57,6 +61,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.EpochDateRangeOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | endColumn | `int` | 
@@ -68,6 +73,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.LineOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | name | `String` | 
@@ -77,6 +83,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.NullOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | inputType | one of STRING, INTEGER, BOOLEAN, REAL, DECIMAL, MONEY, DATE, DATE_RANGE | 
@@ -87,6 +94,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.QuarterToFirstDayOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | name | `String` | 
@@ -98,6 +106,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.QuarterToRangeOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | name | `String` | 
@@ -109,6 +118,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.SourceOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | name | `String` | 
@@ -118,6 +128,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.StartingFromOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | name | `String` | 
@@ -128,6 +139,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.preproc.outputs.UnpivotOutput`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | name | `String` | 

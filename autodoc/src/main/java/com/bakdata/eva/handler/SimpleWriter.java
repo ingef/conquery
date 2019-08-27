@@ -34,7 +34,7 @@ public class SimpleWriter implements Closeable {
 	}
 	
 	public void tableHeader(String... header) throws IOException {
-		line("| "+Joiner.on(" | ").join(header)+" |");
+		line("\n| "+Joiner.on(" | ").join(header)+" |");
 		line("| "+Stream.generate(()->"---").limit(header.length).collect(Collectors.joining(" | "))+" |");
 	}
 	public void table(String... values) throws IOException {

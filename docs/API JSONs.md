@@ -15,6 +15,7 @@ Different types of IQuery can be used by setting `type` to one of the following 
 Java Name: `com.bakdata.conquery.models.query.concept.ConceptQuery`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | root | [CQElement](#Base-CQElement) | 
@@ -31,6 +32,7 @@ Different types of CQElement can be used by setting `type` to one of the followi
 Java Name: `com.bakdata.conquery.models.query.concept.specific.CQAnd`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | children | `List` | 
@@ -51,6 +53,7 @@ No fields can be set for this type.
 Java Name: `com.bakdata.conquery.models.query.concept.specific.CQConcept`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | excludeFromTimeAggregation | `boolean` | 
@@ -63,6 +66,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.specific.CQDateRestriction`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | child | [CQElement](#Base-CQElement) | 
@@ -90,6 +94,7 @@ No fields can be set for this type.
 Java Name: `com.bakdata.conquery.models.query.concept.specific.CQExternalResolved`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | values | `Map` | 
@@ -98,6 +103,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.specific.CQNegation`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | child | [CQElement](#Base-CQElement) | 
@@ -106,6 +112,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.specific.CQOr`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | children | `List` | 
@@ -134,6 +141,7 @@ Different types of FilterValue can be used by setting `type` to one of the follo
 Java Name: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQMultiSelectFilter`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | filter | `Filter` | 
@@ -143,6 +151,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQIntegerRangeFilter`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | filter | `Filter` | 
@@ -152,6 +161,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQIntegerRangeFilter`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | filter | `Filter` | 
@@ -161,6 +171,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQMultiSelectFilter`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | filter | `Filter` | 
@@ -170,6 +181,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQRealRangeFilter`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | filter | `Filter` | 
@@ -179,6 +191,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQSelectFilter`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | filter | `Filter` | 
@@ -188,6 +201,7 @@ The following fields are supported:
 Java Name: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQStringFilter`
 
 The following fields are supported:
+
 | Field | Type |
 | --- | --- |
 | filter | `Filter` | 
