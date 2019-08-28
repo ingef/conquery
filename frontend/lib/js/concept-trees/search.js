@@ -1,6 +1,7 @@
 // @flow
 
 import type { ConceptIdT, ConceptT } from "../api/types";
+import type { TreesT } from "./reducer";
 
 export const doesQueryMatchNode = (node: ConceptT, query: string) => {
   return (
@@ -23,7 +24,8 @@ export const doesQueryMatchNode = (node: ConceptT, query: string) => {
   - it's been optimized to _not_ use object spread, because that slowed it down
   - it's been optimized to have a time complexity of O(n)
 
-  treeId: the root tree id
+  trees: the structure that contains all data and allows to lookup children
+  treeId: the root tree id that's being currently searched in
   nodeId: the id of the concept node, because node doesn't include it itself
   node: the current node to check for match,
     includes all information needed, eg: label, description, additionalInfos and children
@@ -32,6 +34,7 @@ export const doesQueryMatchNode = (node: ConceptT, query: string) => {
     this object through the recursion and define new properties as we go (side effects)
 */
 export const findConcepts = (
+  trees: TreesT,
   treeId: string,
   nodeId: ConceptIdT,
   node: ConceptT,
@@ -60,9 +63,10 @@ export const findConcepts = (
 
   for (let child of node.children) {
     const result = findConcepts(
+      trees,
       treeId,
       child,
-      window.conceptTrees[treeId][child],
+      trees[treeId][child],
       query,
       intermediateResult
     );

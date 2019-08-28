@@ -3,10 +3,11 @@
 import { type Dispatch } from "redux-thunk";
 import { Sema } from "../common/helpers/rateLimitHelper";
 
-import type { DatasetIdT } from "../api/types";
+import type { DatasetIdT, ConceptIdT } from "../api/types";
+import type { TreesT } from "./reducer";
+
 import api from "../api";
 import { defaultSuccess, defaultError } from "../common/actions";
-import type { ConceptIdT } from "../api/types";
 import { isEmpty } from "../common/helpers";
 
 import { resetAllTrees, globalSearch } from "./globalTreeStoreHelper";
@@ -108,14 +109,18 @@ export const searchTreesSuccess = (query: string, result: Object) => ({
 export const searchTreesError = (query: string, err: any) =>
   defaultError(SEARCH_TREES_ERROR, err, { query });
 
-export const searchTrees = (datasetId: DatasetIdT, query: string) => {
+export const searchTrees = (
+  datasetId: DatasetIdT,
+  trees: TreesT,
+  query: string
+) => {
   return async (dispatch: Dispatch) => {
     dispatch(searchTreesStart(query));
 
     if (isEmpty(query)) return;
 
     try {
-      const result = await globalSearch(query);
+      const result = await globalSearch(trees, query);
 
       dispatch(searchTreesSuccess(query, result));
     } catch (e) {

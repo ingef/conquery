@@ -18,7 +18,7 @@ import type { DatasetIdT } from "../api/types";
 import { getAreTreesAvailable } from "./selectors";
 import { searchTrees, clearSearchQuery, toggleShowMismatches } from "./actions";
 
-import type { SearchT } from "./reducer";
+import type { SearchT, TreesT } from "./reducer";
 
 const Root = styled("div")`
   margin: 0 10px 5px;
@@ -76,11 +76,12 @@ const StyledButton = styled(TransparentButton)`
 type PropsT = {
   datasetId: string,
 
+  trees: TreesT,
   search: SearchT,
   areTreesAvailable: boolean,
   showMismatches: boolean,
 
-  onSearch: (datasetId: DatasetIdT, value: string) => void,
+  onSearch: (datasetId: DatasetIdT, trees: TreesT, value: string) => void,
   onChange: string => void,
   onClearQuery: () => void,
   onToggleShowMismatches: () => void
@@ -89,12 +90,13 @@ type PropsT = {
 const mapStateToProps = state => ({
   areTreesAvailable: getAreTreesAvailable(state),
   showMismatches: state.conceptTrees.search.showMismatches,
-  search: state.conceptTrees.search
+  search: state.conceptTrees.search,
+  trees: state.conceptTrees.trees
 });
 
 const mapDispatchToProps = dispatch => ({
-  onSearch: (datasetId, query) => {
-    if (query.length > 1) dispatch(searchTrees(datasetId, query));
+  onSearch: (datasetId, trees, query) => {
+    if (query.length > 1) dispatch(searchTrees(datasetId, trees, query));
   },
   onClearQuery: () => dispatch(clearSearchQuery()),
   onToggleShowMismatches: () => dispatch(toggleShowMismatches())
@@ -107,6 +109,7 @@ export default connect(
   ({
     datasetId,
     search,
+    trees,
     onSearch,
     onClearQuery,
     showMismatches,
@@ -134,7 +137,7 @@ export default connect(
           inputProps={{
             onKeyPress: e => {
               return e.key === "Enter" && !isEmpty(e.target.value)
-                ? onSearch(datasetId, e.target.value)
+                ? onSearch(datasetId, trees, e.target.value)
                 : null;
             }
           }}
@@ -144,7 +147,7 @@ export default connect(
             <StyledIconButton
               icon="search"
               aria-hidden="true"
-              onClick={() => onSearch(datasetId, localQuery)}
+              onClick={() => onSearch(datasetId, trees, localQuery)}
             />
           </Right>
         )}

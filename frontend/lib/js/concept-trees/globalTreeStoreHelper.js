@@ -132,16 +132,39 @@ export const hasConceptChildren = (node: ConceptT): boolean => {
   This is async because ... we might want to parallelize this very soon,
   as there are up to 200k concepts that need to be searched.
 */
-export const globalSearch = async (query: string) => {
+export const globalSearch = async (trees: TreesT, query: string) => {
   const lowerQuery = query.toLowerCase();
+  // `trees contains concept folders as well,
+  // but they're not saved globally in window.conceptTrees, because they're not many
+  //
+  // We DO want to search in concept folders as well, so we'll
+  // - format them to have the same "nested" structure as a single conceptTree
+  // - we combine both into one object
+  //
+  // TODO: Refactor the state and keep both root trees as well as concept trees in a single format
+  //       Then simply use that here
+  const formattedTrees = Object.keys(trees).reduce((all, key) => {
+    all[key] = { [key]: trees[key] };
 
-  const result = Object.keys(window.conceptTrees).reduce(
-    (all, key) => ({
-      ...all,
-      ...findConcepts(key, key, window.conceptTrees[key][key], lowerQuery)
-    }),
-    {}
-  );
+    return all;
+  }, {});
+  const combinedTrees = Object.assign({}, formattedTrees, window.conceptTrees);
+
+  const result = Object.keys(combinedTrees)
+    .filter(key => !combinedTrees[key].parent)
+    .reduce(
+      (all, key) => ({
+        ...all,
+        ...findConcepts(
+          combinedTrees,
+          key,
+          key,
+          combinedTrees[key][key],
+          lowerQuery
+        )
+      }),
+      {}
+    );
 
   return result;
 };

@@ -42,6 +42,7 @@ type PropsT = {
   loading: boolean,
   trees: TreesT,
   areTreesAvailable: boolean,
+  areDatasetsPristineOrLoading: boolean,
   activeTab: string,
   search: SearchT,
   onLoadTree: (id: string) => void
