@@ -1,14 +1,12 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.concept.ResultInfo;
-import com.bakdata.conquery.models.query.concept.ResultInfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
@@ -27,10 +25,10 @@ public interface IQuery {
 		return set;
 	}
 
-	default List<ResultInfo> collectResultInfos(PrintSettings config) {
+	default ResultInfoCollector collectResultInfos(PrintSettings config) {
 		ResultInfoCollector collector = new ResultInfoCollector(config);
 		collectResultInfos(collector);
-		return collector.getInfos();
+		return collector;
 	}
 	
 	void collectResultInfos(ResultInfoCollector collector);

@@ -27,7 +27,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -126,6 +126,9 @@ public class CQExternal implements CQElement {
 		
 		return new CQExternalResolved(includedEntities);
 	}
+	
+	@Override
+	public void collectResultInfos(ResultInfoCollector collector) {}
 
 	public enum DateFormat {
 		EVENT_DATE {

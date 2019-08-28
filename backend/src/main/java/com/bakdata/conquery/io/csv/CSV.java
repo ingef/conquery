@@ -16,7 +16,6 @@ import java.util.stream.StreamSupport;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.models.config.CSVConfig;
-import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 
@@ -44,19 +43,7 @@ public class CSV implements Closeable {
 
 	public CSV(CSVConfig config, InputStream input) throws IOException {
 		this.config = config;
-		CsvFormat format = new CsvFormat();
-		{
-			format.setQuoteEscape(config.getEscape());
-			format.setCharToEscapeQuoteEscaping(config.getEscape());
-			format.setComment(config.getComment());
-			format.setDelimiter(config.getDelimeter());
-			format.setLineSeparator(config.getLineSeparator());
-			format.setQuote(config.getQuote());
-		}
-		settings = new CsvParserSettings();
-		{
-			settings.setFormat(format);
-		}
+		settings = config.createCsvParserSettings();
 		
 		reader = new BufferedReader(new InputStreamReader(input, config.getEncoding()));
 	}

@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 
@@ -15,10 +14,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.Getter;
@@ -52,9 +51,9 @@ public class CQAnd implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<SelectDescriptor> select) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		for(CQElement c:children) {
-			c.collectSelects(select);
+			c.collectResultInfos(collector);
 		}
 	}
 

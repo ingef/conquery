@@ -18,7 +18,7 @@ import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -62,4 +62,7 @@ public class CQReusedQuery implements CQElement {
 			resolvedQuery.visit(visitor);
 		}
 	}
+
+	@Override
+	public void collectResultInfos(ResultInfoCollector collector) {}
 }

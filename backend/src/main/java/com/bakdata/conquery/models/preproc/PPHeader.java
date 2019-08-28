@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.util.Map;
-
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 
 import lombok.AllArgsConstructor;

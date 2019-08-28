@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
 import java.io.File;
@@ -32,11 +31,9 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.resources.api.FilterResource.StringContainer;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

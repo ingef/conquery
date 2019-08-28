@@ -1,6 +1,9 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
@@ -12,80 +15,81 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.query.concept.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.google.common.base.Joiner;
+import com.univocity.parsers.csv.CsvWriter;
+import com.univocity.parsers.csv.CsvWriterSettings;
 
 import lombok.RequiredArgsConstructor;
 
 @RequiredArgsConstructor
 public class QueryToCSVRenderer {
 
-	private static final char DELIMETER = ConqueryConfig.getInstance().getCsv().getDelimeter();
+	private static final CsvWriterSettings CSV_SETTINGS =  ConqueryConfig.getInstance().getCsv().createCsvWriterSettings();
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
-	private static final Joiner JOINER = Joiner.on(DELIMETER).useForNull("");
-	private static final String HEADER = JOINER.join(ID_MAPPING.getPrintIdFields());
-
+	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
+	
 	public Stream<String> toCSV(ManagedQuery query) {
-		return toCSV(new PrintSettings(), query);
+		return toCSV(new PrintSettings(true), query);
 	}
 	
 	public Stream<String> toCSV(PrintSettings cfg, ManagedQuery query) {
-		if (query.getState() != ExecutionState.DONE) {
-			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + query.getId());
-		}
-		List<ResultInfo> infos = query.getResultInfos(cfg);
-		return Stream.concat(
-			Stream.of(HEADER + DELIMETER + JOINER.join(infos.stream().map(ResultInfo::getUniqueName).iterator())),
-			createCSVBody(cfg, infos, query)
-		);
+		return toCSV(cfg, Collections.singleton(query));
 	}
 	
 	public Stream<String> toCSV(PrintSettings cfg, Collection<ManagedQuery> queries) {
 		if (queries.stream().anyMatch(q->q.getState() != ExecutionState.DONE)) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
 		}
+		ResultInfoCollector infos = queries.iterator().next().collectResultInfos(cfg);
+		
+		//build header
+		CsvWriter writer = new CsvWriter(CSV_SETTINGS);
+		writer.addStringValues(HEADER);
+		for(var info : infos.getInfos()) {
+			writer.addValue(info.getUniqueName(cfg));
+		}
+		
 		return Stream.concat(
-			Stream.of(HEADER + DELIMETER + JOINER.join(queries.iterator().next().getResultInfos(cfg).stream().map(ResultInfo::getUniqueName).iterator())),
+			Stream.of(writer.writeValuesToString()),
 			queries
 				.stream()
-				.flatMap(q->createCSVBody(cfg, q.getResultInfos(cfg), q))
+				.flatMap(q->createCSVBody(writer, cfg, q.collectResultInfos(cfg), q))
 		);
 	}
 
-	private Stream<String> createCSVBody(PrintSettings cfg, List<ResultInfo> infos, ManagedQuery query) {
+	private Stream<String> createCSVBody(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, ManagedQuery query) {
 		Namespace namespace = Objects.requireNonNull(query.getNamespace());
 		return query.getResults()
 			.stream()
 			.flatMap(ContainedEntityResult::filterCast)
 			.map(result -> Pair.of(createId(namespace, result), result))
 			.sorted(Comparator.comparing(Pair::getKey))
-			.flatMap(res -> createCSVLine(cfg, infos, res));
+			.flatMap(res -> createCSVLine(writer, cfg, infos, res));
 	}
 
-	private String createId(Namespace namespace, ContainedEntityResult cer) {
+	private ExternalEntityId createId(Namespace namespace, ContainedEntityResult cer) {
 		DirectDictionary dict = namespace.getStorage().getPrimaryDictionary();
-		return JOINER.join(
-			ID_MAPPING
-				.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace)
-				.getExternalId()
-		);
+		return ID_MAPPING
+			.toExternal(new CsvEntityId(dict.getElement(cer.getEntityId())), namespace);
 	}
 	
-	private Stream<String> createCSVLine(PrintSettings cfg, List<ResultInfo> infos, Pair<String, ContainedEntityResult> idResult) {
+	private Stream<String> createCSVLine(CsvWriter writer, PrintSettings cfg, ResultInfoCollector infos, Pair<ExternalEntityId, ContainedEntityResult> idResult) {
 		return idResult
 			.getValue()
 			.streamValues()
-			.map(result -> idResult.getKey() + DELIMETER + JOINER.join(print(cfg, infos, result)));
+			.map(result -> print(writer, cfg, idResult.getKey(), infos, result));
 	}
 	
-	public static String[] print(PrintSettings cfg, List<ResultInfo> infos, Object[] value) {
-		String[] result = new String[value.length];
+	public static String print(CsvWriter writer, PrintSettings cfg, ExternalEntityId entity, ResultInfoCollector infos, Object[] value) {
+		List<String> result = new ArrayList<>(entity.getExternalId().length + value.length);
+		result.addAll(Arrays.asList(entity.getExternalId()));
 		for(int i=0;i<infos.size();i++) {
-			result[i] = infos.get(i).getType().printNullable(cfg, value[i]);
+			result.add(infos.getInfos().get(i).getType().printNullable(cfg, value[i]));
 		}
-		return result;
+		return writer.writeRowToString(result);
 	}
 }

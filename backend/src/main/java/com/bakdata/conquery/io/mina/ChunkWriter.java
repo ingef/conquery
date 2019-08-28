@@ -9,6 +9,7 @@ import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.ProtocolEncoderAdapter;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 
+import com.bakdata.conquery.util.SimplePool;
 import com.google.common.primitives.Ints;
 
 import io.dropwizard.util.Size;
@@ -26,6 +27,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 	
 	@Getter @Setter
 	private int bufferSize = Ints.checkedCast(Size.megabytes(32).toBytes());
+	private SimplePool<IoBuffer> bufferPool = new SimplePool<>(()->IoBuffer.allocate(bufferSize));
 	@SuppressWarnings("rawtypes")
 	private final CQCoder coder;
 
@@ -50,7 +52,7 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 				if(buffer != null) {
 					finishBuffer(false);
 				}
-				buffer = IoBuffer.allocate(bufferSize);
+				buffer = bufferPool.borrow();
 				buffer.position(HEADER_SIZE);
 			}
 		}
@@ -65,7 +67,11 @@ public class ChunkWriter extends ProtocolEncoderAdapter {
 			buffer.putLong(Byte.BYTES+Integer.BYTES, id.getMostSignificantBits());
 			buffer.putLong(Byte.BYTES+Integer.BYTES+Long.BYTES, id.getLeastSignificantBits());
 			out.write(buffer);
-			out.flush();
+			final IoBuffer currentBuffer = buffer;
+			out.flush().addListener(future-> {
+				currentBuffer.clear();
+				bufferPool.returnValue(currentBuffer);
+			});
 			buffer = null;
 		}
 

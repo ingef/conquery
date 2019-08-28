@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.ConqueryEscape;
 
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
@@ -46,15 +45,7 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultCSVResource {
 
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(ResultCSVResource.class, "getAsCSV");
-	private static final PrintSettings PRINT_SETTINGS = PrintSettings
-		.builder()
-		.prettyPrint(true)
-		.nameExtractor(sd ->
-			sd.getCqConcept().getIds().get(0).toStringWithoutDataset()
-			+ "_"
-			+ sd.getSelect().getId().toStringWithoutDataset()
-		)
-		.build();
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
 

@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ExternalNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.AllArgsConstructor;
@@ -49,4 +50,7 @@ public class CQExternalResolved implements CQElement {
 			dataset,
 			values);
 	}
+	
+	@Override
+	public void collectResultInfos(ResultInfoCollector collector) {}
 }
