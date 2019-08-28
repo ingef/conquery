@@ -5,7 +5,6 @@ export { default as EditableText } from "./EditableText";
 export { default as InputSelect } from "./InputSelect";
 export { default as ToggleButton } from "./ToggleButton";
 export { default as VerticalToggleButton } from "./VerticalToggleButton";
-export { default as SearchBox } from "./SearchBox";
 export { default as InputMultiSelect } from "./InputMultiSelect";
 export { default as Dropzone } from "./Dropzone";
 export { default as InputCheckbox } from "./InputCheckbox";

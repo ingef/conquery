@@ -23,11 +23,10 @@ type PropsT = {
 
 export default ({ trees, treeId, search, onLoadTree }: PropsT) => {
   const tree = trees[treeId];
+
+  if (!isNodeInSearchResult(treeId, tree.children, search)) return null;
+
   const rootConcept = getConceptById(treeId);
-
-  const render = isNodeInSearchResult(treeId, tree.children, search);
-
-  if (!render) return null;
 
   const commonProps = {
     treeId,
