@@ -4,6 +4,9 @@ import { connect } from "react-redux";
 import type { Dispatch } from "redux-thunk";
 
 import { QueryRunner } from "../query-runner";
+
+import { validateQueryLength, validateQueryDates } from "../model/query";
+
 import actions from "../app/actions";
 
 const { startStandardQuery, stopStandardQuery } = actions;
@@ -16,18 +19,12 @@ function validateDataset(datasetId) {
   return datasetId !== null;
 }
 
-function validateQueryLength(query) {
-  return query.length > 0;
-}
-
-function validateQueryDates(query) {
-  return true;
-}
-
 function getButtonTooltipKey(hasQueryValidDates) {
   if (!hasQueryValidDates) {
-    return "tooltip";
+    return "queryRunner.errorDates";
   }
+
+  // Potentially add further validation and more detailed messages
 
   return null;
 }
