@@ -120,8 +120,11 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 				}
 			}
 		}
-
-		//ugly workaround which we should find a fix for
+		
+		/*
+		 * ugly workaround which we should find a fix for,
+		 * because the jackson serializer can't deal with NaN or infinity
+		 */
 		EntityResult result = createResult();
 		if(result instanceof ContainedEntityResult) {
 			result.asContained().streamValues().forEach(row -> {
