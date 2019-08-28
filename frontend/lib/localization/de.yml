@@ -25,6 +25,7 @@ conceptTreeList:
   showingMismatches: "Zeige vollständig"
 
 queryRunner:
+  errorDates: "Invalider Datumsbereich"
   start: "Anfrage starten"
   stop: "Anfrage stoppen"
   stopSuccess: "Anfrage erfolgreich gestoppt."

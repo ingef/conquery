@@ -3,8 +3,10 @@
 import React from "react";
 import styled from "@emotion/styled";
 import Hotkeys from "react-hot-keys";
+import T from "i18n-react";
 
 import Preview from "../preview/Preview";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryResults from "./QueryResults";
 import QueryRunningSpinner from "./QueryRunningSpinner";
@@ -15,6 +17,7 @@ type PropsType = {
   queryRunner: Object,
   isQueryRunning: boolean,
   isButtonEnabled: boolean,
+  buttonTooltipKey?: ?string,
   startQuery: Function,
   stopQuery: Function
 };
@@ -47,6 +50,7 @@ const QueryRunner = (props: PropsType) => {
     queryRunner,
     startQuery,
     stopQuery,
+    buttonTooltipKey,
     isQueryRunning,
     isButtonEnabled
   } = props;
@@ -66,12 +70,16 @@ const QueryRunner = (props: PropsType) => {
       />
       <Preview />
       <Left>
-        <QueryRunnerButton
-          onClick={btnAction}
-          isStartStopLoading={isStartStopLoading}
-          isQueryRunning={isQueryRunning}
-          disabled={!isButtonEnabled}
-        />
+        <WithTooltip
+          text={buttonTooltipKey ? T.translate(buttonTooltipKey) : null}
+        >
+          <QueryRunnerButton
+            onClick={btnAction}
+            isStartStopLoading={isStartStopLoading}
+            isQueryRunning={isQueryRunning}
+            disabled={!isButtonEnabled}
+          />
+        </WithTooltip>
       </Left>
       <Right>
         <LoadingGroup>
