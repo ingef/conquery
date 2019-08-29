@@ -27,6 +27,7 @@ import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.config.APIConfig;
 import com.bakdata.conquery.models.config.CSVConfig;
 import com.bakdata.conquery.models.config.ClusterConfig;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.FrontendConfig;
 import com.bakdata.conquery.models.config.LocaleConfig;
 import com.bakdata.conquery.models.config.MinaConfig;
@@ -74,11 +75,12 @@ public class Constants {
 			.hide(AutoOutput.class)
 			.build(),
 		Group.builder().name("Config JSON")
-			.description("The `config.json` is required for every type of execution.")
+			.description("The `config.json` is required for every type of execution. Its root element is a [ConqueryConfig](#Type-ConqueryConfig) object.")
 			.base(new Base(AuthConfig.class, "An `AuthConfig` is used to define how users are authenticated."))
 			.base(new Base(PluginConfig.class, "A `PluginConfig` is used to define settings for Conquery plugins."))
 			.base(new Base(IdMappingConfig.class, "An `IdMappingConfig` is used to define how multi column IDs are printed and parsed"))
 			.otherClass(APIConfig.class)
+			.otherClass(ConqueryConfig.class)
 			.otherClass(ClusterConfig.class)
 			.otherClass(CSVConfig.class)
 			.otherClass(FrontendConfig.class)
