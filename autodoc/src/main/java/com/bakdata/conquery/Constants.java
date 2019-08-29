@@ -16,11 +16,9 @@ import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.concepts.conditions.CTCondition;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.concepts.filters.SingleColumnFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
-import com.bakdata.conquery.models.concepts.select.connector.SingleColumnSelect;
+import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
-import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -43,11 +41,13 @@ public class Constants {
 			.otherClass(ConceptTreeChild.class)
 			.otherClass(FilterTemplate.class)
 			.otherClass(ValidityDate.class)
-			.build()/*,
+			.hide(UniversalSelect.class)
+			.build(),
 		Group.builder().name("Import JSONs")
 			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#ImportDescriptor).")
 			.base(new Base(Output.class, ""))
-			.build(),
+			.hide(UniversalSelect.class)
+			.build()/*,
 		Group.builder().name("API JSONs")
 			.base(new Base(IQuery.class, ""))
 			.base(new Base(CQElement.class, ""))

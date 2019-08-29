@@ -14,7 +14,7 @@ Different types of IQuery can be used by setting `type` to one of the following 
 
 
 ### CONCEPT_QUERY
-Java Name: `com.bakdata.conquery.models.query.concept.ConceptQuery`
+Java Type: `com.bakdata.conquery.models.query.concept.ConceptQuery`
 
 The following fields are supported:
 
@@ -33,7 +33,7 @@ Different types of CQElement can be used by setting `type` to one of the followi
 
 
 ### AND
-Java Name: `com.bakdata.conquery.models.query.concept.specific.CQAnd`
+Java Type: `com.bakdata.conquery.models.query.concept.specific.CQAnd`
 
 The following fields are supported:
 
@@ -42,19 +42,19 @@ The following fields are supported:
 | children | list of [CQElement](#Base-CQElement) | 
 
 ### BEFORE
-Java Name: `com.bakdata.conquery.models.query.concept.specific.temporal.CQBeforeTemporalQuery`
+Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQBeforeTemporalQuery`
 
 No fields can be set for this type.
 
 
 ### BEFORE_OR_SAME
-Java Name: `com.bakdata.conquery.models.query.concept.specific.temporal.CQBeforeOrSameTemporalQuery`
+Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQBeforeOrSameTemporalQuery`
 
 No fields can be set for this type.
 
 
 ### CONCEPT
-Java Name: `com.bakdata.conquery.models.query.concept.specific.CQConcept`
+Java Type: `com.bakdata.conquery.models.query.concept.specific.CQConcept`
 
 The following fields are supported:
 
@@ -67,7 +67,7 @@ The following fields are supported:
 | tables | list of `CQTable` | 
 
 ### DATE_RESTRICTION
-Java Name: `com.bakdata.conquery.models.query.concept.specific.CQDateRestriction`
+Java Type: `com.bakdata.conquery.models.query.concept.specific.CQDateRestriction`
 
 The following fields are supported:
 
@@ -77,19 +77,19 @@ The following fields are supported:
 | dateRange | `Range<LocalDate>` | 
 
 ### DAYS_BEFORE
-Java Name: `com.bakdata.conquery.models.query.concept.specific.temporal.CQDaysBeforeTemporalQuery`
+Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQDaysBeforeTemporalQuery`
 
 No fields can be set for this type.
 
 
 ### DAYS_OR_NO_EVENT_BEFORE
-Java Name: `com.bakdata.conquery.models.query.concept.specific.temporal.CQDaysBeforeOrNeverTemporalQuery`
+Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQDaysBeforeOrNeverTemporalQuery`
 
 No fields can be set for this type.
 
 
 ### EXTERNAL
-Java Name: `com.bakdata.conquery.models.query.concept.specific.CQExternal`
+Java Type: `com.bakdata.conquery.models.query.concept.specific.CQExternal`
 
 The following fields are supported:
 
@@ -98,10 +98,122 @@ The following fields are supported:
 | format | list of one of ID, EVENT_DATE, START_DATE, END_DATE, DATE_RANGE, DATE_SET, IGNORE | 
 | values | list of `String` | 
 
-### EXTERNAL_RESOLVED
-Java Name: `com.bakdata.conquery.models.query.concept.specific.CQExternalResolved`
+### NEGATION
+Java Type: `com.bakdata.conquery.models.query.concept.specific.CQNegation`
 
 The following fields are supported:
 
 | Field | Type |
 | --- | --- |
+| child | [CQElement](#Base-CQElement) | 
+
+### OR
+Java Type: `com.bakdata.conquery.models.query.concept.specific.CQOr`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| children | list of [CQElement](#Base-CQElement) | 
+
+### SAME
+Java Type: `com.bakdata.conquery.models.query.concept.specific.temporal.CQSameTemporalQuery`
+
+No fields can be set for this type.
+
+
+### SAVED_QUERY
+Java Type: `com.bakdata.conquery.models.query.concept.specific.CQReusedQuery`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| query | ID of `ManagedExecution` | 
+| resolvedQuery | [IQuery](#Base-IQuery) | 
+
+
+
+---
+
+## Base FilterValue
+
+
+Different types of FilterValue can be used by setting `type` to one of the following values:
+
+
+### BIG_MULTI_SELECT
+Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQMultiSelectFilter`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| filter | ID of `Filter<?>` | 
+| value | `VALUE` | 
+
+### INTEGER_RANGE
+Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQIntegerRangeFilter`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| filter | ID of `Filter<?>` | 
+| value | `VALUE` | 
+
+### MONEY_RANGE
+Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQIntegerRangeFilter`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| filter | ID of `Filter<?>` | 
+| value | `VALUE` | 
+
+### MULTI_SELECT
+Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQMultiSelectFilter`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| filter | ID of `Filter<?>` | 
+| value | `VALUE` | 
+
+### REAL_RANGE
+Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQRealRangeFilter`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| filter | ID of `Filter<?>` | 
+| value | `VALUE` | 
+
+### SELECT
+Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQSelectFilter`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| filter | ID of `Filter<?>` | 
+| value | `VALUE` | 
+
+### STRING
+Java Type: `com.bakdata.conquery.models.query.concept.filter.FilterValue$CQStringFilter`
+
+The following fields are supported:
+
+| Field | Type |
+| --- | --- |
+| filter | ID of `Filter<?>` | 
+| value | `VALUE` | 
+
+
+
+---
+
+## Other Types

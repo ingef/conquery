@@ -16,7 +16,7 @@ Different types of Output can be used by setting `operation` to one of the follo
 
 
 ### CONCAT
-Java Name: `com.bakdata.conquery.models.preproc.outputs.ConcatOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.ConcatOutput`
 
 The following fields are supported:
 
@@ -27,7 +27,7 @@ The following fields are supported:
 | required | `boolean` | 
 
 ### COPY
-Java Name: `com.bakdata.conquery.models.preproc.outputs.CopyOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.CopyOutput`
 
 The following fields are supported:
 
@@ -39,7 +39,7 @@ The following fields are supported:
 | required | `boolean` | 
 
 ### DATE_RANGE
-Java Name: `com.bakdata.conquery.models.preproc.outputs.DateRangeOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.DateRangeOutput`
 
 The following fields are supported:
 
@@ -51,7 +51,7 @@ The following fields are supported:
 | required | `boolean` | 
 
 ### EPOCH
-Java Name: `com.bakdata.conquery.models.preproc.outputs.EpochOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.EpochOutput`
 
 The following fields are supported:
 
@@ -62,7 +62,7 @@ The following fields are supported:
 | required | `boolean` | 
 
 ### EPOCH_DATE_RANGE
-Java Name: `com.bakdata.conquery.models.preproc.outputs.EpochDateRangeOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.EpochDateRangeOutput`
 
 The following fields are supported:
 
@@ -74,7 +74,7 @@ The following fields are supported:
 | required | `boolean` | 
 
 ### LINE
-Java Name: `com.bakdata.conquery.models.preproc.outputs.LineOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.LineOutput`
 
 The following fields are supported:
 
@@ -84,7 +84,7 @@ The following fields are supported:
 | required | `boolean` | 
 
 ### NULL
-Java Name: `com.bakdata.conquery.models.preproc.outputs.NullOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.NullOutput`
 
 The following fields are supported:
 
@@ -95,7 +95,7 @@ The following fields are supported:
 | required | `boolean` | 
 
 ### QUARTER_TO_FIRST_DAY
-Java Name: `com.bakdata.conquery.models.preproc.outputs.QuarterToFirstDayOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.QuarterToFirstDayOutput`
 
 The following fields are supported:
 
@@ -107,7 +107,7 @@ The following fields are supported:
 | yearColumn | `int` | 
 
 ### QUARTER_TO_RANGE
-Java Name: `com.bakdata.conquery.models.preproc.outputs.QuarterToRangeOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.QuarterToRangeOutput`
 
 The following fields are supported:
 
@@ -119,7 +119,7 @@ The following fields are supported:
 | yearColumn | `int` | 
 
 ### SOURCE
-Java Name: `com.bakdata.conquery.models.preproc.outputs.SourceOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.SourceOutput`
 
 The following fields are supported:
 
@@ -129,7 +129,7 @@ The following fields are supported:
 | required | `boolean` | 
 
 ### STARTING_FROM
-Java Name: `com.bakdata.conquery.models.preproc.outputs.StartingFromOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.StartingFromOutput`
 
 The following fields are supported:
 
@@ -140,7 +140,7 @@ The following fields are supported:
 | inputColumn | `int` | 
 
 ### UNPIVOT
-Java Name: `com.bakdata.conquery.models.preproc.outputs.UnpivotOutput`
+Java Type: `com.bakdata.conquery.models.preproc.outputs.UnpivotOutput`
 
 The following fields are supported:
 
@@ -153,3 +153,7 @@ The following fields are supported:
 | inputType | one of STRING, INTEGER, BOOLEAN, REAL, DECIMAL, MONEY, DATE, DATE_RANGE | 
 
 
+
+---
+
+## Other Types
