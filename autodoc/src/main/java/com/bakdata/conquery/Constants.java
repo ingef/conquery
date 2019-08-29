@@ -162,9 +162,7 @@ public class Constants {
 			.otherClass(ConceptResource.ConceptCodeList.class)
 			.otherClass(CQTable.class)
 			.otherClass(CQTable.ValidityDateColumn.class)
-			.build(),
-		Group.builder().name("Admin API JSONs")
-			.
+			.build()
 	};
 	
 	public static final String DOC = Doc.class.getName();

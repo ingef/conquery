@@ -129,14 +129,14 @@ public class GroupHandler {
 	
 	private void handleEndpoint(String url, MethodInfo method) throws IOException {
 		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo())) {
-			out.line("Method: "+code(method.getName()));
-			out.line("Returns: "+printType(new Ctx(), method.getTypeSignatureOrTypeDescriptor().getResultType()));
+			out.paragraph("Method: "+code(method.getName()));
 			for(var param : method.getParameterInfo()) {
 				if(param.hasAnnotation(PATH_PARAM) || param.hasAnnotation(AUTH) || param.hasAnnotation(CONTEXT)) {
 					continue;
 				}
 				out.line("Expects: "+ printType(new Ctx(), param.getTypeSignatureOrTypeDescriptor()));
 			}
+			out.paragraph("Returns: "+printType(new Ctx(), method.getTypeSignatureOrTypeDescriptor().getResultType()));
 		}
 	}
 
