@@ -116,7 +116,8 @@ public class GroupHandler {
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
 		out.subSubHeading(name);
-		out.paragraph("Java Name: `"+c.getName()+"`");
+		out.paragraph("Java Type: `"+c.getName()+"`");
+		
 		if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 			out.line("The following fields are supported:");
 
