@@ -39,7 +39,7 @@ type PropsType = {
   data: TreeNodeData,
   depth: number,
   open: boolean,
-  search?: SearchT,
+  search: SearchT,
   onToggleOpen: () => void
 };
 
@@ -56,11 +56,11 @@ const selectTreeNodeData = (concept: ConceptT, tree: ConceptIdT) => ({
 });
 
 class ConceptTreeNode extends React.Component<PropsType> {
-  _onToggleOpen() {
+  onToggleOpen = () => {
     if (!this.props.data.children) return;
 
     this.props.onToggleOpen();
-  }
+  };
 
   render() {
     const { id, data, depth, open, search } = this.props;
@@ -111,7 +111,7 @@ class ConceptTreeNode extends React.Component<PropsType> {
           open={isOpen}
           depth={depth}
           active={data.active}
-          onTextClick={this._onToggleOpen.bind(this)}
+          onTextClick={this.onToggleOpen}
           search={search}
         />
         {!!data.children && isOpen && (

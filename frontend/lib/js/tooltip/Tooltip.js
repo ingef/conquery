@@ -57,7 +57,7 @@ const Head = styled("div")`
   padding: 10px 20px;
   background-color: white;
   margin: 20px -20px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
 `;
 
 const StyledFaIcon = styled(FaIcon)`

@@ -25,6 +25,7 @@ conceptTreeList:
   showingMismatches: "Showing full trees"
 
 queryRunner:
+  errorDates: "Invalid date range"
   start: "Start Query"
   stop: "Stop Query"
   stopSuccess: "Query was successfully stopped."
