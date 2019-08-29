@@ -1,0 +1,24 @@
+trigger:
+- master
+- develop
+
+variables:
+- group: ConqueryConstants
+
+pool:
+  vmImage: $(IMAGE)
+steps:
+- task: Maven@3
+  displayName: build conquery
+  inputs:
+    jdkVersionOption: '1.11'
+    options: $(MVN) -T 1C -DskipTests -pl !frontend-resources,!executable
+- bash: |
+    cd autodoc
+    java -jar target/autodoc-0.0.0-SNAPSHOT-jar-with-dependencies.jar
+    git diff --quiet HEAD || \
+    {
+      git commit --message "automatic update to docs"
+      git push origin HEAD:$(Build.SourceBranch)
+      exit -1
+    }
