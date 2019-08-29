@@ -41,7 +41,7 @@ Different types of PluginConfig can be used by setting `type` to one of the foll
 ---
 
 ## Base IdMappingConfig
-An `IdMappingConfig` is used to define how multi column IDs are printed and parsed
+An `IdMappingConfig` is used to define how multi column entity IDs are printed and parsed
 
 Different types of IdMappingConfig can be used by setting `type` to one of the following values:
 
@@ -236,7 +236,7 @@ Supported Fields:
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | directories | list of [PreprocessingDirectories](#Type-PreprocessingDirectories) | ␀ |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | maximumPrintedErrors | `int` | `10` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | threads | `int` | `12` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | threads | `int` | `2` |  |  | 
 </p></details>
 
 ### Type PreprocessingDirectories<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingDirectories.java)</sup></sub></sup>
@@ -315,8 +315,8 @@ Supported Fields:
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | allowCoreThreadTimeOut | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | keepAliveTime | `Duration` | `"60 seconds"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | maxThreads | `int` | `12` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | minThreads | `int` | `12` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | maxThreads | `int` | `2` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | minThreads | `int` | `2` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ThreadPoolDefinition.java) | shutdownTime | `Duration` | `"1 hour"` |  |  | 
 </p></details>
 
