@@ -12,10 +12,15 @@ steps:
   displayName: build conquery
   inputs:
     jdkVersionOption: '1.11'
+    goals: install
     options: $(MVN) -T 1C -DskipTests -pl !frontend-resources,!executable
+- task: Maven@3
+  displayName: autodoc
+  inputs:
+    jdkVersionOption: '1.11'
+    goals: exec:java
+    options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -pl autodoc
 - bash: |
-    cd autodoc
-    java -jar target/autodoc-0.0.0-SNAPSHOT-jar-with-dependencies.jar
     git diff --quiet HEAD || \
     {
       git commit --message "automatic update to docs"
