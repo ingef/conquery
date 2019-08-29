@@ -123,11 +123,9 @@ public class GroupHandler {
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
 		out.subSubHeading(name);
-		out.paragraph("Java Type: `"+c.getName()+"` "+editLink(c));
+		out.paragraph("Java Type: `"+c.getName()+"`");
 		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
-		if(!Strings.isNullOrEmpty(docAnnotation.description())) {
-			out.paragraph(docAnnotation.description());
-		}
+		out.paragraph(editLink(c)+" "+docAnnotation.description());
 		if(!Strings.isNullOrEmpty(docAnnotation.example())) {
 			out.paragraph(
 				"Example:\n\n```jsonc\n"

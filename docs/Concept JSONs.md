@@ -16,7 +16,9 @@ Different types of Concept can be used by setting `type` to one of the following
 
 
 ### TREE
-Java Type: `com.bakdata.conquery.models.concepts.tree.TreeConcept` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java)
+Java Type: `com.bakdata.conquery.models.concepts.tree.TreeConcept`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) 
 
 The following fields are supported:
 
@@ -34,7 +36,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### VIRTUAL
-Java Type: `com.bakdata.conquery.models.concepts.virtual.VirtualConcept` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/virtual/VirtualConcept.java)
+Java Type: `com.bakdata.conquery.models.concepts.virtual.VirtualConcept`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/virtual/VirtualConcept.java) 
 
 The following fields are supported:
 
@@ -60,7 +64,9 @@ Different types of CTCondition can be used by setting `type` to one of the follo
 
 
 ### AND
-Java Type: `com.bakdata.conquery.models.concepts.conditions.AndCondition` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/AndCondition.java)
+Java Type: `com.bakdata.conquery.models.concepts.conditions.AndCondition`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/AndCondition.java) 
 
 The following fields are supported:
 
@@ -69,7 +75,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/AndCondition.java) | conditions | list of [CTCondition](#Base-CTCondition) |  |  | 
 
 ### COLUMN_EQUAL
-Java Type: `com.bakdata.conquery.models.concepts.conditions.ColumnEqualCondition` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java)
+Java Type: `com.bakdata.conquery.models.concepts.conditions.ColumnEqualCondition`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java) 
 
 The following fields are supported:
 
@@ -79,7 +87,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java) | values | list of `String` |  |  | 
 
 ### EQUAL
-Java Type: `com.bakdata.conquery.models.concepts.conditions.EqualCondition` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/EqualCondition.java)
+Java Type: `com.bakdata.conquery.models.concepts.conditions.EqualCondition`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/EqualCondition.java) 
 
 The following fields are supported:
 
@@ -88,7 +98,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/EqualCondition.java) | values | list of `String` |  |  | 
 
 ### GROOVY
-Java Type: `com.bakdata.conquery.models.concepts.conditions.GroovyCondition` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/GroovyCondition.java)
+Java Type: `com.bakdata.conquery.models.concepts.conditions.GroovyCondition`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/GroovyCondition.java) 
 
 The following fields are supported:
 
@@ -97,7 +109,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/GroovyCondition.java) | script | `String` |  |  | 
 
 ### NOT
-Java Type: `com.bakdata.conquery.models.concepts.conditions.NotCondition` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/NotCondition.java)
+Java Type: `com.bakdata.conquery.models.concepts.conditions.NotCondition`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/NotCondition.java) 
 
 The following fields are supported:
 
@@ -106,7 +120,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/NotCondition.java) | condition | [CTCondition](#Base-CTCondition) |  |  | 
 
 ### OR
-Java Type: `com.bakdata.conquery.models.concepts.conditions.OrCondition` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/OrCondition.java)
+Java Type: `com.bakdata.conquery.models.concepts.conditions.OrCondition`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/OrCondition.java) 
 
 The following fields are supported:
 
@@ -115,7 +131,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/OrCondition.java) | conditions | list of [CTCondition](#Base-CTCondition) |  |  | 
 
 ### PREFIX_LIST
-Java Type: `com.bakdata.conquery.models.concepts.conditions.PrefixCondition` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixCondition.java)
+Java Type: `com.bakdata.conquery.models.concepts.conditions.PrefixCondition`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixCondition.java) 
 
 The following fields are supported:
 
@@ -124,7 +142,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixCondition.java) | prefixes | list of `String` |  |  | 
 
 ### PREFIX_RANGE
-Java Type: `com.bakdata.conquery.models.concepts.conditions.PrefixRangeCondition` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixRangeCondition.java)
+Java Type: `com.bakdata.conquery.models.concepts.conditions.PrefixRangeCondition`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixRangeCondition.java) 
 
 The following fields are supported:
 
@@ -144,7 +164,9 @@ Different types of Filter can be used by setting `type` to one of the following 
 
 
 ### BIG_MULTI_SELECT
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.BigMultiSelectFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/BigMultiSelectFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.BigMultiSelectFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/BigMultiSelectFilter.java) 
 
 The following fields are supported:
 
@@ -162,7 +184,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### COUNT
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.CountFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.CountFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountFilter.java) 
 
 The following fields are supported:
 
@@ -180,7 +204,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### COUNT_QUARTERS
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.CountQuartersFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountQuartersFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.CountQuartersFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountQuartersFilter.java) 
 
 The following fields are supported:
 
@@ -196,7 +222,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### DATE_DISTANCE
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/DateDistanceFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.DateDistanceFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/DateDistanceFilter.java) 
 
 The following fields are supported:
 
@@ -213,7 +241,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### DURATION_SUM
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.DurationSumFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/DurationSumFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.DurationSumFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/DurationSumFilter.java) 
 
 The following fields are supported:
 
@@ -229,7 +259,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### NUMBER
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.NumberFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/NumberFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.NumberFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/NumberFilter.java) 
 
 The following fields are supported:
 
@@ -245,7 +277,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### PREFIX_TEXT
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.PrefixTextFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/PrefixTextFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.PrefixTextFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/PrefixTextFilter.java) 
 
 The following fields are supported:
 
@@ -261,7 +295,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### QUARTERS_IN_YEAR
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.QuartersInYearFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/QuartersInYearFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.QuartersInYearFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/QuartersInYearFilter.java) 
 
 The following fields are supported:
 
@@ -277,7 +313,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### SELECT
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.MultiSelectFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/MultiSelectFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.MultiSelectFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/MultiSelectFilter.java) 
 
 The following fields are supported:
 
@@ -295,17 +333,16 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### SINGLE_SELECT
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.SelectFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SelectFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.SelectFilter`
 
-This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SelectFilter.java) This filter represents a select in the front end. This means that the user can select one or more values from a list of values.
 
 Example:
 
 ```jsonc
 {
-	"label": "geschlecht",
-	"description": "Geschlecht zur gegebenen Datumseinschränkung",
-	"column": "vers_stamm.geschlecht",
+	"label": "gender",
+	"column": "reference_data.gender",
 	"type": "SELECT"
 }
 ```
@@ -326,7 +363,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### SUM
-Java Type: `com.bakdata.conquery.models.concepts.filters.specific.SumFilter` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java)
+Java Type: `com.bakdata.conquery.models.concepts.filters.specific.SumFilter`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java) 
 
 The following fields are supported:
 
@@ -355,7 +394,9 @@ Different types of Select can be used by setting `type` to one of the following 
 
 
 ### COUNT
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountSelect.java) 
 
 The following fields are supported:
 
@@ -369,7 +410,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### COUNT_OCCURENCES
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountOccurencesSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountOccurencesSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountOccurencesSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountOccurencesSelect.java) 
 
 The following fields are supported:
 
@@ -383,7 +426,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### COUNT_QUARTERS
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountQuartersSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountQuartersSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.CountQuartersSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountQuartersSelect.java) 
 
 The following fields are supported:
 
@@ -396,7 +441,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### DATE_DISTANCE
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DateDistanceSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/DateDistanceSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DateDistanceSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/DateDistanceSelect.java) 
 
 The following fields are supported:
 
@@ -410,7 +457,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### DATE_UNION
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DateUnionSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/DateUnionSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DateUnionSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/DateUnionSelect.java) 
 
 The following fields are supported:
 
@@ -423,7 +472,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### DISTINCT
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.DistinctSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/DistinctSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.DistinctSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/DistinctSelect.java) 
 
 The following fields are supported:
 
@@ -436,7 +487,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### DURATION_SUM
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DurationSumSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/DurationSumSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.DurationSumSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/DurationSumSelect.java) 
 
 The following fields are supported:
 
@@ -449,7 +502,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### EXISTS
-Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.ExistsSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/concept/specific/ExistsSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.specific.ExistsSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/concept/specific/ExistsSelect.java) 
 
 The following fields are supported:
 
@@ -460,7 +515,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### FIRST
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.FirstValueSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/FirstValueSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.FirstValueSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/FirstValueSelect.java) 
 
 The following fields are supported:
 
@@ -473,7 +530,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### LAST
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.LastValueSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/LastValueSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.LastValueSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/LastValueSelect.java) 
 
 The following fields are supported:
 
@@ -486,7 +545,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### PREFIX
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.PrefixSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/PrefixSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.PrefixSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/PrefixSelect.java) 
 
 The following fields are supported:
 
@@ -500,7 +561,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### QUARTERS_IN_YEAR
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.QuartersInYearSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/QuartersInYearSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.QuartersInYearSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/QuartersInYearSelect.java) 
 
 The following fields are supported:
 
@@ -513,7 +576,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### RANDOM
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.RandomValueSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/RandomValueSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.RandomValueSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/RandomValueSelect.java) 
 
 The following fields are supported:
 
@@ -526,7 +591,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### SUM
-Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.SumSelect` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java)
+Java Type: `com.bakdata.conquery.models.concepts.select.connector.specific.SumSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java) 
 
 The following fields are supported:
 
@@ -547,7 +614,9 @@ The following fields are supported:
 ## Other Types
 
 ### ConceptTreeChild
-Java Type: `com.bakdata.conquery.models.concepts.tree.ConceptTreeChild` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/ConceptTreeChild.java)
+Java Type: `com.bakdata.conquery.models.concepts.tree.ConceptTreeChild`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/ConceptTreeChild.java) 
 
 The following fields are supported:
 
@@ -561,7 +630,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### Connector
-Java Type: `com.bakdata.conquery.models.concepts.Connector` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Connector.java)
+Java Type: `com.bakdata.conquery.models.concepts.Connector`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Connector.java) 
 
 The following fields are supported:
 
@@ -573,7 +644,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
 ### FilterTemplate
-Java Type: `com.bakdata.conquery.apiv1.FilterTemplate` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java)
+Java Type: `com.bakdata.conquery.apiv1.FilterTemplate`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java) 
 
 The following fields are supported:
 
@@ -586,7 +659,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/FilterTemplate.java) | value | `String` |  |  | 
 
 ### KeyValue
-Java Type: `com.bakdata.conquery.models.common.KeyValue` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/common/KeyValue.java)
+Java Type: `com.bakdata.conquery.models.common.KeyValue`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/common/KeyValue.java) 
 
 The following fields are supported:
 
@@ -596,7 +671,9 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/common/KeyValue.java) | value | `String` |  |  | 
 
 ### ValidityDate
-Java Type: `com.bakdata.conquery.models.concepts.ValidityDate` [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ValidityDate.java)
+Java Type: `com.bakdata.conquery.models.concepts.ValidityDate`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ValidityDate.java) 
 
 The following fields are supported:
 

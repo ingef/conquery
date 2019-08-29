@@ -12,7 +12,7 @@ import lombok.Setter;
 
 @Doc(
 	description = "This filter represents a select in the front end. This means that the user can select one or more values from a list of values.",
-	example = "{\"label\":\"geschlecht\",\"description\":\"Geschlecht zur gegebenen Datumseinschränkung\",\"column\":\"vers_stamm.geschlecht\",\"type\":\"SELECT\"}"
+	example = "{\"label\":\"gender\",\"column\":\"reference_data.gender\",\"type\":\"SELECT\"}"
 )
 @Getter @Setter
 @CPSType(id = "SINGLE_SELECT", base = Filter.class)
