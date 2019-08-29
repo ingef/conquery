@@ -57,6 +57,8 @@ import com.bakdata.conquery.models.config.StandaloneConfig;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.config.ThreadPoolDefinition;
 import com.bakdata.conquery.models.config.XodusConfig;
+import com.bakdata.conquery.models.datasets.Column;
+import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
@@ -104,6 +106,11 @@ public class Constants {
 			.otherClass(ImportDescriptor.class)
 			.otherClass(Input.class)
 			.hide(AutoOutput.class)
+			.build(),
+		Group.builder().name("Table JSONs")
+			.description("Each `*.table.json` has to contain exactly one [Tabel](#Type-Tabel).")
+			.otherClass(Table.class)
+			.otherClass(Column.class)
 			.build(),
 		Group.builder().name("Config JSON")
 			.description("The `config.json` is required for every type of execution. Its root element is a [ConqueryConfig](#Type-ConqueryConfig) object.")

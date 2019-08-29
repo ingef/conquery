@@ -15,7 +15,9 @@ Instead of a list ConQuery also always accepts a single element.
 Java Type: `com.bakdata.conquery.resources.api.APIResource`
 
 Method: `getDatasets`
+
 Returns: list of [IdLabel](#Type-IdLabel)
+
 </p></details>
 
 ### GET config<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/ConfigResource.java)</sup></sub></sup>
@@ -26,7 +28,9 @@ Returns: list of [IdLabel](#Type-IdLabel)
 Java Type: `com.bakdata.conquery.apiv1.ConfigResource`
 
 Method: `getFrontendConfig`
+
 Returns: [FrontendConfig](#Type-FrontendConfig)
+
 </p></details>
 
 ### GET datasets/{datasetName}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/DatasetResource.java)</sup></sub></sup>
@@ -37,7 +41,9 @@ Returns: [FrontendConfig](#Type-FrontendConfig)
 Java Type: `com.bakdata.conquery.resources.api.DatasetResource`
 
 Method: `getRoot`
+
 Returns: [FERoot](#Type-FERoot)
+
 </p></details>
 
 ### GET datasets/{datasetName}/concepts/{conceptName}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java)</sup></sub></sup>
@@ -48,7 +54,9 @@ Returns: [FERoot](#Type-FERoot)
 Java Type: `com.bakdata.conquery.resources.api.ConceptResource`
 
 Method: `getNode`
+
 Returns: `Response`
+
 </p></details>
 
 ### POST datasets/{datasetName}/concepts/{conceptName}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/ConceptResource.java)</sup></sub></sup>
@@ -59,8 +67,10 @@ Returns: `Response`
 Java Type: `com.bakdata.conquery.resources.api.ConceptResource`
 
 Method: `resolve`
-Returns: [ResolvedConceptsResult](#Type-ResolvedConceptsResult)
+
 Expects: [ConceptCodeList](#Type-ConceptCodeList)
+Returns: [ResolvedConceptsResult](#Type-ResolvedConceptsResult)
+
 </p></details>
 
 ### POST datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java)</sup></sub></sup>
@@ -71,8 +81,10 @@ Expects: [ConceptCodeList](#Type-ConceptCodeList)
 Java Type: `com.bakdata.conquery.resources.api.FilterResource`
 
 Method: `resolveFilterValues`
-Returns: [ResolvedConceptsResult](#Type-ResolvedConceptsResult)
+
 Expects: [FilterValues](#Type-FilterValues)
+Returns: [ResolvedConceptsResult](#Type-ResolvedConceptsResult)
+
 </p></details>
 
 ### POST datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/resources/api/FilterResource.java)</sup></sub></sup>
@@ -83,8 +95,10 @@ Expects: [FilterValues](#Type-FilterValues)
 Java Type: `com.bakdata.conquery.resources.api.FilterResource`
 
 Method: `autocompleteTextFilter`
-Returns: list of [FEValue](#Type-FEValue)
+
 Expects: [StringContainer](#Type-StringContainer)
+Returns: list of [FEValue](#Type-FEValue)
+
 </p></details>
 
 ### POST datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/QueryResource.java)</sup></sub></sup>
@@ -95,8 +109,10 @@ Expects: [StringContainer](#Type-StringContainer)
 Java Type: `com.bakdata.conquery.apiv1.QueryResource`
 
 Method: `postQuery`
-Returns: [ExecutionStatus](#Type-ExecutionStatus)
+
 Expects: [IQuery](#Base-IQuery)
+Returns: [ExecutionStatus](#Type-ExecutionStatus)
+
 </p></details>
 
 ### DELETE datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/QueryResource.java)</sup></sub></sup>
@@ -107,7 +123,9 @@ Expects: [IQuery](#Base-IQuery)
 Java Type: `com.bakdata.conquery.apiv1.QueryResource`
 
 Method: `cancel`
+
 Returns: [ExecutionStatus](#Type-ExecutionStatus)
+
 </p></details>
 
 ### GET datasets/{dataset}/queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/QueryResource.java)</sup></sub></sup>
@@ -118,7 +136,9 @@ Returns: [ExecutionStatus](#Type-ExecutionStatus)
 Java Type: `com.bakdata.conquery.apiv1.QueryResource`
 
 Method: `getStatus`
+
 Returns: [ExecutionStatus](#Type-ExecutionStatus)
+
 </p></details>
 
 ### GET datasets/{dataset}/result/<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/ResultCSVResource.java)</sup></sub></sup>
@@ -129,7 +149,9 @@ Returns: [ExecutionStatus](#Type-ExecutionStatus)
 Java Type: `com.bakdata.conquery.apiv1.ResultCSVResource`
 
 Method: `getAsCSV`
+
 Returns: `Response`
+
 </p></details>
 
 ### GET datasets/{dataset}/stored-queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/StoredQueriesResource.java)</sup></sub></sup>
@@ -140,7 +162,9 @@ Returns: `Response`
 Java Type: `com.bakdata.conquery.apiv1.StoredQueriesResource`
 
 Method: `getAllQueries`
+
 Returns: list of [ExecutionStatus](#Type-ExecutionStatus)
+
 </p></details>
 
 ### GET datasets/{dataset}/stored-queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/StoredQueriesResource.java)</sup></sub></sup>
@@ -151,7 +175,9 @@ Returns: list of [ExecutionStatus](#Type-ExecutionStatus)
 Java Type: `com.bakdata.conquery.apiv1.StoredQueriesResource`
 
 Method: `getQueryWithSource`
+
 Returns: [ExecutionStatus](#Type-ExecutionStatus)
+
 </p></details>
 
 ### PATCH datasets/{dataset}/stored-queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/StoredQueriesResource.java)</sup></sub></sup>
@@ -162,8 +188,10 @@ Returns: [ExecutionStatus](#Type-ExecutionStatus)
 Java Type: `com.bakdata.conquery.apiv1.StoredQueriesResource`
 
 Method: `patchQuery`
-Returns: [ExecutionStatus](#Type-ExecutionStatus)
+
 Expects: [QueryPatch](#Type-QueryPatch)
+Returns: [ExecutionStatus](#Type-ExecutionStatus)
+
 </p></details>
 
 ### DELETE datasets/{dataset}/stored-queries<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/apiv1/StoredQueriesResource.java)</sup></sub></sup>
@@ -174,7 +202,9 @@ Expects: [QueryPatch](#Type-QueryPatch)
 Java Type: `com.bakdata.conquery.apiv1.StoredQueriesResource`
 
 Method: `deleteQuery`
+
 Returns: `void`
+
 </p></details>
 
 ---
