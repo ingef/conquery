@@ -21,7 +21,8 @@ steps:
   inputs:
     jdkVersionOption: '1.11'
     goals: exec:java
-    options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -pl autodoc
+    mavenPomFile: autodoc/pom.xml
+    options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc"
 - task: Bash@3
   displayName: push new docs
   inputs:
