@@ -116,7 +116,7 @@ public class Constants {
 			.description("The `config.json` is required for every type of execution. Its root element is a [ConqueryConfig](#Type-ConqueryConfig) object.")
 			.base(new Base(AuthConfig.class, "An `AuthConfig` is used to define how users are authenticated."))
 			.base(new Base(PluginConfig.class, "A `PluginConfig` is used to define settings for Conquery plugins."))
-			.base(new Base(IdMappingConfig.class, "An `IdMappingConfig` is used to define how multi column IDs are printed and parsed"))
+			.base(new Base(IdMappingConfig.class, "An `IdMappingConfig` is used to define how multi column entity IDs are printed and parsed"))
 			.otherClass(APIConfig.class)
 			.otherClass(ConqueryConfig.class)
 			.otherClass(ClusterConfig.class)
