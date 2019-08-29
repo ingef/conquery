@@ -116,7 +116,7 @@ public class GroupHandler {
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
 		out.subSubHeading(name);
-		out.paragraph("Java Type: `"+c.getName()+"`");
+		out.paragraph("Java Type: `"+c.getName()+"` "+editLink(c));
 		
 		if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 			out.line("The following fields are supported:");
@@ -155,12 +155,17 @@ public class GroupHandler {
 		}
 
 		out.table(
-			"[✎](https://github.com/bakdata/conquery/edit/develop/src/main/java/"
-				+ field.getClassInfo().getName().replace('.', '/').replace("/java", ".java")
-				+")",
+			editLink(field.getClassInfo()),
 			name,
 			type
 		);
+	}
+
+	private String editLink(ClassInfo classInfo) {
+		return "[✎]("
+			+"https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/"
+			+ classInfo.getName().replace('.', '/')
+			+".java)";
 	}
 
 	private String printType(Ctx ctx, TypeSignature type) {
@@ -223,6 +228,11 @@ public class GroupHandler {
 			if(Primitives.isWrapperType(cl)) {
 				return Primitives.unwrap(cl).getSimpleName()
 					+ (ctx.isIdOf()?"":" or null");
+			}
+			
+			//default for hidden types
+			if(group.getHides().contains(cl)) {
+				return "`"+type.toStringWithSimpleNames()+"`";
 			}
 		}
 		if(!ctx.isIdOf()) {
