@@ -1,6 +1,7 @@
 package com.bakdata.conquery.handler;
 
 import static com.bakdata.conquery.Constants.CPS_TYPE;
+import static com.bakdata.conquery.Constants.DOC;
 import static com.bakdata.conquery.Constants.ID_REF;
 import static com.bakdata.conquery.Constants.ID_REF_COL;
 import static com.bakdata.conquery.Constants.JSON_BACK_REFERENCE;
@@ -20,16 +21,20 @@ import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.model.Base;
+import com.bakdata.conquery.model.CreateableDoc;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.util.Doc;
+import com.bakdata.conquery.util.PrettyPrinter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
 
+import io.github.classgraph.AnnotationInfo;
 import io.github.classgraph.ArrayTypeSignature;
 import io.github.classgraph.BaseTypeSignature;
 import io.github.classgraph.ClassInfo;
@@ -119,6 +124,17 @@ public class GroupHandler {
 	private void handleClass(String name, ClassInfo c) throws IOException {
 		out.subSubHeading(name);
 		out.paragraph("Java Type: `"+c.getName()+"` "+editLink(c));
+		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
+		if(!Strings.isNullOrEmpty(docAnnotation.description())) {
+			out.paragraph(docAnnotation.description());
+		}
+		if(!Strings.isNullOrEmpty(docAnnotation.example())) {
+			out.paragraph(
+				"Example:\n\n```jsonc\n"
+				+ PrettyPrinter.print(docAnnotation.example())
+				+ "\n```"
+			);
+		}
 		
 		if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 			out.line("The following fields are supported:");
@@ -156,17 +172,24 @@ public class GroupHandler {
 			type = printType(ctx, typeSignature);
 		}
 		
-		var docAnnotation = field.getAnnotationInfo(Doc.class.getName());
-		String description = docAnnotation==null ? "" : docAnnotation.getParameterValues().get("description").toString();
-		String example = docAnnotation==null ? "" : docAnnotation.getParameterValues().get("example").toString();
+		Doc docAnnotation = getDocAnnotation(field.getAnnotationInfo(DOC));
 
 		out.table(
 			editLink(field.getClassInfo()),
 			name,
 			type,
-			example,
-			description
+			docAnnotation.example(),
+			docAnnotation.description()
 		);
+	}
+
+	private Doc getDocAnnotation(AnnotationInfo info) {
+		if(info == null) {
+			return new CreateableDoc("", "");
+		}
+		return (Doc)info.loadClassAndInstantiate();
+		//String description = docAnnotation==null ? "" : docAnnotation.getParameterValues().get("description").getValue().toString();
+		//String example = docAnnotation==null ? "" : docAnnotation.getParameterValues().get("example").getValue().toString();
 	}
 
 	private String editLink(ClassInfo classInfo) {
