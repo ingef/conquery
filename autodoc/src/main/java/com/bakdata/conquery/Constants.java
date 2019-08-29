@@ -1,5 +1,9 @@
 package com.bakdata.conquery;
 
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.util.Currency;
+import java.util.Locale;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -10,6 +14,7 @@ import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
+import com.bakdata.conquery.models.auth.AuthConfig;
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -19,6 +24,21 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.config.APIConfig;
+import com.bakdata.conquery.models.config.CSVConfig;
+import com.bakdata.conquery.models.config.ClusterConfig;
+import com.bakdata.conquery.models.config.FrontendConfig;
+import com.bakdata.conquery.models.config.LocaleConfig;
+import com.bakdata.conquery.models.config.MinaConfig;
+import com.bakdata.conquery.models.config.PluginConfig;
+import com.bakdata.conquery.models.config.PreprocessingConfig;
+import com.bakdata.conquery.models.config.PreprocessingDirectories;
+import com.bakdata.conquery.models.config.QueryConfig;
+import com.bakdata.conquery.models.config.StandaloneConfig;
+import com.bakdata.conquery.models.config.StorageConfig;
+import com.bakdata.conquery.models.config.ThreadPoolDefinition;
+import com.bakdata.conquery.models.config.XodusConfig;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
@@ -27,6 +47,9 @@ import com.bakdata.conquery.util.Doc;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+
+import io.dropwizard.util.Duration;
+import io.dropwizard.util.Size;
 
 public class Constants {
 	public static final Group[] GROUPS = {
@@ -49,12 +72,40 @@ public class Constants {
 			.otherClass(ImportDescriptor.class)
 			.otherClass(Input.class)
 			.hide(AutoOutput.class)
+			.build(),
+		Group.builder().name("Config JSON")
+			.description("The `config.json` is required for every type of execution.")
+			.otherClass(APIConfig.class)
+			.otherClass(AuthConfig.class)
+			.otherClass(ClusterConfig.class)
+			.otherClass(CSVConfig.class)
+			.otherClass(FrontendConfig.class)
+			.otherClass(IdMappingConfig.class)
+			.otherClass(LocaleConfig.class)
+			.otherClass(PluginConfig.class)
+			.otherClass(PreprocessingConfig.class)
+			.otherClass(QueryConfig.class)
+			.otherClass(StandaloneConfig.class)
+			.otherClass(StorageConfig.class)
+			.otherClass(MinaConfig.class)
+			.otherClass(FrontendConfig.CurrencyConfig.class)
+			.otherClass(XodusConfig.class)
+			.otherClass(ThreadPoolDefinition.class)
+			.otherClass(PreprocessingDirectories.class)
+			.hide(Charset.class)
+			.hide(Currency.class)
+			.hide(InetAddress.class)
+			.hide(Locale.class)
+			.hide(Duration.class)
+			.hide(Size.class)
 			.build()/*,
 		Group.builder().name("API JSONs")
 			.base(new Base(IQuery.class, ""))
 			.base(new Base(CQElement.class, ""))
 			.base(new Base(FilterValue.class, ""))
 			.hide(CQExternalResolved.class)
+			.build(),
+		Group.builder().name("COnfig!")
 			.build()*/
 	};
 	

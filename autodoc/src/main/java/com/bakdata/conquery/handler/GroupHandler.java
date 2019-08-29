@@ -232,7 +232,7 @@ public class GroupHandler {
 			editLink(field.getClassInfo()),
 			name,
 			type,
-			docAnnotation.example(),
+			StringUtils.isEmpty(docAnnotation.example()) ? "" : code(PrettyPrinter.print(docAnnotation.example())),
 			docAnnotation.description()
 		);
 	}
@@ -242,8 +242,6 @@ public class GroupHandler {
 			return new CreateableDoc("", "");
 		}
 		return (Doc)info.loadClassAndInstantiate();
-		//String description = docAnnotation==null ? "" : docAnnotation.getParameterValues().get("description").getValue().toString();
-		//String example = docAnnotation==null ? "" : docAnnotation.getParameterValues().get("example").getValue().toString();
 	}
 
 	private String editLink(ClassInfo classInfo) {

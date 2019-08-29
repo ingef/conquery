@@ -21,7 +21,7 @@ public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> e
 	
 	@Doc(
 		description="visible label shown in the frontend",
-		example="`\"someLabel\"`"
+		example="\"someLabel\""
 	)
 	@NotEmpty @ToString.Include
 	private String label;
