@@ -23,6 +23,7 @@ steps:
     goals: exec:java
     options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -pl autodoc
 - task: Bash@3
+  displayName: push new docs
   inputs:
     targetType: inline
     script: |
