@@ -9,6 +9,69 @@ The `config.json` is required for every type of execution.
 
 ---
 
+## Base AuthConfig
+An `AuthConfig` is used to define how users are authenticated.
+
+Different types of AuthConfig can be used by setting `type` to one of the following values:
+
+
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/DevAuthConfig.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.DevAuthConfig`
+
+No fields can be set for this type.
+
+</p></details>
+
+
+
+---
+
+## Base PluginConfig
+A `PluginConfig` is used to define settings for Conquery plugins.
+
+Different types of PluginConfig can be used by setting `type` to one of the following values:
+
+
+
+
+---
+
+## Base IdMappingConfig
+An `IdMappingConfig` is used to define how multi column IDs are printed and parsed
+
+Different types of IdMappingConfig can be used by setting `type` to one of the following values:
+
+
+### NO_ID_MAPPING<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/mapping/NoIdMapping.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.identifiable.mapping.NoIdMapping`
+
+No fields can be set for this type.
+
+</p></details>
+
+### SIMPLE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/mapping/SimpleIdMapping.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.identifiable.mapping.SimpleIdMapping`
+
+No fields can be set for this type.
+
+</p></details>
+
+
+
+---
+
 ## Other Types
 
 ### Type APIConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/APIConfig.java)</sup></sub></sup>
@@ -24,17 +87,6 @@ Supported Fields:
 | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/APIConfig.java) | allowCORSRequests | `boolean` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/APIConfig.java) | caching | `boolean` |  |  | 
-</p></details>
-
-### Type AuthConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/AuthConfig.java)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.models.auth.AuthConfig`
-
-No fields can be set for this type.
-
 </p></details>
 
 ### Type CSVConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java)</sup></sub></sup>
@@ -106,17 +158,6 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/FrontendConfig.java) | version | `String` |  |  | 
 </p></details>
 
-### Type IdMappingConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/mapping/IdMappingConfig.java)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig`
-
-No fields can be set for this type.
-
-</p></details>
-
 ### Type LocaleConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/LocaleConfig.java)</sup></sub></sup>
 
 
@@ -153,17 +194,6 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/MinaConfig.java) | useReadOperation | `boolean` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/MinaConfig.java) | writeTimeout | `int` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/MinaConfig.java) | writerIdleTime | `int` |  |  | 
-</p></details>
-
-### Type PluginConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PluginConfig.java)</sup></sub></sup>
-
-
-<details><summary>Details</summary><p>
-
-Java Type: `com.bakdata.conquery.models.config.PluginConfig`
-
-No fields can be set for this type.
-
 </p></details>
 
 ### Type PreprocessingConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java)</sup></sub></sup>
