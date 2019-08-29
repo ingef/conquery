@@ -121,7 +121,7 @@ public class GroupHandler {
 		if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 			out.line("The following fields are supported:");
 
-			out.tableHeader("Field", "Type");
+			out.tableHeader("", "Field", "Type");
 			for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
 				handleField(field);
 			}
@@ -155,6 +155,9 @@ public class GroupHandler {
 		}
 
 		out.table(
+			"[✎](https://github.com/bakdata/conquery/edit/develop/src/main/java/"
+				+ field.getClassInfo().getName().replace('.', '/').replace("/java", ".java")
+				+")",
 			name,
 			type
 		);
