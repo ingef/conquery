@@ -18,7 +18,12 @@ import lombok.extern.slf4j.Slf4j;
 public class AutoDoc {
 	
 	public static void main(String[] args) throws IOException {
-		new AutoDoc().start();
+		if(args.length == 0) {
+			new AutoDoc().start(new File("../docs/"));
+		}
+		else {
+			new AutoDoc().start(new File(args[0]));
+		}
 	}
 
 	private ScanResult scan;
@@ -37,8 +42,7 @@ public class AutoDoc {
 			.scan();
 	}
 	
-	public void start() throws IOException {
-		File docs = new File("../docs/");
+	public void start(File docs) throws IOException {
 		docs.mkdirs();
 		for(Group group : GROUPS) {
 			File target = new File(docs, group.getName()+".md");
