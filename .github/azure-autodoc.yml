@@ -22,12 +22,15 @@ steps:
     jdkVersionOption: '1.11'
     goals: exec:java
     options: $(MVN) -Dexec.mainClass="com.bakdata.conquery.AutoDoc" -pl autodoc
-- bash: |
-    git diff --quiet HEAD || \
-    {
-      git config --global user.email "bot@bakdata.com"
-      git config --global user.name "bakdata-bot"
-      git commit --message "automatic update to docs"
-      git push origin HEAD:$(Build.SourceBranch)
-      exit -1
-    }
+- task: Bash@3
+  inputs:
+    targetType: inline
+    script: |
+      git diff --quiet HEAD || \
+      {
+        git config --global user.email "bot@bakdata.com"
+        git config --global user.name "bakdata-bot"
+        git commit --message "automatic update to docs"
+        git push origin HEAD:$(Build.SourceBranch)
+        exit -1
+      }
