@@ -1,6 +1,6 @@
 package com.bakdata.conquery.handler;
 
-import static com.bakdata.conquery.Constants.CPS_TYPE;
+import static com.bakdata.conquery.Constants.*;
 import static com.bakdata.conquery.Constants.DOC;
 import static com.bakdata.conquery.Constants.ID_OF;
 import static com.bakdata.conquery.Constants.ID_REF;
@@ -13,9 +13,11 @@ import static com.bakdata.conquery.Constants.LIST_OF;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -50,6 +52,7 @@ import io.github.classgraph.BaseTypeSignature;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ClassRefTypeSignature;
 import io.github.classgraph.FieldInfo;
+import io.github.classgraph.MethodInfo;
 import io.github.classgraph.ScanResult;
 import io.github.classgraph.TypeArgument;
 import io.github.classgraph.TypeParameter;
@@ -65,6 +68,7 @@ public class GroupHandler {
 	private final Group group;
 	private final SimpleWriter out;
 	private Multimap<Base, Pair<CPSType, ClassInfo>> content = HashMultimap.create();
+	private List<Pair<String, MethodInfo>> endpoints = new ArrayList<>();
 	
 	public void handle() throws IOException {
 		out.heading(group.getName());
@@ -97,7 +101,13 @@ public class GroupHandler {
 		}
 		
 		for(var resource : group.getResources()) {
-			handleResource(resource);
+			collectEndpoints(resource);
+		}
+		if(!endpoints.isEmpty()) {
+			out.heading("REST endpoints");
+			for(var endpoint : endpoints.stream().sorted(Comparator.comparing(Pair::getLeft)).collect(Collectors.toList())) {
+				handleEndpoint(endpoint.getLeft(), endpoint.getRight());
+			}
 		}
 		
 		for(var base : group.getBases()) {
@@ -117,16 +127,47 @@ public class GroupHandler {
 		}
 	}
 	
-	private void handleResource(Class<?> resource) throws IOException {
+	private void handleEndpoint(String url, MethodInfo method) throws IOException {
+		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo())) {
+			/*if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
+				out.line("Supported Fields:");
+	
+				out.tableHeader("", "Field", "Type", "Default", "Example", "Description");
+				for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
+					handleField(c, field);
+				}
+				
+			}
+			else {
+				out.paragraph("No fields can be set for this type.");
+			}*/
+		}
+	}
+
+	private void collectEndpoints(Class<?> resource) throws IOException {
 		ClassInfo info = scan.getClassInfo(resource.getName());
 		
 		for(var method : info.getMethodInfo()) {
-			if(method.hasAnnotation(GET.class.getName())) {
-				String uri = UriBuilder.fromMethod(resource, method.getName()).build().toString();
-				out.line(uri);
+			if(getRestMethod(method) == null) {
+				continue;
+			}
+			
+			UriBuilder builder = UriBuilder.fromResource(resource);
+			if(method.hasAnnotation(PATH)) {
+				builder = builder.path(resource, method.getName());
+			}
+			
+			endpoints.add(Pair.of(builder.toTemplate(), method));
+		}
+	}
+
+	private String getRestMethod(MethodInfo method) {
+		for(var rest : RESTS) {
+			if(method.hasAnnotation(rest)) {
+				return method.getAnnotationInfo(rest).getClassInfo().getSimpleName();
 			}
 		}
-		
+		return null;
 	}
 
 	public void handleBase(Base base) throws IOException {

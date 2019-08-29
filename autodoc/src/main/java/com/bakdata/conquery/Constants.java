@@ -2,9 +2,15 @@ package com.bakdata.conquery;
 
 import java.net.InetAddress;
 import java.nio.charset.Charset;
+import java.nio.file.Path;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Set;
+
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 
 import com.bakdata.conquery.apiv1.ConfigResource;
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -61,6 +67,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.dropwizard.jersey.PATCH;
 import io.dropwizard.util.Duration;
 import io.dropwizard.util.Size;
 
@@ -136,6 +143,13 @@ public class Constants {
 	public static final Set<String> ID_REF_COL = Set.of(NsIdRefCollection.class.getName(), MetaIdRefCollection.class.getName());
 	public static final String JSON_IGNORE = JsonIgnore.class.getName();
 	public static final String JSON_BACK_REFERENCE = JsonBackReference.class.getName();
+	public static final String PATH = Path.class.getName();
 	public static final String LIST_OF = "list of ";
 	public static final String ID_OF = "ID of ";
+	public static final String GET = GET.class.getName();
+	public static final String POST = POST.class.getName();
+	public static final String PATCH = PATCH.class.getName();
+	public static final String DELETE = DELETE.class.getName();
+	public static final String PUT = PUT.class.getName();
+	public static final Set<String> RESTS = Set.of(GET, POST, PUT, PATCH, DELETE);
 }
