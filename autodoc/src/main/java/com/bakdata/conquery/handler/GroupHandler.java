@@ -8,6 +8,7 @@ import static com.bakdata.conquery.Constants.JSON_CREATOR;
 import static com.bakdata.conquery.Constants.JSON_IGNORE;
 
 import java.io.IOException;
+import java.lang.annotation.Annotation;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Map;
@@ -21,6 +22,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.util.Doc;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashMultimap;
@@ -121,7 +123,7 @@ public class GroupHandler {
 		if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 			out.line("The following fields are supported:");
 
-			out.tableHeader("", "Field", "Type");
+			out.tableHeader("", "Field", "Type", "Example", "Description");
 			for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
 				handleField(field);
 			}
@@ -153,11 +155,17 @@ public class GroupHandler {
 		else {
 			type = printType(ctx, typeSignature);
 		}
+		
+		var docAnnotation = field.getAnnotationInfo(Doc.class.getName());
+		String description = docAnnotation==null ? "" : docAnnotation.getParameterValues().get("description").toString();
+		String example = docAnnotation==null ? "" : docAnnotation.getParameterValues().get("example").toString();
 
 		out.table(
 			editLink(field.getClassInfo()),
 			name,
-			type
+			type,
+			example,
+			description
 		);
 	}
 
