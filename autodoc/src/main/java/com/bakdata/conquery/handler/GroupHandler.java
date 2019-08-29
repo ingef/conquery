@@ -129,18 +129,14 @@ public class GroupHandler {
 	
 	private void handleEndpoint(String url, MethodInfo method) throws IOException {
 		try(var details = details(getRestMethod(method)+"\u2001"+url, method.getClassInfo())) {
-			/*if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
-				out.line("Supported Fields:");
-	
-				out.tableHeader("", "Field", "Type", "Default", "Example", "Description");
-				for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
-					handleField(c, field);
+			out.line("Method: "+code(method.getName()));
+			out.line("Returns: "+printType(new Ctx(), method.getTypeSignatureOrTypeDescriptor().getResultType()));
+			for(var param : method.getParameterInfo()) {
+				if(param.hasAnnotation(PATH_PARAM) || param.hasAnnotation(AUTH) || param.hasAnnotation(CONTEXT)) {
+					continue;
 				}
-				
+				out.line("Expects: "+ printType(new Ctx(), param.getTypeSignatureOrTypeDescriptor()));
 			}
-			else {
-				out.paragraph("No fields can be set for this type.");
-			}*/
 		}
 	}
 
@@ -274,10 +270,7 @@ public class GroupHandler {
 		}
 		
 		String name = field.getName();
-		var typeSignature = Objects.requireNonNullElse(
-			field.getTypeSignature(),
-			field.getTypeDescriptor()
-		);
+		var typeSignature = field.getTypeSignatureOrTypeDescriptor();
 		Ctx ctx = new Ctx().withField(field);
 		
 		String type;

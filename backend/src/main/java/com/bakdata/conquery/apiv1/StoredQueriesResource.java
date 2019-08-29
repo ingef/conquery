@@ -36,6 +36,7 @@ import com.google.common.collect.Iterators;
 
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
+import lombok.Data;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)
@@ -76,7 +77,7 @@ public class StoredQueriesResource {
 
 	@PATCH
 	@Path("{" + QUERY + "}")
-	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, JsonNode patch) throws JSONException {
+	public ExecutionStatus patchQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, QueryPatch patch) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 
 		Dataset dataset = dsUtil.getDataset(datasetId);
@@ -87,16 +88,22 @@ public class StoredQueriesResource {
 			throw new IllegalArgumentException(queryId+" is not a patchable query");
 		}
 		ManagedQuery query = (ManagedQuery) exec;
-		if (patch.has("tags")) {
-			String[] newTags = Iterators.toArray(Iterators.transform(patch.get("tags").elements(), n -> n.asText(null)), String.class);
-			processor.tagQuery(user, query, newTags);
-		} else if (patch.has("label")) {
-			processor.updateQueryLabel(user, query, patch.get("label").textValue());
-		} else if (patch.has("shared")) {
-			processor.shareQuery(user, query, patch.get("shared").asBoolean());
+		if (patch.getTags() != null) {
+			processor.tagQuery(user, query, patch.getTags());
+		} else if (patch.getLabel() != null) {
+			processor.updateQueryLabel(user, query, patch.getLabel());
+		} else if (patch.getShared() != null) {
+			processor.shareQuery(user, query, patch.getShared());
 		}
 		
 		return getQueryWithSource(user, datasetId, queryId);
+	}
+	
+	@Data
+	public static class QueryPatch {
+		private String[] tags;
+		private String label;
+		private Boolean shared;
 	}
 
 	@DELETE
