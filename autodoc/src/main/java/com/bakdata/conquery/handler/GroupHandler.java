@@ -11,9 +11,12 @@ import static com.bakdata.conquery.Constants.JSON_IGNORE;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.StringUtils;
@@ -93,6 +96,11 @@ public class GroupHandler {
 		for(var t : group.getOtherClasses().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
 			handleClass(typeTitle(t), scan.getClassInfo(t.getName()));
 		}
+		
+		out.subHeading("Marker Interfaces");
+		for(var t : group.getMarkerInterfaces().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
+			handleMarkerInterface(markerTitle(t), scan.getClassInfo(t.getName()));
+		}
 	}
 	
 	public void handleBase(Base base) throws IOException {
@@ -144,6 +152,44 @@ public class GroupHandler {
 		}
 		else {
 			out.paragraph("No fields can be set for this type.");
+		}
+	}
+	
+	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
+		out.subSubHeading(name);
+		out.paragraph("Java Type: "+code(c.getName()));
+		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
+		out.paragraph(editLink(c)+" "+docAnnotation.description());
+		if(!Strings.isNullOrEmpty(docAnnotation.example())) {
+			out.paragraph(
+				"Example:\n\n```jsonc\n"
+				+ PrettyPrinter.print(docAnnotation.example())
+				+ "\n```"
+			);
+		}
+		
+		Set<String> values = new HashSet<>();
+		for(var cl : group.getOtherClasses()) {
+			if(c.loadClass().isAssignableFrom(cl)) {
+				values.add("["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")");
+			}
+		}
+		content
+			.values()
+			.stream()
+			.filter(p-> c.loadClass().isAssignableFrom(p.getRight().loadClass()))
+			.forEach(p->values.add("["+p.getLeft().id()+"]("+anchor(p.getLeft().id())+")"));
+		for(var cl : group.getMarkerInterfaces()) {
+			if(c.loadClass().isAssignableFrom(cl) && !c.loadClass().equals(cl)) {
+				values.add("["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")");
+			}
+		}
+		
+		if(!values.isEmpty()) {
+			out.paragraph(
+				"A "+name+" is any of:\n* "
+				+ values.stream().sorted().collect(Collectors.joining("\n* "))
+			);
 		}
 	}
 
@@ -248,6 +294,10 @@ public class GroupHandler {
 			if(group.getOtherClasses().contains(cl)) {
 				return "["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")";
 			}
+			//a marker interface
+			if(group.getMarkerInterfaces().contains(cl)) {
+				return "["+cl.getSimpleName()+"]("+anchor(markerTitle(cl))+")";
+			}
 			
 			//ENUM
 			if(Enum.class.isAssignableFrom(cl)) {
@@ -268,6 +318,10 @@ public class GroupHandler {
 			log.warn("Unhandled type {}", type);
 		}
 		return code(type.toStringWithSimpleNames());
+	}
+
+	private String markerTitle(Class<?> cl) {
+		return "Marker "+cl.getSimpleName();
 	}
 
 	private String code(String string) {

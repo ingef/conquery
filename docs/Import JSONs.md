@@ -181,3 +181,7 @@ The following fields are supported:
 ---
 
 ## Other Types
+
+---
+
+## Marker Interfaces

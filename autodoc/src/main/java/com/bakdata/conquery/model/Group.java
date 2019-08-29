@@ -18,4 +18,6 @@ public class Group {
 	private Set<Class<?>> otherClasses;
 	@Singular
 	private List<Class<?>> hides;
+	@Singular
+	private List<Class<?>> markerInterfaces;
 }

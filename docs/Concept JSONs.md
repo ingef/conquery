@@ -31,7 +31,7 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | description | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | globalToLocalOffset | `int` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | selects | list of `UniversalSelect` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | selects | list of [UniversalSelect](#Marker-UniversalSelect) |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `"someLabel"` | visible label shown in the frontend | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
 
@@ -682,3 +682,16 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ValidityDate.java) | column | ID of `Column` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `"someLabel"` | visible label shown in the frontend | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
+
+---
+
+## Marker Interfaces
+
+### Marker UniversalSelect
+Java Type: `com.bakdata.conquery.models.concepts.select.concept.UniversalSelect`
+
+[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/concept/UniversalSelect.java) 
+
+A Marker UniversalSelect is any of:
+* [EXISTS](#EXISTS)
+

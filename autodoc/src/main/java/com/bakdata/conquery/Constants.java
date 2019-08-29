@@ -42,7 +42,7 @@ public class Constants {
 			.otherClass(ConceptTreeChild.class)
 			.otherClass(FilterTemplate.class)
 			.otherClass(ValidityDate.class)
-			.hide(UniversalSelect.class)
+			.markerInterface(UniversalSelect.class)
 			.build(),
 		Group.builder().name("Import JSONs")
 			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#ImportDescriptor).")
