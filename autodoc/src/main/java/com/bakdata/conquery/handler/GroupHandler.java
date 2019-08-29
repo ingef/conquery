@@ -253,7 +253,7 @@ public class GroupHandler {
 				String json = Jackson.MAPPER.writeValueAsString(def);
 				//we don't want to print defaults if it is a whole object itself
 				if(json.contains("{")) {
-					return "default";
+					return "";
 				}
 				//check if file path not not generate absolute paths
 				String localPath = Jackson.MAPPER.writeValueAsString(new File("."));
