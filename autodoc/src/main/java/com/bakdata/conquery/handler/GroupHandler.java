@@ -8,6 +8,7 @@ import static com.bakdata.conquery.Constants.JSON_BACK_REFERENCE;
 import static com.bakdata.conquery.Constants.JSON_CREATOR;
 import static com.bakdata.conquery.Constants.JSON_IGNORE;
 
+import java.io.Closeable;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -130,26 +131,7 @@ public class GroupHandler {
 	}
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
-		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
-		
-		out.subSubHeading(
-			name
-			//this will not be part of the anchor in gfmd
-			+ "<sup><sub><sup>"+editLink(c)+"</sup></sub></sup>"
-		);
-		out.paragraph(docAnnotation.description());
-		
-		out.paragraph("<details><summary>Details</summary><p>");
-		{
-			out.paragraph("Java Type: "+code(c.getName()));
-			if(!Strings.isNullOrEmpty(docAnnotation.example())) {
-				out.paragraph(
-					"Example:\n\n```jsonc\n"
-					+ PrettyPrinter.print(docAnnotation.example())
-					+ "\n```"
-				);
-			}
-			
+		try(var details = details(name, c)) {
 			if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 				out.line("Supported Fields:");
 	
@@ -163,12 +145,10 @@ public class GroupHandler {
 				out.paragraph("No fields can be set for this type.");
 			}
 		}
-		out.line("</p></details>");
 	}
 	
-	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
+	private Closeable details(String name, ClassInfo c) throws IOException {
 		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
-
 		out.subSubHeading(
 			name
 			//this will not be part of the anchor in gfmd
@@ -176,18 +156,26 @@ public class GroupHandler {
 		);
 		out.paragraph(docAnnotation.description());
 		out.paragraph("<details><summary>Details</summary><p>");
-		{
-			out.paragraph("Java Type: "+code(c.getName()));
-			
-			
-			if(!Strings.isNullOrEmpty(docAnnotation.example())) {
-				out.paragraph(
-					"Example:\n\n```jsonc\n"
-					+ PrettyPrinter.print(docAnnotation.example())
-					+ "\n```"
-				);
+		
+		out.paragraph("Java Type: "+code(c.getName()));
+		if(!Strings.isNullOrEmpty(docAnnotation.example())) {
+			out.paragraph(
+				"Example:\n\n```jsonc\n"
+				+ PrettyPrinter.print(docAnnotation.example())
+				+ "\n```"
+			);
+		}
+		
+		return new Closeable() {
+			@Override
+			public void close() throws IOException {
+				out.line("</p></details>");
 			}
-			
+		};
+	}
+	
+	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
+		try(var details = details(name, c)) {			
 			Set<String> values = new HashSet<>();
 			for(var cl : group.getOtherClasses()) {
 				if(c.loadClass().isAssignableFrom(cl)) {
@@ -212,7 +200,6 @@ public class GroupHandler {
 				);
 			}
 		}
-		out.line("</p></details>");
 	}
 
 	private void handleField(FieldInfo field) throws IOException {
