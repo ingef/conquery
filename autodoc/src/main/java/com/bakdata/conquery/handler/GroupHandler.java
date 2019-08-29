@@ -9,6 +9,7 @@ import static com.bakdata.conquery.Constants.JSON_CREATOR;
 import static com.bakdata.conquery.Constants.JSON_IGNORE;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.util.Arrays;
@@ -151,7 +152,7 @@ public class GroupHandler {
 		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
 		out.subSubHeading(
 			name
-			//this will not be part of the anchor in gfmd
+			//non-ASCII characters and tags do not change the anchor
 			+ "<sup><sub><sup>\u2001"+editLink(c)+"</sup></sub></sup>"
 		);
 		out.paragraph(docAnnotation.description());
@@ -267,6 +268,12 @@ public class GroupHandler {
 			if(IId.class.isAssignableFrom(cl)) {
 				String name = cl.getSimpleName();
 				return ID_OF+code(name.substring(0,name.length()-2));
+			}
+			
+			//File
+			if(File.class.isAssignableFrom(cl)) {
+				//we could check if dir or file here
+				return code("File");
 			}
 			
 			//Iterable

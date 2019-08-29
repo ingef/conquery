@@ -4,7 +4,7 @@ This is an automatically created documentation. It is not 100% accurate since th
 
 Instead of a list ConQuery also always accepts a single element.
 
-Each `*.concept.json` has to contain exactly one [Concept](#Concept).
+Each `*.concept.json` has to contain exactly one [Concept](#Base-Concept).
 
 
 ---

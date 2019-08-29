@@ -4,7 +4,7 @@ This is an automatically created documentation. It is not 100% accurate since th
 
 Instead of a list ConQuery also always accepts a single element.
 
-Each `*.import.json` has to contain exactly one [ImportDescriptor](#ImportDescriptor).
+Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).
 
 
 ---
@@ -217,6 +217,41 @@ Supported Fields:
 ---
 
 ## Other Types
+
+### Type ImportDescriptor<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/ImportDescriptor.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.preproc.ImportDescriptor`
+
+Supported Fields:
+
+|  | Field | Type | Example | Description |
+| --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `"someLabel"` | visible label shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/ImportDescriptor.java) | inputs | list of [Input](#Type-Input) |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/ImportDescriptor.java) | table | `String` |  |  | 
+</p></details>
+
+### Type Input<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/Input.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.preproc.Input`
+
+Supported Fields:
+
+|  | Field | Type | Example | Description |
+| --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/Input.java) | autoOutput | `AutoOutput` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/Input.java) | filter | `String` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/Input.java) | output | list of [Output](#Base-Output) |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/Input.java) | primary | [Output](#Base-Output) |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/Input.java) | sourceFile | `File` |  |  | 
+</p></details>
 
 ---
 

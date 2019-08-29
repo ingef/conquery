@@ -19,11 +19,10 @@ import com.bakdata.conquery.models.concepts.filters.Filter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.select.concept.UniversalSelect;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
+import com.bakdata.conquery.models.preproc.ImportDescriptor;
+import com.bakdata.conquery.models.preproc.Input;
+import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.concept.specific.CQExternalResolved;
 import com.bakdata.conquery.util.Doc;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -32,7 +31,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public class Constants {
 	public static final Group[] GROUPS = {
 		Group.builder().name("Concept JSONs")
-			.description("Each `*.concept.json` has to contain exactly one [Concept](#Concept).")
+			.description("Each `*.concept.json` has to contain exactly one [Concept](#Base-Concept).")
 			.base(new Base(Concept.class, "A concept is a collection of filters and selects and their connection to tables."))
 			.base(new Base(CTCondition.class, "These represent guard conditions. A value matches a [ConceptElement](#ConceptElement) if it matches its condition and its parent"))
 			.base(new Base(Filter.class, "These are used to define filters, than can be used to reduce the result set."))
@@ -45,9 +44,11 @@ public class Constants {
 			.markerInterface(UniversalSelect.class)
 			.build(),
 		Group.builder().name("Import JSONs")
-			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#ImportDescriptor).")
+			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).")
 			.base(new Base(Output.class, ""))
-			.hide(UniversalSelect.class)
+			.otherClass(ImportDescriptor.class)
+			.otherClass(Input.class)
+			.hide(AutoOutput.class)
 			.build()/*,
 		Group.builder().name("API JSONs")
 			.base(new Base(IQuery.class, ""))
