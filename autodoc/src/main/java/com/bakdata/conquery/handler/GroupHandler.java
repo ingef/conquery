@@ -1,25 +1,28 @@
 package com.bakdata.conquery.handler;
 
-import static com.bakdata.conquery.Constants.*;
+import static com.bakdata.conquery.Constants.CPS_TYPE;
 import static com.bakdata.conquery.Constants.DOC;
+import static com.bakdata.conquery.Constants.ID_OF;
 import static com.bakdata.conquery.Constants.ID_REF;
 import static com.bakdata.conquery.Constants.ID_REF_COL;
 import static com.bakdata.conquery.Constants.JSON_BACK_REFERENCE;
 import static com.bakdata.conquery.Constants.JSON_CREATOR;
 import static com.bakdata.conquery.Constants.JSON_IGNORE;
+import static com.bakdata.conquery.Constants.LIST_OF;
 
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
-import java.lang.annotation.Annotation;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+
+import javax.ws.rs.GET;
+import javax.ws.rs.core.UriBuilder;
 
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -30,6 +33,7 @@ import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.CreateableDoc;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.util.Doc;
 import com.bakdata.conquery.util.PrettyPrinter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -91,6 +95,11 @@ public class GroupHandler {
 					.collect(Collectors.toList())
 			);
 		}
+		
+		for(var resource : group.getResources()) {
+			handleResource(resource);
+		}
+		
 		for(var base : group.getBases()) {
 			handleBase(base);
 		}
@@ -108,6 +117,18 @@ public class GroupHandler {
 		}
 	}
 	
+	private void handleResource(Class<?> resource) throws IOException {
+		ClassInfo info = scan.getClassInfo(resource.getName());
+		
+		for(var method : info.getMethodInfo()) {
+			if(method.hasAnnotation(GET.class.getName())) {
+				String uri = UriBuilder.fromMethod(resource, method.getName()).build().toString();
+				out.line(uri);
+			}
+		}
+		
+	}
+
 	public void handleBase(Base base) throws IOException {
 		out.subHeading(baseTitle(base.getBaseClass()));
 		out.paragraph(base.getDescription());

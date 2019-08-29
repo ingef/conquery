@@ -13,6 +13,8 @@ public class Group {
 	private String name;
 	private String description;
 	@Singular
+	private List<Class<?>> resources;
+	@Singular
 	private List<Base> bases;
 	@Singular
 	private Set<Class<?>> otherClasses;
