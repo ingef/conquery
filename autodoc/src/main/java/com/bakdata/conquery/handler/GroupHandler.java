@@ -130,67 +130,89 @@ public class GroupHandler {
 	}
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
-		out.subSubHeading(name);
-		out.paragraph("Java Type: "+code(c.getName()));
 		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
-		out.paragraph(editLink(c)+" "+docAnnotation.description());
-		if(!Strings.isNullOrEmpty(docAnnotation.example())) {
-			out.paragraph(
-				"Example:\n\n```jsonc\n"
-				+ PrettyPrinter.print(docAnnotation.example())
-				+ "\n```"
-			);
-		}
 		
-		if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
-			out.line("The following fields are supported:");
-
-			out.tableHeader("", "Field", "Type", "Example", "Description");
-			for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
-				handleField(field);
+		out.subSubHeading(
+			name
+			//this will not be part of the anchor in gfmd
+			+ "<sup><sub><sup>"+editLink(c)+"</sup></sub></sup>"
+		);
+		out.paragraph(docAnnotation.description());
+		
+		out.paragraph("<details><summary>Details</summary><p>");
+		{
+			out.paragraph("Java Type: "+code(c.getName()));
+			if(!Strings.isNullOrEmpty(docAnnotation.example())) {
+				out.paragraph(
+					"Example:\n\n```jsonc\n"
+					+ PrettyPrinter.print(docAnnotation.example())
+					+ "\n```"
+				);
+			}
+			
+			if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
+				out.line("Supported Fields:");
+	
+				out.tableHeader("", "Field", "Type", "Example", "Description");
+				for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
+					handleField(field);
+				}
+				
+			}
+			else {
+				out.paragraph("No fields can be set for this type.");
 			}
 		}
-		else {
-			out.paragraph("No fields can be set for this type.");
-		}
+		out.line("</p></details>");
 	}
 	
 	private void handleMarkerInterface(String name, ClassInfo c) throws IOException {
-		out.subSubHeading(name);
-		out.paragraph("Java Type: "+code(c.getName()));
 		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
-		out.paragraph(editLink(c)+" "+docAnnotation.description());
-		if(!Strings.isNullOrEmpty(docAnnotation.example())) {
-			out.paragraph(
-				"Example:\n\n```jsonc\n"
-				+ PrettyPrinter.print(docAnnotation.example())
-				+ "\n```"
-			);
-		}
-		
-		Set<String> values = new HashSet<>();
-		for(var cl : group.getOtherClasses()) {
-			if(c.loadClass().isAssignableFrom(cl)) {
-				values.add("["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")");
+
+		out.subSubHeading(
+			name
+			//this will not be part of the anchor in gfmd
+			+ "<sup><sub><sup>"+editLink(c)+"</sup></sub></sup>"
+		);
+		out.paragraph(docAnnotation.description());
+		out.paragraph("<details><summary>Details</summary><p>");
+		{
+			out.paragraph("Java Type: "+code(c.getName()));
+			
+			
+			if(!Strings.isNullOrEmpty(docAnnotation.example())) {
+				out.paragraph(
+					"Example:\n\n```jsonc\n"
+					+ PrettyPrinter.print(docAnnotation.example())
+					+ "\n```"
+				);
+			}
+			
+			Set<String> values = new HashSet<>();
+			for(var cl : group.getOtherClasses()) {
+				if(c.loadClass().isAssignableFrom(cl)) {
+					values.add("["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")");
+				}
+			}
+			content
+				.values()
+				.stream()
+				.filter(p-> c.loadClass().isAssignableFrom(p.getRight().loadClass()))
+				.forEach(p->values.add("["+p.getLeft().id()+"]("+anchor(p.getLeft().id())+")"));
+			for(var cl : group.getMarkerInterfaces()) {
+				if(c.loadClass().isAssignableFrom(cl) && !c.loadClass().equals(cl)) {
+					values.add("["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")");
+				}
+			}
+	
+			if(!values.isEmpty()) {
+				out.paragraph (
+					"A "+name+" is any of:\n* "
+					+ values.stream().sorted().collect(Collectors.joining("\n* "))
+				);
 			}
 		}
-		content
-			.values()
-			.stream()
-			.filter(p-> c.loadClass().isAssignableFrom(p.getRight().loadClass()))
-			.forEach(p->values.add("["+p.getLeft().id()+"]("+anchor(p.getLeft().id())+")"));
-		for(var cl : group.getMarkerInterfaces()) {
-			if(c.loadClass().isAssignableFrom(cl) && !c.loadClass().equals(cl)) {
-				values.add("["+cl.getSimpleName()+"]("+anchor(typeTitle(cl))+")");
-			}
-		}
-		
-		if(!values.isEmpty()) {
-			out.paragraph(
-				"A "+name+" is any of:\n* "
-				+ values.stream().sorted().collect(Collectors.joining("\n* "))
-			);
-		}
+		out.line("</p></details>");
 	}
 
 	private void handleField(FieldInfo field) throws IOException {

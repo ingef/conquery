@@ -15,25 +15,30 @@ Each `*.import.json` has to contain exactly one [ImportDescriptor](#ImportDescri
 Different types of Output can be used by setting `operation` to one of the following values:
 
 
-### CONCAT
+### CONCAT<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/ConcatOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.ConcatOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/ConcatOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/ConcatOutput.java) | inputColumns | list of `int` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
+</p></details>
 
-### COPY
+### COPY<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/CopyOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.CopyOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/CopyOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
@@ -41,13 +46,16 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/CopyOutput.java) | inputType | one of STRING, INTEGER, BOOLEAN, REAL, DECIMAL, MONEY, DATE, DATE_RANGE |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
+</p></details>
 
-### DATE_RANGE
+### DATE_RANGE<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/DateRangeOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.DateRangeOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/DateRangeOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
@@ -55,26 +63,32 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/DateRangeOutput.java) | startColumn | `int` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
+</p></details>
 
-### EPOCH
+### EPOCH<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/EpochOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.EpochOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/EpochOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/EpochOutput.java) | column | `int` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
+</p></details>
 
-### EPOCH_DATE_RANGE
+### EPOCH_DATE_RANGE<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/EpochDateRangeOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.EpochDateRangeOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/EpochDateRangeOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
@@ -82,38 +96,47 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/EpochDateRangeOutput.java) | startColumn | `int` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
+</p></details>
 
-### LINE
+### LINE<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/LineOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.LineOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/LineOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
+</p></details>
 
-### NULL
+### NULL<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/NullOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.NullOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/NullOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/NullOutput.java) | inputType | one of STRING, INTEGER, BOOLEAN, REAL, DECIMAL, MONEY, DATE, DATE_RANGE |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
+</p></details>
 
-### QUARTER_TO_FIRST_DAY
+### QUARTER_TO_FIRST_DAY<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/QuarterToFirstDayOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.QuarterToFirstDayOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/QuarterToFirstDayOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
@@ -121,13 +144,16 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/QuarterToFirstDayOutput.java) | quarterColumn | `int` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/QuarterToFirstDayOutput.java) | yearColumn | `int` |  |  | 
+</p></details>
 
-### QUARTER_TO_RANGE
+### QUARTER_TO_RANGE<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/QuarterToRangeOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.QuarterToRangeOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/QuarterToRangeOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
@@ -135,38 +161,47 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/QuarterToRangeOutput.java) | quarterColumn | `int` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/QuarterToRangeOutput.java) | yearColumn | `int` |  |  | 
+</p></details>
 
-### SOURCE
+### SOURCE<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/SourceOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.SourceOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/SourceOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
+</p></details>
 
-### STARTING_FROM
+### STARTING_FROM<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/StartingFromOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.StartingFromOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/StartingFromOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | name | `String` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/Output.java) | required | `boolean` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/StartingFromOutput.java) | inputColumn | `int` |  |  | 
+</p></details>
 
-### UNPIVOT
+### UNPIVOT<sup><sub><sup>[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/UnpivotOutput.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
 Java Type: `com.bakdata.conquery.models.preproc.outputs.UnpivotOutput`
 
-[✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/UnpivotOutput.java) 
-
-The following fields are supported:
+Supported Fields:
 
 |  | Field | Type | Example | Description |
 | --- | --- | --- | --- | --- |
@@ -175,6 +210,7 @@ The following fields are supported:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/UnpivotOutput.java) | includeNulls | `boolean` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/UnpivotOutput.java) | inputColumns | list of `int` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/preproc/outputs/UnpivotOutput.java) | inputType | one of STRING, INTEGER, BOOLEAN, REAL, DECIMAL, MONEY, DATE, DATE_RANGE |  |  | 
+</p></details>
 
 
 
