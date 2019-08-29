@@ -141,7 +141,7 @@ public class GroupHandler {
 	
 				out.tableHeader("", "Field", "Type", "Default", "Example", "Description");
 				for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
-					handleField(field);
+					handleField(c, field);
 				}
 				
 			}
@@ -206,7 +206,7 @@ public class GroupHandler {
 		}
 	}
 
-	private void handleField(FieldInfo field) throws IOException {
+	private void handleField(ClassInfo currentType, FieldInfo field) throws IOException {
 		if(!isJSONSettableField(field)) {
 			return;
 		}
@@ -235,15 +235,15 @@ public class GroupHandler {
 			editLink(field.getClassInfo()),
 			name,
 			type,
-			findDefault(field),
+			findDefault(currentType, field),
 			StringUtils.isEmpty(docAnnotation.example()) ? "" : code(PrettyPrinter.print(docAnnotation.example())),
 			docAnnotation.description()
 		);
 	}
 
-	private String findDefault(FieldInfo field) {
+	private String findDefault(ClassInfo currentType, FieldInfo field) {
 		try {
-			Object value = field.getClassInfo().loadClass().getConstructor().newInstance();
+			Object value = currentType.loadClass().getConstructor().newInstance();
 			var node = Jackson.MAPPER.valueToTree(value);
 			var def = node.get(field.getName());
 			if(def == null) {

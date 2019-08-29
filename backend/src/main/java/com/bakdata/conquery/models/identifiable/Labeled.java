@@ -20,7 +20,7 @@ public abstract class Labeled<ID extends IId<? extends Labeled<? extends ID>>> e
 	private static final CharMatcher DEFAULT_NAME_UNWANTED = CharMatcher.is(IId.JOIN_CHAR).or(CharMatcher.whitespace());
 	
 	@Doc(
-		description="visible label shown in the frontend",
+		description="shown in the frontend",
 		example="\"someLabel\""
 	)
 	@NotEmpty @ToString.Include
