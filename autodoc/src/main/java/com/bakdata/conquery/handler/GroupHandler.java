@@ -152,7 +152,7 @@ public class GroupHandler {
 		out.subSubHeading(
 			name
 			//this will not be part of the anchor in gfmd
-			+ "<sup><sub><sup> "+editLink(c)+"</sup></sub></sup>"
+			+ "<sup><sub><sup>\u2001"+editLink(c)+"</sup></sub></sup>"
 		);
 		out.paragraph(docAnnotation.description());
 		out.paragraph("<details><summary>Details</summary><p>");
