@@ -25,6 +25,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.CreateableDoc;
 import com.bakdata.conquery.model.Group;
@@ -99,9 +100,11 @@ public class GroupHandler {
 			handleClass(typeTitle(t), scan.getClassInfo(t.getName()));
 		}
 		
-		out.subHeading("Marker Interfaces");
-		for(var t : group.getMarkerInterfaces().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
-			handleMarkerInterface(markerTitle(t), scan.getClassInfo(t.getName()));
+		if(!group.getMarkerInterfaces().isEmpty()) {
+			out.subHeading("Marker Interfaces");
+			for(var t : group.getMarkerInterfaces().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
+				handleMarkerInterface(markerTitle(t), scan.getClassInfo(t.getName()));
+			}
 		}
 	}
 	
@@ -136,7 +139,7 @@ public class GroupHandler {
 			if(c.getFieldInfo().stream().anyMatch(this::isJSONSettableField)) {
 				out.line("Supported Fields:");
 	
-				out.tableHeader("", "Field", "Type", "Example", "Description");
+				out.tableHeader("", "Field", "Type", "Default", "Example", "Description");
 				for(var field : c.getFieldInfo().stream().sorted().collect(Collectors.toList())) {
 					handleField(field);
 				}
@@ -232,9 +235,35 @@ public class GroupHandler {
 			editLink(field.getClassInfo()),
 			name,
 			type,
+			findDefault(field),
 			StringUtils.isEmpty(docAnnotation.example()) ? "" : code(PrettyPrinter.print(docAnnotation.example())),
 			docAnnotation.description()
 		);
+	}
+
+	private String findDefault(FieldInfo field) {
+		try {
+			Object value = field.getClassInfo().loadClass().getConstructor().newInstance();
+			var node = Jackson.MAPPER.valueToTree(value);
+			var def = node.get(field.getName());
+			if(def == null) {
+				return "\u2400";
+			}
+			else {
+				String json = Jackson.MAPPER.writeValueAsString(def);
+				//we don't want to print defaults if it is a whole object itself
+				if(json.contains("{")) {
+					return "default";
+				}
+				//check if file path not not generate absolute paths
+				String localPath = Jackson.MAPPER.writeValueAsString(new File("."));
+				json = StringUtils.replace(json, localPath.substring(1,localPath.length()-2), "./");
+				return code(json);
+			}
+		}
+		catch(Exception e) {
+			return "?";
+		}
 	}
 
 	private Doc getDocAnnotation(AnnotationInfo info) {
