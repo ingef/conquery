@@ -64,4 +64,6 @@ public class Constants {
 	public static final Set<String> ID_REF_COL = Set.of(NsIdRefCollection.class.getName(), MetaIdRefCollection.class.getName());
 	public static final String JSON_IGNORE = JsonIgnore.class.getName();
 	public static final String JSON_BACK_REFERENCE = JsonBackReference.class.getName();
+	public static final String LIST_OF = "list of ";
+	public static final String ID_OF = "ID of ";
 }

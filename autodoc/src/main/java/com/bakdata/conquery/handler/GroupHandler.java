@@ -1,6 +1,6 @@
 package com.bakdata.conquery.handler;
 
-import static com.bakdata.conquery.Constants.CPS_TYPE;
+import static com.bakdata.conquery.Constants.*;
 import static com.bakdata.conquery.Constants.DOC;
 import static com.bakdata.conquery.Constants.ID_REF;
 import static com.bakdata.conquery.Constants.ID_REF_COL;
@@ -91,7 +91,7 @@ public class GroupHandler {
 		
 		out.subHeading("Other Types");
 		for(var t : group.getOtherClasses().stream().sorted(Comparator.comparing(Class::getSimpleName)).collect(Collectors.toList())) {
-			handleClass(t.getSimpleName(), scan.getClassInfo(t.getName()));
+			handleClass(typeTitle(t), scan.getClassInfo(t.getName()));
 		}
 	}
 	
@@ -100,7 +100,7 @@ public class GroupHandler {
 		out.paragraph(base.getDescription());
 		String typeProperty = base.getBaseClass().getAnnotation(JsonTypeInfo.class).property();
 		
-		out.paragraph("Different types of "+base.getBaseClass().getSimpleName()+" can be used by setting `"+typeProperty+"` to one of the following values:");
+		out.paragraph("Different types of "+base.getBaseClass().getSimpleName()+" can be used by setting "+code(typeProperty)+" to one of the following values:");
 
 		for(Pair<CPSType, ClassInfo> pair : content.get(base).stream().sorted(Comparator.comparing(p->p.getLeft().id())).collect(Collectors.toList())) {
 			
@@ -123,7 +123,7 @@ public class GroupHandler {
 
 	private void handleClass(String name, ClassInfo c) throws IOException {
 		out.subSubHeading(name);
-		out.paragraph("Java Type: `"+c.getName()+"`");
+		out.paragraph("Java Type: "+code(c.getName()));
 		Doc docAnnotation = getDocAnnotation(c.getAnnotationInfo(DOC));
 		out.paragraph(editLink(c)+" "+docAnnotation.description());
 		if(!Strings.isNullOrEmpty(docAnnotation.example())) {
@@ -161,10 +161,10 @@ public class GroupHandler {
 		
 		String type;
 		if(ID_REF.stream().anyMatch(field::hasAnnotation)) {
-			type = "ID of "+printType(ctx.withIdOf(true), typeSignature);
+			type = ID_OF+printType(ctx.withIdOf(true), typeSignature);
 		}
 		else if(ID_REF_COL.stream().anyMatch(field::hasAnnotation)) {
-			type = "list of ID of "+printType(ctx.withIdOf(true), typeSignature);
+			type = LIST_OF+ID_OF+StringUtils.removeStart(printType(ctx.withIdOf(true), typeSignature), LIST_OF);
 		}
 		else {
 			type = printType(ctx, typeSignature);
@@ -199,10 +199,10 @@ public class GroupHandler {
 
 	private String printType(Ctx ctx, TypeSignature type) {
 		if(type instanceof ArrayTypeSignature) {
-			return "list of "+printType(ctx, ((ArrayTypeSignature) type).getElementTypeSignature());
+			return LIST_OF+printType(ctx, ((ArrayTypeSignature) type).getElementTypeSignature());
 		}
 		if(type instanceof BaseTypeSignature) {
-			return "`"+type.toString()+"`";
+			return code(type.toString());
 		}
 		if(type instanceof ClassRefTypeSignature) {
 			var classRef = (ClassRefTypeSignature) type;
@@ -211,13 +211,13 @@ public class GroupHandler {
 			//ID
 			if(IId.class.isAssignableFrom(cl)) {
 				String name = cl.getSimpleName();
-				return "ID of `"+name.substring(0,name.length()-2)+"`";
+				return ID_OF+code(name.substring(0,name.length()-2));
 			}
 			
 			//Iterable
 			if(Iterable.class.isAssignableFrom(cl)) {
 				var param = classRef.getTypeArguments().get(0);
-				return "list of "+printType(ctx.withGeneric(true), param);
+				return LIST_OF+printType(ctx.withGeneric(true), param);
 			}
 			
 			//Map
@@ -237,7 +237,7 @@ public class GroupHandler {
 
 			//String
 			if(String.class.isAssignableFrom(cl)) {
-				return "`String`";
+				return code("String");
 			}
 			
 			//another BaseClass
@@ -261,13 +261,17 @@ public class GroupHandler {
 			
 			//default for hidden types
 			if(group.getHides().contains(cl)) {
-				return "`"+type.toStringWithSimpleNames()+"`";
+				return code(type.toStringWithSimpleNames());
 			}
 		}
 		if(!ctx.isIdOf()) {
 			log.warn("Unhandled type {}", type);
 		}
-		return "`"+type.toStringWithSimpleNames()+"`";
+		return code(type.toStringWithSimpleNames());
+	}
+
+	private String code(String string) {
+		return "`"+string+"`";
 	}
 
 	private String typeTitle(Class<?> cl) {
