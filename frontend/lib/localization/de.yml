@@ -149,6 +149,8 @@ inputDateRange:
 
 inputMultiSelect:
   openFileDialog: "Datei auswählen"
+  insertAll: "Alle einfügen"
+  options: "Werte"
 
 previousQueries:
   loading: "Lade Anfragen"
