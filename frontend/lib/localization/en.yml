@@ -149,6 +149,8 @@ inputDateRange:
 
 inputMultiSelect:
   openFileDialog: "Select file"
+  insertAll: "Insert all"
+  options: "options"
 
 previousQueries:
   loading: "Loading queries"
