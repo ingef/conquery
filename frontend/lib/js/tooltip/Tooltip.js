@@ -207,7 +207,7 @@ const Tooltip = (props: PropsType) => {
         <Infos>
           {infos &&
             infos.map((info, i) => (
-              <PieceOfInfo key={info.key}>
+              <PieceOfInfo key={info.key + i}>
                 <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
                 <Markdown source={info.value} escapeHtml={true} />
               </PieceOfInfo>
