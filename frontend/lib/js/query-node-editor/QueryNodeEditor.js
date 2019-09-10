@@ -86,7 +86,6 @@ export type PropsType = {
   onLoadFilterSuggestions: Function,
   onSelectSelects: Function,
   onSelectTableSelects: Function,
-  onToggleIncludeSubnodes: Function,
   onSetDateColumn: Function
 };
 
