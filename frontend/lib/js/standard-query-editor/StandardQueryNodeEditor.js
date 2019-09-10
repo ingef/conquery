@@ -3,7 +3,6 @@
 import React from "react";
 
 import { createConnectedQueryNodeEditor } from "../query-node-editor";
-import { hasConceptChildren } from "../concept-trees/globalTreeStoreHelper";
 
 import type { PropsType } from "../query-node-editor/QueryNodeEditor";
 
@@ -18,7 +17,6 @@ import {
   resetAllFilters,
   toggleTimestamps,
   loadFilterSuggestions,
-  toggleIncludeSubnodes,
   setSelects,
   setTableSelects,
   setDateColumn
@@ -42,7 +40,6 @@ const mapStateToProps = state => {
     editorState: state.queryNodeEditor,
     showTables,
     isExcludeTimestampsPossible: true,
-    canIncludeSubnodes: hasConceptChildren(node),
     currencyConfig: state.startup.config.currency
   };
 };
@@ -66,8 +63,6 @@ const mapDispatchToProps = dispatch => ({
   onToggleTimestamps: () => dispatch(toggleTimestamps(null, null)),
   onLoadFilterSuggestions: (...params) =>
     dispatch(loadFilterSuggestions(...params)),
-  onToggleIncludeSubnodes: isIncludeSubNodes =>
-    dispatch(toggleIncludeSubnodes(isIncludeSubNodes)),
   onSetDateColumn: (tableIdx, value) => dispatch(setDateColumn(tableIdx, value))
 });
 
