@@ -1,12 +1,8 @@
 // @flow
 
 import T from "i18n-react";
-import difference from "lodash.difference";
 
-import {
-  getConceptsByIdsWithTablesAndSelects,
-  getConceptById
-} from "../concept-trees/globalTreeStoreHelper";
+import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
@@ -35,8 +31,6 @@ import {
   MONEY_RANGE
 } from "../form-components/filterTypes";
 
-import type { StateType } from "../query-runner/reducer";
-
 import {
   DROP_AND_NODE,
   DROP_OR_NODE,
@@ -61,7 +55,6 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
-  TOGGLE_INCLUDE_SUBNODES,
   SET_DATE_COLUMN
 } from "./actionTypes";
 
@@ -772,49 +765,62 @@ const removeConceptFromNode = (state, action) => {
   });
 };
 
-const toggleIncludeSubnodes = (state: StateType, action: Object) => {
-  const { includeSubnodes } = action.payload;
+// -----------------------------
+// TODO: Figure out, whether we ever want to
+//       include subnodes in the reguar query editor
+//       => If we do, use this method, if we don't remove it
+// -----------------------------
+//
+// const toggleIncludeSubnodes = (state: StateType, action: Object) => {
+//   const { includeSubnodes } = action.payload;
 
-  const nodePosition = selectEditedNode(state);
-  if (!nodePosition) return state;
+//   const nodePosition = selectEditedNode(state);
 
-  const { andIdx, orIdx } = nodePosition;
+//   if (!nodePosition) return state;
 
-  const node = state[andIdx].elements[orIdx];
+//   const { andIdx, orIdx } = nodePosition;
+//   const node = state[andIdx].elements[orIdx];
+//   const concept = getConceptById(node.ids);
 
-  const concept = getConceptById(node.ids);
+//   const childIds = [];
+//   const elements = concept.children.map(childId => {
+//     const child = getConceptById(childId);
 
-  const childIds = [];
-  const elements = concept.children.map(childId => {
-    const child = getConceptById(childId);
-    childIds.push(childId);
-    return {
-      ids: [childId],
-      label: child.label,
-      tables: node.tables,
-      tree: node.tree
-    };
-  });
+//     childIds.push(childId);
 
-  const groupProps = {
-    elements: [
-      ...state[andIdx].elements.slice(0, orIdx),
-      {
-        ...state[andIdx].elements[orIdx],
-        includeSubnodes: includeSubnodes
-      },
-      ...state[andIdx].elements.slice(orIdx + 1)
-    ]
-  };
+//     return {
+//       ids: [childId],
+//       label: child.label,
+//       description: child.description,
+//       tables: node.tables,
+//       selects: node.selects,
+//       tree: node.tree
+//     };
+//   });
 
-  if (includeSubnodes) groupProps.elements.push(...elements);
-  else
-    groupProps.elements = groupProps.elements.filter(element => {
-      return !(difference(element.ids, childIds).length === 0);
-    });
+//   const groupProps = {
+//     elements: [
+//       ...state[andIdx].elements.slice(0, orIdx),
+//       {
+//         ...state[andIdx].elements[orIdx],
+//         includeSubnodes
+//       },
+//       ...state[andIdx].elements.slice(orIdx + 1)
+//     ]
+//   };
 
-  return setGroupProperties(state, andIdx, groupProps);
-};
+//   if (includeSubnodes) {
+//     groupProps.elements.push(...elements);
+//   } else {
+//     groupProps.elements = groupProps.elements.filter(element => {
+//       return !(difference(element.ids, childIds).length === 0);
+//     });
+//   }
+
+//   return setGroupProperties(state, andIdx, groupProps);
+// };
+
+// -----------------------------
 
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
@@ -914,8 +920,6 @@ const query = (
       return loadFilterSuggestionsError(state, action);
     case QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
-    case TOGGLE_INCLUDE_SUBNODES:
-      return toggleIncludeSubnodes(state, action);
     case SET_DATE_COLUMN:
       return setNodeTableDateColumn(state, action);
     default:
