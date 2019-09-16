@@ -71,7 +71,7 @@ class ConceptTreeNodeTextContainer extends React.Component {
         searchWords={search.words}
         hasChildren={hasChildren}
         isOpen={open}
-        isStructFolder={isStructFolder}
+        isStructFolder={isStructFolder || active === false}
         red={red}
         onClick={onTextClick}
       />
