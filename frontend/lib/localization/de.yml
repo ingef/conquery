@@ -86,6 +86,7 @@ queryNodeEditor:
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
+  dateRange: "Datumsbereich"
   headlineStart: "Konzepte:"
 
 deletePreviousQueryModal:

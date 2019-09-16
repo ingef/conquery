@@ -86,6 +86,7 @@ queryNodeEditor:
 
 queryGroupModal:
   explanation: "Set time frame"
+  dateRange: "Date range"
   headlineStart: "Concepts:"
 
 deletePreviousQueryModal:
