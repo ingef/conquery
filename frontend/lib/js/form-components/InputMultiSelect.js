@@ -129,7 +129,6 @@ const InputMultiSelect = (props: PropsType) => {
       value={props.input.value}
       isDisabled={props.disabled}
       isLoading={!!props.isLoading}
-      filterOption={false}
       classNamePrefix={"react-select"}
       closeMenuOnSelect={false}
       placeholder={
