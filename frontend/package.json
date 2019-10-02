@@ -46,7 +46,7 @@
     "mustache": "^2.3.0",
     "node-sass": "^4.12.0",
     "prettier": "^1.18.2",
-    "query-string": "^5.1.0",
+    "query-string": "^6.8.3",
     "react": "^16.8.1",
     "react-animated-dots": "^1.0.0",
     "react-dnd": "^9.4.0",
