@@ -21,7 +21,6 @@ public class AddSlave extends MasterMessage {
 
 	@Override
 	public void react(NetworkMessageContext.Master context) throws Exception {
-		//TODO test if this slave is already registered and send a warning message?
 		context.getNamespaces().getSlaves().put(context.getRemoteAddress(), new SlaveInformation(new NetworkSession(context.getSession().getSession())));
 
 		log.info("Slave {} registered.", context.getRemoteAddress());
