@@ -1,19 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
-
-import javax.validation.Validator;
-
-import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.service.IoHandlerAdapter;
-import org.apache.mina.core.session.IoSession;
-import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
@@ -38,17 +24,27 @@ import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.NamespaceCollection;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.mina.core.service.IoAcceptor;
+import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.session.IoSession;
+import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
+
+import javax.validation.Validator;
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
 @Getter
@@ -117,9 +113,9 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			try {
 				ResourcesProvider provider = resourceProvider.getConstructor().newInstance();
 				provider.registerResources(this);
-				providers .add(provider);
+				providers.add(provider);
 			} catch (Exception e) {
-				log.error("Failed to register Resource {}", e);
+				log.error("Failed to register Resource {}",resourceProvider, e);
 			}
 		}
 
@@ -134,7 +130,6 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	@Override
 	public void sessionOpened(IoSession session) throws Exception {
 		ConqueryMDC.setLocation("Master["+session.getLocalAddress().toString()+"]");
-		namespaces.getSlaves().put(session.getRemoteAddress(), new SlaveInformation(new NetworkSession(session)));
 		log.info("New client {} connected, waiting for identity", session.getRemoteAddress());
 	}
 
@@ -147,7 +142,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	@Override
 	public void exceptionCaught(IoSession session, Throwable cause) throws Exception {
 		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
-		log.error("cought exception", cause);
+		log.error("caught exception", cause);
 	}
 
 	@Override
@@ -155,7 +150,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
 		if (message instanceof MasterMessage) {
 			MasterMessage mrm = (MasterMessage) message;
-			log.trace("Master recieved {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+			log.trace("Master received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<MasterMessage, NetworkMessageContext.Master> job = new ReactingJob<>(mrm, new NetworkMessageContext.Master(
 				jobManager,
 				new NetworkSession(session),
@@ -177,6 +172,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	@Override
 	public void start() throws Exception {
 		acceptor = new NioSocketAcceptor();
+
 		BinaryJacksonCoder coder = new BinaryJacksonCoder(namespaces, validator);
 		acceptor.getFilterChain().addLast("codec", new CQProtocolCodecFilter(new ChunkWriter(coder), new ChunkReader(coder)));
 		acceptor.setHandler(this);
