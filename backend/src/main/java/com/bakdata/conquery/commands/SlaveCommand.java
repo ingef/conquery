@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import javax.validation.Validator;
 
 import com.bakdata.conquery.models.messages.network.specific.AddSlave;
-import com.bakdata.conquery.models.messages.network.specific.RemoveSlave;
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandler;
