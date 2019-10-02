@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.jackson;
 
 import java.util.Locale;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -19,14 +20,16 @@ import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 public class Jackson {
 	public static final ObjectMapper MAPPER;
 	public static final ObjectMapper BINARY_MAPPER;
-	
+
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
-		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()));
+		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()))
+								.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS,
+										 SerializationFeature.WRITE_NULL_MAP_VALUES);
 	}
-	
+
 	public static <T extends ObjectMapper> T configure(T objectMapper) {
-		
+
 		objectMapper
 			.enable(MapperFeature.PROPAGATE_TRANSIENT_MARKER)
 			.enable(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY)
@@ -41,23 +44,25 @@ public class Jackson {
 			.enable(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES)
 			.enable(DeserializationFeature.FAIL_ON_UNRESOLVED_OBJECT_IDS)
 			.enable(DeserializationFeature.USE_BIG_DECIMAL_FOR_FLOATS)
-			.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS)
 			.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS)
 			.setLocale(Locale.ROOT)
 			.disable(JsonGenerator.Feature.AUTO_CLOSE_TARGET)
+			.enable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS)
+			.enable(SerializationFeature.WRITE_NULL_MAP_VALUES)
 			.registerModule(new JavaTimeModule())
 			.registerModule(new ParameterNamesModule())
 			.registerModule(new GuavaModule())
 			.registerModule(ConquerySerializersModule.INSTANCE)
-			.setSerializationInclusion(Include.NON_NULL)
+			.setSerializationInclusion(Include.ALWAYS)
+			.setDefaultPropertyInclusion(Include.ALWAYS)
 			//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
 			.setInjectableValues(new MutableInjectableValues());
-		
+
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(Object.class));
-		
+
 		return (T)objectMapper;
 	}
-	
+
 	public static <T> T findInjectable(DeserializationContext ctxt, Class<T> clazz) throws JsonMappingException {
 		return (T) ctxt.findInjectableValue(clazz.getName(), null, null);
 	}
