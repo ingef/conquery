@@ -1,8 +1,5 @@
 package com.bakdata.conquery.io.jackson;
 
-import java.util.Locale;
-
-import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -17,6 +14,8 @@ import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 
+import java.util.Locale;
+
 public class Jackson {
 	public static final ObjectMapper MAPPER;
 	public static final ObjectMapper BINARY_MAPPER;
@@ -24,8 +23,7 @@ public class Jackson {
 	static {
 		MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper());
 		BINARY_MAPPER = configure(io.dropwizard.jackson.Jackson.newObjectMapper(new SmileFactory()))
-								.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS,
-										 SerializationFeature.WRITE_NULL_MAP_VALUES);
+								.disable(SerializationFeature.WRITE_EMPTY_JSON_ARRAYS, 										 SerializationFeature.WRITE_NULL_MAP_VALUES);
 	}
 
 	public static <T extends ObjectMapper> T configure(T objectMapper) {
