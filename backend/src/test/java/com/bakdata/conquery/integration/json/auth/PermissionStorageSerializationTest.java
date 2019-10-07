@@ -18,11 +18,11 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.MPStore;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -42,12 +42,12 @@ import lombok.Setter;
 public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	private static final String STORE_SUFFIX = "SERIALIZATION_TEST";
 	@Valid
-	private Mandator [] roles = new Mandator[0];
+	private Role [] roles = new Role[0];
 	@Valid @NotNull @JsonProperty("users")
 	private RequiredUser [] rUsers;
 	
 	@JsonIgnore
-	private MPStore<MandatorId, Mandator> authMandator;
+	private MPStore<RoleId, Role> authMandator;
 	@JsonIgnore
 	private MPStore<UserId, User> authUser;
 	@JsonIgnore
@@ -69,7 +69,7 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	 * @throws JSONException
 	 */
 	public void serializeData() throws JSONException {
-		for(Mandator mandator : roles) {
+		for(Role mandator : roles) {
 			authMandator.add(mandator.getId(), mandator);
 		}
 		for(RequiredUser rUser : rUsers) {
@@ -83,7 +83,7 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	 */
 	@JsonIgnore
 	public void deserializeData() {
-		List<Mandator> storedMandators = new ArrayList<>();
+		List<Role> storedMandators = new ArrayList<>();
 		authMandator.forEach(e -> storedMandators.add(e.getValue()));
 		assertThat(storedMandators).containsExactlyInAnyOrderElementsOf(Arrays.asList(roles));
 

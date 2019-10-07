@@ -29,8 +29,8 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 			switch(type) {
 				case UserId.TYPE:
 					return new UserId(ownerId);
-				case MandatorId.TYPE:
-					return new MandatorId(ownerId);
+				case RoleId.TYPE:
+					return new RoleId(ownerId);
 				case NullSubjectId.TYPE:
 					return new NullSubjectId();
 				default:

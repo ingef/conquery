@@ -1,10 +1,10 @@
 package com.bakdata.conquery.integration.common;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 
 import lombok.experimental.UtilityClass;
 
@@ -16,19 +16,19 @@ public class IntegrationUtils {
 	 * Load the constellation of roles, users and permissions into the provided storage.
 	 */
 	public static void importPermissionConstellation(MasterMetaStorage storage,
-			Mandator [] roles,
+			Role [] roles,
 			RequiredUser [] rUsers) throws JSONException {
 				
-		for(Mandator role: roles) {
-			storage.addMandator(role);
+		for(Role role: roles) {
+			storage.addRole(role);
 		}
 		
 		for(RequiredUser rUser: rUsers) {
 			User user = rUser.getUser();
-			MandatorId [] rolesInjected = rUser.getRolesInjected();
+			RoleId [] rolesInjected = rUser.getRolesInjected();
 			
-			for(MandatorId mandatorId : rolesInjected) {
-				user.addMandatorLocal(storage.getMandator(mandatorId));
+			for(RoleId mandatorId : rolesInjected) {
+				user.addMandatorLocal(storage.getRole(mandatorId));
 			}
 			storage.addUser(user);
 		}
@@ -38,8 +38,8 @@ public class IntegrationUtils {
 
 	public static void clearAuthStorage(MasterMetaStorage storage) {
 		// Clear MasterStorage
-		for(Mandator mandator : storage.getAllMandators()) {
-			storage.removeMandator(mandator.getId());
+		for(Role mandator : storage.getAllRoles()) {
+			storage.removeRole(mandator.getId());
 		}
 		for(User user : storage.getAllUsers()) {
 			storage.removeUser(user.getId());

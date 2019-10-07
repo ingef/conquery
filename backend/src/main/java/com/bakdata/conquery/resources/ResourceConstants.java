@@ -4,7 +4,7 @@ public class ResourceConstants {
 	public static final String DATASET_NAME = "datasetName";
 	public static final String TABLE_NAME = "tableName";
 	public static final String CONCEPT_NAME = "conceptName";
-	public static final String MANDATOR_NAME = "mandatorName";
+	public static final String ROLE_NAME = "roleName";
 	public static final String IMPORT_ID = "importId";
 	public static final String FILTER_NAME = "filterName";
 	public static final String JOB_ID = "jobId";

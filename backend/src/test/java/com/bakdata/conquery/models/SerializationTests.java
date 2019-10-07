@@ -11,7 +11,7 @@ import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
@@ -39,10 +39,10 @@ public class SerializationTests {
 	
 	@Test
 	public void mandator() throws IOException, JSONException{
-		Mandator mandator = new Mandator("company", "company");
+		Role mandator = new Role("company", "company");
 		
 		SerializationTestUtil
-			.forType(Mandator.class)
+			.forType(Role.class)
 			.test(mandator);
 	}
 	

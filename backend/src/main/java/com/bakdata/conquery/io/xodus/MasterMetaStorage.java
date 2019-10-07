@@ -2,12 +2,12 @@ package com.bakdata.conquery.io.xodus;
 
 import java.util.Collection;
 
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.Namespaces;
 
@@ -54,37 +54,37 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	
 	
 	/**
-	 * Adds a mandator to the storage.
-	 * @param mandator The mandator to add.
+	 * Adds a role to the storage.
+	 * @param role The role to add.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void addMandator(Mandator mandator) throws JSONException;
+	void addRole(Role role) throws JSONException;
 	
 	/**
-	 * Gets the mandator with the specified id from the storage.
-	 * @param id The id of the mandator to be retrieved.
-	 * @return The mandator with the specified id.
+	 * Gets the role with the specified id from the storage.
+	 * @param id The id of the role to be retrieved.
+	 * @return The role with the specified id.
 	 */
-	Mandator getMandator(MandatorId id);
+	Role getRole(RoleId id);
 	
 	/**
-	 * Gets all mandators saved in the storage.
-	 * @return A collection of the stored mandators
+	 * Gets all roles saved in the storage.
+	 * @return A collection of the stored roles
 	 */
-	Collection<Mandator> getAllMandators();
+	Collection<Role> getAllRoles();
 	
 	/**
-	 * Removes a mandator from the storage that has the given id.
-	 * @param id The id of the mandator that will be deleted.
+	 * Removes a role from the storage that has the given id.
+	 * @param id The id of the role that will be deleted.
 	 */
-	void removeMandator(MandatorId id);
+	void removeRole(RoleId id);
 	
 	/**
-	 * Updates a stored mandator that is identified by its id.
-	 * @param mandator The mandator, which holds the values, to be updated.
+	 * Updates a stored role that is identified by its id.
+	 * @param role The role, which holds the values, to be updated.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void updateMandator(Mandator mandator) throws JSONException;
+	void updaterRole(Role role) throws JSONException;
 	
 	/**
 	 * Return the namespaces used in the instance of conquery.

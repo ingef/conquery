@@ -10,11 +10,11 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
@@ -30,8 +30,8 @@ public class MandatorUITest implements IntegrationTest.Simple {
 	private TestConquery conquery;
 
 	private MasterMetaStorage storage;
-	private Mandator mandator = new Mandator("testMandatorName", "testMandatorLabel");
-	private MandatorId mandatorId = mandator.getId();
+	private Role mandator = new Role("testMandatorName", "testMandatorLabel");
+	private RoleId mandatorId = mandator.getId();
 	private User user = new User("testUser@test.de", "testUserName");
 	private UserId userId = user.getId();
 	private ConqueryPermission permission = new DatasetPermission(Ability.READ.asSet(), new DatasetId("testDatasetId"));
@@ -42,12 +42,12 @@ public class MandatorUITest implements IntegrationTest.Simple {
 	
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 			try {
-				storage.addMandator(mandator);
+				storage.addRole(mandator);
 				storage.addUser(user);
 				// override permission object, because it might have changed by the subject
 				// owning the permission
 				permission = mandator.addPermission(storage, permission);
-				user.addMandator(storage, mandator);
+				user.addRole(storage, mandator);
 			}
 			catch (JSONException e) {
 				fail("Failed when adding to storage.",e);
@@ -69,7 +69,7 @@ public class MandatorUITest implements IntegrationTest.Simple {
 
 		}
 		finally {
-			storage.removeMandator(mandatorId);
+			storage.removeRole(mandatorId);
 			storage.removeUser(userId);
 		}
 	}

@@ -23,7 +23,7 @@ import lombok.Setter;
 
 public class User extends PermissionOwner<UserId> implements Principal{
 	@Getter @Setter @MetaIdRefCollection
-	private Set<Mandator> roles = new HashSet<>();
+	private Set<Role> roles = new HashSet<>();
 	@Getter @Setter @NonNull @NotNull
 	private String email;
 	@Getter @Setter @NonNull @NotNull
@@ -40,7 +40,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 			return true;
 		}
 		
-		return isPermittedByMandators((ConqueryPermission)permission);
+		return isPermittedByRoles((ConqueryPermission)permission);
 	}
 
 	@Override
@@ -67,12 +67,8 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		return new UserId(email);
 	}
 	
-	public void removeRole(Mandator mandator) {
-		roles.remove(mandator);
-	}
-	
-	private boolean isPermittedByMandators(ConqueryPermission permission) {
-		for(Mandator mandator : roles) {
+	private boolean isPermittedByRoles(ConqueryPermission permission) {
+		for(Role mandator : roles) {
 			if(mandator.isPermittedSelfOnly(permission)) {
 				return true;
 			}
@@ -80,21 +76,21 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		return false;
 	}
 
-	public void addMandator(MasterMetaStorage storage, Mandator mandator) throws JSONException {
+	public void addRole(MasterMetaStorage storage, Role mandator) throws JSONException {
 		if(!roles.contains(mandator)) {
 			addMandatorLocal(mandator);
-			storage.updateUser(this);
+			updateStorage(storage);
 		}
 	}
 	
-	public void removeMandator(MasterMetaStorage storage, Mandator mandator) throws JSONException {
+	public void removerRole(MasterMetaStorage storage, Role mandator) throws JSONException {
 		if(roles.contains(mandator)) {
 			roles.remove(mandator);
-			storage.updateUser(this);
+			updateStorage(storage);
 		}
 	}
 
-	public void addMandatorLocal(Mandator mandator) {
+	public void addMandatorLocal(Role mandator) {
 		roles.add(mandator);
 	}
 
@@ -107,9 +103,14 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	@Override
 	public Set<ConqueryPermission> getPermissions(){
 		Set<ConqueryPermission> permissions = new HashSet<>(super.getPermissions());
-		for (Mandator mandator : roles) {
+		for (Role mandator : roles) {
 			permissions.addAll(mandator.getPermissions());
 		}
 		return permissions;
+	}
+
+	@Override
+	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
+		storage.updateUser(this);
 	}
 }

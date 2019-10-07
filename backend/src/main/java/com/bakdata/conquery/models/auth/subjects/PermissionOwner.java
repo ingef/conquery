@@ -235,16 +235,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		}
 
 		permissions.add(permission);
-
-		if (this instanceof User) {
-			storage.updateUser((User) this);
-		}
-		else if (this instanceof Mandator) {
-			storage.updateMandator((Mandator) this);
-		}
-		else {
-			throw new IllegalStateException(String.format("The type %s is not handled.", this.getClass()));
-		}
+		updateStorage(storage);
+		
 		return permission;
 	}
 
@@ -256,9 +248,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *            The storage in which the permission persists.
 	 * @param permission
 	 *            The permission to be deleted.
+	 * @throws JSONException 
 	 */
-	public synchronized void removePermission(MasterMetaStorage storage, ConqueryPermission permission) {
+	public synchronized void removePermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
 		permissions.remove(permission);
+		updateStorage(storage);
 	}
 
 	private Optional<ConqueryPermission> ofTarget(ConqueryPermission other) {
@@ -283,5 +277,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public boolean isPermittedSelfOnly(ConqueryPermission permission) {
 		return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
 	}
+	
+	abstract protected void updateStorage(MasterMetaStorage storage) throws JSONException;
 
 }

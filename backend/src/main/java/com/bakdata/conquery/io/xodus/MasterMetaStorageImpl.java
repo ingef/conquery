@@ -8,13 +8,13 @@ import javax.validation.Validator;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
@@ -26,7 +26,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedExecution> executions;
 	private IdentifiableStore<User> authUser;
-	private IdentifiableStore<Mandator> authMandator;
+	private IdentifiableStore<Role> authRole;
 	
 	@Getter
 	private Namespaces namespaces;
@@ -47,12 +47,12 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 			.onAdd(value-> value.initExecutable(namespaces.get(value.getDataset())));
 		
 		MasterMetaStorage storage = this;
-		this.authMandator = StoreInfo.AUTH_MANDATOR.<Mandator>identifiable(storage);
+		this.authRole = StoreInfo.AUTH_MANDATOR.<Role>identifiable(storage);
 		this.authUser = StoreInfo.AUTH_USER.<User>identifiable(storage);
 		
 		collector
 			.collect(meta)
-			.collect(authMandator)
+			.collect(authRole)
 			//load users before queries
 			.collect(authUser)
 			.collect(executions);
@@ -104,23 +104,23 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void addMandator(Mandator mandator) throws JSONException {
-		authMandator.add(mandator);
+	public void addRole(Role role) throws JSONException {
+		authRole.add(role);
 	}
 	
 	@Override
-	public Mandator getMandator(MandatorId mandatorId) {
-		return authMandator.get(mandatorId);
+	public Role getRole(RoleId roleId) {
+		return authRole.get(roleId);
 	}
 	
 	@Override
-	public Collection<Mandator> getAllMandators() {
-		return authMandator.getAll();
+	public Collection<Role> getAllRoles() {
+		return authRole.getAll();
 	}
 	
 	@Override
-	public void removeMandator(MandatorId mandatorId)  {
-		authMandator.remove(mandatorId);
+	public void removeRole(RoleId roleId)  {
+		authRole.remove(roleId);
 	}
 
 	@Override
@@ -129,7 +129,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void updateMandator(Mandator mandator) throws JSONException {
-		authMandator.update(mandator);
+	public void updaterRole(Role role) throws JSONException {
+		authRole.update(role);
 	}
 }

@@ -6,7 +6,7 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -21,8 +21,8 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 		dataset1.setLabel("dataset1");
 		
 		// setup mandator
-		Mandator mandator1 = new Mandator("company", "company");
-		storage.addMandator(mandator1);
+		Role mandator1 = new Role("company", "company");
+		storage.addRole(mandator1);
 		
 		DatasetPermission datasetPermission1 = new DatasetPermission(Ability.READ.asSet(), dataset1.getId());
 		DatasetPermission datasetPermission2 = new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId());
@@ -31,8 +31,8 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 		User user1  = new User("user", "user");
 		storage.addUser(user1);
 		
-		user1.addMandator(storage, mandator1);
-		user1.addMandator(storage, mandator1);
+		user1.addRole(storage, mandator1);
+		user1.addRole(storage, mandator1);
 		assertThat(user1.getRoles()).containsExactlyInAnyOrder(mandator1);
 
 		user1.addPermission(storage, datasetPermission1);

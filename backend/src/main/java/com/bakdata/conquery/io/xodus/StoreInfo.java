@@ -9,7 +9,7 @@ import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.MPStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.xodus.stores.WeakCachedStore;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -49,7 +49,7 @@ public enum StoreInfo implements IStoreInfo {
 	C_BLOCKS		(CBlock.class,				CBlockId.class),
 	WORKER			(WorkerInformation.class,	Boolean.class),
 	EXECUTIONS		(ManagedExecution.class,		ManagedExecutionId.class),
-	AUTH_MANDATOR	(Mandator.class,				MandatorId.class),
+	AUTH_MANDATOR	(Role.class,				RoleId.class),
 	AUTH_USER		(User.class,					UserId.class),
 	STRUCTURE		(StructureNode[].class,		Boolean.class),
 	;

@@ -10,6 +10,7 @@ import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
+import javax.validation.Validator;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
@@ -25,7 +26,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -36,7 +37,8 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
@@ -52,7 +54,7 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.resources.admin.ui.model.FEMandatorContent;
+import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 
 import lombok.Getter;
@@ -69,6 +71,7 @@ public class AdminProcessor {
 	private final Namespaces namespaces;
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
+	private final Validator validator;
 
 	public void addTable(Dataset dataset, Table table) throws JSONException {
 		Objects.requireNonNull(dataset);
@@ -176,10 +179,10 @@ public class AdminProcessor {
 		namespaces.get(dataset.getId()).getStorage().updateStructure(structure);
 	}
 
-	public void createMandator(String name, String idString) throws JSONException {
-		log.info("New mandator:\tName: {}\tId: {} ", name, idString);
-		Mandator mandator = new Mandator(idString, name);
-		storage.addMandator(mandator);
+	public void addRole(Role role) throws JSONException {
+		ValidatorHelper.failOnError(log, validator.validate(role));
+		log.info("New mandator:\tName: {}\tId: {} ", role.getName(), role.getId());
+		storage.addRole(role);
 	}
 
 	/**
@@ -188,21 +191,21 @@ public class AdminProcessor {
 	 * @param mandatorId The id belonging to the mandator
 	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
-	public void deleteMandator(MandatorId mandatorId) throws JSONException {
+	public void deleteRole(RoleId mandatorId) throws JSONException {
 		log.info("Deleting mandator: {}", mandatorId);
-		Mandator mandator = storage.getMandator(mandatorId);
+		Role mandator = storage.getRole(mandatorId);
 		for(User user : storage.getAllUsers()) {
-			user.removeMandator(storage, mandator);
+			user.removerRole(storage, mandator);
 		}
-		storage.removeMandator(mandatorId);
+		storage.removeRole(mandatorId);
 	}
 
-	public List<Mandator> getAllMandators() {
-		return new ArrayList<>(storage.getAllMandators());
+	public List<Role> getAllRoles() {
+		return new ArrayList<>(storage.getAllRoles());
 	}
 
-	public List<User> getUsers(MandatorId mandatorId) {
-		Mandator mandator = (Mandator) mandatorId.getOwner(storage);
+	public List<User> getUsers(RoleId mandatorId) {
+		Role mandator = (Role) mandatorId.getOwner(storage);
 		Collection<User> user = storage.getAllUsers();
 		return user.stream().filter(u -> u.getRoles().contains(mandator)).collect(Collectors.toList());
 	}
@@ -212,7 +215,7 @@ public class AdminProcessor {
 		return new ArrayList<>(owner.getPermissions());
 	}
 
-	public FEMandatorContent getMandatorContent(MandatorId mandatorId) {
+	public FERoleContent getRoleContent(RoleId mandatorId) {
 		List<ConqueryPermission> permissions = getPermissions(mandatorId);
 		List<DatasetPermission> datasetPermissions = new ArrayList<>();
 		List<QueryPermission> queryPermissions = new ArrayList<>();
@@ -232,8 +235,8 @@ public class AdminProcessor {
 
 		List<Dataset> datasets = storage.getNamespaces().getAllDatasets();
 
-		return new FEMandatorContent(
-			(Mandator)mandatorId.getOwner(storage),
+		return new FERoleContent(
+			(Role)mandatorId.getOwner(storage),
 			getUsers(mandatorId),
 			datasetPermissions,
 			queryPermissions,

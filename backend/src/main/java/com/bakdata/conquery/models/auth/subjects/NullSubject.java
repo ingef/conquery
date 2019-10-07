@@ -6,6 +6,8 @@ import java.util.List;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.Permission;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.NullSubjectId;
 
 public class NullSubject extends PermissionOwner<NullSubjectId> {
@@ -44,6 +46,12 @@ public class NullSubject extends PermissionOwner<NullSubjectId> {
 	@Override
 	public NullSubjectId createId() {
 		return new NullSubjectId();
+	}
+
+	@Override
+	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
+		throw new UnsupportedOperationException();
+		
 	}
 
 }

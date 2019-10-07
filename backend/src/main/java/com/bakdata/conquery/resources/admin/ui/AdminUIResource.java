@@ -1,8 +1,7 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
-import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
 import java.net.SocketAddress;
 import java.time.LocalDate;
@@ -16,7 +15,6 @@ import java.util.stream.Stream;
 
 import javax.inject.Inject;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
@@ -29,8 +27,6 @@ import javax.ws.rs.core.UriBuilder;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -38,7 +34,6 @@ import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.jobs.Job;
 import com.bakdata.conquery.models.jobs.JobManagerStatus;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
@@ -101,43 +96,11 @@ public class AdminUIResource {
 		}
 	}
 
-	@GET
-	@Path("/mandators")
-	public View getMandators() {
-		return new UIView<>("mandators.html.ftl", processor.getUIContext(), processor.getAllMandators());
-	}
 
 	@GET
 	@Path("datasets")
 	public View getDatasets() {
 		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getNamespaces().getAllDatasets());
-	}
-
-	@POST
-	@Path("/mandators")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postMandator(
-		@NotEmpty @FormDataParam("mandator_name") String name,
-		@NotEmpty @FormDataParam("mandator_id") String idString) throws JSONException {
-		processor.createMandator(name, idString);
-		return Response.ok().build();
-	}
-	
-	@DELETE
-	@Path("/mandators/{"+ MANDATOR_NAME +"}")
-	public Response deleteMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) throws JSONException {
-		processor.deleteMandator(mandatorId);
-		return Response.ok().build();
-	}
-	
-	/**
-	 * End point for retrieving information about a specific mandator.
-	 * @param mandatorId Unique id of the mandator.
-	 * @return A view holding the information about the mandator.
-	 */
-	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
-	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
-		return new UIView<>("mandator.html.ftl", processor.getUIContext(), processor.getMandatorContent(mandatorId));
 	}
 
 	@POST @Path("/update-matching-stats/{"+ DATASET_NAME +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)

@@ -8,9 +8,12 @@ import javax.validation.constraints.NotNull;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.Permission;
+import org.hibernate.validator.constraints.NotEmpty;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -18,17 +21,17 @@ import lombok.NonNull;
 import lombok.Setter;
 
 @AllArgsConstructor
-public class Mandator extends PermissionOwner<MandatorId> {
+public class Role extends PermissionOwner<RoleId> {
 
-	@Getter @Setter @NonNull @NotNull
+	@Getter @Setter @NonNull @NotNull @NotEmpty
 	private String name;
-	@Getter @Setter @NonNull @NotNull
+	@Getter @Setter @NonNull @NotNull @NotEmpty
 	private String label;
 	
 
 	@Override
-	public MandatorId createId() {
-		return new MandatorId(name);
+	public RoleId createId() {
+		return new RoleId(name);
 	}
 
 	@Override
@@ -67,5 +70,11 @@ public class Mandator extends PermissionOwner<MandatorId> {
 	@Override
 	public boolean isRemembered() {
 		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
+		storage.updaterRole(this);
+		
 	}
 }
