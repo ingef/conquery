@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.BiFunction;
 
 import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTION;
 import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
@@ -28,32 +27,41 @@ public class FilterSearch {
 	@AllArgsConstructor
 	@Getter
 	public static enum FilterSearchType {
-		PREFIX((keywordMatch, keyword) -> {
-			/* 0...1 depending on the length ratio */
-			double matchScore = (double) keywordMatch.length() / (double) keyword.length();
+		PREFIX {
+			@Override
+			double score(String keywordMatch, String keyword) {
+				/* 0...1 depending on the length ratio */
+				double matchScore = (double) keywordMatch.length() / (double) keyword.length();
 
-			/* boost by 1 if matches start of keyword */
-			if (keyword.startsWith(keywordMatch))
+				/* boost by 1 if matches start of keyword */
+				if (keyword.startsWith(keywordMatch))
+					return matchScore;
+				else
+					return -1d;
+			}
+		},
+		CONTAINS {
+			@Override
+			double score(String keywordMatch, String keyword) {
+				/* 0...1 depending on the length ratio */
+				double matchScore = (double) keywordMatch.length() / (double) keyword.length();
+
+				/* boost by 1 if matches start of keyword */
+				if (keyword.startsWith(keywordMatch))
+					matchScore += 1.0;
+
 				return matchScore;
-			else
-				return -1d;
-		}),
-		CONTAINS((keywordMatch, keyword) -> {
-			/* 0...1 depending on the length ratio */
-			double matchScore = (double) keywordMatch.length() / (double) keyword.length();
+			}
+		},
+		EXACT {
+			@Override
+			double score(String candidate, String keyword) {
+				/* Only allow exact matches through (returning < 0.0 means skip this candidate) */
+				return candidate.length() == keyword.length() ? 1.0 : -1.0;
+			}
+		};
 
-			/* boost by 1 if matches start of keyword */
-			if (keyword.startsWith(keywordMatch))
-				matchScore += 1.0;
-
-			return matchScore;
-		}),
-		EXACT((candidate, keyword) -> {
-			/* Only allow exact matches through (returning < 0.0 means skip this candidate) */
-			return candidate.length() == keyword.length() ? 1.0 : -1.0;
-		});
-
-		private final BiFunction<String, String, Double> scorer;
+		abstract double score(String candidate, String match);
 	}
 
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
@@ -93,7 +101,7 @@ public class FilterSearch {
 		quick = new QuickSearch.QuickSearchBuilder()
 			.withUnmatchedPolicy(IGNORE)
 			.withMergePolicy(INTERSECTION)
-			.withKeywordMatchScorer(filter.getSearchType().getScorer())
+			.withKeywordMatchScorer(filter.getSearchType()::score)
 			.build();
 
 		try {
