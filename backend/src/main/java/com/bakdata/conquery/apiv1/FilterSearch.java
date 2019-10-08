@@ -1,9 +1,15 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTION;
-import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
+import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.worker.Namespaces;
+import com.zigurs.karlis.utils.search.QuickSearch;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -11,16 +17,44 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.BiFunction;
 
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.worker.Namespaces;
-import com.zigurs.karlis.utils.search.QuickSearch;
-
-import lombok.extern.slf4j.Slf4j;
+import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTION;
+import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
 
 @Slf4j
 public class FilterSearch {
+
+	@AllArgsConstructor
+	@Getter
+	public static enum FilterSearchType {
+		PREFIX((keywordMatch, keyword) -> {
+			/* 0...1 depending on the length ratio */
+			double matchScore = (double) keywordMatch.length() / (double) keyword.length();
+
+			/* boost by 1 if matches start of keyword */
+			if (keyword.startsWith(keywordMatch))
+				return matchScore;
+			else
+				return -1d;
+		}),
+		CONTAINS((keywordMatch, keyword) -> {
+			/* 0...1 depending on the length ratio */
+			double matchScore = (double) keywordMatch.length() / (double) keyword.length();
+
+			/* boost by 1 if matches start of keyword */
+			if (keyword.startsWith(keywordMatch))
+				matchScore += 1.0;
+
+			return matchScore;
+		}),
+		EXACT((candidate, keyword) -> {
+			/* Only allow exact matches through (returning < 0.0 means skip this candidate) */
+			return candidate.length() == keyword.length() ? 1.0 : -1.0;
+		});
+
+		private final BiFunction<String, String, Double> scorer;
+	}
 
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
@@ -37,10 +71,10 @@ public class FilterSearch {
 		return executor;
 	}
 
-	private static void createSourceSearch(AbstractSelectFilter<?> filter) {
+	public static void createSourceSearch(AbstractSelectFilter<?> filter) {
 		FilterTemplate template = filter.getTemplate();
 
-		List<String> columns = template.getColumns();
+		List<String> columns = new ArrayList<>(template.getColumns());
 		columns.add(template.getColumnValue());
 
 		File file = new File(template.getFilePath());
@@ -59,6 +93,7 @@ public class FilterSearch {
 		quick = new QuickSearch.QuickSearchBuilder()
 			.withUnmatchedPolicy(IGNORE)
 			.withMergePolicy(INTERSECTION)
+			.withKeywordMatchScorer(filter.getSearchType().getScorer())
 			.build();
 
 		try {
