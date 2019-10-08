@@ -24,35 +24,47 @@ import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
 @Slf4j
 public class FilterSearch {
 
+	/**
+	 * Enum to specify a scorer function in {@link QuickSearch}. Used for resolvers in {@link AbstractSelectFilter}.
+	 */
 	@AllArgsConstructor
 	@Getter
 	public static enum FilterSearchType {
+		/**
+		 * String must start with search-String.
+		 */
 		PREFIX {
 			@Override
-			double score(String keywordMatch, String keyword) {
+			double score(String candidate, String keyword) {
 				/* 0...1 depending on the length ratio */
-				double matchScore = (double) keywordMatch.length() / (double) keyword.length();
+				double matchScore = (double) candidate.length() / (double) keyword.length();
 
 				/* boost by 1 if matches start of keyword */
-				if (keyword.startsWith(keywordMatch))
+				if (keyword.startsWith(candidate))
 					return matchScore;
 				else
 					return -1d;
 			}
 		},
+		/**
+		 * Search is contained somewhere in string.
+		 */
 		CONTAINS {
 			@Override
-			double score(String keywordMatch, String keyword) {
+			double score(String candidate, String keyword) {
 				/* 0...1 depending on the length ratio */
-				double matchScore = (double) keywordMatch.length() / (double) keyword.length();
+				double matchScore = (double) candidate.length() / (double) keyword.length();
 
 				/* boost by 1 if matches start of keyword */
-				if (keyword.startsWith(keywordMatch))
+				if (keyword.startsWith(candidate))
 					matchScore += 1.0;
 
 				return matchScore;
 			}
 		},
+		/**
+		 * Values must be exactly the same.
+		 */
 		EXACT {
 			@Override
 			double score(String candidate, String keyword) {
@@ -61,6 +73,12 @@ public class FilterSearch {
 			}
 		};
 
+		/**
+		 * Search function. See {@link QuickSearch#DEFAULT_MATCH_SCORER}.
+		 * @param candidate potential match.
+		 * @param match search String.
+		 * @return Value > 0 increases relevance of string (also used for ordering results). < 0 removes string.
+		 */
 		abstract double score(String candidate, String match);
 	}
 
