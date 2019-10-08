@@ -19,6 +19,7 @@ import lombok.Getter;
 
 import javax.validation.Validator;
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 
 public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {
@@ -150,5 +151,13 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Override
 	public void updateMandator(Mandator mandator) throws JSONException {
 		authMandator.update(mandator);
+	}
+
+	@Override
+	public void close() throws IOException {
+		getUsersEnvironment().close();
+		getExecutionsEnvironment().close();
+
+		super.close();
 	}
 }
