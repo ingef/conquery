@@ -7,6 +7,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import lombok.Getter;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.session.IoSession;
 
@@ -17,6 +18,7 @@ import lombok.extern.slf4j.Slf4j;
 
 @RequiredArgsConstructor @Slf4j
 public class NetworkSession implements MessageSender<NetworkMessage<?>> {
+	@Getter
 	private final IoSession session;
 	private final LinkedBlockingQueue<NetworkMessage<?>> queuedMessages = new LinkedBlockingQueue<>(20);
 
