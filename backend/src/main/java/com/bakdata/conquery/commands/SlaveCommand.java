@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.models.messages.network.specific.AddSlave;
 import org.apache.mina.core.RuntimeIoException;
 import org.apache.mina.core.future.ConnectFuture;
 import org.apache.mina.core.service.IoHandler;
@@ -134,6 +135,10 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		NetworkSession networkSession = new NetworkSession(session);
 		context = new NetworkMessageContext.Slave(jobManager, networkSession, workers, config, validator);
 		log.info("Connected to master @ {}", session.getRemoteAddress());
+
+		// Authenticate with Master
+		context.send(new AddSlave());
+
 		for(Worker w:workers.getWorkers().values()) {
 			w.setSession(new NetworkSession(session));
 			WorkerInformation info = w.getInfo();
