@@ -96,7 +96,6 @@ public class SerializationTests {
 		table.setLabel("tableLabel");
 		table.setName("tableName");
 		table.setPrimaryColumn(column);
-		table.setTags(Set.of("tag"));
 		
 		column.setTable(table);
 		

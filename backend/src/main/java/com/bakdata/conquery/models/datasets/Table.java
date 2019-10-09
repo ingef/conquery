@@ -28,7 +28,6 @@ public class Table extends Labeled<TableId> {
 	private Column primaryColumn;
 	@NotNull @Valid @JsonManagedReference
 	private Column[] columns = new Column[0];
-	private Set<String> tags = new HashSet<>();
 	
 	public boolean matches(PPHeader header) {
 		if(!primaryColumn.matches(header.getPrimaryColumn())) {

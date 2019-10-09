@@ -63,7 +63,14 @@ public class TablesUIResource extends HTables {
 				imports
 					.stream()
 					.mapToLong(Import::estimateMemoryConsumption)
-					.sum()
+					.sum(),
+					namespace
+					.getStorage()
+					.getAllImports()
+					.stream()
+					.filter(imp -> imp.getTable().equals(table.getId()))
+					.map(imp -> imp.getName())
+					.collect(Collectors.toList())
 			)
 		);
 	}
