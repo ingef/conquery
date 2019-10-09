@@ -458,7 +458,9 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
         ? {
             ...filterModeWithValue,
             value: filterModeWithValue.value.map(val =>
-              filter.options.find(op => op.value === val)
+              !!filter.options
+                ? filter.options.find(op => op.value === val)
+                : val
             )
           }
         : filterModeWithValue;
