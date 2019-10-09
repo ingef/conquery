@@ -36,12 +36,9 @@ public class FilterSearch {
 		PREFIX {
 			@Override
 			double score(String candidate, String keyword) {
-				/* 0...1 depending on the length ratio */
-				double matchScore = (double) candidate.length() / (double) keyword.length();
-
-				/* boost by 1 if matches start of keyword */
+				/* Sort ascending by length of match */
 				if (keyword.startsWith(candidate))
-					return matchScore;
+					return 1d / (double) candidate.length();
 				else
 					return -1d;
 			}
@@ -57,7 +54,7 @@ public class FilterSearch {
 
 				/* boost by 1 if matches start of keyword */
 				if (keyword.startsWith(candidate))
-					matchScore += 1.0;
+					return matchScore + 1.0;
 
 				return matchScore;
 			}
