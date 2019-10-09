@@ -1,8 +1,6 @@
 package com.bakdata.conquery.models.datasets;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -28,7 +26,6 @@ public class Table extends Labeled<TableId> {
 	private Column primaryColumn;
 	@NotNull @Valid @JsonManagedReference
 	private Column[] columns = new Column[0];
-	private Set<String> tags = new HashSet<>();
 	
 	public boolean matches(PPHeader header) {
 		if(!primaryColumn.matches(header.getPrimaryColumn())) {
