@@ -10,7 +10,7 @@ import Hotkeys from "react-hot-keys";
 import { type QueryNodeType } from "../standard-query-editor/types";
 import WithTooltip from "../tooltip/WithTooltip";
 
-import TransparentButton from "../button/TransparentButton";
+import BasicButton from "../button/BasicButton";
 
 import MenuColumn from "./MenuColumn";
 import NodeDetailsView from "./NodeDetailsView";
@@ -46,7 +46,7 @@ const SxWithTooltip = styled(WithTooltip)`
   right: 20px;
 `;
 
-const CloseButton = styled(TransparentButton)`
+const CloseButton = styled(BasicButton)`
   border: 1px solid ${({ theme }) => theme.col.blueGrayDark};
 `;
 
