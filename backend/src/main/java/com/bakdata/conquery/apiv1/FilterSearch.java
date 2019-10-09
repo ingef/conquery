@@ -29,7 +29,7 @@ public class FilterSearch {
 	 */
 	@AllArgsConstructor
 	@Getter
-	public static enum FilterSearchType {
+	public enum FilterSearchType {
 		/**
 		 * String must start with search-String.
 		 */
