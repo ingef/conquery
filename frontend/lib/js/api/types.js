@@ -288,7 +288,8 @@ export type PostFilterResolveResponseT = {
 };
 
 export type PostFilterSuggestionsResponseT = {
-  resolvedFilter: {
-    value: string
-  }
-};
+  label: string,
+  value: string,
+  optionValue: ?string,
+  templateValues: string[] // unclear whether that's correct
+}[];
