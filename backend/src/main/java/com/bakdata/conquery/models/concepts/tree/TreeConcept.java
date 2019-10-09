@@ -1,17 +1,5 @@
 package com.bakdata.conquery.models.concepts.tree;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.SelectHolder;
@@ -28,11 +16,21 @@ import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import javax.validation.ConstraintViolation;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -44,7 +42,7 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 	@Getter @Setter
 	private int globalToLocalOffset;
 	@JsonIgnore
-	private transient int maxDepth=-1;
+	private transient int maxDepth = -1;
 	@JsonIgnore
 	private List<ConceptTreeNode<?>> localIdMap = new ArrayList<>();
 	@JsonIgnore @Getter
