@@ -28,6 +28,11 @@ public class CSVConfig {
 	@NotNull
 	private Charset encoding = StandardCharsets.UTF_8;
 	private boolean skipHeader = true;
+	/**
+	 * Script used to generate the CSV column names from CQConcept and Select information.
+	 * The script has an instance of SelectResultInfo named columnInfo available to construct the name.
+	 */
+	private String columnNamerScript = null;
 	
 	public CsvParserSettings createCsvParserSettings() {
 		CsvParserSettings settings = new CsvParserSettings();

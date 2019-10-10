@@ -23,8 +23,9 @@ import com.google.common.collect.ImmutableMap;
 @Execution(ExecutionMode.SAME_THREAD)
 public class ResultTypeTest {
 
-	private static final PrintSettings PRETTY = new PrintSettings(true);
-	private static final PrintSettings PLAIN = new PrintSettings(false);
+	private static final String COLUMN_NAMER = "columnInfo.getSelect().getId().toStringWithoutDataset()";
+	private static final PrintSettings PRETTY = new PrintSettings(COLUMN_NAMER);
+	private static final PrintSettings PLAIN = new PrintSettings();
 	
 	public static Stream<Arguments> testData() {
 		//init global default config

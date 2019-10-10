@@ -45,9 +45,9 @@ import lombok.extern.slf4j.Slf4j;
 public class ResultCSVResource {
 
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(ResultCSVResource.class, "getAsCSV");
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
+		
 
 	@GET
 	@Path("{" + QUERY + "}.csv")
@@ -55,10 +55,12 @@ public class ResultCSVResource {
 	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-
+		
+		PrintSettings printSettings = new PrintSettings(config.getCsv().getColumnNamerScript());
+		
 		try {
 			ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
-			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery());
+			Stream<String> csv = new QueryToCSVRenderer().toCSV(printSettings, exec.toResultQuery());
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
