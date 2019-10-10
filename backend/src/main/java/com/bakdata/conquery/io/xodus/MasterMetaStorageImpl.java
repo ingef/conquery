@@ -38,6 +38,9 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	@Getter
 	private final Environment usersEnvironment;
 
+	@Getter
+	private final Environment mandatorEnvironment;
+
 	public MasterMetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {
 		super(
 				validator,
@@ -55,6 +58,11 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 				config.getXodus().createConfig()
 		);
 
+		mandatorEnvironment = Environments.newInstance(
+				new File(config.getDirectory(), "mandators"),
+				config.getXodus().createConfig()
+		);
+
 		this.namespaces = namespaces;
 	}
 
@@ -66,7 +74,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		executions = StoreInfo.EXECUTIONS.<ManagedExecution>identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces)
 							 .onAdd(value -> value.initExecutable(namespaces.get(value.getDataset())));
 
-		authMandator = StoreInfo.AUTH_MANDATOR.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
+		authMandator = StoreInfo.AUTH_MANDATOR.identifiable(getMandatorEnvironment(), getValidator(), getCentralRegistry());
 
 		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
 
@@ -157,6 +165,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	public void close() throws IOException {
 		getUsersEnvironment().close();
 		getExecutionsEnvironment().close();
+		getMandatorEnvironment().close();
 
 		super.close();
 	}
