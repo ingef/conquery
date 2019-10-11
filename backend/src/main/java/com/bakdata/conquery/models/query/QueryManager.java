@@ -59,7 +59,7 @@ public class QueryManager {
 		return executeQuery(createQuery(query, queryId, user));
 	}
 
-	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) {
+	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) throws JSONException {
 		query = query.resolve(new QueryResolveContext(
 			namespace.getStorage().getMetaStorage(),
 			namespace
@@ -68,12 +68,18 @@ public class QueryManager {
 		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
 		managed.setQueryId(queryId);
 		queries.put(managed.getId(), managed);
+		namespace.getStorage().getMetaStorage().addExecution(managed);
 
 		return managed;
 	}
 
-	private ManagedQuery executeQuery(ManagedQuery query) throws JSONException {
-		namespace.getStorage().getMetaStorage().addExecution(query);
+	/**
+	 * Send message for query execution to all workers.
+	 *
+	 * @param query
+	 * @return
+	 */
+	private ManagedQuery executeQuery(ManagedQuery query) {
 
 		query.initExecutable(namespace);
 		query.setState(ExecutionState.RUNNING);
