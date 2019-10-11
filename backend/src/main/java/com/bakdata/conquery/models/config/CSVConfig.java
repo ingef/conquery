@@ -32,6 +32,7 @@ public class CSVConfig {
 	 * Script used to generate the CSV column names from CQConcept and Select information.
 	 * The script has an instance of SelectResultInfo named columnInfo available to construct the name.
 	 */
+	@ValidColumnNamer
 	private String columnNamerScript = "java.lang.String.format(\"%s %s\",columnInfo.getCqConcept().getLabel(),columnInfo.getSelect().getLabel())";
 	
 	public CsvParserSettings createCsvParserSettings() {

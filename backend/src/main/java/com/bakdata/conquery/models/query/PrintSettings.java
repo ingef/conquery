@@ -16,7 +16,10 @@ import lombok.ToString;
 
 @Getter @AllArgsConstructor @NoArgsConstructor @ToString
 public class PrintSettings implements SelectNameExtractor {
-	private static final String GROOVY_VARIABLE = "columnInfo";
+	public static final String GROOVY_VARIABLE = "columnInfo";
+	/**
+	 * Non static shell because thread safety is not given.
+	 */
 	private final GroovyShell groovyShell = new GroovyShell(new CompilerConfiguration());
 	private String columnNamerScript = null;
 
