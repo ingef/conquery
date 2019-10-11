@@ -1,18 +1,5 @@
 package com.bakdata.conquery.models.execution;
 
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.ResultCSVResource;
 import com.bakdata.conquery.apiv1.URLBuilder;
@@ -28,13 +15,23 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.annotation.Nullable;
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 @NoArgsConstructor
 @Getter
@@ -59,7 +56,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	private final transient CountDownLatch execution = new CountDownLatch(1);
 	@JsonIgnore
-	protected transient LocalDateTime startTime = LocalDateTime.now();
+	protected transient LocalDateTime startTime;
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore

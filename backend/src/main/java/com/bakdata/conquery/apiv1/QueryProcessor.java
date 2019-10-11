@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -30,7 +29,7 @@ public class QueryProcessor {
 	public ExecutionStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());
 		
-		ManagedQuery mq = namespace.getQueryManager().createQuery(query, user);
+		ManagedQuery mq = namespace.getQueryManager().runQuery(query, user);
 		
 		// Set abilities for submitted query
 		user.addPermission(storage, new QueryPermission(AbilitySets.QUERY_CREATOR, mq.getId()));

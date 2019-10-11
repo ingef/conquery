@@ -1,22 +1,5 @@
 package com.bakdata.conquery.integration.json;
 
-import static org.assertj.core.api.Assertions.fail;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -50,10 +33,24 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.fail;
 
 @Slf4j
 @Getter
@@ -112,7 +109,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			ConceptQuery q = new ConceptQuery();
 			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 			
-			ManagedExecution managed = support.getNamespace().getQueryManager().createQuery(q, queryId, DevAuthConfig.USER);
+			ManagedExecution managed = support.getNamespace().getQueryManager().runQuery(q, queryId, DevAuthConfig.USER);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getState() == ExecutionState.FAILED) {

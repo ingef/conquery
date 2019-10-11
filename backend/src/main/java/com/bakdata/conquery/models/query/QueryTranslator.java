@@ -1,16 +1,15 @@
 package com.bakdata.conquery.models.query;
 
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
-
 import lombok.experimental.UtilityClass;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @UtilityClass
 public class QueryTranslator {
@@ -23,7 +22,7 @@ public class QueryTranslator {
 			return (T)translated;
 		}
 		else {
-			throw new IllegalStateException("Can't translate non ConceptQuery IQueries");
+			throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
 		}
 	}
 	

@@ -1,14 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-import java.time.LocalDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
-
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -18,9 +9,17 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 @RequiredArgsConstructor
 public class QueryManager {
@@ -52,26 +51,34 @@ public class QueryManager {
 		}
 	}
 
-	public ManagedQuery createQuery(IQuery query, User user) throws JSONException {
-		return createQuery(query, UUID.randomUUID(), user);
+	public ManagedQuery runQuery(IQuery query, User user) throws JSONException {
+		return runQuery(query, UUID.randomUUID(), user);
 	}
 	
-	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) throws JSONException {
+	public ManagedQuery runQuery(IQuery query, UUID queryId, User user) throws JSONException {
+		return executeQuery(createQuery(query, queryId, user));
+	}
+
+	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) {
 		query = query.resolve(new QueryResolveContext(
 			namespace.getStorage().getMetaStorage(),
 			namespace
 		));
+
 		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
 		managed.setQueryId(queryId);
-		namespace.getStorage().getMetaStorage().addExecution(managed);
-		return reexecuteQuery(managed);
+		queries.put(managed.getId(), managed);
+
+		return managed;
 	}
-	
-	public ManagedQuery reexecuteQuery(ManagedQuery query) throws JSONException {
+
+	private ManagedQuery executeQuery(ManagedQuery query) throws JSONException {
+		namespace.getStorage().getMetaStorage().addExecution(query);
+
 		query.initExecutable(namespace);
 		query.setState(ExecutionState.RUNNING);
-		queries.put(query.getId(), query);
-		
+		query.setStartTime(LocalDateTime.now());
+
 		for(WorkerInformation worker : namespace.getWorkers()) {
 			worker.send(new ExecuteQuery(query));
 		}
