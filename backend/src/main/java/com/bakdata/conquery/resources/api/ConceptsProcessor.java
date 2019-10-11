@@ -1,18 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -38,7 +25,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.zigurs.karlis.utils.search.QuickSearch;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -46,6 +32,19 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Getter
 @Slf4j
@@ -91,10 +90,13 @@ public class ConceptsProcessor {
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
 		
 		//search in the full text engine
-		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), openSearchTerms.toArray(new String[openSearchTerms.size()]))
-			.stream()
-			.map(FEValue::getValue)
-			.collect(Collectors.toSet());
+		Set<String> searchResult = createSourceSearchResult(
+				filter.getSourceSearch(),
+				openSearchTerms.toArray(new String[0])
+		)
+										   .stream()
+										   .map(FEValue::getValue)
+										   .collect(Collectors.toSet());
 
 		openSearchTerms.removeAll(searchResult);
 		

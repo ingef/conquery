@@ -149,9 +149,7 @@ public class AdminProcessor {
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);
 
-			table.getTags().add(header.getName());
-			namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
-
+			
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 			jobManager.addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
 		}
