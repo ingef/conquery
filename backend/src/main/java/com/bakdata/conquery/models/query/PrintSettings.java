@@ -20,13 +20,13 @@ public class PrintSettings implements SelectNameExtractor {
 
 	@Override
 	public String columnName(SelectResultInfo info) {
-		if(columnNamerScript != null) {
+		if(columnNamerScript != null || !columnNamerScript.isEmpty()) {
 			groovyShell.setProperty("columnInfo", info);
 			Object result = groovyShell.evaluate(columnNamerScript);
 			return Objects.toString(result);
 		}
 		else {
-			return info.getSelect().getId().toStringWithoutDataset();
+			return String.format("%s %s",info.getCqConcept().getLabel(),info.getSelect().getLabel());
 		}
 	}
 	
