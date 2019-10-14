@@ -87,9 +87,12 @@ public class QueryManager {
 		return query;
 	}
 
+	/**
+	 * Receive part of query result and store into query.
+	 * @param result
+	 */
 	public void addQueryResult(ShardResult result) {
-		ManagedQuery managedQuery = getQuery(result.getQueryId());
-		managedQuery.addResult(result);
+		getQuery(result.getQueryId()).addResult(result);
 	}
 
 	public ManagedQuery getQuery(ManagedExecutionId id) {
