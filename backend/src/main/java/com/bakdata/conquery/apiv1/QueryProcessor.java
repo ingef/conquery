@@ -55,7 +55,7 @@ public class QueryProcessor {
 
 
 			try {
-				IQuery translated = QueryTranslator.translate(namespaces, query, ns.getDataset().getId());
+				IQuery translated = QueryTranslator.replaceDataset(namespaces, query, ns.getDataset().getId());
 				final ManagedQuery mqTranslated = namespace.getQueryManager().createQuery(translated, mq.getQueryId(), user);
 
 				user.addPermission(storage, new QueryPermission(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));

@@ -14,9 +14,9 @@ import java.util.regex.Pattern;
 @UtilityClass
 public class QueryTranslator {
 
-	public <T extends IQuery> T translate(Namespaces namespaces, T element, DatasetId target) {
+	public <T extends IQuery> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		if(element instanceof ConceptQuery) {
-			CQElement root = translate(namespaces, ((ConceptQuery) element).getRoot(), target);
+			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target);
 			ConceptQuery translated = new ConceptQuery();
 			translated.setRoot(root);
 			return (T)translated;
@@ -26,7 +26,7 @@ public class QueryTranslator {
 		}
 	}
 	
-	public <T extends CQElement> T translate(Namespaces namespaces, T element, DatasetId target) {
+	public <T extends CQElement> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		try {
 			String value = Jackson.MAPPER.writeValueAsString(element);
 	
@@ -35,7 +35,9 @@ public class QueryTranslator {
 				.stream()
 				.map(NamespacedId::getDataset)
 				.map(DatasetId::toString)
-				.map(n -> Pattern.compile("(?<=(\"))" + Pattern.quote(n) + "(?=(\\.|\"))"))
+				// ?<= -- non-capturing assertion, to start with "
+				// ?= --  non-capturing assertion to end with [."]
+				.map(n -> Pattern.compile("(?<=(\"))" + Pattern.quote(n) + "(?=([.\"]))"))
 				.toArray(Pattern[]::new);
 	
 			String replacement = Matcher.quoteReplacement(target.toString());
