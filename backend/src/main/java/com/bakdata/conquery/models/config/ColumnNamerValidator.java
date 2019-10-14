@@ -7,10 +7,12 @@ import org.codehaus.groovy.control.CompilationFailedException;
 import org.codehaus.groovy.control.CompilerConfiguration;
 
 import com.bakdata.conquery.models.concepts.select.Select;
+import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.google.common.base.Strings;
 
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
@@ -33,10 +35,12 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 			return null;
 		}
 	};
+	private static final VirtualConcept V_CONCEPT = new VirtualConcept();
 	
 	static {
 		CQ_CONCEPT.setLabel(CONCEPT_NAME);
 		SELECT.setName(SELECT_NAME);
+		SELECT.setHolder(V_CONCEPT);
 	}
 	
 	private final GroovyShell groovyShell = new GroovyShell(new CompilerConfiguration());
@@ -52,9 +56,11 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 	public boolean isValid(String value, ConstraintValidatorContext context) {
 		context.disableDefaultConstraintViolation();
 		String scriptString = value;
-
-		log.info("Checking configured column namer script");
 		
+		if(Strings.isNullOrEmpty(scriptString)) {
+			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script is not alloed to be null or empty")).addConstraintViolation();
+			return false;
+		}
 		
 		/*
 		 * Instantiate a column info. Be aware that this instance is not fully resolved (e.g. json backreferences are not set),
@@ -70,7 +76,7 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 		try {
 			script  = groovyShell.parse(scriptString);
 		}
-		catch (CompilationFailedException e) {
+		catch (CompilationFailedException|IllegalArgumentException e) {
 			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script could not be parsed/compiled: %s", e)).addConstraintViolation();
 			return false;
 		}
@@ -84,6 +90,9 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script failed execution: %s",e)).addConstraintViolation();
 			return false;
 		}
+		
+		
+		log.info("Configured column namer script is okay.");
 		
 		return true;
 	}
