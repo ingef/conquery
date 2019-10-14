@@ -4,7 +4,6 @@ import java.util.Objects;
 
 import org.codehaus.groovy.control.CompilerConfiguration;
 
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.resultinfo.SelectNameExtractor;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.google.common.base.Strings;
@@ -33,7 +32,7 @@ public class PrintSettings implements SelectNameExtractor {
 	 */
 	@Override
 	public String columnName(SelectResultInfo columnInfo) {
-		if(prettyPrint && !Strings.isNullOrEmpty(columnNamerScript)) {
+		if(!Strings.isNullOrEmpty(columnNamerScript)) {
 			// Use the provided script
 			groovyShell.setProperty(GROOVY_VARIABLE, columnInfo);
 			Object result = groovyShell.evaluate(columnNamerScript);
