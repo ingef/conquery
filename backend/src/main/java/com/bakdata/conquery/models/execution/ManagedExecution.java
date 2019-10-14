@@ -86,6 +86,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	protected void finish() {
+		if (getState() == ExecutionState.NEW)
+			log.error("Query {} was never run.", getId());
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
@@ -98,10 +100,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			}
 		}
 		//TODO why does this happen?
-		if (getState() == ExecutionState.NEW)
-			log.error("Query {} was never run.", getId());
-		else
-			log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), Duration.between(startTime, finishTime));
+
+
+		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
