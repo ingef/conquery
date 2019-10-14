@@ -75,7 +75,7 @@ public class QueryManager {
 	 * @param query
 	 * @return
 	 */
-	private ManagedQuery executeQuery(ManagedQuery query) {
+	public ManagedQuery executeQuery(ManagedQuery query) {
 
 		query.initExecutable(namespace);
 		query.setState(ExecutionState.RUNNING);

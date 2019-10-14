@@ -1,12 +1,5 @@
 package com.bakdata.conquery.models.query;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -18,8 +11,15 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.time.LocalDateTime;
+import java.util.Collection;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class QueryExecutor implements Closeable {
@@ -31,6 +31,7 @@ public class QueryExecutor implements Closeable {
 	}
 
 	public ShardResult execute(QueryPlanContext context, ManagedQuery query) {
+		query.setStartTime(LocalDateTime.now());
 		QueryPlan plan = query.getQuery().createQueryPlan(context);
 		return execute(
 				context.getBlockManager(),
