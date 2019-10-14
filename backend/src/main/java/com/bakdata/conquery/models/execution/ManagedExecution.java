@@ -84,20 +84,24 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			execution.countDown();
 		}
 	}
-	
+
 	protected void finish() {
+
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
 			this.state = ExecutionState.DONE;
 			execution.countDown();
 			try {
 				namespace.getStorage().getMetaStorage().updateExecution(this);
-			}
-			catch (JSONException e) {
+			} catch (JSONException e) {
 				log.error("Failed to store {} after finishing: {}", this.getClass().getSimpleName(), e, this);
 			}
 		}
-		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), Duration.between(startTime, finishTime));
+		//TODO why does this happen?
+		if (getState() == ExecutionState.NEW)
+			log.error("Query {} was never run.", getId());
+		else
+			log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), Duration.between(startTime, finishTime));
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
