@@ -96,11 +96,15 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			try {
 				namespace.getStorage().getMetaStorage().updateExecution(this);
 			} catch (JSONException e) {
-				log.error("Failed to store {} after finishing: {}", this.getClass().getSimpleName(), e, this);
+				log.error("Failed to store {} after finishing: {}", this.getClass().getSimpleName(), this, e);
 			}
 		}
-		//TODO why does this happen?
 
+		if(startTime == null)
+			log.error("startTime is null" );
+
+		if(finishTime == null)
+			log.error("finishTime is null" );
 
 		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
 	}
