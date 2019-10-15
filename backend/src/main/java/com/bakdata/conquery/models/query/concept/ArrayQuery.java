@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -52,6 +53,10 @@ public class ArrayQuery implements IQuery {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		childQueries.forEach(q -> q.collectResultInfos(collector));
+		// Remove DateInfo from each childQuery
+		collector.getInfos().removeAll(List.of(ConqueryConstants.DATES_INFO));
+		// Add one DateInfo for the whole Query
+		collector.getInfos().add(0, ConqueryConstants.DATES_INFO);
 	}
 
 	@Override

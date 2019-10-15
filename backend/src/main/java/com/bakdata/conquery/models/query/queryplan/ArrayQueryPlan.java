@@ -3,9 +3,11 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
@@ -40,14 +42,16 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	@Override
 	public EntityResult execute(QueryContext ctx, Entity entity) {
 		Object[] resultValues = new Object[this.getAggregatorSize()];
-		int resultInsertIdx= 0;
+		CDateSet dateSet = CDateSet.create();
+		// Start with 1 for aggregator values, insert DateSet later at 0
+		int resultInsertIdx= 1;
 		for(ConceptQueryPlan child : childPlans) {
 			EntityResult result = child.execute(ctx, entity);
 			
 			// Check if child 
-			if(result.isContained()) {
-				// Advance pointer for the result insertion by the number of currently handled aggregartors.
-				resultInsertIdx += child.getAggregatorSize();
+			if(!result.isContained()) {
+				// Advance pointer for the result insertion by the number of currently handled aggregators.
+				resultInsertIdx = advanceResultPointer(resultInsertIdx, child);
 				continue;
 			}
 			if (!(result instanceof SinglelineContainedEntityResult)) {
@@ -57,11 +61,15 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 					result.toString()));
 			}
 			SinglelineContainedEntityResult singleLineResult = (SinglelineContainedEntityResult) result;
-			System.arraycopy(singleLineResult.getValues(), 0, resultValues, resultInsertIdx, singleLineResult.getValues().length);			
-			
-			// Advance pointer for the result insertion by the number of currently handled aggregartors.
-			resultInsertIdx += child.getAggregatorSize();
+			dateSet.addAll(prepareDateSet(singleLineResult.getValues()[0]));
+			// Skip copying of first value: daterange
+			int copyLength = calculateCopyLength(singleLineResult);
+			System.arraycopy(singleLineResult.getValues(), 1, resultValues, resultInsertIdx, copyLength);			
+
+			// Advance pointer for the result insertion by the number of currently handled aggregators.
+			resultInsertIdx = advanceResultPointer(resultInsertIdx, child);
 		}
+		resultValues[0] = dateSet.toString();
 		
 		return new SinglelineContainedEntityResult(entity.getId(), resultValues);
 	}
@@ -81,6 +89,33 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	}
 	
 	private int getAggregatorSize() {
-		return childPlans.stream().map(ConceptQueryPlan::getAggregatorSize).reduce(0, Integer::sum);
+		Integer size = childPlans.stream().map(ConceptQueryPlan::getAggregatorSize).reduce(0, Integer::sum);
+		// Subtract the number of date aggregators (one per ConceptQueryPlan) and +1 for the whole query
+		size -= childPlans.size();
+		size += 1;
+		return size;
+	}
+	
+	private int advanceResultPointer(int resultInsertIdx, ConceptQueryPlan child) {
+		int offset = child.getAggregatorSize()-1;
+		if (offset < 0) {
+			throw new IllegalStateException("Result index offset must be positive, so the advancing pointer does not override results.");
+		}
+		resultInsertIdx += offset;
+		return resultInsertIdx;
+	}
+	
+	private int calculateCopyLength(SinglelineContainedEntityResult singleLineResult) {
+		int length = singleLineResult.getValues().length -1;
+		if (length < 0) {
+			throw new IllegalStateException("Copy length must be positive.");
+		}
+		return length;
+	}
+	
+	private CDateSet prepareDateSet(Object value) {
+		CDateSet range;
+		range = CDateSet.parse(Objects.toString(value));
+		return range;
 	}
 }
