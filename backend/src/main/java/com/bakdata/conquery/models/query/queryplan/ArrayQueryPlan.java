@@ -1,22 +1,18 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.apache.commons.collections4.map.HashedMap;
-
-import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -27,12 +23,10 @@ import lombok.ToString;
 @ToString
 public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	List<ConceptQueryPlan> childPlans = new ArrayList<>();
-	Map<ConceptQueryPlan,Set<TableId>> requiredTableMap = new HashedMap<>();
 
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		// TODO Auto-generated method stub
-		return false;
+		return childPlans.stream().map(cp -> cp.isOfInterest(bucket)).reduce(Boolean::logicalOr).orElse(false);
 	}
 
 	@Override
@@ -45,8 +39,31 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 
 	@Override
 	public EntityResult execute(QueryContext ctx, Entity entity) {
-		// TODO Auto-generated method stub
-		return null;
+		Object[] resultValues = new Object[this.getAggregatorSize()];
+		int resultInsertIdx= 0;
+		for(ConceptQueryPlan child : childPlans) {
+			EntityResult result = child.execute(ctx, entity);
+			
+			// Check if child 
+			if(result.isContained()) {
+				// Advance pointer for the result insertion by the number of currently handled aggregartors.
+				resultInsertIdx += child.getAggregatorSize();
+				continue;
+			}
+			if (!(result instanceof SinglelineContainedEntityResult)) {
+				throw new IllegalStateException(String.format(
+					"Unhandled EntityResult Type %s: %s",
+					result.getClass(),
+					result.toString()));
+			}
+			SinglelineContainedEntityResult singleLineResult = (SinglelineContainedEntityResult) result;
+			System.arraycopy(singleLineResult.getValues(), 0, resultValues, resultInsertIdx, singleLineResult.getValues().length);			
+			
+			// Advance pointer for the result insertion by the number of currently handled aggregartors.
+			resultInsertIdx += child.getAggregatorSize();
+		}
+		
+		return new SinglelineContainedEntityResult(entity.getId(), resultValues);
 	}
 
 	@Override
@@ -60,7 +77,10 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 			Set<TableId> tables = new HashSet<>();
 			child.collectRequiredTables(tables);
 			requiredTables.addAll(tables);
-			requiredTableMap.put(child, tables);
 		}
+	}
+	
+	private int getAggregatorSize() {
+		return childPlans.stream().map(ConceptQueryPlan::getAggregatorSize).reduce(0, Integer::sum);
 	}
 }
