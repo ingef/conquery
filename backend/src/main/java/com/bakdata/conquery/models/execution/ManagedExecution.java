@@ -91,20 +91,14 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
-			this.state = ExecutionState.DONE;
+			state = ExecutionState.DONE;
 			execution.countDown();
 			try {
 				namespace.getStorage().getMetaStorage().updateExecution(this);
 			} catch (JSONException e) {
-				log.error("Failed to store {} after finishing: {}", this.getClass().getSimpleName(), this, e);
+				log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
 			}
 		}
-
-		if(startTime == null)
-			log.error("startTime is null" );
-
-		if(finishTime == null)
-			log.error("finishTime is null" );
 
 		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
 	}
