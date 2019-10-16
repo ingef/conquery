@@ -15,7 +15,6 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -31,7 +30,8 @@ public class QueryExecutor implements Closeable {
 	}
 
 	public ShardResult execute(QueryPlanContext context, ManagedQuery query) {
-		query.setStartTime(LocalDateTime.now());
+		query.start();
+
 		QueryPlan plan = query.getQuery().createQueryPlan(context);
 		return execute(
 				context.getBlockManager(),
@@ -45,7 +45,9 @@ public class QueryExecutor implements Closeable {
 	}
 
 	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
+
 		Collection<Entity> entries = blockManager.getEntities().values();
+
 		if(entries.isEmpty()) {
 			log.warn("entries for query {} are empty", queryId);
 		}

@@ -56,7 +56,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	private final transient CountDownLatch execution = new CountDownLatch(1);
 	@JsonIgnore
-	protected transient LocalDateTime startTime;
+	private transient LocalDateTime startTime;
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore
@@ -83,6 +83,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			finishTime = LocalDateTime.now();
 			execution.countDown();
 		}
+	}
+
+	public void start() {
+		startTime = LocalDateTime.now();
+		state = ExecutionState.RUNNING;
 	}
 
 	protected void finish() {
