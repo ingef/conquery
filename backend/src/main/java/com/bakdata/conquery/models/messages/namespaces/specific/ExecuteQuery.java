@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.messages.namespaces.specific;
 
-import java.time.LocalDateTime;
-import java.util.Collections;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -12,13 +9,18 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
 import com.google.common.util.concurrent.MoreExecutors;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
+import java.time.LocalDateTime;
+import java.util.Collections;
+
+/**
+ * Send message to worker to execute {@code query} on the workers associated entities.
+ */
 @CPSType(id="EXECUTE_QUERY", base=NamespacedMessage.class)
 @AllArgsConstructor @NoArgsConstructor @Getter @Setter @ToString(callSuper=true)
 public class ExecuteQuery extends WorkerMessage {

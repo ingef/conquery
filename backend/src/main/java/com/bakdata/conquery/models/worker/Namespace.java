@@ -1,21 +1,20 @@
 package com.bakdata.conquery.models.worker;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
-
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
 
 @Setter @Getter @NoArgsConstructor
 public class Namespace {
@@ -38,7 +37,6 @@ public class Namespace {
 	}
 	
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {
-		queryManager.initMaintenance(maintenanceService);
 	}
 	
 	public void checkConnections() {
