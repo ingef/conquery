@@ -27,7 +27,7 @@ public class PrintSettings implements SelectNameExtractor {
 	
 
 	/**
-	 * Generates the name for a query result column. 
+	 * Generates the name for a query result column.
 	 * The name is either determined by a configured script or by a standard procedure
 	 */
 	@Override
