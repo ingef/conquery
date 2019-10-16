@@ -26,7 +26,7 @@ public class PrintSettings implements SelectNameExtractor {
 
 	private final boolean prettyPrint;
 	/**
-	 * Assuming the Script has already been validated (from loading the config)
+	 * Assuming the Script has already been validated (from loading the config).
 	 */
 	private String columnNamerScript = null;
 	
@@ -41,7 +41,7 @@ public class PrintSettings implements SelectNameExtractor {
 			// Use the provided script
 			groovyShell.setProperty(GROOVY_VARIABLE, columnInfo);
 			Object result = groovyShell.evaluate(columnNamerScript);
-			if(result != null) {				
+			if(result != null) {
 				return Objects.toString(result);
 			}
 			log.info("The column namer script returned null: {}\nFalling back to standard format",columnNamerScript);

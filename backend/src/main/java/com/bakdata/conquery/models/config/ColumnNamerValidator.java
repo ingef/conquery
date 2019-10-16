@@ -83,7 +83,7 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 		
 		// Check if script handles a simple SelectResultInfo
 		try {
-			script.run();			
+			script.run();
 		}
 		catch (Exception e) {
 			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script failed execution: %s",e)).addConstraintViolation();
