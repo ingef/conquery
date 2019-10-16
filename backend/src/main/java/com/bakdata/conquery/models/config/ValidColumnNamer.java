@@ -11,7 +11,10 @@ import javax.validation.Constraint;
 import javax.validation.Payload;
 
 
-
+/*
+ * Annotation to mark a String for validation as a column name generator.
+ * The validation includes parsing and an exemplary execution of the script.
+ */
 @Retention(RUNTIME)
 @Target({ FIELD, PARAMETER })
 @Constraint(validatedBy = ColumnNamerValidator.class)

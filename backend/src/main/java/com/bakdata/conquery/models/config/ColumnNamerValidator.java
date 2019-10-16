@@ -48,8 +48,7 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 
 	@Override
 	public void initialize(ValidColumnNamer constraintAnnotation) {
-		
-		
+		// Nothing to initialize
 	}
 
 	@Override
@@ -92,7 +91,7 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 		}
 		
 		
-		log.info("Configured column namer script is okay.");
+		log.info(String.format("Configured column namer script is okay: %s", scriptString));
 		
 		return true;
 	}

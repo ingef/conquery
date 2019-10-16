@@ -13,7 +13,9 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Getter @RequiredArgsConstructor @AllArgsConstructor @ToString
 public class PrintSettings implements SelectNameExtractor {
 	public static final String GROOVY_VARIABLE = "columnInfo";
@@ -23,6 +25,9 @@ public class PrintSettings implements SelectNameExtractor {
 	private final GroovyShell groovyShell = new GroovyShell(new CompilerConfiguration());
 
 	private final boolean prettyPrint;
+	/**
+	 * Assuming the Script has already been validated (from loading the config)
+	 */
 	private String columnNamerScript = null;
 	
 
@@ -36,11 +41,14 @@ public class PrintSettings implements SelectNameExtractor {
 			// Use the provided script
 			groovyShell.setProperty(GROOVY_VARIABLE, columnInfo);
 			Object result = groovyShell.evaluate(columnNamerScript);
-			return Objects.toString(result);
+			if(result != null) {				
+				return Objects.toString(result);
+			}
+			log.info("The column namer script returned null: {}\nFalling back to standard format",columnNamerScript);
 		}
-		else {
-			// Use the standard procedure
-			return String.format("%s %s",columnInfo.getCqConcept().getLabel(),columnInfo.getSelect().getLabel());
-		}
+		
+		// Use the standard procedure
+		return String.format("%s %s",columnInfo.getCqConcept().getLabel(),columnInfo.getSelect().getLabel());
+		
 	}
 }
