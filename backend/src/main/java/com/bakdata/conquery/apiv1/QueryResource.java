@@ -1,11 +1,17 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
-import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-
-import java.sql.SQLException;
-import java.util.concurrent.TimeUnit;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.ResourceUtil;
+import io.dropwizard.auth.Auth;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -18,20 +24,12 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
+import java.sql.SQLException;
+import java.util.concurrent.TimeUnit;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.ResourceUtil;
-
-import io.dropwizard.auth.Auth;
+import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
+import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 @Path("datasets/{" + DATASET + "}/queries")
 @Consumes(AdditionalMediaTypes.JSON)
@@ -64,7 +62,7 @@ public class QueryResource {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
-		return processor.cancel(dsUtil.getDataset(datasetId), dsUtil.getManagedQuery(datasetId, queryId), URLBuilder.fromRequest(req));
+		return processor.cancel(dsUtil.getDataset(datasetId), dsUtil.getManagedQuery(queryId), URLBuilder.fromRequest(req));
 	}
 
 	@GET
@@ -72,7 +70,7 @@ public class QueryResource {
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		ManagedQuery query = dsUtil.getManagedQuery(datasetId, queryId);
+		ManagedQuery query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(dsUtil.getDataset(datasetId), query, URLBuilder.fromRequest(req));
 	}
