@@ -39,5 +39,4 @@ public abstract class FilterNode<FILTER_VALUE> implements EventIterating, CtxClo
 		return true;
 	}
 	
-	public abstract void reset();
 }
