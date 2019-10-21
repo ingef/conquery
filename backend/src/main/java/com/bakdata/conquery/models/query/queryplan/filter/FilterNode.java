@@ -38,4 +38,6 @@ public abstract class FilterNode<FILTER_VALUE> implements EventIterating, CtxClo
 	public boolean isOfInterest(Entity entity) {
 		return true;
 	}
+	
+	public abstract void reset();
 }

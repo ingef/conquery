@@ -62,4 +62,13 @@ public class LastValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());
 	}
+
+	@Override
+	public void reset() {
+		value= null;
+		date = 0;
+		bucket = null;
+
+		
+	}
 }

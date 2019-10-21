@@ -50,6 +50,8 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 
 	@Override
 	public abstract boolean isContained();
+	
+
 
 	@Override
 	public String toString() {
@@ -60,4 +62,9 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	public boolean isOfInterest(Bucket bucket) {
 		return aggregator.isOfInterest(bucket);
 	}
+	
+	public void reset() {
+		this.aggregator.reset();
+	}
+	
 }

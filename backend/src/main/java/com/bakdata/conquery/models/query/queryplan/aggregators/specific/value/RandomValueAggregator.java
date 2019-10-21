@@ -18,7 +18,7 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	private int nValues = 0;
 	private Bucket bucket;
 
-	private final Random random = new Random();
+	private final Random random = new Random(1337);
 
 	public RandomValueAggregator(Column column) {
 		super(column);
@@ -67,5 +67,13 @@ public class RandomValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> 
 	@Override
 	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());
+	}
+
+	@Override
+	public void reset() {
+		value = null;
+		nValues = 0;
+		bucket = null;
+		random.setSeed(1337);
 	}
 }

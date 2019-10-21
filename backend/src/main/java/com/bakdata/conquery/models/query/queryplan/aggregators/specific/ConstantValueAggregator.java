@@ -37,4 +37,8 @@ public class ConstantValueAggregator implements Aggregator<Object> {
 	public ResultType getResultType() {
 		return type;
 	}
+
+	@Override
+	public void reset() {
+	}
 }

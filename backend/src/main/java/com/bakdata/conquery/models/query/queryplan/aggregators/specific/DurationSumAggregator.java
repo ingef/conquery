@@ -59,4 +59,9 @@ public class DurationSumAggregator extends SingleColumnAggregator<Long> {
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
 	}
+	@Override
+	public void reset() {
+		set.clear();
+		dateRestriction = null;
+	}
 }

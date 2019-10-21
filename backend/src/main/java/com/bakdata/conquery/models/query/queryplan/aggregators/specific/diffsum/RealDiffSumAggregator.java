@@ -14,9 +14,9 @@ import lombok.Getter;
 public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 
 	@Getter
-	private Column addendColumn;
+	private final Column addendColumn;
 	@Getter
-	private Column subtrahendColumn;
+	private final Column subtrahendColumn;
 
 	private double sum = 0;
 	private boolean hit;
@@ -64,5 +64,11 @@ public class RealDiffSumAggregator extends ColumnAggregator<Double> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;
+	}
+
+	@Override
+	public void reset() {
+		sum = 0;
+		hit = false;
 	}
 }

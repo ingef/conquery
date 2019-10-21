@@ -18,10 +18,10 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 
 	private LocalDate reference;
-	private ChronoUnit unit;
+	private final ChronoUnit unit;
 
 	private long result = Long.MAX_VALUE;
-	private boolean hit;
+	private boolean hit = false;
 
 	public DateDistanceAggregator(Column column, ChronoUnit unit) {
 		super(column);
@@ -70,5 +70,12 @@ public class DateDistanceAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
+	}
+
+	@Override
+	public void reset() {
+		hit = false;
+		result = Long.MAX_VALUE;
+		reference = null;
 	}
 }

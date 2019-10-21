@@ -45,4 +45,10 @@ public class IntegerSumAggregator extends SingleColumnAggregator<Long> {
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
 	}
+
+	@Override
+	public void reset() {
+		hit = false;
+		sum = 0;
+	}
 }

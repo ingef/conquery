@@ -48,4 +48,10 @@ public class ExistsAggregator implements Aggregator<Boolean> {
 	public String toString(){
 		return getClass().getSimpleName();
 	}
+	@Override
+	public void reset() {
+		requiredTables.clear();
+		hit = false;
+	
+	}
 }

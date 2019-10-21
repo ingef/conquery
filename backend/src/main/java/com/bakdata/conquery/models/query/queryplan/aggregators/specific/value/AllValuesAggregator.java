@@ -42,4 +42,10 @@ public class AllValuesAggregator<VALUE> extends SingleColumnAggregator<Set<VALUE
 	public ResultType getResultType() {
 		return ResultType.STRING;
 	}
+
+	@Override
+	public void reset() {
+		this.entries.clear();
+		
+	}
 }

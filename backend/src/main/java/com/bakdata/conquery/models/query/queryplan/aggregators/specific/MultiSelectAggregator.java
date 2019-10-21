@@ -82,7 +82,14 @@ public class MultiSelectAggregator extends SingleColumnAggregator<Map<String, In
 				return false;
 			}
 		}
-
 		return super.isOfInterest(bucket);
+	}
+
+	@Override
+	public void reset() {
+		for (int i = 0; i< hits.length; i++) {
+			selectedValues[i] = 0;
+			hits[i] = 0;
+		}
 	}
 }

@@ -33,10 +33,11 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
 	@ToString.Exclude
 	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
+	private boolean generateSpecialDateUnion = false;
 	private Entity entity;
 	
 	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
-		if(generateSpecialDateUnion) {
+		if(this.generateSpecialDateUnion = generateSpecialDateUnion) {
 			aggregators.add(specialDateUnion);
 		}
 	}
@@ -45,7 +46,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		this(ctx.isGenerateSpecialDateUnion());
 	}
 
-	@Override
+	@Override 
 	public ConceptQueryPlan clone(CloneContext ctx) {
 		checkRequiredTables(ctx.getStorage());
 		
@@ -177,6 +178,12 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		child.collectRequiredTables(requiredTables);
+	}
+
+	@Override
+	public void reset() {
+		child.reset();
+		aggregators.forEach(Aggregator<?>::reset);
 	}
 	
 	

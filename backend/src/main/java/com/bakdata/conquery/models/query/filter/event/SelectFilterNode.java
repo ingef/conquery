@@ -56,4 +56,10 @@ public class SelectFilterNode extends SingleColumnFilterNode<String> {
 		return super.isOfInterest(bucket) &&
 			   ((AStringType) bucket.getImp().getColumns()[getColumn().getPosition()].getType()).getId(filterValue) != -1;
 	}
+
+	@Override
+	public void reset() {
+		selectedId = -1;
+		hit = false;
+	}
 }

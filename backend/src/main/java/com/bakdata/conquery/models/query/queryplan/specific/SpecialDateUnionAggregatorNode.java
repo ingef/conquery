@@ -16,8 +16,8 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 public class SpecialDateUnionAggregatorNode extends QPNode {
 
-	private TableId requiredTable;
-	private SpecialDateUnion aggregator;
+	private final TableId requiredTable;
+	private final SpecialDateUnion aggregator;
 	private boolean triggered = false;
 	
 	private Column currentColumn;
@@ -78,5 +78,15 @@ public class SpecialDateUnionAggregatorNode extends QPNode {
 	@Override
 	public boolean isOfInterest(Entity entity) {
 		return true;
+	}
+
+	@Override
+	public void reset() {
+		aggregator.reset();
+		triggered = false;
+		
+		dateRestriction.clear();
+		currentColumn = null;
+		
 	}
 }

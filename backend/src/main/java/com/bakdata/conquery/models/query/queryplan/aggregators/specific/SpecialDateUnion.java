@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
  */
 public class SpecialDateUnion implements Aggregator<String> {
 
-	private CDateSet set = CDateSet.create();
+	private final CDateSet set = CDateSet.create();
 
 	@Override
 	public void aggregateEvent(Bucket bucket, int event) {
@@ -53,5 +53,11 @@ public class SpecialDateUnion implements Aggregator<String> {
 	@Override
 	public String toString(){
 		return getClass().getSimpleName();
+	}
+
+	@Override
+	public void reset() {
+		set.clear();
+		
 	}
 }

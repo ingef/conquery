@@ -64,4 +64,10 @@ public class SelectAggregator extends SingleColumnAggregator<Long> {
 		return super.isOfInterest(bucket) &&
 			   ((AStringType) bucket.getImp().getColumns()[column.getPosition()].getType()).getId(selected) != -1;
 	}
+
+	@Override
+	public void reset() {
+		hits = 0;
+		selectedId = -1;
+	}
 }

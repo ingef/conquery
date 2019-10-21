@@ -59,4 +59,11 @@ public class DateUnionAggregator extends SingleColumnAggregator<String> {
 	public ResultType getResultType() {
 		return ResultType.STRING;
 	}
+
+	@Override
+	public void reset() {
+		set = CDateSet.create();
+		dateRestriction = null;
+
+	}
 }

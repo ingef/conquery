@@ -47,4 +47,10 @@ public class DecimalSumAggregator extends SingleColumnAggregator<BigDecimal> {
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;
 	}
+
+	@Override
+	public void reset() {
+		hit = false;
+		sum = BigDecimal.ZERO;
+	}
 }

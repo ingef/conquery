@@ -14,9 +14,9 @@ import lombok.Getter;
 public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Getter
-	private Column addendColumn;
+	private final Column addendColumn;
 	@Getter
-	private Column subtrahendColumn;
+	private final Column subtrahendColumn;
 	private long sum;
 	private boolean hit;
 
@@ -59,5 +59,11 @@ public class IntegerDiffSumAggregator extends ColumnAggregator<Long> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
+	}
+
+	@Override
+	public void reset() {
+		sum = 0L;
+		hit = false;
 	}
 }

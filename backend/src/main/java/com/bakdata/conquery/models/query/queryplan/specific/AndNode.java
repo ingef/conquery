@@ -47,4 +47,10 @@ public class AndNode extends QPParentNode {
 				return new AndNode(new ArrayList<>(children));
 		}
 	}
+
+	@Override
+	public void reset() {
+		getChildren().forEach(QPNode::reset);
+		
+	}
 }

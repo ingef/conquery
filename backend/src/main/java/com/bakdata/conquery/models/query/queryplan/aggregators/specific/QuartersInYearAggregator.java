@@ -56,10 +56,7 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 		long max = 0;
 
 		for (EnumSet<Month> months : quartersInYear.values()) {
-			long cardinality = months.size();
-			if (cardinality > max) {
-				max = cardinality;
-			}
+			max = Math.max(months.size(), max);
 		}
 
 		return max;
@@ -73,5 +70,11 @@ public class QuartersInYearAggregator extends SingleColumnAggregator<Long> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
+	}
+
+	@Override
+	public void reset() {
+			quartersInYear.clear();
+		
 	}
 }

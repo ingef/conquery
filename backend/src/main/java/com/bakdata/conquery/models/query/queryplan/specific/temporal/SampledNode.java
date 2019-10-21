@@ -37,4 +37,10 @@ public class SampledNode implements CtxCloneable<SampledNode> {
 	public SampledNode doClone(CloneContext ctx) {
 		return new SampledNode(child.clone(ctx), sampler);
 	}
+
+	@Override
+	public void reset() {
+		this.child.reset();
+		
+	}
 }

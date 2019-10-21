@@ -67,4 +67,12 @@ public class DecimalDiffSumAggregator extends ColumnAggregator<BigDecimal> {
 	public boolean isOfInterest(Bucket bucket) {
 		return false;
 	}
+
+	@Override
+	public void reset() {
+		hit = false;
+		addendColumn = null;
+		subtrahendColumn = null;
+		sum = BigDecimal.ZERO;
+	}
 }

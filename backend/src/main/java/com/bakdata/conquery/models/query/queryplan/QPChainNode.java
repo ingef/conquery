@@ -80,4 +80,8 @@ public abstract class QPChainNode extends QPNode {
 	public boolean isOfInterest(Entity entity) {
 		return true;
 	}
+	
+	public void reset() {
+		child.reset();
+	}
 }

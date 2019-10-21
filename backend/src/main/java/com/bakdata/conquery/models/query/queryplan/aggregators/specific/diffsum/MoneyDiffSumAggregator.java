@@ -14,9 +14,9 @@ import lombok.Getter;
 public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 
 	@Getter
-	private Column addendColumn;
+	private final Column addendColumn;
 	@Getter
-	private Column subtrahendColumn;
+	private final Column subtrahendColumn;
 	private long sum = 0L;
 	private boolean hit;
 
@@ -59,5 +59,11 @@ public class MoneyDiffSumAggregator extends ColumnAggregator<Long> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.MONEY;
+	}
+
+	@Override
+	public void reset() {
+		sum = 0L;
+		hit = false;
 	}
 }

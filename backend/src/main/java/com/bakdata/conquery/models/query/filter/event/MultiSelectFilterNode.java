@@ -73,4 +73,12 @@ public class MultiSelectFilterNode extends SingleColumnFilterNode<String[]> {
 
 		return super.isOfInterest(bucket);
 	}
+
+	@Override
+	public void reset() {
+		hit = false;
+		for (int i = 0; i < selectedValues.length; i++)
+			selectedValues[i] = 0;
+ 		
+	}
 }

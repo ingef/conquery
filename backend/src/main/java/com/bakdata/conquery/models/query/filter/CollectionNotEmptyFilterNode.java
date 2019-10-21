@@ -24,4 +24,5 @@ public class CollectionNotEmptyFilterNode<FILTER_VALUE> extends AggregationResul
 	public boolean isContained() {
 		return !getAggregator().getAggregationResult().isEmpty();
 	}
+
 }

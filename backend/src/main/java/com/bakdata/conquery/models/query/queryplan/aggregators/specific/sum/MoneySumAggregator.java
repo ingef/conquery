@@ -45,4 +45,10 @@ public class MoneySumAggregator extends SingleColumnAggregator<Long> {
 	public ResultType getResultType() {
 		return ResultType.MONEY;
 	}
+
+	@Override
+	public void reset() {
+		hit = false;
+		sum = 0L;
+	}
 }

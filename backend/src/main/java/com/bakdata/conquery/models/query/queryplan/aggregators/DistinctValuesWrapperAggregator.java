@@ -55,4 +55,12 @@ public class DistinctValuesWrapperAggregator<VALUE> extends ColumnAggregator<VAL
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
 	}
+
+	@Override
+	public void reset() {
+		observed.clear();
+		aggregator.reset();
+
+		
+	}
 }

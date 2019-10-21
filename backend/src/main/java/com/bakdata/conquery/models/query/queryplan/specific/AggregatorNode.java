@@ -21,6 +21,10 @@ public class AggregatorNode<T> extends QPNode  {
 	private final Aggregator<T> aggregator;
 	private boolean triggered = false;
 	
+	public void reset() {
+		this.triggered = false;
+		this.aggregator.reset();
+	}
 	@Override
 	public void nextEvent(Bucket bucket, int event) {
 		triggered = true;
@@ -54,11 +58,11 @@ public class AggregatorNode<T> extends QPNode  {
 	
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
-		return true;
+		return this.aggregator.isOfInterest(bucket);
 	}
 	
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return true;
+		return this.aggregator.isOfInterest(entity);
 	}
 }

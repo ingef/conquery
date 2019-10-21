@@ -45,4 +45,10 @@ public class RealSumAggregator extends SingleColumnAggregator<Double> {
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;
 	}
+
+	@Override
+	public void reset() {
+		sum = 0;
+		hit = false;
+	}
 }

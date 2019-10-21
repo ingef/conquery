@@ -19,7 +19,7 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 
 	private boolean hit = false;
 	private LocalDate reference;
-	private ChronoUnit unit;
+	private final ChronoUnit unit;
 
 	public DateDistanceFilterNode(Column column, ChronoUnit unit, Range.LongRange filterValue) {
 		super(column, filterValue);
@@ -68,5 +68,11 @@ public class DateDistanceFilterNode extends SingleColumnFilterNode<Range.LongRan
 	@Override
 	public boolean isContained() {
 		return hit;
+	}
+
+	@Override
+	public void reset() {
+		hit = false;
+		reference = null;
 	}
 }

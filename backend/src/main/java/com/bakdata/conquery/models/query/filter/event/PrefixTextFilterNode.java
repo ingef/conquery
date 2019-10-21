@@ -44,4 +44,10 @@ public class PrefixTextFilterNode extends SingleColumnFilterNode<String> {
 	public boolean isContained() {
 		return hit;
 	}
+
+	@Override
+	public void reset() {
+		hit = false;
+		
+	}
 }

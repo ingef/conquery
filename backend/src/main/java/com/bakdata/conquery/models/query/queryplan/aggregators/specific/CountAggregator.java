@@ -38,4 +38,9 @@ public class CountAggregator extends SingleColumnAggregator<Long> {
 	public ResultType getResultType() {
 		return ResultType.NUMERIC;
 	}
+
+	@Override
+	public void reset() {
+		this.count = 0;
+	}
 }

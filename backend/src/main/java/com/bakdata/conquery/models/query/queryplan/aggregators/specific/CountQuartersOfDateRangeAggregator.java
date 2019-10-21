@@ -73,4 +73,9 @@ public class CountQuartersOfDateRangeAggregator extends SingleColumnAggregator<L
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
 	}
+
+	@Override
+	public void reset() {
+		quarters.clear();
+	}
 }

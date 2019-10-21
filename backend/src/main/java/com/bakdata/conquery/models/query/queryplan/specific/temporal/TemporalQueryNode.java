@@ -164,4 +164,11 @@ public class TemporalQueryNode extends QPNode {
 			preceding.getChild().isOfInterest(entity)
 		;
 	}
+
+	@Override
+	public void reset() {
+		this.reference.reset();
+		this.preceding.reset();
+		this.dateUnion.reset();;
+	}
 }

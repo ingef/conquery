@@ -107,4 +107,13 @@ public class ConceptNode extends QPChainNode {
 		super.collectRequiredTables(requiredTables);
 		requiredTables.add(table.getResolvedConnector().getTable().getId());
 	}
+
+	@Override
+	public void reset() {
+		tableActive = false;
+		interested = false;
+		preCurrentRow = null;
+		currentRow = null;
+		
+	}
 }

@@ -33,4 +33,10 @@ public class Leaf extends QPNode {
 	public boolean isOfInterest(Entity entity) {
 		return true;
 	}
+
+	@Override
+	public void reset() {
+		triggered = false;
+	}
+	
 }

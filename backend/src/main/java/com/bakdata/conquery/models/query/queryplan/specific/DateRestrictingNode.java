@@ -40,7 +40,6 @@ public class DateRestrictingNode extends QPChainNode {
 		}
 		super.nextTable(ctx, currentTable);
 
-
 		validityDateColumn = Objects.requireNonNull(context.getValidityDateColumn());
 		preCurrentRow = entity.getCBlockPreSelect(context.getConnector().getId());
 
@@ -82,5 +81,12 @@ public class DateRestrictingNode extends QPChainNode {
 	@Override
 	public QPNode doClone(CloneContext ctx) {
 		return new DateRestrictingNode(restriction, getChild().clone(ctx));
+	}
+
+	@Override
+	public void reset() {
+		super.reset();
+		validityDateColumn = null;
+		preCurrentRow = null;
 	}
 }

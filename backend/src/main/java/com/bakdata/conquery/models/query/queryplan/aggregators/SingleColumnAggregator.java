@@ -23,9 +23,8 @@ public abstract class SingleColumnAggregator<T> extends ColumnAggregator<T> {
 	@Valid
 	@NotNull
 	@Getter
-	@Setter
 	@NsIdRef
-	protected Column column;
+	protected final Column column;
 
 	@Override
 	public final Column[] getRequiredColumns() {

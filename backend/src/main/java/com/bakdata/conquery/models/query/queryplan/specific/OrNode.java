@@ -47,4 +47,10 @@ public class OrNode extends QPParentNode {
 				return new OrNode(new ArrayList<>(children));
 		}
 	}
+
+	@Override
+	public void reset() {
+		getChildren().forEach(QPNode::reset);
+		getChildMap().values().forEach(QPNode::reset);
+	}
 }

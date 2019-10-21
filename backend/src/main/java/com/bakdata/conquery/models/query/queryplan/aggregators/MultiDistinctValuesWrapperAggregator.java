@@ -60,4 +60,11 @@ public class MultiDistinctValuesWrapperAggregator<VALUE> extends ColumnAggregato
 	public ResultType getResultType() {
 		return ResultType.INTEGER;
 	}
+
+	@Override
+	public void reset() {
+		this.aggregator.reset();
+		this.observed.clear();
+		
+	}
 }

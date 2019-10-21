@@ -39,4 +39,8 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Singl
 	public boolean isContained() {
 		return hit;
 	}
+	
+	public void reset() {
+		this.hit = false;
+	}
 }

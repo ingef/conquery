@@ -63,4 +63,12 @@ public class FirstValueAggregator<VALUE> extends SingleColumnAggregator<VALUE> {
 	public ResultType getResultType() {
 		return ResultType.resolveResultType(getColumn().getType());
 	}
+
+	@Override
+	public void reset() {
+		value = null;
+		bucket = null;
+		date = Integer.MAX_VALUE;
+		validityDateColumn = null;
+	}
 }

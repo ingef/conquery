@@ -54,4 +54,10 @@ public class PrefixTextAggregator extends SingleColumnAggregator<Set<String>> {
 	public ResultType getResultType() {
 		return ResultType.STRING;
 	}
+
+	@Override
+	public void reset() {
+		entries.clear();
+		
+	}
 }

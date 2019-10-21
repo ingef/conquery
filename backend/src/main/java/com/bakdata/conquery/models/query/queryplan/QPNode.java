@@ -17,7 +17,8 @@ public abstract class QPNode implements EventIterating, CtxCloneable<QPNode> {
 		this.entity = entity;
 		init();
 	}
-
+//	public abstract void reset();
+	
 	protected void init() {
 	}
 
