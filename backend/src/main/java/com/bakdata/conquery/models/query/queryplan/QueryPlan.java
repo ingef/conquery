@@ -15,13 +15,6 @@ public interface QueryPlan extends Resetable {
 	@Deprecated
 	QueryPlan clone(CloneContext ctx);
 
-	default Stream<QueryJob> executeOn(QueryContext context, Collection<Entity> entities) {
-		return entities
-			.stream()
-			.filter(this::isOfInterest)
-			.map(entity -> new QueryJob(context, this, entity));
-	}
-	
 	EntityResult execute(QueryContext ctx, Entity entity);
 	
 	boolean isOfInterest(Entity entity);

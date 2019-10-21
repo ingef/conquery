@@ -48,15 +48,16 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 
 	@Override 
 	public ConceptQueryPlan clone(CloneContext ctx) {
-		checkRequiredTables(ctx.getStorage());
-		
-		ConceptQueryPlan clone = new ConceptQueryPlan(false);
-		clone.setChild(child.clone(ctx));
-		for(Aggregator<?> agg:aggregators)
-			clone.aggregators.add(agg.clone(ctx));
-		clone.specialDateUnion = specialDateUnion.clone(ctx);
-		clone.setRequiredTables(this.getRequiredTables());
-		return clone;
+		this.reset();
+//		checkRequiredTables(ctx.getStorage());
+//		
+//		ConceptQueryPlan clone = new ConceptQueryPlan(false);
+//		clone.setChild(child.clone(ctx));
+//		for(Aggregator<?> agg:aggregators)
+//			clone.aggregators.add(agg.clone(ctx));
+//		clone.specialDateUnion = specialDateUnion.clone(ctx);
+//		clone.setRequiredTables(this.getRequiredTables());
+		return this;
 	}
 	
 	private void checkRequiredTables(WorkerStorage storage) {
@@ -181,7 +182,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 
 	@Override
-	public void reset() {
+	public synchronized void reset() {
 		child.reset();
 		aggregators.forEach(Aggregator<?>::reset);
 	}

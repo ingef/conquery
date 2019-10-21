@@ -31,20 +31,20 @@ public class QueryExecutor implements Closeable {
 
 	public ShardResult execute(QueryPlanContext context, ManagedQuery query) {
 		query.start();
-
-		QueryPlan plan = query.getQuery().createQueryPlan(context);
+		ThreadLocal<QueryPlan> plans = ThreadLocal.withInitial(() -> query.getQuery().createQueryPlan(context));
+//		QueryPlan plan = ;
 		return execute(
 				context.getBlockManager(),
 				new QueryContext(
 					context.getWorker().getStorage()
 				),
 				query.getId(),
-				plan,
+				plans,
 				pool
 		);
 	}
 
-	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
+	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedExecutionId queryId, ThreadLocal<QueryPlan> plans, ListeningExecutorService executor) {
 
 		Collection<Entity> entries = blockManager.getEntities().values();
 
@@ -54,10 +54,11 @@ public class QueryExecutor implements Closeable {
 		ShardResult result = new ShardResult();
 		result.setQueryId(queryId);
 		
-		List<ListenableFuture<EntityResult>> futures = plan
-			.executeOn(context, entries)
-			.map(executor::submit)
-			.collect(Collectors.toList());
+		List<ListenableFuture<EntityResult>> futures = entries
+		.stream()
+		.filter(entity -> plans.get().isOfInterest(entity))
+		.map(entity -> executor.submit(new QueryJob(context, plans, entity)))
+		.collect(Collectors.toList());
 		
 		result.setFuture(Futures.allAsList(futures));
 		

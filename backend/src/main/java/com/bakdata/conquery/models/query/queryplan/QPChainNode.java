@@ -16,7 +16,7 @@ import lombok.Getter;
 public abstract class QPChainNode extends QPNode {
 	
 	@Getter
-	private QPNode child;
+	private  QPNode child;
 	
 	public QPChainNode() {
 		this(null);

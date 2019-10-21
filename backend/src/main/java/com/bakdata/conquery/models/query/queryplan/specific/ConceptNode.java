@@ -114,6 +114,7 @@ public class ConceptNode extends QPChainNode {
 		interested = false;
 		preCurrentRow = null;
 		currentRow = null;
+//		init();
 		
 	}
 }

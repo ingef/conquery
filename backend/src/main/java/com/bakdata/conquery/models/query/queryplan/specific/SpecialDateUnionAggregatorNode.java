@@ -85,7 +85,7 @@ public class SpecialDateUnionAggregatorNode extends QPNode {
 		aggregator.reset();
 		triggered = false;
 		
-		dateRestriction.clear();
+		dateRestriction = null;
 		currentColumn = null;
 		
 	}

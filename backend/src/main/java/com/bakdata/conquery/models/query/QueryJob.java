@@ -13,14 +13,15 @@ import lombok.RequiredArgsConstructor;
 public class QueryJob implements Callable<EntityResult> {
 
 	private final QueryContext ctx;
-	private final QueryPlan plan;
+	private final ThreadLocal<QueryPlan> plan;
 	private final Entity entity;
+	
 	
 	@Override
 	public EntityResult call() throws Exception {
 		try {
 			CloneContext cCtx = new CloneContext(ctx.getStorage());
-			QueryPlan queryPlan = this.plan.clone(cCtx);
+			QueryPlan queryPlan = this.plan.get().clone(cCtx);
 			
 			return queryPlan.execute(ctx, entity);
 		}
