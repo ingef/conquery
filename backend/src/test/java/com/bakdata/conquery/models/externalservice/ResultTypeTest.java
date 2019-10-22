@@ -23,6 +23,7 @@ import com.google.common.collect.ImmutableMap;
 @Execution(ExecutionMode.SAME_THREAD)
 public class ResultTypeTest {
 
+	private static final String COLUMN_NAMER = "columnInfo.getSelect().getId().toStringWithoutDataset()";
 	private static final PrintSettings PRETTY = new PrintSettings(true);
 	private static final PrintSettings PLAIN = new PrintSettings(false);
 	
