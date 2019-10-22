@@ -81,6 +81,10 @@ public class AdminUIResource {
 		return new UIView<>("script.html.ftl", processor.getUIContext());
 	}
 
+	/**
+	 * Execute script and serialize value with {@link Objects::toString}.
+	 * Used in admin UI for minor scripting.
+	 */
 	@Produces({MediaType.TEXT_PLAIN})
 	@Consumes(MediaType.TEXT_PLAIN)
 	@POST
@@ -88,6 +92,11 @@ public class AdminUIResource {
 	public String executeScript(@Auth User user, String script) throws JSONException {
 		return Objects.toString(executeScript(script));
 	}
+
+	/**
+	 * Execute script and serialize return value as Json.
+	 * Useful for configuration and verification scripts.
+	 */
 	@Produces({MediaType.APPLICATION_JSON})
 	@Consumes(MediaType.TEXT_PLAIN)
 	@POST
