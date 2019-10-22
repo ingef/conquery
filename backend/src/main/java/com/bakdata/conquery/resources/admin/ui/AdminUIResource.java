@@ -111,6 +111,7 @@ public class AdminUIResource {
 		config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
 		GroovyShell groovy = new GroovyShell(config);
 		groovy.setProperty("namespaces", processor.getNamespaces());
+		groovy.setProperty("jobManager", processor.getJobManager());
 
 		try {
 			return groovy.evaluate(script);
