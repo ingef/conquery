@@ -18,7 +18,6 @@ import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.api.PermissionResource;
-import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
@@ -91,7 +90,7 @@ public class AdminServlet {
 			.register(AdminDatasetResource.class)
 			.register(AdminConceptsResource.class)
 			.register(AdminUIResource.class)
-			.register(DatasetsUIResource.class)		
+			.register(DatasetsUIResource.class)
 			.register(TablesUIResource.class)
 			.register(ConceptsUIResource.class)
 			.register(PermissionResource.class);
@@ -100,8 +99,9 @@ public class AdminServlet {
 		for (Class<? extends AdminServletResource> resourceProvider : CPSTypeIdResolver.listImplementations(AdminServletResource.class)) {
 			try {
 				jerseyConfig.register(resourceProvider);
-			} catch (Exception e) {
-				log.error("Failed loading admin resource {}",resourceProvider, e);
+			}
+			catch (Exception e) {
+				log.error("Failed loading admin resource {}", resourceProvider, e);
 			}
 		}
 		
