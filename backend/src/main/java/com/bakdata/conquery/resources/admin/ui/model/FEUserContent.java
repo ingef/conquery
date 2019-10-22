@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui.model;
 
+import java.util.Collection;
 import java.util.List;
 
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -18,4 +19,6 @@ public class FEUserContent {
 	public User self;
 	public List<Role> roles;
 	public List<ConqueryPermission> permissions;
+	
+	public Collection<Role> availableRoles;
 }

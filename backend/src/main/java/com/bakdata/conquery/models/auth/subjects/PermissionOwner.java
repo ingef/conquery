@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.subjects;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -20,13 +21,16 @@ import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.Subject;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -41,7 +45,10 @@ import lombok.extern.slf4j.Slf4j;
 @JsonIgnoreProperties({ "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> implements Subject {
 
-	@Getter
+	/**
+	 * This getter is only used for the JSON serialization/deserialization
+	 */
+	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({@Deprecated}))
 	private final Set<ConqueryPermission> permissions = new HashSet<>();
 
 	@Override
@@ -236,7 +243,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 		permissions.add(permission);
 		updateStorage(storage);
-		
 		return permission;
 	}
 
@@ -250,9 +256,24 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *            The permission to be deleted.
 	 * @throws JSONException 
 	 */
-	public synchronized void removePermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
-		permissions.remove(permission);
-		updateStorage(storage);
+	public void removePermission(MasterMetaStorage storage, ConqueryPermission delPermission) throws JSONException {
+		synchronized (permissions) {
+			Optional<ConqueryPermission> sameTarget =  ofTarget(delPermission);
+			if (sameTarget.isPresent()) {
+				// found permission with the same target
+				ConqueryPermission permission = sameTarget.get();
+				
+				// remove all provided abilities
+				EnumSet<Ability> abilities = permission.getAbilities();
+				abilities.removeAll(permission.getAbilities());
+				
+				// if no abilitiy is left, remove the whole permission
+				if(abilities.isEmpty()) {
+					permissions.remove(permission);
+				}
+				this.updateStorage(storage);
+			}
+		}
 	}
 
 	private Optional<ConqueryPermission> ofTarget(ConqueryPermission other) {
@@ -277,7 +298,34 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public boolean isPermittedSelfOnly(ConqueryPermission permission) {
 		return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
 	}
+	/**
+	 * Return a copy of the permissions hold by the owner.
+	 * @return A set of the permissions hold by the owner.
+	 */
+	@JsonIgnore
+	public Set<ConqueryPermission> getPermissionsCopy(){
+		return new HashSet<ConqueryPermission>(permissions);
+	}
 	
-	abstract protected void updateStorage(MasterMetaStorage storage) throws JSONException;
+	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) throws JSONException {
+		synchronized (permissions) {
+			permissions.clear();
+			permissions.addAll(permissionsNew);
+			updateStorage(storage);
+		}
+	}
+	
+	/**
+	 * Returns a list of the effective permissions. These are the permissions of the owner and
+	 * the permission of the roles it inherits.
+	 * @return
+	 */
+	public abstract Set<ConqueryPermission> getPermissionsEffective();
+	
+	/**
+	 * Update this instance, only to be called from a synchronized context.
+	 * @throws JSONException 
+	 */
+	protected abstract void updateStorage(MasterMetaStorage storage) throws JSONException;
 
 }

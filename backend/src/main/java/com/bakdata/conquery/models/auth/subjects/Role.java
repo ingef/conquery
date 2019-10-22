@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.subjects;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
@@ -14,6 +15,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -72,9 +74,14 @@ public class Role extends PermissionOwner<RoleId> {
 		throw new UnsupportedOperationException();
 	}
 
+	@JsonIgnore
+	public Set<ConqueryPermission> getPermissionsEffective() {
+		return getPermissionsCopy();
+	}
+
 	@Override
 	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
-		storage.updateRole(this);
+		storage.addRole(this);
 		
 	}
 }

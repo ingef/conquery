@@ -31,8 +31,6 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 					return new UserId(ownerId);
 				case RoleId.TYPE:
 					return new RoleId(ownerId);
-				case NullSubjectId.TYPE:
-					return new NullSubjectId();
 				default:
 					throw new IllegalStateException("Unknown permission owner type: " + type);
 			}

@@ -195,7 +195,7 @@ public class AdminProcessor {
 		log.info("Deleting mandator: {}", mandatorId);
 		Role mandator = storage.getRole(mandatorId);
 		for(User user : storage.getAllUsers()) {
-			user.removerRole(storage, mandator);
+			user.removeRole(storage, mandator);
 		}
 		storage.removeRole(mandatorId);
 	}
@@ -212,7 +212,7 @@ public class AdminProcessor {
 
 	public List<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
 		PermissionOwner<?> owner = id.getOwner(storage);
-		return new ArrayList<>(owner.getPermissions());
+		return new ArrayList<>(owner.getPermissionsCopy());
 	}
 
 	public FERoleContent getRoleContent(RoleId mandatorId) {
@@ -273,12 +273,13 @@ public class AdminProcessor {
 
 	public Object getUserContent(UserId userId) {
 		User user = storage.getUser(userId);
+		Collection<Role> availableRoles = storage.getAllRoles();
 		
 		FEUserContent content = new FEUserContent(
 			user,
 			new ArrayList<>(user.getRoles()),
-			new ArrayList<>(user.getPermissions())
-		
+			new ArrayList<>(user.getPermissionsCopy()),
+			availableRoles
 			);
 		
 		return content;
@@ -292,16 +293,29 @@ public class AdminProcessor {
 		storage.addUser(user);
 	}
 
-	public void deleteRoleFromUser(UserId userId, RoleId roleId) {
+	public void deleteRoleFromUser(UserId userId, RoleId roleId) throws JSONException {
 		User user = null;
 		Role role = null;
 		synchronized(storage) {
-			storage.getUser(userId);
-			storage.getRole(roleId);
+			user = storage.getUser(userId);
+			role = storage.getRole(roleId);
 		}
 		Objects.requireNonNull(user);
 		Objects.requireNonNull(role);
-		user.removerRole(storage, role);
+		user.removeRole(storage, role);
+		
+	}
+
+	public void addRoleToUser(UserId userId, RoleId roleId) throws JSONException {
+		User user = null;
+		Role role = null;
+		synchronized(storage) {
+			user = storage.getUser(userId);
+			role = storage.getRole(roleId);
+		}
+		Objects.requireNonNull(user);
+		Objects.requireNonNull(role);
+		user.addRole(storage, role);
 		
 	}
 }

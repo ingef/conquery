@@ -13,6 +13,7 @@ import org.apache.shiro.authz.Permission;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -76,16 +77,16 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		return false;
 	}
 
-	public void addRole(MasterMetaStorage storage, Role mandator) throws JSONException {
+	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
 		synchronized (roles) {
-			if(!roles.contains(mandator)) {
-				addMandatorLocal(mandator);
+			if(!roles.contains(role)) {
+				addMandatorLocal(role);
 				updateStorage(storage);
 			}
 		}
 	}
 	
-	public void removerRole(MasterMetaStorage storage, Role role) throws JSONException {
+	public void removeRole(MasterMetaStorage storage, Role role) throws JSONException {
 		synchronized (roles) {
 			if(roles.contains(role)) {
 				roles.remove(role);
@@ -108,15 +109,15 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		return email;
 	}
 	
-	@Override
-	public Set<ConqueryPermission> getPermissions(){
-		Set<ConqueryPermission> permissions = new HashSet<>(super.getPermissions());
-		for (Role mandator : roles) {
-			permissions.addAll(mandator.getPermissions());
+	@JsonIgnore
+	public Set<ConqueryPermission> getPermissionsEffective(){
+		Set<ConqueryPermission> permissions = getPermissionsCopy();
+		for (Role role : roles) {
+			permissions.addAll(role.getPermissionsEffective());
 		}
 		return permissions;
 	}
-
+	
 	@Override
 	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateUser(this);
