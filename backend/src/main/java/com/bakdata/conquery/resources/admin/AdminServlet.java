@@ -13,6 +13,7 @@ import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
+import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
@@ -37,8 +38,8 @@ import java.util.ServiceLoader;
 public class AdminServlet {
 
 	@CPSBase
-	public interface AdminUIResource {
-		void registerResources(DropwizardResourceConfig master);
+	public interface AdminServletResource {
+		void registerResources(MasterCommand masterCommand);
 	}
 
 	private AdminProcessor adminProcessor;
@@ -93,9 +94,12 @@ public class AdminServlet {
 			.register(ConceptsUIResource.class)
 			.register(PermissionResource.class);
 
-		for (Class<? extends AdminUIResource> resourceProvider : CPSTypeIdResolver.listImplementations(AdminUIResource.class)) {
+		for (Class<? extends AdminServletResource> resourceProvider : CPSTypeIdResolver.listImplementations(AdminServletResource.class)) {
 			try {
-				resourceProvider.getConstructor().newInstance().registerResources(jerseyConfig);
+
+				final AdminServletResource reseource = resourceProvider.getConstructor().newInstance();
+				jerseyConfig.register(reseource);
+				reseource.registerResources(masterCommand);
 			} catch (Exception e) {
 				log.error("Failed loading admin resource {}",resourceProvider, e);
 			}
