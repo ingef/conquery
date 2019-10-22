@@ -43,9 +43,9 @@ public class QueryProcessor {
 		user.addPermission(storage, new QueryPermission(AbilitySets.QUERY_CREATOR, mq.getId()));
 		
 		//translate the query for all other datasets of user and submit it.
-		for(Namespace ns : namespaces.getNamespaces()) {
-			if (!user.isPermitted(new DatasetPermission(Ability.READ.asSet(), ns.getDataset().getId()))
-				|| ns.getDataset().equals(dataset)) {
+		for(Namespace targetNamespace : namespaces.getNamespaces()) {
+			if (!user.isPermitted(new DatasetPermission(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
+				|| targetNamespace.getDataset().equals(dataset)) {
 				continue;
 			}
 
@@ -55,13 +55,13 @@ public class QueryProcessor {
 
 
 			try {
-				IQuery translated = QueryTranslator.replaceDataset(namespaces, query, ns.getDataset().getId());
-				final ManagedQuery mqTranslated = namespace.getQueryManager().createQuery(translated, mq.getQueryId(), user);
+				IQuery translated = QueryTranslator.replaceDataset(namespaces, query, targetNamespace.getDataset().getId());
+				final ManagedQuery mqTranslated = targetNamespace.getQueryManager().createQuery(translated, mq.getQueryId(), user);
 
 				user.addPermission(storage, new QueryPermission(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}
 			catch(Exception e) {
-				log.trace("Could not translate " + query + " to dataset " + ns.getDataset(), e);
+				log.trace("Could not translate " + query + " to dataset " + targetNamespace.getDataset(), e);
 			}
 		}
 		
