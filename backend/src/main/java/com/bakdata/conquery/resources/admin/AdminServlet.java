@@ -23,8 +23,10 @@ import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
+import com.bakdata.conquery.resources.admin.ui.UserUIResource;
 import com.bakdata.conquery.resources.api.PermissionResource;
 import com.bakdata.conquery.resources.api.RoleResource;
+import com.bakdata.conquery.resources.api.UserResource;
 
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
@@ -87,6 +89,8 @@ public class AdminServlet {
 			.register(AdminUIResource.class)
 			.register(RoleResource.class)
 			.register(RoleUIResource.class)
+			.register(UserResource.class)
+			.register(UserUIResource.class)
 			.register(DatasetsUIResource.class)		
 			.register(TablesUIResource.class)
 			.register(ConceptsUIResource.class)

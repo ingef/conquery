@@ -26,8 +26,8 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
+import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.StructureNode;
@@ -38,9 +38,10 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
@@ -55,6 +56,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
+import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 
 import lombok.Getter;
@@ -152,9 +154,7 @@ public class AdminProcessor {
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);
 
-			table.getTags().add(header.getName());
-			namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
-
+			
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 			jobManager.addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
 		}
@@ -191,7 +191,7 @@ public class AdminProcessor {
 	 * @param mandatorId The id belonging to the mandator
 	 * @throws JSONException is thrown on JSON validation form the storage.
 	 */
-	public void deleteRole(RoleId mandatorId) throws JSONException {
+	public synchronized void deleteRole(RoleId mandatorId) throws JSONException {
 		log.info("Deleting mandator: {}", mandatorId);
 		Role mandator = storage.getRole(mandatorId);
 		for(User user : storage.getAllUsers()) {
@@ -265,5 +265,43 @@ public class AdminProcessor {
 
 	public UIContext getUIContext() {
 		return new UIContext(namespaces);
+	}
+
+	public Object getAllUsers() {
+		return new ArrayList<>(storage.getAllUsers());
+	}
+
+	public Object getUserContent(UserId userId) {
+		User user = storage.getUser(userId);
+		
+		FEUserContent content = new FEUserContent(
+			user,
+			new ArrayList<>(user.getRoles()),
+			new ArrayList<>(user.getPermissions())
+		
+			);
+		
+		return content;
+	}
+
+	public synchronized void deleteUser(UserId userId) {
+		storage.removeUser(userId);
+	}
+
+	public synchronized void addUser(User user) throws JSONException {
+		storage.addUser(user);
+	}
+
+	public void deleteRoleFromUser(UserId userId, RoleId roleId) {
+		User user = null;
+		Role role = null;
+		synchronized(storage) {
+			storage.getUser(userId);
+			storage.getRole(roleId);
+		}
+		Objects.requireNonNull(user);
+		Objects.requireNonNull(role);
+		user.removerRole(storage, role);
+		
 	}
 }

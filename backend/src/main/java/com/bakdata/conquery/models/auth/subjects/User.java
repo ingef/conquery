@@ -77,19 +77,27 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	}
 
 	public void addRole(MasterMetaStorage storage, Role mandator) throws JSONException {
-		if(!roles.contains(mandator)) {
-			addMandatorLocal(mandator);
-			updateStorage(storage);
+		synchronized (roles) {
+			if(!roles.contains(mandator)) {
+				addMandatorLocal(mandator);
+				updateStorage(storage);
+			}
 		}
 	}
 	
-	public void removerRole(MasterMetaStorage storage, Role mandator) throws JSONException {
-		if(roles.contains(mandator)) {
-			roles.remove(mandator);
-			updateStorage(storage);
+	public void removerRole(MasterMetaStorage storage, Role role) throws JSONException {
+		synchronized (roles) {
+			if(roles.contains(role)) {
+				roles.remove(role);
+				updateStorage(storage);
+			}
 		}
 	}
 
+	/**
+	 * Only to be called from a context that is synchronized on `roles`.
+	 * @param mandator
+	 */
 	public void addMandatorLocal(Role mandator) {
 		roles.add(mandator);
 	}

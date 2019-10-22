@@ -74,7 +74,7 @@ public class Role extends PermissionOwner<RoleId> {
 
 	@Override
 	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
-		storage.updaterRole(this);
+		storage.updateRole(this);
 		
 	}
 }

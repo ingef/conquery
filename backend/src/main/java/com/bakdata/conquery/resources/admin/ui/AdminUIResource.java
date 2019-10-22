@@ -14,6 +14,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -29,6 +30,7 @@ import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.common.Range;
@@ -42,6 +44,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
 
@@ -77,19 +80,40 @@ public class AdminUIResource {
 	public View getScript() {
 		return new UIView<>("script.html.ftl", processor.getUIContext());
 	}
-	
+
+	/**
+	 * Execute script and serialize value with {@link Objects#toString}.
+	 * Used in admin UI for minor scripting.
+	 */
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@POST
 	@Path("/script")
 	public String executeScript(@Auth User user, String script) throws JSONException {
+		return Objects.toString(executeScript(script));
+	}
+
+	/**
+	 * Execute script and serialize return value as Json.
+	 * Useful for configuration and verification scripts.
+	 */
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@POST
+	@Path("/script")
+	public String executeScriptJson(@Auth User user, String script) throws JSONException, JsonProcessingException {
+		return Jackson.MAPPER.writeValueAsString(executeScript(script));
+	}
+
+	private Object executeScript(String script) {
+		HttpServletRequest request;
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
 		GroovyShell groovy = new GroovyShell(config);
 		groovy.setProperty("namespaces", processor.getNamespaces());
+
 		try {
-			Object result = groovy.evaluate(script);
-			return Objects.toString(result);
+			return groovy.evaluate(script);
 		}
 		catch(Exception e) {
 			return ExceptionUtils.getStackTrace(e);

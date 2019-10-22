@@ -84,7 +84,7 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param role The role, which holds the values, to be updated.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void updaterRole(Role role) throws JSONException;
+	void updateRole(Role role) throws JSONException;
 	
 	/**
 	 * Return the namespaces used in the instance of conquery.

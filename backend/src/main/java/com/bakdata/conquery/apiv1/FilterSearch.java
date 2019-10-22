@@ -1,9 +1,15 @@
 package com.bakdata.conquery.apiv1;
 
-import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTION;
-import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
+import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.worker.Namespaces;
+import com.zigurs.karlis.utils.search.QuickSearch;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -12,15 +18,66 @@ import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.worker.Namespaces;
-import com.zigurs.karlis.utils.search.QuickSearch;
-
-import lombok.extern.slf4j.Slf4j;
+import static com.zigurs.karlis.utils.search.QuickSearch.MergePolicy.INTERSECTION;
+import static com.zigurs.karlis.utils.search.QuickSearch.UnmatchedPolicy.IGNORE;
 
 @Slf4j
 public class FilterSearch {
+
+	/**
+	 * Enum to specify a scorer function in {@link QuickSearch}. Used for resolvers in {@link AbstractSelectFilter}.
+	 */
+	@AllArgsConstructor
+	@Getter
+	public enum FilterSearchType {
+		/**
+		 * String must start with search-String.
+		 */
+		PREFIX {
+			@Override
+			double score(String candidate, String keyword) {
+				/* Sort ascending by length of match */
+				if (keyword.startsWith(candidate))
+					return 1d / (double) candidate.length();
+				else
+					return -1d;
+			}
+		},
+		/**
+		 * Search is contained somewhere in string.
+		 */
+		CONTAINS {
+			@Override
+			double score(String candidate, String keyword) {
+				/* 0...1 depending on the length ratio */
+				double matchScore = (double) candidate.length() / (double) keyword.length();
+
+				/* boost by 1 if matches start of keyword */
+				if (keyword.startsWith(candidate))
+					return matchScore + 1.0;
+
+				return matchScore;
+			}
+		},
+		/**
+		 * Values must be exactly the same.
+		 */
+		EXACT {
+			@Override
+			double score(String candidate, String keyword) {
+				/* Only allow exact matches through (returning < 0.0 means skip this candidate) */
+				return candidate.length() == keyword.length() ? 1.0 : -1.0;
+			}
+		};
+
+		/**
+		 * Search function. See {@link QuickSearch#DEFAULT_MATCH_SCORER}.
+		 * @param candidate potential match.
+		 * @param match search String.
+		 * @return Value > 0 increases relevance of string (also used for ordering results). < 0 removes string.
+		 */
+		abstract double score(String candidate, String match);
+	}
 
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
@@ -37,10 +94,10 @@ public class FilterSearch {
 		return executor;
 	}
 
-	private static void createSourceSearch(AbstractSelectFilter<?> filter) {
+	public static void createSourceSearch(AbstractSelectFilter<?> filter) {
 		FilterTemplate template = filter.getTemplate();
 
-		List<String> columns = template.getColumns();
+		List<String> columns = new ArrayList<>(template.getColumns());
 		columns.add(template.getColumnValue());
 
 		File file = new File(template.getFilePath());
@@ -59,6 +116,7 @@ public class FilterSearch {
 		quick = new QuickSearch.QuickSearchBuilder()
 			.withUnmatchedPolicy(IGNORE)
 			.withMergePolicy(INTERSECTION)
+			.withKeywordMatchScorer(filter.getSearchType()::score)
 			.build();
 
 		try {

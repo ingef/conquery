@@ -34,16 +34,18 @@ type PropsType = {
 };
 
 const QueryResults = (props: PropsType) => {
-  if (isEmpty(props.resultCount) && isEmpty(props.resultUrl)) return null;
+  if (isEmpty(props.resultUrl)) return null;
 
-  const isDownload = props.resultCount > 0 || !!props.resultUrl;
+  const isDownload = !!props.resultUrl;
   const ending = props.resultUrl.split(".").reverse()[0];
 
   return (
     <Root>
-      <Text>
-        {T.translate("queryRunner.resultCount", { count: props.resultCount })}
-      </Text>
+      {!isEmpty(props.resultCount) && (
+        <Text>
+          {T.translate("queryRunner.resultCount", { count: props.resultCount })}
+        </Text>
+      )}
       {ending === "csv" && <SxPreviewButton url={props.resultUrl} />}
       {isDownload && (
         <StyledDownloadButton

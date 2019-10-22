@@ -20,7 +20,7 @@ import Labeled from "./Labeled";
 
 type PropsType = FieldPropsType & {
   label?: string,
-  options: SelectOptionsT,
+  options: ?SelectOptionsT,
   disabled?: ?boolean,
   tooltip?: string,
   onInputChange?: Function,
@@ -84,7 +84,7 @@ const InputMultiSelect = (props: PropsType) => {
     props.input.value && props.input.value.length > OPTIONS_LIMIT;
 
   const options =
-    props.options &&
+    !!props.options &&
     props.options.slice(0, OPTIONS_LIMIT).map(option => ({
       ...option,
       label:
@@ -100,12 +100,12 @@ const InputMultiSelect = (props: PropsType) => {
       <div>
         <Row>
           <InfoText>
-            {props.options.length || 0}{" "}
+            {!!props.options ? props.options.length : 0}{" "}
             {T.translate("inputMultiSelect.options")}
           </InfoText>
           <TransparentButton
             tiny
-            disabled={props.options.length === 0}
+            disabled={!props.options || props.options.length === 0}
             onClick={() => ownProps.setValue(props.options)}
           >
             {T.translate("inputMultiSelect.insertAll")}

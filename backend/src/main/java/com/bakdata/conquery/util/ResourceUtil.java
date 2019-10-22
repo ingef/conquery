@@ -23,8 +23,8 @@ public class ResourceUtil {
 		return namespaces.get(id).getStorage();
 	}
 
-	public ManagedQuery getManagedQuery(DatasetId id, ManagedExecutionId queryId) {
-		return namespaces.get(id).getQueryManager().getQuery(queryId);
+	public ManagedQuery getManagedQuery(ManagedExecutionId queryId) {
+		return namespaces.get(queryId.getDataset()).getQueryManager().getQuery(queryId);
 	}
 
 }

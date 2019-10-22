@@ -2,7 +2,6 @@ package com.bakdata.conquery.models;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 
 import org.junit.jupiter.api.Test;
@@ -96,7 +95,6 @@ public class SerializationTests {
 		table.setLabel("tableLabel");
 		table.setName("tableName");
 		table.setPrimaryColumn(column);
-		table.setTags(Set.of("tag"));
 		
 		column.setTable(table);
 		
