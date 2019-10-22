@@ -18,6 +18,7 @@ import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.api.PermissionResource;
+import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
@@ -37,10 +38,11 @@ import java.util.ServiceLoader;
 @Slf4j
 public class AdminServlet {
 
+	/**
+	 * Marker interface for classes that provide admin UI functionality. Classes have to register as CPSType=AdminServletResource and will then be able to be registered in the admin jerseyconfig.
+	 */
 	@CPSBase
-	public interface AdminServletResource {
-		void registerResources(MasterCommand masterCommand);
-	}
+	public interface AdminServletResource { }
 
 	private AdminProcessor adminProcessor;
 
@@ -94,12 +96,10 @@ public class AdminServlet {
 			.register(ConceptsUIResource.class)
 			.register(PermissionResource.class);
 
+		// Scan calsspath for Admin side plugins and register them.
 		for (Class<? extends AdminServletResource> resourceProvider : CPSTypeIdResolver.listImplementations(AdminServletResource.class)) {
 			try {
-
-				final AdminServletResource reseource = resourceProvider.getConstructor().newInstance();
-				jerseyConfig.register(reseource);
-				reseource.registerResources(masterCommand);
+				jerseyConfig.register(resourceProvider);
 			} catch (Exception e) {
 				log.error("Failed loading admin resource {}",resourceProvider, e);
 			}
