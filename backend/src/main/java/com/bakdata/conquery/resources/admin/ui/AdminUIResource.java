@@ -82,10 +82,10 @@ public class AdminUIResource {
 	}
 
 	/**
-	 * Execute script and serialize value with {@link Objects::toString}.
+	 * Execute script and serialize value with {@link Objects#toString}.
 	 * Used in admin UI for minor scripting.
 	 */
-	@Produces({MediaType.TEXT_PLAIN})
+	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@POST
 	@Path("/script")
@@ -97,7 +97,7 @@ public class AdminUIResource {
 	 * Execute script and serialize return value as Json.
 	 * Useful for configuration and verification scripts.
 	 */
-	@Produces({MediaType.APPLICATION_JSON})
+	@Produces(MediaType.APPLICATION_JSON)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@POST
 	@Path("/script")
