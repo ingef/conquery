@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ArrayQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
@@ -27,7 +26,7 @@ public class ArrayQuery implements IQuery {
 	List<ConceptQuery> childQueries = new ArrayList<>();
 
 	@Override
-	public IQuery resolve(QueryResolveContext context) {
+	public ArrayQuery resolve(QueryResolveContext context) {
 		for(ConceptQuery child : childQueries) {
 			child = child.resolve(context);
 		}
@@ -35,13 +34,9 @@ public class ArrayQuery implements IQuery {
 	}
 
 	@Override
-	public QueryPlan createQueryPlan(QueryPlanContext context) {
-		ArrayQueryPlan aq = new ArrayQueryPlan();
-		List<ConceptQueryPlan> childPlans = new ArrayList<>();
-		for(ConceptQuery child: childQueries) {
-			childPlans.add(child.createQueryPlan(context));
-		}
-		aq.setChildPlans(childPlans);
+	public ArrayQueryPlan createQueryPlan(QueryPlanContext context) {
+		ArrayQueryPlan aq = new ArrayQueryPlan(context);
+		aq.addChildPlans(childQueries, context);
 		return aq;
 	}
 
