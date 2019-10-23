@@ -11,7 +11,6 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ArrayQueryPlan;
-import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
@@ -35,6 +34,7 @@ public class ArrayQuery implements IQuery {
 
 	@Override
 	public ArrayQueryPlan createQueryPlan(QueryPlanContext context) {
+		// Make sure the constructor and the adding is called with the same context.
 		ArrayQueryPlan aq = new ArrayQueryPlan(context);
 		aq.addChildPlans(childQueries, context);
 		return aq;

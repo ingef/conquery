@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
@@ -17,7 +16,6 @@ import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
-import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult;
@@ -59,8 +57,10 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	
 	/**
 	 * Helper function to add child queries. This takes care of the SpecialDateUnion union handling.
-	 * @param childQueries 
-	 * @param context
+	 * It acts as a gate keeper, so all child queries either have a SpecialDateUnion or none.
+	 * @param childQueries The queries that are individually executed, for which QueryPlans are generated uniformly 
+	 * regarding the SpecialDateContext.
+	 * @param context Primarily used to decide if a SpecialDateUnion needs to be generated.
 	 */
 	public void addChildPlans(List<ConceptQuery> childQueries, QueryPlanContext context) {
 		for(ConceptQuery child :childQueries) {
