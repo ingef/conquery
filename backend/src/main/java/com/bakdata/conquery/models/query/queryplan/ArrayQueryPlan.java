@@ -58,7 +58,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	/**
 	 * Helper function to add child queries. This takes care of the SpecialDateUnion union handling.
 	 * It acts as a gate keeper, so all child queries either have a SpecialDateUnion or none.
-	 * @param childQueries The queries that are individually executed, for which QueryPlans are generated uniformly 
+	 * @param childQueries The queries that are individually executed, for which QueryPlans are generated uniformly
 	 * regarding the SpecialDateContext.
 	 * @param context Primarily used to decide if a SpecialDateUnion needs to be generated.
 	 */
@@ -79,7 +79,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 		for(ConceptQueryPlan child : childPlans) {
 			EntityResult result = child.execute(ctx, entity);
 			
-			// Check if child 
+			// Check if child returned a result
 			if(!result.isContained()) {
 				// Advance pointer for the result insertion by the number of currently handled aggregators.
 				resultInsertIdx = advanceResultPointer(resultInsertIdx, child);
@@ -102,7 +102,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 
 			// Skip copying of first value: daterange
 			int copyLength = calculateCopyLength(singleLineResult);
-			System.arraycopy(singleLineResult.getValues(), srcCopyPos, resultValues, resultInsertIdx, copyLength);			
+			System.arraycopy(singleLineResult.getValues(), srcCopyPos, resultValues, resultInsertIdx, copyLength);	
 
 			// Advance pointer for the result insertion by the number of currently handled aggregators.
 			resultInsertIdx = advanceResultPointer(resultInsertIdx, child);
