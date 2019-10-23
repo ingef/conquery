@@ -97,10 +97,10 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 			int srcCopyPos = 0;
 			if(specialDateUnion) {
 				dateSet.addAll(prepareDateSet(singleLineResult.getValues()[0]));
+				// Skip overwriting the first value: daterange
 				srcCopyPos = 1;
 			}
 
-			// Skip copying of first value: daterange
 			int copyLength = calculateCopyLength(singleLineResult);
 			System.arraycopy(singleLineResult.getValues(), srcCopyPos, resultValues, resultInsertIdx, copyLength);	
 
