@@ -170,7 +170,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		return aggregators;
 	}
 
-	private int nextIndex(int resultInsertIdx, ConceptQueryPlan child) {
+	private int nextIndex(int currentIdx, ConceptQueryPlan child) {
 		/**
 		 * If we have as specialDateUnion, we also have those in the children. We don't
 		 * want to add the result directly to the end result (its merged in a single
@@ -180,7 +180,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		if (offset < 0) {
 			throw new IllegalStateException("Result index offset must be positive, so the advancing pointer does not override results.");
 		}
-		return resultInsertIdx + offset;
+		return currentIdx + offset;
 	}
 
 	private int calculateCopyLength(SinglelineContainedEntityResult singleLineResult) {
