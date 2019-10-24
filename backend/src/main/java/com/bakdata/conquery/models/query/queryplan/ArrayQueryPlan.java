@@ -82,12 +82,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 				resultInsertIdx = advanceResultPointer(resultInsertIdx, child);
 				continue;
 			}
-			if (!(result instanceof SinglelineContainedEntityResult)) {
-				throw new IllegalStateException(String.format(
-					"Unhandled EntityResult Type %s: %s",
-					result.getClass(),
-					result.toString()));
-			}
+
 			SinglelineContainedEntityResult singleLineResult = SinglelineContainedEntityResult.class.cast(result);
 			// Mark this result line as contained.
 			notContainedInChildQueries = false;
