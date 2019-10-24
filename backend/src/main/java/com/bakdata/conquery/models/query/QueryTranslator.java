@@ -50,7 +50,7 @@ public class QueryTranslator {
 				.readValue(value, CQElement.class);
 		}
 		catch(Exception e) {
-			throw new RuntimeException("Failed to translate element "+element+" to dataset "+target);
+			throw new RuntimeException("Failed to translate element "+element+" to dataset "+target, e);
 		}
 	}
 }
