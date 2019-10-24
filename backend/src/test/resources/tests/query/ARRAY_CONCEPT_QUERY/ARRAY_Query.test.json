@@ -85,7 +85,7 @@
     "content": {
         "tables": [
             {
-                "csv": "tests/query/ARRAY_QUERY/content.csv",
+                "csv": "tests/query/ARRAY_CONCEPT_QUERY/content.csv",
                 "name": "vers_stamm",
                 "primaryColumn": {
                     "name": "pid",
