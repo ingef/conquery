@@ -79,7 +79,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 			// Check if child returned a result
 			if(!result.isContained()) {
 				// Advance pointer for the result insertion by the number of currently handled aggregators.
-				resultInsertIdx = advanceResultPointer(resultInsertIdx, child);
+				resultInsertIdx = nextIndex(resultInsertIdx, child);
 				continue;
 			}
 
@@ -97,7 +97,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 			System.arraycopy(singleLineResult.getValues(), srcCopyPos, resultValues, resultInsertIdx, copyLength);	
 
 			// Advance pointer for the result insertion by the number of currently handled aggregators.
-			resultInsertIdx = advanceResultPointer(resultInsertIdx, child);
+			resultInsertIdx = nextIndex(resultInsertIdx, child);
 		}
 		if(notContainedInChildQueries) {
 			// None of the subqueries contained an result
@@ -140,7 +140,8 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 			 *  Because the end result should only have one such column we substract the number of queries from the aggregator size
 			 *  and add one for the union present in this class.
 			 */
-			size -= childPlans.size() + 1;
+			size -= childPlans.size();
+			size += 1;
 		}
 		return size;
 	}
@@ -152,28 +153,20 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 			.collect(Collectors.toList());
 	}
 	
-	private int advanceResultPointer(int resultInsertIdx, ConceptQueryPlan child) {
-		int offset = child.getAggregatorSize();
-		if(specialDateUnion) {
-			/** If we have as specialDateUnion, we also have those in the children.
-			 * We don't want to add the result directly to the end result (its merged in a single DateSet).
-			 * Hence the index for the result insertion is reduces by one.
-			 */
-			offset -= 1;
-		}
+	private int nextIndex(int resultInsertIdx, ConceptQueryPlan child) {
+		/** If we have as specialDateUnion, we also have those in the children.
+		 * We don't want to add the result directly to the end result (its merged in a single DateSet).
+		 * Hence the index for the result insertion is reduces by one.
+		 */
+		int offset = child.getAggregatorSize() - (specialDateUnion? 1 : 0);
 		if (offset < 0) {
 			throw new IllegalStateException("Result index offset must be positive, so the advancing pointer does not override results.");
 		}
-		resultInsertIdx += offset;
-		return resultInsertIdx;
+		return resultInsertIdx + offset;
 	}
 	
 	private int calculateCopyLength(SinglelineContainedEntityResult singleLineResult) {
-		int length = singleLineResult.getValues().length;
-		if(specialDateUnion) {
-			// Substract 1 for the same reason as in method advanceResultPointer
-			length -= 1;
-		}
+		int length = singleLineResult.getValues().length - (specialDateUnion? 1 : 0);
 		if (length < 0) {
 			throw new IllegalStateException("Copy length must be positive.");
 		}
@@ -181,9 +174,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	}
 	
 	private CDateSet prepareDateSet(Object value) {
-		CDateSet range;
-		range = CDateSet.parse(Objects.toString(value));
-		return range;
+		return CDateSet.parse(Objects.toString(value));
 	}
 	
 	
