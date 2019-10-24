@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.dictionary;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.types.specific.VarIntType;
-
 import jersey.repackaged.com.google.common.collect.Iterators;
+
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
 
 public class DirectDictionary extends AStringType<Integer> {
 
@@ -29,6 +28,9 @@ public class DirectDictionary extends AStringType<Integer> {
 
 	@Override
 	public int getId(String value) {
+		if(dict == null)
+			return -1;
+
 		return dict.getId(value.getBytes(StandardCharsets.UTF_8));
 	}
 

@@ -10,7 +10,6 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Objects;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -66,7 +65,7 @@ public class QueryManager {
 	}
 
 	public ManagedQuery getQuery(ManagedExecutionId id) {
-		return (ManagedQuery) Objects.requireNonNull(namespace.getStorage().getMetaStorage().getExecution(id),"Unable to find query " + id.toString());
+		return (ManagedQuery) namespace.getStorage().getMetaStorage().getExecution(id);
 	}
 
 }

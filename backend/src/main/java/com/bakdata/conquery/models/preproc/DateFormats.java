@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc;
 
+import com.bakdata.conquery.models.exceptions.ParsingException;
+
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
@@ -10,8 +12,6 @@ import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import com.bakdata.conquery.models.exceptions.ParsingException;
 
 public class DateFormats {
 
@@ -38,6 +38,7 @@ public class DateFormats {
 	public DateFormats(String[] additionalFormats) {
 		formats.add(toFormat("yyyy-MM-dd"));
 		formats.add(toFormat("ddMMMyyyy"));
+		formats.add(toFormat("dd.MM.yyyy"));
 		formats.add(toFormat("yyyyMMdd"));
 		for (String p : additionalFormats) {
 			formats.add(toFormat(p));
@@ -58,15 +59,17 @@ public class DateFormats {
 			}
 		}
 		for (DateTimeFormatter format : formats) {
-			if (lastFormat != format) {
-				try {
-					LocalDate res = LocalDate.parse(value, format);
-					lastFormat = format;
-					return res;
-				}
-				catch (DateTimeParseException e) {
-					//intentionally left blank
-				}
+			if (lastFormat == format) {
+				continue;
+			}
+
+			try {
+				LocalDate res = LocalDate.parse(value, format);
+				lastFormat = format;
+				return res;
+			}
+			catch (DateTimeParseException e) {
+				//intentionally left blank
 			}
 		}
 		return ERROR_DATE;
@@ -90,7 +93,7 @@ public class DateFormats {
 				it.next();
 				it.remove();
 			}
-			
+
 			if(d!=ERROR_DATE) {
 				return d;
 			}
