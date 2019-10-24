@@ -1,9 +1,9 @@
 {
     "type": "QUERY_TEST",
-    "label": "ARRAY_QUERY Test",
-    "expectedCsv": "tests/query/ARRAY_QUERY/expected.csv",
+    "label": "ARRAY_CONCEPT_QUERY Test",
+    "expectedCsv": "tests/query/ARRAY_CONCEPT_QUERY/expected.csv",
     "query": {
-		"type": "ARRAY_QUERY",
+		"type": "ARRAY_CONCEPT_QUERY",
         "childQueries": [
             {
                 "type": "CONCEPT_QUERY",
