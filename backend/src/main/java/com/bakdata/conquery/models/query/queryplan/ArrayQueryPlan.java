@@ -130,15 +130,17 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	}
 	
 	public int getAggregatorSize() {
-		Integer size = childPlans.stream().map(ConceptQueryPlan::getAggregatorSize).reduce(0, Integer::sum);
+		int size = 0;
+		for (ConceptQueryPlan child : childPlans) {
+			size += child.getAggregatorSize();
+		}
 		if(specialDateUnion) {
 			/**
 			 *  With the specialDateUnion all our children have such an aggregator too (taken care of the addChildPlans() method).
 			 *  Because the end result should only have one such column we substract the number of queries from the aggregator size
 			 *  and add one for the union present in this class.
 			 */
-			size -= childPlans.size();
-			size += 1;
+			size -= childPlans.size() + 1;
 		}
 		return size;
 	}
