@@ -23,7 +23,7 @@ import lombok.Getter;
 import lombok.ToString;
 
 /**
- * Represents the QueryPlan for corresponding to the {@link ArrayConceptQuery}
+ * Represents the QueryPlan for corresponding to the {@link ArrayConceptQuery}.
  */
 @Getter
 @ToString
@@ -151,12 +151,12 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		for (ConceptQueryPlan child : childPlans) {
 			size += child.getAggregatorSize();
 		}
-			/**
-			 * With the specialDateUnion all our children have such an aggregator too (taken
-			 * care of the addChildPlans() method). Because the end result should only have
-			 * one such column we substract the number of queries from the aggregator size
-			 * and add one for the union present in this class.
-			 */
+		/**
+		 * With the specialDateUnion all our children have such an aggregator too (taken
+		 * care of the addChildPlans() method). Because the end result should only have
+		 * one such column we substract the number of queries from the aggregator size
+		 * and add one for the union present in this class.
+		 */
 		return specialDateUnion ? size - childPlans.size() + 1 : size;
 	}
 
