@@ -100,7 +100,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 			notContainedInChildQueries = false;
 			int srcCopyPos = 0;
 			if (specialDateUnion) {
-				dateSet.addAll(prepareDateSet(singleLineResult.getValues()[0]));
+				dateSet.addAll(CDateSet.parse(Objects.toString(singleLineResult.getValues()[0])));
 				// Skip overwriting the first value: daterange
 				srcCopyPos = 1;
 			}
@@ -189,10 +189,6 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 			throw new IllegalStateException("Copy length must be positive.");
 		}
 		return length;
-	}
-
-	private CDateSet prepareDateSet(Object value) {
-		return CDateSet.parse(Objects.toString(value));
 	}
 
 	public void nextTable(QueryContext ctx, Table currentTable) {
