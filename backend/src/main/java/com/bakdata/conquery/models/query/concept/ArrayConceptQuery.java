@@ -26,7 +26,7 @@ import lombok.Setter;
 @Setter
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = IQuery.class)
 public class ArrayConceptQuery implements IQuery {
-	List<ConceptQuery> childQueries = new ArrayList<>();
+	private final List<ConceptQuery> childQueries = new ArrayList<>();
 
 	@Override
 	public ArrayConceptQuery resolve(QueryResolveContext context) {

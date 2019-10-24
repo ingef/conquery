@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -21,11 +22,14 @@ import com.bakdata.conquery.models.query.results.SinglelineContainedEntityResult
 import lombok.Getter;
 import lombok.ToString;
 
+/**
+ * Represents the QueryPlan for corresponding to the {@link ArrayConceptQuery}
+ */
 @Getter
 @ToString
 public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 
-	List<ConceptQueryPlan> childPlans;
+	private List<ConceptQueryPlan> childPlans;
 	@ToString.Exclude
 	private boolean specialDateUnion = false;
 
@@ -147,17 +151,13 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		for (ConceptQueryPlan child : childPlans) {
 			size += child.getAggregatorSize();
 		}
-		if (specialDateUnion) {
 			/**
 			 * With the specialDateUnion all our children have such an aggregator too (taken
 			 * care of the addChildPlans() method). Because the end result should only have
 			 * one such column we substract the number of queries from the aggregator size
 			 * and add one for the union present in this class.
 			 */
-			size -= childPlans.size();
-			size += 1;
-		}
-		return size;
+		return specialDateUnion ? size : size - childPlans.size() + 1;
 	}
 
 	public List<Aggregator<?>> getAggregators() {
