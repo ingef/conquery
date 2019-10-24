@@ -10,7 +10,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
-import com.bakdata.conquery.models.query.queryplan.ArrayQueryPlan;
+import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
@@ -24,12 +24,12 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@CPSType(id = "ARRAY_QUERY", base = IQuery.class)
-public class ArrayQuery implements IQuery {
+@CPSType(id = "ARRAY_CONCEPT_QUERY", base = IQuery.class)
+public class ArrayConceptQuery implements IQuery {
 	List<ConceptQuery> childQueries = new ArrayList<>();
 
 	@Override
-	public ArrayQuery resolve(QueryResolveContext context) {
+	public ArrayConceptQuery resolve(QueryResolveContext context) {
 		for(ConceptQuery child : childQueries) {
 			child = child.resolve(context);
 		}
@@ -37,9 +37,9 @@ public class ArrayQuery implements IQuery {
 	}
 
 	@Override
-	public ArrayQueryPlan createQueryPlan(QueryPlanContext context) {
+	public ArrayConceptQueryPlan createQueryPlan(QueryPlanContext context) {
 		// Make sure the constructor and the adding is called with the same context.
-		ArrayQueryPlan aq = new ArrayQueryPlan(context);
+		ArrayConceptQueryPlan aq = new ArrayConceptQueryPlan(context);
 		aq.addChildPlans(childQueries, context);
 		return aq;
 	}

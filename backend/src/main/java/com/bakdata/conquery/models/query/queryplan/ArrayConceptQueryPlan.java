@@ -23,17 +23,17 @@ import lombok.ToString;
 
 @Getter
 @ToString
-public class ArrayQueryPlan implements QueryPlan, EventIterating {
+public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 
 	List<ConceptQueryPlan> childPlans;
 	@ToString.Exclude
 	private boolean specialDateUnion = false;
 
-	public ArrayQueryPlan(boolean generateSpecialDateUnion) {
+	public ArrayConceptQueryPlan(boolean generateSpecialDateUnion) {
 		specialDateUnion = generateSpecialDateUnion;
 	}
 
-	public ArrayQueryPlan(QueryPlanContext context) {
+	public ArrayConceptQueryPlan(QueryPlanContext context) {
 		this(context.isGenerateSpecialDateUnion());
 	}
 
@@ -48,12 +48,12 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	}
 
 	@Override
-	public ArrayQueryPlan clone(CloneContext ctx) {
+	public ArrayConceptQueryPlan clone(CloneContext ctx) {
 		List<ConceptQueryPlan> childPlanClones = new ArrayList<>();
 		for (ConceptQueryPlan child : childPlans) {
 			childPlanClones.add(child.clone(ctx));
 		}
-		ArrayQueryPlan aqClone = new ArrayQueryPlan(specialDateUnion);
+		ArrayConceptQueryPlan aqClone = new ArrayConceptQueryPlan(specialDateUnion);
 		aqClone.childPlans = new ArrayList<ConceptQueryPlan>(childPlanClones);
 		return aqClone;
 	}
