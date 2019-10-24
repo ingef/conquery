@@ -157,7 +157,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 			 * one such column we substract the number of queries from the aggregator size
 			 * and add one for the union present in this class.
 			 */
-		return specialDateUnion ? size : size - childPlans.size() + 1;
+		return specialDateUnion ? size - childPlans.size() + 1 : size;
 	}
 
 	public List<Aggregator<?>> getAggregators() {
