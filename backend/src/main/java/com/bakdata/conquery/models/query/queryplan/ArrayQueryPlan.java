@@ -125,9 +125,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	@Override
 	public void collectRequiredTables(Set<TableId> requiredTables) {
 		for(ConceptQueryPlan child : childPlans) {
-			Set<TableId> tables = new HashSet<>();
-			child.collectRequiredTables(tables);
-			requiredTables.addAll(tables);
+			child.collectRequiredTables(requiredTables);
 		}
 	}
 	
