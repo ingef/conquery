@@ -62,7 +62,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 	 * Helper function to add child queries. This takes care of the SpecialDateUnion
 	 * union handling. It acts as a gate keeper, so all child queries either have a
 	 * SpecialDateUnion or none.
-	 * 
+	 *
 	 * @param childQueries
 	 *            The queries that are individually executed, for which QueryPlans
 	 *            are generated uniformly regarding the SpecialDateContext.

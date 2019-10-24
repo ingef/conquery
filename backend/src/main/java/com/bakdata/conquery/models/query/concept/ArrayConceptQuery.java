@@ -19,7 +19,7 @@ import lombok.Setter;
 
 /**
  * Query type that combines a set of {@link ConceptQuery}s which are separately evaluated
- * and whose results are merged. If a SpecialDateUnion is required, the result will hold 
+ * and whose results are merged. If a SpecialDateUnion is required, the result will hold
  * the union of all dates from the separate queries.
  */
 @Getter
