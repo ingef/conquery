@@ -28,8 +28,8 @@ import lombok.ToString;
 @Getter
 @ToString
 public class ArrayQueryPlan implements QueryPlan, EventIterating {
-	@Setter(value = AccessLevel.PRIVATE)
-	List<ConceptQueryPlan> childPlans = new ArrayList<>();
+
+	List<ConceptQueryPlan> childPlans;
 	@ToString.Exclude
 	private boolean specialDateUnion = false;
 	
@@ -51,7 +51,7 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	public ArrayQueryPlan clone(CloneContext ctx) {
 		List<ConceptQueryPlan> childClones = childPlans.stream().map(qp -> qp.clone(ctx)).collect(Collectors.toList());
 		ArrayQueryPlan aqClone = new ArrayQueryPlan(specialDateUnion);
-		aqClone.setChildPlans(childClones);
+		aqClone.childPlans = new ArrayList<ConceptQueryPlan>(childClones);
 		return aqClone;
 	}
 	
@@ -63,9 +63,6 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 	 * @param context Primarily used to decide if a SpecialDateUnion needs to be generated.
 	 */
 	public void addChildPlans(List<ConceptQuery> childQueries, QueryPlanContext context) {
-		for(ConceptQuery child :childQueries) {
-			child.createQueryPlan(context);
-		}
 		childPlans = childQueries.stream().map(cp -> cp.createQueryPlan(context)).collect(Collectors.toList());
 	}
 
