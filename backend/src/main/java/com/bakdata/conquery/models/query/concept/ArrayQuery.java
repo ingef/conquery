@@ -17,7 +17,11 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import lombok.Getter;
 import lombok.Setter;
 
-
+/**
+ * Query type that combines a set of {@code ConceptQuery}s which are separately evaluated
+ * and whose results are merged. If a SpecialDateUnion is required, the result will hold 
+ * the union of all dates from the separate queries.
+ */
 @Getter
 @Setter
 @CPSType(id = "ARRAY_QUERY", base = IQuery.class)
