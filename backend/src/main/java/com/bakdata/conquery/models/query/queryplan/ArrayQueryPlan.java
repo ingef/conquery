@@ -119,7 +119,12 @@ public class ArrayQueryPlan implements QueryPlan, EventIterating {
 
 	@Override
 	public boolean isOfInterest(Entity entity) {
-		return childPlans.stream().map(cp -> cp.isOfInterest(entity)).reduce(Boolean::logicalOr).orElse(false);
+		for (ConceptQueryPlan child : childPlans) {
+			if(child.isOfInterest(entity)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
