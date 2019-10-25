@@ -22,8 +22,8 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
+import com.bakdata.conquery.resources.hierarchies.HierarchyHelper;
 import com.bakdata.conquery.util.support.StandaloneSupport;
-import com.bakdata.conquery.util.support.TestConquery;
 
 /**
  * Tests the mandator UI interface. Before the request is done, a mandator, a
@@ -33,7 +33,6 @@ import com.bakdata.conquery.util.support.TestConquery;
  */
 public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
 
-	private TestConquery conquery;
 
 	private MasterMetaStorage storage;
 	private Role mandator = new Role("testMandatorName", "testMandatorLabel");
@@ -60,7 +59,7 @@ public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationT
 			}
 			
 			String base = String.format("http://localhost:%d/admin/", conquery.getAdminPort());
-			URI classBase = fromHierachicalPathResourceMethod(base, RoleUIResource.class, "getrole")
+			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(base, RoleUIResource.class, "getRole")
 			.buildFromMap(Map.of(ROLE_NAME, mandatorId.toString()));
 	
 			Response response = conquery
@@ -82,22 +81,6 @@ public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationT
 			storage.removeRole(mandatorId);
 			storage.removeUser(userId);
 		}
-	}
-	
-	private static UriBuilder fromHierachicalPathResourceMethod(String base, Class<?> clazz, String methodName) {
-		UriBuilder uri = UriBuilder.fromPath(base);
-		Class<?> currentClass = clazz;
-		do {
-			// Walk up the class hierarchy and collect @Path annotations
-			try {
-				uri.path(currentClass);	
-			} catch (IllegalArgumentException e) {
-				// ignore this class, a @Path might be more up in the hierarchy
-			}
-			currentClass = currentClass.getSuperclass();
-		}while(!currentClass.equals(Object.class));
-		uri.path(clazz, methodName);
-		return uri;
 	}
 
 }

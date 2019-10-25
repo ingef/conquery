@@ -28,7 +28,7 @@ public class RoleUIResource extends HRoles {
 	 */
 	@Path("{" + ROLE_NAME + "}")
 	@GET
-	public View getrole(@PathParam(ROLE_NAME) RoleId roleId) {
+	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) {
 		return new UIView<>("role.html.ftl", processor.getUIContext(), processor.getRoleContent(roleId));
 	}
 }
