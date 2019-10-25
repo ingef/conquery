@@ -28,6 +28,9 @@ public class QueryTranslator {
 	
 	public <T extends CQElement> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		try {
+			if(namespaces.get(target) == null)
+				throw new IllegalStateException("dataset is not in namespaces.");
+
 			String value = Jackson.MAPPER.writeValueAsString(element);
 	
 			Pattern[] patterns = element
