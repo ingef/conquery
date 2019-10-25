@@ -1,9 +1,14 @@
 package com.bakdata.conquery.integration.tests;
 
+import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import java.net.URI;
+import java.util.Map;
+
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -16,6 +21,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 
@@ -25,7 +31,7 @@ import com.bakdata.conquery.util.support.TestConquery;
  * tested against the created entities.
  *
  */
-public class MandatorUITest implements IntegrationTest.Simple {
+public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
 
 	private TestConquery conquery;
 
@@ -52,10 +58,14 @@ public class MandatorUITest implements IntegrationTest.Simple {
 			catch (JSONException e) {
 				fail("Failed when adding to storage.",e);
 			}
+			
+			String base = String.format("http://localhost:%d/admin/", conquery.getAdminPort());
+			URI classBase = fromHierachicalPathResourceMethod(base, RoleUIResource.class, "getrole")
+			.buildFromMap(Map.of(ROLE_NAME, mandatorId.toString()));
 	
 			Response response = conquery
 				.getClient()
-				.target(String.format("http://localhost:%d/admin/mandators/%s", conquery.getAdminPort(), mandatorId.toString()))
+				.target(classBase)
 				.request()
 				.get();
 	
@@ -72,6 +82,22 @@ public class MandatorUITest implements IntegrationTest.Simple {
 			storage.removeRole(mandatorId);
 			storage.removeUser(userId);
 		}
+	}
+	
+	private static UriBuilder fromHierachicalPathResourceMethod(String base, Class<?> clazz, String methodName) {
+		UriBuilder uri = UriBuilder.fromPath(base);
+		Class<?> currentClass = clazz;
+		do {
+			// Walk up the class hierarchy and collect @Path annotations
+			try {
+				uri.path(currentClass);	
+			} catch (IllegalArgumentException e) {
+				// ignore this class, a @Path might be more up in the hierarchy
+			}
+			currentClass = currentClass.getSuperclass();
+		}while(!currentClass.equals(Object.class));
+		uri.path(clazz, methodName);
+		return uri;
 	}
 
 }
