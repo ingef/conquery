@@ -82,6 +82,7 @@ export const selectDataset = (
 ) => {
   return (dispatch: Dispatch, state: getState) => {
     dispatch(saveQuery(query, previouslySelectedDatasetId));
+
     dispatch(selectDatasetInput(datasetId));
 
     // To allow loading trees to check whether they should abort or not
@@ -97,7 +98,8 @@ export const selectDataset = (
       else dispatch(loadQuery(nextDataset.query));
 
       dispatch(loadTrees(datasetId));
-      // clearing Redux Form
+
+      // CLEAR Redux Form
       dispatch(reset(selectActiveForm(state)));
 
       return dispatch(loadPreviousQueries(datasetId));
@@ -105,14 +107,8 @@ export const selectDataset = (
   };
 };
 
-const selectActiveForm = getState => {
-  const state = getState();
-  return (
-    state.panes &&
-    state.panes.right &&
-    state.panes.right.tabs &&
-    state.panes.right.tabs.externalForms &&
-    state.panes.right.tabs.externalForms.externalForms &&
-    state.panes.right.tabs.externalForms.externalForms.activeForm
-  );
+const selectActiveForm = getStateFn => {
+  const state = getStateFn();
+
+  return state.externalForms && state.externalForms.activeForm;
 };
