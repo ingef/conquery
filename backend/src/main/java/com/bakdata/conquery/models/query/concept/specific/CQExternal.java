@@ -1,15 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -32,12 +22,20 @@ import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.MoreCollectors;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @CPSType(id = "EXTERNAL", base = CQElement.class)
@@ -101,7 +99,7 @@ public class CQExternal implements CQElement {
 				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format));
 				
 				int resolvedId;
-				if(id!=null && (resolvedId=primary.getId(id.getCsvId())) != -1) {
+				if (id != null && id.getCsvId() != null && (resolvedId = primary.getId(id.getCsvId())) != -1) {
 					includedEntities.put(
 						resolvedId,
 						Objects.requireNonNull(dates)

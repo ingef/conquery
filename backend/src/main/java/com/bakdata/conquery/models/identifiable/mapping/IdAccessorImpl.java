@@ -1,16 +1,14 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import org.apache.commons.lang3.ArrayUtils;
-
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.models.query.concept.specific.CQExternal;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 /**
  * The standard Implementation for an IdAccessor.
@@ -42,6 +40,9 @@ public class IdAccessorImpl implements IdAccessor {
 	 * @return The filtered csvLine.
 	 */
 	public static String[] removeNonIdFields(String[] csvLine, List<CQExternal.FormatColumn> formatColumns) {
+		if(csvLine.length < formatColumns.size())
+			throw new IllegalArgumentException(String.format("csvline `{}` of length {}, should be at least {}",csvLine, csvLine.length, formatColumns.size()));
+
 		List<String> result = new ArrayList<>();
 		for (int i = 0; i < csvLine.length; i++) {
 			if (formatColumns.get(i) == CQExternal.FormatColumn.ID) {
