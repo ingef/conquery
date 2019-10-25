@@ -6,6 +6,7 @@ import T from "i18n-react";
 
 import DownloadButton from "../button/DownloadButton";
 import PreviewButton from "../button/PreviewButton";
+import FaIcon from "../icon/FaIcon";
 import { isEmpty } from "../common/helpers/commonHelper";
 
 const Root = styled("div")`
@@ -15,9 +16,13 @@ const Root = styled("div")`
 `;
 
 const Text = styled("p")`
-  font-size: ${({ theme }) => theme.font.lg};
   margin: 0 10px 0 0;
   line-height: 1;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
+const LgText = styled(Text)`
+  font-size: ${({ theme }) => theme.font.lg};
 `;
 
 const StyledDownloadButton = styled(DownloadButton)`
@@ -26,6 +31,10 @@ const StyledDownloadButton = styled(DownloadButton)`
 
 const SxPreviewButton = styled(PreviewButton)`
   margin-right: 10px;
+`;
+
+const Bold = styled("span")`
+  font-weight: 700;
 `;
 
 type PropsType = {
@@ -41,10 +50,16 @@ const QueryResults = (props: PropsType) => {
 
   return (
     <Root>
-      {!isEmpty(props.resultCount) && (
+      {isEmpty(props.resultCount) ? (
         <Text>
-          {T.translate("queryRunner.resultCount", { count: props.resultCount })}
+          <FaIcon icon="check" left />
+          {T.translate("queryRunner.endSuccess")}
         </Text>
+      ) : (
+        <LgText>
+          <Bold>{props.resultCount}</Bold>{" "}
+          {T.translate("queryRunner.resultCount")}
+        </LgText>
       )}
       {ending === "csv" && <SxPreviewButton url={props.resultUrl} />}
       {isDownload && (
