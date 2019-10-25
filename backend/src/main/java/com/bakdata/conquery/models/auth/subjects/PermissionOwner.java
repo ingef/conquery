@@ -204,17 +204,35 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public boolean isRemembered() {
 		throw new UnsupportedOperationException();
 	}
-
+	
 	/**
-	 * Adds a permission to the storage and to the locally stored permissions by
-	 * calling indirectly {@link #addPermissionLocal(ConqueryPermission)}.
+	 * Adds permissions to the user and persistent to the storage.
 	 *
 	 * @param storage
 	 *            A storage where the permission are added for persistence.
 	 * @param permission
 	 *            The permission to add.
-	 * @return Returns the added Permission (Id might change when the owner changed
-	 *         or permissions are aggregated)
+	 * @return Returns the added Permission (Might change when the permissions are aggregated)
+	 * @throws JSONException
+	 *             When the permission object could not be formed in to the
+	 *             appropriate JSON format.
+	 */
+	public Set<ConqueryPermission> addPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissions) throws JSONException {
+		HashSet<ConqueryPermission> addedPermissions = new HashSet<>();
+		for(ConqueryPermission permission : permissions) {
+			addedPermissions.add(addPermission(storage, permission));
+		}
+		return addedPermissions;
+	}
+
+	/**
+	 * Adds permissions to the user and persistent to the storage.
+	 *
+	 * @param storage
+	 *            A storage where the permission are added for persistence.
+	 * @param permission
+	 *            The permission to add.
+	 * @return Returns the added Permission (Might change when the permissions are aggregated)
 	 * @throws JSONException
 	 *             When the permission object could not be formed in to the
 	 *             appropriate JSON format.

@@ -13,7 +13,6 @@ import org.apache.shiro.authz.Permission;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -80,7 +79,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
 		synchronized (roles) {
 			if(!roles.contains(role)) {
-				addMandatorLocal(role);
+				addRoleLocal(role);
 				updateStorage(storage);
 			}
 		}
@@ -99,7 +98,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	 * Only to be called from a context that is synchronized on `roles`.
 	 * @param mandator
 	 */
-	public void addMandatorLocal(Role mandator) {
+	public void addRoleLocal(Role mandator) {
 		roles.add(mandator);
 	}
 

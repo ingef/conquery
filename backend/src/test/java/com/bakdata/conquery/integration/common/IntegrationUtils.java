@@ -28,7 +28,7 @@ public class IntegrationUtils {
 			RoleId [] rolesInjected = rUser.getRolesInjected();
 			
 			for(RoleId mandatorId : rolesInjected) {
-				user.addMandatorLocal(storage.getRole(mandatorId));
+				user.addRoleLocal(storage.getRole(mandatorId));
 			}
 			storage.addUser(user);
 		}

@@ -71,7 +71,7 @@ public class PermissionStorageFunctionTest extends ConqueryTestSpec {
 			RoleId [] rolesInjected = rUser.getRolesInjected();
 			
 			for(RoleId mandatorId : rolesInjected) {
-				user.addMandatorLocal(storage.getRole(mandatorId));
+				user.addRoleLocal(storage.getRole(mandatorId));
 			}
 			storage.updateUser(user);
 		}
@@ -115,7 +115,7 @@ public class PermissionStorageFunctionTest extends ConqueryTestSpec {
 				.map(rUser ->{
 					User user = (User)rUser.getUser();
 					for(RoleId id : rUser.getRolesInjected()){
-						user.addMandatorLocal(storage.getRole(id));
+						user.addRoleLocal(storage.getRole(id));
 					}
 					return user;
 				}).map(User.class::cast).collect(Collectors.toList());
