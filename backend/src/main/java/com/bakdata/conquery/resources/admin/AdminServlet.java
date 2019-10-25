@@ -1,23 +1,18 @@
 package com.bakdata.conquery.resources.admin;
 
-import java.util.Collections;
-import java.util.ServiceLoader;
-
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.servlet.ServletContainer;
-
 import com.bakdata.conquery.commands.MasterCommand;
+import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthCookieFilter;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
-import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
@@ -35,9 +30,23 @@ import io.dropwizard.views.ViewMessageBodyWriter;
 import io.dropwizard.views.ViewRenderer;
 import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.servlet.ServletContainer;
+
+import java.util.Collections;
+import java.util.ServiceLoader;
 
 @Getter
+@Slf4j
 public class AdminServlet {
+
+	/**
+	 * Marker interface for classes that provide admin UI functionality. Classes have to register as CPSType=AdminServletResource and will then be able to be registered in the admin jerseyconfig.
+	 */
+	@CPSBase
+	public interface AdminServletResource { }
 
 	private AdminProcessor adminProcessor;
 
@@ -95,6 +104,16 @@ public class AdminServlet {
 			.register(TablesUIResource.class)
 			.register(ConceptsUIResource.class)
 			.register(PermissionResource.class);
+
+		// Scan calsspath for Admin side plugins and register them.
+		for (Class<? extends AdminServletResource> resourceProvider : CPSTypeIdResolver.listImplementations(AdminServletResource.class)) {
+			try {
+				jerseyConfig.register(resourceProvider);
+			}
+			catch (Exception e) {
+				log.error("Failed loading admin resource {}", resourceProvider, e);
+			}
+		}
 		
 		//register features
 		jerseyConfig
