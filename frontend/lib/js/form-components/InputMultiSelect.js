@@ -77,6 +77,15 @@ const MultiValueLabel = params => {
   );
 };
 
+const optionContainsStr = str => option => {
+  return (
+    option.value
+      .toString()
+      .toLowerCase()
+      .includes(str) || option.label.toLowerCase().includes(str)
+  );
+};
+
 const InputMultiSelect = (props: PropsType) => {
   const allowDropFile = props.allowDropFile && !!props.onDropFile;
 
@@ -91,7 +100,7 @@ const InputMultiSelect = (props: PropsType) => {
         !!option.optionValue && !!option.templateValues
           ? Mustache.render(option.optionValue, option.templateValues)
           : option.label,
-      value: "" + option.value, // convert number to string
+      value: option.value.toString(),
       optionLabel: option.label
     }));
 
@@ -106,7 +115,13 @@ const InputMultiSelect = (props: PropsType) => {
           <TransparentButton
             tiny
             disabled={!props.options || props.options.length === 0}
-            onClick={() => ownProps.setValue(props.options)}
+            onClick={() => {
+              const visibleOptions = props.options.filter(
+                optionContainsStr(ownProps.selectProps.inputValue)
+              );
+
+              ownProps.setValue(visibleOptions);
+            }}
           >
             {T.translate("inputMultiSelect.insertAll")}
           </TransparentButton>
@@ -139,10 +154,13 @@ const InputMultiSelect = (props: PropsType) => {
       noOptionsMessage={() => T.translate("reactSelect.noResults")}
       onChange={props.input.onChange}
       onInputChange={
-        props.onInputChange ||
+        props.onInputChange || // To allow for async option loading
         function(value) {
           return value;
         }
+      }
+      formatCreateLabel={inputValue =>
+        T.translate("common.create") + `: "${inputValue}"`
       }
       formatOptionLabel={({ label, optionValue, templateValues, highlight }) =>
         optionValue && templateValues ? (

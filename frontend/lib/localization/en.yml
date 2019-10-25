@@ -108,6 +108,7 @@ common:
   clearAll: "Clear all"
   clearValue: "Clear value"
   closeEsc: "Close (ESC)"
+  create: "Create"
 
 tooltip:
   headline: "Info"
