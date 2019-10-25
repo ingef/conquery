@@ -25,16 +25,16 @@ conceptTreeList:
   showingMismatches: "Showing full trees"
 
 queryRunner:
-  errorDates: "Invalid date range"
+  errorDates: "Invalid: all date ranges excluded from time calculation"
   start: "Start Query"
   stop: "Stop Query"
-  stopSuccess: "Query was successfully stopped."
+  stopSuccess: "Query stopped"
   stopError: "Failed to stop the query."
-  startSuccess: "Query was successfully started."
-  endSuccess: "Query finished successfully."
+  startSuccess: "Query started"
+  endSuccess: "Query finished"
   startError: "Failed to start the query."
   resultError: "Could not load the query result."
-  resultCount: "{count} results"
+  resultCount: "results"
   queryFailed: "The query failed."
   queryCanceled: "The query was canceled."
 
