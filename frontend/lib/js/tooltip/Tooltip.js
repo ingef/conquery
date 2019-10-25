@@ -174,6 +174,10 @@ const Tooltip = (props: PropsType) => {
     );
   };
 
+  const renderers = {
+    text: ({ value, children, nodeKey }) => searchHighlight(value)
+  };
+
   return (
     <Root>
       <StyledIconButton
@@ -214,7 +218,11 @@ const Tooltip = (props: PropsType) => {
             infos.map((info, i) => (
               <PieceOfInfo key={info.key + i}>
                 <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
-                <Markdown escapeHtml={true} source={info.value} />
+                <Markdown
+                  escapeHtml={true}
+                  renderers={renderers}
+                  source={info.value}
+                />
               </PieceOfInfo>
             ))}
         </Infos>
