@@ -181,7 +181,7 @@ public class AdminProcessor {
 
 	public void addRole(Role role) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(role));
-		log.info("New mandator:\tName: {}\tId: {} ", role.getName(), role.getId());
+		log.info("New mandator:\\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
 		storage.addRole(role);
 	}
 
