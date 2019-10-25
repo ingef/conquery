@@ -30,7 +30,6 @@ const TopRight = styled("p")`
   position: absolute;
   top: -15px;
   right: 0;
-  z-index: 1;
   cursor: pointer;
 
   &:hover {
