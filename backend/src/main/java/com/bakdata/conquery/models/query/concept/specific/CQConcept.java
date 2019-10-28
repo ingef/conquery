@@ -68,7 +68,8 @@ public class CQConcept implements CQElement {
 		for(CQTable table : tables) {
 			try {
 				table.setResolvedConnector(concept.getConnectorByName(table.getId().getConnector()));
-			}catch (NoSuchElementException exc){
+			}
+			catch (NoSuchElementException exc){
 				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), concept.getDataset(), exc);
 				continue;
 			}
