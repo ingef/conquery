@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.common;
 
+import java.util.Optional;
 import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -167,9 +168,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public static IntegerRange fromNumberRange(IRange<? extends Number, ?> orig){
-			int min = getValueWith(orig.getMin(), Number::intValue);
-			int max = getValueWith(orig.getMax(), Number::intValue);
-			return new Range.IntegerRange(min, max);
+			return new Range.IntegerRange(
+				Optional.ofNullable(orig.getMin()).map(Number::intValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::intValue).orElse(null));
 		}
 
 		@Override
@@ -198,9 +199,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public static LongRange fromNumberRange(IRange<? extends Number, ?> orig){
-			long min = getValueWith(orig.getMin(), Number::longValue);
-			long max = getValueWith(orig.getMax(), Number::longValue);
-			return new Range.LongRange(min, max);
+			return new Range.LongRange(
+				Optional.ofNullable(orig.getMin()).map(Number::longValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::longValue).orElse(null));
 		}
 
 		@Override
@@ -229,9 +230,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public static FloatRange fromNumberRange(IRange<? extends Number, ?> orig){
-			Float min = getValueWith(orig.getMin(), Number::floatValue);
-			Float max = getValueWith(orig.getMax(), Number::floatValue);
-			return new Range.FloatRange(min, max);
+			return new Range.FloatRange(
+				Optional.ofNullable(orig.getMin()).map(Number::floatValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::floatValue).orElse(null));
 		}
 
 		@Override
@@ -263,9 +264,9 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public static DoubleRange fromNumberRange(IRange<? extends Number, ?> orig){
-			Double min = getValueWith(orig.getMin(), Number::doubleValue);
-			Double max = getValueWith(orig.getMax(), Number::doubleValue);
-			return new Range.DoubleRange(min, max);
+			return new Range.DoubleRange(
+				Optional.ofNullable(orig.getMin()).map(Number::doubleValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::doubleValue).orElse(null));
 		}
 
 		@Override
@@ -289,23 +290,5 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 			}
 			return true;
 		}
-	}
-	
-	/**
-	 * Helper function to avoid null pointer exception and encapsulate the null comparison.
-	 * Returns the value from the range with the type specified by the valueGetter.
-	 * Returns null if the number object is empty.
-	 * @param <T> Input type of the number to extract
-	 * @param <R> Output type of the number to extract
-	 * @param number The number to extract.
-	 * @param valueGetter Procedure to retrieve the number for the output type.
-	 * @return The number as the desired type or null of number was null.
-	 */
-	private static <T extends Number, R extends Number> R getValueWith(T number, Function<T, R> valueGetter){
-		if(number == null) {
-			return null;
-		}
-		return valueGetter.apply(number);
-		
 	}
 }
