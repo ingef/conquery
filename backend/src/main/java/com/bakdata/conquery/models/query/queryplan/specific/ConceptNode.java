@@ -1,9 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-
 import com.bakdata.conquery.models.concepts.ConceptElement;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
@@ -15,7 +11,12 @@ import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.extern.slf4j.Slf4j;
 
+import java.util.Map;
+import java.util.Set;
+
+@Slf4j
 public class ConceptNode extends QPChainNode {
 
 	private final ConceptElement[] concepts;
@@ -55,8 +56,18 @@ public class ConceptNode extends QPChainNode {
 	
 	@Override
 	public boolean isOfInterest(Bucket bucket) {
+		final boolean rowExists = preCurrentRow.containsKey(bucket.getId());
+
+		if(!rowExists){
+			log.warn("No row for bucket=`{}` entity=`{}` table=`{}`", bucket.getId(), entity.getId(), table.getId());
+			interested = false;
+			return false;
+		}
+
 		if (tableActive) {
-			currentRow = Objects.requireNonNull(preCurrentRow.get(bucket.getId()));
+
+			currentRow = preCurrentRow.get(bucket.getId());
+
 			int localEntity = bucket.toLocal(entity.getId());
 			long bits = currentRow.getCBlock().getIncludedConcepts()[localEntity];
 			if((bits & requiredBits) != 0L || requiredBits == 0L) {
