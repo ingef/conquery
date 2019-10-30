@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.auth;
 
-import java.util.EnumSet;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -13,11 +11,15 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import lombok.extern.slf4j.Slf4j;
+
+import java.util.EnumSet;
 
 /**
  * Helper for easier and cleaner authorization.
  *
  */
+@Slf4j
 public class AuthorizationHelper {
 	
 	// Dataset Instances
@@ -38,6 +40,7 @@ public class AuthorizationHelper {
 	 * @param ability The kind of ability that is checked.
 	 */
 	public static void authorize(User user, DatasetId dataset, EnumSet<Ability> abilities) {
+		log.trace("Checking dataset access on `{}` with for `{}` with abilities `{}`", dataset, user, abilities);
 		user.checkPermission(new DatasetPermission(abilities, dataset));
 	}
 	
@@ -59,6 +62,7 @@ public class AuthorizationHelper {
 	 * @param ability The kind of ability that is checked.
 	 */
 	public static void authorize(User user, ManagedExecutionId query, EnumSet<Ability> abilities) {
+		log.trace("Checking query access on `{}` with for `{}` with abilities `{}`", query, user, abilities);
 		user.checkPermission(new QueryPermission(abilities, query));
 	}
 	
@@ -79,7 +83,7 @@ public class AuthorizationHelper {
 	 * @param ability The kind of ability that is checked.
 	 */
 	public static void authorize(User user, ManagedQuery query, EnumSet<Ability> abilities) {
-		user.checkPermission(new QueryPermission(abilities, query.getId()));
+		authorize(user, query.getId(), abilities);
 	}
 	
 	/**
