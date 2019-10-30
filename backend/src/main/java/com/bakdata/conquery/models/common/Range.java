@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.common;
 
 import java.util.Optional;
-import java.util.function.Function;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -16,7 +15,7 @@ import lombok.experimental.Wither;
 @Wither
 @Getter
 @EqualsAndHashCode
-public class Range<T extends Comparable> implements IRange<T, Range<T>>{
+public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 
 	private final T min;
 	private final T max;
