@@ -21,7 +21,7 @@
   },
   "dependencies": {
     "@emotion/core": "^10.0.7",
-    "@emotion/is-prop-valid": "^0.7.3",
+    "@emotion/is-prop-valid": "^0.8.4",
     "@emotion/styled": "^10.0.7",
     "@fortawesome/fontawesome-svg-core": "^1.2.19",
     "@fortawesome/free-regular-svg-icons": "^5.9.0",
