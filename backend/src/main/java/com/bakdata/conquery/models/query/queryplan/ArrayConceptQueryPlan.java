@@ -164,7 +164,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		List<Aggregator<?>> aggregators = new ArrayList<>();
 		for (ConceptQueryPlan child : childPlans) {
 			List<Aggregator<?>> allAggs = child.getAggregators();
-			aggregators.addAll(allAggs.subList((specialDateUnion? 1 : 0), allAggs.size()-1));
+			aggregators.addAll(allAggs.subList((specialDateUnion? 1 : 0), allAggs.size()));
 		}
 
 		return aggregators;
