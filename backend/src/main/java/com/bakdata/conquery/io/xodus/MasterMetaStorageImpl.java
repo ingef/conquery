@@ -16,12 +16,14 @@ import com.bakdata.conquery.util.functions.Collector;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.validation.Validator;
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 
+@Slf4j
 public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {
 
 	private SingletonStore<Namespaces> meta;
@@ -72,8 +74,13 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		meta = StoreInfo.NAMESPACES.singleton(getEnvironment(), getValidator());
 
 		executions = StoreInfo.EXECUTIONS.<ManagedExecution>identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces)
-							 .onAdd(value -> value.initExecutable(namespaces.get(value.getDataset())));
-
+							 .onAdd(value -> {
+								 try {
+									 value.initExecutable(namespaces.get(value.getDataset()));
+								 } catch (Exception e) {
+									 log.error("Failed to load execution `{}`", value.getId(), e);
+								 }
+							 });
 		authMandator = StoreInfo.AUTH_MANDATOR.identifiable(getMandatorEnvironment(), getValidator(), getCentralRegistry());
 
 		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
