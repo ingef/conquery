@@ -1,13 +1,18 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
 
+import java.util.List;
 
+import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -19,9 +24,22 @@ import com.bakdata.conquery.resources.hierarchies.HUsers;
 public class UserResource extends HUsers{
 
 
+	@GET
+	@Produces(MediaType.APPLICATION_JSON)
+	public List<User> getUsers() {
+		return processor.getAllUsers();
+	}
+
 	@POST
 	public Response postUser(User user) throws JSONException {
 		processor.addUser(user);
+		return Response.ok().build();
+	}
+	
+	@POST
+	@Consumes(MediaType.APPLICATION_JSON)
+	public Response postUsers(List<User> users) throws JSONException {
+		processor.addUsers(users);
 		return Response.ok().build();
 	}
 	

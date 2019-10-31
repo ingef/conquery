@@ -5,6 +5,8 @@ import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
@@ -13,6 +15,7 @@ import com.bakdata.conquery.resources.hierarchies.HRoles;
 import io.dropwizard.views.View;
 
 
+@Produces(MediaType.TEXT_HTML)
 public class RoleUIResource extends HRoles {
 
 

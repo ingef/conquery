@@ -179,10 +179,20 @@ public class AdminProcessor {
 		namespaces.get(dataset.getId()).getStorage().updateStructure(structure);
 	}
 
-	public void addRole(Role role) throws JSONException {
+	public synchronized void addRole(Role role) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(role));
 		log.info("New mandator:\\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
 		storage.addRole(role);
+	}
+	
+	public void addRoles(List<Role> roles) {
+		for(Role role : roles) {
+			try {
+				addRole(role);
+			}catch(Exception e) {
+				log.error(String.format("Failed to add Role: %s", role),e);
+			}
+		}
 	}
 
 	/**
@@ -267,7 +277,7 @@ public class AdminProcessor {
 		return new UIContext(namespaces);
 	}
 
-	public Object getAllUsers() {
+	public List<User> getAllUsers() {
 		return new ArrayList<>(storage.getAllUsers());
 	}
 
@@ -290,7 +300,20 @@ public class AdminProcessor {
 	}
 
 	public synchronized void addUser(User user) throws JSONException {
+		ValidatorHelper.failOnError(log, validator.validate(user));
+		log.info("New mandator:\\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 		storage.addUser(user);
+	}
+	
+	public void addUsers(List<User> users) {
+
+		for(User user : users) {
+			try {
+				addUser(user);
+			}catch(Exception e) {
+				log.error(String.format("Failed to add User: %s", user),e);
+			}
+		}
 	}
 
 	public void deleteRoleFromUser(UserId userId, RoleId roleId) throws JSONException {

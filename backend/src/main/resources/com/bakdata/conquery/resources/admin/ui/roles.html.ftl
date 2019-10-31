@@ -20,6 +20,8 @@
 				  <input class="btn btn-primary" type="submit" onclick="createRole()"/>
 				</div> 
 			</form>
+
+			<button class="btn btn-primary" onclick="downloadRoles()"> Download Roles </button>
 		</div>
 	</div>
 	<script type="application/javascript">
@@ -35,5 +37,21 @@
 				})
 		}).then(function(){location.reload()});
 	}
+
+	function downloadRoles() {
+		event.preventDefault(); 
+		fetch('./roles/',
+		{
+			method: 'get',
+			headers: {'Accept': 'application/json'}
+		})
+		.then(response => {return response.json()})
+		.then(json => {
+			console.log(json);
+			uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(json));
+			newWindow = window.open(uriContent, 'Roles');
+			});
+	}
+	
 	</script>
 </@layout.layout>

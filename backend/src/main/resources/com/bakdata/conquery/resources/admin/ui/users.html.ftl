@@ -10,6 +10,26 @@
 				</li>
 			</#list>
 			</ul>
+			
+			<button class="btn btn-primary" onclick="downloadUsers()"> Download Users </button>
 		</div>
 	</div>
+	
+	<script type="application/javascript">
+	function downloadUsers() {
+		event.preventDefault(); 
+		fetch('./users/',
+		{
+			method: 'get',
+			headers: {'Accept': 'application/json'}
+		})
+		.then(response => {return response.json()})
+		.then(json => {
+			console.log(json);
+			uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(json));
+			newWindow = window.open(uriContent, 'Users');
+			});
+	}
+	
+	</script>
 </@layout.layout>
