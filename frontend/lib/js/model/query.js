@@ -10,7 +10,7 @@ function isTimebasedQuery(node) {
   const queryString = JSON.stringify(node.query);
 
   Object.values(TIMEBASED_OPERATOR_TYPES).some(
-    op => queryString.indexOf(op) === -1
+    op => queryString.indexOf(op) !== -1
   );
 }
 

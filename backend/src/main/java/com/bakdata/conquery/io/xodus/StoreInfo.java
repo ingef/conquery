@@ -57,7 +57,7 @@ public enum StoreInfo implements IStoreInfo {
 	C_BLOCKS		(CBlock.class,				CBlockId.class),
 	WORKER			(WorkerInformation.class,	Boolean.class),
 	EXECUTIONS		(ManagedExecution.class,		ManagedExecutionId.class),
-	AUTH_MANDATOR	(Role.class,				RoleId.class),
+	AUTH_ROLE	(Role.class,				RoleId.class),
 	AUTH_USER		(User.class,					UserId.class),
 	STRUCTURE		(StructureNode[].class,		Boolean.class),
 	;

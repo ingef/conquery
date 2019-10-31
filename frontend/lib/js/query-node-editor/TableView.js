@@ -18,6 +18,7 @@ const Column = styled("div")`
 
 const MaximizedCell = styled(ContentCell)`
   flex-grow: 1;
+  padding-bottom: 30px;
 `;
 
 const TableView = (props: PropsType) => {
