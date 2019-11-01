@@ -111,7 +111,7 @@ public class FrontEndConceptBuilder {
 		List<ConceptId> unstructured = new ArrayList<>();
 		for(ConceptId id : cn.getContainedRoots()) {
 			if(!storage.hasConcept(id)) {
-				log.warn(String.format("Concept from structure node can not be found: %s", id));
+				log.warn("Concept from structure node can not be found: {}", id);
 				continue;
 			}
 			unstructured.add(id);
