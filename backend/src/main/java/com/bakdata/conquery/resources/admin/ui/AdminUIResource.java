@@ -113,18 +113,6 @@ public class AdminUIResource {
 		groovy.setProperty("namespaces", processor.getNamespaces());
 		groovy.setProperty("jobManager", processor.getJobManager());
 
-//		{
-//			Namespaces namespaces;
-//			for (Namespace namespace : namespaces.getNamespaces()) {
-//				for (ManagedExecution exec : namespaces.getMetaStorage().getAllExecutions()) {
-//					if(exec.getDataset().equals(namespace.getDataset().getId())) {
-//						namespace.getQueryManager().executeQuery(((ManagedQuery) exec));
-//						Thread.sleep(100);
-//					}
-//				}
-//			}
-//		}
-
 		try {
 			return groovy.evaluate(script);
 		}
