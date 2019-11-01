@@ -42,8 +42,8 @@
 		<@permissionTable.permissionTable ownerId=c.self.getId() permissions=c.otherPermissions/>
 		</div>
 	</div>
+	<h3>Users</h3>
 	<div class="row">
-		<h3>Users</h3>
 		<div class="col">
 			<ul>
 			<#list c.users as user>
