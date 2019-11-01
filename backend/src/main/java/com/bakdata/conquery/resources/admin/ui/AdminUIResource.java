@@ -1,38 +1,7 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
-import static com.bakdata.conquery.resources.ResourceConstants.MANDATOR_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-
-import java.net.SocketAddress;
-import java.time.LocalDate;
-import java.util.Collections;
-import java.util.Map;
-import java.util.Objects;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.inject.Inject;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
-
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.common.Range;
@@ -47,13 +16,42 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import groovy.lang.GroovyShell;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import org.glassfish.jersey.media.multipart.FormDataParam;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.inject.Inject;
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+import java.net.SocketAddress;
+import java.time.LocalDate;
+import java.util.Collections;
+import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -82,19 +80,41 @@ public class AdminUIResource {
 	public View getScript() {
 		return new UIView<>("script.html.ftl", processor.getUIContext());
 	}
-	
+
+	/**
+	 * Execute script and serialize value with {@link Objects#toString}.
+	 * Used in admin UI for minor scripting.
+	 */
 	@Produces(MediaType.TEXT_PLAIN)
 	@Consumes(MediaType.TEXT_PLAIN)
 	@POST
 	@Path("/script")
 	public String executeScript(@Auth User user, String script) throws JSONException {
+		return Objects.toString(executeScript(script));
+	}
+
+	/**
+	 * Execute script and serialize return value as Json.
+	 * Useful for configuration and verification scripts.
+	 */
+	@Produces(MediaType.APPLICATION_JSON)
+	@Consumes(MediaType.TEXT_PLAIN)
+	@POST
+	@Path("/script")
+	public String executeScriptJson(@Auth User user, String script) throws JSONException, JsonProcessingException {
+		return Jackson.MAPPER.writeValueAsString(executeScript(script));
+	}
+
+	private Object executeScript(String script) {
+		HttpServletRequest request;
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
 		GroovyShell groovy = new GroovyShell(config);
 		groovy.setProperty("namespaces", processor.getNamespaces());
+		groovy.setProperty("jobManager", processor.getJobManager());
+
 		try {
-			Object result = groovy.evaluate(script);
-			return Objects.toString(result);
+			return groovy.evaluate(script);
 		}
 		catch(Exception e) {
 			return ExceptionUtils.getStackTrace(e);
