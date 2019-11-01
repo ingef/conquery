@@ -117,7 +117,7 @@ public class FrontEndConceptBuilder {
 						.map(IdentifiableImpl::getId)
 						.toArray(IId[]::new),
 					cn.getContainedRoots().stream()
-						.filter(id->storage.getConcept(id)!=null)
+						.filter(id->storage.hasConcept(id))
 						.toArray(IId[]::new)
 				)
 			)
