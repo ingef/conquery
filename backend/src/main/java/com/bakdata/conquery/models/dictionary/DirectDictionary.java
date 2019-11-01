@@ -28,8 +28,9 @@ public class DirectDictionary extends AStringType<Integer> {
 
 	@Override
 	public int getId(String value) {
-		if(dict == null)
+		if(dict == null) {
 			return -1;
+		}
 
 		return dict.getId(value.getBytes(StandardCharsets.UTF_8));
 	}

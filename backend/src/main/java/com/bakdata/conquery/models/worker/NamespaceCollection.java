@@ -41,6 +41,6 @@ public interface NamespaceCollection extends Injectable {
 	}
 	
 	default <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> Optional<T> getOptional(ID id) {
-		return findRegistry(id.getDataset()).getOptional(id);
+		return Optional.ofNullable(findRegistry(id.getDataset())).flatMap(reg -> reg.getOptional(id));
 	}
 }

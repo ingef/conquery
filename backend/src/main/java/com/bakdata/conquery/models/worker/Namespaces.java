@@ -61,6 +61,7 @@ public class Namespaces implements NamespaceCollection {
 
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
+
 		return datasets.get(dataset).getStorage().getCentralRegistry();
 	}
 	

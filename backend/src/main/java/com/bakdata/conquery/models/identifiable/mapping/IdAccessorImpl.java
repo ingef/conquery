@@ -40,8 +40,9 @@ public class IdAccessorImpl implements IdAccessor {
 	 * @return The filtered csvLine.
 	 */
 	public static String[] removeNonIdFields(String[] csvLine, List<CQExternal.FormatColumn> formatColumns) {
-		if(csvLine.length < formatColumns.size())
+		if(csvLine.length < formatColumns.size()) {
 			throw new IllegalArgumentException(String.format("csvline `{}` of length {}, should be at least {}",csvLine, csvLine.length, formatColumns.size()));
+		}
 
 		List<String> result = new ArrayList<>();
 		for (int i = 0; i < csvLine.length; i++) {
