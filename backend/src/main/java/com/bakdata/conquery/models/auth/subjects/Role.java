@@ -38,7 +38,7 @@ public class Role extends PermissionOwner<RoleId> {
 
 	@Override
 	public boolean isPermitted(Permission permission) {
-		return  isPermittedSelfOnly((ConqueryPermission)permission);
+		return  SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
 	}
 
 	@Override
@@ -80,7 +80,7 @@ public class Role extends PermissionOwner<RoleId> {
 	}
 
 	@Override
-	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
+	protected synchronized void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateRole(this);
 		
 	}

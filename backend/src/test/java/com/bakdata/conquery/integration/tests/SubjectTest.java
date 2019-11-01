@@ -13,6 +13,10 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 
 public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
 
+	/**
+	 * This is a longer test that plays through different scenarios of permission and role adding/deleting.
+	 * Creating many objects here to avoid side effects.
+	 */
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
 		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
@@ -38,8 +42,42 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 		user1.addPermission(storage, datasetPermission1);
 		mandator1.addPermission(storage, datasetPermission2);
 		
-		assertThat(user1.isPermitted(datasetPermission1));
-		assertThat(user1.isPermitted(datasetPermission2));
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isTrue();
+		
+		// Delete permission from mandator
+		mandator1.removePermission(storage, new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()));
+		assertThat(mandator1.getPermissionsEffective()).isEmpty();
+		
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isFalse();
+		
+		// Add permission to user
+		user1.addPermission(storage, new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()));
+
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isTrue();
+		
+
+		// Delete permission from mandator
+		user1.removePermission(storage, new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()));
+		
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isFalse();
+		
+
+		// Add permission to mandator, remove mandator from user
+		mandator1.addPermission(storage, new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()));
+		user1.removeRole(storage, mandator1);
+
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isFalse();
+		
+		// Add mandator back to user
+		user1.addRole(storage, mandator1);
+
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isTrue();
 	}
 
 }

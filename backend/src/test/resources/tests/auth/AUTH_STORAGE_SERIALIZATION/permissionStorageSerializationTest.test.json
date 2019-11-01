@@ -32,7 +32,7 @@
                 ]
             },
             "rolesInjected": [
-                "mandator.testCompany"
+                "role.testCompany"
             ]
         },
         {

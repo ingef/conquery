@@ -8,6 +8,7 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authz.Permission;
 
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
@@ -36,11 +37,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	
 	@Override
 	public boolean isPermitted(Permission permission) {
-		if(isPermittedSelfOnly((ConqueryPermission)permission)) {
-			return true;
-		}
-		
-		return isPermittedByRoles((ConqueryPermission)permission);
+		return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
 	}
 
 	@Override
@@ -65,15 +62,6 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	@Override
 	public UserId createId() {
 		return new UserId(email);
-	}
-	
-	private boolean isPermittedByRoles(ConqueryPermission permission) {
-		for(Role mandator : roles) {
-			if(mandator.isPermittedSelfOnly(permission)) {
-				return true;
-			}
-		}
-		return false;
 	}
 
 	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
@@ -118,7 +106,7 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	}
 	
 	@Override
-	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
+	protected synchronized void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateUser(this);
 	}
 }

@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
+import groovy.transform.Synchronized;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
@@ -280,15 +281,23 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			if (sameTarget.isPresent()) {
 				// found permission with the same target
 				ConqueryPermission permission = sameTarget.get();
+				/*
+				 *  We must remove the complete permission from the HashSet,
+				 *  because we will probably change the object and the corresponding has
+				 */
+				permissions.remove(permission);
 				
 				// remove all provided abilities
-				EnumSet<Ability> abilities = permission.getAbilities();
-				abilities.removeAll(permission.getAbilities());
-				
-				// if no abilitiy is left, remove the whole permission
-				if(abilities.isEmpty()) {
-					permissions.remove(permission);
+				if(permission.getAbilities().removeAll(delPermission.getAbilities())) {
+					log.info(String.format("After deleting the abilites %s the permission remains as: %s", delPermission.getAbilities(), permission));
 				}
+				
+				
+				// if there are abilities left, add the permission back to the local storage
+				if(!permission.getAbilities().isEmpty()) {
+					permissions.add(permission);
+				}
+				// make the change persistent
 				this.updateStorage(storage);
 			}
 		}
@@ -306,16 +315,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 	}
 
-	/**
-	 * Owns the permission and checks if it is permitted by only regarding owner
-	 * specific permissions. Inherit permission from roles are not checked.
-	 *
-	 * @param permission
-	 *            The permission to check.
-	 */
-	public boolean isPermittedSelfOnly(ConqueryPermission permission) {
-		return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
-	}
 	/**
 	 * Return a copy of the permissions hold by the owner.
 	 * @return A set of the permissions hold by the owner.

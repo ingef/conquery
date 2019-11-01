@@ -39,7 +39,7 @@ public class DevAuthConfig extends AuthConfig {
 
 	@Override
 	public AuthorizingRealm getRealm(MasterMetaStorage storage) {
-		return new AllGrantedRealm();
+		return new AllGrantedRealm(storage);
 	}
 
 	@Override
