@@ -24,7 +24,10 @@ public class ResourceUtil {
 	}
 
 	public ManagedQuery getManagedQuery(ManagedExecutionId queryId) {
-		return namespaces.get(queryId.getDataset()).getQueryManager().getQuery(queryId);
+		return namespaces.get(queryId.getDataset())
+						 .getQueryManager()
+						 .getQuery(queryId)
+						 .orElseThrow(() -> new IllegalArgumentException(String.format("Unable to find query `%s` in dataset `%s`", queryId, queryId.getDataset())));
 	}
 
 }

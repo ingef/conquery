@@ -37,6 +37,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 	protected KeyIncludingStore<IId<Dictionary>, Dictionary> dictionaries;
 	protected IdentifiableStore<Import> imports;
 	protected IdentifiableStore<Concept<?>> concepts;
+	private DirectDictionary directDictionary;
 
 	public NamespacedStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator,config,directory);
@@ -63,6 +64,7 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 				}
 				centralRegistry.remove(ds);
 			});
+
 		if(ConqueryConfig.getInstance().getStorage().isUseWeakDictionaryCaching()) {
 			dictionaries =	StoreInfo.DICTIONARIES.weakBig(getEnvironment(), getValidator(), getCentralRegistry());
 		}
@@ -146,7 +148,12 @@ public abstract class NamespacedStorageImpl extends ConqueryStorageImpl implemen
 
 	@Override
 	public DirectDictionary getPrimaryDictionary() {
-		return new DirectDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(getDataset())));
+		// TODO: 01.11.2019 Create DirectDictionary at the place where the primary dictionary is set instead. Did not find the proper place so far.
+		if (directDictionary == null && dictionaries.get(ConqueryConstants.getPrimaryDictionary(dataset.get().getId())) != null) {
+			directDictionary = new DirectDictionary(dictionaries.get(ConqueryConstants.getPrimaryDictionary(dataset.get().getId())));
+		}
+
+		return directDictionary;
 	}
 
 	@Override

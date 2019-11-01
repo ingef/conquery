@@ -10,6 +10,7 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
+import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor
@@ -61,11 +62,12 @@ public class QueryManager {
 	 * @param result
 	 */
 	public void addQueryResult(ShardResult result) {
-		getQuery(result.getQueryId()).addResult(result);
+		getQuery(result.getQueryId())
+				.ifPresent(q -> q.addResult(result));
 	}
 
-	public ManagedQuery getQuery(ManagedExecutionId id) {
-		return (ManagedQuery) namespace.getStorage().getMetaStorage().getExecution(id);
+	public Optional<ManagedQuery> getQuery(ManagedExecutionId id) {
+		return Optional.ofNullable((ManagedQuery) namespace.getStorage().getMetaStorage().getExecution(id));
 	}
 
 }
