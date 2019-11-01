@@ -57,6 +57,6 @@ nbactions.xml
 **/dumps
 **/target/
 
-**/.iml
+# **/.iml
 **/.idea
 **/**.iml
