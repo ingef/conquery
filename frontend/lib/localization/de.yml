@@ -25,16 +25,16 @@ conceptTreeList:
   showingMismatches: "Zeige vollständig"
 
 queryRunner:
-  errorDates: "Invalider Datumsbereich"
+  errorDates: "Ungültig: Alle Datumsbereiche sind von Zeitberechnung ausgeschlossen"
   start: "Anfrage starten"
   stop: "Anfrage stoppen"
-  stopSuccess: "Anfrage erfolgreich gestoppt."
+  stopSuccess: "Anfrage gestoppt."
   stopError: "Anfrage stoppen fehlgeschlagen."
-  startSuccess: "Anfrage erfolgreich gestartet."
-  endSuccess: "Anfrage erfolgreich abgeschlossen."
+  startSuccess: "Anfrage gestartet."
+  endSuccess: "Anfrage erfolgreich"
   startError: "Anfrage starten fehlgeschlagen."
   resultError: "Anfrageergebnis konnte nicht geladen werden."
-  resultCount: "{count} Ergebnisse"
+  resultCount: "Ergebnisse"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
 
@@ -108,6 +108,7 @@ common:
   clearAll: "Alle entfernen"
   clearValue: "Wert entfernen"
   closeEsc: "Schließen (ESC)"
+  create: "Erstellen"
 
 tooltip:
   headline: "Info"

@@ -27,6 +27,7 @@ steps:
   displayName: push new docs
   inputs:
     targetType: inline
+    workingDirectory: docs/
     script: |
       git diff --quiet HEAD || \
       {
@@ -34,6 +35,6 @@ steps:
         git config --global user.name "bakdata-bot"
         git add *
         git commit --message "automatic update to docs"
-        git push origin HEAD:$(Build.SourceBranch)
+        git push origin HEAD:$(System.PullRequest.SourceBranch)
         exit -1
       }
