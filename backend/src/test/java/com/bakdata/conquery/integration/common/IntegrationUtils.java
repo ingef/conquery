@@ -25,12 +25,13 @@ public class IntegrationUtils {
 		
 		for(RequiredUser rUser: rUsers) {
 			User user = rUser.getUser();
+			storage.addUser(user);
+
 			RoleId [] rolesInjected = rUser.getRolesInjected();
 			
 			for(RoleId mandatorId : rolesInjected) {
-				user.addRoleLocal(storage.getRole(mandatorId));
+				user.addRole(storage, storage.getRole(mandatorId));
 			}
-			storage.addUser(user);
 		}
 	}
 	

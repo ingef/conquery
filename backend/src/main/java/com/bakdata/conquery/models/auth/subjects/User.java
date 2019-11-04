@@ -9,11 +9,14 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.Permission;
+import org.apache.shiro.subject.PrincipalCollection;
 
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -22,7 +25,7 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-public class User extends PermissionOwner<UserId> implements Principal{
+public class User extends FilteredUser<UserId> implements Principal{
 	@Getter @Setter @MetaIdRefCollection
 	private Set<Role> roles = new HashSet<>();
 	@Getter @Setter @NonNull @NotNull
@@ -35,6 +38,23 @@ public class User extends PermissionOwner<UserId> implements Principal{
 		this.label = label;
 	}
 	
+
+
+	@Override
+	public void checkPermission(Permission permission) throws AuthorizationException {
+		SecurityUtils.getSecurityManager().checkPermission(getPrincipals(), permission);
+	}
+
+	@Override
+	public void checkPermissions(Collection<Permission> permissions) throws AuthorizationException {
+		SecurityUtils.getSecurityManager().checkPermissions(getPrincipals(), permissions);
+	}
+
+	@Override
+	public PrincipalCollection getPrincipals() {
+		return new SinglePrincipalCollection(getId());
+	}
+	
 	@Override
 	public boolean isPermitted(Permission permission) {
 		return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permission);
@@ -42,21 +62,12 @@ public class User extends PermissionOwner<UserId> implements Principal{
 
 	@Override
 	public boolean[] isPermitted(List<Permission> permissions) {
-		boolean[] ret = new boolean[permissions.size()];
-		for(int i = 0; i < permissions.size(); ++i) {
-			ret[i] = isPermitted(permissions.get(i));
-		}
-		return ret;
+		return SecurityUtils.getSecurityManager().isPermitted(getPrincipals(), permissions);
 	}
 
 	@Override
 	public boolean isPermittedAll(Collection<Permission> permissions) {
-		for(Permission permission : permissions) {
-			if(!isPermitted(permission)) {
-				return false;
-			}
-		}
-		return true;
+		return SecurityUtils.getSecurityManager().isPermittedAll(getPrincipals(), permissions);
 	}
 	
 	@Override
@@ -108,5 +119,12 @@ public class User extends PermissionOwner<UserId> implements Principal{
 	@Override
 	protected synchronized void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateUser(this);
+	}
+
+
+
+	@Override
+	public Object getPrincipal() {
+		return getId();
 	}
 }
