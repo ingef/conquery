@@ -1,14 +1,5 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
@@ -24,9 +15,16 @@ import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-
 import lombok.Getter;
 import lombok.Setter;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 
 @CPSType(id = "DATE_RESTRICTION", base = CQElement.class)
 @Setter
@@ -40,7 +38,7 @@ public class CQDateRestriction implements CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		QPNode childAgg = child.createQueryPlan(context, plan);
+		QPNode childAgg = child.createQueryPlan(context.withDateRestriction(dateRange), plan);
 
 		//insert behind every ValidityDateNode
 		List<QPNode> openList = new ArrayList<>();
@@ -53,6 +51,7 @@ public class CQDateRestriction implements CQElement {
 			QPNode current = openList.get(i);
 			if (current instanceof ValidityDateNode) {
 				ValidityDateNode validityDateNode = (ValidityDateNode) current;
+
 				validityDateNode.setChild(new DateRestrictingNode(
 					CDateSet.create(Collections.singleton(CDateRange.of(dateRange))),
 					validityDateNode.getChild()
