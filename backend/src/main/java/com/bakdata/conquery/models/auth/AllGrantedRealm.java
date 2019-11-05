@@ -7,7 +7,6 @@ import java.util.Set;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
@@ -49,8 +48,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	 */
 	public AllGrantedRealm(MasterMetaStorage storage) {
 		log.warn(WARNING);
-		this.setAuthenticationTokenClass(ConqueryToken.class);
-		this.setCredentialsMatcher(new AllGrantedCredentialsMatcher());
+		this.setAuthenticationTokenClass(AuthenticationToken.class);
 		this.storage = storage;
 	}
 
@@ -89,17 +87,4 @@ public class AllGrantedRealm extends AuthorizingRealm {
 			return true;
 		}
 	}
-	
-	/**
-	 * Inner class that matches any credentials.
-	 */
-	private static class AllGrantedCredentialsMatcher implements CredentialsMatcher{
-
-		@Override
-		public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
-			return true;
-		}
-		
-	}
-
 }
