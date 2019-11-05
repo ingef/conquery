@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth.subjects;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -32,11 +33,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * This getter is only used for the JSON serialization/deserialization
 	 */
 	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({@Deprecated}))
-	private final Set<ConqueryPermission> permissions = new HashSet<>();
-
-	
-
-	
+	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
 	
 	/**
 	 * Adds permissions to the user and persistent to the storage.
@@ -82,14 +79,15 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 				log.info("User {} has already permission {}.", this, permission);
 				return permission;
 			}
-			else {
-				// new permission has different ability
-				List<ConqueryPermission> reducedPermission = ConqueryPermission
-					.reduceByOwnerAndTarget(Arrays.asList(oldPermission, permission));
-				removePermission(storage, oldPermission);
-				// has only one entry as permissions only differ in the ability
-				permission = reducedPermission.get(0);
-			}
+			// new permission has different ability
+			
+			// remove old permission because we construct and add a new one
+			permissions.remove(oldPermission);
+			List<ConqueryPermission> reducedPermission = ConqueryPermission
+				.reduceByTarget(Arrays.asList(oldPermission, permission));
+			// has only one entry as permissions only differ in the ability
+			permission = reducedPermission.get(0);
+			
 		}
 
 		permissions.add(permission);

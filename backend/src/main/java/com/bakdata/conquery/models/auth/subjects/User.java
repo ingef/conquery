@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth.subjects;
 
 import java.security.Principal;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -27,7 +28,7 @@ import lombok.Setter;
 
 public class User extends FilteredUser<UserId> implements Principal{
 	@Getter @Setter @MetaIdRefCollection
-	private Set<Role> roles = new HashSet<>();
+	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
 	@Getter @Setter @NonNull @NotNull
 	private String email;
 	@Getter @Setter @NonNull @NotNull
@@ -94,7 +95,7 @@ public class User extends FilteredUser<UserId> implements Principal{
 	}
 
 	/**
-	 * Only to be called from a context that is synchronized on `roles`.
+	 * At role to the local role set only.
 	 * @param mandator
 	 */
 	public void addRoleLocal(Role mandator) {

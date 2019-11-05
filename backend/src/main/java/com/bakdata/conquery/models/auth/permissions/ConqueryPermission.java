@@ -34,18 +34,18 @@ public abstract class ConqueryPermission implements Permission , HasTarget {
 	}
 	
 	/**
-	 * Reduces a list of permissions, by combining permissions of the same owner and target by merging the access types
+	 * Reduces a  permission, by combining permissions of the same target by merging the access types
 	 * of the individual permissions into one enum.
 	 */
-	public static final List<ConqueryPermission> reduceByOwnerAndTarget(List<ConqueryPermission> permissions) {
+	public static final List<ConqueryPermission> reduceByTarget(List<ConqueryPermission> permissions) {
 		Map<Object, List<ConqueryPermission>> groupById = permissions
 				.stream()
 				.collect(Collectors.groupingBy(ConqueryPermission::classifier));
 		List<ConqueryPermission> combined = new ArrayList<>();
 		groupById.forEach((k, v) -> {
-			Iterator<ConqueryPermission> it = v.iterator();
 			ConqueryPermission permission = null;
 			EnumSet<Ability> accesses = EnumSet.noneOf(Ability.class);
+			Iterator<ConqueryPermission> it = v.iterator();
 			while(it.hasNext()) {
 				permission = it.next();
 				accesses.addAll(permission.getAbilities());
