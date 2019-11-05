@@ -38,6 +38,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
@@ -45,6 +46,10 @@ import java.util.Set;
 public class CQConcept implements CQElement {
 
 	private String label;
+
+	/**
+	 * All Concept Elements are coming from the same Concept.
+	 */
 	@Valid @NotEmpty
 	private List<ConceptElementId<?>> ids;
 	@Valid @NotEmpty @JsonManagedReference
@@ -57,12 +62,13 @@ public class CQConcept implements CQElement {
 	private boolean excludeFromTimeAggregation = false;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
+	public final QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
+		final ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
+		final Concept<?> concept = concepts[0].getConcept();
 
-		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
+		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(concept, selects);
+		conceptAggregators.forEach(node -> plan.addAggregator(node.getAggregator()));
 
-		Concept<?> concept = concepts[0].getConcept();
 
 		List<QPNode> tableNodes = new ArrayList<>();
 		for(CQTable table : tables) {
@@ -74,23 +80,24 @@ public class CQConcept implements CQElement {
 				continue;
 			}
 
-			List<Select> resolvedSelects = table.getSelects();
-
-
 			List<FilterNode<?>> filters = new ArrayList<>(table.getFilters().size());
 			//add filter to children
-			for(FilterValue f : table.getFilters()) {
-				FilterNode agg = f.getFilter().createAggregator(f.getValue());
+			for(FilterValue filterValue : table.getFilters()) {
+				FilterNode agg = filterValue.getFilter().createAggregator(filterValue.getValue());
 				if(agg != null) {
 					filters.add(agg);
 				}
 			}
 
-			List<QPNode> aggregators = new ArrayList<>();
+			final List<AggregatorNode<?>> tableAggregators = createConceptAggregators(concept, table.getSelects());
+			conceptAggregators.forEach(node -> plan.addAggregator(node.getAggregator()));
+
+			final List<QPNode> aggregators = new ArrayList<>();
 			//add aggregators
 
+			aggregators.addAll(tableAggregators);
 			aggregators.addAll(conceptAggregators);
-			aggregators.addAll(createConceptAggregators(plan, resolvedSelects));
+
 
 			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
@@ -100,15 +107,15 @@ public class CQConcept implements CQElement {
 			}
 
 			tableNodes.add(
-				new ConceptNode(
-					concepts,
-					calculateBitMask(concepts),
-					table,
-					new ValidityDateNode(
-						selectValidityDateColumn(table),
-						conceptChild(filters, aggregators)
+					new ConceptNode(
+							concepts,
+							calculateBitMask(concepts),
+							table,
+							new ValidityDateNode(
+									selectValidityDateColumn(table),
+									createConceptChild(concept, context, filters, aggregators)
+							)
 					)
-				)
 			);
 		}
 
@@ -135,7 +142,7 @@ public class CQConcept implements CQElement {
 					.toArray(ConceptElement[]::new);
 	}
 
-	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
+	protected QPNode createConceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<QPNode> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);
@@ -143,16 +150,11 @@ public class CQConcept implements CQElement {
 		return result;
 	}
 
-	private static List<AggregatorNode<?>> createConceptAggregators(ConceptQueryPlan plan, List<Select> select) {
-
-		List<AggregatorNode<?>> nodes = new ArrayList<>();
-
-		for (Select s : select) {
-			AggregatorNode<?> agg = new AggregatorNode<>(s.createAggregator());
-			plan.addAggregator(agg.getAggregator());
-			nodes.add(agg);
-		}
-		return nodes;
+	private static List<AggregatorNode<?>> createConceptAggregators(Concept<?> concept, List<Select> select) {
+		return select.stream()
+					 .map(Select::createAggregator)
+					 .map(AggregatorNode::new)
+					 .collect(Collectors.toList());
 	}
 
 	private Column selectValidityDateColumn(CQTable t) {
