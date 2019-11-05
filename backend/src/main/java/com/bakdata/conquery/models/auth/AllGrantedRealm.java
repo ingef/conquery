@@ -14,6 +14,7 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.util.SingleAuthenticationInfo;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 
@@ -59,10 +60,8 @@ public class AllGrantedRealm extends AuthorizingRealm {
 		
 		if(userId.equals(DevAuthConfig.USER.getId())) {
 			// It's the default superuser, give her/him the ultimate permission
-			Set<Permission> permissions = new HashSet<Permission>();
-			permissions.add(new AllGrantedPermission());
 			SimpleAuthorizationInfo info =  new SimpleAuthorizationInfo();
-			info.addObjectPermissions(permissions);
+			info.addObjectPermissions(Set.of(new SuperPermission()));
 			return info;
 		} else {
 			// only used for test cases
@@ -76,15 +75,5 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		// Authenticate every token as the superuser
 		return new SingleAuthenticationInfo(DevAuthConfig.USER.getId(),token.getCredentials());
-	}
-	
-	/**
-	 * Inner class that represents a permission, that is always valid.
-	 */
-	private static class AllGrantedPermission implements Permission {
-		@Override
-		public boolean implies(Permission permission) {
-			return true;
-		}
 	}
 }

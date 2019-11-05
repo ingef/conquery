@@ -5,8 +5,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.EnumSet;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
 
@@ -14,8 +18,12 @@ import javax.validation.Validator;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+import org.apache.commons.lang3.tuple.Pair;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -23,9 +31,12 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.IdentifiableInstancePermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -38,6 +49,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -58,6 +70,7 @@ import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
+import com.fasterxml.jackson.databind.deser.std.EnumSetDeserializer;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -97,8 +110,8 @@ public class AdminProcessor {
 
 	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
 		c.setDataset(dataset.getId());
-		if(namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
-			throw new WebApplicationException("Can't replace already existing concept "+c.getId(), Status.CONFLICT);
+		if (namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
+			throw new WebApplicationException("Can't replace already existing concept " + c.getId(), Status.CONFLICT);
 		}
 		jobManager
 			.addSlowJob(new SimpleJob("Adding concept " + c.getId(), () -> namespaces.get(dataset.getId()).getStorage().updateConcept(c)));
@@ -154,7 +167,6 @@ public class AdminProcessor {
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);
 
-			
 			log.info("Importing {}", selectedFile.getAbsolutePath());
 			jobManager.addSlowJob(new ImportJob(namespaces.get(dataset.getId()), table.getId(), selectedFile));
 		}
@@ -165,10 +177,7 @@ public class AdminProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		try(CSV csvData = new CSV(
-			ConqueryConfig.getInstance().getCsv().withSkipHeader(false),
-			data
-		)) {
+		try (CSV csvData = new CSV(ConqueryConfig.getInstance().getCsv().withSkipHeader(false), data)) {
 			IdMappingConfig mappingConfig = config.getIdMapping();
 			PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
 			namespace.getStorage().updateIdMapping(mapping);
@@ -184,27 +193,32 @@ public class AdminProcessor {
 		log.info("New mandator:\\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
 		storage.addRole(role);
 	}
-	
+
 	public void addRoles(List<Role> roles) {
-		for(Role role : roles) {
+		Objects.requireNonNull(roles, "Role list was empty.");
+		for (Role role : roles) {
 			try {
 				addRole(role);
-			}catch(Exception e) {
-				log.error(String.format("Failed to add Role: %s", role),e);
+			}
+			catch (Exception e) {
+				log.error(String.format("Failed to add Role: %s", role), e);
 			}
 		}
 	}
 
 	/**
-	 * Deletes the mandator, that is identified by the id.
-	 * Its references are removed from the users and from the storage.
-	 * @param mandatorId The id belonging to the mandator
-	 * @throws JSONException is thrown on JSON validation form the storage.
+	 * Deletes the mandator, that is identified by the id. Its references are
+	 * removed from the users and from the storage.
+	 * 
+	 * @param mandatorId
+	 *            The id belonging to the mandator
+	 * @throws JSONException
+	 *             is thrown on JSON validation form the storage.
 	 */
 	public synchronized void deleteRole(RoleId mandatorId) throws JSONException {
 		log.info("Deleting mandator: {}", mandatorId);
 		Role mandator = storage.getRole(mandatorId);
-		for(User user : storage.getAllUsers()) {
+		for (User user : storage.getAllUsers()) {
 			user.removeRole(storage, mandator);
 		}
 		storage.removeRole(mandatorId);
@@ -243,33 +257,57 @@ public class AdminProcessor {
 			}
 		}
 
-		List<Dataset> datasets = storage.getNamespaces().getAllDatasets();
+		Map<String, Pair<Set<Ability>,List<Object>>> permissionTemplateMap = new HashMap<>();
+
+		Set<Class<? extends ConqueryPermission>> permissionTypes = CPSTypeIdResolver.listImplementations(ConqueryPermission.class);
+		for (Class<? extends ConqueryPermission> permissionType : permissionTypes) {
+				
+			List<Object> targetObjects = new ArrayList<>();
+			Set<Ability> abilities = EnumSet.noneOf(Ability.class);
+			if (DatasetPermission.class.isAssignableFrom(permissionType)) {
+				targetObjects.addAll(storage.getNamespaces().getAllDatasets().stream().map(Identifiable::getId).collect(Collectors.toList()));
+				abilities.addAll(AbilitySets.DATASET_CREATOR);
+			}
+			else if (QueryPermission.class.isAssignableFrom(permissionType)) {
+				targetObjects.addAll(storage.getAllExecutions().stream().map(Identifiable::getId).collect(Collectors.toList()));
+				abilities.addAll(AbilitySets.QUERY_CREATOR);
+			}
+			CPSType anno = permissionType.getAnnotation(CPSType.class);
+			permissionTemplateMap.put(anno.id(), Pair.of(abilities, targetObjects));
+			
+		}
 
 		return new FERoleContent(
-			(Role)mandatorId.getOwner(storage),
+			(Role) mandatorId.getOwner(storage),
 			getUsers(mandatorId),
 			datasetPermissions,
 			queryPermissions,
 			otherPermissions,
 			Ability.READ.asSet(),
-			datasets);
+			permissionTemplateMap);
 	}
 
 	/**
 	 * Handles creation of permissions.
-	 * @param permission The permission to create.
-	 * @throws JSONException is thrown upon processing JSONs.
+	 * 
+	 * @param permission
+	 *            The permission to create.
+	 * @throws JSONException
+	 *             is thrown upon processing JSONs.
 	 */
-	public void createPermission(PermissionOwnerId<?> ownerId,ConqueryPermission permission) throws JSONException {
+	public void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.addPermission(ownerId.getOwner(storage), permission, storage);
 	}
 
 	/**
 	 * Handles deletion of permissions.
-	 * @param permission The permission to delete.
-	 * @throws JSONException is thrown upon processing JSONs.
+	 * 
+	 * @param permission
+	 *            The permission to delete.
+	 * @throws JSONException
+	 *             is thrown upon processing JSONs.
 	 */
-	public void deletePermission(PermissionOwnerId<?> ownerId,ConqueryPermission permission) throws JSONException {
+	public void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.removePermission(ownerId.getOwner(storage), permission, storage);
 	}
 
@@ -284,14 +322,13 @@ public class AdminProcessor {
 	public Object getUserContent(UserId userId) {
 		User user = storage.getUser(userId);
 		Collection<Role> availableRoles = storage.getAllRoles();
-		
+
 		FEUserContent content = new FEUserContent(
 			user,
 			new ArrayList<>(user.getRoles()),
 			new ArrayList<>(user.getPermissionsCopy()),
-			availableRoles
-			);
-		
+			availableRoles);
+
 		return content;
 	}
 
@@ -304,14 +341,15 @@ public class AdminProcessor {
 		log.info("New mandator:\\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 		storage.addUser(user);
 	}
-	
-	public void addUsers(List<User> users) {
 
-		for(User user : users) {
+	public void addUsers(List<User> users) {
+		Objects.requireNonNull(users, "User list was empty.");
+		for (User user : users) {
 			try {
 				addUser(user);
-			}catch(Exception e) {
-				log.error(String.format("Failed to add User: %s", user),e);
+			}
+			catch (Exception e) {
+				log.error(String.format("Failed to add User: %s", user), e);
 			}
 		}
 	}
@@ -319,26 +357,26 @@ public class AdminProcessor {
 	public void deleteRoleFromUser(UserId userId, RoleId roleId) throws JSONException {
 		User user = null;
 		Role role = null;
-		synchronized(storage) {
+		synchronized (storage) {
 			user = storage.getUser(userId);
 			role = storage.getRole(roleId);
 		}
 		Objects.requireNonNull(user);
 		Objects.requireNonNull(role);
 		user.removeRole(storage, role);
-		
+
 	}
 
 	public void addRoleToUser(UserId userId, RoleId roleId) throws JSONException {
 		User user = null;
 		Role role = null;
-		synchronized(storage) {
+		synchronized (storage) {
 			user = storage.getUser(userId);
 			role = storage.getRole(roleId);
 		}
 		Objects.requireNonNull(user);
 		Objects.requireNonNull(role);
 		user.addRole(storage, role);
-		
+
 	}
 }

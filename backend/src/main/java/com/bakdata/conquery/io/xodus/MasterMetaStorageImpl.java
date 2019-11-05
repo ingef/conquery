@@ -61,7 +61,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 		);
 
 		mandatorEnvironment = Environments.newInstance(
-				new File(config.getDirectory(), "mandators"),
+				new File(config.getDirectory(), "roles"),
 				config.getXodus().createConfig()
 		);
 

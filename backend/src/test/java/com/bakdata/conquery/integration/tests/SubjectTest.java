@@ -6,6 +6,7 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -78,6 +79,34 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 
 		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
 		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isTrue();
+		
+		// Delete all permissions from mandator and user
+		user1.removePermission(storage, new DatasetPermission(Ability.READ.asSet(), dataset1.getId()));
+		mandator1.removePermission(storage, new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()));
+
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isFalse();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isFalse();
+		
+		/////// SUPER_PERMISSION ///////
+		// Add SuperPermission to User
+		user1.addPermission(storage, new SuperPermission());
+
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isTrue();
+		
+
+		// Add SuperPermission to mandator and remove from user
+		user1.removePermission(storage, new SuperPermission());
+		mandator1.addPermission(storage, new SuperPermission());
+
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isTrue();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isTrue();
+
+		// Add SuperPermission to mandator and remove from user
+		mandator1.removePermission(storage, new SuperPermission());
+
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isFalse();
+		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isFalse();
 	}
 
 }

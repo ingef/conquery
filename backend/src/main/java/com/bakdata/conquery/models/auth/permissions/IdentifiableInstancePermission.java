@@ -9,10 +9,12 @@ import com.bakdata.conquery.models.identifiable.ids.AId;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.ToString;
+import lombok.experimental.FieldNameConstants;
 
 @Getter
 @ToString(callSuper=true)
 @EqualsAndHashCode(callSuper=true)
+@FieldNameConstants
 public abstract class IdentifiableInstancePermission<ID extends AId<?>> extends ConqueryPermission {
 	protected final ID instanceId;
 	

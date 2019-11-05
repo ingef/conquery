@@ -10,6 +10,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.apache.shiro.authz.Permission;
+import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -27,6 +28,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(callSuper=false)
 public abstract class ConqueryPermission implements Permission , HasTarget {
+	@NotEmpty
 	protected final EnumSet<Ability> abilities = EnumSet.noneOf(Ability.class);
 	
 	private List<Object> classifier() {
