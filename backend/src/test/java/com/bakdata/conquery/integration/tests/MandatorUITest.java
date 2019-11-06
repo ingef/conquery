@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.net.URI;
+import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
@@ -69,12 +70,8 @@ public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationT
 				.get();
 	
 			assertThat(response.getStatus()).isEqualTo(200);
-			assertThat(response.readEntity(String.class))
-				// check permission
-				.contains(permission.getClass().getSimpleName(), permission.getTarget().toString())
-				.containsSubsequence((Iterable<String>) () -> permission.getAbilities().stream().map(Enum::name).iterator())
-				// check user
-				.contains(user.getLabel());
+			// Check for Freemarker Errors
+			assertThat(response.readEntity(String.class)).doesNotContain(List.of("FREEMARKER", "DEBUG"));
 
 		}
 		finally {
