@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HUsers;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.dropwizard.views.View;
 
@@ -28,10 +29,11 @@ public class UserUIResource extends HUsers {
 	 * End point for retrieving information about a specific role.
 	 * @param roleId Unique id of the role.
 	 * @return A view holding the information about the role.
+	 * @throws JsonProcessingException 
 	 */
 	@Path("{" + USER_ID + "}")
 	@GET
-	public View getUser(@PathParam(USER_ID) UserId userId) {
+	public View getUser(@PathParam(USER_ID) UserId userId) throws JsonProcessingException {
 		return new UIView<>("user.html.ftl", processor.getUIContext(), processor.getUserContent(userId));
 	}
 }

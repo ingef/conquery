@@ -31,10 +31,8 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.IdentifiableInstancePermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
@@ -67,10 +65,13 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
+import com.bakdata.conquery.resources.admin.ui.model.FERoleContent.FERoleContentBuilder;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
-import com.fasterxml.jackson.databind.deser.std.EnumSetDeserializer;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectWriter;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -87,6 +88,7 @@ public class AdminProcessor {
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
 	private final Validator validator;
+	private final ObjectWriter jsonWriter = Jackson.MAPPER.writer();
 
 	public void addTable(Dataset dataset, Table table) throws JSONException {
 		Objects.requireNonNull(dataset);
@@ -236,55 +238,54 @@ public class AdminProcessor {
 
 	public List<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
 		PermissionOwner<?> owner = id.getOwner(storage);
+		Objects.requireNonNull(owner,"PermissionOwner not found.");
 		return new ArrayList<>(owner.getPermissionsCopy());
 	}
 
-	public FERoleContent getRoleContent(RoleId mandatorId) {
-		List<ConqueryPermission> permissions = getPermissions(mandatorId);
-		List<DatasetPermission> datasetPermissions = new ArrayList<>();
-		List<QueryPermission> queryPermissions = new ArrayList<>();
-		List<ConqueryPermission> otherPermissions = new ArrayList<>();
+	public FERoleContent getRoleContent(RoleId mandatorId) throws JsonProcessingException {
+		return FERoleContent.builder()
+			.permissions(wrapInFEPermission(getPermissions(mandatorId)))
+			.permissionTemplateMap(preparePermissionTemplate())
+			.users(getUsers(mandatorId))
+			.owner(mandatorId.getOwner(storage))
+			.build();
+	}
+
+	private List<Pair<FEPermission, String>> wrapInFEPermission(List<ConqueryPermission> permissions) throws JsonProcessingException {
+		List<Pair<FEPermission,String>> fePermissions = new ArrayList<>();
 
 		for (ConqueryPermission permission : permissions) {
-			if (permission instanceof DatasetPermission) {
-				datasetPermissions.add((DatasetPermission) permission);
-			}
-			else if (permission instanceof QueryPermission) {
-				queryPermissions.add((QueryPermission) permission);
-			}
-			else {
-				otherPermissions.add(permission);
-			}
+			fePermissions.add(Pair.of(FEPermission.from(permission), jsonWriter.writeValueAsString(permission)));
 		}
+		return fePermissions;
+	}
 
+	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() {
 		Map<String, Pair<Set<Ability>,List<Object>>> permissionTemplateMap = new HashMap<>();
 
+		// Grab all possible permission types for the "Create Permission" section 
 		Set<Class<? extends ConqueryPermission>> permissionTypes = CPSTypeIdResolver.listImplementations(ConqueryPermission.class);
 		for (Class<? extends ConqueryPermission> permissionType : permissionTypes) {
-				
+			// Get the possible targets and abilities for a permission
 			List<Object> targetObjects = new ArrayList<>();
 			Set<Ability> abilities = EnumSet.noneOf(Ability.class);
 			if (DatasetPermission.class.isAssignableFrom(permissionType)) {
 				targetObjects.addAll(storage.getNamespaces().getAllDatasets().stream().map(Identifiable::getId).collect(Collectors.toList()));
-				abilities.addAll(AbilitySets.DATASET_CREATOR);
+				abilities.addAll(DatasetPermission.ALLOWED_ABILITIES);
 			}
 			else if (QueryPermission.class.isAssignableFrom(permissionType)) {
 				targetObjects.addAll(storage.getAllExecutions().stream().map(Identifiable::getId).collect(Collectors.toList()));
-				abilities.addAll(AbilitySets.QUERY_CREATOR);
+				abilities.addAll(QueryPermission.ALLOWED_ABILITIES);
+			}
+			else if (SuperPermission.class.isAssignableFrom(permissionType)) {
+				//targetObjects.addAll(List.of(SuperPermission.DUMMY_TARGET));
+				abilities.addAll(SuperPermission.ALLOWED_ABILITIES);
 			}
 			CPSType anno = permissionType.getAnnotation(CPSType.class);
 			permissionTemplateMap.put(anno.id(), Pair.of(abilities, targetObjects));
 			
 		}
-
-		return new FERoleContent(
-			(Role) mandatorId.getOwner(storage),
-			getUsers(mandatorId),
-			datasetPermissions,
-			queryPermissions,
-			otherPermissions,
-			Ability.READ.asSet(),
-			permissionTemplateMap);
+		return permissionTemplateMap;
 	}
 
 	/**
@@ -319,17 +320,15 @@ public class AdminProcessor {
 		return new ArrayList<>(storage.getAllUsers());
 	}
 
-	public Object getUserContent(UserId userId) {
+	public Object getUserContent(UserId userId) throws JsonProcessingException {
 		User user = storage.getUser(userId);
-		Collection<Role> availableRoles = storage.getAllRoles();
-
-		FEUserContent content = new FEUserContent(
-			user,
-			new ArrayList<>(user.getRoles()),
-			new ArrayList<>(user.getPermissionsCopy()),
-			availableRoles);
-
-		return content;
+		return FEUserContent.builder()
+			.owner(user)
+			.availableRoles(storage.getAllRoles()	)
+			.permissions(wrapInFEPermission(getPermissions(userId)))
+			.permissionTemplateMap(preparePermissionTemplate())
+			.roles(user.getRoles())
+			.build();
 	}
 
 	public synchronized void deleteUser(UserId userId) {

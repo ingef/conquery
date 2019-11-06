@@ -2,23 +2,20 @@ package com.bakdata.conquery.resources.admin.ui.model;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 
-import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.experimental.SuperBuilder;
 
 /**
  * This class provides the corresponding FreeMarker template with the data needed.
  */
 @Getter
-@AllArgsConstructor
-public class FEUserContent {
-	public User self;
-	public List<Role> roles;
-	public List<ConqueryPermission> permissions;
-	
+@SuperBuilder
+public class FEUserContent extends FEPermissionOwnerContent<User>{
+	public Set<Role> roles;
 	public Collection<Role> availableRoles;
 }

@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.auth.permissions;
 
+import java.util.Objects;
 import java.util.Set;
 
 import org.apache.shiro.authz.Permission;
@@ -20,6 +21,7 @@ public abstract class IdentifiableInstancePermission<ID extends AId<?>> extends 
 	
 	public IdentifiableInstancePermission(Set<Ability> abilities,  ID instanceId) {
 		super(abilities);
+		Objects.requireNonNull(instanceId);
 		this.instanceId = instanceId;
 	}
 	

@@ -11,12 +11,25 @@
         <tbody>
             <#list permissions as permission>
                 <tr>
-                    <td>${permission.class.getSimpleName()}</td>
-                    <td>${permission.getTarget().toString()}</td>
-                    <td><#list permission.getAbilities() as ability>${ability} </#list></td>
-                    <td><a href="" onclick="event.preventDefault(); fetch('/admin/permissions/${ownerId}',{method: 'delete', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({type: 'DATASET_PERMISSION', abilities: '${permission.getAbilities()?first}', instanceId:'${permission.getTarget()}'})}).then(function(){location.reload()});"><i class="fas fa-trash-alt text-danger"></i></a></td>
+                    <td>${permission.getLeft().getType()}</td>
+                    <td>
+                            ${permission.getLeft().getTarget()}</td>
+                    <td>
+                            <#list permission.getLeft().getAbilities() as ability>${ability} </#list></td>
+                    <td><a href="#" onclick="handleDeletePermission(${permission.getRight()})"><i class="fas fa-trash-alt text-danger"></i></a></td>
                 </tr>
             </#list>
         </tbody>
     </table>
+    <script type="application/javascript">
+    function handleDeletePermission(permission){
+        event.preventDefault();
+        fetch(
+            '/admin/permissions/${ownerId}',
+            {
+                method: 'delete',
+                 headers: {'Content-Type': 'application/json'},
+                 body: JSON.stringify(permission)}).then(function(){location.reload()});
+    }
+    </script>
 </#macro>

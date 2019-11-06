@@ -30,7 +30,7 @@ import lombok.extern.slf4j.Slf4j;
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T>{
 
 	/**
-	 * This getter is only used for the JSON serialization/deserialization
+	 * This getter is only used for the JSON serialization/deserialization.
 	 */
 	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({@Deprecated}))
 	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
@@ -118,13 +118,13 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 				permissions.remove(permission);
 				
 				// remove all provided abilities
-				if(permission.getAbilities().removeAll(delPermission.getAbilities())) {
-					log.info(String.format("After deleting the abilites %s the permission remains as: %s", delPermission.getAbilities(), permission));
+				if(permission.removeAllAbilities(delPermission.getAbilitiesCopy())) {
+					log.info(String.format("After deleting the abilites %s the permission remains as: %s", delPermission.getAbilitiesCopy(), permission));
 				}
 				
 				
 				// if there are abilities left, add the permission back to the local storage
-				if(!permission.getAbilities().isEmpty()) {
+				if(!permission.getAbilitiesCopy().isEmpty()) {
 					permissions.add(permission);
 				}
 				// make the change persistent

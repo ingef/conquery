@@ -37,5 +37,5 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 		}
 	}
 	
-	public abstract PermissionOwner<?> getOwner(MasterMetaStorage storage);
+	public abstract T getOwner(MasterMetaStorage storage);
 }

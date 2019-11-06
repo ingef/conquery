@@ -11,6 +11,7 @@ import javax.ws.rs.core.MediaType;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HRoles;
+import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.dropwizard.views.View;
 
@@ -28,10 +29,11 @@ public class RoleUIResource extends HRoles {
 	 * End point for retrieving information about a specific role.
 	 * @param roleId Unique id of the role.
 	 * @return A view holding the information about the role.
+	 * @throws JsonProcessingException 
 	 */
 	@Path("{" + ROLE_NAME + "}")
 	@GET
-	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) {
+	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) throws JsonProcessingException {
 		return new UIView<>("role.html.ftl", processor.getUIContext(), processor.getRoleContent(roleId));
 	}
 }
