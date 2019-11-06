@@ -69,7 +69,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 */
 	public synchronized ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
 
-		Optional<ConqueryPermission> sameTarget = ofTarget(permission);
+		Optional<ConqueryPermission> sameTarget = ofSameTypeAndTarget(permission);
 
 		if (sameTarget.isPresent()) {
 			// found permission with the same target
@@ -107,7 +107,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 */
 	public void removePermission(MasterMetaStorage storage, ConqueryPermission delPermission) throws JSONException {
 		synchronized (permissions) {
-			Optional<ConqueryPermission> sameTarget =  ofTarget(delPermission);
+			Optional<ConqueryPermission> sameTarget =  ofSameTypeAndTarget(delPermission);
 			if (sameTarget.isPresent()) {
 				// found permission with the same target
 				ConqueryPermission permission = sameTarget.get();
@@ -133,13 +133,17 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		}
 	}
 
-	private Optional<ConqueryPermission> ofTarget(ConqueryPermission other) {
+	private Optional<ConqueryPermission> ofSameTypeAndTarget(ConqueryPermission other) {
 		Iterator<ConqueryPermission> it = permissions.iterator();
 		while (it.hasNext()) {
 			ConqueryPermission perm = it.next();
-			if (perm.getTarget().equals(other.getTarget())) {
-				return Optional.of(perm);
+			if(!perm.getClass().isAssignableFrom(other.getClass())) {
+				continue;
 			}
+			if (!perm.getTarget().equals(other.getTarget())) {
+				continue;
+			}
+			return Optional.of(perm);
 		}
 		return Optional.empty();
 

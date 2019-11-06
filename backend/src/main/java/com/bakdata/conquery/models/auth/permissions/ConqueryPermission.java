@@ -69,8 +69,8 @@ public abstract class ConqueryPermission implements Permission , HasTarget {
 	
 	@Override
 	public boolean implies(Permission permission) {
-		// Check permission category
-		if(!(permission instanceof ConqueryPermission)) {
+		// Check exact permission category
+		if(!(this.getClass().isAssignableFrom(permission.getClass()))) {
 			// Fast return on false
 			return false;
 		}

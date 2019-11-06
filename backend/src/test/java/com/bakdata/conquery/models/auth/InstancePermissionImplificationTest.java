@@ -1,13 +1,20 @@
 package com.bakdata.conquery.models.auth;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.EnumSet;
+import java.util.UUID;
 
 import org.apache.shiro.authz.Permission;
 import org.junit.jupiter.api.Test;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 
 public class InstancePermissionImplificationTest {
 	
@@ -86,5 +93,16 @@ public class InstancePermissionImplificationTest {
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
+	}
+	
+	@Test
+	public void permissionTypesFail() {
+		Permission dPerm = new DatasetPermission(Ability.READ.asSet(), new DatasetId(DATASET1));
+		Permission qPerm = new QueryPermission(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId(DATASET1), UUID.randomUUID()));
+		Permission sPerm = new SuperPermission();
+		Permission aPerm = new AdminPermission();
+		assertThat(dPerm.implies(qPerm)).isFalse();
+		assertThat(dPerm.implies(sPerm)).isFalse();
+		assertThat(aPerm.implies(sPerm)).isFalse();
 	}
 }

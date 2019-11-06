@@ -4,6 +4,7 @@ import java.util.EnumSet;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -80,6 +81,16 @@ public class AuthorizationHelper {
 	 */
 	public static void authorize(User user, ManagedQuery query, EnumSet<Ability> abilities) {
 		user.checkPermission(new QueryPermission(abilities, query.getId()));
+	}
+	
+	/**
+	 * Helper function for authorizing an ability on a query.
+	 * @param user The subject that needs authorization.
+	 * @param query The object that needs to be checked.
+	 * @param ability The kind of ability that is checked.
+	 */
+	public static void authorize(User user, ConqueryPermission toBeChecked) {
+		user.checkPermission(toBeChecked);
 	}
 	
 	/**

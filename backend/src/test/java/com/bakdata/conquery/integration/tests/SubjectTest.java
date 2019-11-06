@@ -2,9 +2,12 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.Set;
+
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.subjects.Role;
@@ -107,6 +110,17 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 
 		assertThat(user1.isPermitted(new DatasetPermission(Ability.READ.asSet(), dataset1.getId()))).isFalse();
 		assertThat(user1.isPermitted(new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()))).isFalse();
+		
+		/////// PERMISSION AGGREGATION ///////
+		user1.addPermission(storage, new DatasetPermission(Ability.READ.asSet(), dataset1.getId()));
+		user1.addPermission(storage, new DatasetPermission(Ability.DELETE.asSet(), dataset1.getId()));
+		user1.addPermission(storage, new SuperPermission());
+		user1.addPermission(storage, new AdminPermission());
+		
+		assertThat(user1.getPermissionsCopy()).containsExactlyInAnyOrder(
+			new DatasetPermission(Set.of(Ability.DELETE,Ability.READ), dataset1.getId()),
+			new SuperPermission(),
+			new AdminPermission());
 	}
 
 }

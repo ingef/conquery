@@ -8,9 +8,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableSet;
 
 import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 @CPSType(id="QUERY_PERMISSION", base=ConqueryPermission.class)
 @EqualsAndHashCode(callSuper=true)
+@ToString(callSuper=true)
 public class QueryPermission extends IdentifiableInstancePermission<ManagedExecutionId>{
 
 	public final static Set<Ability> ALLOWED_ABILITIES = ImmutableSet.copyOf(AbilitySets.QUERY_CREATOR);
