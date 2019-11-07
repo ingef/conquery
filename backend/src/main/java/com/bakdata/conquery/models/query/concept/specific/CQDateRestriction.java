@@ -21,9 +21,9 @@ import lombok.Setter;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
-import java.util.ArrayList;
+import java.util.ArrayDeque;
 import java.util.Collections;
-import java.util.List;
+import java.util.Queue;
 import java.util.Set;
 
 @CPSType(id = "DATE_RESTRICTION", base = CQElement.class)
@@ -41,14 +41,12 @@ public class CQDateRestriction implements CQElement {
 		QPNode childAgg = child.createQueryPlan(context.withDateRestriction(CDateRange.of(dateRange)), plan);
 
 		//insert behind every ValidityDateNode
-		List<QPNode> openList = new ArrayList<>();
+		Queue<QPNode> openList = new ArrayDeque<>();
 
 		openList.add(childAgg);
 
-		int i = 0;
-
-		while (i < openList.size()) {
-			QPNode current = openList.get(i);
+		while (!openList.isEmpty()) {
+			QPNode current = openList.poll();
 			if (current instanceof ValidityDateNode) {
 				ValidityDateNode validityDateNode = (ValidityDateNode) current;
 
@@ -63,7 +61,6 @@ public class CQDateRestriction implements CQElement {
 			else {
 				openList.addAll(current.getChildren());
 			}
-			i++;
 		}
 
 		return childAgg;
