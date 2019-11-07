@@ -24,16 +24,18 @@
 					</#if>
 				</td>
 				<td>
-				<div class="form-group col" id="${ABILITIES}${key}">
-					<#list permissionTemplateMap[key].left as ability>
-						<div class="form-check">
-							<input class="form-check-input" type="checkbox" value="${ability}" id="ability_${key}_${ability}">
-							<label class="form-check-label" for="ability_${key}_${ability}">
-								${ability}
-							</label>
+					<#if permissionTemplateMap[key].left?has_content>
+						<div class="form-group col" id="${ABILITIES}${key}">
+							<#list permissionTemplateMap[key].left as ability>
+								<div class="form-check">
+									<input class="form-check-input" type="checkbox" value="${ability}" id="ability_${key}_${ability}">
+									<label class="form-check-label" for="ability_${key}_${ability}">
+										${ability}
+									</label>
+								</div>
+							</#list>
 						</div>
-					</#list>
-				</div>
+					</#if>
 				</td>
 				<td><a href="#" onclick="submitPermission('${key}')"> <i class="fas fa-share"></i> </a> </td>
             </tr>
@@ -77,7 +79,7 @@
 
 		
 		
-		console.log("Sending Permission: Type: " + permissionType + "\tTarget: " + target+ "\tAbilities: " + abilities);
+		console.log("Sending Permission: " + permission);
 		fetch('/admin/permissions/${ownerId}',
 			{
 				method: 'post',

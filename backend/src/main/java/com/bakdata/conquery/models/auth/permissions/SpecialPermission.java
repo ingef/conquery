@@ -1,33 +1,41 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import java.util.Set;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Optional;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.google.common.collect.ImmutableSet;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
 
 
 @EqualsAndHashCode(callSuper = true)
 public abstract class SpecialPermission extends ConqueryPermission {
-	
-	public final static Set<Ability> ALLOWED_ABILITIES = ImmutableSet.of(Ability.DUMMY_ABILITY);
-	@Getter
-	private final String target;
+
+	/**
+	 * Generate unique dummy target for a SpecialPermission, since this is the only member that effects a different hash code
+	 * for different types of SpecialPermissions.
+	 */
+	@JsonIgnore
+	private final String distinguisher;
 
 	public SpecialPermission() {
-		super(Ability.DUMMY_ABILITY.asSet());
-		/**
-		 * Generate unique dummy target for a SpecialPermission, since this is the only member that effects a different hash code
-		 * for different types of SpecialPermissions.
-		 */
-		target = String.format("DUMMY_TARGET_%s", this.getClass().getAnnotation(CPSType.class).id());
+		distinguisher = String.format("DUMMY_TARGET_%s", this.getClass().getAnnotation(CPSType.class).id());
 	}
-
-
+	
 	@Override
-	public Set<Ability> allowedAbilities() {
-		return ALLOWED_ABILITIES;
+	public Optional<ConqueryPermission> findSimilar(Collection<ConqueryPermission> permissions) {
+		Iterator<ConqueryPermission> it = permissions.iterator();
+		while (it.hasNext()) {
+			ConqueryPermission perm = it.next();
+			if(!getClass().isAssignableFrom(perm.getClass())) {
+				continue;
+			}
+			
+			return Optional.of(perm);
+		}
+		return Optional.empty();
 	}
+
 }

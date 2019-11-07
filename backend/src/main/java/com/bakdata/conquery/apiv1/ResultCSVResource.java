@@ -25,6 +25,7 @@ import org.eclipse.jetty.io.EofException;
 
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DownloadPermission;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -53,6 +54,7 @@ public class ResultCSVResource {
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
+		authorize(user, new DownloadPermission());
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 		

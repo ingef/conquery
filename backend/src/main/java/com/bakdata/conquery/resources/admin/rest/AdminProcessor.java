@@ -277,10 +277,6 @@ public class AdminProcessor {
 				targetObjects.addAll(storage.getAllExecutions().stream().map(Identifiable::getId).collect(Collectors.toList()));
 				abilities.addAll(QueryPermission.ALLOWED_ABILITIES);
 			}
-			else if (SuperPermission.class.isAssignableFrom(permissionType)) {
-				//targetObjects.addAll(List.of(SuperPermission.DUMMY_TARGET));
-				abilities.addAll(SuperPermission.ALLOWED_ABILITIES);
-			}
 			CPSType anno = permissionType.getAnnotation(CPSType.class);
 			permissionTemplateMap.put(anno.id(), Pair.of(abilities, targetObjects));
 			

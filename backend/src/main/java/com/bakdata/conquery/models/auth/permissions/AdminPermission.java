@@ -1,12 +1,13 @@
 package com.bakdata.conquery.models.auth.permissions;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * For Granting access to the admin servlet.
+ * For granting access to the admin servlet.
  *
  */
 @Slf4j

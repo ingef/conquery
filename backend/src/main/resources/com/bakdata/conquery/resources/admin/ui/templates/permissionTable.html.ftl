@@ -11,11 +11,16 @@
         <tbody>
             <#list permissions as permission>
                 <tr>
-                    <td>${permission.getLeft().getType()}</td>
+                    <td>${permission.left.type}</td>
                     <td>
-                            ${permission.getLeft().getTarget()}</td>
+                        <#if permission.left.target??>
+                            ${permission.left.target}</td>
+                        </#if>
                     <td>
-                            <#list permission.getLeft().getAbilities() as ability>${ability} </#list></td>
+                        <#if permission.left.abilities?has_content>
+                            <#list permission.left.abilities as ability>${ability} </#list>
+                        </#if>
+                    </td>
                     <td><a href="#" onclick="handleDeletePermission(${permission.getRight()})"><i class="fas fa-trash-alt text-danger"></i></a></td>
                 </tr>
             </#list>

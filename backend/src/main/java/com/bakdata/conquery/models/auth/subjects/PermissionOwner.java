@@ -1,15 +1,13 @@
 package com.bakdata.conquery.models.auth.subjects;
 
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.HasCompactedAbilities;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
@@ -69,12 +67,12 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 */
 	public synchronized ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
 
-		Optional<ConqueryPermission> sameTarget = ofSameTypeAndTarget(permission);
+		Optional<ConqueryPermission> similar = permission.findSimilar(permissions);
 
-		if (sameTarget.isPresent()) {
-			// found permission with the same target
-			ConqueryPermission oldPermission = sameTarget.get();
-			if (oldPermission.equals(permission)) {
+		if (similar.isPresent() && similar.get() instanceof HasCompactedAbilities) {
+			// found same/similar permission
+			ConqueryPermission existingPermission = similar.get();
+			if (existingPermission.equals(permission)) {
 				// is actually the same permission
 				log.info("User {} has already permission {}.", this, permission);
 				return permission;
@@ -82,11 +80,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			// new permission has different ability
 			
 			// remove old permission because we construct and add a new one
-			permissions.remove(oldPermission);
-			List<ConqueryPermission> reducedPermission = ConqueryPermission
-				.reduceByTarget(Arrays.asList(oldPermission, permission));
-			// has only one entry as permissions only differ in the ability
-			permission = reducedPermission.get(0);
+			permissions.remove(existingPermission);
+			((HasCompactedAbilities)existingPermission).addAbilities(((HasCompactedAbilities) permission).getAbilitiesCopy());
+			log.info("Compected permission: {}",existingPermission);
+
+			permission = existingPermission;
 			
 		}
 
@@ -107,46 +105,38 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 */
 	public void removePermission(MasterMetaStorage storage, ConqueryPermission delPermission) throws JSONException {
 		synchronized (permissions) {
-			Optional<ConqueryPermission> sameTarget =  ofSameTypeAndTarget(delPermission);
-			if (sameTarget.isPresent()) {
+			Optional<ConqueryPermission> similar =  delPermission.findSimilar(permissions);
+			if (similar.isPresent()) {
 				// found permission with the same target
-				ConqueryPermission permission = sameTarget.get();
+				ConqueryPermission permission = similar.get();
 				/*
 				 *  We must remove the complete permission from the HashSet,
 				 *  because we will probably change the object and the corresponding has
 				 */
 				permissions.remove(permission);
 				
-				// remove all provided abilities
-				if(permission.removeAllAbilities(delPermission.getAbilitiesCopy())) {
-					log.info(String.format("After deleting the abilites %s the permission remains as: %s", delPermission.getAbilitiesCopy(), permission));
-				}
-				
-				
-				// if there are abilities left, add the permission back to the local storage
-				if(!permission.getAbilitiesCopy().isEmpty()) {
-					permissions.add(permission);
+				// Handle permissions with multiple abilities 
+				if(permission instanceof HasCompactedAbilities) {
+					if(!(delPermission instanceof HasCompactedAbilities)) {
+						throw new IllegalStateException(String.format("Permissions are not of same type. Got existing %s and removing %s.", permission, delPermission));
+					}
+					HasCompactedAbilities iPerm = (HasCompactedAbilities) permission;
+					HasCompactedAbilities iDelPerm = (HasCompactedAbilities) delPermission;
+					// remove all provided abilities
+					if(iPerm.removeAllAbilities(iDelPerm.getAbilitiesCopy())) {
+						log.info(String.format("After deleting the abilites %s the permission remains as: %s", iDelPerm.getAbilitiesCopy(), permission));
+					}
+					
+					
+					// if there are abilities left, add the permission back to the local storage
+					if(!iPerm.getAbilitiesCopy().isEmpty()) {
+						permissions.add(permission);
+					}
 				}
 				// make the change persistent
 				this.updateStorage(storage);
 			}
 		}
-	}
-
-	private Optional<ConqueryPermission> ofSameTypeAndTarget(ConqueryPermission other) {
-		Iterator<ConqueryPermission> it = permissions.iterator();
-		while (it.hasNext()) {
-			ConqueryPermission perm = it.next();
-			if(!perm.getClass().isAssignableFrom(other.getClass())) {
-				continue;
-			}
-			if (!perm.getTarget().equals(other.getTarget())) {
-				continue;
-			}
-			return Optional.of(perm);
-		}
-		return Optional.empty();
-
 	}
 
 	/**

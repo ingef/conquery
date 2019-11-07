@@ -5,6 +5,8 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.HasCompactedAbilities;
+import com.bakdata.conquery.models.auth.permissions.HasTarget;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -22,10 +24,18 @@ public class FEPermission {
 	private final Object target;
 
 	public static FEPermission from(ConqueryPermission cPermission) {
+		Set<Ability> abilities = null;
+		if(cPermission instanceof HasCompactedAbilities) {
+			abilities = ((HasCompactedAbilities)cPermission).getAbilitiesCopy();
+		}
+		Object target = null;
+		if(cPermission instanceof HasTarget) {
+			target = ((HasTarget) cPermission).getTarget();
+		}
 		return new FEPermission(
 			cPermission.getClass().getAnnotation(CPSType.class).id(),
-			cPermission.getAbilitiesCopy(),
-			cPermission.getTarget());
+			abilities,
+			target);
 	}
 
 }
