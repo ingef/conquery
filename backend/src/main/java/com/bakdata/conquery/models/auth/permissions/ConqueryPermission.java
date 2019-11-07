@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth.permissions;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.shiro.authz.Permission;
 

@@ -5,4 +5,5 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 public interface HasTarget {
 	@JsonIgnore
 	Object getTarget();
+
 }

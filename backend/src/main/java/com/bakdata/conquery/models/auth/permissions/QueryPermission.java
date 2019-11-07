@@ -1,8 +1,12 @@
 package com.bakdata.conquery.models.auth.permissions;
 
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.ImmutableSet;
@@ -25,5 +29,9 @@ public class QueryPermission extends IdentifiableInstancePermission<ManagedExecu
 	@Override
 	public Set<Ability> allowedAbilities() {
 		return ALLOWED_ABILITIES;
+	}
+	
+	public static List<Object> getPossibleTargets(MasterMetaStorage storage){
+		return storage.getAllExecutions().stream().map(Identifiable::getId).collect(Collectors.toList());
 	}
 }

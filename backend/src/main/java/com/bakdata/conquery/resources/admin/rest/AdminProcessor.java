@@ -3,6 +3,8 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
@@ -33,6 +35,7 @@ import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.HasTarget;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
@@ -242,7 +245,7 @@ public class AdminProcessor {
 		return new ArrayList<>(owner.getPermissionsCopy());
 	}
 
-	public FERoleContent getRoleContent(RoleId mandatorId) throws JsonProcessingException {
+	public FERoleContent getRoleContent(RoleId mandatorId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		return FERoleContent.builder()
 			.permissions(wrapInFEPermission(getPermissions(mandatorId)))
 			.permissionTemplateMap(preparePermissionTemplate())
@@ -260,7 +263,7 @@ public class AdminProcessor {
 		return fePermissions;
 	}
 
-	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() {
+	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		Map<String, Pair<Set<Ability>,List<Object>>> permissionTemplateMap = new HashMap<>();
 
 		// Grab all possible permission types for the "Create Permission" section 
@@ -269,12 +272,16 @@ public class AdminProcessor {
 			// Get the possible targets and abilities for a permission
 			List<Object> targetObjects = new ArrayList<>();
 			Set<Ability> abilities = EnumSet.noneOf(Ability.class);
+			if (HasTarget.class.isAssignableFrom(permissionType)) {
+				targetObjects.addAll(getTargets(permissionType));
+			}
 			if (DatasetPermission.class.isAssignableFrom(permissionType)) {
-				targetObjects.addAll(storage.getNamespaces().getAllDatasets().stream().map(Identifiable::getId).collect(Collectors.toList()));
+				//targetObjects.addAll(storage.getNamespaces().getAllDatasets().stream().map(Identifiable::getId).collect(Collectors.toList()));
+				//targetObjects.addAll(getTargets(permissionType));
 				abilities.addAll(DatasetPermission.ALLOWED_ABILITIES);
 			}
 			else if (QueryPermission.class.isAssignableFrom(permissionType)) {
-				targetObjects.addAll(storage.getAllExecutions().stream().map(Identifiable::getId).collect(Collectors.toList()));
+				//targetObjects.addAll(storage.getAllExecutions().stream().map(Identifiable::getId).collect(Collectors.toList()));
 				abilities.addAll(QueryPermission.ALLOWED_ABILITIES);
 			}
 			CPSType anno = permissionType.getAnnotation(CPSType.class);
@@ -316,7 +323,7 @@ public class AdminProcessor {
 		return new ArrayList<>(storage.getAllUsers());
 	}
 
-	public Object getUserContent(UserId userId) throws JsonProcessingException {
+	public Object getUserContent(UserId userId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		User user = storage.getUser(userId);
 		return FEUserContent.builder()
 			.owner(user)
@@ -373,5 +380,12 @@ public class AdminProcessor {
 		Objects.requireNonNull(role);
 		user.addRole(storage, role);
 
+	}
+	
+
+	List getTargets(Class<? extends ConqueryPermission> permissionClass) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+		Method method = permissionClass.getMethod("getPossibleTargets", MasterMetaStorage.class);
+		
+		return List.class.cast(method.invoke(null, storage));
 	}
 }

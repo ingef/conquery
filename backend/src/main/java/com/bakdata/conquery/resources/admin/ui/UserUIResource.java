@@ -2,6 +2,8 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,10 +32,15 @@ public class UserUIResource extends HUsers {
 	 * @param roleId Unique id of the role.
 	 * @return A view holding the information about the role.
 	 * @throws JsonProcessingException 
+	 * @throws InvocationTargetException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
 	 */
 	@Path("{" + USER_ID + "}")
 	@GET
-	public View getUser(@PathParam(USER_ID) UserId userId) throws JsonProcessingException {
+	public View getUser(@PathParam(USER_ID) UserId userId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		return new UIView<>("user.html.ftl", processor.getUIContext(), processor.getUserContent(userId));
 	}
 }

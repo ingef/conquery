@@ -2,6 +2,8 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
 
+import java.lang.reflect.InvocationTargetException;
+
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -30,10 +32,15 @@ public class RoleUIResource extends HRoles {
 	 * @param roleId Unique id of the role.
 	 * @return A view holding the information about the role.
 	 * @throws JsonProcessingException 
+	 * @throws InvocationTargetException 
+	 * @throws IllegalArgumentException 
+	 * @throws IllegalAccessException 
+	 * @throws SecurityException 
+	 * @throws NoSuchMethodException 
 	 */
 	@Path("{" + ROLE_NAME + "}")
 	@GET
-	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) throws JsonProcessingException {
+	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
 		return new UIView<>("role.html.ftl", processor.getUIContext(), processor.getRoleContent(roleId));
 	}
 }
