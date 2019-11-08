@@ -1,12 +1,12 @@
 <#macro permissionCreator ownerId permissionTemplateMap>
-    <#assign TARGETS = "targets_">
+    <#assign INSTANCES = "instances_">
 	<#assign ABILITIES = "abilities_">
     <table class="table table-striped">
         <thead>
             <tr>
-            <th scope="col">Permission Type</th>
-            <th scope="col">Target</th>
+            <th scope="col">Domain</th>
             <th scope="col">Abilities</th>
+            <th scope="col">Instance</th>
             <th></th>
             </tr>
         </thead>
@@ -14,15 +14,6 @@
 		<#list permissionTemplateMap?keys as key>
             <tr>
 				<td>${key}</td>
-				<td>
-					<#if permissionTemplateMap[key].right?size != 0>
-						<select id="${TARGETS}${key}" class="form-control">
-							<#list permissionTemplateMap[key].right as target>
-									<option>${target}</option>
-							</#list>
-						</select>
-					</#if>
-				</td>
 				<td>
 					<#if permissionTemplateMap[key].left?has_content>
 						<div class="form-group col" id="${ABILITIES}${key}">
@@ -37,33 +28,23 @@
 						</div>
 					</#if>
 				</td>
+				<td>
+					<input id="${INSTANCES}${key}" type="text" name="fname">
+				</td>
 				<td><a href="#" onclick="submitPermission('${key}')"> <i class="fas fa-share"></i> </a> </td>
             </tr>
 		</#list>
 		</tbody>
 	</table>
 	<script type="application/javascript">
-	function submitPermission(permissionType) {
+	function submitPermission(domain) {
 		event.preventDefault();
 
-		let permission = {}
-		permission.type = permissionType;
 
-		let targetSelector = document.getElementById("${TARGETS}"+permissionType);
-		let target = null
-		if (targetSelector != null) {
-			let option = targetSelector.options[targetSelector.selectedIndex]
-			if(option.length > 0 && option == null) {
-				alert("No target for permission specified");
-				return;
-			}
-			target = option.value;
-			permission.instanceId = target;
-		}
-
-		let abilitySelector = document.getElementById("${ABILITIES}"+permissionType);
-		let abilities = [];
+		let abilitySelector = document.getElementById("${ABILITIES}"+domain);
+		abilityJoin = null;
 		if (abilitySelector != null) {
+			let abilities = [];
 			let abilityCheckboxes =abilitySelector.getElementsByTagName('input');
 			for(let cb of abilityCheckboxes ) {
 				if(cb.checked){
@@ -74,17 +55,18 @@
 				alert("No abilities for permission specified");
 				return;
 			}
-			permission.abilities = abilities;
+			abilityJoin = abilities.join(",");
 		}
 
+		let instanceInput = document.getElementById("${INSTANCES}"+domain).value;
 		
-		
+		permission = [domain, abilityJoin, instanceInput].join(":")
 		console.log("Sending Permission: " + permission);
 		fetch('/admin/permissions/${ownerId}',
 			{
 				method: 'post',
-				headers: {'Content-Type': 'application/json'},
-				body: JSON.stringify(permission)}).then(function(){location.reload()})
+				headers: {'Content-Type': 'text/plain'},
+				body: permission}).then(function(){location.reload()})
 	}
 	</script>
 </#macro>

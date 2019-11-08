@@ -5,9 +5,13 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 
+import org.apache.shiro.authz.Permission;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.HasCompactedAbilities;
+import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermissionWrapper;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
@@ -32,6 +36,8 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 */
 	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({@Deprecated}))
 	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
+	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({@Deprecated}))
+	private final Set<PermissionMixin> sPermissions = Collections.synchronizedSet(new HashSet<>());
 	
 	/**
 	 * Adds permissions to the user and persistent to the storage.
@@ -45,12 +51,23 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *             When the permission object could not be formed in to the
 	 *             appropriate JSON format.
 	 */
-	public Set<ConqueryPermission> addPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissions) throws JSONException {
-		HashSet<ConqueryPermission> addedPermissions = new HashSet<>();
-		for(ConqueryPermission permission : permissions) {
-			addedPermissions.add(addPermission(storage, permission));
+	public Set<PermissionMixin> addPermissions(MasterMetaStorage storage, Set<PermissionMixin> permissions) throws JSONException {
+		HashSet<PermissionMixin> addedPermissions = new HashSet<>();
+		for(Permission permission : permissions) {
+			if(permission instanceof ConqueryPermission) {				
+				addedPermissions.add(addPermission(storage, (ConqueryPermission) permission));
+			}
+			if(permission instanceof PermissionMixin) {
+				addedPermissions.add(addPermission(storage, (PermissionMixin) permission));				
+			}
 		}
 		return addedPermissions;
+	}
+	
+	public synchronized PermissionMixin addPermission(MasterMetaStorage storage, PermissionMixin permission) throws JSONException {
+		sPermissions.add(permission);
+		updateStorage(storage);
+		return permission;
 	}
 
 	/**
@@ -91,6 +108,13 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		permissions.add(permission);
 		updateStorage(storage);
 		return permission;
+	}
+	
+	public void removePermission(MasterMetaStorage storage, Permission delPermission) throws JSONException {
+		synchronized (sPermissions) {
+			sPermissions.remove(delPermission);
+		}
+		this.updateStorage(storage);
 	}
 
 	/**
@@ -144,8 +168,10 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return A set of the permissions hold by the owner.
 	 */
 	@JsonIgnore
-	public Set<ConqueryPermission> getPermissionsCopy(){
-		return new HashSet<ConqueryPermission>(permissions);
+	public Set<PermissionMixin> getPermissionsCopy(){
+		HashSet<PermissionMixin> permissionsCopy = new HashSet<PermissionMixin>(this.permissions);
+		permissionsCopy.addAll(sPermissions);
+		return permissionsCopy;
 	}
 	
 	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) throws JSONException {
@@ -161,7 +187,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * the permission of the roles it inherits.
 	 * @return
 	 */
-	public abstract Set<ConqueryPermission> getPermissionsEffective();
+	public abstract Set<PermissionMixin> getPermissionsEffective();
 	
 	/**
 	 * Update this instance, only to be called from a synchronized context.

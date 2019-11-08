@@ -3,8 +3,8 @@
         <thead>
             <tr>
             <th scope="col">Type</th>
-            <th scope="col">Target</th>
             <th scope="col">Abilities</th>
+            <th scope="col">Target</th>
             <th></th>
             </tr>
         </thead>
@@ -13,15 +13,16 @@
                 <tr>
                     <td>${permission.left.type}</td>
                     <td>
-                        <#if permission.left.target??>
-                            ${permission.left.target}</td>
-                        </#if>
-                    <td>
                         <#if permission.left.abilities?has_content>
                             <#list permission.left.abilities as ability>${ability} </#list>
                         </#if>
                     </td>
-                    <td><a href="#" onclick="handleDeletePermission(${permission.getRight()})"><i class="fas fa-trash-alt text-danger"></i></a></td>
+                    <td>
+                        <#if permission.left.target?has_content>
+                            <#list permission.left.target as tar> ${tar} </#list>
+                        </#if>
+                    </td>
+                    <td><a href="#" onclick="handleDeletePermission('${permission.right}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
                 </tr>
             </#list>
         </tbody>
@@ -33,8 +34,8 @@
             '/admin/permissions/${ownerId}',
             {
                 method: 'delete',
-                 headers: {'Content-Type': 'application/json'},
-                 body: JSON.stringify(permission)}).then(function(){location.reload()});
+                 headers: {'Content-Type': 'text/plain'},
+                 body: permission}).then(function(){location.reload()});
     }
     </script>
 </#macro>

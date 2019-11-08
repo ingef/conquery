@@ -45,31 +45,19 @@ public class SerializationTests {
 			.test(mandator);
 	}
 	
+	/*
+	 * Only way to add permission without a storage.
+	 */
+	@SuppressWarnings("deprecation")
 	@Test
 	public void user() throws IOException, JSONException{
 		User user = new User("user", "user");
+		user.getSPermissions().add(DatasetPermission.INSTANCE.instancePermission(Ability.READ, new DatasetId("test")));
+		user.getSPermissions().add(QueryPermission.INSTANCE.instancePermission(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		
 		SerializationTestUtil
 			.forType(User.class)
 			.test(user);
-	}
-	
-	@Test
-	public void datasetPermission() throws IOException, JSONException{
-		DatasetPermission permission = new DatasetPermission(Ability.READ.asSet(), new DatasetId("dataset"));
-		
-		SerializationTestUtil
-			.forType(DatasetPermission.class)
-			.test(permission);
-	}
-	
-	@Test
-	public void queryPermission() throws IOException, JSONException{
-		QueryPermission permission = new QueryPermission(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()));
-
-		SerializationTestUtil
-			.forType(QueryPermission.class)
-			.test(permission);
 	}
 	
 

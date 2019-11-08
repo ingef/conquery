@@ -37,10 +37,11 @@ public class RoleUIResource extends HRoles {
 	 * @throws IllegalAccessException 
 	 * @throws SecurityException 
 	 * @throws NoSuchMethodException 
+	 * @throws NoSuchFieldException 
 	 */
 	@Path("{" + ROLE_NAME + "}")
 	@GET
-	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
 		return new UIView<>("role.html.ftl", processor.getUIContext(), processor.getRoleContent(roleId));
 	}
 }

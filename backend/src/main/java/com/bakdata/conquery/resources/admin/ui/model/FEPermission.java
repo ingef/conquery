@@ -1,12 +1,16 @@
 package com.bakdata.conquery.resources.admin.ui.model;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.HasCompactedAbilities;
 import com.bakdata.conquery.models.auth.permissions.HasTarget;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermissionWrapper;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -20,20 +24,39 @@ import lombok.RequiredArgsConstructor;
 public class FEPermission {
 
 	private final String type;
-	private final Set<Ability> abilities;
-	private final Object target;
+	private final Set<String> abilities;
+	private final Set<String> target;
 
 	public static FEPermission from(ConqueryPermission cPermission) {
-		Set<Ability> abilities = null;
+		Set<String> abilities = null;
 		if(cPermission instanceof HasCompactedAbilities) {
-			abilities = ((HasCompactedAbilities)cPermission).getAbilitiesCopy();
+			abilities = ((HasCompactedAbilities)cPermission).getAbilitiesCopy().stream().map(String::valueOf).collect(Collectors.toSet());
 		}
-		Object target = null;
+		Set<String> targets = null;
 		if(cPermission instanceof HasTarget) {
-			target = ((HasTarget) cPermission).getTarget();
+			targets = Set.of(String.valueOf(((HasTarget) cPermission).getTarget()));
 		}
 		return new FEPermission(
 			cPermission.getClass().getAnnotation(CPSType.class).id(),
+			abilities,
+			targets);
+	}
+	
+	public static FEPermission from(WildcardPermissionWrapper cPermission) {
+		String type = null;
+		Set<String> abilities = null;
+		Set<String> target = null;
+		List<Set<String>> parts = cPermission.getParts();
+		Iterator<Set<String>> it = parts.iterator();
+		try {
+			type = it.next().iterator().next();
+			abilities = it.next();
+			target = it.next();
+		} catch(NoSuchElementException e) {
+			// Do nothing because the permission might be a domain or ability-on-domain permission
+		}
+		return new FEPermission(
+			type,
 			abilities,
 			target);
 	}

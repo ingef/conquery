@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import org.apache.shiro.authz.Permission;
+import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 
@@ -12,20 +12,22 @@ import lombok.extern.slf4j.Slf4j;
  *
  */
 @Slf4j
-@CPSType(id="SUPER_PERMISSION", base=ConqueryPermission.class)
 @ToString(callSuper = true)
-public final class SuperPermission extends SpecialPermission {	
+@CPSType(id = "SUPER", base = StringPermission.class)
+public final class SuperPermission extends StringPermission {	
 
-	public SuperPermission() {
-		super();
-		log.info("Created SuperPermission");
-	}
+
+	private static final String DOMAIN = "*";
 	
-	/**
-	 * Always grants the compared permission.
-	 */
+	public final static SuperPermission INSTANCE = new SuperPermission();
+
 	@Override
-	public boolean implies(Permission permission) {
-		return true;
+	public String getDomain() {
+		return DOMAIN;
+	}
+
+	@Override
+	public Set<Ability> getAllowedAbilities() {
+		return Set.of();
 	}
 }

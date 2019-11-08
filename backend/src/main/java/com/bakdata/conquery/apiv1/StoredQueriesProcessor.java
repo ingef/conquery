@@ -10,10 +10,13 @@ import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.apache.shiro.authz.Permission;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -65,7 +68,7 @@ public class StoredQueriesProcessor {
 
 	public void shareQuery(User user, ManagedQuery query, boolean shared) throws JSONException {
 		updateQueryVersions(user, query, Ability.SHARE, q-> {
-			QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, q.getId());
+			PermissionMixin queryPermission = QueryPermission.INSTANCE.instancePermission(AbilitySets.QUERY_EXECUTOR, q.getId());
 			user.getRoles().forEach((Role mandator) -> {
 				try {
 					if (shared) {
@@ -96,11 +99,11 @@ public class StoredQueriesProcessor {
 		authorize(user, query, requiredAbility);
 		
 		for(Namespace ns : namespaces.getNamespaces()) {
-			if(user.isPermitted(new DatasetPermission(Ability.READ.asSet(), ns.getDataset().getId()))) {
+			if(user.isPermitted(DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), ns.getDataset().getId()))) {
 				ManagedExecutionId id = new ManagedExecutionId(ns.getDataset().getId(), query.getQueryId());
 				ManagedQuery exec = (ManagedQuery)namespaces.getMetaStorage().getExecution(id);
 				if(exec != null) {
-					if(user.isPermitted(new QueryPermission(requiredAbility.asSet(), id))) {
+					if(user.isPermitted(QueryPermission.INSTANCE.instancePermission(requiredAbility.asSet(), id))) {
 						updater.accept(exec);
 						namespaces.getMetaStorage().updateExecution(exec);
 					}

@@ -1,37 +1,35 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.google.common.collect.ImmutableSet;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+@CPSType(id = "QUERY", base = StringPermission.class)
+public class QueryPermission extends StringPermission{
 
-@CPSType(id="QUERY_PERMISSION", base=ConqueryPermission.class)
-@EqualsAndHashCode(callSuper=true)
-@ToString(callSuper=true)
-public class QueryPermission extends IdentifiableInstancePermission<ManagedExecutionId>{
+	private static final String DOMAIN = "queries";
 
-	public final static Set<Ability> ALLOWED_ABILITIES = ImmutableSet.copyOf(AbilitySets.QUERY_CREATOR);
+	private static final Set<Ability> ALLOWED_ABILITIES = AbilitySets.QUERY_CREATOR;
 	
-	@JsonCreator
-	public QueryPermission(Set<Ability> abilities, ManagedExecutionId instanceId) {
-		super(abilities, instanceId);
+	public final static QueryPermission INSTANCE = new QueryPermission();
+	
+	
+	public PermissionMixin instancePermission(Ability ability, ManagedExecutionId instance) {
+		return instancePermission(ability, instance.toString());
+	}
+	
+	public PermissionMixin instancePermission(Set<Ability> abilities, ManagedExecutionId instance) {
+		return instancePermission(abilities, instance.toString());
 	}
 
 	@Override
-	public Set<Ability> allowedAbilities() {
-		return ALLOWED_ABILITIES;
+	public String getDomain() {
+		return DOMAIN;
 	}
-	
-	public static List<Object> getPossibleTargets(MasterMetaStorage storage){
-		return storage.getAllExecutions().stream().map(Identifiable::getId).collect(Collectors.toList());
+
+	@Override
+	public Set<Ability> getAllowedAbilities() {
+		return ALLOWED_ABILITIES;
 	}
 }

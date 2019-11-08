@@ -21,6 +21,7 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.shiro.authz.Permission;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -34,10 +35,10 @@ import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.HasTarget;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.permissions.SuperPermission;
+import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
+import com.bakdata.conquery.models.auth.permissions.StringPermission;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermissionWrapper;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -50,7 +51,6 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -70,7 +70,6 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
-import com.bakdata.conquery.resources.admin.ui.model.FERoleContent.FERoleContentBuilder;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -239,13 +238,13 @@ public class AdminProcessor {
 		return user.stream().filter(u -> u.getRoles().contains(mandator)).collect(Collectors.toList());
 	}
 
-	public List<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
+	public List<Permission> getPermissions(PermissionOwnerId<?> id) {
 		PermissionOwner<?> owner = id.getOwner(storage);
 		Objects.requireNonNull(owner,"PermissionOwner not found.");
 		return new ArrayList<>(owner.getPermissionsCopy());
 	}
 
-	public FERoleContent getRoleContent(RoleId mandatorId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public FERoleContent getRoleContent(RoleId mandatorId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
 		return FERoleContent.builder()
 			.permissions(wrapInFEPermission(getPermissions(mandatorId)))
 			.permissionTemplateMap(preparePermissionTemplate())
@@ -254,38 +253,33 @@ public class AdminProcessor {
 			.build();
 	}
 
-	private List<Pair<FEPermission, String>> wrapInFEPermission(List<ConqueryPermission> permissions) throws JsonProcessingException {
+	private List<Pair<FEPermission, String>> wrapInFEPermission(List<Permission> permissions) throws JsonProcessingException {
 		List<Pair<FEPermission,String>> fePermissions = new ArrayList<>();
 
-		for (ConqueryPermission permission : permissions) {
-			fePermissions.add(Pair.of(FEPermission.from(permission), jsonWriter.writeValueAsString(permission)));
+		for (Permission permission : permissions) {
+			if(permission instanceof ConqueryPermission) {
+				fePermissions.add(Pair.of(FEPermission.from((ConqueryPermission) permission), jsonWriter.writeValueAsString(permission)));
+			}
+			else if(permission instanceof WildcardPermissionWrapper) {
+				fePermissions.add(Pair.of(FEPermission.from((WildcardPermissionWrapper) permission), permission.toString()));
+				
+			}
+			else {
+				log.warn("Could not create frontend representation for permission {}", permission);
+			}
 		}
 		return fePermissions;
 	}
 
-	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
 		Map<String, Pair<Set<Ability>,List<Object>>> permissionTemplateMap = new HashMap<>();
 
 		// Grab all possible permission types for the "Create Permission" section 
-		Set<Class<? extends ConqueryPermission>> permissionTypes = CPSTypeIdResolver.listImplementations(ConqueryPermission.class);
-		for (Class<? extends ConqueryPermission> permissionType : permissionTypes) {
-			// Get the possible targets and abilities for a permission
-			List<Object> targetObjects = new ArrayList<>();
-			Set<Ability> abilities = EnumSet.noneOf(Ability.class);
-			if (HasTarget.class.isAssignableFrom(permissionType)) {
-				targetObjects.addAll(getTargets(permissionType));
-			}
-			if (DatasetPermission.class.isAssignableFrom(permissionType)) {
-				//targetObjects.addAll(storage.getNamespaces().getAllDatasets().stream().map(Identifiable::getId).collect(Collectors.toList()));
-				//targetObjects.addAll(getTargets(permissionType));
-				abilities.addAll(DatasetPermission.ALLOWED_ABILITIES);
-			}
-			else if (QueryPermission.class.isAssignableFrom(permissionType)) {
-				//targetObjects.addAll(storage.getAllExecutions().stream().map(Identifiable::getId).collect(Collectors.toList()));
-				abilities.addAll(QueryPermission.ALLOWED_ABILITIES);
-			}
-			CPSType anno = permissionType.getAnnotation(CPSType.class);
-			permissionTemplateMap.put(anno.id(), Pair.of(abilities, targetObjects));
+		Set<Class<? extends StringPermission>> permissionTypes = CPSTypeIdResolver.listImplementations(StringPermission.class);
+		for (Class<? extends StringPermission> permissionType : permissionTypes) {
+			StringPermission instance = (StringPermission) permissionType.getField("INSTANCE").get(null);
+			instance.getDomain();
+			permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
 			
 		}
 		return permissionTemplateMap;
@@ -299,7 +293,7 @@ public class AdminProcessor {
 	 * @throws JSONException
 	 *             is thrown upon processing JSONs.
 	 */
-	public void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
+	public void createPermission(PermissionOwnerId<?> ownerId, PermissionMixin permission) throws JSONException {
 		AuthorizationHelper.addPermission(ownerId.getOwner(storage), permission, storage);
 	}
 
@@ -311,7 +305,7 @@ public class AdminProcessor {
 	 * @throws JSONException
 	 *             is thrown upon processing JSONs.
 	 */
-	public void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
+	public void deletePermission(PermissionOwnerId<?> ownerId, PermissionMixin permission) throws JSONException {
 		AuthorizationHelper.removePermission(ownerId.getOwner(storage), permission, storage);
 	}
 
@@ -323,7 +317,7 @@ public class AdminProcessor {
 		return new ArrayList<>(storage.getAllUsers());
 	}
 
-	public Object getUserContent(UserId userId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public Object getUserContent(UserId userId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
 		User user = storage.getUser(userId);
 		return FEUserContent.builder()
 			.owner(user)
@@ -380,12 +374,5 @@ public class AdminProcessor {
 		Objects.requireNonNull(role);
 		user.addRole(storage, role);
 
-	}
-	
-
-	List getTargets(Class<? extends ConqueryPermission> permissionClass) throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-		Method method = permissionClass.getMethod("getPossibleTargets", MasterMetaStorage.class);
-		
-		return List.class.cast(method.invoke(null, storage));
 	}
 }

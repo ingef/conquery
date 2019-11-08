@@ -40,11 +40,7 @@ public class AdminResource extends HAuthorized {
 	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
 		Dataset dataset = processor.addDataset(name);
 		user.addPermission(
-			processor.getStorage(),
-			new DatasetPermission(
-				AbilitySets.QUERY_CREATOR,
-				dataset.getId()
-			)
+			processor.getStorage(), DatasetPermission.INSTANCE.instancePermission(AbilitySets.DATASET_CREATOR, dataset.createId())
 		);
 		
 		return Response

@@ -4,10 +4,12 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.shiro.authz.Permission;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,7 +34,7 @@ public class Role extends PermissionOwner<RoleId> {
 	}
 	
 	@JsonIgnore
-	public Set<ConqueryPermission> getPermissionsEffective() {
+	public Set<PermissionMixin> getPermissionsEffective() {
 		return getPermissionsCopy();
 	}
 

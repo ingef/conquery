@@ -1,33 +1,30 @@
 package com.bakdata.conquery.models.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
+import org.apache.shiro.authz.Permission;
 import org.junit.jupiter.api.Test;
 
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 
 public class PermissionCreationTest {
 	@Test
 	public void createPermissionLegalAbility() {
-		assertThat(new DatasetPermission(Ability.READ.asSet(), new DatasetId("test"))).isInstanceOf(DatasetPermission.class);
+		assertThat(DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), new DatasetId("test"))).isInstanceOf(Permission.class);
 	}
 	
 	@Test
 	public void createPermissionIllegalAbility() {
-		ConqueryPermission perm = null ;
+		Permission perm = null ;
 		try {
 			// This should fail because the ability is not allowed for a DatasetPermission
-			perm = new DatasetPermission(Ability.DUMMY_ABILITY.asSet(), new DatasetId("test"));
+			perm = DatasetPermission.INSTANCE.instancePermission(Ability.SHARE.asSet(), new DatasetId("test"));
 		}catch (Exception e) {			
-			assertThat(e).isInstanceOf(IllegalStateException.class);
+			assertThat(e).isInstanceOf(IllegalArgumentException.class);
 		}
-		if(perm != null) {			
-			fail();
-		}
+		assertThat(perm).isNull();
 	}
 
 }

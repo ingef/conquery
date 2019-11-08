@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.auth.permissions;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
-import java.util.Set;
 
 import org.apache.shiro.authz.Permission;
 
@@ -22,7 +20,7 @@ import lombok.ToString;
 @ToString
 @EqualsAndHashCode(callSuper=false)
 @RequiredArgsConstructor
-public abstract class ConqueryPermission implements Permission {
+public abstract class ConqueryPermission implements PermissionMixin {
 	
 	
 	@Override

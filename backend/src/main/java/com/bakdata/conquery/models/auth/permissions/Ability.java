@@ -6,14 +6,15 @@ import java.util.Set;
 public enum Ability {
 	DELETE,
 	READ,
+	CREATE,
 
 	// Query Specific
 	TAG,
 	CANCEL,
 	LABEL,
 	SHARE,
-	
-	DUMMY_ABILITY;
+	DOWNLOAD
+	;
 	
 	private final Set<Ability> asSet = Collections.singleton(this);
 	

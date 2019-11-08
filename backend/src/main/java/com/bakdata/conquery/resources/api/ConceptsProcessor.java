@@ -80,7 +80,7 @@ public class ConceptsProcessor {
 		return namespaces
 			.getAllDatasets()
 			.stream()
-			.filter(d -> user.isPermitted(new DatasetPermission(Ability.READ.asSet(), d.getId())))
+			.filter(d -> user.isPermitted(DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), d.getId())))
 			.map(d -> new IdLabel(d.getLabel(), d.getId().toString()))
 			.sorted()
 			.collect(Collectors.toList());

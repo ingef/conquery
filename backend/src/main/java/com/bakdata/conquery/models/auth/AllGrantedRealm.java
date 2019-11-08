@@ -61,7 +61,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 		if(userId.equals(DevAuthConfig.USER.getId())) {
 			// It's the default superuser, give her/him the ultimate permission
 			SimpleAuthorizationInfo info =  new SimpleAuthorizationInfo();
-			info.addObjectPermissions(Set.of(new SuperPermission()));
+			info.addObjectPermissions(Set.of(SuperPermission.INSTANCE.domainPermission()));
 			return info;
 		} else {
 			// only used for test cases

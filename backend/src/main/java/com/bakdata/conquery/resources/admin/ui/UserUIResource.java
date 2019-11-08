@@ -37,10 +37,11 @@ public class UserUIResource extends HUsers {
 	 * @throws IllegalAccessException 
 	 * @throws SecurityException 
 	 * @throws NoSuchMethodException 
+	 * @throws NoSuchFieldException 
 	 */
 	@Path("{" + USER_ID + "}")
 	@GET
-	public View getUser(@PathParam(USER_ID) UserId userId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public View getUser(@PathParam(USER_ID) UserId userId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
 		return new UIView<>("user.html.ftl", processor.getUIContext(), processor.getUserContent(userId));
 	}
 }

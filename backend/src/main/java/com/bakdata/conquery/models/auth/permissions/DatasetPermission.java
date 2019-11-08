@@ -1,35 +1,34 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.google.common.collect.ImmutableSet;
 
-import lombok.EqualsAndHashCode;
-import lombok.ToString;
+@CPSType(id = "DATASETS", base = StringPermission.class)
+public class DatasetPermission extends StringPermission {
 
-@CPSType(id="DATASET_PERMISSION", base=ConqueryPermission.class)
-@EqualsAndHashCode(callSuper=true)
-@ToString(callSuper=true)
-public class DatasetPermission extends IdentifiableInstancePermission<DatasetId> {
+	private static final String DOMAIN = "datasets";
+
+	private static final Set<Ability> ALLOWED_ABILITIES = AbilitySets.DATASET_CREATOR;
 	
-	public final static Set<Ability> ALLOWED_ABILITIES = ImmutableSet.copyOf(AbilitySets.DATASET_CREATOR);
+	public final static DatasetPermission INSTANCE = new DatasetPermission();
 	
-	public DatasetPermission(Set<Ability> abilities, DatasetId instanceId) {
-		super(abilities, instanceId);
+	public PermissionMixin instancePermission(Ability ability, DatasetId instance) {
+		return instancePermission(ability, instance.toString());
+	}
+	
+	public PermissionMixin instancePermission(Set<Ability> abilities, DatasetId instance) {
+		return instancePermission(abilities, instance.toString());
 	}
 
 	@Override
-	public Set<Ability> allowedAbilities() {
-		return ALLOWED_ABILITIES;
+	public String getDomain() {
+		return DOMAIN;
 	}
-	
-	public static List<Object> getPossibleTargets(MasterMetaStorage storage){
-		return storage.getNamespaces().getAllDatasets().stream().map(Identifiable::getId).collect(Collectors.toList());
+
+	@Override
+	public Set<Ability> getAllowedAbilities() {
+		return ALLOWED_ABILITIES;
 	}
 }
