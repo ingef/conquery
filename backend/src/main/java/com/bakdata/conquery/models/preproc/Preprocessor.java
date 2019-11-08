@@ -1,22 +1,5 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.zip.GZIPInputStream;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.csv.CSV;
@@ -35,13 +18,27 @@ import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
-import com.bakdata.conquery.util.io.SmallOut;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
+
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.GZIPInputStream;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -177,7 +174,8 @@ public class Preprocessor {
 				);
 			}
 
-			try (SmallOut out = new SmallOut(outFile.writeContent())) {
+			OutputStream outputStream = outFile.writeContent();
+			try (com.esotericsoftware.kryo.io.Output out = new com.esotericsoftware.kryo.io.Output(outputStream)) {
 				result.writeToFile(out);
 			}
 

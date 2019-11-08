@@ -1,7 +1,7 @@
 package com.bakdata.conquery.io;
 
-import com.bakdata.conquery.util.io.SmallOut;
 import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 
 import java.io.IOException;
 import java.math.BigDecimal;
@@ -17,7 +17,7 @@ public class DeserHelper {
 		return new BigDecimal(new BigInteger(input.readBytes(bytes)), input.readInt(true));
 	}
 	
-	public static void writeBigDecimal(SmallOut output, BigDecimal bigDecimal) throws IOException {
+	public static void writeBigDecimal(Output output, BigDecimal bigDecimal) throws IOException {
 		if(bigDecimal == null) {
 			output.writeInt(0, true);
 			return;

@@ -34,9 +34,9 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
 import com.bakdata.conquery.util.io.Cloner;
-import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
 import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
@@ -133,7 +133,7 @@ public class ImportJob extends Job {
 				BlockFactory factory = allIdsImp.getBlockFactory();
 				Int2ObjectMap<ImportBucket> allIdsBuckets = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 				Int2ObjectMap<List<byte[]>> allIdsBytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
-				try (SmallOut buffer = new SmallOut(2048)) {
+				try (Output buffer = new Output(2048)) {
 					ProgressReporter child = this.progressReporter.subJob(5);
 					child.setMax(primaryMapping.getNumberOfNewIds());
 
@@ -182,7 +182,8 @@ public class ImportJob extends Job {
 							
 							Bucket value = inImport.getBlockFactory().readSingleValue(bucketNumber, inImport, bounded);
 							Bucket result = outImport.getBlockFactory().adaptValuesFrom(bucketNumber, outImport, value, header);
-							try(SmallOut sOut = new SmallOut(out)) {
+							java.io.OutputStream outputStream = out;
+							try(Output sOut = new Output(outputStream)) {
 								result.writeContent(sOut);
 							}
 							data = out.toByteArray();
