@@ -66,7 +66,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	/**
 	 * Inner class that matches any credentials.
 	 */
-	private static class AllGrantedCredentialsMatcher implements CredentialsMatcher{
+	private static class AllGrantedCredentialsMatcher implements CredentialsMatcher {
 
 		@Override
 		public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
