@@ -1,15 +1,15 @@
 package com.bakdata.conquery.io;
 
+import com.bakdata.conquery.util.io.SmallOut;
+import com.esotericsoftware.kryo.io.Input;
+
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
 
-import com.bakdata.conquery.util.io.SmallIn;
-import com.bakdata.conquery.util.io.SmallOut;
-
 public class DeserHelper {
 	
-	public static BigDecimal readBigDecimal(SmallIn input) throws IOException {
+	public static BigDecimal readBigDecimal(Input input) throws IOException {
 		int bytes = input.readInt(true);
 		if(bytes == 0) {
 			return null;

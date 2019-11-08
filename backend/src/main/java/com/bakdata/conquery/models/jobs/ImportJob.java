@@ -1,16 +1,5 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -45,19 +34,29 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.RangeUtil;
 import com.bakdata.conquery.util.io.Cloner;
-import com.bakdata.conquery.util.io.SmallIn;
 import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
+import com.esotericsoftware.kryo.io.Input;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.google.common.primitives.Ints;
 import com.jakewharton.byteunits.BinaryByteUnit;
-
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
 
 @RequiredArgsConstructor
 @Slf4j
@@ -167,7 +166,8 @@ public class ImportJob extends Job {
 			Int2ObjectMap<List<byte[]>> bytes = new Int2ObjectOpenHashMap<>(primaryMapping.getUsedBuckets().size());
 			ProgressReporter child = this.progressReporter.subJob(5);
 			child.setMax(header.getGroups() + 1);
-			try (SmallIn in = new SmallIn(file.readContent())) {
+			InputStream inputStream = file.readContent();
+			try (Input in = new Input(inputStream)) {
 				for (long group = 0; group < header.getGroups(); group++) {
 					int entityId = primaryMapping.source2Target(in.readInt(true));
 					int size = in.readInt(true);
