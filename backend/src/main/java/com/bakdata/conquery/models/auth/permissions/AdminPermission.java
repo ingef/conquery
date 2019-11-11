@@ -14,8 +14,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(callSuper = true)
-@CPSType(id = "ADMIN", base = StringPermission.class)
-public final class AdminPermission extends StringPermission {
+@CPSType(id = "ADMIN", base = StringPermissionBuilder.class)
+public final class AdminPermission extends StringPermissionBuilder {
 
 
 	private static final String DOMAIN = "admin";

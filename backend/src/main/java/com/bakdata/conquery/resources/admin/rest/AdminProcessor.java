@@ -4,10 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -21,11 +19,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.apache.shiro.authz.Permission;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -35,10 +31,8 @@ import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.HasTarget;
-import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
-import com.bakdata.conquery.models.auth.permissions.StringPermission;
-import com.bakdata.conquery.models.auth.permissions.WildcardPermissionWrapper;
+import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -238,7 +232,7 @@ public class AdminProcessor {
 		return user.stream().filter(u -> u.getRoles().contains(mandator)).collect(Collectors.toList());
 	}
 
-	public List<Permission> getPermissions(PermissionOwnerId<?> id) {
+	public List<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
 		PermissionOwner<?> owner = id.getOwner(storage);
 		Objects.requireNonNull(owner,"PermissionOwner not found.");
 		return new ArrayList<>(owner.getPermissionsCopy());
@@ -253,15 +247,12 @@ public class AdminProcessor {
 			.build();
 	}
 
-	private List<Pair<FEPermission, String>> wrapInFEPermission(List<Permission> permissions) throws JsonProcessingException {
+	private List<Pair<FEPermission, String>> wrapInFEPermission(List<ConqueryPermission> permissions) throws JsonProcessingException {
 		List<Pair<FEPermission,String>> fePermissions = new ArrayList<>();
 
-		for (Permission permission : permissions) {
-			if(permission instanceof ConqueryPermission) {
-				fePermissions.add(Pair.of(FEPermission.from((ConqueryPermission) permission), jsonWriter.writeValueAsString(permission)));
-			}
-			else if(permission instanceof WildcardPermissionWrapper) {
-				fePermissions.add(Pair.of(FEPermission.from((WildcardPermissionWrapper) permission), permission.toString()));
+		for (ConqueryPermission permission : permissions) {
+			if(permission instanceof WildcardPermission) {
+				fePermissions.add(Pair.of(FEPermission.from((WildcardPermission) permission), permission.toString()));
 				
 			}
 			else {
@@ -275,9 +266,9 @@ public class AdminProcessor {
 		Map<String, Pair<Set<Ability>,List<Object>>> permissionTemplateMap = new HashMap<>();
 
 		// Grab all possible permission types for the "Create Permission" section 
-		Set<Class<? extends StringPermission>> permissionTypes = CPSTypeIdResolver.listImplementations(StringPermission.class);
-		for (Class<? extends StringPermission> permissionType : permissionTypes) {
-			StringPermission instance = (StringPermission) permissionType.getField("INSTANCE").get(null);
+		Set<Class<? extends StringPermissionBuilder>> permissionTypes = CPSTypeIdResolver.listImplementations(StringPermissionBuilder.class);
+		for (Class<? extends StringPermissionBuilder> permissionType : permissionTypes) {
+			StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE").get(null);
 			instance.getDomain();
 			permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
 			
@@ -293,7 +284,7 @@ public class AdminProcessor {
 	 * @throws JSONException
 	 *             is thrown upon processing JSONs.
 	 */
-	public void createPermission(PermissionOwnerId<?> ownerId, PermissionMixin permission) throws JSONException {
+	public void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.addPermission(ownerId.getOwner(storage), permission, storage);
 	}
 
@@ -305,7 +296,7 @@ public class AdminProcessor {
 	 * @throws JSONException
 	 *             is thrown upon processing JSONs.
 	 */
-	public void deletePermission(PermissionOwnerId<?> ownerId, PermissionMixin permission) throws JSONException {
+	public void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
 		AuthorizationHelper.removePermission(ownerId.getOwner(storage), permission, storage);
 	}
 

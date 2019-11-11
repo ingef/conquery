@@ -6,8 +6,8 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 
-@CPSType(id = "QUERY", base = StringPermission.class)
-public class QueryPermission extends StringPermission{
+@CPSType(id = "QUERY", base = StringPermissionBuilder.class)
+public class QueryPermission extends StringPermissionBuilder{
 
 	private static final String DOMAIN = "queries";
 	
@@ -25,11 +25,11 @@ public class QueryPermission extends StringPermission{
 	public final static QueryPermission INSTANCE = new QueryPermission();
 	
 	
-	public PermissionMixin instancePermission(Ability ability, ManagedExecutionId instance) {
+	public ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
 		return instancePermission(ability, instance.toString());
 	}
 	
-	public PermissionMixin instancePermission(Set<Ability> abilities, ManagedExecutionId instance) {
+	public ConqueryPermission instancePermission(Set<Ability> abilities, ManagedExecutionId instance) {
 		return instancePermission(abilities, instance.toString());
 	}
 

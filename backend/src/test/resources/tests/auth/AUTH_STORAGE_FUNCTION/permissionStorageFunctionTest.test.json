@@ -1,41 +1,47 @@
 {
-    "type": "PERMISSION_STORAGE_FUNCTION_TEST",
-    "label": "PERMISSION_STORAGE_FUNCTION_TEST",
-    "roles":[
-        {
-            "label" : "testCompany",
-            "name" : "testCompany",
-            "permissions" : [
-                {
-                    "type": "DATASET_PERMISSION",
-                    "abilities": ["READ"],
-                    "instanceId": "testDataset"
-                }
-            ]
-        }
-    ],
-    "users": [
-        {
-            "user" : {
-                "label" : "unused",
-                "email" : "user1",
-                "permissions" : [
-                    {
-                        "type": "DATASET_PERMISSION",
-                        "abilities": ["DELETE"],
-                        "instanceId": "testDataset"
-                    }
-                ]
-            },
-            "rolesInjected": [
-                "role.testCompany"
-            ]
-        },
-        {
-            "user" : {
-                "label" : "unused",
-                "email" : "user2"
-            }
-        }
-    ]
+	"type": "PERMISSION_STORAGE_FUNCTION_TEST",
+	"label": "PERMISSION_STORAGE_FUNCTION_TEST",
+	"roles":[
+		{
+			"label" : "testCompany",
+			"name" : "testCompany",
+			"permissions" : [
+				{
+					"type": "WILDCARD_PERMISSION",
+					"parts" : [
+						["datasets"],
+						["read"],
+						["testDataset"]
+					]
+				}
+			]
+		}
+	],
+	"users": [
+		{
+			"user" : {
+				"label" : "unused",
+				"email" : "user1",
+				"permissions" : [
+					{
+						"type": "WILDCARD_PERMISSION",
+						"parts" : [
+							["datasets"],
+							["delete"],
+							["testDataset"]
+						]
+					}
+				]
+			},
+			"rolesInjected": [
+				"role.testCompany"
+			]
+		},
+		{
+			"user" : {
+				"label" : "unused",
+				"email" : "user2"
+			}
+		}
+	]
 }

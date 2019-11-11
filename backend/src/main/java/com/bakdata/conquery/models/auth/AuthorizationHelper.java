@@ -3,13 +3,11 @@ package com.bakdata.conquery.models.auth;
 import java.util.EnumSet;
 
 import org.apache.shiro.authz.Permission;
-import org.apache.shiro.authz.permission.WildcardPermission;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -95,9 +93,6 @@ public class AuthorizationHelper {
 	public static void authorize(User user, ConqueryPermission toBeChecked) {
 		user.checkPermission(toBeChecked);
 	}
-	public static void authorize(User user, PermissionMixin toBeChecked) {
-		user.checkPermission(toBeChecked);
-	}
 	
 	/**
 	 * Utility function to add a permission to a subject (e.g {@link User}).
@@ -109,9 +104,6 @@ public class AuthorizationHelper {
 	public static void addPermission(PermissionOwner<?> owner, ConqueryPermission permission, MasterMetaStorage storage) throws JSONException {
 		owner.addPermission(storage, permission);
 	}
-	public static void addPermission(PermissionOwner<?> owner, PermissionMixin permission, MasterMetaStorage storage) throws JSONException {
-		owner.addPermission(storage, permission);
-	}
 	
 	/**
 	 * Utility function to remove a permission from a subject (e.g {@link User}).
@@ -120,10 +112,6 @@ public class AuthorizationHelper {
 	 * @param storage A storage where the permission is removed from.
 	 * @throws JSONException When the permission object could not be formed in to the appropriate JSON format.
 	 */
-	public static void removePermission(PermissionOwner<?> owner, ConqueryPermission permission, MasterMetaStorage storage) throws JSONException {
-		owner.removePermission(storage, permission);
-	}
-
 	public static void removePermission(PermissionOwner<?> owner, Permission permission, MasterMetaStorage storage) throws JSONException {
 		owner.removePermission(storage, permission);
 	}

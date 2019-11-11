@@ -13,8 +13,8 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 @ToString(callSuper = true)
-@CPSType(id = "SUPER", base = StringPermission.class)
-public final class SuperPermission extends StringPermission {	
+@CPSType(id = "SUPER", base = StringPermissionBuilder.class)
+public final class SuperPermission extends StringPermissionBuilder {	
 
 
 	private static final String DOMAIN = "*";

@@ -13,9 +13,8 @@ import javax.ws.rs.core.Response;
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -40,7 +39,7 @@ public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationT
 	private RoleId mandatorId = mandator.getId();
 	private User user = new User("testUser@test.de", "testUserName");
 	private UserId userId = user.getId();
-	private PermissionMixin permission = DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), new DatasetId("testDatasetId"));
+	private ConqueryPermission permission = DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), new DatasetId("testDatasetId"));
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
@@ -71,7 +70,7 @@ public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationT
 	
 			assertThat(response.getStatus()).isEqualTo(200);
 			// Check for Freemarker Errors
-			assertThat(response.readEntity(String.class).toLowerCase()).doesNotContain(List.of("freemarker", "debug", "error"));
+			assertThat(response.readEntity(String.class).toLowerCase()).doesNotContain(List.of("freemarker", "debug"));
 
 		}
 		finally {

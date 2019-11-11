@@ -16,7 +16,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -109,8 +109,8 @@ public class User extends FilteredUser<UserId> implements Principal{
 	}
 	
 	@JsonIgnore
-	public Set<PermissionMixin> getPermissionsEffective(){
-		Set<PermissionMixin> permissions = getPermissionsCopy();
+	public Set<ConqueryPermission> getPermissionsEffective(){
+		Set<ConqueryPermission> permissions = getPermissionsCopy();
 		for (Role role : roles) {
 			permissions.addAll(role.getPermissionsEffective());
 		}

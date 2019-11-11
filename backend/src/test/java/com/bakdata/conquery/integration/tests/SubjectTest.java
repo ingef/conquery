@@ -7,7 +7,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
@@ -29,8 +29,8 @@ public class SubjectTest implements ProgrammaticIntegrationTest, IntegrationTest
 		// setup mandator
 		Role mandator1 = new Role("company", "company");
 		
-		PermissionMixin datasetPermission1 = DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), dataset1.getId());
-		PermissionMixin datasetPermission2 = DatasetPermission.INSTANCE.instancePermission(Ability.DELETE.asSet(), dataset1.getId());
+		ConqueryPermission datasetPermission1 = DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), dataset1.getId());
+		ConqueryPermission datasetPermission2 = DatasetPermission.INSTANCE.instancePermission(Ability.DELETE.asSet(), dataset1.getId());
 		
 		// setup user
 		User user1 = new User("user", "user");

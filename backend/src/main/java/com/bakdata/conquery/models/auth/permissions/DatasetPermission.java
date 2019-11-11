@@ -5,8 +5,8 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 
-@CPSType(id = "DATASETS", base = StringPermission.class)
-public class DatasetPermission extends StringPermission {
+@CPSType(id = "DATASETS", base = StringPermissionBuilder.class)
+public class DatasetPermission extends StringPermissionBuilder {
 
 	private static final String DOMAIN = "datasets";
 
@@ -14,11 +14,11 @@ public class DatasetPermission extends StringPermission {
 	
 	public final static DatasetPermission INSTANCE = new DatasetPermission();
 	
-	public PermissionMixin instancePermission(Ability ability, DatasetId instance) {
+	public ConqueryPermission instancePermission(Ability ability, DatasetId instance) {
 		return instancePermission(ability, instance.toString());
 	}
 	
-	public PermissionMixin instancePermission(Set<Ability> abilities, DatasetId instance) {
+	public ConqueryPermission instancePermission(Set<Ability> abilities, DatasetId instance) {
 		return instancePermission(abilities, instance.toString());
 	}
 

@@ -4,7 +4,7 @@ import java.util.Locale;
 
 import org.apache.shiro.authz.Permission;
 
-import com.bakdata.conquery.models.auth.permissions.PermissionMixin;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -58,7 +58,7 @@ public class Jackson {
 			.setDefaultPropertyInclusion(Include.ALWAYS)
 			//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
 			.setInjectableValues(new MutableInjectableValues())
-			.addMixIn(Permission.class, PermissionMixin.class);
+			.addMixIn(Permission.class, ConqueryPermission.class);
 
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(Object.class));
 

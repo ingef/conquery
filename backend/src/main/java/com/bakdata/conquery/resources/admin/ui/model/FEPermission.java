@@ -4,13 +4,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.HasCompactedAbilities;
-import com.bakdata.conquery.models.auth.permissions.HasTarget;
-import com.bakdata.conquery.models.auth.permissions.WildcardPermissionWrapper;
+import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -26,23 +21,8 @@ public class FEPermission {
 	private final String type;
 	private final Set<String> abilities;
 	private final Set<String> target;
-
-	public static FEPermission from(ConqueryPermission cPermission) {
-		Set<String> abilities = null;
-		if(cPermission instanceof HasCompactedAbilities) {
-			abilities = ((HasCompactedAbilities)cPermission).getAbilitiesCopy().stream().map(String::valueOf).collect(Collectors.toSet());
-		}
-		Set<String> targets = null;
-		if(cPermission instanceof HasTarget) {
-			targets = Set.of(String.valueOf(((HasTarget) cPermission).getTarget()));
-		}
-		return new FEPermission(
-			cPermission.getClass().getAnnotation(CPSType.class).id(),
-			abilities,
-			targets);
-	}
 	
-	public static FEPermission from(WildcardPermissionWrapper cPermission) {
+	public static FEPermission from(WildcardPermission cPermission) {
 		String type = null;
 		Set<String> abilities = null;
 		Set<String> target = null;

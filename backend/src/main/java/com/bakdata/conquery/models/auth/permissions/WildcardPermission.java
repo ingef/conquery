@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.auth.permissions;
 import java.util.List;
 import java.util.Set;
 
-import org.apache.shiro.authz.permission.WildcardPermission;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -18,16 +16,15 @@ import lombok.Setter;
 @SuppressWarnings("serial")
 @Getter
 @Setter
-@CPSType(id = "WILDCARD_PERMISSION", base = PermissionMixin.class)
-public class WildcardPermissionWrapper extends WildcardPermission implements PermissionMixin{
+@CPSType(id = "WILDCARD_PERMISSION", base = ConqueryPermission.class)
+public class WildcardPermission extends org.apache.shiro.authz.permission.WildcardPermission implements ConqueryPermission{
 	
 	@JsonCreator
-	public WildcardPermissionWrapper(List<Set<String>> parts) {
+	public WildcardPermission(List<Set<String>> parts) {
 		this.setParts(parts);
 	}
-	
-	@JsonCreator
-	public WildcardPermissionWrapper(String wildcardString){
+
+	public WildcardPermission(String wildcardString){
 		super(wildcardString);
 	}
 
