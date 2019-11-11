@@ -22,7 +22,7 @@ import java.util.Objects;
 @Setter
 public class DateRestrictingNode extends QPChainNode {
 
-	protected CDateSet restriction;
+	protected final CDateSet restriction;
 	protected Column validityDateColumn;
 	protected Map<BucketId, EntityRow> preCurrentRow = null;
 
