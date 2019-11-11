@@ -25,6 +25,10 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	@Getter @Setter @JsonIgnore
 	private MatchingStats matchingStats = new MatchingStats();
 
+	/**
+	 * Extra config to be used for sending information from concept-definition to the frontend.
+	 * Will be used to add special flags for the frontend.
+	 */
 	@Getter @Setter
 	private Map<String, Object> config = new HashedMap();
 	
