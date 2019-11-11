@@ -57,18 +57,16 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Objects.requireNonNull(principals, "No principal info was provided");
 		UserId userId = UserId.class.cast(principals.getPrimaryPrincipal());
+		SimpleAuthorizationInfo info =  new SimpleAuthorizationInfo();
 		
 		if(userId.equals(DevAuthConfig.USER.getId())) {
 			// It's the default superuser, give her/him the ultimate permission
-			SimpleAuthorizationInfo info =  new SimpleAuthorizationInfo();
-			info.addObjectPermissions(Set.of(SuperPermission.INSTANCE.domainPermission()));
-			return info;
+			info.addObjectPermissions(Set.of(SuperPermission.onDomain()));
 		} else {
-			// only used for test cases
-			SimpleAuthorizationInfo info  = new SimpleAuthorizationInfo();
-			info.addObjectPermissions(new HashSet<Permission>(userId.getOwner(storage).getPermissionsEffective()));
-			return info;
+			// currently only used for test cases
+			info.addObjectPermissions(new HashSet<Permission>(userId.getOwner(storage).getEffectivePermissions()));
 		}
+		return info;
 	}
 
 	@Override

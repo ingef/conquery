@@ -39,7 +39,7 @@ public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationT
 	private RoleId mandatorId = mandator.getId();
 	private User user = new User("testUser@test.de", "testUserName");
 	private UserId userId = user.getId();
-	private ConqueryPermission permission = DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), new DatasetId("testDatasetId"));
+	private ConqueryPermission permission = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("testDatasetId"));
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {

@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth.permissions;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -17,18 +16,24 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "ADMIN", base = StringPermissionBuilder.class)
 public final class AdminPermission extends StringPermissionBuilder {
 
-
 	private static final String DOMAIN = "admin";
-	
-	public final static AdminPermission INSTANCE = new AdminPermission();
+
+	private final static AdminPermission INSTANCE = new AdminPermission();
 
 	@Override
 	public String getDomain() {
 		return DOMAIN;
 	}
 
+	/*
+	 * Can be further specialized if needed.
+	 */
 	@Override
 	public Set<Ability> getAllowedAbilities() {
 		return Set.of();
+	}
+	
+	public static ConqueryPermission onDomain() {
+		return INSTANCE.domainPermission();
 	}
 }

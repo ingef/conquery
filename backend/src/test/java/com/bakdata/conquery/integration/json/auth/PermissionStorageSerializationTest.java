@@ -17,11 +17,13 @@ import com.bakdata.conquery.integration.common.RequiredUser;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.StoreInfo;
+import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.MPStore;
 import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -47,9 +49,9 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	private RequiredUser [] rUsers;
 	
 	@JsonIgnore
-	private MPStore<RoleId, Role> authMandator;
+	private IdentifiableStore<Role> authMandator;
 	@JsonIgnore
-	private MPStore<UserId, User> authUser;
+	private IdentifiableStore<User> authUser;
 	@JsonIgnore
 	private File directory;
 	
@@ -57,11 +59,12 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	public void importRequiredData(StandaloneSupport support) throws Exception {
 		Validator validator = support.getStandaloneCommand().getMaster().getValidator();
 		StorageConfig config = support.getStandaloneCommand().getMaster().getConfig().getStorage();
+		CentralRegistry registry = support.getStandaloneCommand().getMaster().getStorage().getCentralRegistry();
 		directory = new File(config.getDirectory(), STORE_SUFFIX);
 		directory.deleteOnExit();
 		Environment env = Environments.newInstance(directory, config.getXodus().createConfig());
-		this.authMandator = new MPStore<>(validator, env, StoreInfo.AUTH_ROLE);
-		this.authUser = new MPStore<>(validator, env, StoreInfo.AUTH_USER);
+		this.authMandator =  StoreInfo.AUTH_ROLE.identifiable(env, validator, registry);
+		this.authUser = StoreInfo.AUTH_USER.identifiable(env, validator, registry);
 	}
 	
 	/**
@@ -70,11 +73,11 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	 */
 	public void serializeData() throws JSONException {
 		for(Role mandator : roles) {
-			authMandator.add(mandator.getId(), mandator);
+			authMandator.add(mandator);
 		}
 		for(RequiredUser rUser : rUsers) {
 			User user = rUser.getUser();
-			authUser.add(user.getId(), user);
+			authUser.add(user);
 		}
 	}
 	
@@ -84,11 +87,11 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	@JsonIgnore
 	public void deserializeData() {
 		List<Role> storedMandators = new ArrayList<>();
-		authMandator.forEach(e -> storedMandators.add(e.getValue()));
+		authMandator.forEach(e -> storedMandators.add(e));
 		assertThat(storedMandators).containsExactlyInAnyOrderElementsOf(Arrays.asList(roles));
 
 		List<User> storedUser = new ArrayList<>();
-		authUser.forEach(e -> storedUser.add(e.getValue()));
+		authUser.forEach(e -> storedUser.add(e));
 		assertThat(storedUser).containsExactlyInAnyOrderElementsOf(Arrays.stream(rUsers).map(rU -> rU.getUser()).collect(Collectors.toList()));
 		
 	}

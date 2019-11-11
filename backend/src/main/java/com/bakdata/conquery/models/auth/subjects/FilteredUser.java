@@ -16,7 +16,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 /**
- * Class to filter all unused functionality from the actual User class.
+ * Class to filter all unused functionality from the actual User class to keep it more compact and clean.
+ * These are not supposed to be implemented.
+ * 
  */
 @JsonIgnoreProperties({ "session", "previousPrincipals", "runAs", "principal", "authenticated", "remembered", "principals" })
 public abstract class FilteredUser<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends PermissionOwner<T> implements Subject {

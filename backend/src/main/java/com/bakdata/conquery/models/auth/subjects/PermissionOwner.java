@@ -72,22 +72,28 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return A set of the permissions hold by the owner.
 	 */
 	@JsonIgnore
-	public Set<ConqueryPermission> getPermissionsCopy(){
-		HashSet<ConqueryPermission> permissionsCopy = new HashSet<ConqueryPermission>(this.permissions);
-		permissionsCopy.addAll(permissions);
-		return permissionsCopy;
+	public Set<ConqueryPermission> copyPermissions(){
+		return new HashSet<ConqueryPermission>(permissions);
+	}
+	
+	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) throws JSONException {
+		synchronized (permissions) {
+			permissions.clear();
+			permissions.addAll(permissionsNew);
+			updateStorage(storage);
+		}
 	}
 	
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
 	 * the permission of the roles it inherits.
-	 * @return
+	 * @return Owned and inherited permissions.
 	 */
-	public abstract Set<ConqueryPermission> getPermissionsEffective();
+	public abstract Set<ConqueryPermission> getEffectivePermissions();
 	
 	/**
 	 * Update this instance, only to be called from a synchronized context.
-	 * @throws JSONException 
+	 * @throws JSONException upon serialization error.
 	 */
 	protected abstract void updateStorage(MasterMetaStorage storage) throws JSONException;
 

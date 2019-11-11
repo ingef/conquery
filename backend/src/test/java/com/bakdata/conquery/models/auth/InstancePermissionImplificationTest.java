@@ -25,10 +25,10 @@ public class InstancePermissionImplificationTest {
 	@Test
 	public void testEqual() {
 		// Test equal Permissions
-		Permission pStored = DatasetPermission.INSTANCE.instancePermission(
+		Permission pStored = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
-		Permission pRequested = DatasetPermission.INSTANCE.instancePermission(
+		Permission pRequested = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
@@ -37,10 +37,10 @@ public class InstancePermissionImplificationTest {
 	@Test
 	public void testDivergingPrincipals() {
 		// Test different user principals
-		Permission pStored = DatasetPermission.INSTANCE.instancePermission(
+		Permission pStored = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
-		Permission pRequested = DatasetPermission.INSTANCE.instancePermission(
+		Permission pRequested = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
@@ -49,10 +49,10 @@ public class InstancePermissionImplificationTest {
 	@Test
 	public void testDivergingAccesTypes() {
 		// Test different access types
-		Permission pStored = DatasetPermission.INSTANCE.instancePermission(
+		Permission pStored = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
-		Permission pRequested = DatasetPermission.INSTANCE.instancePermission(
+		Permission pRequested = DatasetPermission.onInstance(
 				Ability.DELETE.asSet(),
 				new DatasetId(DATASET1));
 		assert !pStored.implies(pRequested);
@@ -61,10 +61,10 @@ public class InstancePermissionImplificationTest {
 	@Test
 	public void testDivergingInstances() {
 		// Test different Instances
-		Permission pStored = DatasetPermission.INSTANCE.instancePermission(
+		Permission pStored = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
-		Permission pRequested = DatasetPermission.INSTANCE.instancePermission(
+		Permission pRequested = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET2));
 		assert !pStored.implies(pRequested);
@@ -73,10 +73,10 @@ public class InstancePermissionImplificationTest {
 	@Test
 	public void testMultipleAccessesProhibit() {
 		// Test different Instances
-		Permission pStored = DatasetPermission.INSTANCE.instancePermission(
+		Permission pStored = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
-		Permission pRequested = DatasetPermission.INSTANCE.instancePermission(
+		Permission pRequested = DatasetPermission.onInstance(
 				EnumSet.of(Ability.READ, Ability.DELETE),
 				new DatasetId(DATASET1));
 		// Should not imply, since one access is missing
@@ -86,10 +86,10 @@ public class InstancePermissionImplificationTest {
 	@Test
 	public void testMultipleAccessesPermit() {
 		// Test different Instances
-		Permission pStored = DatasetPermission.INSTANCE.instancePermission(
+		Permission pStored = DatasetPermission.onInstance(
 				EnumSet.of(Ability.READ, Ability.DELETE),
 				new DatasetId(DATASET1));
-		Permission pRequested = DatasetPermission.INSTANCE.instancePermission(
+		Permission pRequested = DatasetPermission.onInstance(
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
 		assert pStored.implies(pRequested);
@@ -97,10 +97,10 @@ public class InstancePermissionImplificationTest {
 	
 	@Test
 	public void permissionTypesFail() {
-		Permission dPerm = DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), new DatasetId(DATASET1));
-		Permission qPerm = QueryPermission.INSTANCE.instancePermission(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId(DATASET1), UUID.randomUUID()));
-		Permission sPerm = SuperPermission.INSTANCE.domainPermission();
-		Permission aPerm = AdminPermission.INSTANCE.domainPermission();
+		Permission dPerm = DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId(DATASET1));
+		Permission qPerm = QueryPermission.onInstance(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId(DATASET1), UUID.randomUUID()));
+		Permission sPerm = SuperPermission.onDomain();
+		Permission aPerm = AdminPermission.onDomain();
 		assertThat(dPerm.implies(qPerm)).isFalse();
 		assertThat(dPerm.implies(sPerm)).isFalse();
 		assertThat(aPerm.implies(sPerm)).isFalse();

@@ -1,6 +1,6 @@
 <#macro permissionCreator ownerId permissionTemplateMap>
-    <#assign INSTANCES = "instances_">
-	<#assign ABILITIES = "abilities_">
+    <#local INSTANCES = "instances_">
+	<#local ABILITIES = "abilities_">
     <table class="table table-striped">
         <thead>
             <tr>

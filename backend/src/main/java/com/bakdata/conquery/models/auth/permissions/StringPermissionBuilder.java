@@ -20,17 +20,17 @@ public abstract class StringPermissionBuilder {
 	private final static String INSTANCE_FORMAT	= "%s"+PART_DIVIDER_TOKEN+"%s"+PART_DIVIDER_TOKEN+"%s";
 
     //// DOMAIN ////
-    public WildcardPermission domainPermission() {
+	protected WildcardPermission domainPermission() {
 		return new WildcardPermission(String.format(DOMAIN_FORMAT, getDomain()));
 	}
 	
     //// ABILITY on DOMAIN ////
-	public WildcardPermission abilityPermission(Ability ability) {
+    protected WildcardPermission abilityPermission(Ability ability) {
 		checkAbility(getAllowedAbilities(),ability);
 		return new WildcardPermission(String.format(ABILITY_FORMAT, getDomain(), ability));
 	}
 
-	public WildcardPermission abilityPermission(Set<Ability> abilities) {
+	protected WildcardPermission abilityPermission(Set<Ability> abilities) {
 		checkAbilities(getAllowedAbilities(),abilities);
 		return new WildcardPermission(String.format(ABILITY_FORMAT, getDomain(), abilities.stream().map(Ability::toString).collect(Collectors.joining(SUBPART_DIVIDER_TOKEN))));
 	}

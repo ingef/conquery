@@ -29,6 +29,6 @@ public abstract class HAuthorized {
 		if(user == null) {
 			throw new WebApplicationException(Status.UNAUTHORIZED);
 		}
-		authorize(user, AdminPermission.INSTANCE.domainPermission());
+		authorize(user, AdminPermission.onDomain());
 	}
 }

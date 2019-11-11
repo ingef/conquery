@@ -14,6 +14,12 @@ import com.bakdata.conquery.resources.hierarchies.HPermissions;
 public class PermissionResource extends HPermissions {
 
 	
+	/**
+	 * We let SHIRO parse the permission from a string, instead of letting Jackson map it directly to an object.
+	 * One reason is, that Jackson only support one JSON creator at the moment, which is already used for the 
+	 * (de)serialization form the store.
+	 * The other reason is, that we delegate the permission-string-checking to SHIRO, that gives useful exception messages.
+	 */
 	@POST
 	public Response createPermission(String permission) throws JSONException {
 		processor.createPermission(ownerId, new WildcardPermission(permission));

@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 public class PermissionCreationTest {
 	@Test
 	public void createPermissionLegalAbility() {
-		assertThat(DatasetPermission.INSTANCE.instancePermission(Ability.READ.asSet(), new DatasetId("test"))).isInstanceOf(Permission.class);
+		assertThat(DatasetPermission.onInstance(Ability.READ.asSet(), new DatasetId("test"))).isInstanceOf(Permission.class);
 	}
 	
 	@Test
@@ -20,10 +20,11 @@ public class PermissionCreationTest {
 		Permission perm = null ;
 		try {
 			// This should fail because the ability is not allowed for a DatasetPermission
-			perm = DatasetPermission.INSTANCE.instancePermission(Ability.SHARE.asSet(), new DatasetId("test"));
+			perm = DatasetPermission.onInstance(Ability.SHARE.asSet(), new DatasetId("test"));
 		}catch (Exception e) {			
-			assertThat(e).isInstanceOf(IllegalArgumentException.class);
+			assertThat(e).isInstanceOf(IllegalStateException.class);
 		}
+		// Should not be reached
 		assertThat(perm).isNull();
 	}
 

@@ -52,8 +52,8 @@ public class SerializationTests {
 	@Test
 	public void user() throws IOException, JSONException{
 		User user = new User("user", "user");
-		user.getPermissions().add(DatasetPermission.INSTANCE.instancePermission(Ability.READ, new DatasetId("test")));
-		user.getPermissions().add(QueryPermission.INSTANCE.instancePermission(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		user.getPermissions().add(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
+		user.getPermissions().add(QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		
 		SerializationTestUtil
 			.forType(User.class)

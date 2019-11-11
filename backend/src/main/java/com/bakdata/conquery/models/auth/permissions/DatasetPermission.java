@@ -12,7 +12,7 @@ public class DatasetPermission extends StringPermissionBuilder {
 
 	private static final Set<Ability> ALLOWED_ABILITIES = AbilitySets.DATASET_CREATOR;
 	
-	public final static DatasetPermission INSTANCE = new DatasetPermission();
+	private final static DatasetPermission INSTANCE = new DatasetPermission();
 	
 	public ConqueryPermission instancePermission(Ability ability, DatasetId instance) {
 		return instancePermission(ability, instance.toString());
@@ -30,5 +30,15 @@ public class DatasetPermission extends StringPermissionBuilder {
 	@Override
 	public Set<Ability> getAllowedAbilities() {
 		return ALLOWED_ABILITIES;
+	}
+	
+	
+	//// Helper functions
+	public static ConqueryPermission onInstance(Set<Ability> abilities, DatasetId instance) {
+		return INSTANCE.instancePermission(abilities, instance);
+	}
+
+	public static ConqueryPermission onInstance(Ability ability, DatasetId instance) {
+		return INSTANCE.instancePermission(ability, instance);
 	}
 }

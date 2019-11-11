@@ -53,7 +53,7 @@ public class StoredQueriesResource {
 		authorize(user, datasetId, Ability.READ);
 
 		return processor.getAllQueries(dsUtil.getDataset(datasetId), req)
-			.filter(status -> user.isPermitted(QueryPermission.INSTANCE.instancePermission(Ability.READ.asSet(), status.getId())))
+			.filter(status -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), status.getId())))
 			.collect(Collectors.toList());
 	}
 

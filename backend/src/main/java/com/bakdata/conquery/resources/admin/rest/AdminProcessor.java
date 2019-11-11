@@ -232,14 +232,14 @@ public class AdminProcessor {
 		return user.stream().filter(u -> u.getRoles().contains(mandator)).collect(Collectors.toList());
 	}
 
-	public List<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
+	public Set<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
 		PermissionOwner<?> owner = id.getOwner(storage);
-		Objects.requireNonNull(owner,"PermissionOwner not found.");
-		return new ArrayList<>(owner.getPermissionsCopy());
+		return Objects.requireNonNull(owner, "PermissionOwner not found.").copyPermissions();
 	}
 
-	public FERoleContent getRoleContent(RoleId mandatorId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
-		return FERoleContent.builder()
+	public FERoleContent getRoleContent(RoleId mandatorId) {
+		return FERoleContent
+			.builder()
 			.permissions(wrapInFEPermission(getPermissions(mandatorId)))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.users(getUsers(mandatorId))
@@ -247,13 +247,13 @@ public class AdminProcessor {
 			.build();
 	}
 
-	private List<Pair<FEPermission, String>> wrapInFEPermission(List<ConqueryPermission> permissions) throws JsonProcessingException {
-		List<Pair<FEPermission,String>> fePermissions = new ArrayList<>();
+	private List<Pair<FEPermission, String>> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
+		List<Pair<FEPermission, String>> fePermissions = new ArrayList<>();
 
 		for (ConqueryPermission permission : permissions) {
-			if(permission instanceof WildcardPermission) {
+			if (permission instanceof WildcardPermission) {
 				fePermissions.add(Pair.of(FEPermission.from((WildcardPermission) permission), permission.toString()));
-				
+
 			}
 			else {
 				log.warn("Could not create frontend representation for permission {}", permission);
@@ -262,23 +262,29 @@ public class AdminProcessor {
 		return fePermissions;
 	}
 
-	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() throws NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
-		Map<String, Pair<Set<Ability>,List<Object>>> permissionTemplateMap = new HashMap<>();
+	private Map<String, Pair<Set<Ability>, List<Object>>> preparePermissionTemplate() {
+		Map<String, Pair<Set<Ability>, List<Object>>> permissionTemplateMap = new HashMap<>();
 
-		// Grab all possible permission types for the "Create Permission" section 
-		Set<Class<? extends StringPermissionBuilder>> permissionTypes = CPSTypeIdResolver.listImplementations(StringPermissionBuilder.class);
+		// Grab all possible permission types for the "Create Permission" section
+		Set<Class<? extends StringPermissionBuilder>> permissionTypes = CPSTypeIdResolver
+			.listImplementations(StringPermissionBuilder.class);
 		for (Class<? extends StringPermissionBuilder> permissionType : permissionTypes) {
-			StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE").get(null);
-			instance.getDomain();
-			permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
-			
+			try {
+				StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE").get(null);
+				// Right argument is for possible targets of a specific permission type, but it is left empty for now. 
+				permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
+			}
+			catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
+				log.error("Could not access allowed abilities for permission type: {}\n\tCause: {}", permissionType, e);
+			}
+
 		}
 		return permissionTemplateMap;
 	}
 
 	/**
 	 * Handles creation of permissions.
-	 * 
+	 *
 	 * @param permission
 	 *            The permission to create.
 	 * @throws JSONException
@@ -308,11 +314,12 @@ public class AdminProcessor {
 		return new ArrayList<>(storage.getAllUsers());
 	}
 
-	public Object getUserContent(UserId userId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, NoSuchFieldException {
+	public Object getUserContent(UserId userId) {
 		User user = storage.getUser(userId);
-		return FEUserContent.builder()
+		return FEUserContent
+			.builder()
 			.owner(user)
-			.availableRoles(storage.getAllRoles()	)
+			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(getPermissions(userId)))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.roles(user.getRoles())

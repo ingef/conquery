@@ -30,4 +30,8 @@ public final class SuperPermission extends StringPermissionBuilder {
 	public Set<Ability> getAllowedAbilities() {
 		return Set.of();
 	}
+	
+	public static ConqueryPermission onDomain() {
+		return INSTANCE.domainPermission();
+	}
 }

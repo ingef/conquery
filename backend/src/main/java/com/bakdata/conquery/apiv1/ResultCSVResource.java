@@ -55,7 +55,7 @@ public class ResultCSVResource {
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, QueryPermission.INSTANCE.instancePermission(Ability.DOWNLOAD, queryId));
+		authorize(user, QueryPermission.onInstance(Ability.DOWNLOAD, queryId));
 		authorize(user, queryId, Ability.READ);
 		
 		try {

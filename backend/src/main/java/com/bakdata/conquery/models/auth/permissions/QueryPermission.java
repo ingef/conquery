@@ -22,14 +22,14 @@ public class QueryPermission extends StringPermissionBuilder{
 		Ability.DOWNLOAD
 		);
 	
-	public final static QueryPermission INSTANCE = new QueryPermission();
+	private final static QueryPermission INSTANCE = new QueryPermission();
 	
 	
-	public ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
+	private ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
 		return instancePermission(ability, instance.toString());
 	}
 	
-	public ConqueryPermission instancePermission(Set<Ability> abilities, ManagedExecutionId instance) {
+	private ConqueryPermission instancePermission(Set<Ability> abilities, ManagedExecutionId instance) {
 		return instancePermission(abilities, instance.toString());
 	}
 
@@ -41,5 +41,15 @@ public class QueryPermission extends StringPermissionBuilder{
 	@Override
 	public Set<Ability> getAllowedAbilities() {
 		return ALLOWED_ABILITIES;
+	}
+	
+	
+	//// Helper functions
+	public static ConqueryPermission onInstance(Ability ability, ManagedExecutionId instance) {
+		return INSTANCE.instancePermission(ability, instance);
+	}
+	
+	public static ConqueryPermission onInstance(Set<Ability> abilities, ManagedExecutionId instance) {
+		return INSTANCE.instancePermission(abilities, instance);
 	}
 }
