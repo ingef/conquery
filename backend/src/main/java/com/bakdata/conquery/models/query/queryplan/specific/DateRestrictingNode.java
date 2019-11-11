@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.query.queryplan.specific;
 
-import java.util.Map;
-import java.util.Objects;
-
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.datasets.Column;
@@ -15,12 +12,19 @@ import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import lombok.Getter;
+import lombok.Setter;
 
+import java.util.Map;
+import java.util.Objects;
+
+@Getter
+@Setter
 public class DateRestrictingNode extends QPChainNode {
 
-	private final CDateSet restriction;
-	private Column validityDateColumn;
-	private Map<BucketId, EntityRow> preCurrentRow = null;
+	protected CDateSet restriction;
+	protected Column validityDateColumn;
+	protected Map<BucketId, EntityRow> preCurrentRow = null;
 
 	public DateRestrictingNode(CDateSet restriction, QPNode child) {
 		super(child);

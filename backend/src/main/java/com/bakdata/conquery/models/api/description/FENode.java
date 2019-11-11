@@ -1,14 +1,14 @@
 package com.bakdata.conquery.models.api.description;
 
-import java.time.LocalDate;
-import java.util.List;
-
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This class represents a concept as it is presented to the front end.
@@ -27,4 +27,6 @@ public class FENode {
 	private Boolean detailsAvailable;
 	private boolean codeListResolvable;
 	private List<FESelect> selects;
+
+	private Map<String, Object> config;
 }

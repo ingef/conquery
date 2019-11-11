@@ -106,7 +106,7 @@ public class CQConcept implements CQElement {
 					table,
 					new ValidityDateNode(
 						selectValidityDateColumn(table),
-						conceptChild(filters, aggregators)
+						conceptChild(concept, context, filters, aggregators)
 					)
 				)
 			);
@@ -135,7 +135,7 @@ public class CQConcept implements CQElement {
 					.toArray(ConceptElement[]::new);
 	}
 
-	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
+	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<QPNode> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);
