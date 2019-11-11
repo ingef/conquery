@@ -12,7 +12,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class QueryJob implements Callable<EntityResult> {
 
-	private final QueryContext ctx;
+	private final QueryExecutionContext ctx;
 	private final QueryPlan plan;
 	private final Entity entity;
 	

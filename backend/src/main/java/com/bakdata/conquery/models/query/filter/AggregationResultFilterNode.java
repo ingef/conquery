@@ -5,7 +5,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
@@ -32,7 +32,7 @@ public abstract class AggregationResultFilterNode<AGGREGATOR extends Aggregator<
 	}
 
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
 		aggregator.nextTable(ctx, currentTable);
 	}

@@ -7,7 +7,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.entity.EntityRow;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -32,7 +32,7 @@ public class DateRestrictingNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		//if there was no date restriction we can just use the restriction CDateSet
 		if(ctx.getDateRestriction().isAll()) {
 			ctx = ctx.withDateRestriction(CDateSet.create(restriction));

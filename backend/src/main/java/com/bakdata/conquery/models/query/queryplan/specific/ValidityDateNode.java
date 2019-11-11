@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -47,7 +47,7 @@ public class ValidityDateNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
 		noRestriction = ctx.getDateRestriction().isAll();
 	}

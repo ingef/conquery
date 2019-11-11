@@ -35,7 +35,7 @@ public class QueryExecutor implements Closeable {
 		QueryPlan plan = query.getQuery().createQueryPlan(context);
 		return execute(
 				context.getBlockManager(),
-				new QueryContext(
+				new QueryExecutionContext(
 					context.getStorage()
 				),
 				query.getId(),
@@ -44,7 +44,7 @@ public class QueryExecutor implements Closeable {
 		);
 	}
 
-	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
+	public static ShardResult execute(BlockManager blockManager, QueryExecutionContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
 
 		Collection<Entity> entries = blockManager.getEntities().values();
 

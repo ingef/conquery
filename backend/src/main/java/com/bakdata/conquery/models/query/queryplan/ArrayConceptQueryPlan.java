@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -82,7 +82,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 
 	@Override
-	public EntityResult execute(QueryContext ctx, Entity entity) {
+	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		Object[] resultValues = new Object[this.getAggregatorSize()];
 		// Start with 1 for aggregator values if dateSet needs to be added to the result
 		CDateSet dateSet = CDateSet.create();
@@ -191,7 +191,7 @@ public class ArrayConceptQueryPlan implements QueryPlan, EventIterating {
 		return length;
 	}
 
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		childPlans.forEach(plan -> plan.nextTable(ctx, currentTable));
 	}
 

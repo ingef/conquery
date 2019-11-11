@@ -12,7 +12,7 @@ import lombok.With;
 
 @Getter @AllArgsConstructor @RequiredArgsConstructor
 @With
-public class QueryContext {
+public class QueryExecutionContext {
 
 	private Column validityDateColumn;
 	@NonNull
