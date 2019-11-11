@@ -13,13 +13,13 @@ import com.google.common.collect.ImmutableSet;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 
-@CPSType(id="DATASET_PERMISSION", base=ConqueryPermission.class)
-@EqualsAndHashCode(callSuper=true)
-@ToString(callSuper=true)
+@CPSType(id = "DATASET_PERMISSION", base = ConqueryPermission.class)
+@EqualsAndHashCode(callSuper = true)
+@ToString(callSuper = true)
 public class DatasetPermission extends IdentifiableInstancePermission<DatasetId> {
-	
-	public final static Set<Ability> ALLOWED_ABILITIES = ImmutableSet.copyOf(AbilitySets.DATASET_CREATOR);
-	
+
+	public static final Set<Ability> ALLOWED_ABILITIES = ImmutableSet.copyOf(AbilitySets.DATASET_CREATOR);
+
 	public DatasetPermission(Set<Ability> abilities, DatasetId instanceId) {
 		super(abilities, instanceId);
 	}
@@ -28,8 +28,8 @@ public class DatasetPermission extends IdentifiableInstancePermission<DatasetId>
 	public Set<Ability> allowedAbilities() {
 		return ALLOWED_ABILITIES;
 	}
-	
-	public static List<Object> getPossibleTargets(MasterMetaStorage storage){
+
+	public static List<Object> getPossibleTargets(MasterMetaStorage storage) {
 		return storage.getNamespaces().getAllDatasets().stream().map(Identifiable::getId).collect(Collectors.toList());
 	}
 }

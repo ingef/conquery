@@ -9,7 +9,6 @@ import java.util.List;
 import java.util.Map;
 
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;

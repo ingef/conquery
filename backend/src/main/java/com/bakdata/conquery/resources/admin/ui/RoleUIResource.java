@@ -2,8 +2,6 @@ package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
 
-import java.lang.reflect.InvocationTargetException;
-
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -13,34 +11,27 @@ import javax.ws.rs.core.MediaType;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HRoles;
-import com.fasterxml.jackson.core.JsonProcessingException;
 
 import io.dropwizard.views.View;
 
-
 @Produces(MediaType.TEXT_HTML)
 public class RoleUIResource extends HRoles {
-
 
 	@GET
 	public View getRoles() {
 		return new UIView<>("roles.html.ftl", processor.getUIContext(), processor.getAllRoles());
 	}
-	
+
 	/**
 	 * End point for retrieving information about a specific role.
-	 * @param roleId Unique id of the role.
+	 * 
+	 * @param roleId
+	 *            Unique id of the role.
 	 * @return A view holding the information about the role.
-	 * @throws JsonProcessingException 
-	 * @throws InvocationTargetException 
-	 * @throws IllegalArgumentException 
-	 * @throws IllegalAccessException 
-	 * @throws SecurityException 
-	 * @throws NoSuchMethodException 
 	 */
 	@Path("{" + ROLE_NAME + "}")
 	@GET
-	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) {
 		return new UIView<>("role.html.ftl", processor.getUIContext(), processor.getRoleContent(roleId));
 	}
 }
