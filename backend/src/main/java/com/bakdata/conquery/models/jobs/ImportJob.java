@@ -182,8 +182,7 @@ public class ImportJob extends Job {
 							
 							Bucket value = inImport.getBlockFactory().readSingleValue(bucketNumber, inImport, bounded);
 							Bucket result = outImport.getBlockFactory().adaptValuesFrom(bucketNumber, outImport, value, header);
-							java.io.OutputStream outputStream = out;
-							try(Output sOut = new Output(outputStream)) {
+							try(Output sOut = new Output(out)) {
 								result.writeContent(sOut);
 							}
 							data = out.toByteArray();

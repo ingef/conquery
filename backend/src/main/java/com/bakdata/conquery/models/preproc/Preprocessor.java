@@ -174,8 +174,7 @@ public class Preprocessor {
 				);
 			}
 
-			OutputStream outputStream = outFile.writeContent();
-			try (com.esotericsoftware.kryo.io.Output out = new com.esotericsoftware.kryo.io.Output(outputStream)) {
+			try (com.esotericsoftware.kryo.io.Output out = new com.esotericsoftware.kryo.io.Output(outFile.writeContent())) {
 				result.writeToFile(out);
 			}
 
