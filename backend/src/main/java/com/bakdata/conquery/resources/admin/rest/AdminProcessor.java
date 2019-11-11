@@ -239,10 +239,9 @@ public class AdminProcessor {
 		return user.stream().filter(u -> u.getRoles().contains(mandator)).collect(Collectors.toList());
 	}
 
-	public List<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
+	public Set<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
 		PermissionOwner<?> owner = id.getOwner(storage);
-		Objects.requireNonNull(owner,"PermissionOwner not found.");
-		return new ArrayList<>(owner.getPermissionsCopy());
+		return Objects.requireNonNull(owner,"PermissionOwner not found.").copyPermissions();
 	}
 
 	public FERoleContent getRoleContent(RoleId mandatorId) throws JsonProcessingException, NoSuchMethodException, SecurityException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -254,7 +253,7 @@ public class AdminProcessor {
 			.build();
 	}
 
-	private List<Pair<FEPermission, String>> wrapInFEPermission(List<ConqueryPermission> permissions) throws JsonProcessingException {
+	private List<Pair<FEPermission, String>> wrapInFEPermission(Collection<ConqueryPermission> permissions) throws JsonProcessingException {
 		List<Pair<FEPermission,String>> fePermissions = new ArrayList<>();
 
 		for (ConqueryPermission permission : permissions) {

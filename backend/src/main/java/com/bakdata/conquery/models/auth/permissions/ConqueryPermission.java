@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.auth.permissions;
 
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Optional;
-import java.util.Set;
 
 import org.apache.shiro.authz.Permission;
 
@@ -30,13 +28,6 @@ public abstract class ConqueryPermission implements Permission {
 		// Check exact permission category
 		return this.getClass().isAssignableFrom(permission.getClass());
 		
-	}
-	
-	public Optional<ConqueryPermission> subtract(ConqueryPermission subtrahend) {
-		if (!getClass().isAssignableFrom(subtrahend.getClass())) {
-			throw new IllegalStateException(String.format("Cannot subtract differing classes, which are: %s nd %s", getClass(), subtrahend.getClass()));
-		}
-		return Optional.empty();
 	}
 	
 	public abstract Optional<ConqueryPermission> findSimilar(Collection<ConqueryPermission> permissions);

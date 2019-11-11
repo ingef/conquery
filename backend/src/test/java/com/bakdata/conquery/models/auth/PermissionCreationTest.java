@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
 
 import org.junit.jupiter.api.Test;
 
@@ -21,13 +20,12 @@ public class PermissionCreationTest {
 		ConqueryPermission perm = null ;
 		try {
 			// This should fail because the ability is not allowed for a DatasetPermission
-			perm = new DatasetPermission(Ability.DUMMY_ABILITY.asSet(), new DatasetId("test"));
+			perm = new DatasetPermission(Ability.SHARE.asSet(), new DatasetId("test"));
 		}catch (Exception e) {			
 			assertThat(e).isInstanceOf(IllegalStateException.class);
 		}
-		if(perm != null) {			
-			fail();
-		}
+		// Should not be reached
+		assertThat(perm).isNull();
 	}
 
 }

@@ -10,7 +10,7 @@ import java.util.Set;
 public interface HasCompactedAbilities {
 	void setAbilities(Set<Ability> accesses);
 	boolean addAbilities(Set<Ability> accesses);
-	Set<Ability> getAbilitiesCopy();
+	Set<Ability> copyAbilities();
 	Set<Ability> allowedAbilities();
 	boolean removeAllAbilities(Set<Ability> delAbilities);
 }

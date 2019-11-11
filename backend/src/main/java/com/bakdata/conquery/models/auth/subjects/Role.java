@@ -32,8 +32,8 @@ public class Role extends PermissionOwner<RoleId> {
 	}
 	
 	@JsonIgnore
-	public Set<ConqueryPermission> getPermissionsEffective() {
-		return getPermissionsCopy();
+	public Set<ConqueryPermission> getEffectivePermissions() {
+		return copyPermissions();
 	}
 
 	@Override

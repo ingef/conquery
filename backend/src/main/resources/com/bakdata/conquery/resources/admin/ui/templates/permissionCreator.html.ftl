@@ -1,6 +1,6 @@
 <#macro permissionCreator ownerId permissionTemplateMap>
-    <#assign TARGETS = "targets_">
-	<#assign ABILITIES = "abilities_">
+    <#local TARGETS = "targets_">
+	<#local ABILITIES = "abilities_">
     <table class="table table-striped">
         <thead>
             <tr>
@@ -53,7 +53,7 @@
 		let target = null
 		if (targetSelector != null) {
 			let option = targetSelector.options[targetSelector.selectedIndex]
-			if(option.length > 0 && option == null) {
+			if(options.length > 0 && option == null) {
 				alert("No target for permission specified");
 				return;
 			}

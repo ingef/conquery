@@ -101,7 +101,7 @@ public abstract class IdentifiableInstancePermission<ID extends AId<?>> extends 
 	}
 
 	@JsonIgnore
-	public Set<Ability> getAbilitiesCopy(){
+	public Set<Ability> copyAbilities(){
 		return Set.copyOf(abilities);
 	}
 	

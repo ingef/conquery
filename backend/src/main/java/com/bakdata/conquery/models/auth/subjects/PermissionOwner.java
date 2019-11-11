@@ -81,7 +81,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 			
 			// remove old permission because we construct and add a new one
 			permissions.remove(existingPermission);
-			((HasCompactedAbilities)existingPermission).addAbilities(((HasCompactedAbilities) permission).getAbilitiesCopy());
+			((HasCompactedAbilities)existingPermission).addAbilities(((HasCompactedAbilities) permission).copyAbilities());
 			log.info("Compected permission: {}",existingPermission);
 
 			permission = existingPermission;
@@ -123,13 +123,13 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 					HasCompactedAbilities iPerm = (HasCompactedAbilities) permission;
 					HasCompactedAbilities iDelPerm = (HasCompactedAbilities) delPermission;
 					// remove all provided abilities
-					if(iPerm.removeAllAbilities(iDelPerm.getAbilitiesCopy())) {
-						log.info(String.format("After deleting the abilites %s the permission remains as: %s", iDelPerm.getAbilitiesCopy(), permission));
+					if(iPerm.removeAllAbilities(iDelPerm.copyAbilities())) {
+						log.info(String.format("After deleting the abilites %s the permission remains as: %s", iDelPerm.copyAbilities(), permission));
 					}
 					
 					
 					// if there are abilities left, add the permission back to the local storage
-					if(!iPerm.getAbilitiesCopy().isEmpty()) {
+					if(!iPerm.copyAbilities().isEmpty()) {
 						permissions.add(permission);
 					}
 				}
@@ -144,7 +144,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return A set of the permissions hold by the owner.
 	 */
 	@JsonIgnore
-	public Set<ConqueryPermission> getPermissionsCopy(){
+	public Set<ConqueryPermission> copyPermissions(){
 		return new HashSet<ConqueryPermission>(permissions);
 	}
 	
@@ -161,7 +161,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * the permission of the roles it inherits.
 	 * @return
 	 */
-	public abstract Set<ConqueryPermission> getPermissionsEffective();
+	public abstract Set<ConqueryPermission> getEffectivePermissions();
 	
 	/**
 	 * Update this instance, only to be called from a synchronized context.

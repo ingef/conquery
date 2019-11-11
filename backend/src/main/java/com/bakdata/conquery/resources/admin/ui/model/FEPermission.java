@@ -26,7 +26,7 @@ public class FEPermission {
 	public static FEPermission from(ConqueryPermission cPermission) {
 		Set<Ability> abilities = null;
 		if(cPermission instanceof HasCompactedAbilities) {
-			abilities = ((HasCompactedAbilities)cPermission).getAbilitiesCopy();
+			abilities = ((HasCompactedAbilities)cPermission).copyAbilities();
 		}
 		Object target = null;
 		if(cPermission instanceof HasTarget) {

@@ -11,9 +11,7 @@ public enum Ability {
 	TAG,
 	CANCEL,
 	LABEL,
-	SHARE,
-	
-	DUMMY_ABILITY;
+	SHARE;
 	
 	private final Set<Ability> asSet = Collections.singleton(this);
 	

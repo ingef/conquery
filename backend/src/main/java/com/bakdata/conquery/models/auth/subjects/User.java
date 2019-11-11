@@ -109,10 +109,10 @@ public class User extends FilteredUser<UserId> implements Principal{
 	}
 	
 	@JsonIgnore
-	public Set<ConqueryPermission> getPermissionsEffective(){
-		Set<ConqueryPermission> permissions = getPermissionsCopy();
+	public Set<ConqueryPermission> getEffectivePermissions(){
+		Set<ConqueryPermission> permissions = copyPermissions();
 		for (Role role : roles) {
-			permissions.addAll(role.getPermissionsEffective());
+			permissions.addAll(role.getEffectivePermissions());
 		}
 		return permissions;
 	}

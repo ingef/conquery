@@ -17,6 +17,5 @@ public final class AdminPermission extends SpecialPermission {
 
 	public AdminPermission() {
 		super();
-		log.info("Created AdminPermission");
 	}
 }

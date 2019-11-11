@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.subjects.Role;
 import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -66,13 +65,13 @@ public class StoredQueriesProcessor {
 	public void shareQuery(User user, ManagedQuery query, boolean shared) throws JSONException {
 		updateQueryVersions(user, query, Ability.SHARE, q-> {
 			QueryPermission queryPermission = new QueryPermission(AbilitySets.QUERY_EXECUTOR, q.getId());
-			user.getRoles().forEach((Role mandator) -> {
+			user.getRoles().forEach((role) -> {
 				try {
 					if (shared) {
-						addPermission(mandator, queryPermission, namespaces.getMetaStorage());
+						addPermission(role, queryPermission, namespaces.getMetaStorage());
 					}
 					else {
-						removePermission(mandator, queryPermission, namespaces.getMetaStorage());
+						removePermission(role, queryPermission, namespaces.getMetaStorage());
 					}
 					q.setShared(shared);
 					namespaces.getMetaStorage().updateExecution(q);
