@@ -5,7 +5,7 @@
 			<#list entities as entity>
 				<li>
 					<a href="${pathBase}${entity.id}">${entity.label}</a> 
-					<a href="" onclick="event.preventDefault(); fetch('${entity.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
+					<a href="" onclick="event.preventDefault(); fetch('${pathBase}${entity.id}', {method: 'delete'}).then(function(){location.reload();});"><i class="fas fa-trash-alt text-danger"></i></a>
 				</li>
 			</#list>
 			</ul>
@@ -26,7 +26,7 @@
 	<script type="application/javascript">
         function createEntity() {
             event.preventDefault(); 
-            fetch('.',
+            fetch('${pathBase}',
             {
                 method: 'post',
                 headers: {'Content-Type': 'application/json'},
@@ -39,7 +39,7 @@
 
         function downloadEntities() {
             event.preventDefault(); 
-            fetch('.',
+            fetch('${pathBase}',
             {
                 method: 'get',
                 headers: {'Accept': 'application/json'}
