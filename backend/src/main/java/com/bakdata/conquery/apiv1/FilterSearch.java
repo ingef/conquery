@@ -3,6 +3,8 @@ package com.bakdata.conquery.apiv1;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.github.powerlibraries.io.In;
+import com.univocity.parsers.csv.CsvParser;
 import com.zigurs.karlis.utils.search.QuickSearch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -120,7 +122,8 @@ public class FilterSearch {
 			.build();
 
 		try {
-			Iterator<String[]> it = CSVReader.readRaw(file).iterator();
+			CsvParser parser = CsvParsing.createParser();
+			Iterator<String[]> it = ((Iterable<String[]>) parser.iterate(In.file(file).withUTF8().asReader())).iterator();
 			String[] header = it.next();
 
 			for (String[] row : (Iterable<String[]>) (() -> it)) {
