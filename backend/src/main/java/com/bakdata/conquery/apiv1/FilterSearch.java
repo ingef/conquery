@@ -4,6 +4,8 @@ import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilte
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.github.powerlibraries.io.In;
+import com.univocity.parsers.common.IterableResult;
+import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.csv.CsvParser;
 import com.zigurs.karlis.utils.search.QuickSearch;
 import lombok.AllArgsConstructor;
@@ -14,7 +16,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutorService;
@@ -37,7 +38,7 @@ public class FilterSearch {
 		 */
 		PREFIX {
 			@Override
-			double score(String candidate, String keyword) {
+			public double score(String candidate, String keyword) {
 				/* Sort ascending by length of match */
 				if (keyword.startsWith(candidate))
 					return 1d / (double) candidate.length();
@@ -50,7 +51,7 @@ public class FilterSearch {
 		 */
 		CONTAINS {
 			@Override
-			double score(String candidate, String keyword) {
+			public double score(String candidate, String keyword) {
 				/* 0...1 depending on the length ratio */
 				double matchScore = (double) candidate.length() / (double) keyword.length();
 
@@ -66,32 +67,33 @@ public class FilterSearch {
 		 */
 		EXACT {
 			@Override
-			double score(String candidate, String keyword) {
+			public double score(String candidate, String keyword) {
 				/* Only allow exact matches through (returning < 0.0 means skip this candidate) */
 				return candidate.length() == keyword.length() ? 1.0 : -1.0;
 			}
 		};
 
 		/**
-		 * Search function. See {@link QuickSearch#DEFAULT_MATCH_SCORER}.
+		 * Search function. See {@link QuickSearch}.
 		 * @param candidate potential match.
 		 * @param match search String.
 		 * @return Value > 0 increases relevance of string (also used for ordering results). < 0 removes string.
 		 */
-		abstract double score(String candidate, String match);
+		public abstract double score(String candidate, String match);
 	}
 
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
 	public static ExecutorService init(Namespaces namespaces, Collection<Dataset> datasets) {
 		ExecutorService executor = Executors.newSingleThreadExecutor();
-		datasets
-			.stream()
-			.flatMap(ds -> namespaces.get(ds.getId()).getStorage().getAllConcepts().stream())
-			.flatMap(c -> c.getConnectors().stream())
-			.flatMap(co -> co.collectAllFilters().stream())
-			.filter(f -> f instanceof AbstractSelectFilter && f.getTemplate() != null)
-			.forEach(f -> executor.submit(()->createSourceSearch((AbstractSelectFilter<?>) f)));
+
+		datasets.stream()
+				.flatMap(ds -> namespaces.get(ds.getId()).getStorage().getAllConcepts().stream())
+				.flatMap(c -> c.getConnectors().stream())
+				.flatMap(co -> co.collectAllFilters().stream())
+				.filter(f -> f instanceof AbstractSelectFilter && f.getTemplate() != null)
+				.forEach(f -> executor.submit(() -> createSourceSearch(((AbstractSelectFilter<?>) f))));
+
 		executor.shutdown();
 		return executor;
 	}
@@ -99,11 +101,11 @@ public class FilterSearch {
 	public static void createSourceSearch(AbstractSelectFilter<?> filter) {
 		FilterTemplate template = filter.getTemplate();
 
-		List<String> columns = new ArrayList<>(template.getColumns());
-		columns.add(template.getColumnValue());
+		List<String> templateColumns = new ArrayList<>(template.getColumns());
+		templateColumns.add(template.getColumnValue());
 
 		File file = new File(template.getFilePath());
-		String key = String.join("_", columns) + "_" + file.getName();
+		String key = String.join("_", templateColumns) + "_" + file.getName();
 
 		QuickSearch<FilterSearchItem> quick = search.get(key);
 		if (quick != null) {
@@ -113,34 +115,36 @@ public class FilterSearch {
 		}
 
 		log.info("Processing reference list '{}' ...", file.getAbsolutePath());
-		long time = System.currentTimeMillis();
+		final long time = System.currentTimeMillis();
 
 		quick = new QuickSearch.QuickSearchBuilder()
 			.withUnmatchedPolicy(IGNORE)
 			.withMergePolicy(INTERSECTION)
-			.withKeywordMatchScorer(filter.getSearchType()::score)
 			.build();
 
 		try {
 			CsvParser parser = CsvParsing.createParser();
-			Iterator<String[]> it = ((Iterable<String[]>) parser.iterate(In.file(file).withUTF8().asReader())).iterator();
-			String[] header = it.next();
+			IterableResult<String[], ParsingContext> it = parser.iterate(In.file(file).withUTF8().asReader());
+			String[] header = it.getContext().parsedHeaders();
 
-			for (String[] row : (Iterable<String[]>) (() -> it)) {
+			for (String[] row : it) {
 				FilterSearchItem item = new FilterSearchItem();
 
 				for (int i = 0; i < header.length; i++) {
 					String column = header[i];
-					if (columns.contains(column)) {
-						item.setLabel(template.getValue());
-						item.setOptionValue(template.getOptionValue());
-						item.getTemplateValues().put(column, row[i]);
 
-						quick.addItem(item, row[i]);
+					if (!templateColumns.contains(column)) {
+						continue;
+					}
 
-						if (column.equals(template.getColumnValue())) {
-							item.setValue(row[i]);
-						}
+					item.setLabel(template.getValue());
+					item.setOptionValue(template.getOptionValue());
+					item.getTemplateValues().put(column, row[i]);
+
+					quick.addItem(item, row[i]);
+
+					if (column.equals(template.getColumnValue())) {
+						item.setValue(row[i]);
 					}
 				}
 			}

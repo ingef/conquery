@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -34,6 +35,7 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -87,22 +89,34 @@ public class ConceptsProcessor {
 	}
 
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
-		Set<String> openSearchTerms = new HashSet<>(searchTerms);
-		
+
 		//search in the full text engine
-		Set<String> searchResult = createSourceSearchResult(
-				filter.getSourceSearch(),
-				openSearchTerms.toArray(new String[0])
-		)
+		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms)
 										   .stream()
 										   .map(FEValue::getValue)
 										   .collect(Collectors.toSet());
 
+		final FilterSearch.FilterSearchType searchType = filter.getSearchType();
+
+		// TODO: 12.11.2019 consider creating either a second search just for resolving or even an index structure for the different resolving types.
+		// Post-process search results, excluding any value that does not match according to the stricter matcher.
+		for (Iterator<String> it = searchResult.iterator(); it.hasNext();) {
+			final String result = it.next();
+
+			// Is the search term accepted by our scorer?
+			if(searchTerms.stream().anyMatch(term -> searchType.score(result, term) > 0))
+				continue;
+
+			// If not, remove it.
+			it.remove();
+		}
+
+		Set<String> openSearchTerms = new HashSet<>(searchTerms);
 		openSearchTerms.removeAll(searchResult);
-		
-		//check the values and label
+
+		// Iterate over all unresolved search terms. Gather all that match the Labels into searchResults. Keep the unresolvable ones.
 		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext();) {
-			String searchTerm = (String) it.next();
+			String searchTerm = it.next();
 			if(filter.getValues().contains(searchTerm)) {
 				searchResult.add(searchTerm);
 				it.remove();
@@ -116,18 +130,17 @@ public class ConceptsProcessor {
 			}
 		}
 
-		// see https://github.com/bakdata/conquery/issues/251
 		return new ResolvedConceptsResult(
-			null,
-			new ResolvedFilterResult(
-				filter.getConnector().getId(),
-				filter.getId(),
-				searchResult
-					.stream()
-					.map(v->new FEValue(filter.getLabelFor(v),v))
-					.collect(Collectors.toList())
-			),
-			new ArrayList<>(openSearchTerms)
+				null,
+				new ResolvedFilterResult(
+						filter.getConnector().getId(),
+						filter.getId(),
+						searchResult
+								.stream()
+								.map(v -> new FEValue(filter.getLabelFor(v), v))
+								.collect(Collectors.toList())
+				),
+				new ArrayList<>(openSearchTerms)
 		);
 	}
 	
@@ -136,7 +149,7 @@ public class ConceptsProcessor {
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 		if (search != null) {
-			result = createSourceSearchResult(filter.getSourceSearch(), text);
+			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text));
 		}
 		
 		String value = filter.getValueFor(text);
@@ -147,7 +160,7 @@ public class ConceptsProcessor {
 		return result;
 	}
 	
-	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, String... values) {
+	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values) {
 		if(search == null) {
 			return Collections.emptyList();
 		}
