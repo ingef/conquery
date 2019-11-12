@@ -37,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -61,7 +60,7 @@ public class ConceptsProcessor {
 			@Override
 			public FEList load(Concept<?> concept) throws Exception {
 				return FrontEndConceptBuilder.createTreeMap(concept);
-			};
+			}
 		});
 		
 	public FERoot getRoot(NamespaceStorage storage) {
@@ -180,27 +179,26 @@ public class ConceptsProcessor {
 		List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
 		List<String> unknownCodes = new ArrayList<>();
 
-		if (concept instanceof TreeConcept) {
-			TreeConcept tree = (TreeConcept) concept;
+		if (concept == null) {
+			return new ResolvedConceptsResult(null, null, conceptCodes);
+		}
 
-			for (String conceptCode : conceptCodes) {
-				ConceptTreeChild child;
-				try {
-					child = tree.findMostSpecificChild(conceptCode, new CalculatedValue<>(() -> new HashMap<>()));
-					if (child != null) {
-						resolvedCodes.add(child.getId());
-					}
-					else {
-						unknownCodes.add(conceptCode);
-					}
+		for (String conceptCode : conceptCodes) {
+			ConceptTreeChild child;
+			try {
+				child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
+				if (child != null) {
+					resolvedCodes.add(child.getId());
 				}
-				catch (ConceptConfigurationException e) {
-					log.error("Error while trying to resolve "+conceptCode, e);
+				else {
+					unknownCodes.add(conceptCode);
 				}
 			}
-			return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
+			catch (ConceptConfigurationException e) {
+				log.error("Error while trying to resolve "+conceptCode, e);
+			}
 		}
-		return new ResolvedConceptsResult(null, null, conceptCodes);
+		return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
 	}
 	
 	@Getter

@@ -11,11 +11,12 @@ public class CsvParsing {
 		CsvFormat format = settings.getFormat();
 		//TODO why is this not configured?
 		format.setDelimiter(';');
-		format.setLineSeparator("\n");
+		format.setLineSeparator(System.lineSeparator());
 		format.setCharToEscapeQuoteEscaping('\\');
 		format.setQuoteEscape('\\');
 		settings.setColumnReorderingEnabled(false);
 		settings.setMaxCharsPerColumn(-1);
+		settings.setHeaderExtractionEnabled(true);
 		return new CsvParser(settings);
 	}
 }

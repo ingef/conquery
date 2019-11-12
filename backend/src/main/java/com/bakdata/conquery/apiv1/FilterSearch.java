@@ -40,7 +40,7 @@ public class FilterSearch {
 			@Override
 			public double score(String candidate, String keyword) {
 				/* Sort ascending by length of match */
-				if (keyword.startsWith(candidate))
+				if (candidate.startsWith(keyword))
 					return 1d / (double) candidate.length();
 				else
 					return -1d;
@@ -69,7 +69,7 @@ public class FilterSearch {
 			@Override
 			public double score(String candidate, String keyword) {
 				/* Only allow exact matches through (returning < 0.0 means skip this candidate) */
-				return candidate.length() == keyword.length() ? 1.0 : -1.0;
+				return candidate.equals(keyword) ? 1.0 : -1.0;
 			}
 		};
 
@@ -120,6 +120,7 @@ public class FilterSearch {
 		quick = new QuickSearch.QuickSearchBuilder()
 			.withUnmatchedPolicy(IGNORE)
 			.withMergePolicy(INTERSECTION)
+			.withKeywordMatchScorer(FilterSearchType.CONTAINS::score)
 			.build();
 
 		try {
