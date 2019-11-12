@@ -29,13 +29,18 @@ import lombok.Setter;
 public class User extends FilteredUser<UserId> implements Principal{
 	@Getter @Setter @MetaIdRefCollection
 	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
+	
+	/**
+	 * The name of a user is unique in the system. It is used to generate the UserId object.
+	 * The name might be an email address.
+	 */
 	@Getter @Setter @NonNull @NotNull
-	private String email;
+	private String name;
 	@Getter @Setter @NonNull @NotNull
 	private String label;
 
-	public User(String email, String label) {
-		this.email = email;
+	public User(String name, String label) {
+		this.name = name;
 		this.label = label;
 	}
 	
@@ -73,7 +78,7 @@ public class User extends FilteredUser<UserId> implements Principal{
 	
 	@Override
 	public UserId createId() {
-		return new UserId(email);
+		return new UserId(name);
 	}
 
 	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
@@ -100,12 +105,6 @@ public class User extends FilteredUser<UserId> implements Principal{
 	 */
 	public void addRoleLocal(Role mandator) {
 		roles.add(mandator);
-	}
-
-	@Override
-	@JsonIgnore
-	public String getName() {
-		return email;
 	}
 	
 	@JsonIgnore
