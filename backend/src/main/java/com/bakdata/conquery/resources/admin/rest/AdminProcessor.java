@@ -188,7 +188,7 @@ public class AdminProcessor {
 
 	public synchronized void addRole(Role role) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(role));
-		log.info("New role:\\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
+		log.info("New role:\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
 		storage.addRole(role);
 	}
 
@@ -327,7 +327,7 @@ public class AdminProcessor {
 
 	public synchronized void addUser(User user) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(user));
-		log.info("New mandator:\\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
+		log.info("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 		storage.addUser(user);
 	}
 
@@ -391,8 +391,8 @@ public class AdminProcessor {
 	public synchronized void addGroup(Group group) throws JSONException {
 		synchronized (storage) {			
 			ValidatorHelper.failOnError(log, validator.validate(group));
-			log.info("New group:\\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
 			storage.addGroup(group);
+			log.info("New group:\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
 		}
 		
 	}
