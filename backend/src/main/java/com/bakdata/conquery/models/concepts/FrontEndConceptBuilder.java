@@ -67,7 +67,7 @@ public class FrontEndConceptBuilder {
 			.orElse(null);
 
 		FENode n = FENode.builder()
-				.active(c instanceof VirtualConcept || c instanceof TreeConcept)
+				.active(true)
 				.description(c.getDescription())
 				.label(c.getLabel())
 				.additionalInfos(c.getAdditionalInfos())
