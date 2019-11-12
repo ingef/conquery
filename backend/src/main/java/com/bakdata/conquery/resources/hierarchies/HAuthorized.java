@@ -8,8 +8,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
 
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
-import com.bakdata.conquery.models.auth.subjects.User;
 
 import io.dropwizard.auth.Auth;
 import lombok.Getter;

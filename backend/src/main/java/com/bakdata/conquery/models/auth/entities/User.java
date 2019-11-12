@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.subjects;
+package com.bakdata.conquery.models.auth.entities;
 
 import java.security.Principal;
 import java.util.Collection;

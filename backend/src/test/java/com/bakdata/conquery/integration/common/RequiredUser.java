@@ -3,7 +3,7 @@ package com.bakdata.conquery.integration.common;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 
 import lombok.Getter;

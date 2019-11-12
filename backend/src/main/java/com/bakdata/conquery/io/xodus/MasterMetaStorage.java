@@ -2,10 +2,12 @@ package com.bakdata.conquery.io.xodus;
 
 import java.util.Collection;
 
-import com.bakdata.conquery.models.auth.subjects.Role;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -85,6 +87,39 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
 	void updateRole(Role role) throws JSONException;
+	
+	/**
+	 * Adds a role to the storage.
+	 * @param role The role to add.
+	 * @throws JSONException Is throw on a JSON related failure.
+	 */
+	void addGroup(Group group) throws JSONException;
+	
+	/**
+	 * Gets the Group with the specified id from the storage.
+	 * @param id The id of the Group to be retrieved.
+	 * @return The Group with the specified id.
+	 */
+	Group getGroup(GroupId id);
+	
+	/**
+	 * Gets all Groups saved in the storage.
+	 * @return A collection of the stored Groups
+	 */
+	Collection<Group> getAllGroups();
+	
+	/**
+	 * Removes a Group from the storage that has the given id.
+	 * @param id The id of the Group that will be deleted.
+	 */
+	void removeGroup(GroupId id);
+	
+	/**
+	 * Updates a stored Group that is identified by its id.
+	 * @param Group The Group, which holds the values, to be updated.
+	 * @throws JSONException Is throw on a JSON related failure.
+	 */
+	void updateGroup(Group group) throws JSONException;
 	
 	/**
 	 * Return the namespaces used in the instance of conquery.

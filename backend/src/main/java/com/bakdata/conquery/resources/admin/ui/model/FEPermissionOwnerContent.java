@@ -6,8 +6,8 @@ import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
 
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
 
 import lombok.Getter;
 import lombok.experimental.SuperBuilder;

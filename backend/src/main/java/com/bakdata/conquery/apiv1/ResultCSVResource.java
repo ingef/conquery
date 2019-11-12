@@ -24,9 +24,9 @@ import javax.ws.rs.core.StreamingOutput;
 import org.eclipse.jetty.io.EofException;
 
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
