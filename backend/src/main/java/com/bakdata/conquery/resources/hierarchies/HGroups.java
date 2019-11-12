@@ -8,8 +8,8 @@ import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import lombok.Setter;
 
 @Setter
-@Path("users")
-public class HUsers extends HAuthorized {
+@Path("groups")
+public class HGroups extends HAuthorized {
 
 	@Inject
 	protected AdminProcessor processor;

@@ -10,4 +10,5 @@ public class ResourceConstants {
 	public static final String JOB_ID = "jobId";
 	public static final String OWNER_ID = "ownerId";
 	public static final String USER_ID = "userId";
+	public static final String GROUP_ID = "groupId";
 }

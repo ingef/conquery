@@ -3,7 +3,6 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -29,7 +28,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -45,6 +44,7 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -62,11 +62,11 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectWriter;
 
 import lombok.Getter;
@@ -188,7 +188,7 @@ public class AdminProcessor {
 
 	public synchronized void addRole(Role role) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(role));
-		log.info("New mandator:\\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
+		log.info("New role:\\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
 		storage.addRole(role);
 	}
 
@@ -226,24 +226,19 @@ public class AdminProcessor {
 		return new ArrayList<>(storage.getAllRoles());
 	}
 
-	public List<User> getUsers(RoleId mandatorId) {
-		Role mandator = (Role) mandatorId.getOwner(storage);
+	public List<User> getUsers(Role role) {
 		Collection<User> user = storage.getAllUsers();
-		return user.stream().filter(u -> u.getRoles().contains(mandator)).collect(Collectors.toList());
+		return user.stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
 	}
-
-	public Set<ConqueryPermission> getPermissions(PermissionOwnerId<?> id) {
-		PermissionOwner<?> owner = id.getOwner(storage);
-		return Objects.requireNonNull(owner, "PermissionOwner not found.").copyPermissions();
-	}
-
-	public FERoleContent getRoleContent(RoleId mandatorId) {
+	
+	public FERoleContent getRoleContent(RoleId roleId) {
+		Role role = Objects.requireNonNull(storage.getRole(roleId));
 		return FERoleContent
 			.builder()
-			.permissions(wrapInFEPermission(getPermissions(mandatorId)))
+			.permissions(wrapInFEPermission(role.copyPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
-			.users(getUsers(mandatorId))
-			.owner(mandatorId.getOwner(storage))
+			.users(getUsers(role))
+			.owner(roleId.getOwner(storage))
 			.build();
 	}
 
@@ -315,12 +310,12 @@ public class AdminProcessor {
 	}
 
 	public Object getUserContent(UserId userId) {
-		User user = storage.getUser(userId);
+		User user = Objects.requireNonNull(storage.getUser(userId));
 		return FEUserContent
 			.builder()
 			.owner(user)
 			.availableRoles(storage.getAllRoles())
-			.permissions(wrapInFEPermission(getPermissions(userId)))
+			.permissions(wrapInFEPermission(user.copyPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.roles(user.getRoles())
 			.build();
@@ -372,5 +367,51 @@ public class AdminProcessor {
 		Objects.requireNonNull(role);
 		user.addRole(storage, role);
 
+	}
+
+	public Collection<Group> getAllGroups() {
+		return storage.getAllGroups();
+	}
+
+	public FEGroupContent getGroupContent(GroupId groupId) {
+		 Group group = Objects.requireNonNull(storage.getGroup(groupId));
+		return FEGroupContent
+			.builder()
+			.owner(group)
+			.member(group.copyMembers())
+			.permissions(wrapInFEPermission(group.copyPermissions()))
+			.permissionTemplateMap(preparePermissionTemplate())
+			.build();
+	}
+
+	public synchronized void addGroup(Group group) throws JSONException {
+		ValidatorHelper.failOnError(log, validator.validate(group));
+		log.info("New group:\\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
+		storage.addGroup(group);
+		
+	}
+	
+	public void addGroups(List<Group> groups) {
+		Objects.requireNonNull(groups, "Group list was null.");
+		for (Group group : groups) {
+			try {
+				addGroup(group);
+			}
+			catch (Exception e) {
+				log.error(String.format("Failed to add Group: %s", group), e);
+			}
+		}
+	}
+
+	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
+		// addMember is synchronized
+		Objects.requireNonNull(groupId.getOwner(storage))
+		.addMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+	}
+
+	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
+		// removeMember is synchronized
+		Objects.requireNonNull(groupId.getOwner(storage))
+		.removeMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
 	}
 }
