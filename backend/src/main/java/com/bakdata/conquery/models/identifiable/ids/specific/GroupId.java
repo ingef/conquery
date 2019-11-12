@@ -7,8 +7,10 @@ import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
 
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
+@EqualsAndHashCode(callSuper=false)
 public class GroupId extends PermissionOwnerId<Group> {
 
 	public static final String TYPE = "group";

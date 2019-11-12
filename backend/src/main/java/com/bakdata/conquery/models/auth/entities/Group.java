@@ -25,7 +25,7 @@ public class Group extends PermissionOwner<GroupId> {
 	@Getter @Setter @NonNull @NotNull @NotEmpty
 	private String label;
 	
-	@MetaIdRefCollection
+	@Getter @Setter @MetaIdRefCollection
 	Set<User> members = Collections.synchronizedSet( new HashSet<>());
 	
 	public Group(String name, String label) {
