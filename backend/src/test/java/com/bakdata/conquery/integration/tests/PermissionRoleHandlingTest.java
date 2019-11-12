@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
-public class PermissionHandlingTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class PermissionRoleHandlingTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
 
 	private final Role mandator1 = new Role("company", "company");
 	private final User user1 = new User("user", "user");
@@ -41,7 +41,7 @@ public class PermissionHandlingTest implements ProgrammaticIntegrationTest, Inte
 
 			// Delete permission from mandator
 			mandator1.removePermission(storage, DatasetPermission.onInstance(Ability.DELETE.asSet(), dataset1.getId()));
-			assertThat(mandator1.getEffectivePermissions()).isEmpty();
+			assertThat(mandator1.getEffectivePermissions(storage)).isEmpty();
 
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dataset1.getId()))).isTrue();
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DELETE.asSet(), dataset1.getId()))).isFalse();

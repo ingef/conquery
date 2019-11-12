@@ -32,7 +32,7 @@ public class Role extends PermissionOwner<RoleId> {
 	}
 	
 	@JsonIgnore
-	public Set<ConqueryPermission> getEffectivePermissions() {
+	public Set<ConqueryPermission> getEffectivePermissions(MasterMetaStorage storage) {
 		return copyPermissions();
 	}
 

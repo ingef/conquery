@@ -89,7 +89,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * the permission of the roles it inherits.
 	 * @return Owned and inherited permissions.
 	 */
-	public abstract Set<ConqueryPermission> getEffectivePermissions();
+	public abstract Set<ConqueryPermission> getEffectivePermissions(MasterMetaStorage storage);
 	
 	/**
 	 * Update this instance, only to be called from a synchronized context.

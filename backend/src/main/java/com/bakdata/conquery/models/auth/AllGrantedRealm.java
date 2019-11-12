@@ -64,7 +64,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 			info.addObjectPermissions(Set.of(SuperPermission.onDomain()));
 		} else {
 			// currently only used for test cases
-			info.addObjectPermissions(new HashSet<Permission>(userId.getOwner(storage).getEffectivePermissions()));
+			info.addObjectPermissions(new HashSet<Permission>(userId.getOwner(storage).getEffectivePermissions(storage)));
 		}
 		return info;
 	}

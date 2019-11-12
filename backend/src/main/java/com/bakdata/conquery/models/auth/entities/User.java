@@ -109,10 +109,16 @@ public class User extends FilteredUser<UserId> implements Principal{
 	}
 	
 	@JsonIgnore
-	public Set<ConqueryPermission> getEffectivePermissions(){
+	public Set<ConqueryPermission> getEffectivePermissions(MasterMetaStorage storage){
 		Set<ConqueryPermission> permissions = copyPermissions();
 		for (Role role : roles) {
-			permissions.addAll(role.getEffectivePermissions());
+			permissions.addAll(role.getEffectivePermissions(storage));
+		}
+		
+		for (Group group : storage.getAllGroups()) {
+			if(group.containsMember(this)) {
+				permissions.addAll(group.getEffectivePermissions(storage));
+			}
 		}
 		return permissions;
 	}
