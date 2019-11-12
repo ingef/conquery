@@ -1,5 +1,12 @@
 package com.bakdata.conquery.resources.admin;
 
+import java.util.Collections;
+import java.util.ServiceLoader;
+
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
+import org.glassfish.jersey.media.multipart.MultiPartFeature;
+import org.glassfish.jersey.servlet.ServletContainer;
+
 import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -16,9 +23,11 @@ import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
+import com.bakdata.conquery.resources.admin.ui.GroupUIResource;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
+import com.bakdata.conquery.resources.api.GroupResource;
 import com.bakdata.conquery.resources.api.PermissionResource;
 import com.bakdata.conquery.resources.api.RoleResource;
 import com.bakdata.conquery.resources.api.UserResource;
@@ -31,12 +40,6 @@ import io.dropwizard.views.ViewRenderer;
 import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.glassfish.hk2.utilities.binding.AbstractBinder;
-import org.glassfish.jersey.media.multipart.MultiPartFeature;
-import org.glassfish.jersey.servlet.ServletContainer;
-
-import java.util.Collections;
-import java.util.ServiceLoader;
 
 @Getter
 @Slf4j
@@ -100,6 +103,8 @@ public class AdminServlet {
 			.register(RoleUIResource.class)
 			.register(UserResource.class)
 			.register(UserUIResource.class)
+			.register(GroupResource.class)
+			.register(GroupUIResource.class)
 			.register(DatasetsUIResource.class)		
 			.register(TablesUIResource.class)
 			.register(ConceptsUIResource.class)

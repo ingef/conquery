@@ -375,19 +375,25 @@ public class AdminProcessor {
 
 	public FEGroupContent getGroupContent(GroupId groupId) {
 		 Group group = Objects.requireNonNull(storage.getGroup(groupId));
+		 Set<User> members = group.copyMembers();
+		 ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
+		 availableMembers.removeAll(members);
 		return FEGroupContent
 			.builder()
 			.owner(group)
-			.member(group.copyMembers())
+			.members(members)
+			.availableMembers(availableMembers)
 			.permissions(wrapInFEPermission(group.copyPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.build();
 	}
 
 	public synchronized void addGroup(Group group) throws JSONException {
-		ValidatorHelper.failOnError(log, validator.validate(group));
-		log.info("New group:\\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
-		storage.addGroup(group);
+		synchronized (storage) {			
+			ValidatorHelper.failOnError(log, validator.validate(group));
+			log.info("New group:\\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
+			storage.addGroup(group);
+		}
 		
 	}
 	
@@ -404,14 +410,22 @@ public class AdminProcessor {
 	}
 
 	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
-		// addMember is synchronized
-		Objects.requireNonNull(groupId.getOwner(storage))
-		.addMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+		synchronized (storage) {			
+			Objects.requireNonNull(groupId.getOwner(storage))
+			.addMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+		}
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
-		// removeMember is synchronized
-		Objects.requireNonNull(groupId.getOwner(storage))
-		.removeMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+		synchronized (storage) {			
+			Objects.requireNonNull(groupId.getOwner(storage))
+			.removeMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+		}
+	}
+
+	public void removeGroup(GroupId groupId) {
+		synchronized (storage) {			
+			storage.removeGroup(groupId);
+		}
 	}
 }

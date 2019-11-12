@@ -31,9 +31,10 @@ public class GroupResource extends HGroups{
 		return processor.getAllGroups();
 	}
 
-	@POST
-	public Response postGroup(Group group) throws JSONException {
-		processor.addGroup(group);
+	@Path("{" + GROUP_ID + "}")
+	@DELETE
+	public Response deleteGroup(@PathParam(GROUP_ID) GroupId groupId) throws JSONException {
+		processor.removeGroup(groupId);
 		return Response.ok().build();
 	}
 	

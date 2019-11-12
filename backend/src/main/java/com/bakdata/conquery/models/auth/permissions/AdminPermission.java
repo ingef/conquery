@@ -19,7 +19,7 @@ public final class AdminPermission extends StringPermissionBuilder {
 
 	private static final String DOMAIN = "admin";
 
-	private final static AdminPermission INSTANCE = new AdminPermission();
+	public final static AdminPermission INSTANCE = new AdminPermission();
 
 	@Override
 	public String getDomain() {

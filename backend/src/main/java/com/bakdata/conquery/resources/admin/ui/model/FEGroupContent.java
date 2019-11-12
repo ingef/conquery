@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui.model;
 
-import java.util.Set;
+import java.util.Collection;
 
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -15,5 +15,6 @@ import lombok.experimental.SuperBuilder;
 @SuperBuilder
 public class FEGroupContent extends FEPermissionOwnerContent<Group> {
 
-	public Set<User> member;
+	public Collection<User> members;
+	public Collection<User> availableMembers;
 }

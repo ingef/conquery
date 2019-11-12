@@ -23,11 +23,11 @@ public class GroupUIResource extends HGroups {
 	}
 
 	/**
-	 * End point for retrieving information about a specific role.
+	 * End point for retrieving information about a specific group.
 	 * 
 	 * @param roleId
 	 *            Unique id of the role.
-	 * @return A view holding the information about the role.
+	 * @return A view holding the information about the group.
 	 */
 	@Path("{" + GROUP_ID + "}")
 	@GET

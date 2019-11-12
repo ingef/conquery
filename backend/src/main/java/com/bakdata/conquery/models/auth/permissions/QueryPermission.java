@@ -22,7 +22,7 @@ public class QueryPermission extends StringPermissionBuilder{
 		Ability.DOWNLOAD
 		);
 	
-	private final static QueryPermission INSTANCE = new QueryPermission();
+	public final static QueryPermission INSTANCE = new QueryPermission();
 	
 	
 	private ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
