@@ -13,6 +13,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.util.SingleAuthenticationInfo;
 
 import lombok.extern.slf4j.Slf4j;
@@ -51,7 +52,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Set<Permission> permissions = new HashSet<Permission>();
-		permissions.add(new AllGrantedPermission());
+		permissions.add(new SuperPermission());
 		SimpleAuthorizationInfo info =  new SimpleAuthorizationInfo();
 		info.addObjectPermissions(permissions);
 		return info;
@@ -63,19 +64,9 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	}
 	
 	/**
-	 * Inner class that represents a permission, that is always valid.
-	 */
-	private static class AllGrantedPermission implements Permission {
-		@Override
-		public boolean implies(Permission permission) {
-			return true;
-		}
-	}
-	
-	/**
 	 * Inner class that matches any credentials.
 	 */
-	private static class AllGrantedCredentialsMatcher implements CredentialsMatcher{
+	private static class AllGrantedCredentialsMatcher implements CredentialsMatcher {
 
 		@Override
 		public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
