@@ -4,7 +4,6 @@ package com.bakdata.conquery.models.events.generation;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
-import com.bakdata.conquery.util.io.SmallOut;
 import com.bakdata.conquery.io.DeserHelper;
 
 
@@ -38,8 +37,9 @@ import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.io.DeserHelper;
 import java.math.BigDecimal;
 
-import com.bakdata.conquery.util.io.SmallIn;
-import com.bakdata.conquery.util.io.SmallOut;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
+
 import java.time.LocalDate;
 
 import java.lang.Integer;
@@ -251,7 +251,7 @@ public class Bucket_${suffix} extends Bucket {
 	}
 	
 	@Override
-	public void read(SmallIn input) throws IOException {
+	public void read(Input input) throws IOException {
 		int numberOfEvents = input.readInt(true);
 		initFields(numberOfEvents);
 		
@@ -279,7 +279,7 @@ public class Bucket_${suffix} extends Bucket {
 	}
 	
 	@Override
-	public void writeContent(SmallOut output) throws IOException {
+	public void writeContent(Output output) throws IOException {
 		output.writeInt(getNumberOfEvents(), true);
 		
 		<#if imp.nullWidth gt 0>

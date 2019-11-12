@@ -1,23 +1,22 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
-import java.io.IOException;
-import java.io.PipedInputStream;
-import java.io.PipedOutputStream;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
-
-import org.apache.commons.lang3.concurrent.BasicThreadFactory;
-
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.NamespaceCollection;
-import com.bakdata.conquery.util.io.SmallIn;
+import com.esotericsoftware.kryo.io.Input;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonDeserializer;
+import org.apache.commons.lang3.concurrent.BasicThreadFactory;
+
+import java.io.IOException;
+import java.io.PipedInputStream;
+import java.io.PipedOutputStream;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 
 public class BucketDeserializer extends JsonDeserializer<Bucket> {
 
@@ -58,7 +57,7 @@ public class BucketDeserializer extends JsonDeserializer<Bucket> {
 		}
 		p.nextValue();
 		try(PipedOutputStream out = new PipedOutputStream();
-		SmallIn in = new SmallIn(new PipedInputStream(out));) {
+			Input in = new Input(new PipedInputStream(out));) {
 			EXECUTORS.execute(()->{
 				try {
 				p.readBinaryValue(out);
