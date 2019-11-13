@@ -5,12 +5,15 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.removePermission;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.servlet.http.HttpServletRequest;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -59,20 +62,23 @@ public class StoredQueriesProcessor {
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedExecution query) {
-		MasterMetaStorage storage = namespaces.get(dataset.getId()).getStorage().getMetaStorage();
+		MasterMetaStorage storage = namespaces.getMetaStorage();
 		storage.removeExecution(query.getId());
 	}
 
 	public void shareQuery(User user, ManagedQuery query, boolean shared) throws JSONException {
 		updateQueryVersions(user, query, Ability.SHARE, q-> {
 			ConqueryPermission queryPermission = QueryPermission.onInstance(AbilitySets.QUERY_EXECUTOR, q.getId());
-			user.getRoles().forEach(role -> {
+			List<Group> userGroups = namespaces.getMetaStorage().getAllGroups().stream().filter(group -> group.containsMember(user)).collect(Collectors.toList());
+			userGroups.forEach(group -> {
 				try {
 					if (shared) {
-						addPermission(role, queryPermission, namespaces.getMetaStorage());
+						addPermission(group, queryPermission, namespaces.getMetaStorage());
+						log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, group);
 					}
 					else {
-						removePermission(role, queryPermission, namespaces.getMetaStorage());
+						removePermission(group, queryPermission, namespaces.getMetaStorage());
+						log.trace("User {} shares query {}. Removing permission {} from group {}.",user, q.getId(), queryPermission, group);
 					}
 					q.setShared(shared);
 					namespaces.getMetaStorage().updateExecution(q);
@@ -96,6 +102,7 @@ public class StoredQueriesProcessor {
 		authorize(user, query, requiredAbility);
 		
 		for(Namespace ns : namespaces.getNamespaces()) {
+			
 			if(user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), ns.getDataset().getId()))) {
 				ManagedExecutionId id = new ManagedExecutionId(ns.getDataset().getId(), query.getQueryId());
 				ManagedQuery exec = (ManagedQuery)namespaces.getMetaStorage().getExecution(id);
