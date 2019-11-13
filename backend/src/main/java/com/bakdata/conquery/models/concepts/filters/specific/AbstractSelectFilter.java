@@ -36,7 +36,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	
 	protected Set<String> values;
 	@JsonIgnore
-	protected transient QuickSearch<FilterSearchItem> sourceSearch;
+	protected transient QuickSearch<FilterSearchItem> sourceSearch, resolveSearch;
 
 	@JsonIgnore
 	private final int maximumSize;

@@ -38,7 +38,7 @@ public class FilterSearch {
 		 */
 		PREFIX {
 			@Override
-			public double score(String candidate, String keyword) {
+			public double score(String keyword, String candidate) {
 				/* Sort ascending by length of match */
 				if (candidate.startsWith(keyword))
 					return 1d / (double) candidate.length();
@@ -51,7 +51,7 @@ public class FilterSearch {
 		 */
 		CONTAINS {
 			@Override
-			public double score(String candidate, String keyword) {
+			public double score(String keyword, String candidate) {
 				/* 0...1 depending on the length ratio */
 				double matchScore = (double) candidate.length() / (double) keyword.length();
 
@@ -67,7 +67,7 @@ public class FilterSearch {
 		 */
 		EXACT {
 			@Override
-			public double score(String candidate, String keyword) {
+			public double score(String keyword, String candidate) {
 				/* Only allow exact matches through (returning < 0.0 means skip this candidate) */
 				return candidate.equals(keyword) ? 1.0 : -1.0;
 			}
@@ -104,24 +104,39 @@ public class FilterSearch {
 		List<String> templateColumns = new ArrayList<>(template.getColumns());
 		templateColumns.add(template.getColumnValue());
 
-		File file = new File(template.getFilePath());
-		String key = String.join("_", templateColumns) + "_" + file.getName();
 
-		QuickSearch<FilterSearchItem> quick = search.get(key);
-		if (quick != null) {
+		File file = new File(template.getFilePath());
+		String autocompleteKey = String.join("_", templateColumns) + "_" + file.getName() + ".auto";
+		String resolveKey = String.join("_", templateColumns) + "_" + file.getName() + ".resolve";
+
+		QuickSearch<FilterSearchItem> autocomplete = search.get(autocompleteKey);
+		QuickSearch<FilterSearchItem> resolve = search.get(resolveKey);
+
+		if (autocomplete != null) {
 			log.info("Reference list '{}' already exists ...", file.getAbsolutePath());
-			filter.setSourceSearch(quick);
-			return;
+			filter.setSourceSearch(autocomplete);
 		}
+
+		if (resolve != null) {
+			log.info("Reference list '{}' already exists ...", file.getAbsolutePath());
+			filter.setResolveSearch(resolve);
+		}
+
 
 		log.info("Processing reference list '{}' ...", file.getAbsolutePath());
 		final long time = System.currentTimeMillis();
 
-		quick = new QuickSearch.QuickSearchBuilder()
-			.withUnmatchedPolicy(IGNORE)
-			.withMergePolicy(INTERSECTION)
-			.withKeywordMatchScorer(FilterSearchType.CONTAINS::score)
-			.build();
+		autocomplete = new QuickSearch.QuickSearchBuilder()
+							   .withUnmatchedPolicy(IGNORE)
+							   .withMergePolicy(INTERSECTION)
+							   .withKeywordMatchScorer(FilterSearchType.CONTAINS::score)
+							   .build();
+
+		resolve = new QuickSearch.QuickSearchBuilder()
+							   .withUnmatchedPolicy(IGNORE)
+							   .withMergePolicy(INTERSECTION)
+							   .withKeywordMatchScorer(filter.getSearchType()::score)
+							   .build();
 
 		try {
 			CsvParser parser = CsvParsing.createParser();
@@ -142,16 +157,20 @@ public class FilterSearch {
 					item.setOptionValue(template.getOptionValue());
 					item.getTemplateValues().put(column, row[i]);
 
-					quick.addItem(item, row[i]);
-
 					if (column.equals(template.getColumnValue())) {
 						item.setValue(row[i]);
 					}
+
+					autocomplete.addItem(item, row[i]);
+					resolve.addItem(item, row[i]);
 				}
 			}
 
-			filter.setSourceSearch(quick);
-			search.put(key, quick);
+			filter.setSourceSearch(autocomplete);
+			filter.setResolveSearch(resolve);
+
+			search.put(autocompleteKey, autocomplete);
+			search.put(resolveKey, resolve);
 			log.info("Processed reference list '{}' in {} ms", file.getAbsolutePath(), System.currentTimeMillis() - time);
 		} catch (Exception e) {
 			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);

@@ -1,6 +1,5 @@
 package com.bakdata.conquery.resources.api;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -90,25 +89,10 @@ public class ConceptsProcessor {
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
 
 		//search in the full text engine
-		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms)
+		Set<String> searchResult = createSourceSearchResult(filter.getResolveSearch(), searchTerms)
 										   .stream()
 										   .map(FEValue::getValue)
 										   .collect(Collectors.toSet());
-
-		final FilterSearch.FilterSearchType searchType = filter.getSearchType();
-
-		// TODO: 12.11.2019 consider creating either a second search just for resolving or even an index structure for the different resolving types.
-		// Post-process search results, excluding any value that does not match according to the stricter matcher.
-		for (Iterator<String> it = searchResult.iterator(); it.hasNext();) {
-			final String result = it.next();
-
-			// Is the search term accepted by our scorer?
-			if(searchTerms.stream().anyMatch(term -> searchType.score(result, term) > 0))
-				continue;
-
-			// If not, remove it.
-			it.remove();
-		}
 
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
 		openSearchTerms.removeAll(searchResult);
