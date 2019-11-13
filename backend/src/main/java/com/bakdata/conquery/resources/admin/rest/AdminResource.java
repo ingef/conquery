@@ -19,7 +19,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
-import com.bakdata.conquery.resources.hierarchies.HAuthorized;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +29,7 @@ import lombok.Setter;
 
 @Path("/")
 @Getter @Setter
-public class AdminResource extends HAuthorized {
+public class AdminResource extends HAdmin {
 
 	@Inject
 	private AdminProcessor processor;

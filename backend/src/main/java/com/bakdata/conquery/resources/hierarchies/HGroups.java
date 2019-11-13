@@ -9,7 +9,7 @@ import lombok.Setter;
 
 @Setter
 @Path("groups")
-public class HGroups extends HAuthorized {
+public abstract class HGroups extends HAdmin {
 
 	@Inject
 	protected AdminProcessor processor;

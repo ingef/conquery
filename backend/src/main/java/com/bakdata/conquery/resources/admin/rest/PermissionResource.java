@@ -1,4 +1,4 @@
-package com.bakdata.conquery.resources.api;
+package com.bakdata.conquery.resources.admin.rest;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;

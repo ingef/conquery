@@ -1,4 +1,4 @@
-package com.bakdata.conquery.resources.api;
+package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
 

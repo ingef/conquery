@@ -10,7 +10,7 @@ import lombok.Setter;
 
 @Setter
 @Path("roles")
-public class HRoles extends HAuthorized{
+public abstract class HRoles extends HAdmin{
 
 	@Inject
 	protected AdminProcessor processor;

@@ -14,7 +14,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -106,7 +105,6 @@ public class AdminUIResource {
 	}
 
 	private Object executeScript(String script) {
-		HttpServletRequest request;
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
 		GroovyShell groovy = new GroovyShell(config);
