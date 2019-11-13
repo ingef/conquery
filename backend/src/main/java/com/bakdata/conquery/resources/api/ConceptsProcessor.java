@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -21,10 +22,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.bakdata.conquery.util.search.QuickSearch;
+import com.bakdata.conquery.util.search.SearchScorer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.zigurs.karlis.utils.search.QuickSearch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -86,10 +88,14 @@ public class ConceptsProcessor {
 			.collect(Collectors.toList());
 	}
 
+	/**
+	 * Search for all search terms at once, with stricter scoring.
+	 * The user will upload a file and expect only well-corresponding resolutions.
+	 */
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
 
 		//search in the full text engine
-		Set<String> searchResult = createSourceSearchResult(filter.getResolveSearch(), searchTerms)
+		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, filter.getSearchType()::score)
 										   .stream()
 										   .map(FEValue::getValue)
 										   .collect(Collectors.toSet());
@@ -97,7 +103,7 @@ public class ConceptsProcessor {
 		Set<String> openSearchTerms = new HashSet<>(searchTerms);
 		openSearchTerms.removeAll(searchResult);
 
-		// Iterate over all unresolved search terms. Gather all that match the Labels into searchResults. Keep the unresolvable ones.
+		// Iterate over all unresolved search terms. Gather all that match labels into searchResults. Keep the unresolvable ones.
 		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext();) {
 			String searchTerm = it.next();
 			if(filter.getValues().contains(searchTerm)) {
@@ -126,13 +132,16 @@ public class ConceptsProcessor {
 				new ArrayList<>(openSearchTerms)
 		);
 	}
-	
+
+	/**
+	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
+	 */
 	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		List<FEValue> result = new LinkedList<>();
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 		if (search != null) {
-			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text));
+			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), FilterSearch.FilterSearchType.CONTAINS::score);
 		}
 		
 		String value = filter.getValueFor(text);
@@ -142,16 +151,17 @@ public class ConceptsProcessor {
 
 		return result;
 	}
-	
-	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values) {
+
+	/**
+	 * Do a search with the supplied values.
+	 */
+	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, SearchScorer scorer) {
 		if(search == null) {
 			return Collections.emptyList();
 		}
 
-		List<FilterSearchItem> result = new LinkedList<>();
-		for (String value : values) {
-			result.addAll(search.findItems(value, 50));
-		}
+		// Quicksearch can split and also schedule for us.
+		List<FilterSearchItem> result = search.findItems(String.join(" ", values), 50, scorer);
 		
 		return result
 			.stream()

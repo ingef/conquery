@@ -10,11 +10,11 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.util.search.QuickSearch;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.Sets;
-import com.zigurs.karlis.utils.search.QuickSearch;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -36,7 +36,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	
 	protected Set<String> values;
 	@JsonIgnore
-	protected transient QuickSearch<FilterSearchItem> sourceSearch, resolveSearch;
+	protected transient QuickSearch<FilterSearchItem> sourceSearch;
 
 	@JsonIgnore
 	private final int maximumSize;
