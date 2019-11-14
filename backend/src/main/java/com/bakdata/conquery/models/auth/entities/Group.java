@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -25,7 +26,7 @@ public class Group extends PermissionOwner<GroupId> {
 	@Getter @Setter @NonNull @NotNull @NotEmpty
 	private String label;
 	
-	@Getter @Setter @MetaIdRefCollection
+	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({@Deprecated})) @Setter @MetaIdRefCollection
 	Set<User> members = Collections.synchronizedSet( new HashSet<>());
 	
 	public Group(String name, String label) {
