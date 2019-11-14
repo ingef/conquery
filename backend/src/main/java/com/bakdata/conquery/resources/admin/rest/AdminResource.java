@@ -39,9 +39,6 @@ public class AdminResource extends HAdmin {
 	@Path("datasets")
 	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
 		Dataset dataset = processor.addDataset(name);
-		user.addPermission(
-			processor.getStorage(), DatasetPermission.onInstance(AbilitySets.DATASET_CREATOR, dataset.createId())
-		);
 		
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsUIResource.class).resolveTemplate(ResourceConstants.DATASET_NAME, name).build())
