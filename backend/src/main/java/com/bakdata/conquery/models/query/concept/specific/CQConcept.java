@@ -56,6 +56,11 @@ public class CQConcept implements CQElement {
 
 	private boolean excludeFromTimeAggregation = false;
 
+	public static interface QueryElementFilter<T extends CQElement> {
+		Class<T> forClass();
+		CQElement transform(T element, QueryPlanContext context, ConceptQueryPlan plan);
+	};
+
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
