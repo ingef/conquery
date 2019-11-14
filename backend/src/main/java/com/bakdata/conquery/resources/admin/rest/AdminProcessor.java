@@ -323,12 +323,13 @@ public class AdminProcessor {
 
 	public synchronized void deleteUser(UserId userId) {
 		storage.removeUser(userId);
+		log.info("Removed user {} from the storage.", userId);
 	}
 
 	public synchronized void addUser(User user) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(user));
-		log.info("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 		storage.addUser(user);
+		log.info("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 	}
 
 	public void addUsers(List<User> users) {
@@ -353,6 +354,7 @@ public class AdminProcessor {
 		Objects.requireNonNull(user);
 		Objects.requireNonNull(role);
 		user.removeRole(storage, role);
+		log.info("Deleted role {} to user {}", role, user);
 
 	}
 
@@ -366,6 +368,7 @@ public class AdminProcessor {
 		Objects.requireNonNull(user);
 		Objects.requireNonNull(role);
 		user.addRole(storage, role);
+		log.info("Added role {} to user {}", role, user);
 
 	}
 
@@ -414,6 +417,7 @@ public class AdminProcessor {
 			Objects.requireNonNull(groupId.getOwner(storage))
 			.addMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
 		}
+		log.info("Added user {} to group {}", userId.getOwner(storage), groupId.getOwner(getStorage()));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
@@ -421,11 +425,13 @@ public class AdminProcessor {
 			Objects.requireNonNull(groupId.getOwner(storage))
 			.removeMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
 		}
+		log.info("Removed user {} from group {}", userId.getOwner(storage), groupId.getOwner(getStorage()));
 	}
 
 	public void removeGroup(GroupId groupId) {
 		synchronized (storage) {			
 			storage.removeGroup(groupId);
 		}
+		log.info("Removed group {}", groupId.getOwner(getStorage()));
 	}
 }
