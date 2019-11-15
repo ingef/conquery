@@ -27,7 +27,7 @@ import lombok.NonNull;
 import lombok.Setter;
 
 public class User extends FilteredUser<UserId> implements Principal{
-	@Getter @Setter @MetaIdRefCollection
+	@Getter(onMethod = @__({@Deprecated})) @Setter(onMethod = @__({@Deprecated})) @MetaIdRefCollection
 	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
 	
 	/**
@@ -98,6 +98,16 @@ public class User extends FilteredUser<UserId> implements Principal{
 			}
 		}
 	}
+	
+
+	/**
+	 * Return a copy of the permissions hold by the owner.
+	 * @return A set of the permissions hold by the owner.
+	 */
+	@JsonIgnore
+	public Set<Role> copyRoles(){
+		return new HashSet<Role>(roles);
+	}
 
 	/**
 	 * At role to the local role set only.
@@ -105,21 +115,6 @@ public class User extends FilteredUser<UserId> implements Principal{
 	 */
 	public void addRoleLocal(Role mandator) {
 		roles.add(mandator);
-	}
-	
-	@JsonIgnore
-	public Set<ConqueryPermission> getEffectivePermissions(MasterMetaStorage storage){
-		Set<ConqueryPermission> permissions = copyPermissions();
-		for (Role role : roles) {
-			permissions.addAll(role.getEffectivePermissions(storage));
-		}
-		
-		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(this)) {
-				permissions.addAll(group.getEffectivePermissions(storage));
-			}
-		}
-		return permissions;
 	}
 	
 	@Override

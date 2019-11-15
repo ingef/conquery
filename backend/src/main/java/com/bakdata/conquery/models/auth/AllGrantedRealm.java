@@ -14,6 +14,10 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.util.SingleAuthenticationInfo;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -64,9 +68,30 @@ public class AllGrantedRealm extends AuthorizingRealm {
 			info.addObjectPermissions(Set.of(SuperPermission.onDomain()));
 		} else {
 			// currently only used for test cases
-			info.addObjectPermissions(new HashSet<Permission>(userId.getOwner(storage).getEffectivePermissions(storage)));
+			info.addObjectPermissions(new HashSet<Permission>(getEffectiveUserPermissions(userId)));
 		}
 		return info;
+	}
+
+	
+	/**
+	 * Returns a list of the effective permissions. These are the permissions of the owner and
+	 * the permission of the roles it inherits.
+	 * @return Owned and inherited permissions.
+	 */
+	private Set<ConqueryPermission> getEffectiveUserPermissions(UserId userId) {
+		User user = userId.getOwner(storage);
+		Set<ConqueryPermission> permissions = user.copyPermissions();
+		for (Role role : user.copyRoles()) {
+			permissions.addAll(role.copyPermissions());
+		}
+		
+		for (Group group : storage.getAllGroups()) {
+			if(group.containsMember(user)) {
+				permissions.addAll(group.copyPermissions());
+			}
+		}
+		return permissions;
 	}
 
 	@Override

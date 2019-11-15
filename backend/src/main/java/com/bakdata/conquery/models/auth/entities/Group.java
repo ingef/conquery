@@ -10,7 +10,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 
@@ -40,12 +39,6 @@ public class Group extends PermissionOwner<GroupId> {
 		this.label = label;
 	}
 	
-
-	@Override
-	public Set<ConqueryPermission> getEffectivePermissions(MasterMetaStorage storage) {
-		return copyPermissions();
-	}
-
 	@Override
 	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateGroup(this);

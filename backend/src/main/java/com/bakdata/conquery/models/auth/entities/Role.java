@@ -31,11 +31,6 @@ public class Role extends PermissionOwner<RoleId> {
 		return new RoleId(name);
 	}
 	
-	@JsonIgnore
-	public Set<ConqueryPermission> getEffectivePermissions(MasterMetaStorage storage) {
-		return copyPermissions();
-	}
-
 	@Override
 	protected synchronized void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateRole(this);

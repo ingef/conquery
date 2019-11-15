@@ -85,13 +85,6 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 	
 	/**
-	 * Returns a list of the effective permissions. These are the permissions of the owner and
-	 * the permission of the roles it inherits.
-	 * @return Owned and inherited permissions.
-	 */
-	public abstract Set<ConqueryPermission> getEffectivePermissions(MasterMetaStorage storage);
-	
-	/**
 	 * Update this instance, only to be called from a synchronized context.
 	 * @throws JSONException upon serialization error.
 	 */
