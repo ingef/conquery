@@ -13,8 +13,6 @@ import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import java.math.BigDecimal;
 import com.google.common.collect.Range;
 
-import com.bakdata.conquery.util.io.SmallIn;
-import com.bakdata.conquery.util.io.SmallOut;
 import java.time.LocalDate;
 
 import java.lang.Integer;

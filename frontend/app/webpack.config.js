@@ -56,7 +56,8 @@ module.exports = ["en", "de"].map(lang => ({
     ifDevelopment(new webpack.HotModuleReplacementPlugin()),
     ifDevelopment(new ProgressBarPlugin()),
     new webpack.DefinePlugin({
-      "process.env.SEARCH_RESULT_LIMIT": 50
+      "process.env.SEARCH_RESULT_LIMIT": 50,
+      "process.env.API_URL" : JSON.stringify(process.env.API_URL)
     }),
     new HtmlWebpackPlugin({
       template: path.join(__dirname, "src/index.tpl.html"),
