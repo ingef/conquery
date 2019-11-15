@@ -37,13 +37,15 @@ import lombok.extern.slf4j.Slf4j;
 public class StoredQueriesProcessor {
 	@Getter
 	private final Namespaces namespaces;
+	private final MasterMetaStorage storage;
 
 	public StoredQueriesProcessor(Namespaces namespaces) {
 		this.namespaces = namespaces;
+		this.storage = namespaces.getMetaStorage();
 	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
-		Collection<ManagedExecution> allQueries = namespaces.getMetaStorage().getAllExecutions();
+		Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
 		return allQueries
 			.stream()
@@ -62,7 +64,6 @@ public class StoredQueriesProcessor {
 	}
 
 	public void deleteQuery(Dataset dataset, ManagedExecution query) {
-		MasterMetaStorage storage = namespaces.getMetaStorage();
 		storage.removeExecution(query.getId());
 	}
 
@@ -70,7 +71,9 @@ public class StoredQueriesProcessor {
 	 * (Un)Shares a query with all groups a user is in.
 	 */
 	public void shareQuery(User user, ManagedQuery query, boolean shared) throws JSONException {
-		List<Group> userGroups = namespaces.getMetaStorage().getAllGroups().stream().filter(group -> group.containsMember(user)).collect(Collectors.toList());
+		List<Group> userGroups = storage.getAllGroups().stream()
+			.filter(group -> group.containsMember(user))
+			.collect(Collectors.toList());
 		for(Group group : userGroups) {
 			shareQuery(user, query, group, shared);
 		}		
@@ -97,22 +100,24 @@ public class StoredQueriesProcessor {
 	public void shareQuery(User user, ManagedQuery query, Group shareGroup, boolean shared) throws JSONException {
 		updateQueryVersions(user, query, Ability.SHARE, q-> {
 			ConqueryPermission queryPermission = QueryPermission.onInstance(AbilitySets.QUERY_EXECUTOR, q.getId());
-			List<Group> userGroups = namespaces.getMetaStorage().getAllGroups().stream().filter(group -> group.containsMember(user)).collect(Collectors.toList());
+			List<Group> userGroups = storage.getAllGroups().stream()
+				.filter(group -> group.containsMember(user))
+				.collect(Collectors.toList());
 			if(!userGroups.contains(shareGroup)) {
 				throw new IllegalArgumentException(String.format("User %s tried to share query %s to group %s, which it does not belong to. Belongs to: %",
 					user.getId(), q.getId(), shareGroup.getId(), userGroups));
 			}
 			try {
 				if (shared) {
-					addPermission(shareGroup, queryPermission, namespaces.getMetaStorage());
+					addPermission(shareGroup, queryPermission, storage);
 					log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, shareGroup);
 				}
 				else {
-					removePermission(shareGroup, queryPermission, namespaces.getMetaStorage());
+					removePermission(shareGroup, queryPermission, storage);
 					log.trace("User {} shares query {}. Removing permission {} from group {}.",user, q.getId(), queryPermission, shareGroup);
 				}
 				q.setShared(shared);
-				namespaces.getMetaStorage().updateExecution(q);
+				storage.updateExecution(q);
 			} catch (JSONException e) {
 				log.error("Failed to set shared status for query "+query, e);
 			}
@@ -135,11 +140,11 @@ public class StoredQueriesProcessor {
 			
 			if(user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), ns.getDataset().getId()))) {
 				ManagedExecutionId id = new ManagedExecutionId(ns.getDataset().getId(), query.getQueryId());
-				ManagedQuery exec = (ManagedQuery)namespaces.getMetaStorage().getExecution(id);
+				ManagedQuery exec = (ManagedQuery)storage.getExecution(id);
 				if(exec != null) {
 					if(user.isPermitted(QueryPermission.onInstance(requiredAbility.asSet(), id))) {
 						updater.accept(exec);
-						namespaces.getMetaStorage().updateExecution(exec);
+						storage.updateExecution(exec);
 					}
 				}
 			}
@@ -147,7 +152,7 @@ public class StoredQueriesProcessor {
 	}
 
 	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId) {
-		ManagedExecution query = namespaces.getMetaStorage().getExecution(queryId);
+		ManagedExecution query = storage.getExecution(queryId);
 		if(query == null) {
 			return null;
 		}

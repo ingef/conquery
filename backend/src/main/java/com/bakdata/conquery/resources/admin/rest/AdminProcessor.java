@@ -188,7 +188,7 @@ public class AdminProcessor {
 
 	public synchronized void addRole(Role role) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(role));
-		log.info("New role:\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
+		log.trace("New role:\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
 		storage.addRole(role);
 	}
 
@@ -230,7 +230,7 @@ public class AdminProcessor {
 		Collection<User> user = storage.getAllUsers();
 		return user.stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
 	}
-	
+
 	public FERoleContent getRoleContent(RoleId roleId) {
 		Role role = Objects.requireNonNull(storage.getRole(roleId));
 		return FERoleContent
@@ -266,7 +266,8 @@ public class AdminProcessor {
 		for (Class<? extends StringPermissionBuilder> permissionType : permissionTypes) {
 			try {
 				StringPermissionBuilder instance = (StringPermissionBuilder) permissionType.getField("INSTANCE").get(null);
-				// Right argument is for possible targets of a specific permission type, but it is left empty for now. 
+				// Right argument is for possible targets of a specific permission type, but it
+				// is left empty for now.
 				permissionTemplateMap.put(instance.getDomain(), Pair.of(instance.getAllowedAbilities(), List.of()));
 			}
 			catch (IllegalArgumentException | IllegalAccessException | NoSuchFieldException | SecurityException e) {
@@ -323,13 +324,13 @@ public class AdminProcessor {
 
 	public synchronized void deleteUser(UserId userId) {
 		storage.removeUser(userId);
-		log.info("Removed user {} from the storage.", userId);
+		log.trace("Removed user {} from the storage.", userId);
 	}
 
 	public synchronized void addUser(User user) throws JSONException {
 		ValidatorHelper.failOnError(log, validator.validate(user));
 		storage.addUser(user);
-		log.info("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
+		log.trace("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 	}
 
 	public void addUsers(List<User> users) {
@@ -354,7 +355,7 @@ public class AdminProcessor {
 		Objects.requireNonNull(user);
 		Objects.requireNonNull(role);
 		user.removeRole(storage, role);
-		log.info("Deleted role {} to user {}", role, user);
+		log.trace("Deleted role {} to user {}", role, user);
 
 	}
 
@@ -368,7 +369,7 @@ public class AdminProcessor {
 		Objects.requireNonNull(user);
 		Objects.requireNonNull(role);
 		user.addRole(storage, role);
-		log.info("Added role {} to user {}", role, user);
+		log.trace("Added role {} to user {}", role, user);
 
 	}
 
@@ -377,10 +378,10 @@ public class AdminProcessor {
 	}
 
 	public FEGroupContent getGroupContent(GroupId groupId) {
-		 Group group = Objects.requireNonNull(storage.getGroup(groupId));
-		 Set<User> members = group.copyMembers();
-		 ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
-		 availableMembers.removeAll(members);
+		Group group = Objects.requireNonNull(storage.getGroup(groupId));
+		Set<User> members = group.copyMembers();
+		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
+		availableMembers.removeAll(members);
 		return FEGroupContent
 			.builder()
 			.owner(group)
@@ -392,14 +393,14 @@ public class AdminProcessor {
 	}
 
 	public synchronized void addGroup(Group group) throws JSONException {
-		synchronized (storage) {			
+		synchronized (storage) {
 			ValidatorHelper.failOnError(log, validator.validate(group));
 			storage.addGroup(group);
-			log.info("New group:\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
 		}
-		
+		log.trace("New group:\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
+
 	}
-	
+
 	public void addGroups(List<Group> groups) {
 		Objects.requireNonNull(groups, "Group list was null.");
 		for (Group group : groups) {
@@ -413,25 +414,23 @@ public class AdminProcessor {
 	}
 
 	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
-		synchronized (storage) {			
-			Objects.requireNonNull(groupId.getOwner(storage))
-			.addMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+		synchronized (storage) {
+			Objects.requireNonNull(groupId.getOwner(storage)).addMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
 		}
-		log.info("Added user {} to group {}", userId.getOwner(storage), groupId.getOwner(getStorage()));
+		log.trace("Added user {} to group {}", userId.getOwner(storage), groupId.getOwner(getStorage()));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
-		synchronized (storage) {			
-			Objects.requireNonNull(groupId.getOwner(storage))
-			.removeMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+		synchronized (storage) {
+			Objects.requireNonNull(groupId.getOwner(storage)).removeMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
 		}
-		log.info("Removed user {} from group {}", userId.getOwner(storage), groupId.getOwner(getStorage()));
+		log.trace("Removed user {} from group {}", userId.getOwner(storage), groupId.getOwner(getStorage()));
 	}
 
 	public void removeGroup(GroupId groupId) {
-		synchronized (storage) {			
+		synchronized (storage) {
 			storage.removeGroup(groupId);
 		}
-		log.info("Removed group {}", groupId.getOwner(getStorage()));
+		log.trace("Removed group {}", groupId.getOwner(getStorage()));
 	}
 }
