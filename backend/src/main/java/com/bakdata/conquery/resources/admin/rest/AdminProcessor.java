@@ -235,7 +235,7 @@ public class AdminProcessor {
 		Role role = Objects.requireNonNull(storage.getRole(roleId));
 		return FERoleContent
 			.builder()
-			.permissions(wrapInFEPermission(role.copyPermissions()))
+			.permissions(wrapInFEPermission(role.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.users(getUsers(role))
 			.owner(roleId.getOwner(storage))
@@ -316,7 +316,7 @@ public class AdminProcessor {
 			.builder()
 			.owner(user)
 			.availableRoles(storage.getAllRoles())
-			.permissions(wrapInFEPermission(user.copyPermissions()))
+			.permissions(wrapInFEPermission(user.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.roles(user.getRoles())
 			.build();
@@ -387,7 +387,7 @@ public class AdminProcessor {
 			.owner(group)
 			.members(members)
 			.availableMembers(availableMembers)
-			.permissions(wrapInFEPermission(group.copyPermissions()))
+			.permissions(wrapInFEPermission(group.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.build();
 	}

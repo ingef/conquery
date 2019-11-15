@@ -13,8 +13,6 @@ import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -27,10 +25,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T>{
 
-	/**
-	 * This getter is only used for the JSON serialization/deserialization.
-	 */
-	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({@Deprecated}))
 	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
 	
 	/**
@@ -68,12 +62,11 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 
 
 	/**
-	 * Return a copy of the permissions hold by the owner.
+	 * Return as immutable copy of the permissions hold by the owner.
 	 * @return A set of the permissions hold by the owner.
 	 */
-	@JsonIgnore
-	public Set<ConqueryPermission> copyPermissions(){
-		return new HashSet<ConqueryPermission>(permissions);
+	public Set<ConqueryPermission> getPermissions(){
+		return Set.copyOf(permissions);
 	}
 	
 	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) throws JSONException {

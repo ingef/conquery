@@ -41,7 +41,7 @@ public class PermissionRoleHandlingTest implements ProgrammaticIntegrationTest, 
 
 			// Delete permission from mandator
 			mandator1.removePermission(storage, DatasetPermission.onInstance(Ability.DELETE.asSet(), dataset1.getId()));
-			assertThat(mandator1.getEffectivePermissions(storage)).isEmpty();
+			assertThat(mandator1.getPermissions()).isEmpty();
 
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), dataset1.getId()))).isTrue();
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DELETE.asSet(), dataset1.getId()))).isFalse();
