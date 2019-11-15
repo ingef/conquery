@@ -2,24 +2,27 @@
     <table class="table table-striped">
         <thead>
             <tr>
-            <th scope="col">Domain</th>
+            <th scope="col">Domains</th>
             <th scope="col">Abilities</th>
-            <th scope="col">Target</th>
+            <th scope="col">Targets</th>
             <th></th>
             </tr>
         </thead>
         <tbody>
             <#list permissions as permission>
                 <tr>
-                    <td>${permission.left.domain}</td>
+                    <td>
+                        <#if permission.left.domains?has_content>
+                            <#list permission.left.domains as domain>${domain} </#list>
+                        </#if>
                     <td>
                         <#if permission.left.abilities?has_content>
                             <#list permission.left.abilities as ability>${ability} </#list>
                         </#if>
                     </td>
                     <td>
-                        <#if permission.left.target?has_content>
-                            <#list permission.left.target as tar> ${tar} </#list>
+                        <#if permission.left.targets?has_content>
+                            <#list permission.left.targets as target> ${target} </#list>
                         </#if>
                     </td>
                     <td><a href="#" onclick="handleDeletePermission('${permission.right}')"><i class="fas fa-trash-alt text-danger"></i></a></td>

@@ -17,26 +17,26 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public class FEPermission {
 
-	private final Set<String> domain;
+	private final Set<String> domains;
 	private final Set<String> abilities;
-	private final Set<String> target;
+	private final Set<String> targets;
 	
 	public static FEPermission from(WildcardPermission cPermission) {
-		Set<String> type = null;
+		Set<String> domains = null;
 		Set<String> abilities = null;
-		Set<String> target = null;
+		Set<String> targets = null;
 		List<Set<String>> parts = cPermission.getParts();
 		try {
-			type = parts.get(0);
+			domains = parts.get(0);
 			abilities = parts.get(1);
-			target = parts.get(2);
+			targets = parts.get(2);
 		} catch(NoSuchElementException e) {
 			// Do nothing because the permission might be a domain or ability-on-domain permission
 		}
 		return new FEPermission(
-			type,
+			domains,
 			abilities,
-			target);
+			targets);
 	}
 
 }
