@@ -26,34 +26,34 @@ public abstract class StringPermissionBuilder {
 	
     //// ABILITY on DOMAIN ////
     protected WildcardPermission abilityPermission(Ability ability) {
-		checkAbility(getAllowedAbilities(),ability);
+		ensureAllowedAbility(getAllowedAbilities(),ability);
 		return new WildcardPermission(String.format(ABILITY_FORMAT, getDomain(), ability));
 	}
 
 	protected WildcardPermission abilityPermission(Set<Ability> abilities) {
-		checkAbilities(getAllowedAbilities(),abilities);
+		ensureAllowedAbilities(getAllowedAbilities(),abilities);
 		return new WildcardPermission(String.format(ABILITY_FORMAT, getDomain(), abilities.stream().map(Ability::toString).collect(Collectors.joining(SUBPART_DIVIDER_TOKEN))));
 	}
 
 	//// ABILITY on INSTANCE in DOMAIN ////
 	protected WildcardPermission instancePermission(Ability ability, String instance) {
-		checkAbility(getAllowedAbilities(),ability);
+		ensureAllowedAbility(getAllowedAbilities(),ability);
 		return new WildcardPermission(String.format(INSTANCE_FORMAT, getDomain(), ability, instance));
 	}
 
 	protected WildcardPermission instancePermission(Set<Ability> abilities, String instance) {
-		checkAbilities(getAllowedAbilities(),abilities);
+		ensureAllowedAbilities(getAllowedAbilities(),abilities);
 		return new WildcardPermission(String.format(INSTANCE_FORMAT, getDomain(), abilities.stream().map(Ability::toString).collect(Collectors.joining(SUBPART_DIVIDER_TOKEN)) , instance));
 	}
 
 	//// UTIL ////
-	private static void checkAbility(Set<Ability> allowedAbilities, Ability ability) {
+	private static void ensureAllowedAbility(Set<Ability> allowedAbilities, Ability ability) {
 		if(!allowedAbilities.contains(ability)) {
 			throw new IllegalArgumentException(String.format("Ability %s is not allowed. Allowed abilities:", ability, allowedAbilities));
 		}
 	}
 	
-	private static void checkAbilities(Set<Ability> allowedAbilities, Set<Ability>  abilities) {
+	private static void ensureAllowedAbilities(Set<Ability> allowedAbilities, Set<Ability>  abilities) {
 		if(!allowedAbilities.containsAll(abilities)) {
 			throw new IllegalArgumentException(String.format("Abilities %s are not allowed. Allowed abilities:", abilities, allowedAbilities));
 		}

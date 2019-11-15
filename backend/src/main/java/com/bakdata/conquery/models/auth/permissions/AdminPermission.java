@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.auth.permissions;
 
+import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -30,7 +31,7 @@ public final class AdminPermission extends StringPermissionBuilder {
 	 */
 	@Override
 	public Set<Ability> getAllowedAbilities() {
-		return Set.of();
+		return Collections.emptySet();
 	}
 	
 	public static ConqueryPermission onDomain() {

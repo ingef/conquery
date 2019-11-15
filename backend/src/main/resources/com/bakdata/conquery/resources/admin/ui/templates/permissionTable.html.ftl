@@ -2,7 +2,7 @@
     <table class="table table-striped">
         <thead>
             <tr>
-            <th scope="col">Type</th>
+            <th scope="col">Domain</th>
             <th scope="col">Abilities</th>
             <th scope="col">Target</th>
             <th></th>
@@ -11,7 +11,10 @@
         <tbody>
             <#list permissions as permission>
                 <tr>
-                    <td>${permission.left.type}</td>
+                    <td>
+                        <#if permission.left.domains?has_content>
+                            <#list permission.left.domains as domain>${domain} </#list>
+                        </#if>
                     <td>
                         <#if permission.left.abilities?has_content>
                             <#list permission.left.abilities as ability>${ability} </#list>
