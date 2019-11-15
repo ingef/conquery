@@ -86,13 +86,8 @@ public class PermissionStorageSerializationTest extends ConqueryTestSpec {
 	 */
 	@JsonIgnore
 	public void deserializeData() {
-		List<Role> storedMandators = new ArrayList<>();
-		authMandator.forEach(e -> storedMandators.add(e));
-		assertThat(storedMandators).containsExactlyInAnyOrderElementsOf(Arrays.asList(roles));
-
-		List<User> storedUser = new ArrayList<>();
-		authUser.forEach(e -> storedUser.add(e));
-		assertThat(storedUser).containsExactlyInAnyOrderElementsOf(Arrays.stream(rUsers).map(rU -> rU.getUser()).collect(Collectors.toList()));
+		assertThat(authMandator.getAll()).containsExactlyInAnyOrderElementsOf(Arrays.asList(roles));
+		assertThat(authUser.getAll()).containsExactlyInAnyOrderElementsOf(Arrays.stream(rUsers).map(rU -> rU.getUser()).collect(Collectors.toList()));
 		
 	}
 

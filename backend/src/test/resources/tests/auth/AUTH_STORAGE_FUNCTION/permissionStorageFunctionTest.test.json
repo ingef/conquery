@@ -21,7 +21,7 @@
 		{
 			"user" : {
 				"label" : "unused",
-				"email" : "user1",
+				"name" : "user1",
 				"permissions" : [
 					{
 						"type": "WILDCARD_PERMISSION",
@@ -40,7 +40,7 @@
 		{
 			"user" : {
 				"label" : "unused",
-				"email" : "user2"
+				"name" : "user2"
 			}
 		}
 	]
