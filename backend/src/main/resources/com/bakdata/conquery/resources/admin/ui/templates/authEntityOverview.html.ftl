@@ -46,7 +46,6 @@
             })
             .then(response => {return response.json()})
             .then(json => {
-                console.log(json);
                 uriContent = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(json));
                 newWindow = window.open(uriContent, 'entities');
                 });
