@@ -19,6 +19,12 @@ import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
+/**
+ * A group consists of users and permissions. The permissions held by the group are effective for all
+ * users in the group. In Conquery, when a user shares a query it is currently shared with all groups
+ * a user is in.
+ *
+ */
 public class Group extends PermissionOwner<GroupId> {
 
 	@Getter @Setter @NonNull @NotNull @NotEmpty

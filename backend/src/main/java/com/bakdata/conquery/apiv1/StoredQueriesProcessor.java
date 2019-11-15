@@ -66,28 +66,58 @@ public class StoredQueriesProcessor {
 		storage.removeExecution(query.getId());
 	}
 
+	/**
+	 * (Un)Shares a query with all groups a user is in.
+	 */
 	public void shareQuery(User user, ManagedQuery query, boolean shared) throws JSONException {
+		List<Group> userGroups = namespaces.getMetaStorage().getAllGroups().stream().filter(group -> group.containsMember(user)).collect(Collectors.toList());
+		for(Group group : userGroups) {
+			shareQuery(user, query, group, shared);
+		}		
+	}
+
+	
+	/**
+	 * (Un)Shares a query with a specific groups.
+	 */
+	public void shareQuery(User user, ManagedQuery query, Collection<Group> shareGroups, boolean shared) throws JSONException {
+		for(Group group : shareGroups) {
+			try {
+				shareQuery(user, query, group, shared);
+			} catch (IllegalArgumentException e) {
+				// Log unsuccessful shares
+				log.warn("Could not share query. Cause: {}", e.getMessage());
+			}
+		}	
+	}
+	
+	/**
+	 * (Un)Shares a query with a specific group.
+	 */
+	public void shareQuery(User user, ManagedQuery query, Group shareGroup, boolean shared) throws JSONException {
 		updateQueryVersions(user, query, Ability.SHARE, q-> {
 			ConqueryPermission queryPermission = QueryPermission.onInstance(AbilitySets.QUERY_EXECUTOR, q.getId());
 			List<Group> userGroups = namespaces.getMetaStorage().getAllGroups().stream().filter(group -> group.containsMember(user)).collect(Collectors.toList());
-			userGroups.forEach(group -> {
-				try {
-					if (shared) {
-						addPermission(group, queryPermission, namespaces.getMetaStorage());
-						log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, group);
-					}
-					else {
-						removePermission(group, queryPermission, namespaces.getMetaStorage());
-						log.trace("User {} shares query {}. Removing permission {} from group {}.",user, q.getId(), queryPermission, group);
-					}
-					q.setShared(shared);
-					namespaces.getMetaStorage().updateExecution(q);
-				} catch (JSONException e) {
-					log.error("Failed to set shared status for query "+query, e);
+			if(!userGroups.contains(shareGroup)) {
+				throw new IllegalArgumentException(String.format("User %s tried to share query %s to group %s, which it does not belong to. Belongs to: %",
+					user.getId(), q.getId(), shareGroup.getId(), userGroups));
+			}
+			try {
+				if (shared) {
+					addPermission(shareGroup, queryPermission, namespaces.getMetaStorage());
+					log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, shareGroup);
 				}
-			});
-		});
+				else {
+					removePermission(shareGroup, queryPermission, namespaces.getMetaStorage());
+					log.trace("User {} shares query {}. Removing permission {} from group {}.",user, q.getId(), queryPermission, shareGroup);
+				}
+				q.setShared(shared);
+				namespaces.getMetaStorage().updateExecution(q);
+			} catch (JSONException e) {
+				log.error("Failed to set shared status for query "+query, e);
+			}
 		
+		});
 	}
 
 	public void updateQueryLabel(User user, ManagedQuery query, String label) throws JSONException {

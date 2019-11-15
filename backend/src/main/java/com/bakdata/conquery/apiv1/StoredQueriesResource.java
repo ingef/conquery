@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
@@ -27,6 +28,9 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
+
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -89,7 +93,12 @@ public class StoredQueriesResource {
 		} else if (patch.getLabel() != null) {
 			processor.updateQueryLabel(user, query, patch.getLabel());
 		} else if (patch.getShared() != null) {
-			processor.shareQuery(user, query, patch.getShared());
+			if(patch.getGroups() == null) {
+				// If no specific group is given (un)share with all groups
+				processor.shareQuery(user, query, patch.getShared());
+			} else {
+				processor.shareQuery(user, query, patch.getGroups(), patch.getShared());
+			}
 		}
 		
 		return getQueryWithSource(user, datasetId, queryId);
@@ -100,6 +109,7 @@ public class StoredQueriesResource {
 		private String[] tags;
 		private String label;
 		private Boolean shared;
+		private Collection<Group> groups;
 	}
 
 	@DELETE
