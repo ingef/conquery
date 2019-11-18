@@ -33,13 +33,13 @@ public class GroupHandlingTest implements ProgrammaticIntegrationTest, Integrati
 			
 			group1.addMember(storage, user1);
 			group1.addMember(storage, user1copy);
-			assertThat(group1.copyMembers()).containsExactlyInAnyOrder(user1);
+			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1);
 
 			group1.addMember(storage, user2);
-			assertThat(group1.copyMembers()).containsExactlyInAnyOrder(user1, user2);
+			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1, user2);
 
 			group1.removeMember(storage, user2);
-			assertThat(group1.copyMembers()).containsExactlyInAnyOrder(user1);
+			assertThat(group1.getMembers()).containsExactlyInAnyOrder(user1);
 
 
 

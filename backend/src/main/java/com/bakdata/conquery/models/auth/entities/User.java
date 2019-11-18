@@ -27,7 +27,6 @@ import lombok.Setter;
 
 public class User extends FilteredUser<UserId> implements Principal{
 
-	@Setter(onMethod = @__({ @Deprecated }))
 	@MetaIdRefCollection
 	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
 	

@@ -11,8 +11,11 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
@@ -32,6 +35,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 	private Role mandator = new Role("99999998", "MANDATOR_LABEL");
 	private Role deleteMandator = new Role("99999997", "SHOULD_BE_DELETED_MANDATOR");
 	private User user = new User("user@test.email", "USER_LABEL");
+	private Group group = new Group("groupName", "groupLabel");
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
@@ -69,6 +73,10 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			storage.addUser(user);
 			user.addRole(storage, mandator);
 
+			storage.addGroup(group);
+			group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset")));
+			group.addMember(storage, user);
+
 		}
 
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
@@ -85,6 +93,9 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			Role userRefMand = userStored.getRoles().iterator().next();
 			assertThat(mandatorStored).isSameAs(userRefMand);
 			assertThat(storage.getRole(deleteMandator.getId())).as("deleted mandator should stay deleted").isNull();
+
+			// Check if user still is permitted to the permission from its group
+			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset")))).isTrue();
 			PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
 				.getMaster()
 				.getNamespaces()

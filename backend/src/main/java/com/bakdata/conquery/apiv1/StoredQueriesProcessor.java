@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -81,8 +82,9 @@ public class StoredQueriesProcessor {
 	/**
 	 * (Un)Shares a query with a specific groups.
 	 */
-	public void shareWithGroups(User user, ManagedQuery query, Collection<Group> shareGroups, boolean shared) throws JSONException {
-		for (Group group : shareGroups) {
+	public void shareWithGroups(User user, ManagedQuery query, Collection<GroupId> shareGroups, boolean shared) throws JSONException {
+		for (GroupId groupId : shareGroups) {
+			Group group = storage.getGroup(groupId);
 			try {
 				shareWithGroup(user, query, group, shared);
 			}
@@ -172,13 +174,13 @@ public class StoredQueriesProcessor {
 		return query.buildStatus();
 	}
 
-	public void shareQuery(User user, ManagedQuery query, Collection<Group> groups, Boolean shared) throws JSONException {
-		if (groups == null) {
+	public void shareQuery(User user, ManagedQuery query, Collection<GroupId> groupIds, Boolean shared) throws JSONException {
+		if (groupIds == null) {
 			// If no specific group is given (un)share with all groups
 			shareWithAllGroups(user, query, shared);
 		}
 		else {
-			shareWithGroups(user, query, groups, shared);
+			shareWithGroups(user, query, groupIds, shared);
 		}
 	}
 

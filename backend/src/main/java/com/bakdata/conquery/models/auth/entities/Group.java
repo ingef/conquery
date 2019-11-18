@@ -13,7 +13,6 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 
-import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
@@ -39,7 +38,6 @@ public class Group extends PermissionOwner<GroupId> {
 	@NotEmpty
 	private String label;
 
-	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({ @Deprecated }))
 	@MetaIdRefCollection
 	private Set<User> members = Collections.synchronizedSet(new HashSet<>());
 
@@ -73,8 +71,8 @@ public class Group extends PermissionOwner<GroupId> {
 		return members.contains(user);
 	}
 
-	public Set<User> copyMembers() {
-		return new HashSet<>(members);
+	public Set<User> getMembers() {
+		return Set.copyOf(members);
 	}
 
 }

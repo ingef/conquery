@@ -379,7 +379,7 @@ public class AdminProcessor {
 
 	public FEGroupContent getGroupContent(GroupId groupId) {
 		Group group = Objects.requireNonNull(storage.getGroup(groupId));
-		Set<User> members = group.copyMembers();
+		Set<User> members = group.getMembers();
 		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
 		availableMembers.removeAll(members);
 		return FEGroupContent
