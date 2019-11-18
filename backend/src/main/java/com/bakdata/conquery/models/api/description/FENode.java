@@ -10,6 +10,9 @@ import com.bakdata.conquery.models.identifiable.ids.IId;
 import lombok.Builder;
 import lombok.Data;
 
+import java.time.LocalDate;
+import java.util.List;
+
 /**
  * This class represents a concept as it is presented to the front end.
  */
