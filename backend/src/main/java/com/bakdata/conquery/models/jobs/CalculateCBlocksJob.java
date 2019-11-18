@@ -1,9 +1,5 @@
 package com.bakdata.conquery.models.jobs;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -17,27 +13,30 @@ import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
+import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor @Slf4j
 public class CalculateCBlocksJob extends Job {
 
 	private final List<CalculationInformation> infos = new ArrayList<>();
 	private final WorkerStorage storage;
-	private final BlockManager blockManager;
+	private final BucketManager bucketManager;
 	private final Connector connector;
 	private final Table table;
 
@@ -57,7 +56,7 @@ public class CalculateCBlocksJob extends Job {
 		
 		for(int i=0;i<infos.size();i++) {
 			try {
-				if (!blockManager.hasCBlock(infos.get(i).getCBlockId())) {
+				if (!bucketManager.hasCBlock(infos.get(i).getCBlockId())) {
 					CBlock cBlock = createCBlock(connector, infos.get(i));
 					cBlock.initIndizes(infos.get(i).getBucket().getBucketSize());
 					if (treeConcept) {
@@ -67,7 +66,7 @@ public class CalculateCBlocksJob extends Job {
 						calculateCBlock(cBlock, (VirtualConceptConnector) connector, infos.get(i));
 					}
 					setDateRangeIndex(cBlock, infos.get(i));
-					blockManager.addCalculatedCBlock(cBlock);
+					bucketManager.addCalculatedCBlock(cBlock);
 					storage.addCBlock(cBlock);
 				}
 			}

@@ -1,9 +1,8 @@
 package com.bakdata.conquery.models.query;
 
-import com.bakdata.conquery.models.events.BlockManager;
+import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.worker.Worker;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -20,7 +19,7 @@ public class QueryPlanContextImpl implements QueryPlanContext {
 	}
 
 	@Override
-	public BlockManager getBlockManager() {
-		return worker.getStorage().getBlockManager();
+	public BucketManager getBlockManager() {
+		return worker.getStorage().getBucketManager();
 	}
 }

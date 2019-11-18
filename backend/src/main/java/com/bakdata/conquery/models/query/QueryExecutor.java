@@ -1,7 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.events.BlockManager;
+import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
@@ -44,9 +44,9 @@ public class QueryExecutor implements Closeable {
 		);
 	}
 
-	public static ShardResult execute(BlockManager blockManager, QueryContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
+	public static ShardResult execute(BucketManager bucketManager, QueryContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
 
-		Collection<Entity> entries = blockManager.getEntities().values();
+		Collection<Entity> entries = bucketManager.getEntities().values();
 
 		if(entries.isEmpty()) {
 			log.warn("entries for query {} are empty", queryId);
