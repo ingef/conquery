@@ -104,19 +104,20 @@ public class FilterSearch {
 
 
 		File file = new File(template.getFilePath());
-		String autocompleteKey = String.join("_", templateColumns) + "_" + file.getName() + ".auto";
+		String autocompleteKey = String.join("_", templateColumns) + "_" + file.getName();
 
-		QuickSearch<FilterSearchItem> autocomplete = search.get(autocompleteKey);
+		QuickSearch<FilterSearchItem> search = FilterSearch.search.get(autocompleteKey);
 
-		if (autocomplete != null) {
+		if (search != null) {
 			log.info("Reference list '{}' already exists ...", file.getAbsolutePath());
-			filter.setSourceSearch(autocomplete);
+			filter.setSourceSearch(search);
+			return;
 		}
 
 		log.info("Processing reference list '{}' ...", file.getAbsolutePath());
 		final long time = System.currentTimeMillis();
 
-		autocomplete = new QuickSearch.QuickSearchBuilder()
+		search = new QuickSearch.QuickSearchBuilder()
 							   .withUnmatchedPolicy(QuickSearch.UnmatchedPolicy.IGNORE)
 							   .withMergePolicy(QuickSearch.MergePolicy.UNION)
 							   .withKeywordMatchScorer(FilterSearchType.CONTAINS::score)
@@ -145,13 +146,13 @@ public class FilterSearch {
 						item.setValue(row[i]);
 					}
 
-					autocomplete.addItem(item, row[i]);
+					search.addItem(item, row[i]);
 				}
 			}
 
-			filter.setSourceSearch(autocomplete);
+			filter.setSourceSearch(search);
 
-			search.put(autocompleteKey, autocomplete);
+			FilterSearch.search.put(autocompleteKey, search);
 			log.info("Processed reference list '{}' in {} ms", file.getAbsolutePath(), System.currentTimeMillis() - time);
 		} catch (Exception e) {
 			log.error("Failed to process reference list '"+file.getAbsolutePath()+"'", e);

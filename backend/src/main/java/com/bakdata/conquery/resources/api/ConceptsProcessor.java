@@ -106,6 +106,7 @@ public class ConceptsProcessor {
 		// Iterate over all unresolved search terms. Gather all that match labels into searchResults. Keep the unresolvable ones.
 		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext();) {
 			String searchTerm = it.next();
+			// Test if any of the values occurs directly in the filter's values or their labels (for when we don't have a provided file).
 			if(filter.getValues().contains(searchTerm)) {
 				searchResult.add(searchTerm);
 				it.remove();
