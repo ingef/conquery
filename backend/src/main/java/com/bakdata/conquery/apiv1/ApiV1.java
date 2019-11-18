@@ -48,11 +48,13 @@ public class ApiV1 implements ResourcesProvider {
 						master.getValidator()
 					)
 				).to(AdminProcessor.class);
+				bind(new MeProcessor(namespaces.getMetaStorage())).to(MeProcessor.class);
 			}
 		});
 		environment.register(APIResource.class);
 		environment.register(ConceptResource.class);
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);
+		environment.register(MeResource.class);
 	}
 }
