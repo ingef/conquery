@@ -1,12 +1,5 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Objects;
-import java.util.function.Consumer;
-
-import javax.validation.Validator;
-
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -17,12 +10,24 @@ import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Environment;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.Validator;
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Objects;
+import java.util.function.Consumer;
+
+/**
+ * MessagePacked key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
+ *
+ * Values are (de-)serialized using {@link Jackson::BINARY_MAPPER}.
+ * @param <KEY> type of keys
+ * @param <VALUE> type of values.
+ */
 @Slf4j
 public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 
@@ -79,9 +84,9 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 
 	@Override
 	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer) {
-		final StoreEntry<KEY, VALUE> entry = new StoreEntry<>();
 		store.forEach((k,v) -> {
 			try {
+				final StoreEntry<KEY, VALUE> entry = new StoreEntry<>();
 				entry.setKey(readKey(k));
 				entry.setByteSize(v.getLength());
 				try {
