@@ -171,11 +171,11 @@
 			<groupId>com.fasterxml.jackson.dataformat</groupId>
 			<artifactId>jackson-dataformat-smile</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>com.zigurs.karlis.utils.search</groupId>
-			<artifactId>QuickSearch</artifactId>
-			<version>1.8</version>
-		</dependency>
+        <dependency>
+            <groupId>com.zigurs.karlis.utils</groupId>
+            <artifactId>magicsort</artifactId>
+            <version>0.2</version>
+        </dependency>
 		<dependency>
 			<groupId>org.tuckey</groupId>
 			<artifactId>urlrewritefilter</artifactId>
