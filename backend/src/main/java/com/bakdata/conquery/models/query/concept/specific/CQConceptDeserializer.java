@@ -80,8 +80,6 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 	public CQConcept deserialize(JsonParser parser, DeserializationContext ctxt)
 			throws IOException, JsonMappingException {
 
-
-
 		// Read tree starting at token.
 		final ObjectCodec codec = parser.getCodec();
 		final ObjectNode treeNode = codec.readValue(parser, ObjectNode.class);
