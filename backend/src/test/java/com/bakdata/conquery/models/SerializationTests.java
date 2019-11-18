@@ -1,4 +1,5 @@
 package com.bakdata.conquery.models;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.List;
@@ -7,6 +8,7 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -48,12 +50,15 @@ public class SerializationTests {
 	/*
 	 * Only way to add permission without a storage.
 	 */
-	@SuppressWarnings("deprecation")
 	@Test
 	public void user() throws IOException, JSONException{
+		MasterMetaStorage storage = mock(MasterMetaStorage.class);
 		User user = new User("user", "user");
-		user.getPermissions().add(DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
-		user.getPermissions().add(QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
+		user
+			.addPermission(
+				storage,
+				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		
 		SerializationTestUtil
 			.forType(User.class)
