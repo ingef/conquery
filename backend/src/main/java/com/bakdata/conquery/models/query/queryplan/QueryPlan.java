@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.queryplan;
 import java.util.Collection;
 import java.util.stream.Stream;
 
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryJob;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
@@ -13,14 +13,14 @@ public interface QueryPlan {
 
 	QueryPlan clone(CloneContext ctx);
 
-	default Stream<QueryJob> executeOn(QueryContext context, Collection<Entity> entities) {
+	default Stream<QueryJob> executeOn(QueryExecutionContext context, Collection<Entity> entities) {
 		return entities
 			.stream()
 			.filter(this::isOfInterest)
 			.map(entity -> new QueryJob(context, this, entity));
 	}
 	
-	EntityResult execute(QueryContext ctx, Entity entity);
+	EntityResult execute(QueryExecutionContext ctx, Entity entity);
 
 	boolean isOfInterest(Entity entity);
 }
