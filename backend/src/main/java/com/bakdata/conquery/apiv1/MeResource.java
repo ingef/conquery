@@ -15,7 +15,9 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 /**
- * 
+ * This endpoint is used to query information about the user itself. The
+ * endpoint might be used to ask the backend to which groups a query can be
+ * shared.
  */
 @Slf4j
 @Path("me")
