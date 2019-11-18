@@ -48,7 +48,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 		return EnumSet.of(MajorTypeId.STRING);
 	}
 
-	public FilterSearch.FilterSearchType searchType = FilterSearch.FilterSearchType.CONTAINS;
+	public FilterSearch.FilterSearchType searchType = FilterSearch.FilterSearchType.EXACT;
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
