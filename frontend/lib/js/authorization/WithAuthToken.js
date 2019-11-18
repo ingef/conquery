@@ -1,7 +1,6 @@
 // @flow
 
 import React from "react";
-import queryString from "query-string";
 import { storeAuthToken } from "./helper";
 
 const WithAuthToken = (Component: any) => {
@@ -16,9 +15,10 @@ const WithAuthToken = (Component: any) => {
 
     componentWillMount() {
       const { search } = this.props.location;
-      const accessToken = search
-        ? queryString.parse(search).access_token
-        : null;
+
+      var params = new URLSearchParams(search);
+
+      const accessToken = params.get("access_token");
 
       if (accessToken) storeAuthToken(accessToken);
     }
