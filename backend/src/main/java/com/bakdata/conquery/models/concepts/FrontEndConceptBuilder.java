@@ -88,7 +88,6 @@ public class FrontEndConceptBuilder {
 						.map(FrontEndConceptBuilder::createTable)
 						.collect(Collectors.toList())
 				)
-				 .config(c.getConfig())
 				.build();
 		
 		if(c instanceof ConceptTreeNode) {
@@ -144,7 +143,6 @@ public class FrontEndConceptBuilder {
 				.additionalInfos(ce.getAdditionalInfos())
 				.matchingEntries(matchingStats.countEvents())
 				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
-						 .config(ce.getConfig())
 				.build();
 		
 		if(ce instanceof ConceptTreeNode) {

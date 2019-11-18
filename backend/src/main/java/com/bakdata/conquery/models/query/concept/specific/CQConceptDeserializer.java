@@ -21,6 +21,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 /**
  * Deserializer for {@link CQConcept}. Specifies the actual query element based on the Concept it is targeting.
@@ -90,8 +91,13 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);
 		}
 
+		final ConceptElementId<?> first = elements[0];
+
 		// we are only interested in the Concept, which is the same over all ids.
-		final ConceptElement[] conceptElements = CQConcept.resolveConcepts(Collections.singletonList(elements[0]), CentralRegistry.getForDataset(ctxt, elements[0].getDataset()));
+		final ConceptElement[] conceptElements = CQConcept.resolveConcepts(
+				Collections.singletonList(first),
+				Objects.requireNonNull(CentralRegistry.getForDataset(ctxt, first.getDataset()), () -> String.format("Unable to find Central registry for dataset `%s`", first.getDataset()))
+		);
 
 		if (conceptElements.length == 0) {
 			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);

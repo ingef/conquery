@@ -8,11 +8,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.collections.map.HashedMap;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 
@@ -25,25 +23,16 @@ public abstract class ConceptElement<ID extends ConceptElementId<? extends Conce
 	@Getter @Setter @JsonIgnore
 	private MatchingStats matchingStats = new MatchingStats();
 
-	/**
-	 * Extra config to be used for sending information from concept-definition to the frontend.
-	 * Will be used to add special flags for the frontend.
-	 */
-	@Getter @Setter
-	private Map<String, Object> config = new HashedMap();
-	
 	public ConceptElement<?> getElementById(ConceptElementId<?> conceptElementId) {
 		if(Objects.equals(conceptElementId, this.getId())) {
 			return this;
 		}
-		else {
-			if(conceptElementId instanceof ConceptTreeChildId) {
-				return getChildById((ConceptTreeChildId)conceptElementId);
-			}
-			else {
-				throw new NoSuchElementException("Could not resolve the element "+conceptElementId +" in " + this);
-			}
+
+		if(conceptElementId instanceof ConceptTreeChildId) {
+			return getChildById((ConceptTreeChildId)conceptElementId);
 		}
+
+		throw new NoSuchElementException("Could not resolve the element "+conceptElementId +" in " + this);
 	}
 
 	public ConceptTreeChild getChildById(ConceptTreeChildId conceptTreeChildId) {
