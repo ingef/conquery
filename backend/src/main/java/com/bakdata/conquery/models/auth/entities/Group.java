@@ -40,9 +40,8 @@ public class Group extends PermissionOwner<GroupId> {
 	private String label;
 
 	@Getter(value = AccessLevel.PUBLIC, onMethod = @__({ @Deprecated }))
-	@Setter
 	@MetaIdRefCollection
-	Set<User> members = Collections.synchronizedSet(new HashSet<>());
+	private Set<User> members = Collections.synchronizedSet(new HashSet<>());
 
 	public Group(String name, String label) {
 		this.name = name;

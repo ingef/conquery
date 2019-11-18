@@ -80,9 +80,9 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	 * @return Owned and inherited permissions.
 	 */
 	private Set<ConqueryPermission> getEffectiveUserPermissions(UserId userId) {
-		User user = userId.getOwner(storage);
+		User user = storage.getUser(userId);
 		Set<ConqueryPermission> permissions = new HashSet<>(user.getPermissions());
-		for (Role role : user.copyRoles()) {
+		for (Role role : user.getRoles()) {
 			permissions.addAll(role.getPermissions());
 		}
 		

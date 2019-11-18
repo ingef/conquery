@@ -40,7 +40,7 @@ public class UserId extends PermissionOwnerId<User> {
 	}
 
 	@Override
-	public User getOwner(MasterMetaStorage storage) {
+	public User getPermissionOwner(MasterMetaStorage storage) {
 		return storage.getUser(this);
 	}
 }

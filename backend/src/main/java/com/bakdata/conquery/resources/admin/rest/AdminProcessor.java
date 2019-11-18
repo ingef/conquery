@@ -238,7 +238,7 @@ public class AdminProcessor {
 			.permissions(wrapInFEPermission(role.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.users(getUsers(role))
-			.owner(roleId.getOwner(storage))
+			.owner(roleId.getPermissionOwner(storage))
 			.build();
 	}
 
@@ -287,7 +287,7 @@ public class AdminProcessor {
 	 *             is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.addPermission(ownerId.getOwner(storage), permission, storage);
+		AuthorizationHelper.addPermission(ownerId.getPermissionOwner(storage), permission, storage);
 	}
 
 	/**
@@ -299,7 +299,7 @@ public class AdminProcessor {
 	 *             is thrown upon processing JSONs.
 	 */
 	public void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.removePermission(ownerId.getOwner(storage), permission, storage);
+		AuthorizationHelper.removePermission(ownerId.getPermissionOwner(storage), permission, storage);
 	}
 
 	public UIContext getUIContext() {
@@ -415,22 +415,22 @@ public class AdminProcessor {
 
 	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
 		synchronized (storage) {
-			Objects.requireNonNull(groupId.getOwner(storage)).addMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+			Objects.requireNonNull(groupId.getPermissionOwner(storage)).addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
-		log.trace("Added user {} to group {}", userId.getOwner(storage), groupId.getOwner(getStorage()));
+		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
 		synchronized (storage) {
-			Objects.requireNonNull(groupId.getOwner(storage)).removeMember(storage, Objects.requireNonNull(userId.getOwner(storage)));
+			Objects.requireNonNull(groupId.getPermissionOwner(storage)).removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
-		log.trace("Removed user {} from group {}", userId.getOwner(storage), groupId.getOwner(getStorage()));
+		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
 	public void removeGroup(GroupId groupId) {
 		synchronized (storage) {
 			storage.removeGroup(groupId);
 		}
-		log.trace("Removed group {}", groupId.getOwner(getStorage()));
+		log.trace("Removed group {}", groupId.getPermissionOwner(getStorage()));
 	}
 }

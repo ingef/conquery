@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui.model;
 
 import java.util.List;
-import java.util.NoSuchElementException;
 import java.util.Set;
 
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
@@ -26,12 +25,18 @@ public class FEPermission {
 		Set<String> abilities = null;
 		Set<String> targets = null;
 		List<Set<String>> parts = cPermission.getParts();
-		try {
-			domains = parts.get(0);
-			abilities = parts.get(1);
-			targets = parts.get(2);
-		} catch(NoSuchElementException e) {
-			// Do nothing because the permission might be a domain or ability-on-domain permission
+		switch (parts.size()) {
+			// Using fall-through here to fill the object
+			case 3:
+				targets = parts.get(2);
+			case 2:
+				abilities = parts.get(1);
+			case 1:
+				domains = parts.get(0);
+				break;
+			default:
+				throw new IllegalStateException(
+					String.format("Permission %c has an unhandled number of parts: %d", cPermission, parts.size()));
 		}
 		return new FEPermission(
 			domains,

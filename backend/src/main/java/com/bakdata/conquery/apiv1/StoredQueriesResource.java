@@ -1,5 +1,24 @@
 package com.bakdata.conquery.apiv1;
 
+import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
+import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response.Status;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -14,29 +33,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
+
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import lombok.Data;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response.Status;
-
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
-import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)
@@ -93,12 +93,7 @@ public class StoredQueriesResource {
 		} else if (patch.getLabel() != null) {
 			processor.updateQueryLabel(user, query, patch.getLabel());
 		} else if (patch.getShared() != null) {
-			if(patch.getGroups() == null) {
-				// If no specific group is given (un)share with all groups
-				processor.shareQuery(user, query, patch.getShared());
-			} else {
-				processor.shareQuery(user, query, patch.getGroups(), patch.getShared());
-			}
+			processor.shareQuery(user, query, patch.getGroups(), patch.getShared());
 		}
 		
 		return getQueryWithSource(user, datasetId, queryId);

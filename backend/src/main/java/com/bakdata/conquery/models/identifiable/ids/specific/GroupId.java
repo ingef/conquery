@@ -39,7 +39,7 @@ public class GroupId extends PermissionOwnerId<Group> {
 	}
 
 	@Override
-	public Group getOwner(MasterMetaStorage storage) {
+	public Group getPermissionOwner(MasterMetaStorage storage) {
 		return storage.getGroup(this);
 	}
 }
