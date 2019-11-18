@@ -3,13 +3,15 @@ package com.bakdata.conquery.io.xodus;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
@@ -29,8 +31,9 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private SingletonStore<Namespaces> meta;
 	private IdentifiableStore<ManagedExecution> executions;
 	private IdentifiableStore<User> authUser;
-	private IdentifiableStore<Mandator> authMandator;
-
+	private IdentifiableStore<Role> authRole;
+	private IdentifiableStore<Group> authGroup;
+	
 	@Getter
 	private Namespaces namespaces;
 
@@ -41,7 +44,10 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	private final Environment usersEnvironment;
 
 	@Getter
-	private final Environment mandatorEnvironment;
+	private final Environment rolesEnvironment;
+
+	@Getter
+	private final Environment groupsEnvironment;
 
 	public MasterMetaStorageImpl(Namespaces namespaces, Validator validator, StorageConfig config) {
 		super(
@@ -60,10 +66,15 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 				config.getXodus().createConfig()
 		);
 
-		mandatorEnvironment = Environments.newInstance(
-				new File(config.getDirectory(), "mandators"),
+		rolesEnvironment = Environments.newInstance(
+				new File(config.getDirectory(), "roles"),
 				config.getXodus().createConfig()
 		);
+
+		groupsEnvironment = Environments.newInstance(
+			new File(config.getDirectory(), "groups"),
+			config.getXodus().createConfig()
+			);
 
 		this.namespaces = namespaces;
 	}
@@ -81,15 +92,18 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 									 log.error("Failed to load execution `{}`", value.getId(), e);
 								 }
 							 });
-		authMandator = StoreInfo.AUTH_MANDATOR.identifiable(getMandatorEnvironment(), getValidator(), getCentralRegistry());
+		authRole = StoreInfo.AUTH_ROLE.identifiable(getRolesEnvironment(), getValidator(), getCentralRegistry());
 
 		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
 
+		authGroup = StoreInfo.AUTH_GROUP.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
+
 		collector
 				.collect(meta)
-				.collect(authMandator)
+				.collect(authRole)
 				//load users before queries
 				.collect(authUser)
+				.collect(authGroup)
 				.collect(executions);
 	}
 
@@ -139,23 +153,23 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void addMandator(Mandator mandator) throws JSONException {
-		authMandator.add(mandator);
+	public void addRole(Role role) throws JSONException {
+		authRole.add(role);
 	}
 
 	@Override
-	public Mandator getMandator(MandatorId mandatorId) {
-		return authMandator.get(mandatorId);
+	public Role getRole(RoleId roleId) {
+		return authRole.get(roleId);
 	}
 
 	@Override
-	public Collection<Mandator> getAllMandators() {
-		return authMandator.getAll();
+	public Collection<Role> getAllRoles() {
+		return authRole.getAll();
 	}
 
 	@Override
-	public void removeMandator(MandatorId mandatorId) {
-		authMandator.remove(mandatorId);
+	public void removeRole(RoleId roleId)  {
+		authRole.remove(roleId);
 	}
 
 	@Override
@@ -164,16 +178,42 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void updateMandator(Mandator mandator) throws JSONException {
-		authMandator.update(mandator);
+	public void updateRole(Role role) throws JSONException {
+		authRole.update(role);
 	}
 
 	@Override
 	public void close() throws IOException {
-		getUsersEnvironment().close();
 		getExecutionsEnvironment().close();
-		getMandatorEnvironment().close();
+		getGroupsEnvironment().close();
+		getUsersEnvironment().close();
+		getRolesEnvironment().close();
 
 		super.close();
+	}
+
+	@Override
+	public void addGroup(Group group) throws JSONException {
+		authGroup.add(group);
+	}
+
+	@Override
+	public Group getGroup(GroupId id) {
+		return authGroup.get(id);
+	}
+
+	@Override
+	public Collection<Group> getAllGroups() {
+		return authGroup.getAll();
+	}
+
+	@Override
+	public void removeGroup(GroupId id) {
+		authGroup.remove(id);
+	}
+
+	@Override
+	public void updateGroup(Group group) throws JSONException {
+		authGroup.update(group);
 	}
 }

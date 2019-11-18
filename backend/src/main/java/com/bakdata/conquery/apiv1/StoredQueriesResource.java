@@ -1,21 +1,12 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.ResourceUtil;
-import io.dropwizard.auth.Auth;
-import io.dropwizard.jersey.PATCH;
-import lombok.Data;
+import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
+import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.Consumes;
@@ -27,12 +18,25 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
-import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
-import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.ResourceUtil;
+
+import io.dropwizard.auth.Auth;
+import io.dropwizard.jersey.PATCH;
+import lombok.Data;
 
 @Path("datasets/{" + DATASET + "}/stored-queries")
 @Consumes(AdditionalMediaTypes.JSON)
@@ -53,7 +57,7 @@ public class StoredQueriesResource {
 		authorize(user, datasetId, Ability.READ);
 
 		return processor.getAllQueries(dsUtil.getDataset(datasetId), req)
-			.filter(status -> user.isPermitted(new QueryPermission(Ability.READ.asSet(), status.getId())))
+			.filter(status -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), status.getId())))
 			.collect(Collectors.toList());
 	}
 
@@ -89,7 +93,7 @@ public class StoredQueriesResource {
 		} else if (patch.getLabel() != null) {
 			processor.updateQueryLabel(user, query, patch.getLabel());
 		} else if (patch.getShared() != null) {
-			processor.shareQuery(user, query, patch.getShared());
+			processor.shareQuery(user, query, patch.getGroups(), patch.getShared());
 		}
 		
 		return getQueryWithSource(user, datasetId, queryId);
@@ -100,6 +104,7 @@ public class StoredQueriesResource {
 		private String[] tags;
 		private String label;
 		private Boolean shared;
+		private Collection<Group> groups;
 	}
 
 	@DELETE

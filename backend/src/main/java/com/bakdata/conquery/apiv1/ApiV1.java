@@ -44,7 +44,8 @@ public class ApiV1 implements ResourcesProvider {
 						master.getStorage(),
 						master.getNamespaces(),
 						master.getJobManager(),
-						master.getMaintenanceService()
+						master.getMaintenanceService(),
+						master.getValidator()
 					)
 				).to(AdminProcessor.class);
 			}
