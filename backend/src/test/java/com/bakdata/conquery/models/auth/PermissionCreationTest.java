@@ -22,7 +22,7 @@ public class PermissionCreationTest {
 			// This should fail because the ability is not allowed for a DatasetPermission
 			perm = DatasetPermission.onInstance(Ability.SHARE.asSet(), new DatasetId("test"));
 		}catch (Exception e) {			
-			assertThat(e).isInstanceOf(IllegalStateException.class);
+			assertThat(e).isInstanceOf(IllegalArgumentException.class);
 		}
 		// Should not be reached
 		assertThat(perm).isNull();
