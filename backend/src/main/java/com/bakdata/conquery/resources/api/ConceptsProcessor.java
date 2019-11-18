@@ -1,5 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
+import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -21,10 +22,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.FilterId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.CalculatedValue;
+import com.bakdata.conquery.util.search.QuickSearch;
+import com.bakdata.conquery.util.search.SearchScorer;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-import com.zigurs.karlis.utils.search.QuickSearch;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -34,8 +36,8 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -59,7 +61,7 @@ public class ConceptsProcessor {
 			@Override
 			public FEList load(Concept<?> concept) throws Exception {
 				return FrontEndConceptBuilder.createTreeMap(concept);
-			};
+			}
 		});
 		
 	public FERoot getRoot(NamespaceStorage storage) {
@@ -86,23 +88,25 @@ public class ConceptsProcessor {
 			.collect(Collectors.toList());
 	}
 
+	/**
+	 * Search for all search terms at once, with stricter scoring.
+	 * The user will upload a file and expect only well-corresponding resolutions.
+	 */
 	public ResolvedConceptsResult resolveFilterValues(AbstractSelectFilter<?> filter, List<String> searchTerms) {
-		Set<String> openSearchTerms = new HashSet<>(searchTerms);
-		
+
 		//search in the full text engine
-		Set<String> searchResult = createSourceSearchResult(
-				filter.getSourceSearch(),
-				openSearchTerms.toArray(new String[0])
-		)
+		Set<String> searchResult = createSourceSearchResult(filter.getSourceSearch(), searchTerms, filter.getSearchType()::score)
 										   .stream()
 										   .map(FEValue::getValue)
 										   .collect(Collectors.toSet());
 
+		Set<String> openSearchTerms = new HashSet<>(searchTerms);
 		openSearchTerms.removeAll(searchResult);
-		
-		//check the values and label
+
+		// Iterate over all unresolved search terms. Gather all that match labels into searchResults. Keep the unresolvable ones.
 		for (Iterator<String> it = openSearchTerms.iterator(); it.hasNext();) {
-			String searchTerm = (String) it.next();
+			String searchTerm = it.next();
+			// Test if any of the values occurs directly in the filter's values or their labels (for when we don't have a provided file).
 			if(filter.getValues().contains(searchTerm)) {
 				searchResult.add(searchTerm);
 				it.remove();
@@ -116,27 +120,29 @@ public class ConceptsProcessor {
 			}
 		}
 
-		// see https://github.com/bakdata/conquery/issues/251
 		return new ResolvedConceptsResult(
-			null,
-			new ResolvedFilterResult(
-				filter.getConnector().getId(),
-				filter.getId(),
-				searchResult
-					.stream()
-					.map(v->new FEValue(filter.getLabelFor(v),v))
-					.collect(Collectors.toList())
-			),
-			new ArrayList<>(openSearchTerms)
+				null,
+				new ResolvedFilterResult(
+						filter.getConnector().getId(),
+						filter.getId(),
+						searchResult
+								.stream()
+								.map(v -> new FEValue(filter.getLabelFor(v), v))
+								.collect(Collectors.toList())
+				),
+				new ArrayList<>(openSearchTerms)
 		);
 	}
-	
+
+	/**
+	 * Autocompletion for search terms. For values of {@link AbstractSelectFilter<?>}.
+	 */
 	public List<FEValue> autocompleteTextFilter(AbstractSelectFilter<?> filter, String text) {
 		List<FEValue> result = new LinkedList<>();
 
 		QuickSearch<FilterSearchItem> search = filter.getSourceSearch();
 		if (search != null) {
-			result = createSourceSearchResult(filter.getSourceSearch(), text);
+			result = createSourceSearchResult(filter.getSourceSearch(), Collections.singletonList(text), FilterSearch.FilterSearchType.CONTAINS::score);
 		}
 		
 		String value = filter.getValueFor(text);
@@ -146,16 +152,17 @@ public class ConceptsProcessor {
 
 		return result;
 	}
-	
-	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, String... values) {
+
+	/**
+	 * Do a search with the supplied values.
+	 */
+	private List<FEValue> createSourceSearchResult(QuickSearch<FilterSearchItem> search, Collection<String> values, SearchScorer scorer) {
 		if(search == null) {
 			return Collections.emptyList();
 		}
 
-		List<FilterSearchItem> result = new LinkedList<>();
-		for (String value : values) {
-			result.addAll(search.findItems(value, 50));
-		}
+		// Quicksearch can split and also schedule for us.
+		List<FilterSearchItem> result = search.findItems(String.join(" ", values), 50, scorer);
 		
 		return result
 			.stream()
@@ -167,27 +174,26 @@ public class ConceptsProcessor {
 		List<ConceptElementId<?>> resolvedCodes = new ArrayList<>();
 		List<String> unknownCodes = new ArrayList<>();
 
-		if (concept instanceof TreeConcept) {
-			TreeConcept tree = (TreeConcept) concept;
+		if (concept == null) {
+			return new ResolvedConceptsResult(null, null, conceptCodes);
+		}
 
-			for (String conceptCode : conceptCodes) {
-				ConceptTreeChild child;
-				try {
-					child = tree.findMostSpecificChild(conceptCode, new CalculatedValue<>(() -> new HashMap<>()));
-					if (child != null) {
-						resolvedCodes.add(child.getId());
-					}
-					else {
-						unknownCodes.add(conceptCode);
-					}
+		for (String conceptCode : conceptCodes) {
+			ConceptTreeChild child;
+			try {
+				child = concept.findMostSpecificChild(conceptCode, new CalculatedValue<>(Collections::emptyMap));
+				if (child != null) {
+					resolvedCodes.add(child.getId());
 				}
-				catch (ConceptConfigurationException e) {
-					log.error("Error while trying to resolve "+conceptCode, e);
+				else {
+					unknownCodes.add(conceptCode);
 				}
 			}
-			return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
+			catch (ConceptConfigurationException e) {
+				log.error("Error while trying to resolve "+conceptCode, e);
+			}
 		}
-		return new ResolvedConceptsResult(null, null, conceptCodes);
+		return new ResolvedConceptsResult(resolvedCodes, null, unknownCodes);
 	}
 	
 	@Getter
