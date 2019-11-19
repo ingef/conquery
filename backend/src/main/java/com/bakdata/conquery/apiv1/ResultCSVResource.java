@@ -13,6 +13,7 @@ import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
 import javax.ws.rs.GET;
+import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
@@ -44,7 +45,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class ResultCSVResource {
 
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true, ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(
+		true,
+		ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(ResultCSVResource.class, "getAsCSV");
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
@@ -52,10 +55,10 @@ public class ResultCSVResource {
 	@GET
 	@Path("{" + QUERY + "}.csv")
 	@Produces(AdditionalMediaTypes.CSV)
-	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
+	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @HeaderParam("user-agent") String userAgent) {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		
+
 		try {
 			ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
 			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery());
@@ -65,7 +68,10 @@ public class ResultCSVResource {
 
 				@Override
 				public void write(OutputStream os) throws WebApplicationException {
-					try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8))) {
+					try (BufferedWriter writer = new BufferedWriter(
+						new OutputStreamWriter(
+							os,
+							userAgent.toLowerCase().contains("windows") ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8))) {
 						Iterator<String> it = csv.iterator();
 						while (it.hasNext()) {
 							writer.write(it.next());
