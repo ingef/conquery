@@ -1,9 +1,5 @@
 package com.bakdata.conquery.io.jackson.serializer;
 
-import java.io.IOException;
-import java.util.InputMismatchException;
-import java.util.Optional;
-
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.Identifiable;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -20,10 +16,14 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.SettableBeanProperty;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.util.InputMismatchException;
+import java.util.Objects;
+import java.util.Optional;
 
 @Slf4j
 @AllArgsConstructor @NoArgsConstructor
@@ -39,9 +39,9 @@ public class MetaIdReferenceDeserializer<ID extends IId<T>, T extends Identifiab
 		if(parser.getCurrentToken()==JsonToken.VALUE_STRING) {
 			String text = parser.getText();
 			try {
-				Optional<T> result = CentralRegistry.get(ctxt).getOptional(idParser.parse(text));
+				Optional<T> result = Objects.requireNonNull(CentralRegistry.get(ctxt), "Could not find injected central registry").getOptional(idParser.parse(text));
 
-				if (!result.isPresent()) {
+				if (result.isEmpty()) {
 					return (T) ctxt.handleWeirdStringValue(type, text, "Could not find entry "+text+" of type "+type.getName());
 				}
 

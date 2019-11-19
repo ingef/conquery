@@ -100,6 +100,10 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 			registry = CentralRegistry.get(ctxt);
 		}
 
+		if(registry == null){
+			return deserializeAs(treeNode.traverse(codec), ctxt, CQConcept.class);
+		}
+
 		final ConceptElement[] conceptElements = CQConcept.resolveConcepts(
 				Collections.singletonList(first),
 				Objects.requireNonNull(registry, () -> String.format("Unable to find Central registry for dataset `%s`", first.getDataset()))
