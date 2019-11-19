@@ -72,7 +72,7 @@ public class CentralRegistry implements Injectable {
 		if(result == null) {
 			NamespaceCollection alternative = (NamespaceCollection)ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
 			if(alternative == null) {
-				throw new NoSuchElementException("Could not find injected central registry");
+				return null;
 			}
 			else {
 				return alternative.getMetaRegistry();
