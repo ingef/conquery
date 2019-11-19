@@ -85,6 +85,10 @@ public class CentralRegistry implements Injectable {
 
 	public static CentralRegistry getForDataset(DeserializationContext ctxt, DatasetId datasetId) throws JsonMappingException {
 		NamespaceCollection alternative = (NamespaceCollection)ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+
+		if(alternative == null)
+			return null;
+
 		return alternative.findRegistry(datasetId);
 	}
 }
