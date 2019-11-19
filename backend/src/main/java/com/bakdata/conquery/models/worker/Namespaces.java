@@ -1,15 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import java.net.SocketAddress;
-import java.util.Collection;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.stream.Collectors;
-
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -18,13 +8,21 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+import javax.validation.constraints.NotNull;
+import java.net.SocketAddress;
+import java.util.Collection;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.stream.Collectors;
+
 @Slf4j
-public class Namespaces implements NamespaceCollection {
+public class Namespaces extends NamespaceCollection {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
