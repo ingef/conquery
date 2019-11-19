@@ -13,6 +13,7 @@ import org.apache.shiro.realm.AuthorizingRealm;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.util.io.ConqueryMDC;
 
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
@@ -36,6 +37,8 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 
 	@Override
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
+		// Set the log to indicate, that the user was not authorized yet
+		ConqueryMDC.setLocation("UNAUTHORIZED_USER");
 
 		ConqueryToken credentials = tokenExtractor.extract(requestContext);
 
