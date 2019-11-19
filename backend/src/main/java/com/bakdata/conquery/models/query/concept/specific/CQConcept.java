@@ -27,8 +27,10 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -42,6 +44,8 @@ import java.util.Set;
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
 @Slf4j
+@FieldNameConstants
+@JsonDeserialize(using = CQConceptDeserializer.class)
 public class CQConcept implements CQElement {
 
 	private String label;
@@ -86,7 +90,7 @@ public class CQConcept implements CQElement {
 				}
 			}
 
-			List<QPNode> aggregators = new ArrayList<>();
+			List<AggregatorNode<?>> aggregators = new ArrayList<>();
 			//add aggregators
 
 			aggregators.addAll(conceptAggregators);
@@ -106,7 +110,7 @@ public class CQConcept implements CQElement {
 					table,
 					new ValidityDateNode(
 						selectValidityDateColumn(table),
-						conceptChild(filters, aggregators)
+						conceptChild(concept, context, filters, aggregators)
 					)
 				)
 			);
@@ -127,7 +131,7 @@ public class CQConcept implements CQElement {
 		return mask;
 	}
 
-	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
+	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
 		return
 				ids
 					.stream()
@@ -135,7 +139,7 @@ public class CQConcept implements CQElement {
 					.toArray(ConceptElement[]::new);
 	}
 
-	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
+	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<AggregatorNode<?>> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);

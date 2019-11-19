@@ -64,8 +64,8 @@
 				<version>2.22.2</version>
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
-					<argLine>-Xmx1G</argLine>
-					<properties>
+					<argLine>-Xmx4G</argLine>
+                    <properties>
 						<configurationParameters>
 							junit.jupiter.execution.parallel.enabled=false
 							junit.jupiter.execution.parallel.mode.default = concurrent
