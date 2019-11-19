@@ -1,22 +1,20 @@
 package com.bakdata.conquery.models.worker;
 
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
+import com.bakdata.conquery.models.query.QueryManager;
+import com.bakdata.conquery.models.query.entity.Entity;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.ScheduledExecutorService;
-
-import javax.annotation.Nonnull;
-
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
-import com.bakdata.conquery.models.query.QueryManager;
-import com.bakdata.conquery.models.query.entity.Entity;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Setter @Getter @NoArgsConstructor
 public class Namespace {
@@ -39,7 +37,6 @@ public class Namespace {
 	}
 	
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {
-		queryManager.initMaintenance(maintenanceService);
 	}
 	
 	public void checkConnections() {
@@ -86,9 +83,11 @@ public class Namespace {
 		}
 	}
 	
-	@Nonnull
 	public synchronized WorkerInformation getResponsibleWorker(int entityId) {
-		int bucket = Entity.getBucket(entityId, entityBucketSize);
+		return getResponsibleWorkerForBucket(Entity.getBucket(entityId, entityBucketSize));
+	}
+	
+	public synchronized WorkerInformation getResponsibleWorkerForBucket(int bucket) {
 		if(bucket < bucket2WorkerMap.size()) {
 			return bucket2WorkerMap.get(bucket);
 		}
@@ -110,5 +109,10 @@ public class Namespace {
 		List<WorkerInformation> l = new ArrayList<>(workers);
 		l.add(info);
 		workers = l;
+	}
+
+	@JsonIgnore
+	public Dataset getDataset() {
+		return storage.getDataset();
 	}
 }

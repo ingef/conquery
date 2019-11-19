@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 
 import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.types.specific.VarIntType;
 
 import jersey.repackaged.com.google.common.collect.Iterators;
 
@@ -52,5 +53,15 @@ public class DirectDictionary extends AStringType<Integer> {
 	@Override
 	public long estimateMemoryBitWidth() {
 		return Integer.SIZE;
+	}
+	
+	@Override
+	public Dictionary getUnderlyingDictionary() {
+		return dict;
+	}
+	
+	@Override
+	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+		throw new UnsupportedOperationException();
 	}
 }

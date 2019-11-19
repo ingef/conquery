@@ -15,6 +15,3 @@ module.name_mapper='.*\(.yml\)' -> 'empty/object'
 ; module.name_mapper='\(react-redux\)' -> '<PROJECT_ROOT>/decls/GeneralStub.js.flow'
 ; module.name_mapper='.*\(.sass\)' -> '<PROJECT_ROOT>/decls/sass.js.flow'
 ; suppress_comment= \\(.\\|\n\\)*\\$FlowFixMe
-
-[version]
-0.94.0

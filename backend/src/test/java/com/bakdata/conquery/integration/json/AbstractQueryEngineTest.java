@@ -1,30 +1,30 @@
 package com.bakdata.conquery.integration.json;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
+import com.bakdata.conquery.models.query.results.EntityResult;
+import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.MultilineContainedEntityResult;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
-
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
@@ -35,26 +35,40 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	protected abstract ResourceFile getExpectedCsv();
 
 	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = PrintSettings
-		.builder()
-		.prettyPrint(false)
-		.nameExtractor(
-			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
-		.build();
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,"columnInfo.getSelect().getId().toStringWithoutDataset()");
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
 
-		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().createQuery(query, DevAuthConfig.USER);
+		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
 
-		managed.awaitDone(1, TimeUnit.DAYS);
-
-		if (managed.getState() == ExecutionState.FAILED) {
-			fail("Query failed");
+		managed.awaitDone(10, TimeUnit.SECONDS);
+		while(managed.getState()!=ExecutionState.DONE && managed.getState()!=ExecutionState.FAILED) {
+			log.warn("waiting for more than 10 seconds on "+getLabel());
+			managed.awaitDone(1, TimeUnit.DAYS);
 		}
 
-		List<String> actual = new QueryToCSVRenderer(standaloneSupport.getNamespace())
+		if (managed.getState() == ExecutionState.FAILED) {
+			managed
+				.getResults()
+				.stream()
+				.filter(EntityResult::isFailed)
+				.map(FailedEntityResult.class::cast)
+				.forEach(r->log.error("Failure in query {}: {}", managed.getId(), r.getExceptionStackTrace()));
+			fail("Query failed (see above)");
+		}
+		
+		//check result info size
+		ResultInfoCollector resultInfos = managed.collectResultInfos(PRINT_SETTINGS);
+		assertThat(
+			managed
+				.fetchContainedEntityResult()
+				.flatMap(ContainedEntityResult::streamValues)
+		)
+		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
+
+		List<String> actual = new QueryToCSVRenderer()
 			.toCSV(PRINT_SETTINGS, managed)
 			.collect(Collectors.toList());
 

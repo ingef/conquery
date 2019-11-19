@@ -4,12 +4,9 @@ import { type Dispatch } from "redux-thunk";
 
 import api from "../api";
 import { flatmap } from "../common/helpers/commonHelper";
-import { type DateRangeType } from "../common/types/backend";
-import { getFileRows } from "../common/helpers/fileHelper";
+import type { DateRangeT } from "../api/types";
 
 import { defaultSuccess, defaultError } from "../common/actions";
-import { resolveFilterValues } from "../upload-filter-list-modal/actions";
-import { uploadConceptListModalOpen } from "../upload-concept-list-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
 
 import type { DraggedNodeType, DraggedQueryType } from "./types";
@@ -37,13 +34,12 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_RESOLVED_FILTER_VALUES,
-  TOGGLE_INCLUDE_SUBNODES
+  SET_DATE_COLUMN
 } from "./actionTypes";
 
 export const dropAndNode = (
   item: DraggedNodeType | DraggedQueryType,
-  dateRange: ?DateRangeType
+  dateRange: ?DateRangeT
 ) => ({
   type: DROP_AND_NODE,
   payload: { item, dateRange }
@@ -144,9 +140,9 @@ export const toggleTable = (tableIdx, isExcluded) => ({
   payload: { tableIdx, isExcluded }
 });
 
-export const setFilterValue = (tableIdx, filterIdx, value, formattedValue) => ({
+export const setFilterValue = (tableIdx, filterIdx, value) => ({
   type: SET_FILTER_VALUE,
-  payload: { tableIdx, filterIdx, value, formattedValue }
+  payload: { tableIdx, filterIdx, value }
 });
 
 export const setTableSelects = (tableIdx, value) => ({
@@ -156,6 +152,11 @@ export const setTableSelects = (tableIdx, value) => ({
 export const setSelects = value => ({
   type: SET_SELECTS,
   payload: { value }
+});
+
+export const setDateColumn = (tableIdx, value) => ({
+  type: SET_DATE_COLUMN,
+  payload: { tableIdx, value }
 });
 
 export const resetAllFilters = (andIdx: number, orIdx: number) => ({
@@ -171,11 +172,6 @@ export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
 export const toggleTimestamps = (andIdx, orIdx) => ({
   type: TOGGLE_TIMESTAMPS,
   payload: { andIdx, orIdx }
-});
-
-export const toggleIncludeSubnodes = includeSubnodes => ({
-  type: TOGGLE_INCLUDE_SUBNODES,
-  payload: { includeSubnodes }
 });
 
 export const loadFilterSuggestionsStart = (tableIdx, filterIdx) => ({
@@ -198,12 +194,12 @@ export const loadFilterSuggestionsError = (error, tableIdx, filterIdx) =>
 
 export const loadFilterSuggestions = (
   datasetId,
-  tableIdx,
-  tableId,
   conceptId,
-  filterIdx,
+  tableId,
   filterId,
-  prefix
+  prefix,
+  tableIdx,
+  filterIdx
 ) => {
   return (dispatch: Dispatch) => {
     dispatch(loadFilterSuggestionsStart(tableIdx, filterIdx));
@@ -215,45 +211,4 @@ export const loadFilterSuggestions = (
         e => dispatch(loadFilterSuggestionsError(e, tableIdx, filterIdx))
       );
   };
-};
-
-const setResolvedFilterValues = (res, tableIdx, filterIdx) =>
-  defaultSuccess(SET_RESOLVED_FILTER_VALUES, res, { tableIdx, filterIdx });
-
-async function getUniqueFileRows(file) {
-  const rows = await getFileRows(file);
-
-  // Take care of duplicate rows
-  return [...new Set(rows)];
-}
-
-export const dropFilterValuesFile = (
-  datasetId,
-  treeId,
-  tableIdx,
-  tableId,
-  filterIdx,
-  filterId,
-  file
-) => async dispatch => {
-  const rows = await getUniqueFileRows(file);
-
-  // Result looks something like that:
-  // const result = {
-  //   // unknownCodes: ...
-  //   resolvedFilter: {
-  //     value: rows.map(row => ({ label: row, value: row }))
-  //   }
-  // };
-  const result = await dispatch(
-    resolveFilterValues(datasetId, treeId, tableId, filterId, rows)
-  );
-
-  return dispatch(setResolvedFilterValues(result, tableIdx, filterIdx));
-};
-
-export const dropConceptListFile = file => async dispatch => {
-  const rows = await getUniqueFileRows(file);
-
-  return dispatch(uploadConceptListModalOpen(rows, file.name));
 };

@@ -2,43 +2,55 @@
 
 import React from "react";
 import T from "i18n-react";
-import { type FieldPropsType } from "redux-form";
+import type { FieldPropsType } from "redux-form";
 
 import ReactSelect from "./ReactSelect";
 import Labeled from "./Labeled";
 
 import { isEmpty } from "../common/helpers";
-import { type SelectOptionsType } from "../common/types/backend";
+import type { SelectOptionsT } from "../api/types";
 import InfoTooltip from "../tooltip/InfoTooltip";
 
 type PropsType = FieldPropsType & {
-  label: string,
-  options: SelectOptionsType,
+  className?: string,
+  label?: string,
+  options: SelectOptionsT,
   disabled?: boolean,
+  small?: boolean,
   selectProps?: Object,
   tooltip?: string
 };
 
-const InputSelect = (props: PropsType) => {
-  const { input, options } = props;
+const InputSelect = ({
+  className,
+  small,
+  input,
+  label,
+  options,
+  disabled,
+  selectProps,
+  tooltip
+}: PropsType) => {
   const selected = options && options.filter(v => v.value === input.value);
   const defaultValue =
     options && options.filter(v => v.value === input.defaultValue);
 
   return (
     <Labeled
-      disabled={props.disabled}
+      className={className}
+      disabled={disabled}
       valueChanged={!isEmpty(input.value) && input.value !== input.defaultValue}
       label={
         <>
-          {props.label}
-          {props.tooltip && <InfoTooltip text={props.tooltip} />}
+          {!!label && label}
+          {!!tooltip && <InfoTooltip text={tooltip} />}
         </>
       }
     >
       <ReactSelect
         highlightChanged
         name="form-field"
+        small={small}
         value={selected}
         defaultValue={defaultValue}
         options={options}
@@ -47,10 +59,10 @@ const InputSelect = (props: PropsType) => {
         }
         isSearchable={false}
         isClearable={input.clearable}
-        isDisabled={!!props.disabled}
+        isDisabled={!!disabled}
         placeholder={T.translate("reactSelect.placeholder")}
         noOptionsMessage={() => T.translate("reactSelect.noResults")}
-        {...props.selectProps}
+        {...selectProps}
       />
     </Labeled>
   );

@@ -1,22 +1,5 @@
 package com.bakdata.conquery.integration.json;
 
-import static org.assertj.core.api.Assertions.fail;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.io.FileUtils;
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -30,7 +13,6 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.preproc.DateFormats;
@@ -40,23 +22,35 @@ import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal.FormatColumn;
-import com.bakdata.conquery.util.io.ConfigCloner;
+import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.github.powerlibraries.io.In;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import static org.assertj.core.api.Assertions.fail;
 
 @Slf4j
 @Getter
@@ -90,15 +84,24 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 		importTableContents(support);
 		support.waitUntilWorkDone();
+		importIdMapping(support);
 		importPreviousQueries(support);
 	}
 
+	private void importIdMapping(StandaloneSupport support) throws JSONException, IOException {
+		if(content.getIdMapping() == null) {
+			return;
+		}
+		try(InputStream in = content.getIdMapping().stream()) {
+			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
+		}
+	}
 	private void importPreviousQueries(StandaloneSupport support) throws JSONException, IOException {
 		// Load previous query results if available
 		int id = 1;
 		for(ResourceFile queryResults : content.getPreviousQueryResults()) {
 			UUID queryId = new UUID(0L, id++);
-			ConqueryConfig config = ConfigCloner.clone(support.getConfig());
+			ConqueryConfig config = Cloner.clone(support.getConfig());
 			config.getCsv().setSkipHeader(false);
 			String[][] data = CSV.streamContent(config.getCsv(), queryResults.stream())
 				.toArray(String[][]::new);
@@ -106,7 +109,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			ConceptQuery q = new ConceptQuery();
 			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 			
-			ManagedExecution managed = support.getNamespace().getQueryManager().createQuery(q, queryId, DevAuthConfig.USER);
+			ManagedExecution managed = support.getNamespace().getQueryManager().runQuery(q, queryId, DevAuthConfig.USER);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getState() == ExecutionState.FAILED) {
@@ -126,7 +129,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		format.setLineSeparator("\n");
 		settings.setFormat(format);
 		settings.setHeaderExtractionEnabled(true);
-		DateFormats.initialize(new String[0]);
+		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : content.getTables()) {

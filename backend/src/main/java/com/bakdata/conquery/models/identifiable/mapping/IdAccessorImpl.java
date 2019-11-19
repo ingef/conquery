@@ -2,6 +2,9 @@ package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
@@ -46,30 +49,18 @@ public class IdAccessorImpl implements IdAccessor {
 			}
 		}
 
-		return result.toArray(new String[0]);
-	}
-
-	/**
-	 * If not real mapping is possible we use this fallback CsvId and join the id Parts together.
-	 * @param idPart all required Parts of the id.
-	 * @return all Parts of the concatenated by a pipe.
-	 */
-	public static CsvEntityId getFallbackCsvId(String[] idPart) {
-		return new CsvEntityId(String.join("|", idPart));
+		return result.toArray(ArrayUtils.EMPTY_STRING_ARRAY);
 	}
 
 	@Override
 	public CsvEntityId getCsvEntityId(String[] csvLine) {
 		String[] reorderedCsvLine = reorder(csvLine);
-		String[] partOfId = this.accessor.extract(reorderedCsvLine);
-		CsvEntityId csvEntityId = storage.getIdMapping()
-			.getExternalIdPartCsvIdMap()
-			.get(new SufficientExternalEntityId(partOfId));
-		if (csvEntityId != null) {
-			return csvEntityId;
-		}
-		// fallback: we join everything relevant together
-		return getFallbackCsvId(partOfId);
+		return Optional
+			.ofNullable(storage.getIdMapping())
+			.map(PersistentIdMap::getExternalIdPartCsvIdMap)
+			.map(m->m.get(new SufficientExternalEntityId(reorderedCsvLine)))
+			// fallback: we join everything relevant together
+			.orElseGet(()->accessor.getFallbackCsvId(reorderedCsvLine));
 	}
 
 	/**

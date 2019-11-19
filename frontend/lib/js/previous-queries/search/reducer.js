@@ -1,11 +1,15 @@
+// @flow
+
 import {
   UPDATE_PREVIOUS_QUERIES_SEARCH,
   ADD_TAG_TO_PREVIOUS_QUERIES_SEARCH
 } from "./actionTypes";
 
-const initialState = [];
+type StateT = string[];
 
-const previousQueriesSearch = (state = initialState, action) => {
+const initialState: StateT = [];
+
+const previousQueriesSearch = (state: StateT = initialState, action) => {
   switch (action.type) {
     case UPDATE_PREVIOUS_QUERIES_SEARCH:
       return action.payload.values;

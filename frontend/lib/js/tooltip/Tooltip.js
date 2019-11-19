@@ -5,12 +5,13 @@ import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
 import T from "i18n-react";
 import { connect } from "react-redux";
-import Markdown from "react-markdown";
+import Markdown from "react-markdown/with-html";
+
 import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
 import FaIcon from "../icon/FaIcon";
-import type { SearchType } from "../category-trees/reducer";
+import type { SearchT } from "../concept-trees/reducer";
 
 import ActivateTooltip from "./ActivateTooltip";
 import {
@@ -57,7 +58,7 @@ const Head = styled("div")`
   padding: 10px 20px;
   background-color: white;
   margin: 20px -20px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
 `;
 
 const StyledFaIcon = styled(FaIcon)`
@@ -100,6 +101,10 @@ const PieceOfInfo = styled("div")`
   /* Markdown */
   font-size: ${({ theme }) => theme.font.xs};
 
+  a {
+    text-decoration: underline;
+  }
+
   p {
     line-height: 1.3;
     margin: 5px 0;
@@ -137,7 +142,7 @@ type PropsType = {
   toggleAdditionalInfos: boolean,
   onToggleDisplayTooltip: Function,
   onToggleAdditionalInfos: Function,
-  search: SearchType
+  search: SearchT
 };
 
 const Tooltip = (props: PropsType) => {
@@ -167,6 +172,10 @@ const Tooltip = (props: PropsType) => {
         textToHighlight={text || ""}
       />
     );
+  };
+
+  const renderers = {
+    text: ({ value, children, nodeKey }) => searchHighlight(value)
   };
 
   return (
@@ -207,9 +216,13 @@ const Tooltip = (props: PropsType) => {
         <Infos>
           {infos &&
             infos.map((info, i) => (
-              <PieceOfInfo key={info.key}>
+              <PieceOfInfo key={info.key + i}>
                 <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
-                <Markdown source={info.value} escapeHtml={true} />
+                <Markdown
+                  escapeHtml={true}
+                  renderers={renderers}
+                  source={info.value}
+                />
               </PieceOfInfo>
             ))}
         </Infos>
@@ -223,7 +236,7 @@ const mapStateToProps = state => {
     additionalInfos: state.tooltip.additionalInfos,
     displayTooltip: state.tooltip.displayTooltip,
     toggleAdditionalInfos: state.tooltip.toggleAdditionalInfos,
-    search: state.categoryTrees.search
+    search: state.conceptTrees.search
   };
 };
 

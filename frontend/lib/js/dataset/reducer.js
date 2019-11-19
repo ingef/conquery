@@ -1,5 +1,7 @@
 // @flow
 
+import type { DatasetIdT } from "../api/types";
+
 import {
   LOAD_DATASETS_START,
   LOAD_DATASETS_SUCCESS,
@@ -8,21 +10,21 @@ import {
   SAVE_QUERY
 } from "./actionTypes";
 
-export type DatasetIdType = string;
-
-export type DatasetType = {
-  id: DatasetIdType,
+export type DatasetT = {
+  id: DatasetIdT,
   label: string
 };
 
 export type StateType = {
+  pristine: boolean,
   loading: boolean,
   error: ?string,
-  data: DatasetType[],
-  selectedDatasetId: ?DatasetIdType
+  data: DatasetT[],
+  selectedDatasetId: ?DatasetIdT
 };
 
 const initialState: StateType = {
+  pristine: true,
   loading: false,
   error: null,
   data: [],
@@ -62,7 +64,7 @@ const datasets = (
 ): StateType => {
   switch (action.type) {
     case LOAD_DATASETS_START:
-      return { ...state, loading: true };
+      return { ...state, loading: true, pristine: false };
     case LOAD_DATASETS_SUCCESS:
       const { data } = action.payload;
       const selectedDatasetId = data && data.length > 0 ? data[0].id : null;

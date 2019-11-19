@@ -4,7 +4,7 @@ import org.apache.shiro.realm.AuthorizingRealm;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -32,11 +32,6 @@ public class DevAuthConfig extends AuthConfig {
 	 */
 	public static final User USER = new User(EMAIL, LABEL);
 
-	/**
-	 * Handler for valid credentials that do not match any user.
-	 */
-	private static final UnknownUserHandler U_U_HANDLER = new DefaultUnknownUserHandler();
-
 	
 	@Getter
 	@JsonIgnore
@@ -44,12 +39,7 @@ public class DevAuthConfig extends AuthConfig {
 
 	@Override
 	public AuthorizingRealm getRealm(MasterMetaStorage storage) {
-		return new AllGrantedRealm();
-	}
-
-	@Override
-	public UnknownUserHandler getUnknownUserHandler(MasterMetaStorage storage) {
-		return U_U_HANDLER;
+		return new AllGrantedRealm(storage);
 	}
 
 	@Override

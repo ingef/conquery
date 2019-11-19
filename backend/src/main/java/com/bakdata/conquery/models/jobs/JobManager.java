@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -44,11 +45,14 @@ public class JobManager implements Managed {
 		slowExecutor.close();
 	}
 	
-	public List<JobStatus> reportStatus() {
-		return getSlowJobs()
-			.stream()
-			.map(job->new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
-			.collect(Collectors.toList());
+	public JobManagerStatus reportStatus() {
+		return new JobManagerStatus(
+			LocalDateTime.now(),
+			getSlowJobs()
+				.stream()
+				.map(job->new JobStatus(job.getJobId(), job.getProgressReporter(), job.getLabel(), job.isCancelled()))
+				.collect(Collectors.toList())
+		);
 	}
 	
 	public boolean isSlowWorkerBusy() {

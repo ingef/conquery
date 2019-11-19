@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 import java.util.List;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.PermissionOwner;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -29,15 +29,15 @@ public abstract class PermissionOwnerId<T extends PermissionOwner<?>> extends AI
 			switch(type) {
 				case UserId.TYPE:
 					return new UserId(ownerId);
-				case MandatorId.TYPE:
-					return new MandatorId(ownerId);
-				case NullSubjectId.TYPE:
-					return new NullSubjectId();
+				case RoleId.TYPE:
+					return new RoleId(ownerId);
+				case GroupId.TYPE:
+					return new GroupId(ownerId);
 				default:
 					throw new IllegalStateException("Unknown permission owner type: " + type);
 			}
 		}
 	}
 	
-	public abstract PermissionOwner<?> getOwner(MasterMetaStorage storage);
+	public abstract T getPermissionOwner(MasterMetaStorage storage);
 }

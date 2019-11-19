@@ -1,19 +1,18 @@
 package com.bakdata.conquery.models.query.concept;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Deque;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -24,7 +23,7 @@ public interface CQElement {
 		return this;
 	}
 
-	QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan);
+	QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan);
 
 	default void collectRequiredQueries(Set<ManagedExecutionId> requiredQueries) {}
 	
@@ -43,11 +42,13 @@ public interface CQElement {
 		return set;
 	}
 
-	default void collectSelects(Deque<SelectDescriptor> select) {}
-	
-	default List<SelectDescriptor> collectSelects() {
-		ArrayDeque<SelectDescriptor> deque = new ArrayDeque<>();
-		this.collectSelects(deque);
-		return new ArrayList<>(deque);
+	default ResultInfoCollector collectResultInfos(PrintSettings config) {
+		ResultInfoCollector collector = new ResultInfoCollector(config);
+		collectResultInfos(collector);
+		return collector;
 	}
+	
+	void collectResultInfos(ResultInfoCollector collector);
+
+	void visit(QueryVisitor visitor);
 }

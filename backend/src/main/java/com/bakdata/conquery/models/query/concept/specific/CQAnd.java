@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Arrays;
-import java.util.Deque;
 import java.util.List;
 import java.util.Set;
 
@@ -15,10 +14,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.SelectDescriptor;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +29,7 @@ public class CQAnd implements CQElement {
 	private List<CQElement> children;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		QPNode[] aggs = new QPNode[children.size()];
 		for(int i=0;i<aggs.length;i++) {
 			aggs[i] = children.get(i).createQueryPlan(context, plan);
@@ -51,9 +51,9 @@ public class CQAnd implements CQElement {
 	}
 	
 	@Override
-	public void collectSelects(Deque<SelectDescriptor> select) {
+	public void collectResultInfos(ResultInfoCollector collector) {
 		for(CQElement c:children) {
-			c.collectSelects(select);
+			c.collectResultInfos(collector);
 		}
 	}
 
@@ -61,6 +61,13 @@ public class CQAnd implements CQElement {
 	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
 		for(CQElement c:children) {
 			c.collectNamespacedIds(namespacedIds);
+		}
+	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {
+		for(CQElement c:children) {
+			c.visit(visitor);
 		}
 	}
 }

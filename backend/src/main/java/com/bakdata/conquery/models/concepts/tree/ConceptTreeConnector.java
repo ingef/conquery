@@ -6,8 +6,6 @@ import java.util.List;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.collections4.CollectionUtils;
-
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.filters.Filter;
@@ -37,10 +35,7 @@ public class ConceptTreeConnector extends Connector {
 
 	@Override
 	public List<Filter<?>> collectAllFilters() {
-		List<Filter<?>> l = new ArrayList<>(filters.size()+1);
-		CollectionUtils.addIgnoreNull(l, getDateSelectionFilter());
-		l.addAll(filters);
-		return l;
+		return filters;
 	}
 
 	@Override

@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.concepts.MatchingStats;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateElementMatchingStats;
@@ -49,26 +49,26 @@ public class UpdateMatchingStats extends Job {
 			}
 
 			Concept<?> concept = worker.getStorage().getConcept(cBlock.getConnector().getConcept());
-			Block block = worker.getStorage().getBlock(cBlock.getBlock());
-			Table table = worker.getStorage().getDataset().getTables().get(block.getId().getImp().getTable());
-
 			try {
-				for (int event = 0; event < block.size(); event++) {
+				Bucket bucket = worker.getStorage().getBucket(cBlock.getBucket());
+				Table table = worker.getStorage().getDataset().getTables().get(bucket.getImp().getTable());
+				
+				for (int event = 0; event < bucket.getNumberOfEvents(); event++) {
 					if (concept instanceof TreeConcept) {
 						int[] localIds = cBlock.getMostSpecificChildren().get(event);
 						if (localIds != null) {
 							ConceptTreeNode<?> e = ((TreeConcept) concept).getElementByLocalId(localIds);
-
+	
 							while (e != null) {
 								messages.computeIfAbsent(e.getId(), (x) -> new MatchingStats.Entry())
-									.addEvent(table, block, cBlock, event);
+									.addEvent(table, bucket, cBlock, event);
 								e = e.getParent();
 							}
 						}
 					}
 					else {
 						messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
-							.addEvent(table, block, cBlock, event);
+							.addEvent(table, bucket, cBlock, event);
 					}
 				}
 			}
@@ -88,7 +88,7 @@ public class UpdateMatchingStats extends Job {
 
 	@Override
 	public String getLabel() {
-		return toString();
+		return "updating matching stats for "+worker.getInfo().getId();
 	}
 
 }

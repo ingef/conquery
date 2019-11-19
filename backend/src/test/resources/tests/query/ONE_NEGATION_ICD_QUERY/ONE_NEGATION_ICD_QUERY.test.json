@@ -1,0 +1,168 @@
+{
+  "type": "QUERY_TEST",
+  "label": "ONE_NEGATION_ICD_QUERY Test",
+  "expectedCsv": "tests/query/ONE_NEGATION_ICD_QUERY/expected.csv",
+  "query": {
+    "type": "CONCEPT_QUERY",
+    "root": {
+      "type": "AND",
+      "children": [
+        {
+          "type": "DATE_RESTRICTION",
+          "dateRange": {
+            "min": "2016-01-01",
+            "max": "2016-12-31"
+          },
+          "child": {
+            "type": "CONCEPT",
+            "ids": [
+              "${dataset}.icd.a00$2db99.a00$2da09.a00"
+            ],
+            "label": "A00",
+            "tables": [
+              {
+                "id": "${dataset}.icd.au_diagnose",
+                "selects": [],
+                "filters": []
+              }
+            ],
+            "selects": []
+          }
+        },
+        {
+          "type": "NEGATION",
+          "child": {
+            "type": "DATE_RESTRICTION",
+            "dateRange": {
+              "max": "2015-12-31"
+            },
+            "child": {
+              
+              "type": "CONCEPT",
+              "ids": [
+                "${dataset}.icd.a00$2db99.a00$2da09.a00"
+              ],
+              "label": "A00",
+              "tables": [
+                {
+                  "id": "${dataset}.icd.au_diagnose",
+                  "selects": [],
+                  "filters": []
+                }
+              ],
+              "selects": []
+            }
+          }
+        }
+      ]
+    }
+  },
+  "concepts": [
+    {
+      "label": "ICD",
+      "type": "TREE",
+      "additionalInfos": [
+        {
+          "key": "ICD-Codes",
+          "value": "Historisierung bis einschließlich des Jahres 2018"
+        }
+      ],
+      "connectors": [
+        {
+          "label": "AU-Diagnose",
+          "name": "au_diagnose",
+          "column": "au_diagnose.icd_code",
+          "validityDates": [
+            {
+              "label": "AU-Beginn",
+              "column": "au_diagnose.au_beginn"
+            },
+            {
+              "label": "AU-Ende",
+              "column": "au_diagnose.au_ende"
+            },
+            {
+              "label": "AU-Zeit",
+              "column": "au_diagnose.au-zeit"
+            }
+          ],
+          "filters": []
+        }
+      ],
+      "children": [
+        {
+          "label": "A00-B99",
+          "description": "Bestimmte infektiöse und parasitäre Krankheiten",
+          "condition": {
+            "type": "PREFIX_RANGE",
+            "min": "A00",
+            "max": "B99"
+          },
+          "children": [
+            {
+              "label": "A00-A09",
+              "description": "Infektiöse Darmkrankheiten",
+              "condition": {
+                "type": "PREFIX_RANGE",
+                "min": "A00",
+                "max": "A09"
+              },
+              "children": [
+                {
+                  "label": "A00",
+                  "description": "Cholera",
+                  "condition": {
+                    "type": "PREFIX_LIST",
+                    "prefixes": [
+                      "A00"
+                    ]
+                  }
+                },
+                {
+                  "label": "A01",
+                  "description": "Typhus abdominalis und Paratyphus",
+                  "condition": {
+                    "type": "PREFIX_LIST",
+                    "prefixes": [
+                      "A01"
+                    ]
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "content": {
+    "tables": [
+      {
+        "csv": "tests/query/ONE_NEGATION_ICD_QUERY/content.csv",
+        "name": "au_diagnose",
+        "primaryColumn": {
+          "name": "pid",
+          "type": "STRING"
+        },
+        "columns": [
+          {
+            "name": "icd_code",
+            "type": "STRING"
+          },
+          {
+            "name": "au_beginn",
+            "type": "DATE"
+          },
+          {
+            "name": "au_ende",
+            "type": "DATE"
+          },
+          {
+            "name": "au-zeit",
+            "type": "DATE_RANGE"
+          }
+        ]
+      }
+    ]
+  }
+}

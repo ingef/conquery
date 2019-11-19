@@ -2,15 +2,12 @@ package com.bakdata.conquery.models.query.queryplan.specific;
 
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
-import lombok.ToString;
-
-@ToString
 public class ValidityDateNode extends QPChainNode {
 
 	private final Column validityDateColumn;
@@ -22,20 +19,20 @@ public class ValidityDateNode extends QPChainNode {
 	}
 	
 	@Override
-	public void nextEvent(Block block, int event) {
+	public void nextEvent(Bucket bucket, int event) {
 		//if table without validity columns we continue always
 		if(validityDateColumn == null) {
-			getChild().nextEvent(block, event);
+			getChild().nextEvent(bucket, event);
 		}
 
 		//if event has null validityDate cancel
-		if(!block.has(event, validityDateColumn)) {
+		if(!bucket.has(event, validityDateColumn)) {
 			return;
 		}
 
 		//no dateRestriction or event is in date restriction
-		if(noRestriction || block.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
-			getChild().nextEvent(block, event);
+		if(noRestriction || bucket.eventIsContainedIn(event, validityDateColumn, context.getDateRestriction())) {
+			getChild().nextEvent(bucket, event);
 		}
 	}
 	
@@ -50,8 +47,13 @@ public class ValidityDateNode extends QPChainNode {
 	}
 
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx.withValidityDateColumn(validityDateColumn), currentTable);
 		noRestriction = ctx.getDateRestriction().isAll();
+	}
+	
+	@Override
+	public String toString() {
+		return "ValidityDateNode [validityDateColumn=" + validityDateColumn + ", getChild()=" + getChild() + "]";
 	}
 }

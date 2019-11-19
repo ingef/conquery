@@ -1,7 +1,6 @@
 package com.bakdata.conquery.util.dict;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
 import lombok.AllArgsConstructor;

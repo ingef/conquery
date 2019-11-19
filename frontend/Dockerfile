@@ -1,4 +1,4 @@
-FROM node:10.15-alpine
+FROM node:10.16-alpine
 
 RUN mkdir /conquery
 WORKDIR /conquery

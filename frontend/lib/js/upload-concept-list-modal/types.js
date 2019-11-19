@@ -1,7 +1,8 @@
 // @flow
 
-import type { TreeNodeIdType } from "../common/types/backend";
+import type { ConceptIdT } from "../api/types";
 
+// TODO Merge this with actual API type
 export type UploadConceptListModalResultType = {
   label: string,
   rootConcepts: any,
@@ -15,6 +16,6 @@ export type UploadConceptListModalResultType = {
         value: string
       }[]
     },
-    selectedRoot: TreeNodeIdType
+    selectedRoot: ConceptIdT
   }
 };

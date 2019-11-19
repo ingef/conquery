@@ -56,8 +56,8 @@ $ yarn start
 
 Depending on the use-case, we're still calling the same concepts differently sometimes. Here is an explanation.
 
-- **Category Tree** – consists of concept nodes
-- **Category Tree Node / Concept** – a concept node
+- **Concept Tree** – consists of concepts
+- **Concept Tree Node / Concept** – a concept node
 - **Query**
   - consisting of multiple `and`-groups
   - which again consist of multiple `or`-ed concepts

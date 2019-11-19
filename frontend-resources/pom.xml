@@ -58,7 +58,7 @@
 			<plugin>
 				<groupId>com.github.eirslett</groupId>
 				<artifactId>frontend-maven-plugin</artifactId>
-				<version>1.7.6</version>
+				<version>1.8.0</version>
 				<executions>
 					<execution>
 						<id>install node and yarn</id>
@@ -97,7 +97,7 @@
 						<phase>generate-resources</phase>
 
 						<configuration>
-							<arguments>build</arguments>
+							<arguments>build-ci</arguments>
 						</configuration>
 					</execution>
 					<execution>
@@ -114,8 +114,8 @@
 				<configuration>
 					<installDirectory>${workingDirectory}</installDirectory>
 					<workingDirectory>${workingDirectory}</workingDirectory>
-					<nodeVersion>v10.15.1</nodeVersion>
-					<yarnVersion>v1.13.0</yarnVersion>
+					<nodeVersion>v10.16.0</nodeVersion>
+					<yarnVersion>v1.16.0</yarnVersion>
 				</configuration>
 			</plugin>
 			<!-- workaround for https://issues.apache.org/jira/browse/MRESOURCES-236 -->

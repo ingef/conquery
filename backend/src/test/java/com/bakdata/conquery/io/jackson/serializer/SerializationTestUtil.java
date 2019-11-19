@@ -15,6 +15,7 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.worker.SingletonNamespaceCollection;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JavaType;
@@ -57,7 +58,6 @@ public class SerializationTestUtil<T> {
 			value,
 			Jackson.BINARY_MAPPER
 		);
-		
 	}
 	
 	private void test(T value, ObjectMapper mapper) throws JSONException, IOException {
@@ -73,6 +73,11 @@ public class SerializationTestUtil<T> {
 		T copy = reader.readValue(src);
 		ValidatorHelper.failOnError(log, validator.validate(copy));
 		
+		//because IdentifiableImp cashes the hash
+		if(value instanceof IdentifiableImpl) {
+			assertThat(copy.hashCode()).isEqualTo(value.hashCode());
+		}
+
 		ObjectAssert<T> ass = assertThat(copy)
 			.as("Unequal after copy.");
 		for(Class<?> ig:ignoreClasses)

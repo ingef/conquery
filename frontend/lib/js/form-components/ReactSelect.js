@@ -2,18 +2,22 @@
 
 import React from "react";
 import Select from "react-select";
-import Creatable from "react-select/lib/Creatable";
+import Creatable from "react-select/creatable";
 import { withTheme } from "emotion-theming";
 
-// TODO: Support value-changed
-//       border: 1px solid $col-blue-gray-dark !important
-
 // Helps to have a common ground for styling selects
-const stylesFromTheme = (theme, changed) => ({
+const stylesFromTheme = (theme, changed, small) => ({
   control: (provided, state) => {
+    const smallStyles = small
+      ? {
+          minHeight: "0"
+        }
+      : {};
+
     return {
       ...provided,
-      fontSize: "14px",
+      ...smallStyles,
+      fontSize: theme.font.sm,
       borderRadius: "3px",
       boxShadow: "none",
       backgroundColor: "white",
@@ -21,6 +25,12 @@ const stylesFromTheme = (theme, changed) => ({
       ":hover": {
         borderColor: changed && state.hasValue ? theme.col.blueGrayDark : "#aaa"
       }
+    };
+  },
+  dropdownIndicator: (provided, state) => {
+    return {
+      ...provided,
+      padding: small ? "3px" : "6px"
     };
   },
   option: (provided, state) => {
@@ -50,12 +60,18 @@ const stylesFromTheme = (theme, changed) => ({
   })
 });
 
-const ReactSelect = ({ theme, creatable, highlightChanged, ...props }) => {
+const ReactSelect = ({
+  theme,
+  creatable,
+  highlightChanged,
+  small,
+  ...props
+}) => {
   const hasChanged =
     JSON.stringify(props.value) !== JSON.stringify(props.defaultValue);
   const changed = hasChanged && highlightChanged;
 
-  const styles = stylesFromTheme(theme, changed);
+  const styles = stylesFromTheme(theme, changed, small);
 
   return creatable ? (
     <Creatable styles={styles} {...props} />

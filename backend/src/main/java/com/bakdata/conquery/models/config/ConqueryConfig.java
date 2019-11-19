@@ -2,11 +2,12 @@ package com.bakdata.conquery.models.config;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
+import java.util.NoSuchElementException;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
+
+import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.models.auth.AuthConfig;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
@@ -45,7 +46,7 @@ public class ConqueryConfig extends Configuration {
 	@Valid @NotNull
 	private APIConfig api = new APIConfig();
 	@NotNull
-	private String[] additionalFormats = new String[0];
+	private String[] additionalFormats = ArrayUtils.EMPTY_STRING_ARRAY;
 	@Valid @NotNull
 	private FrontendConfig frontend = new FrontendConfig();
 	
@@ -76,7 +77,7 @@ public class ConqueryConfig extends Configuration {
 		return (T) plugins.stream()
 			.filter(c -> type.isAssignableFrom(c.getClass()))
 			.collect(MoreCollectors.toOptional())
-			.get();
+			.orElseThrow(()-> new NoSuchElementException("No plugin config of type "+type.getClass().getSimpleName()+" configured"));
 	}
 
 	public void initialize() {

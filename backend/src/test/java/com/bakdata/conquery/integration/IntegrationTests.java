@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.DynamicContainer.dynamicContainer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -17,8 +16,6 @@ import java.util.stream.Stream;
 
 import org.junit.jupiter.api.DynamicNode;
 import org.junit.jupiter.api.DynamicTest;
-import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
 import com.bakdata.conquery.TestTags;
@@ -30,22 +27,22 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.fasterxml.jackson.databind.JsonNode;
 
 import io.github.classgraph.Resource;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
+@Slf4j @RequiredArgsConstructor
 public class IntegrationTests {
 
 	
-	private static final String DEFAULT_TEST_ROOT = "tests/";
+	private final String defaultTestRoot;
 	
 	@RegisterExtension
 	public static final TestConquery CONQUERY = new TestConquery();
 
-	@TestFactory @Tag(TestTags.INTEGRATION_JSON)
 	public List<DynamicNode> jsonTests() throws IOException {
 		final String testRoot = Objects.requireNonNullElse(
 			System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE),
-			DEFAULT_TEST_ROOT
+			defaultTestRoot
 		);
 		
 		ResourceTree tree = new ResourceTree(null, null);
@@ -71,7 +68,6 @@ public class IntegrationTests {
 		}
 	}
 	
-	@TestFactory @Tag(TestTags.INTEGRATION_PROGRAMMATIC)
 	public Stream<DynamicNode> programmaticTests() throws IOException {
 		List<Class<?>> programmatic = CPSTypeIdResolver
 			.SCAN_RESULT
@@ -93,7 +89,7 @@ public class IntegrationTests {
 					c.getClass().getSimpleName(),
 					//classpath URI
 					URI.create("classpath:/"+c.getClass().getName().replace('.', '/')+".java"),
-					new IntegrationTest.Wrapper(CONQUERY, c)
+					new IntegrationTest.Wrapper(c.getClass().getSimpleName(), CONQUERY, c)
 				)
 			);
 	}
@@ -114,7 +110,7 @@ public class IntegrationTests {
 		
 		return dynamicContainer(
 			currentDir.getName(),
-			URI.create("classpath:/"+currentDir.getFullName()),
+			URI.create("classpath:/"+currentDir.getFullName()+"/"),
 			list.stream()
 		);
 	}
@@ -131,29 +127,21 @@ public class IntegrationTests {
 			
 			return DynamicTest.dynamicTest(
 				name,
-				resource.getURL().toURI(),
-				new IntegrationTest.Wrapper(CONQUERY, new JsonIntegrationTest(node))
+				URI.create("classpath:/"+resource.getPath()),
+				new IntegrationTest.Wrapper(
+					name,
+					CONQUERY,
+					new JsonIntegrationTest(node))
 			);
 		}
 		catch(Exception e) {
-			try {
-				return DynamicTest.dynamicTest(
-					name,
-					resource.getURL().toURI(),
-					() -> {
-						throw e;
-					}
-				);
-			}
-			catch (URISyntaxException e1) {
-				log.error("Failed while trying to create errored test", e1);
-				return DynamicTest.dynamicTest(
-					name,
-					() -> {
-						throw e;
-					}
-				);
-			}
+			return DynamicTest.dynamicTest(
+				name,
+				resource.getURI(),
+				() -> {
+					throw e;
+				}
+			);
 		}
 	}
 }

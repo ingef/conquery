@@ -15,16 +15,14 @@ import {
   queryGroupModalResetAllDates
 } from "./actions";
 
-const Root = styled("div")`
-  min-width: 460px;
-`;
-
-const Headline = styled("h3")`
-  text-align: center;
-`;
-
 const HeadlinePart = styled("span")`
-  padding: 0 0 0 5px;
+  padding: 0 5px 0 0;
+`;
+
+const Elements = styled("div")`
+  display: block;
+  margin: 0 0 15px;
+  max-width: 450px;
 `;
 
 const ResetAll = styled(IconButton)`
@@ -36,7 +34,7 @@ const ResetAll = styled(IconButton)`
 type PropsType = {
   group: Object,
   andIdx: number,
-  onCloseModal: () => void,
+  onClose: () => void,
   onSetDate: any => void,
   onResetAllDates: () => void
 };
@@ -53,47 +51,46 @@ const QueryGroupModal = (props: PropsType) => {
   const { onSetDate } = props;
 
   return (
-    <Modal closeModal={props.onCloseModal} doneButton tabIndex={3}>
-      <Root>
-        <Headline>
-          {props.group.elements.reduce(
-            (parts, concept, i, elements) => [
-              ...parts,
-              <HeadlinePart key={i + "-headline"}>
-                {concept.label || concept.id}
-              </HeadlinePart>,
-              i !== elements.length - 1 ? (
-                <span key={i + "-comma"}>, </span>
-              ) : (
-                ""
-              )
-            ],
-            [
-              <HeadlinePart key={-1}>
-                {T.translate("queryGroupModal.headlineStart")}
-              </HeadlinePart>
-            ]
-          )}
-        </Headline>
-        <InputDateRange
-          large
-          inline
-          label={T.translate("queryGroupModal.explanation")}
-          labelSuffix={
-            <>
-              {hasActiveDate && (
-                <ResetAll bare onClick={props.onResetAllDates} icon="undo">
-                  {T.translate("queryNodeEditor.reset")}
-                </ResetAll>
-              )}
-            </>
-          }
-          input={{
-            onChange: onSetDate,
-            value: dateRange
-          }}
-        />
-      </Root>
+    <Modal
+      onClose={props.onClose}
+      doneButton
+      tabIndex={3}
+      headline={T.translate("queryGroupModal.explanation")}
+    >
+      <Elements>
+        {props.group.elements.reduce(
+          (parts, concept, i, elements) => [
+            ...parts,
+            <HeadlinePart key={i + "-headline"}>
+              {concept.label || concept.id}
+            </HeadlinePart>,
+            i !== elements.length - 1 ? <span key={i + "-comma"}>, </span> : ""
+          ],
+          [
+            <HeadlinePart key={-1}>
+              {T.translate("queryGroupModal.headlineStart")}
+            </HeadlinePart>
+          ]
+        )}
+      </Elements>
+      <InputDateRange
+        large
+        inline
+        label={T.translate("queryGroupModal.dateRange")}
+        labelSuffix={
+          <>
+            {hasActiveDate && (
+              <ResetAll bare onClick={props.onResetAllDates} icon="undo">
+                {T.translate("queryNodeEditor.reset")}
+              </ResetAll>
+            )}
+          </>
+        }
+        input={{
+          onChange: onSetDate,
+          value: dateRange
+        }}
+      />
     </Modal>
   );
 };
@@ -110,7 +107,7 @@ const mapStateToProps = state => ({
 });
 
 const mapDispatchToProps = (dispatch: any) => ({
-  onCloseModal: () => dispatch(queryGroupModalClearNode()),
+  onClose: () => dispatch(queryGroupModalClearNode()),
   onSetDate: (andIdx, date) => dispatch(queryGroupModalSetDate(andIdx, date)),
   onResetAllDates: andIdx => dispatch(queryGroupModalResetAllDates(andIdx))
 });

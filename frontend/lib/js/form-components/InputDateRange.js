@@ -131,7 +131,7 @@ const InputDateRange = (props: PropsType) => {
             placeholder={displayDateFormat.toUpperCase()}
             onChange={value => onChangeRaw("min", value, displayDateFormat)}
             onBlur={e => applyDate("min", e.target.value, displayDateFormat)}
-            inputProps={{ tabIndex: 1 }}
+            inputProps={{ tabIndex: 1, autoFocus: true }}
           />
         </StyledLabeled>
         <StyledLabeled label={T.translate("inputDateRange.to")}>

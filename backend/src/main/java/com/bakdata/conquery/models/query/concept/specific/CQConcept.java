@@ -1,20 +1,9 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.List;
-import java.util.Set;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRefCollection;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.ConceptElement;
-import com.bakdata.conquery.models.concepts.filters.specific.ValidityDateSelectionFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -22,12 +11,10 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.SelectDescriptor;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
-import com.bakdata.conquery.models.query.concept.filter.FilterValue.CQSelectFilter;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
@@ -36,13 +23,29 @@ import com.bakdata.conquery.models.query.queryplan.specific.FiltersNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggregatorNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Set;
 
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
+@Slf4j
+@FieldNameConstants
+@JsonDeserialize(using = CQConceptDeserializer.class)
 public class CQConcept implements CQElement {
 
 	private String label;
@@ -50,38 +53,44 @@ public class CQConcept implements CQElement {
 	private List<ConceptElementId<?>> ids;
 	@Valid @NotEmpty @JsonManagedReference
 	private List<CQTable> tables;
-	@Valid @NotNull
 
+	@Valid @NotNull
 	@NsIdRefCollection
 	private List<Select> selects = new ArrayList<>();
 
 	private boolean excludeFromTimeAggregation = false;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		ConceptElement<?>[] concepts = resolveConcepts(ids, context.getCentralRegistry());
 
 		List<AggregatorNode<?>> conceptAggregators = createConceptAggregators(plan, selects);
 
-		Concept<?> c = concepts[0].getConcept();
+		Concept<?> concept = concepts[0].getConcept();
 
 		List<QPNode> tableNodes = new ArrayList<>();
-		for(CQTable t : tables) {
-			t.setResolvedConnector(c.getConnectorByName(t.getId().getConnector()));
+		for(CQTable table : tables) {
+			try {
+				table.setResolvedConnector(concept.getConnectorByName(table.getId().getConnector()));
+			}
+			catch (NoSuchElementException exc){
+				log.warn("Unable to resolve connector `{}` in dataset `{}`.",table.getId().getConnector(), concept.getDataset(), exc);
+				continue;
+			}
 
-			List<Select> resolvedSelects = t.getSelects();
+			List<Select> resolvedSelects = table.getSelects();
 
 
-			List<FilterNode<?>> filters = new ArrayList<>(t.getFilters().size());
+			List<FilterNode<?>> filters = new ArrayList<>(table.getFilters().size());
 			//add filter to children
-			for(FilterValue f : t.getFilters()) {
+			for(FilterValue f : table.getFilters()) {
 				FilterNode agg = f.getFilter().createAggregator(f.getValue());
 				if(agg != null) {
 					filters.add(agg);
 				}
 			}
 
-			List<QPNode> aggregators = new ArrayList<>();
+			List<AggregatorNode<?>> aggregators = new ArrayList<>();
 			//add aggregators
 
 			aggregators.addAll(conceptAggregators);
@@ -89,7 +98,7 @@ public class CQConcept implements CQElement {
 
 			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
-					t.getResolvedConnector().getTable().getId(),
+					table.getResolvedConnector().getTable().getId(),
 					plan.getSpecialDateUnion()
 				));
 			}
@@ -97,19 +106,32 @@ public class CQConcept implements CQElement {
 			tableNodes.add(
 				new ConceptNode(
 					concepts,
-					t,
+					calculateBitMask(concepts),
+					table,
 					new ValidityDateNode(
-						selectValidityDateColumn(t),
-						conceptChild(filters, aggregators)
+						selectValidityDateColumn(table),
+						conceptChild(concept, context, filters, aggregators)
 					)
 				)
 			);
 		}
 
+		if(tableNodes.isEmpty()){
+			throw new IllegalStateException(String.format("Unable to resolve any connector for query `%s`", label));
+		}
+
 		return OrNode.of(tableNodes);
 	}
 
-	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
+	private long calculateBitMask(ConceptElement<?>[] concepts) {
+		long mask = 0;
+		for(ConceptElement<?> concept : concepts) {
+			mask |= concept.calculateBitMask();
+		}
+		return mask;
+	}
+
+	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
 		return
 				ids
 					.stream()
@@ -117,7 +139,7 @@ public class CQConcept implements CQElement {
 					.toArray(ConceptElement[]::new);
 	}
 
-	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
+	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<AggregatorNode<?>> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);
@@ -125,7 +147,7 @@ public class CQConcept implements CQElement {
 		return result;
 	}
 
-	private static List<AggregatorNode<?>> createConceptAggregators(QueryPlan plan, List<Select> select) {
+	private static List<AggregatorNode<?>> createConceptAggregators(ConceptQueryPlan plan, List<Select> select) {
 
 		List<AggregatorNode<?>> nodes = new ArrayList<>();
 
@@ -138,27 +160,26 @@ public class CQConcept implements CQElement {
 	}
 
 	private Column selectValidityDateColumn(CQTable t) {
-		//check if we have a manually selected validity date then use that
-		for(FilterValue<?> fv : t.getFilters()) {
-			if(fv instanceof CQSelectFilter && fv.getFilter() instanceof ValidityDateSelectionFilter) {
-				return t
-					.getResolvedConnector()
-					.getValidityDateColumn(((CQSelectFilter)fv).getValue());
-			}
+		if(t.selectedValidityDate() != null) {
+			return t
+				.getResolvedConnector()
+				.getValidityDateColumn(t.selectedValidityDate());
 		}
 
 		//else use this first defined validity date column
-		if(!t.getResolvedConnector().getValidityDates().isEmpty())
+		else if(!t.getResolvedConnector().getValidityDates().isEmpty()) {
 			return t.getResolvedConnector().getValidityDates().get(0).getColumn();
-		else
+		}
+		else {
 			return null;
+		}
 	}
 
 	@Override
-	public void collectSelects(Deque<SelectDescriptor> select) {
-		selects.forEach(sel -> select.add(new SelectDescriptor(sel,this)));
+	public void collectResultInfos(ResultInfoCollector collector) {
+		selects.forEach(sel -> collector.add(new SelectResultInfo(sel,this)));
 		for (CQTable table : tables) {
-			table.getSelects().forEach(sel -> select.add(new SelectDescriptor(sel,this)));
+			table.getSelects().forEach(sel -> collector.add(new SelectResultInfo(sel,this)));
 		}
 	}
 
@@ -168,5 +189,10 @@ public class CQConcept implements CQElement {
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
 		
+	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {
+		visitor.visitConcept(this);
 	}
 }

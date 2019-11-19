@@ -7,21 +7,23 @@ import { connect } from "react-redux";
 import type { Dispatch } from "redux";
 import T from "i18n-react";
 
+import type { DateRangeT } from "../api/types";
+
 import { queryGroupModalSetNode } from "../query-group-modal/actions";
 import { loadPreviousQuery } from "../previous-queries/list/actions";
-import type { DateRangeType } from "../common/types/backend";
+import { openQueryUploadConceptListModal } from "../query-upload-concept-list-modal/actions";
 
 import {
   dropAndNode,
   dropOrNode,
   deleteNode,
   deleteGroup,
-  dropConceptListFile,
   toggleExcludeGroup,
   expandPreviousQuery,
   selectNodeForEditing,
   toggleTimestamps
 } from "./actions";
+
 import type {
   StandardQueryType,
   DraggedNodeType,
@@ -33,7 +35,7 @@ import QueryGroup from "./QueryGroup";
 type PropsType = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
-  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeType) => void,
+  dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeT) => void,
   dropOrNode: (DraggedNodeType | DraggedQueryType, number) => void,
   deleteNode: Function,
   deleteGroup: Function,
@@ -121,14 +123,14 @@ function mapStateToProps(state) {
     isEmptyQuery: state.queryEditor.query.length === 0,
 
     // only used by other actions
-    rootConcepts: state.categoryTrees.trees
+    rootConcepts: state.conceptTrees.trees
   };
 }
 
 const mapDispatchToProps = (dispatch: Dispatch<*>) => ({
   dropAndNode: (item, dateRange) => dispatch(dropAndNode(item, dateRange)),
   dropConceptListFile: (file, andIdx) =>
-    dispatch(dropConceptListFile(file, andIdx)),
+    dispatch(openQueryUploadConceptListModal(andIdx, file)),
   dropOrNode: (item, andIdx) => dispatch(dropOrNode(item, andIdx)),
   deleteNode: (andIdx, orIdx) => dispatch(deleteNode(andIdx, orIdx)),
   deleteGroup: (andIdx, orIdx) => dispatch(deleteGroup(andIdx, orIdx)),

@@ -2,6 +2,8 @@ package com.bakdata.conquery.util.support;
 
 import java.io.Closeable;
 import java.io.File;
+import java.time.Duration;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import javax.validation.Validator;
@@ -14,7 +16,8 @@ import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.DatasetsProcessor;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
 
 import io.dropwizard.testing.DropwizardTestSupport;
@@ -37,20 +40,25 @@ public class StandaloneSupport implements Closeable {
 	@Getter
 	private final ConqueryConfig config;
 	@Getter
-	private final DatasetsProcessor datasetsProcessor;
+	private final AdminProcessor datasetsProcessor;
 
 
 	public void waitUntilWorkDone() {
 		log.info("Waiting for jobs to finish");
 		boolean busy;
 		//sample 10 times from the job queues to make sure we are done with everything
+		long started = System.nanoTime();
 		for(int i=0;i<10;i++) {
 			do {
 				busy = false;
 				busy |= standaloneCommand.getMaster().getJobManager().isSlowWorkerBusy();
 				for (SlaveCommand slave : standaloneCommand.getSlaves())
 					busy |= slave.getJobManager().isSlowWorkerBusy();
-				Uninterruptibles.sleepUninterruptibly(10, TimeUnit.MILLISECONDS);
+				Uninterruptibles.sleepUninterruptibly(5, TimeUnit.MILLISECONDS);
+				if(Duration.ofNanos(System.nanoTime()-started).toSeconds()>10) {
+					log.warn("waiting for done work for a long time");
+					started = System.nanoTime();
+				}
 			} while(busy);
 		}
 		log.info("all jobs finished");
@@ -60,7 +68,7 @@ public class StandaloneSupport implements Closeable {
 		DropwizardTestSupport<ConqueryConfig> prepro = new DropwizardTestSupport<>(
 			Conquery.class,
 			config,
-			app -> new TestCommandWrapper(config, new PreprocessorCommand())
+			app -> new TestCommandWrapper(config, new PreprocessorCommand(MoreExecutors.newDirectExecutorService()))
 		);
 		prepro.before();
 		prepro.after();

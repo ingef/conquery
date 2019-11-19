@@ -1,51 +1,24 @@
 // @flow
 
-import {
-  OPEN_UPLOAD_MODAL,
-  CLOSE_UPLOAD_MODAL,
-  UPLOAD_FILE_START,
-  UPLOAD_FILE_SUCCESS,
-  UPLOAD_FILE_ERROR
-} from "./actionTypes";
+import { combineReducers } from "redux";
 
-type StateType = {
-  isModalOpen: boolean,
-  isLoading: boolean,
-  success: ?Object,
-  error: ?Object
-};
+import { OPEN_UPLOAD_MODAL, CLOSE_UPLOAD_MODAL } from "./actionTypes";
+import createQueryRunnerReducer from "../../query-runner/reducer";
 
-const initialState = {
-  isModalOpen: false,
-  isLoading: false,
-  success: null,
-  error: null
-};
-
-const queryResultUpload = (
-  state: StateType = initialState,
-  action: Object
-): StateType => {
+function isModalOpen(state: boolean = false, action: Object): boolean {
   switch (action.type) {
     case OPEN_UPLOAD_MODAL:
-      return {
-        ...state,
-        isModalOpen: true,
-        loading: false,
-        success: null,
-        error: null
-      };
+      return true;
     case CLOSE_UPLOAD_MODAL:
-      return initialState;
-    case UPLOAD_FILE_START:
-      return { ...state, loading: true, success: null, error: null };
-    case UPLOAD_FILE_SUCCESS:
-      return { ...state, loading: false, success: action.payload.data };
-    case UPLOAD_FILE_ERROR:
-      return { ...state, loading: false, error: action.payload };
+      return false;
     default:
       return state;
   }
-};
+}
 
-export default queryResultUpload;
+const queryRunner = createQueryRunnerReducer("external");
+
+export default combineReducers({
+  isModalOpen,
+  queryRunner
+});

@@ -31,7 +31,7 @@ public class AddWorker extends SlaveMessage.Slow {
 	public void react(Slave context) throws Exception {
 		log.info("creating a new worker for {}", dataset);
 		ConqueryConfig config = context.getConfig();
-		File dir = createWorkerName(config);
+		File dir = createWorkerName(context);
 		WorkerInformation info = new WorkerInformation();
 		info.setDataset(dataset.getId());
 		info.setIncludedBuckets(new IntArrayList());
@@ -51,8 +51,8 @@ public class AddWorker extends SlaveMessage.Slow {
 		context.send(new RegisterWorker(worker.getInfo()));
 	}
 
-	private File createWorkerName(ConqueryConfig config) {
-		String name = "worker_"+dataset.getId()+"_"+UUID.randomUUID();
-		return new File(config.getStorage().getDirectory(), name);
+	private File createWorkerName(Slave context) {
+		String name = "worker_"+dataset.getName()+"_"+UUID.randomUUID().toString();
+		return new File(context.getConfig().getStorage().getDirectory(), name);
 	}
 }

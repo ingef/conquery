@@ -1,18 +1,15 @@
 // @flow
 
 import T from "i18n-react";
-import difference from "lodash.difference";
 
-import {
-  getConceptsByIdsWithTablesAndSelects,
-  getConceptById
-} from "../category-trees/globalTreeStoreHelper";
+import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTreeStoreHelper";
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
-import { type DateRangeType } from "../common/types/backend";
+import type { DateRangeT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
+import { selectsWithDefaults } from "../model/select";
 
 import {
   QUERY_GROUP_MODAL_SET_DATE,
@@ -26,15 +23,13 @@ import {
   RENAME_PREVIOUS_QUERY_SUCCESS
 } from "../previous-queries/list/actionTypes";
 
-import { UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../upload-concept-list-modal/actionTypes";
+import { MODAL_ACCEPT as QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT } from "../query-upload-concept-list-modal/actionTypes";
 
 import {
   INTEGER_RANGE,
   REAL_RANGE,
   MONEY_RANGE
 } from "../form-components/filterTypes";
-
-import type { StateType } from "../query-runner/reducer";
 
 import {
   DROP_AND_NODE,
@@ -60,13 +55,11 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
-  SET_RESOLVED_FILTER_VALUES,
-  TOGGLE_INCLUDE_SUBNODES
+  SET_DATE_COLUMN
 } from "./actionTypes";
 
 import type {
   QueryNodeType,
-  QueryGroupType,
   StandardQueryType,
   DraggedNodeType,
   DraggedQueryType
@@ -74,31 +67,22 @@ import type {
 
 const initialState: StandardQueryType = [];
 
-export const withDefaultValues = arr => {
-  if (!arr) return arr;
-
-  return arr.map(obj => {
-    // Tables passed
-    if (obj.selects) return { ...obj, selects: withDefaultValues(obj.selects) };
-
-    // Selects passed
-    return { ...obj, selected: !!obj.default };
-  });
-};
-
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
 ): QueryNodeType => {
   // This sort of mapping might be a problem when adding new optional properties to
   // either Nodes or Queries: Flow won't complain when we omit those optional
   // properties here. But we can't use a spread operator either...
+  const baseItem = {
+    label: item.label,
+    excludeTimestamps: item.excludeTimestamps,
+    loading: item.loading,
+    error: item.error
+  };
 
   if (item.isPreviousQuery)
     return {
-      label: item.label,
-      excludeTimestamps: item.excludeTimestamps,
-      loading: item.loading,
-      error: item.error,
+      ...baseItem,
 
       id: item.id,
       // eslint-disable-next-line no-use-before-define
@@ -107,16 +91,13 @@ const filterItem = (
     };
   else
     return {
+      ...baseItem,
+
       ids: item.ids,
       description: item.description,
-      tables: withDefaultValues(item.tables),
-      selects: withDefaultValues(item.selects),
+      tables: item.tables,
+      selects: item.selects,
       tree: item.tree,
-
-      label: item.label,
-      excludeTimestamps: item.excludeTimestamps,
-      loading: item.loading,
-      error: item.error,
 
       additionalInfos: item.additionalInfos,
       matchingEntries: item.matchingEntries,
@@ -167,7 +148,7 @@ const dropAndNode = (
   action: {
     payload: {
       item: DraggedNodeType | DraggedQueryType,
-      dateRange?: DateRangeType
+      dateRange?: DateRangeT
     }
   }
 ) => {
@@ -344,14 +325,9 @@ const setNodeFilterProperties = (state, action, properties) => {
 };
 
 const setNodeFilterValue = (state, action) => {
-  const { value, formattedValue } = action.payload;
+  const { value } = action.payload;
 
-  // "action" is weirdly split if half here.
-  // Check if formattedValue is actually needed and refactor.
-  return setNodeFilterProperties(state, action, {
-    value,
-    formattedValue
-  });
+  return setNodeFilterProperties(state, action, { value });
 };
 
 const setNodeTableSelects = (state, action) => {
@@ -365,8 +341,28 @@ const setNodeTableSelects = (state, action) => {
     ...table,
     selects: selects.map(select => ({
       ...select,
-      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+      selected:
+        !!value &&
+        !!value.find(selectedValue => selectedValue.value === select.id)
     }))
+  };
+
+  return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
+};
+
+const setNodeTableDateColumn = (state, action) => {
+  const { tableIdx, value } = action.payload;
+  const { andIdx, orIdx } = selectEditedNode(state);
+  const table = state[andIdx].elements[orIdx].tables[tableIdx];
+  const { dateColumn } = table;
+
+  // value contains the selects that have now been selected
+  const newTable = {
+    ...table,
+    dateColumn: {
+      ...dateColumn,
+      value
+    }
   };
 
   return updateNodeTable(state, andIdx, orIdx, tableIdx, newTable);
@@ -380,7 +376,9 @@ const setNodeSelects = (state, action) => {
   return setElementProperties(state, andIdx, orIdx, {
     selects: selects.map(select => ({
       ...select,
-      selected: !!value.find(selectedValue => selectedValue.value === select.id)
+      selected:
+        !!value &&
+        !!value.find(selectedValue => selectedValue.value === select.id)
     }))
   });
 };
@@ -390,8 +388,7 @@ const switchNodeFilterMode = (state, action) => {
 
   return setNodeFilterProperties(state, action, {
     mode,
-    value: null,
-    formattedValue: null
+    value: null
   });
 };
 
@@ -404,12 +401,7 @@ const resetNodeAllFilters = (state, action) => {
 
   const newState = setElementProperties(state, andIdx, orIdx, {
     excludeTimestamps: false,
-    selects: node.selects
-      ? node.selects.map(select => ({
-          ...select,
-          selected: false
-        }))
-      : null
+    selects: selectsWithDefaults(node.selects)
   });
 
   if (!node.tables) return newState;
@@ -434,7 +426,7 @@ const resetGroupDates = (state, action) => {
 // Merges filter values from `table` into declared filters from `savedTable`
 //
 // `savedTable` may define filters, but it won't have any filter values,
-// since `savedTables` comes from a `savedConcept` in a `categoryTree`. Such a
+// since `savedTables` comes from a `savedConcept` in a `conceptTree`. Such a
 // `savedConcept` is never modified and only declares possible filters.
 // Since `table` comes from a previous query, it may have set filter values
 // if so, we will need to merge them in.
@@ -466,7 +458,9 @@ const mergeFiltersFromSavedConcept = (savedTable, table) => {
         ? {
             ...filterModeWithValue,
             value: filterModeWithValue.value.map(val =>
-              filter.options.find(op => op.value === val)
+              !!filter.options
+                ? filter.options.find(op => op.value === val)
+                : val
             )
           }
         : filterModeWithValue;
@@ -557,19 +551,23 @@ const expandNode = (rootConcepts, node) => {
 
       const { tables, selects } = mergeFromSavedConcept(lookupResult, node);
       const label = node.label || lookupResult.concepts[0].label;
+      const description =
+        node.description || lookupResult.concepts[0].description;
 
       return {
         ...node,
         label,
+        description,
         tables,
         selects,
+        excludeTimestamps: node.excludeFromTimeAggregation,
         tree: lookupResult.root
       };
   }
 };
 
 // Completely override all groups in the editor with the previous groups, but
-// a) merge elements with concept data from category trees (esp. "tables")
+// a) merge elements with concept data from concept trees (esp. "tables")
 // b) load nested previous queries contained in that query,
 //    so they can also be expanded
 const expandPreviousQuery = (state, action) => {
@@ -635,7 +633,7 @@ const loadPreviousQuerySuccess = (state, action) => {
     ...label,
     id: action.payload.data.id,
     loading: false,
-    query: action.payload.data.query.query // TODO: Backend bug, here should be only "query"
+    query: action.payload.data.query
   });
 };
 const loadPreviousQueryError = (state, action) => {
@@ -708,7 +706,7 @@ const createQueryNodeFromConceptListUploadResult = (
 };
 
 const insertUploadedConceptList = (state, action) => {
-  const { label, rootConcepts, resolvedConcepts } = action.payload;
+  const { label, rootConcepts, resolvedConcepts, andIdx } = action.payload;
 
   const queryElement = createQueryNodeFromConceptListUploadResult(
     label,
@@ -716,25 +714,19 @@ const insertUploadedConceptList = (state, action) => {
     resolvedConcepts
   );
 
-  // TODO: Re-enable soon
-  // if (parameters.andIdx != null)
-  //   return dropOrNode(state, {
-  //     payload: { item: queryElement, andIdx: parameters.andIdx }
-  //   });
+  if (!queryElement) return state;
 
-  return queryElement
+  return andIdx === null
     ? dropAndNode(state, {
         payload: { item: queryElement }
       })
-    : state;
+    : dropOrNode(state, {
+        payload: { andIdx, item: queryElement }
+      });
 };
 
 const selectNodeForEditing = (state, { payload: { andIdx, orIdx } }) => {
   return setElementProperties(state, andIdx, orIdx, { isEditing: true });
-};
-
-const deselectNode = (state, action) => {
-  return setAllElementsProperties(state, { isEditing: false });
 };
 
 const updateNodeLabel = (state, action) => {
@@ -775,72 +767,62 @@ const removeConceptFromNode = (state, action) => {
   });
 };
 
-const setResolvedFilterValues = (state: StateType, action: Object) => {
-  const {
-    tableIdx,
-    filterIdx,
-    data: {
-      resolvedFilter: { value }
-    }
-  } = action.payload;
+// -----------------------------
+// TODO: Figure out, whether we ever want to
+//       include subnodes in the reguar query editor
+//       => If we do, use this method, if we don't remove it
+// -----------------------------
+//
+// const toggleIncludeSubnodes = (state: StateType, action: Object) => {
+//   const { includeSubnodes } = action.payload;
 
-  return setNodeFilterProperties(
-    state,
-    {
-      payload: {
-        tableIdx,
-        filterIdx
-      }
-    },
-    {
-      value
-    }
-  );
-};
+//   const nodePosition = selectEditedNode(state);
 
-const toggleIncludeSubnodes = (state: StateType, action: Object) => {
-  const { includeSubnodes } = action.payload;
+//   if (!nodePosition) return state;
 
-  const nodePosition = selectEditedNode(state);
-  if (!nodePosition) return state;
+//   const { andIdx, orIdx } = nodePosition;
+//   const node = state[andIdx].elements[orIdx];
+//   const concept = getConceptById(node.ids);
 
-  const { andIdx, orIdx } = nodePosition;
+//   const childIds = [];
+//   const elements = concept.children.map(childId => {
+//     const child = getConceptById(childId);
 
-  const node = state[andIdx].elements[orIdx];
+//     childIds.push(childId);
 
-  const concept = getConceptById(node.ids);
+//     return {
+//       ids: [childId],
+//       label: child.label,
+//       description: child.description,
+//       tables: node.tables,
+//       selects: node.selects,
+//       tree: node.tree
+//     };
+//   });
 
-  const childIds = [];
-  const elements = concept.children.map(childId => {
-    const child = getConceptById(childId);
-    childIds.push(childId);
-    return {
-      ids: [childId],
-      label: child.label,
-      tables: node.tables,
-      tree: node.tree
-    };
-  });
+//   const groupProps = {
+//     elements: [
+//       ...state[andIdx].elements.slice(0, orIdx),
+//       {
+//         ...state[andIdx].elements[orIdx],
+//         includeSubnodes
+//       },
+//       ...state[andIdx].elements.slice(orIdx + 1)
+//     ]
+//   };
 
-  const groupProps = {
-    elements: [
-      ...state[andIdx].elements.slice(0, orIdx),
-      {
-        ...state[andIdx].elements[orIdx],
-        includeSubnodes: includeSubnodes
-      },
-      ...state[andIdx].elements.slice(orIdx + 1)
-    ]
-  };
+//   if (includeSubnodes) {
+//     groupProps.elements.push(...elements);
+//   } else {
+//     groupProps.elements = groupProps.elements.filter(element => {
+//       return !(difference(element.ids, childIds).length === 0);
+//     });
+//   }
 
-  if (includeSubnodes) groupProps.elements.push(...elements);
-  else
-    groupProps.elements = groupProps.elements.filter(element => {
-      return !(difference(element.ids, childIds).length === 0);
-    });
+//   return setGroupProperties(state, andIdx, groupProps);
+// };
 
-  return setGroupProperties(state, andIdx, groupProps);
-};
+// -----------------------------
 
 // Query is an array of "groups" (a AND b and c)
 // where a, b, c are objects, that (can) have properites,
@@ -897,7 +879,7 @@ const query = (
     case SELECT_NODE_FOR_EDITING:
       return selectNodeForEditing(state, action);
     case DESELECT_NODE:
-      return deselectNode(state, action);
+      return setAllElementsProperties(state, { isEditing: false });
     case UPDATE_NODE_LABEL:
       return updateNodeLabel(state, action);
     case ADD_CONCEPT_TO_NODE:
@@ -938,12 +920,10 @@ const query = (
       return loadFilterSuggestionsSuccess(state, action);
     case LOAD_FILTER_SUGGESTIONS_ERROR:
       return loadFilterSuggestionsError(state, action);
-    case UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
+    case QUERY_UPLOAD_CONCEPT_LIST_MODAL_ACCEPT:
       return insertUploadedConceptList(state, action);
-    case SET_RESOLVED_FILTER_VALUES:
-      return setResolvedFilterValues(state, action);
-    case TOGGLE_INCLUDE_SUBNODES:
-      return toggleIncludeSubnodes(state, action);
+    case SET_DATE_COLUMN:
+      return setNodeTableDateColumn(state, action);
     default:
       return state;
   }

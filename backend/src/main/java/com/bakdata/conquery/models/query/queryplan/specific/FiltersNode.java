@@ -5,18 +5,20 @@ import java.util.List;
 import java.util.Set;
 
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.queryplan.EventIterating;
 import com.bakdata.conquery.models.query.queryplan.QPChainNode;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 import com.bakdata.conquery.models.query.queryplan.filter.FilterNode;
 
+import lombok.Getter;
+
 
 public class FiltersNode extends QPChainNode implements EventIterating {
-
+	@Getter
 	private final List<FilterNode<?>> filters;
 
 	public FiltersNode(List<FilterNode<?>> filters, QPNode child) {
@@ -25,7 +27,7 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	}
 
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		super.nextTable(ctx, currentTable);
 		for(FilterNode<?> f:filters) {
 			f.nextTable(ctx, currentTable);
@@ -33,28 +35,29 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 	}
 	
 	@Override
-	public void nextBlock(Block block) {
-		super.nextBlock(block);
+	public void nextBlock(Bucket bucket) {
+		super.nextBlock(bucket);
 		for(FilterNode<?> f:filters) {
-			f.nextBlock(block);
+			f.nextBlock(bucket);
 		}
 	}
 	
 	@Override
-	public final void nextEvent(Block block, int event) {
+	public final void nextEvent(Bucket bucket, int event) {
 		for(FilterNode<?> f : filters) {
-			if (!f.checkEvent(block, event)) {
+			if (!f.checkEvent(bucket, event)) {
 				return;
 			}
 		}
 
 		for(FilterNode<?> f : filters) {
-			f.acceptEvent(block, event);
+			f.acceptEvent(bucket, event);
 		}
 
-		getChild().nextEvent(block, event);
+		getChild().nextEvent(bucket, event);
 	}
 
+	@Override
 	public boolean isContained() {
 		for(FilterNode<?> f : filters) {
 			if (!f.isContained()) {
@@ -78,5 +81,10 @@ public class FiltersNode extends QPChainNode implements EventIterating {
 		for(FilterNode<?> f:filters) {
 			f.collectRequiredTables(requiredTables);
 		}
+	}
+	
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return true;
 	}
 }

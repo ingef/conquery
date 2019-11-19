@@ -15,7 +15,7 @@ const environment = {
   basename: isProduction
     ? "/" // Possibly: Run under a subpath in production
     : "/",
-  apiUrl: "/api"
+  apiUrl: !!process.env.API_URL ? process.env.API_URL : "/api"
 };
 
 const tabs = [StandardQueryEditorTab, TimebasedQueryEditorTab];

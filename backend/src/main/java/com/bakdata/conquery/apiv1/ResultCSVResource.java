@@ -12,7 +12,6 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
-import javax.annotation.security.PermitAll;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -25,16 +24,16 @@ import javax.ws.rs.core.StreamingOutput;
 import org.eclipse.jetty.io.EofException;
 
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.ResourceUtil;
 
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
@@ -42,17 +41,12 @@ import lombok.extern.slf4j.Slf4j;
 
 @AllArgsConstructor
 @Path("datasets/{" + DATASET + "}/result/")
-@PermitAll
+
 @Slf4j
 public class ResultCSVResource {
 
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true, ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(ResultCSVResource.class, "getAsCSV");
-	private static final PrintSettings PRINT_SETTINGS = PrintSettings
-		.builder()
-		.prettyPrint(true)
-		.nameExtractor(
-			sd -> sd.getCqConcept().getIds().get(0).toStringWithoutDataset() + "_" + sd.getSelect().getId().toStringWithoutDataset())
-		.build();
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
 
@@ -61,11 +55,12 @@ public class ResultCSVResource {
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId) {
 		authorize(user, datasetId, Ability.READ);
+		authorize(user, QueryPermission.onInstance(Ability.DOWNLOAD, queryId));
 		authorize(user, queryId, Ability.READ);
-
+		
 		try {
-			ManagedQuery query = new ResourceUtil(namespaces).getManagedQuery(datasetId, queryId);
-			Stream<String> csv = new QueryToCSVRenderer(query.getNamespace()).toCSV(PRINT_SETTINGS, query);
+			ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
+			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery());
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {

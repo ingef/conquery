@@ -14,6 +14,10 @@ function shuffleArray(array) {
   return array;
 }
 
+const ERROR = JSON.stringify({
+  message: "Could not process the request"
+});
+
 const LONG_DELAY = 500;
 const SHORT_DELAY = 300;
 const NO_DELAY = 10;
@@ -24,10 +28,17 @@ module.exports = function(app, port) {
     QUERIES
   */
   app.post("/api/datasets/:datasetId/queries", function response(req, res) {
+    const dice = Math.random();
+
     setTimeout(() => {
-      res.setHeader("Content-Type", "application/json");
-      res.status(201);
-      res.send(JSON.stringify({ id: 1 }));
+      if (dice < 0.3) {
+        res.status(422);
+        res.send(ERROR);
+      } else {
+        res.setHeader("Content-Type", "application/json");
+        res.status(201);
+        res.send(JSON.stringify({ id: 1 }));
+      }
     }, NO_DELAY);
   });
 
@@ -47,7 +58,10 @@ module.exports = function(app, port) {
 
       const dice = Math.random();
 
-      if (dice > 0.1 && dice <= 0.6)
+      if (dice <= 0.3) {
+        res.status(422);
+        res.send(ERROR);
+      } else if (dice > 0.3 && dice <= 0.7)
         res.send(JSON.stringify({ id: 1, status: "RUNNING" }));
       else
         res.send(
@@ -118,20 +132,25 @@ module.exports = function(app, port) {
         "interesting"
       ];
 
-      for (var i = 25600; i < 35600; i++)
+      for (var i = 25600; i < 35600; i++) {
+        const notExecuted = Math.random() < 0.1;
+
         ids.push({
           id: i,
           label: Math.random() > 0.7 ? "Saved Query" : null,
-          numberOfResults: Math.floor(Math.random() * 500000),
+          numberOfResults: notExecuted
+            ? null
+            : Math.floor(Math.random() * 500000),
           tags: shuffleArray(possibleTags.filter(() => Math.random() < 0.3)),
           createdAt: new Date(
             Date.now() - Math.floor(Math.random() * 10000000)
           ).toISOString(),
           own: Math.random() < 0.1,
           shared: Math.random() < 0.8,
-          resultUrl: `/api/results/results.csv`,
+          resultUrl: notExecuted ? null : `/api/results/results.csv`,
           ownerName: "System"
         });
+      }
 
       res.send(JSON.stringify(ids));
     }, LONG_DELAY);
@@ -271,7 +290,7 @@ module.exports = function(app, port) {
         const { concepts } = req.body;
 
         res.send({
-          unknownConcepts: concepts.slice(5),
+          unknownCodes: concepts.slice(5),
           resolvedConcepts: concepts.slice(1)
         });
       }, LONG_DELAY);
@@ -329,4 +348,3 @@ module.exports = function(app, port) {
     res.send(config);
   });
 };
-

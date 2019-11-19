@@ -1,6 +1,6 @@
 {
   "type": "QUERY_TEST",
-  "label": "SIMPLE_VIRTUAL_CONCEPT_QUERY Test",
+  "label": "LAST_AGGREGATOR Test",
   "expectedCsv": "tests/aggregator/LAST_AGGREGATOR/expected.csv",
   "query": {
     "type": "CONCEPT_QUERY",

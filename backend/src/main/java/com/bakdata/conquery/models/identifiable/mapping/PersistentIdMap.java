@@ -7,12 +7,17 @@ import com.bakdata.conquery.io.jackson.serializer.PersistentIdMapSerializer;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 
 /**
  * Mapping from Csv Entity Id to External Entity Id and back from the combinations of Accessor + IDs to the Entity Id.
  */
-@Data
+@Getter @Setter
+@EqualsAndHashCode
+@RequiredArgsConstructor
 @JsonSerialize(using = PersistentIdMapSerializer.class)
 @JsonDeserialize(using = PersistentIdMapDeserializer.class)
 public class PersistentIdMap {

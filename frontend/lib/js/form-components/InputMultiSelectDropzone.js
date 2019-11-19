@@ -1,9 +1,10 @@
 // @flow
 
+import * as React from "react";
+import T from "i18n-react";
+import styled from "@emotion/styled";
 import { DropTarget } from "react-dnd";
 import { NativeTypes } from "react-dnd-html5-backend";
-
-import { InnerZone } from "./Dropzone";
 
 /*
   Can't use the dynamic <Dropzone> from './Dropzone' (the default export),
@@ -12,6 +13,30 @@ import { InnerZone } from "./Dropzone";
 
   And we're rerendering an InputMultiSelect potentially quite often.
 */
+import { InnerZone } from "./Dropzone";
+
+const Root = styled("div")`
+  position: relative;
+`;
+
+const FileInput = styled("input")`
+  display: none;
+`;
+
+const TopRight = styled("p")`
+  margin: 0;
+  font-size: ${({ theme }) => theme.font.tiny};
+  color: ${({ theme }) => theme.font.gray};
+  position: absolute;
+  top: -15px;
+  right: 0;
+  cursor: pointer;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 const target = {
   drop: (props, monitor) => {
     const item = monitor.getItem();
@@ -28,4 +53,35 @@ const collect = (connect, monitor) => ({
   canDrop: monitor.canDrop()
 });
 
-export default DropTarget([NativeTypes.FILE], target, collect)(InnerZone);
+export default DropTarget([NativeTypes.FILE], target, collect)(
+  ({ onDropFile, children, isOver, canDrop, connectDropTarget }) => {
+    const fileInputRef = React.useRef(null);
+
+    function onOpenFileDialog() {
+      fileInputRef.current.click();
+    }
+
+    return (
+      <Root>
+        <InnerZone
+          connectDropTarget={connectDropTarget}
+          canDrop={canDrop}
+          isOver={isOver}
+        >
+          {children}
+        </InnerZone>
+        <TopRight onClick={onOpenFileDialog}>
+          {T.translate("inputMultiSelect.openFileDialog")}
+          <FileInput
+            ref={fileInputRef}
+            type="file"
+            onChange={e => {
+              onDropFile(e.target.files[0]);
+              fileInputRef.current.value = null;
+            }}
+          />
+        </TopRight>
+      </Root>
+    );
+  }
+);

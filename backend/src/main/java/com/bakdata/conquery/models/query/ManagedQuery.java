@@ -6,13 +6,15 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.concept.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
@@ -36,7 +38,7 @@ public class ManagedQuery extends ManagedExecution {
 
 	private IQuery query;
 	@NotNull
-	private String[] tags = new String[0];
+	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
 	/**
 	 * The number of contained entities the last time this query was executed.
@@ -44,7 +46,7 @@ public class ManagedQuery extends ManagedExecution {
 	 * @param lastResultCount the new count for JACKSON
 	 * @returns the number of contained entities
 	 */
-	private long lastResultCount;
+	private Long lastResultCount;
 	
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
@@ -71,7 +73,7 @@ public class ManagedQuery extends ManagedExecution {
 				log.error("Failed query {} at least for the entity {} with:\n{}", queryId, failed.getEntityId(), failed.getExceptionStackTrace());
 			}
 		}
-		synchronized (execution) {
+		synchronized (getExecution()) {
 			executingThreads--;
 			results.addAll(result.getResults());
 			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
@@ -91,7 +93,7 @@ public class ManagedQuery extends ManagedExecution {
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos(PrintSettings config) {
+	public ResultInfoCollector collectResultInfos(PrintSettings config) {
 		return query.collectResultInfos(config);
 	}
 	
@@ -100,9 +102,13 @@ public class ManagedQuery extends ManagedExecution {
 		ExecutionStatus status = super.buildStatus(url);
 		status.setTags(tags);
 		status.setQuery(query);
-		Long numberOfResults = Long.valueOf(fetchContainedEntityResult().count());
-		status.setNumberOfResults(numberOfResults > 0 ? numberOfResults : lastResultCount);
+		status.setNumberOfResults(lastResultCount);
 		status.setShared(shared);
 		return status;
+	}
+	
+	@Override
+	public ManagedQuery toResultQuery() {
+		return this;
 	}
 }

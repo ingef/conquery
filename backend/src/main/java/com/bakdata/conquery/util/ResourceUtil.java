@@ -2,7 +2,6 @@ package com.bakdata.conquery.util;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -24,8 +23,8 @@ public class ResourceUtil {
 		return namespaces.get(id).getStorage();
 	}
 
-	public ManagedQuery getManagedQuery(DatasetId id, ManagedExecutionId queryId) {
-		return namespaces.get(id).getQueryManager().getQuery(queryId);
+	public ManagedQuery getManagedQuery(ManagedExecutionId queryId) {
+		return namespaces.get(queryId.getDataset()).getQueryManager().getQuery(queryId);
 	}
 
 }

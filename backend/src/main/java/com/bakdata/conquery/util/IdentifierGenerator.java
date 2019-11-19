@@ -13,7 +13,8 @@ public class IdentifierGenerator {
 	
 	public static String createIdentifier(int hash) {
 		int version = IntMath.mod(hash, COMBINATIONS);
-		return ADJECTIVES[IntMath.mod(version, ADJECTIVES.length)]+" "+CREATURES[version/ADJECTIVES.length];
+		int count = hash / COMBINATIONS;
+		return ADJECTIVES[IntMath.mod(version, ADJECTIVES.length)]+"_"+CREATURES[version/ADJECTIVES.length]+(count>0?"_"+count:"");
 	}
 	
 	private static final String [] CREATURES = {

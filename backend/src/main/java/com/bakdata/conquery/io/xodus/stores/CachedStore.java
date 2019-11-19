@@ -110,7 +110,7 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 			}
 		});
 		log.info(
-				"\tloaded store {}\n\tentries: {}\n\tsize: {}\n\tloading time: {}",
+				"\tloaded store {}: {} entries, {} within {}",
 				this,
 				cache.values().size(),
 				BinaryByteUnit.format(totalSize.get()),

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -16,6 +17,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.exceptions.validators.ValidCSVFormat;
+import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessor;
 import com.bakdata.conquery.models.identifiable.mapping.IdAccessorImpl;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
@@ -23,8 +25,10 @@ import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
-import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.google.common.collect.MoreCollectors;
@@ -49,9 +53,12 @@ public class CQExternal implements CQElement {
 	private final String[][] values;
 
 	@Override
-	public QPNode createQueryPlan(QueryPlanContext context, QueryPlan plan) {
+	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 	}
+	
+	@Override
+	public void visit(QueryVisitor visitor) {}
 
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
@@ -67,8 +74,12 @@ public class CQExternal implements CQElement {
 
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
-		IdAccessor idAccessor = mapping.mappingFromCsvHeader(values[0], context.getNamespace().getStorage());
-
+		IdAccessor idAccessor = mapping.mappingFromCsvHeader(
+			IdAccessorImpl.removeNonIdFields(values[0], format),
+			context.getNamespace().getStorage()
+		);
+		List<List<String>> nonResolved = new ArrayList<>();
+		
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
@@ -87,15 +98,37 @@ public class CQExternal implements CQElement {
 					}
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				includedEntities.put(primary.getId(idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format)).getCsvId()),
-					Objects.requireNonNull(dates));
+				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format));
+				
+				int resolvedId;
+				if(id!=null && (resolvedId=primary.getId(id.getCsvId())) != -1) {
+					includedEntities.put(
+						resolvedId,
+						Objects.requireNonNull(dates)
+					);
+				}
+				else {
+					nonResolved.add(Arrays.asList(row));
+				}
 			}
 			catch (Exception e) {
-				log.warn("failed to parse dates from " + Arrays.toString(row), e);
+				log.warn("failed to parse id from " + Arrays.toString(row), e);
 			}
 		}
+		if(!nonResolved.isEmpty()) {
+			log.warn(
+				"Could not resolve {} of the {} rows. Not resolved: {}",
+				nonResolved.size(),
+				values.length-1,
+				nonResolved.subList(0, Math.min(nonResolved.size(), 10))
+			);
+		}
+		
 		return new CQExternalResolved(includedEntities);
 	}
+	
+	@Override
+	public void collectResultInfos(ResultInfoCollector collector) {}
 
 	public enum DateFormat {
 		EVENT_DATE {

@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.datasets;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ColumnId;
 import com.bakdata.conquery.models.preproc.PPColumn;
@@ -25,12 +25,17 @@ public class Column extends Labeled<ColumnId> {
 
 	@JsonBackReference
 	@NotNull
+	@ToString.Exclude
 	private Table table;
 	@NotNull
-	@ToString.Include
 	private MajorTypeId type;
 	@JsonIgnore
 	private int position = UNKNOWN_POSITION;
+	/**
+	 * if set this column should use the given dictionary
+	 * if it is of type string, instead of its own dictionary
+	 */
+	private String sharedDictionary;
 
 	@Override
 	public ColumnId createId() {
@@ -44,8 +49,8 @@ public class Column extends Labeled<ColumnId> {
 		return this.getType().equals(column.getType().getTypeId());
 	}
 
-	public CType getTypeFor(Block block) {
-		return getTypeFor(block.getImp());
+	public CType getTypeFor(Bucket bucket) {
+		return getTypeFor(bucket.getImp());
 	}
 
 	public CType getTypeFor(Import imp) {
