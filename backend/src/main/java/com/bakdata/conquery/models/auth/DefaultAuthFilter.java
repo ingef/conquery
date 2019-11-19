@@ -12,7 +12,7 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.realm.AuthorizingRealm;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
 
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;

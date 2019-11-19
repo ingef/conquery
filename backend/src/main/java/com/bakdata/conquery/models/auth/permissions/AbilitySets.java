@@ -13,4 +13,7 @@ public class AbilitySets {
 		Ability.TAG,
 		Ability.CANCEL,
 		Ability.LABEL);
+	public final static EnumSet<Ability> DATASET_CREATOR = EnumSet.of(
+		Ability.READ,
+		Ability.DELETE);
 }
