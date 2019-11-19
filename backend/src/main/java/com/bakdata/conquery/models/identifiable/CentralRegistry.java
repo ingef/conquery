@@ -9,10 +9,10 @@ import java.util.function.Supplier;
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.NamespaceCollection;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
-
 import lombok.NoArgsConstructor;
 
 @SuppressWarnings({"rawtypes", "unchecked"}) @NoArgsConstructor
@@ -81,5 +81,14 @@ public class CentralRegistry implements Injectable {
 		else {
 			return result;
 		}
+	}
+
+	public static CentralRegistry getForDataset(DeserializationContext ctxt, DatasetId datasetId) throws JsonMappingException {
+		NamespaceCollection alternative = (NamespaceCollection)ctxt.findInjectableValue(NamespaceCollection.class.getName(), null, null);
+
+		if(alternative == null)
+			return null;
+
+		return alternative.findRegistry(datasetId);
 	}
 }
