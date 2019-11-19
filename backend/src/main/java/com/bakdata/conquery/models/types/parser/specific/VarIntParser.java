@@ -38,7 +38,7 @@ public class VarIntParser extends Parser<Integer> {
 	}
 	
 	@Override
-	protected Decision<Integer, Number, VarIntType> decideType() {
+	public Decision<Integer, Number, VarIntType> decideType() {
 		if(maxValue+1 <= Byte.MAX_VALUE && minValue >= Byte.MIN_VALUE) {
 			return new Decision<Integer, Number, VarIntType>(
 				new Transformer<Integer, Number>() {

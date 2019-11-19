@@ -81,10 +81,18 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer) {
 		final StoreEntry<KEY, VALUE> entry = new StoreEntry<>();
 		store.forEach((k,v) -> {
-			entry.setKey(readKey(k));
-			entry.setByteSize(v.getLength());
-			entry.setValue(readValue(v));
-			consumer.accept(entry);
+			try {
+				entry.setKey(readKey(k));
+				entry.setByteSize(v.getLength());
+				try {
+					entry.setValue(readValue(v));
+					consumer.accept(entry);
+				} catch(Exception e) {
+					log.warn("Could not parse value for key "+entry.getKey(), e);
+				}
+			} catch(Exception e) {
+				log.warn("Could not parse key "+k, e);
+			}
 		});
 	}
 

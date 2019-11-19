@@ -8,7 +8,6 @@ import com.bakdata.conquery.models.types.CType;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Getter
 @Setter
@@ -26,7 +25,7 @@ public abstract class Parser<MAJOR_JAVA_TYPE> {
 				return parseValue(v);
 			}
 			catch(Exception e) {
-				throw new ParsingException("Failed to parse '"+v+"' as "+this.getClass().getSimpleName(), e);
+				throw new ParsingException("Failed to parse '"+v+"' with "+this.getClass().getSimpleName(), e);
 			}
 		}
 	}

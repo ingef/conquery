@@ -15,7 +15,6 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.exceptions.JSONException;

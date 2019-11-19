@@ -19,13 +19,13 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
 
 @Execution(ExecutionMode.SAME_THREAD)
 public class ResultTypeTest {
 
-	private static final PrintSettings PRETTY = new PrintSettings();
-	private static final PrintSettings PLAIN = PrintSettings.builder().prettyPrint(false).build();
+	private static final String COLUMN_NAMER = "columnInfo.getSelect().getId().toStringWithoutDataset()";
+	private static final PrintSettings PRETTY = new PrintSettings(true);
+	private static final PrintSettings PLAIN = new PrintSettings(false);
 	
 	public static Stream<Arguments> testData() {
 		//init global default config

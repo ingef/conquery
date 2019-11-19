@@ -4,29 +4,54 @@ import { connect } from "react-redux";
 import type { Dispatch } from "redux-thunk";
 
 import { QueryRunner } from "../query-runner";
+
+import { validateQueryLength, validateQueryDates } from "../model/query";
+
 import actions from "../app/actions";
 
 const { startStandardQuery, stopStandardQuery } = actions;
 
-function isButtonEnabled(state, ownProps) {
-  return !!// Return true or false even if all are undefined / null
-  (
-    ownProps.datasetId !== null &&
-    !state.queryEditor.queryRunner.startQuery.loading &&
-    !state.queryEditor.queryRunner.stopQuery.loading &&
-    state.queryEditor.query.length > 0
-  );
+function validateQueryStartStop(queryRunner) {
+  return !queryRunner.startQuery.loading && !queryRunner.stopQuery.loading;
 }
 
-const mapStateToProps = (state, ownProps) => ({
-  queryRunner: state.queryEditor.queryRunner,
-  isButtonEnabled: isButtonEnabled(state, ownProps),
-  isQueryRunning: !!state.queryEditor.queryRunner.runningQuery,
-  // Following ones only needed in dispatch functions
-  queryId: state.queryEditor.queryRunner.runningQuery,
-  version: state.categoryTrees.version,
-  query: state.queryEditor.query
-});
+function validateDataset(datasetId) {
+  return datasetId !== null;
+}
+
+function getButtonTooltipKey(hasQueryValidDates) {
+  if (!hasQueryValidDates) {
+    return "queryRunner.errorDates";
+  }
+
+  // Potentially add further validation and more detailed messages
+
+  return null;
+}
+
+const mapStateToProps = (state, ownProps) => {
+  const { query, queryRunner } = state.queryEditor;
+
+  const isDatasetValid = validateDataset(ownProps.datasetId);
+  const hasQueryValidDates = validateQueryDates(query);
+  const isQueryValid = validateQueryLength(query) && hasQueryValidDates;
+  const isQueryNotStartedOrStopped = validateQueryStartStop(queryRunner);
+
+  const isButtonEnabled =
+    isDatasetValid && isQueryValid && isQueryNotStartedOrStopped;
+
+  const buttonTooltipKey = getButtonTooltipKey(hasQueryValidDates);
+
+  return {
+    buttonTooltipKey,
+    isButtonEnabled,
+    query,
+    queryRunner,
+    isQueryRunning: !!queryRunner.runningQuery,
+    queryId: queryRunner.runningQuery,
+    version: state.conceptTrees.version
+  };
+};
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   startQuery: (datasetId, query, version) =>

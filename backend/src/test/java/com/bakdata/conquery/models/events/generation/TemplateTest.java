@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.events.generation;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Set;
 
 import org.junit.jupiter.params.ParameterizedTest;

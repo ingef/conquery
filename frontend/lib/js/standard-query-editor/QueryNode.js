@@ -14,6 +14,7 @@ import { isQueryExpandable } from "../model/query";
 
 import QueryNodeActions from "./QueryNodeActions";
 
+import { getRootNodeLabel } from "./helper";
 import type { QueryNodeType, DraggedNodeType, DraggedQueryType } from "./types";
 
 const Root = styled("div")`
@@ -74,6 +75,15 @@ const StyledErrorMessage = styled(ErrorMessage)`
   margin: 0;
 `;
 
+const RootNode = styled("p")`
+  margin: 0 0 4px;
+  line-height: 1;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: ${({ theme }) => theme.font.xs};
+  color: ${({ theme }) => theme.col.blueGrayDark};
+`;
+
 type PropsType = {
   node: QueryNodeType,
   onDeleteNode: Function,
@@ -102,11 +112,13 @@ class QueryNode extends React.Component {
 
     const hasActiveFilters = !node.error && nodeHasActiveFilters(node);
 
+    const rootNodeLabel = getRootNodeLabel(node);
+
     return (
       <Root
         ref={instance => connectDragSource(instance)}
         hasActiveFilters={hasActiveFilters}
-        onClick={!node.error && onEditClick}
+        onClick={!!node.error ? () => null : onEditClick}
       >
         <Node>
           {node.isPreviousQuery && (
@@ -118,6 +130,7 @@ class QueryNode extends React.Component {
             <StyledErrorMessage message={node.error} />
           ) : (
             <>
+              {rootNodeLabel && <RootNode>{rootNodeLabel}</RootNode>}
               <Label>{node.label || node.id}</Label>
               {node.description && (!node.ids || node.ids.length === 1) && (
                 <Description>{node.description}</Description>
@@ -152,7 +165,7 @@ const nodeSource = {
     // Return the data describing the dragged item
     // NOT using `...node` since that would also spread `children` in.
     // This item may stem from either:
-    // 1) A concept (dragged from CategoryTreeNode)
+    // 1) A concept (dragged from ConceptTreeNode)
     // 2) A previous query (dragged from PreviousQueries)
     const { node, andIdx, orIdx } = props;
     const { height, width } = findDOMNode(component).getBoundingClientRect();

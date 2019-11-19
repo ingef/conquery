@@ -1,26 +1,23 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
-
 import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.common.CQuarter;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
-import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
-import com.bakdata.conquery.models.types.parser.specific.StringParser;
-import com.bakdata.conquery.util.io.SmallOut;
-
+import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
+import com.esotericsoftware.kryo.io.Output;
 import io.dropwizard.util.Size;
 import lombok.Data;
+
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 @Data
 public class Preprocessed {
@@ -35,7 +32,8 @@ public class Preprocessed {
 	private long writtenGroups = 0;
 	private List<List<Object[]>> entries = new ArrayList<>();
 	
-	private final SmallOut buffer = new SmallOut((int)Size.megabytes(50).toBytes());
+	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
+	private Import imp;
 
 	public Preprocessed(PreprocessingConfig config, ImportDescriptor descriptor) throws IOException {
 		this.file = descriptor.getInputFile();
@@ -97,7 +95,7 @@ public class Preprocessed {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void writeRowToFile(SmallOut out, Import imp, int entityId, List<Object[]> events) throws IOException {
+	private void writeRowToFile(Output out, Import imp, int entityId, List<Object[]> events) throws IOException {
 		//transform values to their current subType
 		//we can't map the primary column since we do a lot of work which would destroy any compression anyway
 		//entityId = (Integer)primaryColumn.getType().transformFromMajorType(primaryColumn.getOriginalType(), Integer.valueOf(entityId));
@@ -113,10 +111,10 @@ public class Preprocessed {
 			transformer.finishTransform();
 		}
 		
-		Block block = imp.getBlockFactory().createBlock(entityId, imp, events);
+		Bucket bucket = imp.getBlockFactory().create(imp, events);
 		
 		out.writeInt(entityId, true);
-		block.writeContent(buffer);
+		bucket.writeContent(buffer);
 		out.writeInt(buffer.position(), true);
 		out.writeBytes(buffer.getBuffer(), 0, buffer.position());
 		
@@ -124,8 +122,8 @@ public class Preprocessed {
 		writtenGroups++;
 	}
 	
-	public void writeToFile(SmallOut out) throws IOException {
-		Import imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
+	public void writeToFile(Output out) throws IOException {
+		imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 		
 		for(int entityId = 0; entityId < entries.size(); entityId++) {
 			List<Object[]> events = entries.get(entityId);
@@ -147,6 +145,7 @@ public class Preprocessed {
 				.columns(columns)
 				.groups(writtenGroups)
 				.validityHash(hash)
+				.suffix(imp.getSuffix())
 				.build();
 		
 		try {

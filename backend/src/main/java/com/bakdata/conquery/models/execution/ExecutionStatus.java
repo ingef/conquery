@@ -1,11 +1,7 @@
 package com.bakdata.conquery.models.execution;
 
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;

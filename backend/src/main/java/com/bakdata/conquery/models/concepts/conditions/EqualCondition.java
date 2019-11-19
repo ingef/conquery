@@ -17,8 +17,6 @@ import lombok.Setter;
 @CPSType(id="EQUAL", base=CTCondition.class)
 public class EqualCondition implements CTCondition {
 
-	private static final long serialVersionUID = 1L;
-	
 	@Setter @Getter @NotEmpty
 	private HashSet<String> values;
 

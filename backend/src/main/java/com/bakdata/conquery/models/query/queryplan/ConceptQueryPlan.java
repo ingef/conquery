@@ -2,57 +2,82 @@ package com.bakdata.conquery.models.query.queryplan;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.bakdata.conquery.models.events.Block;
-import com.bakdata.conquery.models.query.QueryContext;
-import com.bakdata.conquery.models.query.PrintSettings;
+import com.bakdata.conquery.io.xodus.WorkerStorage;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.aggregators.specific.SpecialDateUnion;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 
-import lombok.AccessLevel;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
-@Getter @Setter @NoArgsConstructor(access=AccessLevel.PUBLIC)
-public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPlan {
-	
-	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
+@Getter @Setter
+@ToString
+public class ConceptQueryPlan implements QueryPlan, EventIterating {
+
+	@Getter @Setter
+	private Set<Table> requiredTables;
+	private QPNode child;
+	@ToString.Exclude
 	private SpecialDateUnion specialDateUnion = new SpecialDateUnion();
-
-	public static ConceptQueryPlan create() {
-		ConceptQueryPlan plan = new ConceptQueryPlan();
-		plan.aggregators.add(plan.specialDateUnion);
-
-		return plan;
+	@ToString.Exclude
+	protected final List<Aggregator<?>> aggregators = new ArrayList<>();
+	private Entity entity;
+	
+	public ConceptQueryPlan(boolean generateSpecialDateUnion) {
+		if(generateSpecialDateUnion) {
+			aggregators.add(specialDateUnion);
+		}
 	}
 	
-	@Override
-	public ConceptQueryPlan createClone() {
-		return (ConceptQueryPlan)QueryPlan.super.createClone();
+	public ConceptQueryPlan(QueryPlanContext ctx) {
+		this(ctx.isGenerateSpecialDateUnion());
 	}
-	
+
 	@Override
 	public ConceptQueryPlan clone(CloneContext ctx) {
-		return ctx.clone(this);
-	}
-
-	@Override
-	public ConceptQueryPlan doClone(CloneContext ctx) {
-		ConceptQueryPlan clone = new ConceptQueryPlan();
+		checkRequiredTables(ctx.getStorage());
+		
+		ConceptQueryPlan clone = new ConceptQueryPlan(false);
+		clone.setChild(child.clone(ctx));
 		for(Aggregator<?> agg:aggregators)
 			clone.aggregators.add(agg.clone(ctx));
 		clone.specialDateUnion = specialDateUnion.clone(ctx);
-		clone.setChild(getChild().clone(ctx));
+		clone.setRequiredTables(this.getRequiredTables());
 		return clone;
 	}
 	
-	@Override
-	public void nextEvent(Block block, int event) {
-		getChild().nextEvent(block, event);
+	private void checkRequiredTables(WorkerStorage storage) {
+		if(requiredTables == null) {
+			synchronized (this) {
+				if(requiredTables == null) {
+					requiredTables = this.collectRequiredTables()
+						.stream()
+						.map(storage.getDataset().getTables()::getOrFail)
+						.collect(Collectors.toSet());
+				}
+			}
+		}
+	}
+
+	public void init(Entity entity) {
+		this.entity = entity;
+		child.init(entity);
+	}
+
+	public void nextEvent(Bucket bucket, int event) {
+		getChild().nextEvent(bucket, event);
 	}
 	
 	protected EntityResult result() {
@@ -62,7 +87,6 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 		return EntityResult.of(entity.getId(), values);
 	}
 
-	@Override
 	public EntityResult createResult() {
 		if(isContained()) {
 			return result();
@@ -71,19 +95,89 @@ public class ConceptQueryPlan extends QPChainNode implements Cloneable, QueryPla
 			return EntityResult.notContained();
 		}
 	}
-
+	
 	@Override
-	public void addAggregator(Aggregator<?> aggregator) {
-		aggregators.add(aggregator);
+	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
+		checkRequiredTables(ctx.getStorage());
+		init(entity);
+		if (requiredTables.isEmpty()) {
+			return EntityResult.notContained();
+		}
+
+		for(Table currentTable : requiredTables) {
+			nextTable(ctx, currentTable);
+			for(Bucket bucket : entity.getBucket(currentTable)) {
+				int localEntity = bucket.toLocal(entity.getId());
+				if(bucket.containsLocalEntity(localEntity)) {
+					if(isOfInterest(bucket)) {
+						nextBlock(bucket);
+						int start = bucket.getFirstEventOfLocal(localEntity);
+						int end = bucket.getLastEventOfLocal(localEntity);
+						for(int event = start; event < end ; event++) {
+							nextEvent(bucket, event);
+						}
+					}
+				}
+			}
+		}
+		
+		/*
+		 * ugly workaround which we should find a fix for,
+		 * because the jackson serializer can't deal with NaN or infinity
+		 */
+		EntityResult result = createResult();
+		if(result instanceof ContainedEntityResult) {
+			result.asContained().streamValues().forEach(row -> {
+				for(int i=0;i<row.length;i++) {
+					if(row[i] instanceof Double) {
+						double v = (Double) row[i];
+						if(Double.isInfinite(v) || Double.isNaN(v)) {
+							row[i] = null;
+						}
+					}
+				}
+			});
+		}
+		
+		return result;
 	}
 	
 	@Override
-	public void addAggregator(int index, Aggregator<?> aggregator) {
-		aggregators.add(index, aggregator);
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
+		child.nextTable(ctx, currentTable);
+	}
+	
+	@Override
+	public void nextBlock(Bucket bucket) {
+		child.nextBlock(bucket);
 	}
 
-	@Override
+	public void addAggregator(Aggregator<?> aggregator) {
+		aggregators.add(aggregator);
+	}
+
 	public int getAggregatorSize() {
 		return aggregators.size();
 	}
+
+	public boolean isContained() {
+		return child.isContained();
+	}
+
+	@Override
+	public boolean isOfInterest(Entity entity) {
+		return child.isOfInterest(entity);
+	}
+
+	@Override
+	public boolean isOfInterest(Bucket bucket) {
+		return child.isOfInterest(bucket);
+	}
+	
+	@Override
+	public void collectRequiredTables(Set<TableId> requiredTables) {
+		child.collectRequiredTables(requiredTables);
+	}
+	
+	
 }

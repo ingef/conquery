@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
@@ -23,6 +24,10 @@ public class PPColumn {
 	private transient Transformer transformer = null;
 	@SuppressWarnings("rawtypes") @JsonIgnore
 	private transient Parser parser = null;
+	@JsonIgnore
+	private transient DictionaryMapping valueMapping;
+	@JsonIgnore
+	private transient CType oldType;
 
 	public void findBestType() {
 		Decision typeDecision = parser.findBestType();

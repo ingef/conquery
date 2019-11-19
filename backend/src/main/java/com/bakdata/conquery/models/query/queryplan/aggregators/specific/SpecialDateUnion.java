@@ -1,42 +1,21 @@
 package com.bakdata.conquery.models.query.queryplan.aggregators.specific;
 
 import com.bakdata.conquery.models.common.CDateSet;
-import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.externalservice.ResultType;
-import com.bakdata.conquery.models.query.QueryContext;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
+/**
+ * Special Aggregator, used to calculate the times an entity has events after filtering.
+ */
 public class SpecialDateUnion implements Aggregator<String> {
 
 	private CDateSet set = CDateSet.create();
-	private Column currentColumn;
-	private CDateSet dateRestriction;
 
 	@Override
-	public void nextTable(QueryContext ctx, Table table) {
-		currentColumn = ctx.getValidityDateColumn();
-		dateRestriction = ctx.getDateRestriction();
-	}
-
-	@Override
-	public void aggregateEvent(Block block, int event) {
-		if (currentColumn != null) {
-			CDateRange range = block.getAsDateRange(event, currentColumn);
-			if(range != null) {
-				CDateSet add = CDateSet.create(dateRestriction);
-				add.retainAll(CDateSet.create(range));
-				set.addAll(add);
-				return;
-			}
-		}
-		
-		if(dateRestriction.countDays() != null) {
-			set.addAll(dateRestriction);
-		}
+	public void aggregateEvent(Bucket bucket, int event) {
+		throw new IllegalStateException("SpecialDateUnion should never be used as a normal aggregator");
 	}
 
 	/**
@@ -69,5 +48,10 @@ public class SpecialDateUnion implements Aggregator<String> {
 	@Override
 	public ResultType getResultType() {
 		return ResultType.STRING;
+	}
+	
+	@Override
+	public String toString(){
+		return getClass().getSimpleName();
 	}
 }

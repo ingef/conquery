@@ -1,4 +1,4 @@
-<#macro nullValue type>${(type.maxValue+1)?c}</#macro>
+<#macro nullValue type>${type.maxValue+1}</#macro>
 <#macro kryoSerialization type>
 	<#if type.minValue gte 0>
 		output.writeInt(<#nested/>, true)

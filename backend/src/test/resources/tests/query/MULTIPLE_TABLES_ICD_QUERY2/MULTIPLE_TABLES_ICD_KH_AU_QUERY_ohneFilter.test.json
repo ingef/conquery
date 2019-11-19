@@ -224,7 +224,8 @@
         "columns": [
           {
             "name": "icd_code",
-            "type": "STRING"
+            "type": "STRING",
+            "sharedDictionary": "icd"
           },
           {
             "name": "entlassungsdatum",
@@ -246,7 +247,8 @@
         "columns": [
           {
             "name": "icd_code",
-            "type": "STRING"
+            "type": "STRING",
+            "sharedDictionary": "icd"
           },
           {
             "name": "au_beginn",
@@ -272,7 +274,8 @@
         "columns": [
           {
             "name": "icd_code",
-            "type": "STRING"
+            "type": "STRING",
+            "sharedDictionary": "icd"
           },
           {
             "name": "behandlungsquartal",

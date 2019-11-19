@@ -1,8 +1,14 @@
 package com.bakdata.conquery.models.concepts.tree.perf;
 
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.RandomUtils;
+
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeCache;
 import com.bakdata.conquery.models.concepts.tree.TreeChildPrefixIndex;
-import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.types.specific.StringTypeDictionary;
 import com.bakdata.conquery.models.types.specific.StringTypeEncoded;
@@ -12,12 +18,6 @@ import com.bakdata.conquery.util.CalculatedValue;
 import com.bakdata.conquery.util.dict.SuccinctTrie;
 
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.RandomUtils;
-
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Slf4j
 public class CachedGroovyPerformanceTest extends AbstractSearchPerformanceTest<Integer> {

@@ -20,13 +20,6 @@ public abstract class AuthConfig {
 	public abstract AuthorizingRealm getRealm(MasterMetaStorage storage);
 	
 	/**
-	 * Handler for valid credentials that do not match any user.
-	 * @param storage A storage, where the handler might add a new users.
-	 * @return The UnknownUserHandler from the configuration.
-	 */
-	public abstract UnknownUserHandler getUnknownUserHandler(MasterMetaStorage storage);
-	
-	/**
 	 * Sets up the initial subjects and permissions for the authentication system.
 	 * @param storage A storage, where the handler might add a new users.
 	 */

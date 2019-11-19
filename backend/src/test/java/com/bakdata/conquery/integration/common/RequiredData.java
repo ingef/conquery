@@ -18,4 +18,5 @@ public class RequiredData {
 	private RequiredTable[] tables;
 	@Valid @NotNull
 	private List<ResourceFile> previousQueryResults = Collections.emptyList();
+	private ResourceFile idMapping;
 }

@@ -12,13 +12,9 @@
             "tables": [
                 {
                     "id": "${dataset}.test_tree.test_column",
-                    "filters": [
-                        {
-                            "filter": "${dataset}.test_tree.test_column.conquery_validity_date_selection",
-                            "type": "SELECT",
-                            "value": "other_date"
-                        }
-                    ]
+                    "dateColumn": {
+                        "value": "${dataset}.test_tree.test_column.other_date"
+                    }
                 }
             ]
         }

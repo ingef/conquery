@@ -10,4 +10,9 @@ public enum NotContainedEntityResult implements EntityResult {
 	public String toString() {
 		return "NOT_CONTAINED";
 	}
+	
+	@Override
+	public boolean isContained() {
+		return false;
+	}
 }

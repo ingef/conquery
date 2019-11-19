@@ -1,12 +1,11 @@
 package com.bakdata.conquery;
 
 import java.util.Arrays;
-
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.externalservice.ResultType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DictionaryId;
-import com.bakdata.conquery.models.query.concept.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 
 import lombok.experimental.UtilityClass;
 
@@ -15,11 +14,9 @@ public class ConqueryConstants {
 
 	public static final String EXTENSION_PREPROCESSED = ".cqpp";
 	public static final String EXTENSION_DESCRIPTION = ".import.json";
-	public static final String VALIDITY_DATE_SELECTION_FILTER_NAME = "conquery_validity_date_selection";
 	public static final String ALL_IDS_TABLE = "ALL_IDS_TABLE";
 	public static final String ALL_IDS_TABLE___ID = "id";
-	public static final String DATES = "dates";
-	public static final ResultInfo DATES_INFO = new ResultInfo("dates", ResultType.STRING, 0, 0);
+	public static final SimpleResultInfo DATES_INFO = new SimpleResultInfo("dates", ResultType.STRING);
 
 	public static class AuthenticationUtil {
 		public static final String REALM_NAME = "CONQUERY";

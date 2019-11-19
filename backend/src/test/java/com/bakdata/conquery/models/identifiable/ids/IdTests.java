@@ -140,9 +140,8 @@ public class IdTests {
 			//filter test classes
 			.filter(cl -> !cl.toString().toLowerCase().contains("test"))
 			.map(cl -> {
-				Class<?> idClass = null;
 				Class<?> current = cl;
-				while(idClass == null && current != null) {
+				while(current != null) {
 					String name = current.getSimpleName();
 					
 					

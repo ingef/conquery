@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.common;
 
+import java.util.Optional;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -13,7 +15,7 @@ import lombok.experimental.Wither;
 @Wither
 @Getter
 @EqualsAndHashCode
-public class Range<T extends Comparable> implements IRange<T, Range<T>>{
+public class Range<T extends Comparable> implements IRange<T, Range<T>> {
 
 	private final T min;
 	private final T max;
@@ -165,16 +167,18 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public static IntegerRange fromNumberRange(IRange<? extends Number, ?> orig){
-			return new Range.IntegerRange(orig.getMin().intValue(), orig.getMax().intValue());
+			return new Range.IntegerRange(
+				Optional.ofNullable(orig.getMin()).map(Number::intValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::intValue).orElse(null));
 		}
 
 		@Override
 		public boolean contains(Integer value) {
-			return contains(value.intValue());
+			return value != null && contains(value.intValue());
 		}
 
 		public boolean contains(Number value) {
-			return contains(value.intValue());
+			return value != null && contains(value.intValue());
 		}
 
 		public boolean contains(int value) {
@@ -194,16 +198,18 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public static LongRange fromNumberRange(IRange<? extends Number, ?> orig){
-			return new Range.LongRange(orig.getMin().longValue(), orig.getMax().longValue());
+			return new Range.LongRange(
+				Optional.ofNullable(orig.getMin()).map(Number::longValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::longValue).orElse(null));
 		}
 
 		@Override
 		public boolean contains(Long value) {
-			return contains(value.longValue());
+			return value != null && contains(value.longValue());
 		}
 
 		public boolean contains(Number value) {
-			return contains(value.longValue());
+			return value != null && contains(value.longValue());
 		}
 
 		public boolean contains(long value) {
@@ -223,16 +229,18 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public static FloatRange fromNumberRange(IRange<? extends Number, ?> orig){
-			return new Range.FloatRange(orig.getMin().floatValue(), orig.getMax().floatValue());
+			return new Range.FloatRange(
+				Optional.ofNullable(orig.getMin()).map(Number::floatValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::floatValue).orElse(null));
 		}
 
 		@Override
 		public boolean contains(Float value) {
-			return contains(value.floatValue());
+			return value != null && contains(value.floatValue());
 		}
 
 		public boolean contains(Number value) {
-			return contains(value.floatValue());
+			return value != null && contains(value.floatValue());
 		}
 
 		public boolean contains(float value) {
@@ -255,16 +263,18 @@ public class Range<T extends Comparable> implements IRange<T, Range<T>>{
 		}
 
 		public static DoubleRange fromNumberRange(IRange<? extends Number, ?> orig){
-			return new Range.DoubleRange(orig.getMin().doubleValue(), orig.getMax().doubleValue());
+			return new Range.DoubleRange(
+				Optional.ofNullable(orig.getMin()).map(Number::doubleValue).orElse(null),
+				Optional.ofNullable(orig.getMax()).map(Number::doubleValue).orElse(null));
 		}
 
 		@Override
 		public boolean contains(Double value) {
-			return contains(value.doubleValue());
+			return value != null && contains(value.doubleValue());
 		}
 
 		public boolean contains(Number value) {
-			return contains(value.doubleValue());
+			return value != null && contains(value.doubleValue());
 		}
 
 		public boolean contains(double value) {

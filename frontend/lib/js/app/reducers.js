@@ -2,9 +2,9 @@
 
 import { combineReducers } from "redux";
 
-import categoryTrees, {
-  type StateType as CategoryTreesStateType
-} from "../category-trees/reducer";
+import conceptTrees, {
+  type StateType as ConceptTreesStateType
+} from "../concept-trees/reducer";
 
 import {
   reducer as datasets,
@@ -20,7 +20,8 @@ import uploadConceptListModal, {
   type StateType as UploadConceptListModalStateType
 } from "../upload-concept-list-modal/reducer";
 
-import { type StateType as PanesStateType } from "../pane";
+import type { StateType as PanesStateType } from "../pane";
+import type { TabT } from "../pane/types";
 
 import { reducer as startup } from "../startup";
 import { buildPanesReducer } from "../pane/reducer";
@@ -30,26 +31,26 @@ import { reducer as previousQueriesSearch } from "../previous-queries/search";
 import { reducer as previousQueriesFilter } from "../previous-queries/filter";
 import { reducer as uploadQueryResults } from "../previous-queries/upload";
 import { reducer as deletePreviousQueryModal } from "../previous-queries/delete-modal";
-import { reducer as uploadFilterListModal } from "../upload-filter-list-modal";
 import { reducer as snackMessage } from "../snack-message";
+import { reducer as preview } from "../preview";
+import { reducer as queryUploadConceptListModal } from "../query-upload-concept-list-modal";
 
 import { createQueryNodeEditorReducer } from "../query-node-editor";
 
 // TODO: Introduce more StateTypes gradually
 export type StateType = {
-  categoryTrees: CategoryTreesStateType,
+  conceptTrees: ConceptTreesStateType,
   datasets: DatasetsStateType,
   tooltip: TooltipStateType,
   panes: PanesStateType,
   uploadConceptListModal: UploadConceptListModalStateType
 };
 
-const buildAppReducer = tabs => {
+const buildAppReducer = (tabs: TabT[]) => {
   return combineReducers({
     startup,
-    categoryTrees,
+    conceptTrees,
     uploadConceptListModal,
-    uploadFilterListModal,
     queryNodeEditor: createQueryNodeEditorReducer("standard"),
     queryGroupModal,
     datasets,
@@ -61,6 +62,8 @@ const buildAppReducer = tabs => {
     uploadQueryResults,
     deletePreviousQueryModal,
     snackMessage,
+    preview,
+    queryUploadConceptListModal,
     ...tabs.reduce((all, tab) => {
       all[tab.key] = tab.reducer;
       return all;

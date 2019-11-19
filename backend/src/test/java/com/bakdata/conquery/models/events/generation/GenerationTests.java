@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.events.generation;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
@@ -10,10 +11,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.lang3.ArrayUtils;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -23,7 +30,7 @@ import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -31,7 +38,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.specific.StringParser;
+import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
+import com.bakdata.conquery.models.types.specific.AStringType;
+import com.google.common.collect.Lists;
 
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +54,7 @@ public class GenerationTests {
 				Random r = new Random(7);
 				ArrayList<Object[]> arrays = new ArrayList<>();
 				for(int i = 0;i<numberOfValues;i++) {
-					Object[] event = new Object[17];
+					Object[] event = new Object[18];
 					arrays.add(event);
 
 					if(r.nextBoolean()) {
@@ -91,6 +100,9 @@ public class GenerationTests {
 					if(r.nextBoolean()) {
 						event[16] = BigDecimal.valueOf(r.nextInt(4), r.nextInt(120)-60);
 					}
+					if(r.nextBoolean()) {
+						event[17] = Integer.toString(r.nextInt(800));
+					}
 				}
 				arrays.trimToSize();
 
@@ -99,7 +111,7 @@ public class GenerationTests {
 			);
 	}
 
-	public Block generateBlock(List<Object[]> arrays) throws IOException {
+	public Bucket generateBucket(List<Object[]> arrays) throws IOException {
 		Parser[] parser = new Parser[] {
 			MajorTypeId.DATE.createParser(),
 			MajorTypeId.STRING.createParser(),
@@ -117,7 +129,8 @@ public class GenerationTests {
 			MajorTypeId.INTEGER.createParser(),
 			MajorTypeId.INTEGER.createParser(),
 			MajorTypeId.INTEGER.createParser(),
-			MajorTypeId.DECIMAL.createParser()
+			MajorTypeId.DECIMAL.createParser(),
+			MajorTypeId.STRING.createParser()
 		};
 
 
@@ -163,58 +176,79 @@ public class GenerationTests {
 			imp.getColumns()[i].getType().writeHeader(new NullOutputStream());
 		}
 
-		return imp.getBlockFactory().createBlock(
-			0,
-			imp,
-			result
-		);
+		return imp.getBlockFactory().create(imp, result);
+	}
+	
+	@ParameterizedTest(name="{0}")
+	@MethodSource("createRandomContent")
+	public void testParallelSerialization(int numberOfValues, List<Object[]> arrays) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, NoSuchMethodException, SecurityException, JSONException, InterruptedException {
+		ExecutorService pool = Executors.newFixedThreadPool(100);
+		List<Future<?>> futures = new ArrayList<>();
+		for(int i=0;i<30;i++) {
+			List<Object[]> l = arrays.stream().map(v->Arrays.copyOf(v, v.length)).collect(Collectors.toList());
+			futures.add(pool.submit(()->generateBucket(l)));
+		}
+		pool.shutdown();
+		for(Future<?> f:futures) {
+			assertThatCode(()->f.get()).doesNotThrowAnyException();
+		}
+		pool.awaitTermination(1, TimeUnit.HOURS);
 	}
 
 	@ParameterizedTest(name="{0}")
 	@MethodSource("createRandomContent")
 	public void testSerialization(int numberOfValues, List<Object[]> arrays) throws ClassNotFoundException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, IOException, NoSuchMethodException, SecurityException, JSONException {
-		Block block = generateBlock(arrays);
+		List<Object[]> originalArrays = new ArrayList<>(arrays);
+		originalArrays.replaceAll(v->Arrays.copyOf(v, v.length));
+		
+		Bucket bucket = generateBucket(arrays);
 		for(int i=0;i<arrays.size();i++) {
 			for(int c=0;c<arrays.get(i).length;c++) {
 				Column fake = new Column();
 				fake.setPosition(c);
 				
-				Object orig = arrays.get(i)[c];
-				String message = "checking "+c+" "+block.getImp().getColumns()[c].getType()+":"+i+" = "+orig;
+				Object orig = originalArrays.get(i)[c];
+				String message = "checking "+c+" "+bucket.getImp().getColumns()[c].getType()+":"+i+" = "+orig;
 				
 				if(orig == null) {
-					assertThat(block.has(i, fake))
+					assertThat(bucket.has(i, fake))
 						.as(message)
 						.isFalse();
 				}
 				else {
-					assertThat(block.has(i, fake))
+					ImportColumn impCol = bucket.getImp().getColumns()[c];
+					assertThat(bucket.has(i, fake))
 						.as(message+" is not null")
 						.isTrue();
 					
 					if(orig instanceof BigDecimal) {
-						assertThat((BigDecimal)block.getAsObject(i, fake))
+						assertThat((BigDecimal)bucket.getAsObject(i, fake))
 							.as(message)
 							.usingComparator(BigDecimal::compareTo)
 							.isEqualTo(orig);
 					}
+					else if(impCol.getType().getTypeId() == MajorTypeId.STRING) {
+						assertThat(((AStringType<?>)impCol.getType()).getElement(bucket.getString(i, fake)))
+							.as(message)
+							.isEqualTo(orig);
+					}
 					else {
-						assertThat(block.getAsObject(i, fake))
+						assertThat(bucket.getAsObject(i, fake))
 							.as(message)
 							.isEqualTo(orig);
 					}
 				}
 				
 			}
-			block.calculateMap(i, block.getImp());
+			bucket.calculateMap(i, bucket.getImp());
 		}
 		CentralRegistry registry = new CentralRegistry();
-		registry.register(block.getImp());
+		registry.register(bucket.getImp());
 
 		SerializationTestUtil
-			.forType(Block.class)
+			.forType(Bucket.class)
 			.registry(registry)
-			.test(block);
+			.test(bucket);
 	}
 
 	private ImportColumn column(Import imp, int pos) {

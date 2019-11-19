@@ -1,78 +1,27 @@
 // @flow
 
-import fetch from "isomorphic-fetch";
-
-import { getStoredAuthToken } from "../authorization";
 import { apiUrl } from "../environment";
 
-import { type DatasetIdType } from "../dataset/reducer";
+import type { DatasetIdT, QueryIdT } from "../api/types";
 import type {
-  RootType,
-  TreeNodeIdType,
-  ConceptListResolutionResultType
-} from "../common/types/backend";
+  ConceptIdT,
+  GetFrontendConfigResponseT,
+  GetConceptsResponseT,
+  GetConceptResponseT,
+  PostQueriesResponseT,
+  GetQueryResponseT,
+  GetStoredQueriesResponseT,
+  GetStoredQueryResponseT,
+  PostConceptResolveResponseT,
+  PostFilterResolveResponseT,
+  PostFilterSuggestionsResponseT
+} from "./types";
 
+import fetchJson from "./fetchJson";
 import { transformQueryToApi } from "./apiHelper";
-
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 
-type RequestType = {
-  body?: Object | string,
-  headers?: Object
-};
-
-function fetchJsonUnauthorized(
-  url: string,
-  request?: RequestType,
-  rawBody?: boolean = false
-) {
-  const finalRequest = request
-    ? {
-        ...request,
-        body: rawBody ? request.body : JSON.stringify(request.body),
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-          ...request.headers
-        }
-      }
-    : {
-        method: "GET",
-        headers: {
-          Accept: "application/json"
-        }
-      };
-
-  return fetch(url, finalRequest).then(
-    response => {
-      if (response.status >= 200 && response.status < 300)
-        return response.json().catch(e => e);
-      // Also handle empty responses
-      // Reject other status
-      else return response.json().then(Promise.reject.bind(Promise));
-    },
-    error => Promise.reject(error) // Network or connection failure
-  );
-}
-
-function fetchJson(
-  url: string,
-  request?: RequestType,
-  rawBody?: boolean = false
-) {
-  const authToken = getStoredAuthToken() || "";
-  const finalRequest = {
-    ...(request || {}),
-    headers: {
-      Authorization: `Bearer ${authToken}`,
-      ...((request && request.headers) || {})
-    }
-  };
-
-  return fetchJsonUnauthorized(url, finalRequest, rawBody);
-}
-
-export function getFrontendConfig() {
+export function getFrontendConfig(): Promise<GetFrontendConfigResponseT> {
   return fetchJson(apiUrl() + "/config/frontend");
 }
 
@@ -80,27 +29,25 @@ export function getDatasets() {
   return fetchJson(apiUrl() + `/datasets`);
 }
 
-export const getConcepts = (datasetId: DatasetIdType): Promise<RootType> => {
+export const getConcepts = (
+  datasetId: DatasetIdT
+): Promise<GetConceptsResponseT> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts`);
 };
 
-export type ConceptElementType = {
-  children: Array<TreeNodeIdType>
-};
-
 export const getConcept = (
-  datasetId: DatasetIdType,
-  conceptId: TreeNodeIdType
-): Promise<Map<TreeNodeIdType, ConceptElementType>> => {
+  datasetId: DatasetIdT,
+  conceptId: ConceptIdT
+): Promise<GetConceptResponseT> => {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}`);
 };
 
 // Same signature as postFormQueries
 export function postQueries(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   query: Object,
   queryType: string
-) {
+): Promise<PostQueriesResponseT> {
   // Transform into backend-compatible format
   const body = transformQueryToApi(query, queryType);
 
@@ -110,24 +57,30 @@ export function postQueries(
   });
 }
 
-export function deleteQuery(datasetId: DatasetIdType, queryId: number) {
+export function deleteQuery(
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
+): Promise<null> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/queries/${queryId}`, {
     method: "DELETE"
   });
 }
 
-export function getQuery(datasetId: DatasetIdType, queryId: number) {
+export function getQuery(
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
+): Promise<GetQueryResponseT> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/queries/${queryId}`);
 }
 
 // Same signature as postQueries, plus a form query transformator
 export function postFormQueries(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   query: Object,
   queryType: string,
   version: any,
   formQueryTransformation: Function
-) {
+): Promise<PostQueriesResponseT> {
   // Transform into backend-compatible format
   const body = transformFormQueryToApi(query, version, formQueryTransformation);
 
@@ -137,7 +90,10 @@ export function postFormQueries(
   });
 }
 
-export function deleteFormQuery(datasetId: DatasetIdType, queryId: number) {
+export function deleteFormQuery(
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
+): Promise<null> {
   return fetchJson(
     apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`,
     {
@@ -146,21 +102,32 @@ export function deleteFormQuery(datasetId: DatasetIdType, queryId: number) {
   );
 }
 
-export function getFormQuery(datasetId: DatasetIdType, queryId: number) {
+export function getFormQuery(
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
+): Promise<GetQueryResponseT> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`);
 }
 
-export function getStoredQueries(datasetId: DatasetIdType) {
+export function getStoredQueries(
+  datasetId: DatasetIdT
+): Promise<GetStoredQueriesResponseT> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/stored-queries`);
 }
 
-export function getStoredQuery(datasetId: DatasetIdType, queryId: number) {
+export function getStoredQuery(
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
+): Promise<GetStoredQueryResponseT> {
   return fetchJson(
     apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`
   );
 }
 
-export function deleteStoredQuery(datasetId: DatasetIdType, queryId: number) {
+export function deleteStoredQuery(
+  datasetId: DatasetIdT,
+  queryId: QueryIdT
+): Promise<null> {
   return fetchJson(
     apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`,
     {
@@ -170,10 +137,10 @@ export function deleteStoredQuery(datasetId: DatasetIdType, queryId: number) {
 }
 
 export function patchStoredQuery(
-  datasetId: DatasetIdType,
-  queryId: number,
+  datasetId: DatasetIdT,
+  queryId: QueryIdT,
   attributes: Object
-) {
+): Promise<null> {
   return fetchJson(
     apiUrl() + `/datasets/${datasetId}/stored-queries/${queryId}`,
     {
@@ -184,12 +151,12 @@ export function patchStoredQuery(
 }
 
 export function postPrefixForSuggestions(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   conceptId: string,
   tableId: string,
   filterId: string,
   text: string
-) {
+): Promise<PostFilterSuggestionsResponseT> {
   return fetchJson(
     apiUrl() +
       `/datasets/${datasetId}/concepts/${conceptId}` +
@@ -202,10 +169,10 @@ export function postPrefixForSuggestions(
 }
 
 export function postConceptsListToResolve(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   conceptId: string,
   concepts: string[]
-): ConceptListResolutionResultType {
+): Promise<PostConceptResolveResponseT> {
   return fetchJson(
     apiUrl() + `/datasets/${datasetId}/concepts/${conceptId}/resolve`,
     {
@@ -216,12 +183,12 @@ export function postConceptsListToResolve(
 }
 
 export function postFilterValuesResolve(
-  datasetId: DatasetIdType,
+  datasetId: DatasetIdT,
   conceptId: string,
   tableId: string,
   filterId: string,
   values: string[]
-) {
+): Promise<PostFilterResolveResponseT> {
   return fetchJson(
     apiUrl() +
       `/datasets/${datasetId}/concepts/${conceptId}` +

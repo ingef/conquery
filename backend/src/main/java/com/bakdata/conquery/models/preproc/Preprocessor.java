@@ -1,5 +1,31 @@
 package com.bakdata.conquery.models.preproc;
 
+import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.io.HCFile;
+import com.bakdata.conquery.io.csv.CSV;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
+import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.types.CType;
+import com.bakdata.conquery.models.types.parser.Parser;
+import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
+import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
+import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
+import com.bakdata.conquery.util.io.ConqueryFileUtil;
+import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.bakdata.conquery.util.io.LogUtil;
+import com.bakdata.conquery.util.io.ProgressBar;
+import com.google.common.io.CountingInputStream;
+import com.jakewharton.byteunits.BinaryByteUnit;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -13,34 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
-
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
-import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.csv.CSV;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
-import com.bakdata.conquery.models.types.CType;
-import com.bakdata.conquery.models.types.parser.Parser;
-import com.bakdata.conquery.models.types.parser.specific.StringParser;
-import com.bakdata.conquery.models.types.specific.StringTypeEncoded.Encoding;
-import com.bakdata.conquery.util.io.ConqueryFileUtil;
-import com.bakdata.conquery.util.io.ConqueryMDC;
-import com.bakdata.conquery.util.io.LogUtil;
-import com.bakdata.conquery.util.io.ProgressBar;
-import com.bakdata.conquery.util.io.SmallOut;
-import com.google.common.io.CountingInputStream;
-import com.jakewharton.byteunits.BinaryByteUnit;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -148,7 +146,9 @@ public class Preprocessor {
 			log.info("finding optimal column types");
 			log.info("\t{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getParser(), result.getPrimaryColumn().getType());
 			
-			result.getPrimaryColumn().setType(((StringParser)result.getPrimaryColumn().getParser()).createBaseType(Encoding.UTF8));
+			StringParser parser = (StringParser)result.getPrimaryColumn().getParser();
+			parser.setEncoding(Encoding.UTF8);
+			result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
 			for(PPColumn c:result.getColumns()) {
 				c.findBestType();
 				log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
@@ -174,7 +174,7 @@ public class Preprocessor {
 				);
 			}
 
-			try (SmallOut out = new SmallOut(outFile.writeContent())) {
+			try (com.esotericsoftware.kryo.io.Output out = new com.esotericsoftware.kryo.io.Output(outFile.writeContent())) {
 				result.writeToFile(out);
 			}
 

@@ -18,11 +18,13 @@ public class RequiredColumn {
 	private String name;
 	@NotNull
 	private MajorTypeId type;
+	private String sharedDictionary;
 
 	public Column toColumn(Table t) {
 		Column col = new Column();
 		col.setName(name);
 		col.setType(type);
+		col.setSharedDictionary(sharedDictionary);
 		col.setTable(t);
 		return col;
 	}

@@ -21,8 +21,6 @@ import lombok.Setter;
 @CPSType(id="OR", base=CTCondition.class)
 public class OrCondition implements CTCondition {
 
-	private static final long serialVersionUID = 1L;
-	
 	@Setter @Getter @Valid @NotEmpty
 	private List<CTCondition> conditions;
 	

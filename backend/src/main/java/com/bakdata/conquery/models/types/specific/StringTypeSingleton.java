@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.dictionary.Dictionary;
 import com.bakdata.conquery.models.types.CType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 
@@ -66,5 +67,15 @@ public class StringTypeSingleton extends AStringType<Boolean> {
 	@Override
 	public long estimateMemoryBitWidth() {
 		return Byte.SIZE;
+	}
+	
+	@Override
+	public Dictionary getUnderlyingDictionary() {
+		return null;
+	}
+	
+	@Override
+	public void adaptUnderlyingDictionary(Dictionary newDict, VarIntType newNumberType) {
+		throw new UnsupportedOperationException();
 	}
 }

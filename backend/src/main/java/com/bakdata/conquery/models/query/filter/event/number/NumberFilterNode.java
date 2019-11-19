@@ -2,9 +2,14 @@ package com.bakdata.conquery.models.query.filter.event.number;
 
 import com.bakdata.conquery.models.common.IRange;
 import com.bakdata.conquery.models.datasets.Column;
-import com.bakdata.conquery.models.events.Block;
+import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.query.queryplan.filter.SingleColumnFilterNode;
 
+/**
+ * Abstract class, filtering single events to be in a specified range. Entity is only included if a single event is in range.
+ * There exist type specific implementations.
+ * @param <RANGE> Range Type for inclusion test.
+ */
 public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends SingleColumnFilterNode<RANGE> {
 
 	private boolean hit;
@@ -14,18 +19,18 @@ public abstract class NumberFilterNode<RANGE extends IRange<?, ?>> extends Singl
 	}
 
 	@Override
-	public final boolean checkEvent(Block block, int event) {
-		if (!block.has(event, getColumn())) {
+	public final boolean checkEvent(Bucket bucket, int event) {
+		if (!bucket.has(event, getColumn())) {
 			return false;
 		}
 
-		return contains(block, event);
+		return contains(bucket, event);
 	}
 
-	public abstract boolean contains(Block block, int event);
+	public abstract boolean contains(Bucket bucket, int event);
 
 	@Override
-	public void acceptEvent(Block block, int event) {
+	public void acceptEvent(Bucket bucket, int event) {
 		// Assumption is that accept cannot be called when checkEvent returned false
 		hit = true;
 	}

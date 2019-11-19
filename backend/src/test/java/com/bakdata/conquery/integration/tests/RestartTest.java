@@ -11,8 +11,11 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
@@ -29,11 +32,13 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class RestartTest implements ProgrammaticIntegrationTest {
 
-	private Mandator mandator = new Mandator("99999998", "MANDATOR_LABEL");
+	private Role mandator = new Role("99999998", "MANDATOR_LABEL");
+	private Role deleteMandator = new Role("99999997", "SHOULD_BE_DELETED_MANDATOR");
 	private User user = new User("user@test.email", "USER_LABEL");
+	private Group group = new Group("groupName", "groupLabel");
 
 	@Override
-	public void execute(TestConquery testConquery) throws Exception {
+	public void execute(String name, TestConquery testConquery) throws Exception {
 		//read test sepcification
 		String testJson = In.resource("/tests/query/SIMPLE_TREECONCEPT_QUERY/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
@@ -43,7 +48,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		PersistentIdMap persistentIdMap = getPersistentIdMap();
 
 
-		try (StandaloneSupport conquery = testConquery.getSupport()) {
+		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
 			dataset = conquery.getDataset().getId();
 
 			test = JsonIntegrationTest.readJson(dataset, testJson);
@@ -55,7 +60,9 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 			// Auth testing
 			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
-			storage.addMandator(mandator);
+			storage.addRole(mandator);
+			storage.addRole(deleteMandator);
+			storage.removeRole(deleteMandator.getId());
 
 			// IDMapping Testing
 			NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
@@ -64,7 +71,11 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			namespaceStorage.updateIdMapping(persistentIdMap);
 
 			storage.addUser(user);
-			user.addMandator(storage, mandator);
+			user.addRole(storage, mandator);
+
+			storage.addGroup(group);
+			group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset")));
+			group.addMember(storage, user);
 
 		}
 
@@ -78,9 +89,13 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
 			User userStored = storage.getUser(user.getId());
-			Mandator mandatorStored = storage.getMandator(mandator.getId());
-			Mandator userRefMand = userStored.getRoles().iterator().next();
+			Role mandatorStored = storage.getRole(mandator.getId());
+			Role userRefMand = userStored.getRoles().iterator().next();
 			assertThat(mandatorStored).isSameAs(userRefMand);
+			assertThat(storage.getRole(deleteMandator.getId())).as("deleted mandator should stay deleted").isNull();
+
+			// Check if user still is permitted to the permission from its group
+			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset")))).isTrue();
 			PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
 				.getMaster()
 				.getNamespaces()

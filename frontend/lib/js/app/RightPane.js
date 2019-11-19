@@ -2,12 +2,12 @@
 
 import React from "react";
 import { connect } from "react-redux";
-import type { TabType } from "../common/types/tabs";
+import type { TabT } from "../pane/types";
 
 import { Pane } from "../pane";
 
 type PropsType = {
-  tabs: TabType[],
+  tabs: TabT[],
   activeTab: string,
   selectedDatasetId: ?string
 };

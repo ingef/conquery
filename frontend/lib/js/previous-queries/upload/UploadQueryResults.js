@@ -6,22 +6,24 @@ import T from "i18n-react";
 import type { Dispatch } from "redux-thunk";
 import { connect } from "react-redux";
 
-import { type DatasetIdType } from "../../dataset/reducer";
-
+import type { DatasetIdT } from "../../api/types";
 import IconButton from "../../button/IconButton";
+import actions from "../../app/actions";
 
 import UploadQueryResultsModal from "./UploadQueryResultsModal";
-import { openUploadModal, closeUploadModal, uploadFile } from "./actions";
+import { openUploadModal, closeUploadModal } from "./actions";
+
+const { startExternalQuery, queryExternalResultReset } = actions;
 
 type PropsType = {
-  datasetId: ?DatasetIdType,
+  datasetId: ?DatasetIdT,
   isModalOpen: boolean,
   loading: boolean,
   success: ?Object,
   error: ?Object,
   onOpenModal: Function,
   onCloseModal: Function,
-  onUploadFile: Function
+  onUpload: Function
 };
 
 const Root = styled("div")`
@@ -37,8 +39,8 @@ const UploadQueryResults = (props: PropsType) => {
       </IconButton>
       {props.isModalOpen && (
         <UploadQueryResultsModal
-          onCloseModal={props.onCloseModal}
-          onUploadFile={file => props.onUploadFile(props.datasetId, file)}
+          onClose={props.onCloseModal}
+          onUpload={query => props.onUpload(props.datasetId, query)}
           loading={props.loading}
           success={props.success}
           error={props.error}
@@ -48,17 +50,24 @@ const UploadQueryResults = (props: PropsType) => {
   );
 };
 
-const mapStateToProps = state => ({
-  isModalOpen: state.uploadQueryResults.isModalOpen,
-  loading: state.uploadQueryResults.loading,
-  success: state.uploadQueryResults.success,
-  error: state.uploadQueryResults.error
-});
+const selectQueryRunner = state => state.uploadQueryResults.queryRunner;
+
+const mapStateToProps = state => {
+  const queryRunner = selectQueryRunner(state);
+
+  return {
+    isModalOpen: state.uploadQueryResults.isModalOpen,
+    loading: queryRunner.startQuery.loading || !!queryRunner.runningQuery,
+    success: queryRunner.queryResult.success,
+    error: queryRunner.startQuery.error || queryRunner.queryResult.error
+  };
+};
 
 const mapDispatchToProps = (dispatch: Dispatch) => ({
   onOpenModal: () => dispatch(openUploadModal()),
-  onCloseModal: () => dispatch(closeUploadModal()),
-  onUploadFile: (datasetId, file) => dispatch(uploadFile(datasetId, file))
+  onCloseModal: () =>
+    dispatch([closeUploadModal(), queryExternalResultReset()]),
+  onUpload: (datasetId, query) => dispatch(startExternalQuery(datasetId, query))
 });
 
 export default connect(

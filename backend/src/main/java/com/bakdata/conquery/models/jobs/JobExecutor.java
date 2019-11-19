@@ -8,6 +8,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Uninterruptibles;
 
@@ -72,6 +73,7 @@ public class JobExecutor extends Thread {
 	
 	@Override
 	public void run() {
+		ConqueryMDC.setLocation(this.getName());
 		while(!closed.get()) {
 			Job job;
 			try {
@@ -83,21 +85,21 @@ public class JobExecutor extends Thread {
 					try {
 						if(job.isCancelled()){
 							log.trace("{} skipping cancelled job {}", this.getName(), job);
-							currentJob.set(null);
 							continue;
 						}
 
 						log.trace("{} started job {} with Id {}", this.getName(), job, job.getJobId());
+						ConqueryMDC.setLocation(this.getName());
 						job.execute();
+						ConqueryMDC.setLocation(this.getName());
 						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
-						currentJob.set(null);
 					}
 					catch (Throwable e) {
-						log.error("Fast Job "+job+" failed", e);
-						currentJob.set(null);
+						log.error("Job "+job+" failed", e);
 					}
 				}
 				busy.set(false);
+				currentJob.set(null);
 			} catch (InterruptedException e) {
 				log.warn("Interrupted JobManager polling", e);
 			}

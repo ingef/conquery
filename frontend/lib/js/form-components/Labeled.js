@@ -2,17 +2,19 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 
 import Label from "./Label";
 
 const Root = styled("label")`
-  width: ${({ fullWidth }) => (fullWidth ? "100%" : "initial")};
-
-  input {
-    width: ${({ fullWidth }) => (fullWidth ? "100%" : "initial")};
-    border: 1px solid
-      ${({ theme, valueChanged }) =>
-        valueChanged ? theme.col.blueGrayDark : "initial"};
+  ${({ fullWidth }) =>
+    fullWidth &&
+    css`
+      width: 100%;
+      input {
+        width: 100%;
+      }
+    `};
   }
 `;
 
@@ -26,16 +28,26 @@ type PropsType = {
   children?: React.Node
 };
 
-const Labeled = (props: PropsType) => {
+const Labeled = ({
+  className,
+  valueChanged,
+  fullWidth,
+  disabled,
+  label,
+  tinyLabel,
+  children
+}: PropsType) => {
   return (
     <Root
-      className={props.className}
-      valueChanged={props.valueChanged}
-      fullWidth={props.fullWidth}
-      disabled={props.disabled}
+      className={className}
+      valueChanged={valueChanged}
+      fullWidth={fullWidth}
+      disabled={disabled}
     >
-      <Label tiny={props.tinyLabel}>{props.label}</Label>
-      {props.children}
+      <Label fullWidth={fullWidth} tiny={tinyLabel}>
+        {label}
+      </Label>
+      {children}
     </Root>
   );
 };

@@ -3,22 +3,14 @@
 import * as React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
+import onClickOutside from "react-onclickoutside";
+import Hotkeys from "react-hot-keys";
 
+import FaIcon from "../icon/FaIcon";
 import TransparentButton from "../button/TransparentButton";
-import EscAble from "../common/components/EscAble";
+import WithTooltip from "../tooltip/WithTooltip";
 
-import ModalContent from "./ModalContent";
-
-type PropsType = {
-  className?: string,
-  children?: React.Node,
-  headline?: React.Node,
-  closeModal: Function,
-  doneButton: boolean,
-  tabIndex: number
-};
-
-const StyledEscAble = styled(EscAble)`
+const Root = styled("div")`
   position: fixed;
   z-index: 10;
   top: 0;
@@ -33,43 +25,103 @@ const StyledEscAble = styled(EscAble)`
   cursor: pointer;
 `;
 
+const Content = styled("div")`
+  display: inline-block;
+  text-align: left;
+  cursor: initial;
+  background-color: white;
+  box-shadow: 0 0 15px 0 rgba(0, 0, 0, 0.2);
+  border-radius: ${({ theme }) => theme.borderRadius};
+  padding: 30px;
+  margin: 0 20px;
+  position: relative;
+`;
+
+const TopRow = styled("div")`
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+`;
+
 const Headline = styled("h3")`
-  margin-top: 20px;
+  margin: 0 10px 15px 0;
   font-size: ${({ theme }) => theme.font.md};
   color: ${({ theme }) => theme.col.blueGrayDark};
 `;
 
-const StyledTransparentButton = styled(TransparentButton)`
-  position: absolute;
-  top: 12px;
-  right: 15px;
-`;
+// https://github.com/Pomax/react-onclickoutside
+type ContentPropsT = {
+  children?: React.Node,
+  onClose: () => void
+};
 
-class Modal extends React.Component {
-  props: PropsType;
+const ModalContentComponent = ({ children, onClose }: ContentPropsT) => {
+  ModalContentComponent.handleClickOutside = onClose;
 
-  render() {
-    return (
-      <StyledEscAble
-        className={this.props.className}
-        onEscPressed={this.props.closeModal}
-      >
-        <ModalContent onClickOutside={this.props.closeModal}>
-          {this.props.doneButton && (
-            <StyledTransparentButton
-              small
-              onClick={this.props.closeModal}
-              tabIndex={this.props.tabIndex || 0}
-            >
-              {T.translate("common.done")}
-            </StyledTransparentButton>
+  return <Content>{children}</Content>;
+};
+
+const ModalContent = onClickOutside(ModalContentComponent, {
+  handleClickOutside: () => ModalContentComponent.handleClickOutside
+});
+// -----------------------------------------------
+
+type PropsT = {
+  children?: React.Node,
+  className?: string,
+  headline?: React.Node,
+  doneButton?: boolean,
+  closeIcon?: boolean,
+  tabIndex?: number,
+  onClose: () => void
+};
+
+// A modal with three ways to close it
+// - a button
+// - click outside
+// - press esc
+const Modal = ({
+  className,
+  children,
+  headline,
+  tabIndex,
+  doneButton,
+  closeIcon,
+  onClose
+}: PropsT) => {
+  return (
+    <Root className={className}>
+      <Hotkeys keyName="escape" onKeyDown={onClose} />
+      <ModalContent onClose={onClose}>
+        <TopRow>
+          <Headline>{headline}</Headline>
+          {closeIcon && (
+            <WithTooltip text={T.translate("common.closeEsc")}>
+              <TransparentButton
+                small
+                tabIndex={tabIndex || 0}
+                onClick={onClose}
+              >
+                <FaIcon icon="times" />
+              </TransparentButton>
+            </WithTooltip>
           )}
-          {this.props.headline && <Headline>{this.props.headline}</Headline>}
-          {this.props.children}
-        </ModalContent>
-      </StyledEscAble>
-    );
-  }
-}
+          {doneButton && (
+            <WithTooltip text={T.translate("common.closeEsc")}>
+              <TransparentButton
+                small
+                tabIndex={tabIndex || 0}
+                onClick={onClose}
+              >
+                {T.translate("common.done")}
+              </TransparentButton>
+            </WithTooltip>
+          )}
+        </TopRow>
+        {children}
+      </ModalContent>
+    </Root>
+  );
+};
 
 export default Modal;

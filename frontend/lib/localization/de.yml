@@ -2,7 +2,7 @@ locale: "de"
 
 headline: "Anfragen und Analyse"
 leftPane:
-  categoryTrees: "Konzeptbäume"
+  conceptTrees: "Konzeptbäume"
   previousQueries: "Anfragen"
 
 rightPane:
@@ -10,7 +10,7 @@ rightPane:
   timebasedQueryEditor: "Zeit-Editor"
   externalForms: "Formulare"
 
-categoryTreeList:
+conceptTreeList:
   loading: "Lade Konzeptbäume"
   loadingTree: "Lade Konzeptbaum: {tree}"
   error: "Konnte Konzeptbaum {tree} nicht laden."
@@ -25,15 +25,16 @@ categoryTreeList:
   showingMismatches: "Zeige vollständig"
 
 queryRunner:
+  errorDates: "Ungültig: Alle Datumsbereiche sind von Zeitberechnung ausgeschlossen"
   start: "Anfrage starten"
   stop: "Anfrage stoppen"
-  stopSuccess: "Anfrage erfolgreich gestoppt."
+  stopSuccess: "Anfrage gestoppt."
   stopError: "Anfrage stoppen fehlgeschlagen."
-  startSuccess: "Anfrage erfolgreich gestartet."
-  endSuccess: "Anfrage erfolgreich abgeschlossen."
+  startSuccess: "Anfrage gestartet."
+  endSuccess: "Anfrage erfolgreich"
   startError: "Anfrage starten fehlgeschlagen."
   resultError: "Anfrageergebnis konnte nicht geladen werden."
-  resultCount: "{count} Ergebnisse"
+  resultCount: "Ergebnisse"
   queryFailed: "Anfrage ist fehlgeschlagen."
   queryCanceled: "Anfrage wurde abgebrochen."
 
@@ -44,9 +45,7 @@ queryEditor:
   exclude: "Nicht"
   date: "Datum"
   expand: "Expandieren"
-  details: "Details"
   previousQuery: "Anfrage"
-  conceptList: "Konzeptliste"
   loadingPreviousQuery: "Lade Anfragedetails"
 
 dropzone:
@@ -82,10 +81,13 @@ queryNodeEditor:
   filters: "Filter"
   selects: "Zusatzwerte"
   nodeNotFound: "Konzept nicht gefunden"
+  selectValidityDate: "Relevanter Zeitraum"
+  dateColumn: "Datumsspalte"
 
 queryGroupModal:
   explanation: "Zeitlich einschränken"
-  headlineStart: "Elemente:"
+  dateRange: "Datumsbereich"
+  headlineStart: "Konzepte:"
 
 deletePreviousQueryModal:
   areYouSure: "Diese Anfrage wirklich löschen?"
@@ -105,6 +107,8 @@ common:
   description: "Beschreibung"
   clearAll: "Alle entfernen"
   clearValue: "Wert entfernen"
+  closeEsc: "Schließen (ESC)"
+  create: "Erstellen"
 
 tooltip:
   headline: "Info"
@@ -145,6 +149,11 @@ inputDateRange:
   tooltip:
     possiblePattern: "j2000 => von: 01.01.2000 bis: 31.12.2000 <br/> q2.2000 => von: 01.04.2000 bis: 30.06.2000 <br/> m3.2000 => von: 01.03.2000 bis: 31.03.2000"
 
+inputMultiSelect:
+  openFileDialog: "Datei auswählen"
+  insertAll: "Alle einfügen"
+  options: "Werte"
+
 previousQueries:
   loading: "Lade Anfragen"
   error: "Konnte Anfragen nicht laden"
@@ -152,6 +161,7 @@ previousQueries:
   noQueriesFound: "Keine Anfragen gefunden"
 
 previousQuery:
+  notExecuted: "Noch nicht ausgeführt"
   addTag: "Schlagwort hinzufügen"
   share: "Freigeben"
   shared: "Freigegeben"
@@ -225,7 +235,19 @@ uploadQueryResultsModal:
   uploadFailedSub: "Bitte überprüfen Sie das Format und die Netzwerkverbindung"
   uploadSucceeded: "Ergebnisliste hochladen erfolgreich"
   formatInfo:
-    text: "Datei sollte ein Ergebnis pro Zeile mit kommagetrennten Werten enthalten"
+    text: "Datei sollte ein Ergebnis pro Zeile enthalten, getrennt mit ; (Semikolon)"
+
+csvColumnPicker:
+  loading: "Lese Daten ..."
+  delimiter: "Trennzeichen"
+  semicolon: "Semikolon"
+  colon: "Doppelpunkt"
+  comma: "Komma"
+  id: "ID"
+  dateSet: "DATUMSBEREICH"
+  startDate: "START_DATUM"
+  endDate: "END_DATUM"
+  ignore: "IGNORIEREN"
 
 uploadConceptListModal:
   headline: "Konzepte aus Liste einfügen"
@@ -237,8 +259,8 @@ uploadConceptListModal:
     1: "1 Wert aufgelöst."
     _: "{context} Werte aufgelöst."
   unknownCodes:
-    1: "1 Wert <strong>nicht</strong> aufgelöst"
-    _: "{context} Werte <strong>nicht</strong> aufgelöst"
+    1: "1 Wert nicht aufgelöst"
+    _: "{context} Werte nicht aufgelöst"
   error: "Beim Auflösen der Werte ist ein Fehler aufgetreten."
 
 uploadFilterListModal:
@@ -257,3 +279,6 @@ authorization:
 search:
   placeholder: "Suchen ..."
   resultLabel: "{totalResults} Ergebnisse ({duration} s)"
+
+preview:
+  preview: "Vorschau"

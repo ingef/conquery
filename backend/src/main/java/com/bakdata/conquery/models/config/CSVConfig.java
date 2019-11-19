@@ -7,6 +7,10 @@ import javax.validation.constraints.NotNull;
 
 import org.hibernate.validator.constraints.Length;
 
+import com.univocity.parsers.csv.CsvFormat;
+import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.csv.CsvWriterSettings;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,4 +28,33 @@ public class CSVConfig {
 	@NotNull
 	private Charset encoding = StandardCharsets.UTF_8;
 	private boolean skipHeader = true;
+	/**
+	 * Script used to generate the CSV column names from CQConcept and Select information.
+	 * The script has an instance of SelectResultInfo named columnInfo available to construct the name.
+	 */
+	@ValidColumnNamer
+	private String columnNamerScript = "java.lang.String.format(\"%s %s %s\",columnInfo.getSelect().getHolder().findConcept().getLabel(), columnInfo.getCqConcept().getLabel(),columnInfo.getSelect().getLabel())";
+	
+	public CsvParserSettings createCsvParserSettings() {
+		CsvParserSettings settings = new CsvParserSettings();
+		settings.setFormat(createCsvFormat());
+		return settings;
+	}
+	
+	public CsvWriterSettings createCsvWriterSettings() {
+		CsvWriterSettings settings = new CsvWriterSettings();
+		settings.setFormat(createCsvFormat());
+		return settings;
+	}
+
+	public CsvFormat createCsvFormat() {
+		CsvFormat format = new CsvFormat();
+		format.setQuoteEscape(getEscape());
+		format.setCharToEscapeQuoteEscaping(getEscape());
+		format.setComment(getComment());
+		format.setDelimiter(getDelimeter());
+		format.setLineSeparator(getLineSeparator());
+		format.setQuote(getQuote());
+		return format;
+	}
 }

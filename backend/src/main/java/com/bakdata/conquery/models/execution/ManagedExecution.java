@@ -1,5 +1,29 @@
 package com.bakdata.conquery.models.execution;
 
+import com.bakdata.conquery.apiv1.ResourceConstants;
+import com.bakdata.conquery.apiv1.ResultCSVResource;
+import com.bakdata.conquery.apiv1.URLBuilder;
+import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.google.common.util.concurrent.Uninterruptibles;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.NonNull;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.NotEmpty;
+
+import javax.annotation.Nullable;
 import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -8,30 +32,6 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nullable;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.bakdata.conquery.apiv1.ResourceConstants;
-import com.bakdata.conquery.apiv1.ResultCSVResource;
-import com.bakdata.conquery.apiv1.URLBuilder;
-import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.google.common.util.concurrent.Uninterruptibles;
-
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import lombok.extern.slf4j.Slf4j;
 
 @NoArgsConstructor
 @Getter
@@ -52,11 +52,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
-	protected transient ExecutionState state = ExecutionState.RUNNING;
+	protected transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
-	protected transient CountDownLatch execution;
+	private final transient CountDownLatch execution = new CountDownLatch(1);
 	@JsonIgnore
-	protected transient LocalDateTime startTime = LocalDateTime.now();
+	private transient LocalDateTime startTime;
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore
@@ -67,9 +67,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		initExecutable(namespace);
 	}
 
-	public void initExecutable(Namespace namespace) {
+	public void initExecutable(@NonNull Namespace namespace) {
 		this.namespace = namespace;
-		this.execution = new CountDownLatch(1);
 		this.dataset = namespace.getStorage().getDataset().getId();
 	}
 
@@ -85,24 +84,34 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			execution.countDown();
 		}
 	}
-	
+
+	public void start() {
+		startTime = LocalDateTime.now();
+		state = ExecutionState.RUNNING;
+	}
+
 	protected void finish() {
+		if (getState() == ExecutionState.NEW)
+			log.error("Query {} was never run.", getId());
+
 		synchronized (execution) {
 			finishTime = LocalDateTime.now();
-			this.state = ExecutionState.DONE;
+			state = ExecutionState.DONE;
 			execution.countDown();
 			try {
 				namespace.getStorage().getMetaStorage().updateExecution(this);
-			}
-			catch (JSONException e) {
-				log.error("Failed to store {} after finishing: {}", this.getClass().getSimpleName(), e, this);
+			} catch (JSONException e) {
+				log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
 			}
 		}
-		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), Duration.between(startTime, finishTime));
+
+		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
-		Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		if(state == ExecutionState.RUNNING) {
+			Uninterruptibles.awaitUninterruptibly(execution, time, unit);
+		}
 	}
 	
 	public ExecutionStatus buildStatus(URLBuilder url) {
@@ -117,9 +126,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 				: null)
 			.status(state)
 			.owner(Optional.ofNullable(owner).orElse(null))
-			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user).getLabel()).orElse(null))
+			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user)).map(User::getLabel).orElse(null))
 			.resultUrl(
-				url != null
+				url != null && state != ExecutionState.NEW
 				? url
 					.set(ResourceConstants.DATASET, dataset.getName())
 					.set(ResourceConstants.QUERY, getId().toString())
@@ -132,4 +141,6 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	public ExecutionStatus buildStatus() {
 		return buildStatus(null);
 	}
+
+	public abstract ManagedQuery toResultQuery();
 }

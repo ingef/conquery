@@ -1,6 +1,6 @@
 import { combineReducers } from "redux";
 
-import type { TabType } from "../common/types/tabs";
+import type { TabT } from "../pane/types";
 import { createQueryRunnerReducer } from "../query-runner";
 import { default as timebasedQueryReducer } from "./reducer";
 import TimebasedQueryEditorTab from "./TimebasedQueryEditorTab";
@@ -9,7 +9,7 @@ const timebasedQueryRunnerReducer = createQueryRunnerReducer("timebased");
 
 export * as actions from "./actions";
 
-const Tab: TabType = {
+const Tab: TabT = {
   key: "timebasedQueryEditor",
   label: "rightPane.timebasedQueryEditor",
   reducer: combineReducers({

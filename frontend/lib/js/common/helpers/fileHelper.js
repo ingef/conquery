@@ -22,17 +22,20 @@ export const stripFilename = (fileName: string) => {
 };
 
 export async function getFileRows(file: File) {
-  if (file.type !== "text/plain") {
-    throw new Error("Invalid file type dropped");
-  }
-
   const text = await readFileAsText(file);
 
   const rows = cleanFileContent(text);
 
   if (rows.length === 0) {
-    throw new Error("An empty file was dropped");
+    console.error("An empty file was dropped");
   }
 
   return rows;
+}
+
+export async function getUniqueFileRows(file: File) {
+  const rows = await getFileRows(file);
+
+  // Take care of duplicate rows
+  return [...new Set(rows)];
 }

@@ -4,6 +4,12 @@ export const concat = (arr: []) => arr.reduce((a, b) => a.concat(b), []);
 
 export const flatmap = (ar: [], map: Function) => concat(ar.map(map));
 
+export const compose = (...fns: Function[]) =>
+  fns.reduceRight(
+    (prevFn, nextFn) => (...args) => nextFn(prevFn(...args)),
+    v => v
+  );
+
 export const objectWithoutKey = (key: string) => (obj: Object) => {
   if (!obj.hasOwnProperty(key)) return obj;
 

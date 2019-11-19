@@ -4,7 +4,7 @@ import React from "react";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
-import { getConceptById } from "../category-trees/globalTreeStoreHelper";
+import { getConceptById } from "../concept-trees/globalTreeStoreHelper";
 import { sortSelects } from "../model/select";
 
 import InputMultiSelect from "../form-components/InputMultiSelect";

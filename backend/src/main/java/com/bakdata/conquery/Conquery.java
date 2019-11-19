@@ -2,7 +2,6 @@ package com.bakdata.conquery;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
-
 import javax.tools.ToolProvider;
 
 import org.apache.commons.lang3.StringUtils;
@@ -23,7 +22,6 @@ import io.dropwizard.configuration.JsonConfigurationFactory;
 import io.dropwizard.servlets.assets.AssetServlet;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.views.ViewBundle;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -69,9 +67,6 @@ public class Conquery extends Application<ConqueryConfig> {
 		});
 		//register frontend
 		registerFrontend(bootstrap);
-
-		//freemarker support
-		bootstrap.addBundle(new ViewBundle<>());
 	}
 
 	protected void registerFrontend(Bootstrap<ConqueryConfig> bootstrap) {
