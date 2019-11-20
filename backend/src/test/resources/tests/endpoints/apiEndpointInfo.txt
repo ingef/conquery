@@ -1,0 +1,18 @@
+The following paths were found for the configured resources:
+
+    GET     /api/config/frontend (com.bakdata.conquery.apiv1.ConfigResource)
+    GET     /api/datasets (com.bakdata.conquery.resources.api.APIResource)
+    GET     /api/datasets/{datasetName}/concepts (com.bakdata.conquery.resources.api.DatasetResource)
+    GET     /api/datasets/{datasetName}/concepts/{conceptName} (com.bakdata.conquery.resources.api.ConceptResource)
+    POST    /api/datasets/{datasetName}/concepts/{conceptName}/resolve (com.bakdata.conquery.resources.api.ConceptResource)
+    POST    /api/datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}/autocomplete (com.bakdata.conquery.resources.api.FilterResource)
+    POST    /api/datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}/resolve (com.bakdata.conquery.resources.api.FilterResource)
+    POST    /api/datasets/{dataset}/queries (com.bakdata.conquery.apiv1.QueryResource)
+    DELETE  /api/datasets/{dataset}/queries/{query} (com.bakdata.conquery.apiv1.QueryResource)
+    GET     /api/datasets/{dataset}/queries/{query} (com.bakdata.conquery.apiv1.QueryResource)
+    GET     /api/datasets/{dataset}/result/{query}.csv (com.bakdata.conquery.apiv1.ResultCSVResource)
+    GET     /api/datasets/{dataset}/stored-queries (com.bakdata.conquery.apiv1.StoredQueriesResource)
+    DELETE  /api/datasets/{dataset}/stored-queries/{query} (com.bakdata.conquery.apiv1.StoredQueriesResource)
+    GET     /api/datasets/{dataset}/stored-queries/{query} (com.bakdata.conquery.apiv1.StoredQueriesResource)
+    PATCH   /api/datasets/{dataset}/stored-queries/{query} (com.bakdata.conquery.apiv1.StoredQueriesResource)
+    GET     /api/me/groups (com.bakdata.conquery.apiv1.MeResource)

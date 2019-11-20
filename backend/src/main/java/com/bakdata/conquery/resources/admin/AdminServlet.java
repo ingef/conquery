@@ -52,9 +52,10 @@ public class AdminServlet {
 	public interface AdminServletResource { }
 
 	private AdminProcessor adminProcessor;
+	private DropwizardResourceConfig jerseyConfig;
 
 	public void register(MasterCommand masterCommand) {
-		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
+		jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
 		
 		RESTServer.configure(masterCommand.getConfig(), jerseyConfig);

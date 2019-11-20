@@ -47,6 +47,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
 	
+	@Getter
 	private StandaloneCommand standaloneCommand;
 	@Getter
 	private DropwizardTestSupport<ConqueryConfig> dropwizard;
