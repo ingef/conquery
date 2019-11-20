@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.jobs.CalculateCBlocksJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
@@ -144,14 +145,20 @@ public class BucketManager {
 				CalculateCBlocksJob job = new CalculateCBlocksJob(storage, this, con, t);
 				for (Import imp : t.findImports(storage)) {
 					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
+
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
-						Optional<Bucket> bucket = buckets.getOptional(bucketId);
-						if (bucket.isPresent()) {
-							CBlockId cBlockId = new CBlockId(bucketId, con.getId());
-							if (!cBlocks.getOptional(cBlockId).isPresent()) {
-								job.addCBlock(imp, bucket.get(), cBlockId);
-							}
+
+						if (buckets.containsKey(bucketId)) {
+							continue;
 						}
+
+						CBlockId cBlockId = new CBlockId(bucketId, con.getId());
+
+						if (cBlocks.containsKey(cBlockId)) {
+							continue;
+						}
+
+						job.addCBlock(imp, buckets.get(bucketId), cBlockId);
 					}
 				}
 				if (!job.isEmpty()) {
@@ -162,40 +169,60 @@ public class BucketManager {
 	}
 
 	private void deregisterBucket(Bucket bucket) {
-		for (int entity : bucket) {
-			Optional
-					.ofNullable(entities.get(entity))
-					.ifPresent(e -> e.removeBucket(bucket.getId()));
+		for (int entityId : bucket) {
+			final Entity entity = entities.get(entityId);
+
+			if(entity == null)
+				continue;
+
+			entity.removeBucket(bucket.getId());
+
+			//TODO Verify that this is enough.
+			if(entity.isEmpty()) {
+				entities.remove(entityId);
+			}
 		}
 	}
 
 	private void deregisterCBlock(CBlockId cBlock) {
 		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
-		for (int entity : bucket) {
-			Optional
-					.ofNullable(entities.get(entity))
-					.ifPresent(e -> e.removeCBlock(cBlock.getConnector(), cBlock.getBucket()));
+		for (int entityId : bucket) {
+			final Entity entity = entities.get(entityId);
+
+			if(entity == null)
+				continue;
+
+			entity.removeCBlock(cBlock.getConnector(), cBlock.getBucket());
+
+			//TODO Verify that this is enough.
+			if(entity.isEmpty()) {
+				entities.remove(entityId);
+			}
 		}
 	}
 
 	public void removeBucket(BucketId bucketId) {
 		Bucket bucket = buckets.remove(bucketId);
-		if (bucket != null) {
-			deregisterBucket(bucket);
+		if (bucket == null) {
+			return;
+		}
 
-			for (Concept<?> c : concepts) {
-				for (Connector con : c.getConnectors()) {
-					try (Locked lock = cBlockLocks.acquire(con.getId())) {
-						if (con.getTable().getId().equals(bucket.getImp().getTable())) {
-							CBlockId cBlockId = new CBlockId(
-									bucketId,
-									con.getId()
-							);
-							if (cBlocks.remove(cBlockId) != null) {
-								storage.removeCBlock(cBlockId);
-								deregisterCBlock(cBlockId);
-							}
-						}
+		deregisterBucket(bucket);
+
+		for (Concept<?> c : concepts) {
+			for (Connector con : c.getConnectors()) {
+				try (Locked lock = cBlockLocks.acquire(con.getId())) {
+					if (!con.getTable().getId().equals(bucket.getImp().getTable())) {
+						continue;
+					}
+
+					CBlockId cBlockId = new CBlockId(
+							bucketId,
+							con.getId()
+					);
+					if (cBlocks.remove(cBlockId) != null) {
+						storage.removeCBlock(cBlockId);
+						deregisterCBlock(cBlockId);
 					}
 				}
 			}
@@ -222,14 +249,15 @@ public class BucketManager {
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 						Optional<Bucket> bucket = buckets.getOptional(bucketId);
 
-						if (bucket.isPresent()) {
+						if (bucket.isEmpty()) {
+							continue;
+						}
 
-							CBlockId cBlockId = new CBlockId(bucketId, con.getId());
+						CBlockId cBlockId = new CBlockId(bucketId, con.getId());
 
-							if (cBlocks.remove(cBlockId) != null) {
-								storage.removeCBlock(cBlockId);
-								deregisterCBlock(cBlockId);
-							}
+						if (cBlocks.remove(cBlockId) != null) {
+							storage.removeCBlock(cBlockId);
+							deregisterCBlock(cBlockId);
 						}
 					}
 				}
@@ -237,7 +265,36 @@ public class BucketManager {
 		}
 	}
 
+	public void removeImport(ImportId imp) {
+
+		for (Concept<?> concept : concepts.values()) {
+			for (Connector con : concept.getConnectors()) {
+
+				try (Locked lock = cBlockLocks.acquire(con.getId())) {
+
+					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
+
+						BucketId bucketId = new BucketId(imp, bucketNumber);
+
+						if (!buckets.containsKey(bucketId)) {
+							continue;
+						}
+
+						CBlockId cBlockId = new CBlockId(bucketId, con.getId());
+
+						if (cBlocks.remove(cBlockId) != null) {
+							storage.removeCBlock(cBlockId);
+							deregisterCBlock(cBlockId);
+						}
+
+						buckets.remove(bucketId);
+					}
+				}
+			}
+		}
+	}
+
 	public boolean hasCBlock(CBlockId id) {
-		return cBlocks.getOptional(id).isPresent();
+		return cBlocks.containsKey(id);
 	}
 }

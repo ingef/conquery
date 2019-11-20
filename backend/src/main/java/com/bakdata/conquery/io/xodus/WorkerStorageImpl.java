@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.functions.Collector;
 import lombok.Getter;
@@ -133,6 +134,15 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 		concepts.remove(id);
 		if(bucketManager != null) {
 			bucketManager.removeConcept(id);
+		}
+	}
+
+	@Override
+	public void removeImport(ImportId id){
+		imports.remove(id);
+
+		if (bucketManager != null){
+			bucketManager.removeImport(id);
 		}
 	}
 }
