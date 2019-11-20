@@ -32,7 +32,7 @@ import type {
 import QueryEditorDropzone from "./QueryEditorDropzone";
 import QueryGroup from "./QueryGroup";
 
-type PropsType = {
+type PropsT = {
   query: StandardQueryType,
   isEmptyQuery: boolean,
   dropAndNode: (DraggedNodeType | DraggedQueryType, ?DateRangeT) => void,
@@ -45,6 +45,7 @@ type PropsType = {
   loadPreviousQuery: Function,
   selectNodeForEditing: Function,
   queryGroupModalSetNode: Function,
+  toggleTimestamps: Function,
   dateRange: Object
 };
 
@@ -67,7 +68,7 @@ const QueryGroupConnector = styled("p")`
   text-align: center;
 `;
 
-const Query = (props: PropsType) => {
+const Query = (props: PropsT) => {
   return (
     <Container>
       {props.isEmptyQuery ? (
