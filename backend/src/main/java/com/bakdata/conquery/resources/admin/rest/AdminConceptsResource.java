@@ -31,12 +31,12 @@ import lombok.Setter;
 @Path("datasets/{" + DATASET_NAME + "}/concepts/{" + CONCEPT_NAME + "}")
 public class AdminConceptsResource extends HAdmin {
 	
+	@PathParam(DATASET_NAME)
+	protected DatasetId datasetId;
+	protected Namespace namespace;
 	@PathParam(CONCEPT_NAME)
 	protected ConceptId conceptId;
 	protected Concept<?> concept;
-	protected Namespace namespace;
-	@PathParam(DATASET_NAME)
-	protected DatasetId datasetId;
 
 	@PostConstruct
 	@Override
