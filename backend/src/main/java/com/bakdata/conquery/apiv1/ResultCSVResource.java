@@ -7,6 +7,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.io.BufferedWriter;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -73,7 +74,7 @@ public class ResultCSVResource {
 					try (BufferedWriter writer = new BufferedWriter(
 						new OutputStreamWriter(
 							os,
-							userAgent.toLowerCase().contains("windows") ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8))) {
+							determineCharset(userAgent)))) {
 						Iterator<String> it = csv.iterator();
 						while (it.hasNext()) {
 							writer.write(it.next());
@@ -95,5 +96,9 @@ public class ResultCSVResource {
 		catch (NoSuchElementException e) {
 			throw new WebApplicationException(e, Status.NOT_FOUND);
 		}
+	}
+
+	private Charset determineCharset(String userAgent) {
+		return userAgent.toLowerCase().contains("windows") ? StandardCharsets.ISO_8859_1 : StandardCharsets.UTF_8;
 	}
 }
