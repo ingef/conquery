@@ -25,8 +25,9 @@ import javax.ws.rs.core.StreamingOutput;
 import org.eclipse.jetty.io.EofException;
 
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -57,6 +58,7 @@ public class ResultCSVResource {
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @HeaderParam("user-agent") String userAgent) {
 		authorize(user, datasetId, Ability.READ);
+		authorize(user, QueryPermission.onInstance(Ability.DOWNLOAD, queryId));
 		authorize(user, queryId, Ability.READ);
 
 		try {

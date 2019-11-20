@@ -8,7 +8,7 @@ import com.bakdata.conquery.io.jetty.CachingFilter;
 import com.bakdata.conquery.io.jetty.ConqueryJsonExceptionMapper;
 import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
 import com.bakdata.conquery.models.auth.AuthorizationExceptionMapper;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 
 import io.dropwizard.auth.AuthValueFactoryProvider;

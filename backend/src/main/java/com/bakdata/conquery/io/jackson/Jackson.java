@@ -1,5 +1,10 @@
 package com.bakdata.conquery.io.jackson;
 
+import java.util.Locale;
+
+import org.apache.shiro.authz.Permission;
+
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser.Feature;
@@ -13,8 +18,6 @@ import com.fasterxml.jackson.dataformat.smile.SmileFactory;
 import com.fasterxml.jackson.datatype.guava.GuavaModule;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
-
-import java.util.Locale;
 
 public class Jackson {
 	public static final ObjectMapper MAPPER;
@@ -54,7 +57,8 @@ public class Jackson {
 			.setSerializationInclusion(Include.ALWAYS)
 			.setDefaultPropertyInclusion(Include.ALWAYS)
 			//.setAnnotationIntrospector(new RestrictingAnnotationIntrospector())
-			.setInjectableValues(new MutableInjectableValues());
+			.setInjectableValues(new MutableInjectableValues())
+			.addMixIn(Permission.class, ConqueryPermission.class);
 
 		objectMapper.setConfig(objectMapper.getSerializationConfig().withView(Object.class));
 

@@ -1,30 +1,37 @@
 package com.bakdata.conquery.models.auth.permissions;
 
-import org.apache.shiro.authz.Permission;
+import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
-@CPSType(id="SUPER_PERMISSION", base=ConqueryPermission.class)
-public class SuperPermission extends ConqueryPermission {
+import lombok.ToString;
+import lombok.extern.slf4j.Slf4j;
+
+/**
+ * Gives access to everything.
+ *
+ */
+@Slf4j
+@ToString(callSuper = true)
+@CPSType(id = "SUPER", base = StringPermissionBuilder.class)
+public final class SuperPermission extends StringPermissionBuilder {	
+
+
+	private static final String DOMAIN = "*";
 	
-	private static final String DUMMY_TARGET = "dummy";
-	
-	public SuperPermission() {
-		// Add a dummy ability here for now. This class becomes obsolete with introduction of the role system.
-		super(Ability.READ.asSet());
+	public final static SuperPermission INSTANCE = new SuperPermission();
+
+	@Override
+	public String getDomain() {
+		return DOMAIN;
 	}
 
 	@Override
-	public boolean implies(Permission permission) {
-		
-		return true;
+	public Set<Ability> getAllowedAbilities() {
+		return Set.of();
 	}
 	
-	@JsonIgnore
-	@Override
-	public Object getTarget() {
-		return DUMMY_TARGET;
+	public static ConqueryPermission onDomain() {
+		return INSTANCE.domainPermission();
 	}
-
 }

@@ -44,14 +44,17 @@ public class ApiV1 implements ResourcesProvider {
 						master.getStorage(),
 						master.getNamespaces(),
 						master.getJobManager(),
-						master.getMaintenanceService()
+						master.getMaintenanceService(),
+						master.getValidator()
 					)
 				).to(AdminProcessor.class);
+				bind(new MeProcessor(namespaces.getMetaStorage())).to(MeProcessor.class);
 			}
 		});
 		environment.register(APIResource.class);
 		environment.register(ConceptResource.class);
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);
+		environment.register(MeResource.class);
 	}
 }

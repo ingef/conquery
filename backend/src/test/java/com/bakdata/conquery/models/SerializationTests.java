@@ -1,4 +1,5 @@
 package com.bakdata.conquery.models;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.List;
@@ -7,11 +8,12 @@ import java.util.UUID;
 import org.junit.jupiter.api.Test;
 
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
-import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -38,38 +40,29 @@ public class SerializationTests {
 	
 	@Test
 	public void mandator() throws IOException, JSONException{
-		Mandator mandator = new Mandator("company", "company");
+		Role mandator = new Role("company", "company");
 		
 		SerializationTestUtil
-			.forType(Mandator.class)
+			.forType(Role.class)
 			.test(mandator);
 	}
 	
+	/*
+	 * Only way to add permission without a storage.
+	 */
 	@Test
 	public void user() throws IOException, JSONException{
+		MasterMetaStorage storage = mock(MasterMetaStorage.class);
 		User user = new User("user", "user");
+		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
+		user
+			.addPermission(
+				storage,
+				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		
 		SerializationTestUtil
 			.forType(User.class)
 			.test(user);
-	}
-	
-	@Test
-	public void datasetPermission() throws IOException, JSONException{
-		DatasetPermission permission = new DatasetPermission(Ability.READ.asSet(), new DatasetId("dataset"));
-		
-		SerializationTestUtil
-			.forType(DatasetPermission.class)
-			.test(permission);
-	}
-	
-	@Test
-	public void queryPermission() throws IOException, JSONException{
-		QueryPermission permission = new QueryPermission(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()));
-
-		SerializationTestUtil
-			.forType(QueryPermission.class)
-			.test(permission);
 	}
 	
 

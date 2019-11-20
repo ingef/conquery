@@ -12,7 +12,8 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.realm.AuthorizingRealm;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.util.io.ConqueryMDC;
 
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
@@ -36,6 +37,8 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 
 	@Override
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
+		// Set the log to indicate, that the user was not authorized yet
+		ConqueryMDC.setLocation("UNAUTHORIZED_USER");
 
 		ConqueryToken credentials = tokenExtractor.extract(requestContext);
 
@@ -46,8 +49,12 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 			}
 		}
 		catch (AuthenticationException e) {
-			log.warn("Shiro failed to authenticate the request. See the following trace:", e);
-			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.", e);
+			log
+				.warn(
+					"Shiro failed to authenticate the request. See the following message by {}:\n\t{}",
+					e.getStackTrace()[0],
+					e.getMessage());
+			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 		}
 	}
 

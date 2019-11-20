@@ -33,8 +33,9 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.bakdata.conquery.resources.hierarchies.HDatasets;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.Getter;
@@ -43,7 +44,9 @@ import lombok.Setter;
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter @Setter
-public class AdminDatasetResource extends HDatasets {
+public class AdminDatasetResource extends HAdmin {
+
+	protected Namespace namespace;
 	
 	@POST
 	@Consumes(MediaType.WILDCARD)
