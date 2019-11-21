@@ -6,12 +6,15 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -43,6 +46,16 @@ public class DatasetsUIResource extends HAdmin {
 	@PathParam(DATASET_NAME)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
+
+	@PostConstruct
+	@Override
+	public void init() {
+		super.init();
+		this.namespace = processor.getNamespaces().get(datasetId);
+		if (namespace == null) {
+			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
+		}
+	}
 
 	@GET
 	public View getDataset() {
