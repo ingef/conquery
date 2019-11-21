@@ -34,15 +34,16 @@ import lombok.Getter;
 import lombok.Setter;
 
 @Produces(MediaType.TEXT_HTML)
-@Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Getter @Setter
+@Consumes({ ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING })
+@Getter
+@Setter
 @Path("datasets/{" + DATASET_NAME + "}")
 public class DatasetsUIResource extends HAdmin {
 
 	@PathParam(DATASET_NAME)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
-	
+
 	@GET
 	public View getDataset() {
 		return new FileView<>(
@@ -51,54 +52,44 @@ public class DatasetsUIResource extends HAdmin {
 			new DatasetInfos(
 				namespace.getDataset(),
 				namespace.getStorage().getAllConcepts(),
-				//total size of dictionaries
-				namespace.getStorage()
+				// total size of dictionaries
+				namespace
+					.getStorage()
 					.getAllImports()
 					.stream()
-					.flatMap(i->Arrays.stream(i.getColumns()))
-					.filter(c->c.getType().getTypeId()==MajorTypeId.STRING)
-					.map(c->(AStringType)c.getType())
-					.filter(c->c.getUnderlyingDictionary() != null)
-					.collect(Collectors.groupingBy(t->t.getUnderlyingDictionary().getId()))
+					.flatMap(i -> Arrays.stream(i.getColumns()))
+					.filter(c -> c.getType().getTypeId() == MajorTypeId.STRING)
+					.map(c -> (AStringType) c.getType())
+					.filter(c -> c.getUnderlyingDictionary() != null)
+					.collect(Collectors.groupingBy(t -> t.getUnderlyingDictionary().getId()))
 					.values()
 					.stream()
-					.mapToLong(l->l.get(0).estimateTypeSize())
+					.mapToLong(l -> l.get(0).estimateTypeSize())
 					.sum(),
-				//total size of entries
-				namespace.getStorage()
-					.getAllImports()
-					.stream()
-					.mapToLong(Import::estimateMemoryConsumption)
-					.sum()
-			),
-			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp")
-		);
+				// total size of entries
+				namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()),
+			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
 	}
-	
-	@Data @AllArgsConstructor
+
+	@Data
+	@AllArgsConstructor
 	public static class DatasetInfos {
+
 		private Dataset ds;
 		private Collection<? extends Concept<?>> concepts;
 		private long dictionariesSize;
 		private long size;
 	}
-	
+
 	@GET
 	@Path("mapping")
 	public View getIdMapping() {
 		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null && mapping.getCsvIdToExternalIdMap() != null) {
-			return new UIView<>(
-				"idmapping.html.ftl",
-				processor.getUIContext(),
-				mapping.getCsvIdToExternalIdMap()
-			);
-		} else {
-			return new UIView<>(
-				"add_idmapping.html.ftl",
-				processor.getUIContext(),
-				namespace.getDataset().getId()
-			);
+			return new UIView<>("idmapping.html.ftl", processor.getUIContext(), mapping.getCsvIdToExternalIdMap());
+		}
+		else {
+			return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
 		}
 	}
 }
