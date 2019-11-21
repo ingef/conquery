@@ -1,5 +1,13 @@
 package com.bakdata.conquery.models.concepts;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import org.apache.commons.lang3.ArrayUtils;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEList;
@@ -14,22 +22,15 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
+
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
@@ -179,12 +180,11 @@ public class FrontEndConceptBuilder {
 			result.setDateColumn(
 				new FEValidityDate(
 					null,
-					FEValue.fromLabels(
 						con
 						.getValidityDates()
 						.stream()
-						.collect(Collectors.toMap(vd->vd.getId().toString(), ValidityDate::getLabel))
-					)
+							.map(vd -> new FEValue(vd.getLabel(), vd.getId().toString()))
+							.collect(Collectors.toList())
 				)
 			);
 			
