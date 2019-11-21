@@ -9,6 +9,7 @@ import java.util.stream.Collectors;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
@@ -16,12 +17,14 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.FileView;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import com.bakdata.conquery.resources.hierarchies.HDatasets;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.io.FileTreeReduction;
 
 import io.dropwizard.views.View;
@@ -34,7 +37,11 @@ import lombok.Setter;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter @Setter
 @Path("datasets/{" + DATASET_NAME + "}")
-public class DatasetsUIResource extends HDatasets {
+public class DatasetsUIResource extends HAdmin {
+
+	@PathParam(DATASET_NAME)
+	protected DatasetId datasetId;
+	protected Namespace namespace;
 	
 	@GET
 	public View getDataset() {
