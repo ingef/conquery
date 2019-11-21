@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -181,12 +180,11 @@ public class FrontEndConceptBuilder {
 			result.setDateColumn(
 				new FEValidityDate(
 					null,
-					FEValue.fromLabels(
 						con
 						.getValidityDates()
 						.stream()
-						.collect(Collectors.toMap(vd->vd.getId().toString(), ValidityDate::getLabel))
-					)
+							.map(vd -> new FEValue(vd.getLabel(), vd.getId().toString()))
+							.collect(Collectors.toList())
 				)
 			);
 			
