@@ -16,9 +16,9 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-/*
+/**
  * The following functions are adapted from dropwizards
- * DropwizardResourceConfig$EndpointLogger class
+ * {@link DropwizardResourceConfig.EndpointLogger } class
  */
 public class EndpointTestHelper {
 
