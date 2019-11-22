@@ -12,7 +12,8 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import {
   getDiffInDays,
   parseStdDate,
-  formatStdDate
+  formatStdDate,
+  formatDateDistance
 } from "../common/helpers/dateHelper";
 
 import TransparentButton from "../button/TransparentButton";
@@ -31,18 +32,17 @@ const Preview = styled("div")`
   top: 0;
   left: 0;
   background-color: white;
-  padding: 60px 20px 0;
+  padding: 60px 20px 20px;
   z-index: 2;
-  overflow-x: auto;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const TopRow = styled("div")`
-  margin: 0 0 20px;
+  margin: 12px 0 20px;
   width: 100%;
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
+  align-items: center;
 `;
 
 const StatsRow = styled("div")`
@@ -58,11 +58,12 @@ const Stat = styled("code")`
 `;
 
 const Line = styled("div")`
-  margin: 0;
   display: flex;
   width: 100%;
   align-items: center;
   line-height: 10px;
+  border-bottom: ${({ isHeader }) => (isHeader ? "1px solid #ccc" : "none")};
+  margin: ${({ isHeader }) => (isHeader ? "0 0 10px" : "0")};
 `;
 
 const Cell = styled("code")`
@@ -75,20 +76,40 @@ const Cell = styled("code")`
   flex-shrink: 0;
   background-color: white;
   overflow-wrap: ${({ isHeader }) => (isHeader ? "break-word" : "normal")};
+  font-weight: ${({ isHeader }) => (isHeader ? "700" : "400")};
+  margin: ${({ isHeader }) => (isHeader ? "0 0 5px" : "0")};
   position: relative;
 `;
 
 const Span = styled("div")`
   position: absolute;
   top: 0;
-  left: ${({ left }) => `${left}%`};
-  width: ${({ width }) => `${width}%`};
   height: 10px;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   margin-right: 10px;
   color: white;
-  text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
   font-size: ${({ theme }) => theme.font.tiny};
+`;
+
+const Headline = styled("h2")`
+  font-size: ${({ theme }) => theme.font.md};
+  margin: 0;
+`;
+
+const Explanation = styled("p")`
+  font-size: ${({ theme }) => theme.font.sm};
+  margin: 0;
+`;
+
+const HeadInfo = styled("div")`
+  margin: 0 20px;
+`;
+
+const CSVFrame = styled("div")`
+  flex-grow: 1;
+  overflow: hidden;
+  padding: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
 `;
 
 function detectColumn(cell) {
@@ -105,7 +126,16 @@ function getDaysDiff(d1, d2) {
   return Math.abs(getDiffInDays(d1, d2)) + 1;
 }
 
-// TODO: Use this to spread dates visualization correctly
+function getFirstAndLastDateOfRange(dateStr: string) {
+  const dateStrTrimmed = dateStr.slice(1, dateStr.length - 1);
+
+  const ranges = dateStrTrimmed.split(",");
+  const first = parseStdDate(ranges[0].split("/")[0]);
+  const last = parseStdDate(ranges[ranges.length - 1].split("/")[1]);
+
+  return { first, last };
+}
+
 function getMinMaxDates(rows: string[][], columns: string[]) {
   let min = null;
   let max = null;
@@ -117,16 +147,13 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
 
   for (let row of rows) {
     // To cut off '{' and '}'
-    const dateCol = row[dateColumnIdx];
-    const dateColTrimmed = dateCol.slice(1, dateCol.length - 1);
-    const ranges = dateColTrimmed.split(",");
-    const first = parseStdDate(ranges[0].split("/")[0]);
-    const last = parseStdDate(ranges[ranges.length - 1].split("/")[1]);
+    const cell = row[dateColumnIdx];
+    const { first, last } = getFirstAndLastDateOfRange(cell);
 
-    if (!min || first < min) {
+    if (!!first && (!min || first < min)) {
       min = first;
     }
-    if (!max || last > max) {
+    if (!!last && (!max || last > max)) {
       max = last;
     }
   }
@@ -178,7 +205,10 @@ export default connect(
                   const width = (diffWidth / diff) * 100;
 
                   return (
-                    <Span key={k} left={left} width={width}>
+                    <Span
+                      key={k}
+                      style={{ left: `${left}%`, width: `${width}%` }}
+                    >
                       {diffWidth}
                     </Span>
                   );
@@ -196,36 +226,51 @@ export default connect(
     <Preview>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
       <TopRow>
+        <TransparentButton icon="times" onClick={onClose}>
+          {T.translate("common.back")}
+        </TransparentButton>
+        <HeadInfo>
+          <Headline>{T.translate("preview.headline")}</Headline>
+          <Explanation>{T.translate("preview.explanation")}</Explanation>
+        </HeadInfo>
         <StatsRow>
-          <Stat>Total: {csv.length}</Stat>
           <Stats>
-            <Stat>Min: {formatStdDate(min)}</Stat>
-            <Stat>Max: {formatStdDate(max)}</Stat>
+            <Stat>
+              {T.translate("preview.total")}: {csv.length}
+            </Stat>
+            <Stat>
+              {T.translate("preview.min")}: {formatStdDate(min)}
+            </Stat>
+            <Stat>
+              {T.translate("preview.max")}: {formatStdDate(max)}
+            </Stat>
+            <Stat>
+              {T.translate("preview.span")}: {formatDateDistance(min, max)}
+            </Stat>
           </Stats>
         </StatsRow>
-        <TransparentButton icon="times" onClick={onClose}>
-          {T.translate("common.done")}
-        </TransparentButton>
       </TopRow>
-      <Line>
-        {slice[0].map((cell, k) => (
-          <Cell key={k} isHeader={true}>
-            {cell}
-          </Cell>
-        ))}
-      </Line>
-      <AutoSizer>
-        {({ width, height }) => (
-          <List
-            height={height}
-            width={width}
-            itemCount={slice.length - 1}
-            itemSize={10}
-          >
-            {Row}
-          </List>
-        )}
-      </AutoSizer>
+      <CSVFrame>
+        <Line isHeader={true}>
+          {slice[0].map((cell, k) => (
+            <Cell key={k} isHeader={true}>
+              {cell}
+            </Cell>
+          ))}
+        </Line>
+        <AutoSizer>
+          {({ width, height }) => (
+            <List
+              height={height}
+              width={width}
+              itemCount={slice.length - 1}
+              itemSize={10}
+            >
+              {Row}
+            </List>
+          )}
+        </AutoSizer>
+      </CSVFrame>
     </Preview>
   );
 });
