@@ -79,17 +79,6 @@
 						</configuration>
 					</execution>
 					<execution>
-						<id>yarn set version</id>
-						<goals>
-							<goal>yarn</goal>
-						</goals>
-						<phase>generate-resources</phase>
-
-						<configuration>
-							<arguments>version --no-git-tag-version --new-version ${project.version}</arguments>
-						</configuration>
-					</execution>
-					<execution>
 						<id>yarn build</id>
 						<goals>
 							<goal>yarn</goal>
