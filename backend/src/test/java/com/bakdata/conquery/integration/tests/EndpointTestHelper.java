@@ -18,7 +18,7 @@ import lombok.Getter;
 
 /**
  * The following functions are adapted from dropwizards
- * {@link DropwizardResourceConfig.EndpointLogger } class
+ * {@link DropwizardResourceConfig.EndpointLogger } class.
  */
 public class EndpointTestHelper {
 
