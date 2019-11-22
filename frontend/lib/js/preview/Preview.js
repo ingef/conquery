@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 import T from "i18n-react";
 import { connect } from "react-redux";
 import Hotkeys from "react-hot-keys";
@@ -60,7 +61,7 @@ const Stat = styled("code")`
 const Line = styled("div")`
   display: flex;
   width: 100%;
-  align-items: center;
+  align-items: ${({ isHeader }) => (isHeader ? "flex-end" : "center")};
   line-height: 10px;
   border-bottom: ${({ isHeader }) => (isHeader ? "1px solid #ccc" : "none")};
   margin: ${({ isHeader }) => (isHeader ? "0 0 10px" : "0")};
@@ -69,16 +70,29 @@ const Line = styled("div")`
 const Cell = styled("code")`
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.xs};
-  display: flex;
-  align-items: center;
+  height: ${({ theme }) => theme.font.xs};
   width: ${({ isDates }) => (isDates ? "auto" : "100px")};
   flex-grow: ${({ isDates }) => (isDates ? "1" : "0")};
   flex-shrink: 0;
   background-color: white;
-  overflow-wrap: ${({ isHeader }) => (isHeader ? "break-word" : "normal")};
-  font-weight: ${({ isHeader }) => (isHeader ? "700" : "400")};
-  margin: ${({ isHeader }) => (isHeader ? "0 0 5px" : "0")};
+  margin: 0;
   position: relative;
+  text-overflow: ellipsis;
+  white-space: initial;
+  display: ${({ isDates }) => (isDates ? "flex" : "block")};
+  align-items: center;
+  overflow: hidden;
+
+  ${({ isHeader }) =>
+    isHeader &&
+    css`
+      font-weight: 700;
+      overflow-wrap: break-word;
+      text-overflow: initial;
+      margin: 0 0 5px;
+      white-space: wrap;
+      height: initial;
+    `};
 `;
 
 const Span = styled("div")`
@@ -217,7 +231,11 @@ export default connect(
           );
         }
 
-        return <Cell key={i}>{cell}</Cell>;
+        return (
+          <Cell title={cell} key={i}>
+            {cell}
+          </Cell>
+        );
       })}
     </Line>
   );
@@ -253,7 +271,7 @@ export default connect(
       <CSVFrame>
         <Line isHeader={true}>
           {slice[0].map((cell, k) => (
-            <Cell key={k} isHeader={true}>
+            <Cell key={k} isHeader={true} title={cell}>
               {cell}
             </Cell>
           ))}
@@ -264,7 +282,7 @@ export default connect(
               height={height}
               width={width}
               itemCount={slice.length - 1}
-              itemSize={10}
+              itemSize={12}
             >
               {Row}
             </List>
