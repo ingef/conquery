@@ -150,6 +150,7 @@ Java Type: `com.bakdata.conquery.apiv1.ResultCSVResource`
 
 Method: `getAsCSV`
 
+Expects: `String`
 Returns: `Response`
 
 </p></details>
