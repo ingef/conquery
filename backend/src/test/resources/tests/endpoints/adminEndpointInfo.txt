@@ -1,42 +1,232 @@
-The following paths were found for the configured resources:
-
-    GET     /admin/ (com.bakdata.conquery.resources.admin.ui.AdminUIResource)
-    GET     /admin/datasets (com.bakdata.conquery.resources.admin.ui.AdminUIResource)
-    POST    /admin/datasets (com.bakdata.conquery.resources.admin.rest.AdminResource)
-    GET     /admin/datasets/{datasetName} (com.bakdata.conquery.resources.admin.ui.DatasetsUIResource)
-    POST    /admin/datasets/{datasetName}/concepts (com.bakdata.conquery.resources.admin.rest.AdminDatasetResource)
-    DELETE  /admin/datasets/{datasetName}/concepts/{conceptName} (com.bakdata.conquery.resources.admin.rest.AdminConceptsResource)
-    GET     /admin/datasets/{datasetName}/concepts/{conceptName} (com.bakdata.conquery.resources.admin.ui.ConceptsUIResource)
-    POST    /admin/datasets/{datasetName}/imports (com.bakdata.conquery.resources.admin.rest.AdminDatasetResource)
-    POST    /admin/datasets/{datasetName}/label (com.bakdata.conquery.resources.admin.rest.AdminDatasetResource)
-    GET     /admin/datasets/{datasetName}/mapping (com.bakdata.conquery.resources.admin.ui.DatasetsUIResource)
-    POST    /admin/datasets/{datasetName}/mapping (com.bakdata.conquery.resources.admin.rest.AdminDatasetResource)
-    POST    /admin/datasets/{datasetName}/structure (com.bakdata.conquery.resources.admin.rest.AdminDatasetResource)
-    POST    /admin/datasets/{datasetName}/tables (com.bakdata.conquery.resources.admin.rest.AdminDatasetResource)
-    DELETE  /admin/datasets/{datasetName}/tables/{tableName} (com.bakdata.conquery.resources.admin.rest.AdminDatasetResource)
-    GET     /admin/datasets/{datasetName}/tables/{tableName} (com.bakdata.conquery.resources.admin.ui.TablesUIResource)
-    GET     /admin/datasets/{datasetName}/tables/{tableName}/import/{importId} (com.bakdata.conquery.resources.admin.ui.TablesUIResource)
-    GET     /admin/groups (com.bakdata.conquery.resources.admin.rest.GroupResource)
-    POST    /admin/groups (com.bakdata.conquery.resources.admin.rest.GroupResource)
-    DELETE  /admin/groups/{groupId} (com.bakdata.conquery.resources.admin.rest.GroupResource)
-    GET     /admin/groups/{groupId} (com.bakdata.conquery.resources.admin.ui.GroupUIResource)
-    DELETE  /admin/groups/{groupId}/{userId} (com.bakdata.conquery.resources.admin.rest.GroupResource)
-    POST    /admin/groups/{groupId}/{userId} (com.bakdata.conquery.resources.admin.rest.GroupResource)
-    POST    /admin/jobs (com.bakdata.conquery.resources.admin.ui.AdminUIResource)
-    GET     /admin/jobs/ (com.bakdata.conquery.resources.admin.ui.AdminUIResource)
-    POST    /admin/jobs/{jobId}/cancel (com.bakdata.conquery.resources.admin.ui.AdminUIResource)
-    DELETE  /admin/permissions/{ownerId} (com.bakdata.conquery.resources.admin.rest.PermissionResource)
-    POST    /admin/permissions/{ownerId} (com.bakdata.conquery.resources.admin.rest.PermissionResource)
-    GET     /admin/roles (com.bakdata.conquery.resources.admin.rest.RoleResource)
-    POST    /admin/roles (com.bakdata.conquery.resources.admin.rest.RoleResource)
-    DELETE  /admin/roles/{roleName} (com.bakdata.conquery.resources.admin.rest.RoleResource)
-    GET     /admin/roles/{roleName} (com.bakdata.conquery.resources.admin.ui.RoleUIResource)
-    GET     /admin/script (com.bakdata.conquery.resources.admin.ui.AdminUIResource)
-    POST    /admin/script (com.bakdata.conquery.resources.admin.ui.AdminUIResource)
-    POST    /admin/update-matching-stats/{datasetName} (com.bakdata.conquery.resources.admin.ui.AdminUIResource)
-    GET     /admin/users (com.bakdata.conquery.resources.admin.rest.UserResource)
-    POST    /admin/users (com.bakdata.conquery.resources.admin.rest.UserResource)
-    DELETE  /admin/users/{userId} (com.bakdata.conquery.resources.admin.rest.UserResource)
-    GET     /admin/users/{userId} (com.bakdata.conquery.resources.admin.ui.UserUIResource)
-    DELETE  /admin/users/{userId}/{roleName} (com.bakdata.conquery.resources.admin.rest.UserResource)
-    POST    /admin/users/{userId}/{roleName} (com.bakdata.conquery.resources.admin.rest.UserResource)
+[
+    {
+        "method": "DELETE",
+        "path": "/datasets/{datasetName}/concepts/{conceptName}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminConceptsResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/tables",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/concepts",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/imports",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/mapping",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/structure",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/datasets/{datasetName}/tables/{tableName}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/label",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminResource"
+    },
+    {
+        "method": "GET",
+        "path": "/groups",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+    },
+    {
+        "method": "POST",
+        "path": "/groups",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/groups/{groupId}/{userId}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+    },
+    {
+        "method": "POST",
+        "path": "/groups/{groupId}/{userId}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/groups/{groupId}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/permissions/{ownerId}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.PermissionResource"
+    },
+    {
+        "method": "POST",
+        "path": "/permissions/{ownerId}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.PermissionResource"
+    },
+    {
+        "method": "GET",
+        "path": "/roles",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.RoleResource"
+    },
+    {
+        "method": "POST",
+        "path": "/roles",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.RoleResource"
+    },
+    {
+        "method": "POST",
+        "path": "/roles",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.RoleResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/roles/{roleName}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.RoleResource"
+    },
+    {
+        "method": "GET",
+        "path": "/users",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+    },
+    {
+        "method": "POST",
+        "path": "/users",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+    },
+    {
+        "method": "POST",
+        "path": "/users",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/users/{userId}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/users/{userId}/{roleName}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+    },
+    {
+        "method": "POST",
+        "path": "/users/{userId}/{roleName}",
+        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+    },
+    {
+        "method": "GET",
+        "path": "/",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/script",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "POST",
+        "path": "/jobs/{jobId}/cancel",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/jobs/",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "POST",
+        "path": "/update-matching-stats/{datasetName}",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "POST",
+        "path": "/script",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "POST",
+        "path": "/script",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "POST",
+        "path": "/jobs",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{datasetName}/concepts/{conceptName}",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.ConceptsUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{datasetName}",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.DatasetsUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{datasetName}/mapping",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.DatasetsUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/groups",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.GroupUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/groups/{groupId}",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.GroupUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/roles",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.RoleUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/roles/{roleName}",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.RoleUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{datasetName}/tables/{tableName}",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.TablesUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{datasetName}/tables/{tableName}/import/{importId}",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.TablesUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/users",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.UserUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/users/{userId}",
+        "clazz": "com.bakdata.conquery.resources.admin.ui.UserUIResource"
+    }
+]
