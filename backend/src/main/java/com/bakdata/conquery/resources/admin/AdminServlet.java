@@ -46,34 +46,32 @@ import lombok.extern.slf4j.Slf4j;
 public class AdminServlet {
 
 	/**
-	 * Marker interface for classes that provide admin UI functionality. Classes have to register as CPSType=AdminServletResource and will then be able to be registered in the admin jerseyconfig.
+	 * Marker interface for classes that provide admin UI functionality. Classes
+	 * have to register as CPSType=AdminServletResource and will then be able to be
+	 * registered in the admin jerseyconfig.
 	 */
 	@CPSBase
-	public interface AdminServletResource { }
+	public interface AdminServletResource {}
 
 	private AdminProcessor adminProcessor;
+	private DropwizardResourceConfig jerseyConfig;
 
 	public void register(MasterCommand masterCommand) {
-		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
+		jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
-		
+
 		RESTServer.configure(masterCommand.getConfig(), jerseyConfig);
-		
+
 		JettyConfigurationUtil.configure(jerseyConfig);
 		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));
 
 		masterCommand.getEnvironment().admin().addServlet("admin", servletContainerHolder.getContainer()).addMapping("/admin/*");
 
 		jerseyConfig.register(new JacksonMessageBodyProvider(masterCommand.getEnvironment().getObjectMapper()));
-		//freemarker support
+		// freemarker support
 		FreemarkerViewRenderer freemarker = new FreemarkerViewRenderer();
 		freemarker.configure(Freemarker.asMap());
-		jerseyConfig.register(
-			new ViewMessageBodyWriter(
-				masterCommand.getEnvironment().metrics(),
-				Collections.singleton(freemarker)
-			)
-		);
+		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(freemarker)));
 
 		adminProcessor = new AdminProcessor(
 			masterCommand.getConfig(),
@@ -81,19 +79,18 @@ public class AdminServlet {
 			masterCommand.getNamespaces(),
 			masterCommand.getJobManager(),
 			masterCommand.getMaintenanceService(),
-			masterCommand.getValidator()
-		);
-		
-		
-		//inject required services
+			masterCommand.getValidator());
+
+		// inject required services
 		jerseyConfig.register(new AbstractBinder() {
+
 			@Override
 			protected void configure() {
 				bind(adminProcessor).to(AdminProcessor.class);
 			}
 		});
-		
-		//register root resources
+
+		// register root resources
 		jerseyConfig
 			.register(AdminResource.class)
 			.register(AdminDatasetResource.class)
@@ -105,7 +102,7 @@ public class AdminServlet {
 			.register(UserUIResource.class)
 			.register(GroupResource.class)
 			.register(GroupUIResource.class)
-			.register(DatasetsUIResource.class)		
+			.register(DatasetsUIResource.class)
 			.register(TablesUIResource.class)
 			.register(ConceptsUIResource.class)
 			.register(PermissionResource.class);
@@ -119,8 +116,8 @@ public class AdminServlet {
 				log.error("Failed loading admin resource {}", resourceProvider, e);
 			}
 		}
-		
-		//register features
+
+		// register features
 		jerseyConfig
 			.register(new MultiPartFeature())
 			.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)))

@@ -1,11 +1,13 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
@@ -31,6 +33,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -44,10 +47,23 @@ import lombok.Setter;
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter @Setter
+@Path("datasets/{" + DATASET_NAME + "}")
 public class AdminDatasetResource extends HAdmin {
 
+	@PathParam(DATASET_NAME)
+	protected DatasetId datasetId;
 	protected Namespace namespace;
 	
+	@PostConstruct
+	@Override
+	public void init() {
+		super.init();
+		this.namespace = processor.getNamespaces().get(datasetId);
+		if (namespace == null) {
+			throw new WebApplicationException("Could not find dataset " + datasetId, Status.NOT_FOUND);
+		}
+	}
+
 	@POST
 	@Consumes(MediaType.WILDCARD)
 	@Path("mapping")
