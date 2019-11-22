@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.EnumSet;
+import java.util.Objects;
 
 import org.apache.shiro.authz.Permission;
 
@@ -8,8 +9,8 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -102,7 +103,7 @@ public class AuthorizationHelper {
 	 * @throws JSONException When the permission object could not be formed in to the appropriate JSON format.
 	 */
 	public static void addPermission(PermissionOwner<?> owner, ConqueryPermission permission, MasterMetaStorage storage) throws JSONException {
-		owner.addPermission(storage, permission);
+		Objects.requireNonNull(owner).owner.addPermission(storage, permission);
 	}
 	
 	/**
@@ -113,6 +114,6 @@ public class AuthorizationHelper {
 	 * @throws JSONException When the permission object could not be formed in to the appropriate JSON format.
 	 */
 	public static void removePermission(PermissionOwner<?> owner, Permission permission, MasterMetaStorage storage) throws JSONException {
-		owner.removePermission(storage, permission);
+		Objects.requireNonNull(owner).removePermission(storage, permission);
 	}
 }
