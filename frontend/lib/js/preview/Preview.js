@@ -23,7 +23,8 @@ import type { StateT as PreviewStateT } from "./reducer";
 import { closePreview } from "./actions";
 
 type PropsT = {
-  preview: PreviewStateT
+  preview: PreviewStateT,
+  onClose: () => void
 };
 
 const Preview = styled("div")`
@@ -44,13 +45,14 @@ const TopRow = styled("div")`
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 `;
 
-const StatsRow = styled("div")`
+const StdRow = styled("div")`
   display: flex;
   align-items: center;
 `;
-const Stats = styled("div")``;
+
 const Stat = styled("code")`
   display: block;
   margin: 0;
@@ -58,13 +60,24 @@ const Stat = styled("code")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
+const BStat = styled(Stat)`
+  font-weight: 700;
+`;
+
 const Line = styled("div")`
   display: flex;
   width: 100%;
-  align-items: ${({ isHeader }) => (isHeader ? "flex-end" : "center")};
+  align-items: center;
   line-height: 10px;
-  border-bottom: ${({ isHeader }) => (isHeader ? "1px solid #ccc" : "none")};
-  margin: ${({ isHeader }) => (isHeader ? "0 0 10px" : "0")};
+
+  ${({ isHeader }) =>
+    isHeader &&
+    css`
+      border-bottom: "1px solid #ccc";
+      align-items: flex-end;
+      margin: "0 0 10px";
+      overflow-x: auto;
+    `};
 `;
 
 const Cell = styled("code")`
@@ -78,7 +91,7 @@ const Cell = styled("code")`
   margin: 0;
   position: relative;
   text-overflow: ellipsis;
-  white-space: initial;
+  white-space: nowrap;
   display: ${({ isDates }) => (isDates ? "flex" : "block")};
   align-items: center;
   overflow: hidden;
@@ -88,9 +101,9 @@ const Cell = styled("code")`
     css`
       font-weight: 700;
       overflow-wrap: break-word;
-      text-overflow: initial;
       margin: 0 0 5px;
-      white-space: wrap;
+      text-overflow: initial;
+      white-space: initial;
       height: initial;
     `};
 `;
@@ -103,6 +116,7 @@ const Span = styled("div")`
   margin-right: 10px;
   color: white;
   font-size: ${({ theme }) => theme.font.tiny};
+  min-width: 1px;
 `;
 
 const Headline = styled("h2")`
@@ -124,6 +138,10 @@ const CSVFrame = styled("div")`
   overflow: hidden;
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+`;
+
+const Tr = styled("tr")`
+  line-height: 1;
 `;
 
 function detectColumn(cell) {
@@ -180,18 +198,18 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
 }
 
 export default connect(
-  state => ({ csv: state.preview.csv }),
+  state => ({ preview: state.preview }),
   dispatch => ({
     onClose: () => dispatch(closePreview())
   })
-)(({ csv, onClose }: PropsT) => {
-  if (!csv || csv.length < 2) return null;
+)(({ preview, onClose }: PropsT) => {
+  if (!preview.csv || preview.csv.length < 2) return null;
 
-  const columns = detectColumnsByHeader(csv[0]);
+  const columns = detectColumnsByHeader(preview.csv[0]);
 
   // Potentially, limit size:
   // const slice = csv.slice(1000);
-  const slice = csv.slice();
+  const slice = preview.csv.slice();
 
   const { min, max, diff } = getMinMaxDates(slice.slice(1), columns);
 
@@ -244,34 +262,61 @@ export default connect(
     <Preview>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
       <TopRow>
-        <TransparentButton icon="times" onClick={onClose}>
-          {T.translate("common.back")}
-        </TransparentButton>
-        <HeadInfo>
-          <Headline>{T.translate("preview.headline")}</Headline>
-          <Explanation>{T.translate("preview.explanation")}</Explanation>
-        </HeadInfo>
-        <StatsRow>
-          <Stats>
-            <Stat>
-              {T.translate("preview.total")}: {csv.length}
-            </Stat>
-            <Stat>
-              {T.translate("preview.min")}: {formatStdDate(min)}
-            </Stat>
-            <Stat>
-              {T.translate("preview.max")}: {formatStdDate(max)}
-            </Stat>
-            <Stat>
-              {T.translate("preview.span")}: {formatDateDistance(min, max)}
-            </Stat>
-          </Stats>
-        </StatsRow>
+        <StdRow>
+          <TransparentButton icon="times" onClick={onClose}>
+            {T.translate("common.back")}
+          </TransparentButton>
+          <HeadInfo>
+            <Headline>{T.translate("preview.headline")}</Headline>
+            <Explanation>{T.translate("preview.explanation")}</Explanation>
+          </HeadInfo>
+        </StdRow>
+        <table>
+          <tbody>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.total")}:</Stat>
+              </td>
+              <td>
+                <BStat>{preview.csv.length}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.min")}:</Stat>
+              </td>
+              <td>
+                <BStat>{formatStdDate(min)}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.max")}:</Stat>
+              </td>
+              <td>
+                <BStat>{formatStdDate(max)}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.span")}:</Stat>
+              </td>
+              <td>
+                <BStat>{formatDateDistance(min, max)}</BStat>
+              </td>
+            </Tr>
+          </tbody>
+        </table>
       </TopRow>
       <CSVFrame>
         <Line isHeader={true}>
           {slice[0].map((cell, k) => (
-            <Cell key={k} isHeader={true} title={cell}>
+            <Cell
+              key={k}
+              isHeader={true}
+              title={cell}
+              isDates={columns[k] === "DATE_RANGE"}
+            >
               {cell}
             </Cell>
           ))}
