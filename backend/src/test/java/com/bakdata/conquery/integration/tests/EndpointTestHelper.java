@@ -34,7 +34,7 @@ public class EndpointTestHelper {
 
 		private String method;
 		private String path;
-		private Class<?> clazz;
+		private String clazz;
 
 		public String toString() {
 			return String.format("%s\t\t%s\t\t%s", method, path, clazz);
@@ -55,14 +55,14 @@ public class EndpointTestHelper {
 		}
 
 		for (ResourceMethod method : resource.getResourceMethods()) {
-			endpointLogLines.add(new EndPoint(method.getHttpMethod(), basePath, klass));
+			endpointLogLines.add(new EndPoint(method.getHttpMethod(), basePath, klass.getSimpleName()));
 		}
 
 		for (Resource childResource : resource.getChildResources()) {
 			for (ResourceMethod method : childResource.getAllMethods()) {
 				if (method.getType() == ResourceMethod.JaxrsType.RESOURCE_METHOD) {
 					final String path = normalizePath(basePath, childResource.getPath());
-					endpointLogLines.add(new EndPoint(method.getHttpMethod(), path, klass));
+					endpointLogLines.add(new EndPoint(method.getHttpMethod(), path, klass.getSimpleName()));
 				}
 				else if (method.getType() == ResourceMethod.JaxrsType.SUB_RESOURCE_LOCATOR) {
 					final String path = normalizePath(basePath, childResource.getPath());
@@ -71,7 +71,7 @@ public class EndpointTestHelper {
 						? responseType.getTypeBindings().getBoundType(0).getErasedType()
 						: responseType.getErasedType();
 					if (Resource.from(erasedType) == null) {
-						endpointLogLines.add(new EndPoint(method.getHttpMethod(), path, erasedType));
+						endpointLogLines.add(new EndPoint(method.getHttpMethod(), path, erasedType.getSimpleName()));
 					}
 					else {
 						populate(path, erasedType, true, endpointLogLines);

@@ -24,7 +24,7 @@ public class AdminEndpointTest implements ProgrammaticIntegrationTest {
 		DropwizardResourceConfig jerseyConfig = testConquery.getStandaloneCommand().getMaster().getAdmin().getJerseyConfig();
 
 		List<EndPoint> resources = EndpointTestHelper.collectEndpoints(jerseyConfig);
-		
+
 		assertThat(resources).containsExactlyInAnyOrderElementsOf(expectedEndpoints);
 
 	}

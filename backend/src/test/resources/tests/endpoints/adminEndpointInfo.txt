@@ -2,231 +2,231 @@
     {
         "method": "DELETE",
         "path": "/datasets/{datasetName}/concepts/{conceptName}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminConceptsResource"
-    },
-    {
-        "method": "POST",
-        "path": "/datasets/{datasetName}/tables",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+        "clazz": "AdminConceptsResource"
     },
     {
         "method": "POST",
         "path": "/datasets/{datasetName}/concepts",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+        "clazz": "AdminDatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/mapping",
+        "clazz": "AdminDatasetResource"
     },
     {
         "method": "POST",
         "path": "/datasets/{datasetName}/imports",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+        "clazz": "AdminDatasetResource"
     },
     {
         "method": "POST",
-        "path": "/datasets/{datasetName}/mapping",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+        "path": "/datasets/{datasetName}/tables",
+        "clazz": "AdminDatasetResource"
     },
     {
         "method": "POST",
         "path": "/datasets/{datasetName}/structure",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+        "clazz": "AdminDatasetResource"
     },
     {
         "method": "DELETE",
         "path": "/datasets/{datasetName}/tables/{tableName}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+        "clazz": "AdminDatasetResource"
     },
     {
         "method": "POST",
         "path": "/datasets/{datasetName}/label",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminDatasetResource"
+        "clazz": "AdminDatasetResource"
     },
     {
         "method": "POST",
         "path": "/datasets",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.AdminResource"
+        "clazz": "AdminResource"
     },
     {
         "method": "GET",
         "path": "/groups",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+        "clazz": "GroupResource"
     },
     {
         "method": "POST",
         "path": "/groups",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+        "clazz": "GroupResource"
     },
     {
         "method": "DELETE",
         "path": "/groups/{groupId}/{userId}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+        "clazz": "GroupResource"
     },
     {
         "method": "POST",
         "path": "/groups/{groupId}/{userId}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+        "clazz": "GroupResource"
     },
     {
         "method": "DELETE",
         "path": "/groups/{groupId}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.GroupResource"
+        "clazz": "GroupResource"
     },
     {
         "method": "DELETE",
         "path": "/permissions/{ownerId}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.PermissionResource"
+        "clazz": "PermissionResource"
     },
     {
         "method": "POST",
         "path": "/permissions/{ownerId}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.PermissionResource"
+        "clazz": "PermissionResource"
     },
     {
         "method": "GET",
         "path": "/roles",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.RoleResource"
+        "clazz": "RoleResource"
     },
     {
         "method": "POST",
         "path": "/roles",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.RoleResource"
+        "clazz": "RoleResource"
     },
     {
         "method": "POST",
         "path": "/roles",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.RoleResource"
+        "clazz": "RoleResource"
     },
     {
         "method": "DELETE",
         "path": "/roles/{roleName}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.RoleResource"
+        "clazz": "RoleResource"
     },
     {
         "method": "GET",
         "path": "/users",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+        "clazz": "UserResource"
     },
     {
         "method": "POST",
         "path": "/users",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+        "clazz": "UserResource"
     },
     {
         "method": "POST",
         "path": "/users",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+        "clazz": "UserResource"
+    },
+    {
+        "method": "POST",
+        "path": "/users/{userId}/{roleName}",
+        "clazz": "UserResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/users/{userId}/{roleName}",
+        "clazz": "UserResource"
     },
     {
         "method": "DELETE",
         "path": "/users/{userId}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
-    },
-    {
-        "method": "DELETE",
-        "path": "/users/{userId}/{roleName}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
-    },
-    {
-        "method": "POST",
-        "path": "/users/{userId}/{roleName}",
-        "clazz": "com.bakdata.conquery.resources.admin.rest.UserResource"
+        "clazz": "UserResource"
     },
     {
         "method": "GET",
         "path": "/",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
-    },
-    {
-        "method": "GET",
-        "path": "/script",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+        "clazz": "AdminUIResource"
     },
     {
         "method": "POST",
         "path": "/jobs/{jobId}/cancel",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
-    },
-    {
-        "method": "GET",
-        "path": "/jobs/",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
-    },
-    {
-        "method": "GET",
-        "path": "/datasets",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+        "clazz": "AdminUIResource"
     },
     {
         "method": "POST",
         "path": "/update-matching-stats/{datasetName}",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+        "clazz": "AdminUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets",
+        "clazz": "AdminUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/jobs/",
+        "clazz": "AdminUIResource"
     },
     {
         "method": "POST",
         "path": "/script",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+        "clazz": "AdminUIResource"
     },
     {
         "method": "POST",
         "path": "/script",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+        "clazz": "AdminUIResource"
     },
     {
         "method": "POST",
         "path": "/jobs",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.AdminUIResource"
+        "clazz": "AdminUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/script",
+        "clazz": "AdminUIResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{datasetName}/concepts/{conceptName}",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.ConceptsUIResource"
+        "clazz": "ConceptsUIResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{datasetName}",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.DatasetsUIResource"
+        "clazz": "DatasetsUIResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{datasetName}/mapping",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.DatasetsUIResource"
+        "clazz": "DatasetsUIResource"
     },
     {
         "method": "GET",
         "path": "/groups",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.GroupUIResource"
+        "clazz": "GroupUIResource"
     },
     {
         "method": "GET",
         "path": "/groups/{groupId}",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.GroupUIResource"
+        "clazz": "GroupUIResource"
     },
     {
         "method": "GET",
         "path": "/roles",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.RoleUIResource"
+        "clazz": "RoleUIResource"
     },
     {
         "method": "GET",
         "path": "/roles/{roleName}",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.RoleUIResource"
+        "clazz": "RoleUIResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{datasetName}/tables/{tableName}",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.TablesUIResource"
+        "clazz": "TablesUIResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{datasetName}/tables/{tableName}/import/{importId}",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.TablesUIResource"
+        "clazz": "TablesUIResource"
     },
     {
         "method": "GET",
         "path": "/users",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.UserUIResource"
+        "clazz": "UserUIResource"
     },
     {
         "method": "GET",
         "path": "/users/{userId}",
-        "clazz": "com.bakdata.conquery.resources.admin.ui.UserUIResource"
+        "clazz": "UserUIResource"
     }
 ]

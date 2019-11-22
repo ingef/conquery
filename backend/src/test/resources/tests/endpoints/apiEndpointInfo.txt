@@ -2,81 +2,81 @@
     {
         "method": "GET",
         "path": "/config/frontend",
-        "clazz": "com.bakdata.conquery.apiv1.ConfigResource"
+        "clazz": "ConfigResource"
     },
     {
         "method": "GET",
         "path": "/me/groups",
-        "clazz": "com.bakdata.conquery.apiv1.MeResource"
+        "clazz": "MeResource"
     },
     {
         "method": "POST",
         "path": "/datasets/{dataset}/queries",
-        "clazz": "com.bakdata.conquery.apiv1.QueryResource"
-    },
-    {
-        "method": "DELETE",
-        "path": "/datasets/{dataset}/queries/{query}",
-        "clazz": "com.bakdata.conquery.apiv1.QueryResource"
+        "clazz": "QueryResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{dataset}/queries/{query}",
-        "clazz": "com.bakdata.conquery.apiv1.QueryResource"
+        "clazz": "QueryResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/datasets/{dataset}/queries/{query}",
+        "clazz": "QueryResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{dataset}/result/{query}.csv",
-        "clazz": "com.bakdata.conquery.apiv1.ResultCSVResource"
+        "clazz": "ResultCSVResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{dataset}/stored-queries",
-        "clazz": "com.bakdata.conquery.apiv1.StoredQueriesResource"
-    },
-    {
-        "method": "GET",
-        "path": "/datasets/{dataset}/stored-queries/{query}",
-        "clazz": "com.bakdata.conquery.apiv1.StoredQueriesResource"
-    },
-    {
-        "method": "DELETE",
-        "path": "/datasets/{dataset}/stored-queries/{query}",
-        "clazz": "com.bakdata.conquery.apiv1.StoredQueriesResource"
+        "clazz": "StoredQueriesResource"
     },
     {
         "method": "PATCH",
         "path": "/datasets/{dataset}/stored-queries/{query}",
-        "clazz": "com.bakdata.conquery.apiv1.StoredQueriesResource"
+        "clazz": "StoredQueriesResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/stored-queries/{query}",
+        "clazz": "StoredQueriesResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/datasets/{dataset}/stored-queries/{query}",
+        "clazz": "StoredQueriesResource"
     },
     {
         "method": "GET",
         "path": "/datasets",
-        "clazz": "com.bakdata.conquery.resources.api.APIResource"
+        "clazz": "APIResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{datasetName}/concepts/{conceptName}",
-        "clazz": "com.bakdata.conquery.resources.api.ConceptResource"
+        "clazz": "ConceptResource"
     },
     {
         "method": "POST",
         "path": "/datasets/{datasetName}/concepts/{conceptName}/resolve",
-        "clazz": "com.bakdata.conquery.resources.api.ConceptResource"
+        "clazz": "ConceptResource"
     },
     {
         "method": "GET",
         "path": "/datasets/{datasetName}/concepts",
-        "clazz": "com.bakdata.conquery.resources.api.DatasetResource"
+        "clazz": "DatasetResource"
     },
     {
         "method": "POST",
         "path": "/datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}/resolve",
-        "clazz": "com.bakdata.conquery.resources.api.FilterResource"
+        "clazz": "FilterResource"
     },
     {
         "method": "POST",
         "path": "/datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}/autocomplete",
-        "clazz": "com.bakdata.conquery.resources.api.FilterResource"
+        "clazz": "FilterResource"
     }
 ]
