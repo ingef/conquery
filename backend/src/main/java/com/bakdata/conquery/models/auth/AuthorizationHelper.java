@@ -103,7 +103,7 @@ public class AuthorizationHelper {
 	 * @throws JSONException When the permission object could not be formed in to the appropriate JSON format.
 	 */
 	public static void addPermission(PermissionOwner<?> owner, ConqueryPermission permission, MasterMetaStorage storage) throws JSONException {
-		Objects.requireNonNull(owner).owner.addPermission(storage, permission);
+		Objects.requireNonNull(owner).addPermission(storage, permission);
 	}
 	
 	/**
