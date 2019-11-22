@@ -89,6 +89,7 @@ const Span = styled("div")`
   margin-right: 10px;
   color: white;
   font-size: ${({ theme }) => theme.font.tiny};
+  min-width: 1px;
 `;
 
 const Headline = styled("h2")`
@@ -253,7 +254,7 @@ export default connect(
       <CSVFrame>
         <Line isHeader={true}>
           {slice[0].map((cell, k) => (
-            <Cell key={k} isHeader={true}>
+            <Cell key={k} isHeader={true} isDates={columns[k] === "DATE_RANGE"}>
               {cell}
             </Cell>
           ))}
