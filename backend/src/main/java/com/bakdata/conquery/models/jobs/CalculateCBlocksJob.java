@@ -24,6 +24,7 @@ import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
 
@@ -111,7 +112,12 @@ public class CalculateCBlocksJob extends Job {
 
 		Bucket bucket = info.getBucket();
 		
-		AStringType<?> stringType = (AStringType<?>) info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
+		CType<?, ?> cType = info.getImp().getColumns()[connector.getColumn().getPosition()].getType();
+
+		if (!(cType instanceof AStringType)) {
+			return;
+		}
+		AStringType<?> stringType = (AStringType<?>) cType;
 
 		final TreeConcept treeConcept = connector.getConcept();
 
