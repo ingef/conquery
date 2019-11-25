@@ -93,6 +93,7 @@ deletePreviousQueryModal:
   areYouSure: "Should this query be deleted?"
 
 common:
+  back: "Back"
   any: "Any"
   save: "Save"
   edit: "Edit"
@@ -282,3 +283,9 @@ search:
 
 preview:
   preview: "Preview"
+  headline: "Results preview"
+  explanation: "Visualizes the CSV file for the results"
+  total: "Total rows"
+  min: "Min date"
+  max: "Max date"
+  span: "Date span"
