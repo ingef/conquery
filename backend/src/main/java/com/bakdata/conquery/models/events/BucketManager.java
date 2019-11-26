@@ -267,33 +267,31 @@ public class BucketManager {
 
 	public void removeImport(ImportId imp) {
 
-		for (Concept<?> concept : concepts.values()) {
-			for (Connector con : concept.getConnectors()) {
+		for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
-				try (Locked lock = cBlockLocks.acquire(con.getId())) {
+			BucketId bucketId = new BucketId(imp, bucketNumber);
 
-					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
+			if (!buckets.containsKey(bucketId)) {
+				continue;
+			}
 
-						BucketId bucketId = new BucketId(imp, bucketNumber);
-
-						if (!buckets.containsKey(bucketId)) {
-							continue;
-						}
-
+			for (Concept<?> concept : concepts.values()) {
+				for (Connector con : concept.getConnectors()) {
+					try (Locked lock = cBlockLocks.acquire(con.getId())) {
 						CBlockId cBlockId = new CBlockId(bucketId, con.getId());
 
 						if (cBlocks.remove(cBlockId) != null) {
 							storage.removeCBlock(cBlockId);
 							deregisterCBlock(cBlockId);
 						}
-
-						deregisterBucket(buckets.get(bucketId));
-
-						buckets.remove(bucketId);
-						storage.removeBucket(bucketId);
 					}
 				}
 			}
+
+			deregisterBucket(buckets.get(bucketId));
+
+			buckets.remove(bucketId);
+			storage.removeBucket(bucketId);
 		}
 	}
 
