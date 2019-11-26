@@ -88,7 +88,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		importPreviousQueries(support);
 	}
 
-	private void importIdMapping(StandaloneSupport support) throws JSONException, IOException {
+	public void importIdMapping(StandaloneSupport support) throws JSONException, IOException {
 		if(content.getIdMapping() == null) {
 			return;
 		}
@@ -96,7 +96,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			support.getDatasetsProcessor().setIdMapping(in, support.getNamespace());
 		}
 	}
-	private void importPreviousQueries(StandaloneSupport support) throws JSONException, IOException {
+	public void importPreviousQueries(StandaloneSupport support) throws JSONException, IOException {
 		// Load previous query results if available
 		int id = 1;
 		for(ResourceFile queryResults : content.getPreviousQueryResults()) {
@@ -123,7 +123,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	private void importTableContents(StandaloneSupport support) throws IOException, JSONException {
+	public void importTableContents(StandaloneSupport support) throws IOException, JSONException {
 		CsvParserSettings settings = new CsvParserSettings();
 		CsvFormat format = new CsvFormat();
 		format.setLineSeparator("\n");
@@ -165,7 +165,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	private Output copyOutput(int columnPosition, RequiredColumn column) {
+	public static Output copyOutput(int columnPosition, RequiredColumn column) {
 		CopyOutput out = new CopyOutput();
 		out.setInputColumn(columnPosition);
 		out.setInputType(column.getType());
@@ -173,7 +173,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		return out;
 	}
 
-	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
+	public void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTree(
@@ -188,7 +188,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	private IQuery parseQuery(StandaloneSupport support) throws JSONException, IOException {
+	public IQuery parseQuery(StandaloneSupport support) throws JSONException, IOException {
 		return parseSubTree(support, rawQuery, IQuery.class);
 	}
 
@@ -197,7 +197,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		return query;
 	}
 
-	private void importTables(StandaloneSupport support) throws JSONException {
+	public void importTables(StandaloneSupport support) throws JSONException {
 		Dataset dataset = support.getDataset();
 
 		for (RequiredTable rTable : content.getTables()) {

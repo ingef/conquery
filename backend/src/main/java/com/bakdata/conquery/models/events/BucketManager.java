@@ -287,7 +287,10 @@ public class BucketManager {
 							deregisterCBlock(cBlockId);
 						}
 
+						deregisterBucket(buckets.get(bucketId));
+
 						buckets.remove(bucketId);
+						storage.removeBucket(bucketId);
 					}
 				}
 			}
