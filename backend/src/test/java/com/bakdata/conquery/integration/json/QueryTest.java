@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
@@ -82,7 +83,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		support.waitUntilWorkDone();
 		query = parseQuery(support);
 
-		importTableContents(support);
+		importTableContents(support, Arrays.asList(content.getTables()));
 		support.waitUntilWorkDone();
 		importIdMapping(support);
 		importPreviousQueries(support);
@@ -123,7 +124,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	public void importTableContents(StandaloneSupport support) throws IOException, JSONException {
+	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws IOException, JSONException {
 		CsvParserSettings settings = new CsvParserSettings();
 		CsvFormat format = new CsvFormat();
 		format.setLineSeparator("\n");
@@ -132,7 +133,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
 		List<File> preprocessedFiles = new ArrayList<>();
 
-		for (RequiredTable rTable : content.getTables()) {
+		for (RequiredTable rTable : tables) {
 			//copy csv to tmp folder
 			String name = rTable.getCsv().getName().substring(0, rTable.getCsv().getName().lastIndexOf('.'));
 			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
