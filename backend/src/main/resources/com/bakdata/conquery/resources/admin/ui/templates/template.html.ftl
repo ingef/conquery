@@ -52,9 +52,15 @@
 		  </li>
 		  <li class="nav-item">
 			<a class="nav-link" href="/admin/script">Script</a>
-		  </li>
-		  <li class="nav-item">
-			<a class="nav-link" href="/admin/mandators">Mandators</a>
+		  <li class="nav-item dropdown">
+			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+			  Auth
+			</a>
+			<div class="dropdown-menu" aria-labelledby="navbarDropdown">
+			  <a class="dropdown-item" href="/admin/groups">Groups</a>
+			  <a class="dropdown-item" href="/admin/users">Users</a>
+			  <a class="dropdown-item" href="/admin/roles">Roles</a>
+			</div>
 		  </li>
 		  <li class="nav-item dropdown">
 			<a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">

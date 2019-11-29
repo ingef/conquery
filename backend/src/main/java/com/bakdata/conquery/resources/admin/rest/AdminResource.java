@@ -13,13 +13,11 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.permissions.AbilitySets;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
-import com.bakdata.conquery.resources.hierarchies.HAuthorized;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +27,7 @@ import lombok.Setter;
 
 @Path("/")
 @Getter @Setter
-public class AdminResource extends HAuthorized {
+public class AdminResource extends HAdmin {
 
 	@Inject
 	private AdminProcessor processor;
@@ -39,13 +37,6 @@ public class AdminResource extends HAuthorized {
 	@Path("datasets")
 	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
 		Dataset dataset = processor.addDataset(name);
-		user.addPermission(
-			processor.getStorage(),
-			new DatasetPermission(
-				AbilitySets.QUERY_CREATOR,
-				dataset.getId()
-			)
-		);
 		
 		return Response
 			.seeOther(UriBuilder.fromPath("/admin/").path(DatasetsUIResource.class).resolveTemplate(ResourceConstants.DATASET_NAME, name).build())

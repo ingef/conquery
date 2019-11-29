@@ -13,7 +13,7 @@ import lombok.Setter;
 
 @Setter
 @Path("permissions/{" + OWNER_ID + "}")
-public class HPermissions extends HAuthorized {
+public abstract class HPermissions extends HAdmin {
 	
 	@Inject
 	protected AdminProcessor processor;

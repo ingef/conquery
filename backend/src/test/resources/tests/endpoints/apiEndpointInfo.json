@@ -1,0 +1,82 @@
+[
+    {
+        "method": "GET",
+        "path": "/config/frontend",
+        "clazz": "ConfigResource"
+    },
+    {
+        "method": "GET",
+        "path": "/me/groups",
+        "clazz": "MeResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{dataset}/queries",
+        "clazz": "QueryResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/queries/{query}",
+        "clazz": "QueryResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/datasets/{dataset}/queries/{query}",
+        "clazz": "QueryResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/result/{query}.csv",
+        "clazz": "ResultCSVResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/stored-queries",
+        "clazz": "StoredQueriesResource"
+    },
+    {
+        "method": "PATCH",
+        "path": "/datasets/{dataset}/stored-queries/{query}",
+        "clazz": "StoredQueriesResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{dataset}/stored-queries/{query}",
+        "clazz": "StoredQueriesResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/datasets/{dataset}/stored-queries/{query}",
+        "clazz": "StoredQueriesResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets",
+        "clazz": "APIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{datasetName}/concepts/{conceptName}",
+        "clazz": "ConceptResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/concepts/{conceptName}/resolve",
+        "clazz": "ConceptResource"
+    },
+    {
+        "method": "GET",
+        "path": "/datasets/{datasetName}/concepts",
+        "clazz": "DatasetResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}/resolve",
+        "clazz": "FilterResource"
+    },
+    {
+        "method": "POST",
+        "path": "/datasets/{datasetName}/concepts/{conceptName}/tables/{tableName}/filters/{filterName}/autocomplete",
+        "clazz": "FilterResource"
+    }
+]

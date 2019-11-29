@@ -64,8 +64,8 @@
 				<version>2.22.2</version>
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
-					<argLine>-Xmx1G</argLine>
-					<properties>
+					<argLine>-Xmx4G</argLine>
+                    <properties>
 						<configurationParameters>
 							junit.jupiter.execution.parallel.enabled=false
 							junit.jupiter.execution.parallel.mode.default = concurrent
@@ -84,7 +84,7 @@
 					<plugin>
 						<groupId>pl.project13.maven</groupId>
 						<artifactId>git-commit-id-plugin</artifactId>
-						<version>3.0.1</version>
+						<version>4.0.0</version>
 						<inherited>false</inherited>
 						<executions>
 							<execution>
