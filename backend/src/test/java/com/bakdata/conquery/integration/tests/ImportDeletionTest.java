@@ -1,10 +1,8 @@
 package com.bakdata.conquery.integration.tests;
 
 import com.bakdata.conquery.commands.SlaveCommand;
-import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
-import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
@@ -21,11 +19,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
-import com.bakdata.conquery.models.preproc.DateFormats;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-import com.bakdata.conquery.models.preproc.Input;
-import com.bakdata.conquery.models.preproc.InputFile;
-import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -34,18 +27,9 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-import com.univocity.parsers.csv.CsvFormat;
-import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -91,7 +75,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				test.importConcepts(conquery);
 				conquery.waitUntilWorkDone();
 
-				importTableContents(conquery, Arrays.asList(test.getContent().getTables()));
+				test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()));
 				conquery.waitUntilWorkDone();
 			}
 
@@ -175,10 +159,10 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			conquery.waitUntilWorkDone();
 
-			// Load another import into the same table, with only the deleted import/table
+			// Load the same import into the same table, with only the deleted import/table
 			{
 				// only import the deleted import/table
-				importTableContents(conquery, Arrays.stream(test.getContent().getTables()).filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable())).collect(Collectors.toList()));
+				test.importTableContents(conquery, Arrays.stream(test.getContent().getTables()).filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable())).collect(Collectors.toList()));
 				conquery.waitUntilWorkDone();
 			}
 
@@ -199,8 +183,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 				log.info("Executing query after re-import");
 
-				// Issue a query and assert that it has less content.
-				assertQueryResult(conquery, query, 2);
+				// Issue a query and assert that it has the same content as the first time around.
+				assertQueryResult(conquery, query, 2L);
 			}
 
 		}
@@ -212,6 +196,9 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		}
 	}
 
+	/**
+	 * Send a query onto the conquery instance and assert the result's size.
+	 */
 	private void assertQueryResult(StandaloneSupport conquery, IQuery query, long size) throws JSONException {
 		final ManagedQuery managedQuery = conquery.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
 
@@ -219,47 +206,5 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 		assertThat(managedQuery.getState()).isEqualTo(ExecutionState.DONE);
 
 		assertThat(managedQuery.getLastResultCount()).isEqualTo(size);
-	}
-
-	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws IOException, JSONException {
-		CsvParserSettings settings = new CsvParserSettings();
-		CsvFormat format = new CsvFormat();
-		format.setLineSeparator("\n");
-		settings.setFormat(format);
-		settings.setHeaderExtractionEnabled(true);
-		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
-		List<File> preprocessedFiles = new ArrayList<>();
-
-		for (RequiredTable rTable : tables) {
-			//copy csv to tmp folder
-			String name = rTable.getCsv().getName().substring(0, rTable.getCsv().getName().lastIndexOf('.'));
-			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
-
-			//create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);
-			ImportDescriptor desc = new ImportDescriptor();
-			desc.setInputFile(inputFile);
-			desc.setName(rTable.getName() + "_import");
-			desc.setTable(rTable.getName());
-			Input input = new Input();
-			{
-				input.setPrimary(QueryTest.copyOutput(0, rTable.getPrimaryColumn()));
-				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
-				input.setOutput(new Output[rTable.getColumns().length]);
-				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = QueryTest.copyOutput(i + 1, rTable.getColumns()[i]);
-				}
-			}
-			desc.setInputs(new Input[]{input});
-			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
-			preprocessedFiles.add(inputFile.getPreprocessedFile());
-		}
-		//preprocess
-		support.preprocessTmp();
-
-		//import preprocessedFiles
-		for (File file : preprocessedFiles) {
-			support.getDatasetsProcessor().addImport(support.getDataset(), file);
-		}
 	}
 }
