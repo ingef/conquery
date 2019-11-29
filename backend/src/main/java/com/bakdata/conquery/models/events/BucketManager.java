@@ -247,9 +247,8 @@ public class BucketManager {
 					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
-						Optional<Bucket> bucket = buckets.getOptional(bucketId);
 
-						if (bucket.isEmpty()) {
+						if (!buckets.containsKey(bucketId)) {
 							continue;
 						}
 
@@ -297,5 +296,9 @@ public class BucketManager {
 
 	public boolean hasCBlock(CBlockId id) {
 		return cBlocks.containsKey(id);
+	}
+
+	public boolean hasBucket(BucketId id) {
+		return buckets.containsKey(id);
 	}
 }
