@@ -202,68 +202,64 @@ public class BucketManager {
 	}
 
 	public void removeBucket(BucketId bucketId) {
-		Bucket bucket = buckets.remove(bucketId);
+		Bucket bucket = buckets.get(bucketId);
 		if (bucket == null) {
 			return;
 		}
 
-		deregisterBucket(bucket);
-
-		for (Concept<?> c : concepts) {
-			for (Connector con : c.getConnectors()) {
+		for (Concept<?> concept : concepts.values()) {
+			for (Connector con : concept.getConnectors()) {
 				try (Locked lock = cBlockLocks.acquire(con.getId())) {
-					if (!con.getTable().getId().equals(bucket.getImp().getTable())) {
-						continue;
-					}
-
-					CBlockId cBlockId = new CBlockId(
-							bucketId,
-							con.getId()
-					);
-					if (cBlocks.remove(cBlockId) != null) {
-						storage.removeCBlock(cBlockId);
-						deregisterCBlock(cBlockId);
-					}
+					removeCBlock(new CBlockId(bucketId, con.getId()));
 				}
 			}
 		}
+
+		deregisterBucket(buckets.get(bucketId));
+
+		buckets.remove(bucketId);
+		storage.removeBucket(bucketId);
+	}
+
+	private void removeCBlock(CBlockId cBlockId) {
+		if (!cBlocks.containsKey(cBlockId)) {
+			return;
+		}
+
+		deregisterCBlock(cBlockId);
+
+		cBlocks.remove(cBlockId);
+		storage.removeCBlock(cBlockId);
 	}
 
 	public void removeConcept(ConceptId conceptId) {
-		Concept<?> c = concepts.remove(conceptId);
+		Concept<?> c = concepts.get(conceptId);
 
 		if (c == null) {
 			return;
 		}
 
 		for (Connector con : c.getConnectors()) {
+			for (Import imp : con.getTable().findImports(storage)) {
+				for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
-			try (Locked lock = cBlockLocks.acquire(con.getId())) {
+					BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 
-				Table t = con.getTable();
-
-				for (Import imp : t.findImports(storage)) {
-
-					for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
-
-						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
-
-						if (!buckets.containsKey(bucketId)) {
-							continue;
-						}
-
-						CBlockId cBlockId = new CBlockId(bucketId, con.getId());
-
-						if (cBlocks.remove(cBlockId) != null) {
-							storage.removeCBlock(cBlockId);
-							deregisterCBlock(cBlockId);
-						}
+					if (!buckets.containsKey(bucketId)) {
+						continue;
 					}
+
+					removeCBlock(new CBlockId(bucketId, con.getId()));
 				}
 			}
 		}
+
+		concepts.remove(conceptId);
 	}
 
+	/**
+	 * Remove all buckets comprising the import. Which will in-turn remove all CBLocks.
+	 */
 	public void removeImport(ImportId imp) {
 
 		for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
@@ -274,24 +270,10 @@ public class BucketManager {
 				continue;
 			}
 
-			for (Concept<?> concept : concepts.values()) {
-				for (Connector con : concept.getConnectors()) {
-					try (Locked lock = cBlockLocks.acquire(con.getId())) {
-						CBlockId cBlockId = new CBlockId(bucketId, con.getId());
-
-						if (cBlocks.remove(cBlockId) != null) {
-							storage.removeCBlock(cBlockId);
-							deregisterCBlock(cBlockId);
-						}
-					}
-				}
-			}
-
-			deregisterBucket(buckets.get(bucketId));
-
-			buckets.remove(bucketId);
-			storage.removeBucket(bucketId);
+			removeBucket(bucketId);
 		}
+
+		storage.removeImport(imp);
 	}
 
 	public boolean hasCBlock(CBlockId id) {

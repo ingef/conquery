@@ -30,6 +30,9 @@ import java.util.Map;
 import java.util.PrimitiveIterator;
 import java.util.stream.IntStream;
 
+/**
+ * Contains data from possibly multiple entities, loaded in a single import.
+ */
 @FieldNameConstants
 @Getter @Setter @ToString @JsonDeserialize(using = BucketDeserializer.class)
 public abstract class Bucket extends IdentifiableImpl<BucketId> implements Iterable<Integer>, JsonSerializable {
