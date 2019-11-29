@@ -7,19 +7,12 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
-import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
-import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -44,17 +37,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
-	private Mandator mandator = new Mandator("testMandatorName", "testMandatorLabel");
-	private MandatorId mandatorId = mandator.getId();
-	private User user = new User("testUser@test.de", "testUserName");
-	private UserId userId = user.getId();
-	private ConqueryPermission permission = new DatasetPermission(Ability.READ.asSet(), new DatasetId("testDatasetId"));
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
 		MasterMetaStorage storage = null;
 
-		try (StandaloneSupport conquery = testConquery.getSupport(name)){
+		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 
 			final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
@@ -80,9 +68,6 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()));
 				conquery.waitUntilWorkDone();
 			}
-
-
-
 
 			final int nImports = namespace.getStorage().getAllImports().size();
 
@@ -166,7 +151,10 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			// Load the same import into the same table, with only the deleted import/table
 			{
 				// only import the deleted import/table
-				test.importTableContents(conquery, Arrays.stream(test.getContent().getTables()).filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable())).collect(Collectors.toList()));
+				test.importTableContents(conquery, Arrays
+														   .stream(test.getContent().getTables())
+														   .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
+														   .collect(Collectors.toList()));
 				conquery.waitUntilWorkDone();
 			}
 
@@ -191,12 +179,6 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				assertQueryResult(conquery, query, 2L);
 			}
 
-		}
-		finally {
-			if (storage != null) {
-				storage.removeMandator(mandatorId);
-				storage.removeUser(userId);
-			}
 		}
 	}
 

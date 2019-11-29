@@ -1,9 +1,8 @@
 package com.bakdata.conquery.models.query;
 
-import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.events.BlockManager;
+import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Worker;
@@ -35,6 +34,6 @@ public class QueryPlanContext {
 	}
 
 	public BucketManager getBlockManager() {
-		return worker.getStorage().getBlockManager();
+		return worker.getStorage().getBucketManager();
 	}
 }
