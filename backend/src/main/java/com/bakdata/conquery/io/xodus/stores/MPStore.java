@@ -22,7 +22,7 @@ import java.util.Objects;
 import java.util.function.Consumer;
 
 /**
- * MessagePacked key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
+ * Key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
  *
  * Values are (de-)serialized using {@link Jackson.BINARY_MAPPER}.
  * @param <KEY> type of keys
