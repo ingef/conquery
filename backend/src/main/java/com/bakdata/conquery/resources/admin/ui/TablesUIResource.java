@@ -1,8 +1,10 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
@@ -95,7 +97,9 @@ public class TablesUIResource extends HTables {
 	@DELETE
 	@Path("import/{"+IMPORT_ID+"}")
 	public void deleteImportView(@PathParam(IMPORT_ID)ImportId importId) {
+
 		namespace.getStorage().removeImport(importId);
+		namespace.getStorage().removeImport(new ImportId(new TableId(importId.getDataset(), ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
 
 		for (WorkerInformation w : namespace.getWorkers()) {
 			w.send(new RemoveImportJob(importId));
