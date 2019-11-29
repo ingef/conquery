@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration.tests;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -17,6 +18,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.query.IQuery;
@@ -115,6 +117,8 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			// Delete the import.
 			namespace.getStorage().removeImport(importId);
+			namespace.getStorage().removeImport(new ImportId(new TableId(dataset, ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
+
 
 			for (WorkerInformation w : namespace.getWorkers()) {
 				w.send(new RemoveImportJob(importId));
@@ -126,7 +130,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			{
 				// We have deleted an import now there should be two less!
-				assertThat(namespace.getStorage().getAllImports().size()).isLessThan(nImports);
+				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 2);
 
 				// The deleted import should not be found.
 				assertThat(namespace.getStorage().getAllImports())
