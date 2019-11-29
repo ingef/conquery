@@ -8,18 +8,16 @@ import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.apiv1.MeProcessor.FEGroup;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 
 import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * This endpoint is used to query information about the user itself. The
  * endpoint might be used to ask the backend to which groups a query can be
  * shared.
  */
-@Slf4j
 @Path("me")
 @Setter
 public class MeResource extends HAuthorized {
@@ -27,10 +25,16 @@ public class MeResource extends HAuthorized {
 	@Inject
 	private MeProcessor processor;
 
+	@Produces(MediaType.APPLICATION_JSON)
+	@GET
+	public String myName() {
+		return processor.getMyName(user);
+	}
+
 	@Path("groups")
 	@Produces(MediaType.APPLICATION_JSON)
 	@GET
-	public List<GroupId> getMyGroups(){
+	public List<FEGroup> getMyGroups() {
 		return processor.getMyGroups(user);
 	}
 
