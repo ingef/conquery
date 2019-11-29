@@ -24,7 +24,7 @@ import java.util.function.Consumer;
 /**
  * MessagePacked key-value-store from {@link KEY} type values to {@link VALUE} values. ACID consistent, stored on disk using {@link jetbrains.exodus.env.Store} via {@link XodusStore}.
  *
- * Values are (de-)serialized using {@link Jackson::BINARY_MAPPER}.
+ * Values are (de-)serialized using {@link Jackson.BINARY_MAPPER}.
  * @param <KEY> type of keys
  * @param <VALUE> type of values.
  */
@@ -95,7 +95,8 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 				} catch(Exception e) {
 					log.warn("Could not parse value for key "+entry.getKey(), e);
 				}
-			} catch(Exception e) {
+			}
+			catch(Exception e) {
 				log.warn("Could not parse key "+k, e);
 			}
 		});
@@ -142,7 +143,8 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 				log.trace("Written Messagepack ({}): {}", valueType.getName(), json);
 			}
 			return new ArrayByteIterable(bytes);
-		} catch (JsonProcessingException e) {
+		}
+		catch (JsonProcessingException e) {
 			throw new RuntimeException("Failed to write "+obj, e);
 		}
 	}
@@ -153,7 +155,8 @@ public class MPStore <KEY, VALUE> implements Store<KEY, VALUE> {
 		}
 		try {
 			return reader.readValue(obj.getBytesUnsafe(), 0, obj.getLength());
-		} catch (IOException e) {
+		}
+		catch (IOException e) {
 			throw new RuntimeException("Failed to read "+JacksonUtil.toJsonDebug(obj.getBytesUnsafe()), e);
 		}
 	}
