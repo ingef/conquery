@@ -19,7 +19,7 @@ public class QueryPlanContext {
 	private final Worker worker;
 
 	private boolean generateSpecialDateUnion = true;
-	private CDateRange dateRestriction;
+	private CDateRange dateRestriction = CDateRange.all();
 
 	public DatasetId getDataset() {
 		return worker.getStorage().getDataset().getId();
