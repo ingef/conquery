@@ -44,7 +44,7 @@ public class QueryExecutor implements Closeable {
 		);
 	}
 
-	public static ShardResult execute(BlockManager bucketManager, QueryExecutionContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
+	public static ShardResult execute(BucketManager bucketManager, QueryExecutionContext context, ManagedExecutionId queryId, QueryPlan plan, ListeningExecutorService executor) {
 
 		Collection<Entity> entries = bucketManager.getEntities().values();
 
