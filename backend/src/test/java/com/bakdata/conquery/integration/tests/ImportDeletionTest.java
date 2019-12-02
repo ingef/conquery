@@ -42,18 +42,27 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 	public void execute(String name, TestConquery testConquery) throws Exception {
 		MasterMetaStorage storage = null;
 
+		final DatasetId dataset;
+		final Namespace namespace;
+
+		final ImportId importId;
+
+		final QueryTest test;
+		final IQuery query;
+
+
 		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 
 			final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
-			final DatasetId dataset = conquery.getDataset().getId();
-			final Namespace namespace = storage.getNamespaces().get(dataset);
+			dataset = conquery.getDataset().getId();
+			namespace = storage.getNamespaces().get(dataset);
 
-			final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2_import");
+			importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2_import");
 
-			final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-			final IQuery query = test.parseQuery(conquery);
+			test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+			query = test.parseQuery(conquery);
 
 			// Manually import data, so we can do our own work.
 			{
@@ -178,7 +187,36 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				// Issue a query and assert that it has the same content as the first time around.
 				assertQueryResult(conquery, query, 2L);
 			}
+		}
 
+		// Finally, restart conquery and assert again, that the data is correct.
+
+		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
+		testConquery.getDropwizard().after();
+		//restart
+		testConquery.beforeAll(testConquery.getBeforeAllContext());
+
+		try (StandaloneSupport conquery = testConquery.openDataset(dataset)) {
+			log.info("Checking state after re-start");
+
+			{
+				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
+
+				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						final WorkerStorage workerStorage = value.getStorage();
+
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(importId)))
+								.describedAs("Buckets for Worker %s", value.getInfo().getId())
+								.isNotEmpty();
+					}
+				}
+
+				log.info("Executing query after re-import");
+
+				// Issue a query and assert that it has the same content as the first time around.
+				assertQueryResult(conquery, query, 2L);
+			}
 		}
 	}
 
