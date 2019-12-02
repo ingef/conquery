@@ -261,7 +261,6 @@ public class BucketManager {
 	 * Remove all buckets comprising the import. Which will in-turn remove all CBLocks.
 	 */
 	public void removeImport(ImportId imp) {
-
 		for (int bucketNumber : worker.getInfo().getIncludedBuckets()) {
 
 			BucketId bucketId = new BucketId(imp, bucketNumber);
@@ -272,8 +271,6 @@ public class BucketManager {
 
 			removeBucket(bucketId);
 		}
-
-		storage.removeImport(imp);
 	}
 
 	public boolean hasCBlock(CBlockId id) {
