@@ -1,9 +1,10 @@
-package com.bakdata.conquery.integration.tests;
+package com.bakdata.conquery.integration.tests.deletion;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
+import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.auth.DevAuthConfig;

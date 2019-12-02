@@ -148,7 +148,7 @@ public class BucketManager {
 
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 
-						if (buckets.containsKey(bucketId)) {
+						if (!buckets.containsKey(bucketId)) {
 							continue;
 						}
 
@@ -248,6 +248,7 @@ public class BucketManager {
 					if (!buckets.containsKey(bucketId)) {
 						continue;
 					}
+
 
 					removeCBlock(new CBlockId(bucketId, con.getId()));
 				}
