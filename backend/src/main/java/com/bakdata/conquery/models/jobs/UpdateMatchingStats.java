@@ -65,6 +65,11 @@ public class UpdateMatchingStats extends Job {
 								e = e.getParent();
 							}
 						}
+						else {
+							messages
+								.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
+								.addEvent(table, bucket, cBlock, event);
+						}
 					}
 					else {
 						messages.computeIfAbsent(concept.getId(), (x) -> new MatchingStats.Entry())
