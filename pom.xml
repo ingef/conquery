@@ -8,6 +8,7 @@
 	<packaging>pom</packaging>
 	<name>Conquery Parent</name>
 
+	
 	<properties>
 		<java.required>11</java.required>
 		<lombok.version>1.18.10</lombok.version>
