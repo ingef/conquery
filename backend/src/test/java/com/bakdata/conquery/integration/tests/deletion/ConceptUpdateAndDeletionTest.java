@@ -52,6 +52,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 
+			// Read two JSONs with different Trees
 			final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
 			final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
 
@@ -78,8 +79,6 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()));
 				conquery.waitUntilWorkDone();
 			}
-
-			final int nImports = namespace.getStorage().getAllImports().size();
 
 			log.info("Checking state before deletion");
 
@@ -108,7 +107,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 			log.info("Issuing deletion of import {}", conceptId);
 
-			// Delete the import.
+			// Delete the Concept.
 			namespace.getStorage().removeConcept(conceptId);
 
 			for (WorkerInformation w : namespace.getWorkers()) {
@@ -139,23 +138,23 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
 
-				// Issue a query and assert that it is failing..
+				// Issue a query and assert that it is failing.
 				assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
 			}
 
 			conquery.waitUntilWorkDone();
 
-			// Load the same import into the same table, with only the deleted import/table
+			// Load a different concept with the same id (it has different children "C1" that are more than "A1")
 			{
 				// only import the deleted concept
 				test2.importConcepts(conquery);
 				conquery.waitUntilWorkDone();
 			}
 
-			log.info("Checking state after re-import");
+			log.info("Checking state after update");
 
 			{
-				// Must contain the concept.
+				// Must contain the concept now.
 				assertThat(namespace.getStorage().getAllConcepts())
 						.filteredOn(concept -> concept.getId().equals(conceptId))
 						.isNotEmpty();
@@ -173,6 +172,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				log.info("Executing query after update");
 
+				// Assert that it now contains 2 instead of 1.
 				assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 			}
 		}
@@ -206,7 +206,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				}
 
 				log.info("Executing query after restart.");
-
+				// Re-assert state.
 				assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 			}
 		}
