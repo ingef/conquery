@@ -33,7 +33,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  */
 @Slf4j
-public class ConceptsDeletionTest implements ProgrammaticIntegrationTest {
+public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest {
 
 
 	@Override
@@ -45,14 +45,15 @@ public class ConceptsDeletionTest implements ProgrammaticIntegrationTest {
 
 		final ConceptId conceptId;
 
-		final QueryTest test;
+		final QueryTest test, test2;
 		final IQuery query;
 
 
 		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 
-			final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+			final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
+			final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
 
 			dataset = conquery.getDataset().getId();
 			namespace = storage.getNamespaces().get(dataset);
@@ -60,6 +61,8 @@ public class ConceptsDeletionTest implements ProgrammaticIntegrationTest {
 			conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
 
 			test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+			test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
+
 			query = test.parseQuery(conquery);
 
 			// Manually import data, so we can do our own work.
@@ -100,7 +103,7 @@ public class ConceptsDeletionTest implements ProgrammaticIntegrationTest {
 
 				log.info("Executing query before deletion");
 
-				assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+				assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
 			}
 
 			log.info("Issuing deletion of import {}", conceptId);
@@ -145,7 +148,7 @@ public class ConceptsDeletionTest implements ProgrammaticIntegrationTest {
 			// Load the same import into the same table, with only the deleted import/table
 			{
 				// only import the deleted concept
-				test.importConcepts(conquery);
+				test2.importConcepts(conquery);
 				conquery.waitUntilWorkDone();
 			}
 
@@ -168,7 +171,7 @@ public class ConceptsDeletionTest implements ProgrammaticIntegrationTest {
 					}
 				}
 
-				log.info("Executing query before deletion");
+				log.info("Executing query after update");
 
 				assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 			}
@@ -219,9 +222,13 @@ public class ConceptsDeletionTest implements ProgrammaticIntegrationTest {
 		assertThat(managedQuery.getState()).isEqualTo(state);
 
 		if(state == ExecutionState.FAILED){
-			assertThat(managedQuery.getLastResultCount()).isEqualTo(null);
+			assertThat(managedQuery.getLastResultCount())
+					.describedAs(managedQuery.getResults().toString())
+					.isEqualTo(null);
 		}else {
-			assertThat(managedQuery.getLastResultCount()).isEqualTo(size);
+			assertThat(managedQuery.getLastResultCount())
+					.describedAs(managedQuery.getResults().toString())
+					.isEqualTo(size);
 		}
 
 
