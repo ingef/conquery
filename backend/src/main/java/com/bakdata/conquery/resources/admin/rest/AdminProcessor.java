@@ -29,7 +29,9 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -62,6 +64,7 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
@@ -231,6 +234,11 @@ public class AdminProcessor {
 		return user.stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
 	}
 
+	private List<Group> getGroups(Role role) {
+		Collection<Group> groups = storage.getAllGroups();
+		return groups.stream().filter(g -> g.getRoles().contains(role)).collect(Collectors.toList());
+	}
+
 	public FERoleContent getRoleContent(RoleId roleId) {
 		Role role = Objects.requireNonNull(storage.getRole(roleId));
 		return FERoleContent
@@ -238,6 +246,7 @@ public class AdminProcessor {
 			.permissions(wrapInFEPermission(role.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.users(getUsers(role))
+			.groups(getGroups(role))
 			.owner(roleId.getPermissionOwner(storage))
 			.build();
 	}
@@ -310,15 +319,16 @@ public class AdminProcessor {
 		return new ArrayList<>(storage.getAllUsers());
 	}
 
-	public Object getUserContent(UserId userId) {
+	public FEUserContent getUserContent(UserId userId) {
 		User user = Objects.requireNonNull(storage.getUser(userId));
 		return FEUserContent
 			.builder()
 			.owner(user)
+			.roles(user.getRoles())
 			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(user.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
-			.roles(user.getRoles())
+			.staticUriElem(ResourceConstants.getAsTemplateModel())
 			.build();
 	}
 
@@ -345,34 +355,6 @@ public class AdminProcessor {
 		}
 	}
 
-	public void deleteRoleFromUser(UserId userId, RoleId roleId) throws JSONException {
-		User user = null;
-		Role role = null;
-		synchronized (storage) {
-			user = storage.getUser(userId);
-			role = storage.getRole(roleId);
-		}
-		Objects.requireNonNull(user);
-		Objects.requireNonNull(role);
-		user.removeRole(storage, role);
-		log.trace("Deleted role {} to user {}", role, user);
-
-	}
-
-	public void addRoleToUser(UserId userId, RoleId roleId) throws JSONException {
-		User user = null;
-		Role role = null;
-		synchronized (storage) {
-			user = storage.getUser(userId);
-			role = storage.getRole(roleId);
-		}
-		Objects.requireNonNull(user);
-		Objects.requireNonNull(role);
-		user.addRole(storage, role);
-		log.trace("Added role {} to user {}", role, user);
-
-	}
-
 	public Collection<Group> getAllGroups() {
 		return storage.getAllGroups();
 	}
@@ -387,8 +369,11 @@ public class AdminProcessor {
 			.owner(group)
 			.members(members)
 			.availableMembers(availableMembers)
+			.roles(group.getRoles())
+			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(group.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
+			.staticUriElem(ResourceConstants.getAsTemplateModel())
 			.build();
 	}
 
@@ -432,5 +417,37 @@ public class AdminProcessor {
 			storage.removeGroup(groupId);
 		}
 		log.trace("Removed group {}", groupId.getPermissionOwner(getStorage()));
+	}
+
+	public void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
+		PermissionOwner<?> owner = null;
+		Role role = null;
+		synchronized (storage) {
+			owner = ownerId.getPermissionOwner(storage);
+			role = storage.getRole(roleId);
+		}
+		Objects.requireNonNull(owner);
+		Objects.requireNonNull(role);
+		if (!(owner instanceof RoleOwner)) {
+			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
+		}
+		((RoleOwner) owner).removeRole(storage, role);
+		log.trace("Deleted role {} from {}", role, owner);
+	}
+
+	public void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
+		PermissionOwner<?> owner = null;
+		Role role = null;
+		synchronized (storage) {
+			owner = ownerId.getPermissionOwner(storage);
+			role = storage.getRole(roleId);
+		}
+		Objects.requireNonNull(owner);
+		Objects.requireNonNull(role);
+		if (!(owner instanceof RoleOwner)) {
+			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
+		}
+		((RoleOwner) owner).addRole(storage, role);
+		log.trace("Deleted role {} from {}", role, owner);
 	}
 }

@@ -1,6 +1,7 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.ROLE_PATH_ELEMENT;
 import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
 
 import java.util.List;
@@ -12,6 +13,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -50,17 +52,17 @@ public class UserResource extends HUsers{
 		return Response.ok().build();
 	}
 	
-	@Path("{" + USER_ID + "}/{" + ROLE_NAME + "}")
+	@Path("{" + USER_ID + "}/{" + ROLE_PATH_ELEMENT + "}")
 	@DELETE
-	public Response deleteRoleFromUser(@PathParam(USER_ID) UserId userId, @PathParam(ROLE_NAME) RoleId roleId) throws JSONException {
-		processor.deleteRoleFromUser(userId, roleId);
+	public Response deleteRoleFromUser(@PathParam(USER_ID) UserId userId, @QueryParam(ROLE_ID) RoleId roleId) throws JSONException {
+		processor.deleteRoleFrom(userId, roleId);
 		return Response.ok().build();
 	}
 	
-	@Path("{" + USER_ID + "}/{" + ROLE_NAME + "}")
+	@Path("{" + USER_ID + "}/{" + ROLE_PATH_ELEMENT + "}")
 	@POST
-	public Response addRoleToUser(@PathParam(USER_ID) UserId userId, @PathParam(ROLE_NAME) RoleId roleId) throws JSONException {
-		processor.addRoleToUser(userId, roleId);
+	public Response addRoleToUser(@PathParam(USER_ID) UserId userId, @QueryParam(ROLE_ID) RoleId roleId) throws JSONException {
+		processor.addRoleTo(userId, roleId);
 		return Response.ok().build();
 	}
 }

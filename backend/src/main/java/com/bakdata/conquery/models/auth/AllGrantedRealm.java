@@ -88,7 +88,10 @@ public class AllGrantedRealm extends AuthorizingRealm {
 		
 		for (Group group : storage.getAllGroups()) {
 			if(group.containsMember(user)) {
+				// Get Permissions of the group
 				permissions.addAll(group.getPermissions());
+				// And all of all roles a group holds
+				group.getRoles().forEach(r -> permissions.addAll(r.getPermissions()));
 			}
 		}
 		return permissions;

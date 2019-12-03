@@ -23,7 +23,7 @@ import lombok.Setter;
  * query it is currently shared with all groups a user is in.
  *
  */
-public class Group extends PermissionOwner<GroupId> {
+public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	@Getter
 	@Setter
@@ -40,6 +40,8 @@ public class Group extends PermissionOwner<GroupId> {
 
 	@MetaIdRefCollection
 	private Set<User> members = Collections.synchronizedSet(new HashSet<>());
+	@MetaIdRefCollection
+	private Set<Role> roles = Collections.synchronizedSet(new HashSet<>());
 
 	public Group(String name, String label) {
 		this.name = name;
@@ -73,6 +75,28 @@ public class Group extends PermissionOwner<GroupId> {
 
 	public Set<User> getMembers() {
 		return Set.copyOf(members);
+	}
+
+	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
+		synchronized (roles) {
+			if (!roles.contains(role)) {
+				roles.add(role);
+				updateStorage(storage);
+			}
+		}
+	}
+
+	public void removeRole(MasterMetaStorage storage, Role role) throws JSONException {
+		synchronized (roles) {
+			if (roles.contains(role)) {
+				roles.remove(role);
+				updateStorage(storage);
+			}
+		}
+	}
+
+	public Set<Role> getRoles() {
+		return Set.copyOf(roles);
 	}
 
 }
