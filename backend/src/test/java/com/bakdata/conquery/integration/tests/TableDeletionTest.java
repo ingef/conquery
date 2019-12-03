@@ -1,18 +1,19 @@
-package com.bakdata.conquery.integration.tests.deletion;
+package com.bakdata.conquery.integration.tests;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
-import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -25,6 +26,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,7 +35,7 @@ import static org.assertj.core.api.Assertions.assertThat;
  *
  */
 @Slf4j
-public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest {
+public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 
 	@Override
@@ -43,27 +45,23 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final DatasetId dataset;
 		final Namespace namespace;
 
-		final ConceptId conceptId;
+		final TableId tableId;
 
-		final QueryTest test, test2;
+		final QueryTest test;
 		final IQuery query;
 
 
 		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 
-			// Read two JSONs with different Trees
-			final String testJson = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_Query.json").withUTF8().readAll();
-			final String testJson2 = In.resource("/tests/query/UPDATE_CONCEPT_TESTS/SIMPLE_TREECONCEPT_2_Query.json").withUTF8().readAll();
+			final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 
 			dataset = conquery.getDataset().getId();
 			namespace = storage.getNamespaces().get(dataset);
 
-			conceptId = ConceptId.Parser.INSTANCE.parse(dataset.getName(), "test_tree");
+			tableId = TableId.Parser.INSTANCE.parse(dataset.getName(), "test_table2");
 
 			test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-			test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
-
 			query = test.parseQuery(conquery);
 
 			// Manually import data, so we can do our own work.
@@ -80,121 +78,113 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				conquery.waitUntilWorkDone();
 			}
 
+			final int nImports = namespace.getStorage().getAllImports().size();
+
 			log.info("Checking state before deletion");
 
 			// State before deletion.
 			{
-				// Must contain the concept.
-				assertThat(namespace.getStorage().getAllConcepts())
-						.filteredOn(concept -> concept.getId().equals(conceptId))
-						.isNotEmpty();
-
-				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
+				// Must contain the import.
+				assertThat(namespace.getStorage().getCentralRegistry().getOptional(tableId))
 						.isNotEmpty();
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						final WorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-								.isNotEmpty();
-
 						assertThat(workerStorage.getAllCBlocks())
 								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
+								.isNotEmpty();
+						assertThat(workerStorage.getAllBuckets())
+								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}
 				}
 
 				log.info("Executing query before deletion");
 
-				assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
+				assertQueryResult(conquery, query, 2L);
 			}
 
-			log.info("Issuing deletion of import {}", conceptId);
+			log.info("Issuing deletion of import {}", tableId);
 
-			// Delete the Concept.
-			namespace.getStorage().removeConcept(conceptId);
+			// Delete the import.
+//			namespace.getStorage().removeTable(tableId);
+//			namespace.getStorage().removeImport(new ImportId(new TableId(dataset, ConqueryConstants.ALL_IDS_TABLE), tableId.toString()));
+
 
 			for (WorkerInformation w : namespace.getWorkers()) {
-				w.send(new RemoveConcept(conceptId));
 			}
-
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
 
 			log.info("Checking state after deletion");
 
 			{
-				// We've deleted the concept so it and it's associated cblock should be gone.
-				assertThat(namespace.getStorage().getAllConcepts())
-						.filteredOn(concept -> concept.getId().equals(conceptId))
-						.isEmpty();
+				// We have deleted an import now there should be two less!
+				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 2);
 
-				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
+				// The deleted import should not be found.
+				assertThat(namespace.getStorage().getAllImports())
+						.filteredOn(imp -> imp.getId().equals(tableId))
 						.isEmpty();
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						final WorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
+						// No bucket should be found referencing the import.
+						assertThat(workerStorage.getAllBuckets())
+								.describedAs("Buckets for Worker %s", value.getInfo().getId())
+								.filteredOn(bucket -> bucket.getImp().getId().equals(tableId))
 								.isEmpty();
 
+						// No CBlock associated with import may exist
 						assertThat(workerStorage.getAllCBlocks())
 								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
+								.filteredOn(cBlock -> cBlock.getBucket().getImp().equals(tableId))
 								.isEmpty();
 					}
 				}
 
-				log.info("Executing query after deletion (EXPECTING AN EXCEPTION IN THE LOGS!)");
+				log.info("Executing query after deletion");
 
-				// Issue a query and assert that it is failing.
-				assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
+				// Issue a query and asseert that it has less content.
+				assertQueryResult(conquery, query, 1L);
 			}
 
 			conquery.waitUntilWorkDone();
 
-			// Load a different concept with the same id (it has different children "C1" that are more than "A1")
+			// Load the same import into the same table, with only the deleted import/table
 			{
-				// only import the deleted concept
-				test2.importConcepts(conquery);
+				// only import the deleted import/table
+				test.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
+														 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+														 .collect(Collectors.toList()));
 				conquery.waitUntilWorkDone();
 			}
 
-			log.info("Checking state after update");
+			log.info("Checking state after re-import");
 
 			{
-				// Must contain the concept now.
-				assertThat(namespace.getStorage().getAllConcepts())
-						.filteredOn(concept -> concept.getId().equals(conceptId))
-						.isNotEmpty();
-
-				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
-						.isNotEmpty();
+				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						final WorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-								.isNotEmpty();
-
-						assertThat(workerStorage.getAllCBlocks())
-								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
-								.isNotEmpty();
+//						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(tableId)))
+//								.describedAs("Buckets for Worker %s", value.getInfo().getId())
+//								.isNotEmpty();
 					}
 				}
 
-				log.info("Executing query after update");
+				log.info("Executing query after re-import");
 
-				// Assert that it now contains 2 instead of 1.
-				assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+				// Issue a query and assert that it has the same content as the first time around.
+				assertQueryResult(conquery, query, 2L);
 			}
 		}
-
 
 		// Finally, restart conquery and assert again, that the data is correct.
 
@@ -207,31 +197,22 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 			log.info("Checking state after re-start");
 
 			{
-				// Must contain the concept.
-				assertThat(namespace.getStorage().getAllConcepts())
-						.filteredOn(concept -> concept.getId().equals(conceptId))
-						.isNotEmpty();
-
-				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
-						.isNotEmpty();
+				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						final WorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
-								.isNotEmpty();
-
-						assertThat(workerStorage.getAllCBlocks())
-								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getConnector().getConcept().equals(conceptId))
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(tableId)))
+								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}
 				}
 
-				log.info("Executing query after restart.");
-				// Re-assert state.
-				assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+				log.info("Executing query after re-import");
+
+				// Issue a query and assert that it has the same content as the first time around.
+				assertQueryResult(conquery, query, 2L);
 			}
 		}
 	}
@@ -239,22 +220,12 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 	/**
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
-	private void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState state) throws JSONException {
+	private void assertQueryResult(StandaloneSupport conquery, IQuery query, long size) throws JSONException {
 		final ManagedQuery managedQuery = conquery.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
 
 		managedQuery.awaitDone(2, TimeUnit.MINUTES);
-		assertThat(managedQuery.getState()).isEqualTo(state);
+		assertThat(managedQuery.getState()).isEqualTo(ExecutionState.DONE);
 
-		if(state == ExecutionState.FAILED){
-			assertThat(managedQuery.getLastResultCount())
-					.describedAs(managedQuery.getResults().toString())
-					.isEqualTo(null);
-		}else {
-			assertThat(managedQuery.getLastResultCount())
-					.describedAs(managedQuery.getResults().toString())
-					.isEqualTo(size);
-		}
-
-
+		assertThat(managedQuery.getLastResultCount()).isEqualTo(size);
 	}
 }
