@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.Optional;
+
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -22,9 +24,7 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 
-import java.util.Optional;
-
-public class BucketManager {
+public class BlockManager {
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;
@@ -148,7 +148,7 @@ public class BucketManager {
 
 						BucketId bucketId = new BucketId(imp.getId(), bucketNumber);
 
-						if (buckets.containsKey(bucketId)) {
+						if (!buckets.containsKey(bucketId)) {
 							continue;
 						}
 
@@ -248,6 +248,7 @@ public class BucketManager {
 					if (!buckets.containsKey(bucketId)) {
 						continue;
 					}
+
 
 					removeCBlock(new CBlockId(bucketId, con.getId()));
 				}
