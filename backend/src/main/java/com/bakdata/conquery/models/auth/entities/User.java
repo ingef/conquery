@@ -19,13 +19,12 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
 
-public class User extends FilteredUser<UserId> implements Principal{
+public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 
 	@MetaIdRefCollection
 	private Set<Role> roles = Collections.synchronizedSet( new HashSet<>());
@@ -84,7 +83,7 @@ public class User extends FilteredUser<UserId> implements Principal{
 	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
 		synchronized (roles) {
 			if(!roles.contains(role)) {
-				addRoleLocal(role);
+				roles.add(role);
 				updateStorage(storage);
 			}
 		}
@@ -98,24 +97,9 @@ public class User extends FilteredUser<UserId> implements Principal{
 			}
 		}
 	}
-	
 
-	/**
-	 * Return a copy of the roles hold by the owner.
-	 * 
-	 * @return A set of the roles hold by the owner.
-	 */
-	@JsonIgnore
 	public Set<Role> getRoles(){
 		return Set.copyOf(roles);
-	}
-
-	/**
-	 * At role to the local role set only.
-	 * @param mandator
-	 */
-	public void addRoleLocal(Role mandator) {
-		roles.add(mandator);
 	}
 	
 	@Override

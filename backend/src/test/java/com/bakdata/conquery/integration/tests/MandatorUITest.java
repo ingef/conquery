@@ -1,6 +1,6 @@
 package com.bakdata.conquery.integration.tests;
 
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
@@ -15,8 +15,8 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
@@ -60,7 +60,7 @@ public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationT
 			
 			String base = String.format("http://localhost:%d/admin/", conquery.getAdminPort());
 			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(base, RoleUIResource.class, "getRole")
-			.buildFromMap(Map.of(ROLE_NAME, mandatorId.toString()));
+				.buildFromMap(Map.of(ROLE_ID, mandatorId.toString()));
 	
 			Response response = conquery
 				.getClient()
