@@ -20,11 +20,11 @@ public class CSVConfig {
 	private char comment = '\0';
 	private char delimeter = ',';
 	@Length(min=1, max=2) @NotNull
-	private String lineSeparator = System.lineSeparator();
+	private String lineSeparator = "\n";
 	private char quote = '"';
 	@NotNull
 	private Charset encoding = StandardCharsets.UTF_8;
-	private boolean skipHeader = true;
+	private boolean skipHeader = false;
 	private boolean parseHeaders = true;
 	private int maxColumns = 1_000_000; // This should be sufficiently enough.
 	/**

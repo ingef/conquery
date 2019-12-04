@@ -1,28 +1,8 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-
-import javax.validation.Validator;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -49,7 +29,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -68,10 +47,27 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
+import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+
+import javax.validation.Validator;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 @Getter
 @Slf4j
@@ -175,11 +171,11 @@ public class AdminProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		try (CSV csvData = new CSV(ConqueryConfig.getInstance().getCsv().withSkipHeader(false), data)) {
-			IdMappingConfig mappingConfig = config.getIdMapping();
-			PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
-			namespace.getStorage().updateIdMapping(mapping);
-		}
+		CsvParser parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withSkipHeader(false).createCsvParserSettings());
+
+		PersistentIdMap mapping = config.getIdMapping().generateIdMapping(parser.iterate(data).iterator());
+
+		namespace.getStorage().updateIdMapping(mapping);
 	}
 
 	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {

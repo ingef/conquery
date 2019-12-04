@@ -4,6 +4,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
 
+import java.io.File;
+
 public class CsvParsing {
 
 	public static CsvParser createParser() {
@@ -12,5 +14,9 @@ public class CsvParsing {
 
 	public static CsvWriter createWriter() {
 		return new CsvWriter(ConqueryConfig.getInstance().getCsv().createCsvWriterSettings());
+	}
+
+	public static boolean isGZipped(File file) {
+		return file.getName().endsWith(".gz");
 	}
 }

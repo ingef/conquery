@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -42,12 +43,13 @@ public class QueryToCSVRenderer {
 		if (queries.stream().anyMatch(q->q.getState() != ExecutionState.DONE)) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
 		}
+
 		ResultInfoCollector infos = queries.iterator().next().collectResultInfos(cfg);
 		
 		//build header
 		CsvWriter writer = CsvParsing.createWriter();
 		writer.addStringValues(HEADER);
-		for(var info : infos.getInfos()) {
+		for(ResultInfo info : infos.getInfos()) {
 			writer.addValue(info.getUniqueName(cfg));
 		}
 		

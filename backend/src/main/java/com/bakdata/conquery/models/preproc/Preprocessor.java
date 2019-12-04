@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.preproc;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.CsvParsing;
 import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -20,6 +20,9 @@ import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
+import com.univocity.parsers.common.IterableResult;
+import com.univocity.parsers.common.ParsingContext;
+import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,7 +38,6 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
@@ -112,32 +114,28 @@ public class Preprocessor {
 
 				try(CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
-					try(CSV csv = new CSV(
-						config.getCsv(),
-						CSV.isGZipped(input.getSourceFile())?new GZIPInputStream(countingIn):countingIn
-					)){
-						Iterator<String[]> it = csv.iterateContent();
-	
-						while(it.hasNext()) {
-							String[] row = it.next();
-							Integer primary = getPrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
-							if(primary != null) {
-								int primaryId = result.addPrimary(primary);
-								parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
-							}
-							
-							//report progress
-							long newProgress = countingIn.getCount();
-							totalProgress.addCurrentValue(newProgress - progress);
-							progress = newProgress;
-							lineId++;
+
+					final CsvParser parser = CsvParsing.createParser();
+					IterableResult<String[], ParsingContext> it = parser.iterate(CsvParsing.isGZipped(input.getSourceFile())?new GZIPInputStream(countingIn):countingIn );
+
+					for (String[] row : it) {
+						Integer primary = getPrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
+						if(primary != null) {
+							int primaryId = result.addPrimary(primary);
+							parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
 						}
-	
-						if (input.checkAutoOutput()) {
-							List<AutoOutput.OutRow> outRows = input.getAutoOutput().finish();
-							for (AutoOutput.OutRow outRow : outRows) {
-								result.addRow(outRow.getPrimaryId(), outRow.getTypes(), outRow.getData());
-							}
+
+						//report progress
+						long newProgress = countingIn.getCount();
+						totalProgress.addCurrentValue(newProgress - progress);
+						progress = newProgress;
+						lineId++;
+					}
+
+					if (input.checkAutoOutput()) {
+						List<AutoOutput.OutRow> outRows = input.getAutoOutput().finish();
+						for (AutoOutput.OutRow outRow : outRows) {
+							result.addRow(outRow.getPrimaryId(), outRow.getTypes(), outRow.getData());
 						}
 					}
 				}
