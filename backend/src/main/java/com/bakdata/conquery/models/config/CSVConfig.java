@@ -20,7 +20,7 @@ public class CSVConfig {
 	private char comment = '\0';
 	private char delimeter = ',';
 	@Length(min=1, max=2) @NotNull
-	private String lineSeparator = "\n";
+	private String lineSeparator = System.lineSeparator();
 	private char quote = '"';
 	@NotNull
 	private Charset encoding = StandardCharsets.UTF_8;
