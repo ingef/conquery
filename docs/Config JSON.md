@@ -106,6 +106,7 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | encoding | `Charset` | `"UTF-8"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | escape | `char` | `"\\"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | lineSeparator | `String` | `"\n"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | maxColumns | `int` | `-1` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | quote | `char` | `"\""` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | skipHeader | `boolean` | `true` |  |  | 
 </p></details>
