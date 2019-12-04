@@ -29,6 +29,7 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -68,6 +69,7 @@ import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.collect.HashBasedTable;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -415,14 +417,18 @@ public class AdminProcessor {
 
 	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
 		synchronized (storage) {
-			Objects.requireNonNull(groupId.getPermissionOwner(storage)).addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+			Objects
+				.requireNonNull(groupId.getPermissionOwner(storage))
+				.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
 		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
 		synchronized (storage) {
-			Objects.requireNonNull(groupId.getPermissionOwner(storage)).removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+			Objects
+				.requireNonNull(groupId.getPermissionOwner(storage))
+				.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
@@ -432,5 +438,23 @@ public class AdminProcessor {
 			storage.removeGroup(groupId);
 		}
 		log.trace("Removed group {}", groupId.getPermissionOwner(getStorage()));
+	}
+
+	public Object getAuthOverview() {
+		HashBasedTable<User, String, List<PermissionOwner<?>>> overview = HashBasedTable.create();
+		storage.getAllUsers();
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	private Collection<Group> getGroups(User user) {
+		Collection<Group> allGroups = storage.getAllGroups();
+		List<Group> userGroups = new ArrayList<>();
+		allGroups.forEach(g -> {
+			if (g.containsMember(user)) {
+				userGroups.add(g);
+			}
+		});
+		return userGroups;
 	}
 }
