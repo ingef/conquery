@@ -1,5 +1,20 @@
 package com.bakdata.conquery.models.query;
 
+import com.bakdata.conquery.apiv1.CsvParsing;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.dictionary.DirectDictionary;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.results.ContainedEntityResult;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.univocity.parsers.csv.CsvWriter;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.tuple.Pair;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -9,26 +24,9 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.apache.commons.lang3.tuple.Pair;
-
-import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.dictionary.DirectDictionary;
-import com.bakdata.conquery.models.execution.ExecutionState;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.results.ContainedEntityResult;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.univocity.parsers.csv.CsvWriter;
-import com.univocity.parsers.csv.CsvWriterSettings;
-
-import lombok.RequiredArgsConstructor;
-
 @RequiredArgsConstructor
 public class QueryToCSVRenderer {
 
-	private static final CsvWriterSettings CSV_SETTINGS =  ConqueryConfig.getInstance().getCsv().createCsvWriterSettings();
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
 	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
 	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true, ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
@@ -45,12 +43,13 @@ public class QueryToCSVRenderer {
 		if (queries.stream().anyMatch(q->q.getState() != ExecutionState.DONE)) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
 		}
+
 		ResultInfoCollector infos = queries.iterator().next().collectResultInfos(cfg);
 		
 		//build header
-		CsvWriter writer = new CsvWriter(CSV_SETTINGS);
+		CsvWriter writer = CsvParsing.createWriter();
 		writer.addStringValues(HEADER);
-		for(var info : infos.getInfos()) {
+		for(ResultInfo info : infos.getInfos()) {
 			writer.addValue(info.getUniqueName(cfg));
 		}
 		

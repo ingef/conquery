@@ -1,22 +1,22 @@
 package com.bakdata.conquery.apiv1;
 
-import com.univocity.parsers.csv.CsvFormat;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.univocity.parsers.csv.CsvParser;
-import com.univocity.parsers.csv.CsvParserSettings;
+import com.univocity.parsers.csv.CsvWriter;
+
+import java.io.File;
 
 public class CsvParsing {
 
 	public static CsvParser createParser() {
-		CsvParserSettings settings = new CsvParserSettings();
-		CsvFormat format = settings.getFormat();
-		//TODO why is this not configured?
-		format.setDelimiter(';');
-		format.setLineSeparator(System.lineSeparator());
-		format.setCharToEscapeQuoteEscaping('\\');
-		format.setQuoteEscape('\\');
-		settings.setColumnReorderingEnabled(false);
-		settings.setMaxCharsPerColumn(-1);
-		settings.setHeaderExtractionEnabled(true);
-		return new CsvParser(settings);
+		return new CsvParser(ConqueryConfig.getInstance().getCsv().createCsvParserSettings());
+	}
+
+	public static CsvWriter createWriter() {
+		return new CsvWriter(ConqueryConfig.getInstance().getCsv().createCsvWriterSettings());
+	}
+
+	public static boolean isGZipped(File file) {
+		return file.getName().endsWith(".gz");
 	}
 }
