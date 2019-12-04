@@ -24,7 +24,7 @@ public class RoleUIResource extends HRoles {
 
 	/**
 	 * End point for retrieving information about a specific role.
-	 * 
+	 *
 	 * @param roleId
 	 *            Unique id of the role.
 	 * @return A view holding the information about the role.

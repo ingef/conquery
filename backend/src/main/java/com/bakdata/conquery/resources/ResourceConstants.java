@@ -6,6 +6,7 @@ import freemarker.template.TemplateModel;
 import freemarker.template.TemplateModelException;
 
 public class ResourceConstants {
+
 	public static final String DATASET_NAME = "datasetName";
 	public static final String TABLE_NAME = "tableName";
 	public static final String CONCEPT_NAME = "conceptName";
@@ -22,10 +23,10 @@ public class ResourceConstants {
 	/**
 	 * Method to generate a data-model of this class's static members so that they
 	 * are accessible from within a freemarker template.
-	 * 
+	 *
 	 * @return
 	 */
-	public final static TemplateModel getAsTemplateModel() {
+	public static final TemplateModel getAsTemplateModel() {
 		try {
 			return new DefaultObjectWrapperBuilder(Configuration.getVersion())
 				.build()

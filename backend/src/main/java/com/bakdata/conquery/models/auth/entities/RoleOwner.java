@@ -14,7 +14,7 @@ public interface RoleOwner {
 
 	/**
 	 * Return a copy of the roles hold by the owner.
-	 * 
+	 *
 	 * @return A set of the roles hold by the owner.
 	 */
 	@JsonIgnore

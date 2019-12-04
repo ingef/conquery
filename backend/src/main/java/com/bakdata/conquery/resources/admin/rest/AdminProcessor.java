@@ -210,7 +210,7 @@ public class AdminProcessor {
 	/**
 	 * Deletes the mandator, that is identified by the id. Its references are
 	 * removed from the users and from the storage.
-	 * 
+	 *
 	 * @param mandatorId
 	 *            The id belonging to the mandator
 	 * @throws JSONException
@@ -301,7 +301,7 @@ public class AdminProcessor {
 
 	/**
 	 * Handles deletion of permissions.
-	 * 
+	 *
 	 * @param permission
 	 *            The permission to delete.
 	 * @throws JSONException

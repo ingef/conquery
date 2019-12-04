@@ -26,8 +26,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.hierarchies.HGroups;
 
-public class GroupResource extends HGroups{
-
+public class GroupResource extends HGroups {
 
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
@@ -41,21 +40,21 @@ public class GroupResource extends HGroups{
 		processor.removeGroup(groupId);
 		return Response.ok().build();
 	}
-	
+
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	public Response postGroups(List<Group> groups) throws JSONException {
 		processor.addGroups(groups);
 		return Response.ok().build();
 	}
-	
+
 	@Path("{" + GROUP_ID + "}/" + USER_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@POST
 	public Response addUserToGroup(@PathParam(GROUP_ID) GroupId groupId, @PathParam(USER_ID) UserId userId) throws JSONException {
 		processor.addUserToGroup(groupId, userId);
 		return Response.ok().build();
 	}
-	
+
 	@Path("{" + GROUP_ID + "}/" + USER_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@DELETE
 	public Response deleteUserFromGroup(@PathParam(GROUP_ID) GroupId groupId, @PathParam(USER_ID) UserId userId) throws JSONException {
