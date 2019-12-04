@@ -16,7 +16,6 @@ import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
-import javax.ws.rs.QueryParam;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
@@ -50,30 +49,30 @@ public class GroupResource extends HGroups{
 		return Response.ok().build();
 	}
 	
-	@Path("{" + GROUP_ID + "}/" + USER_PATH_ELEMENT + "")
+	@Path("{" + GROUP_ID + "}/" + USER_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@POST
-	public Response addUserToGroup(@PathParam(GROUP_ID) GroupId groupId, @QueryParam(USER_ID) UserId userId) throws JSONException {
+	public Response addUserToGroup(@PathParam(GROUP_ID) GroupId groupId, @PathParam(USER_ID) UserId userId) throws JSONException {
 		processor.addUserToGroup(groupId, userId);
 		return Response.ok().build();
 	}
 	
-	@Path("{" + GROUP_ID + "}/" + USER_PATH_ELEMENT + "")
+	@Path("{" + GROUP_ID + "}/" + USER_PATH_ELEMENT + "/{" + USER_ID + "}")
 	@DELETE
-	public Response deleteUserFromGroup(@PathParam(GROUP_ID) GroupId groupId, @QueryParam(USER_ID) UserId userId) throws JSONException {
+	public Response deleteUserFromGroup(@PathParam(GROUP_ID) GroupId groupId, @PathParam(USER_ID) UserId userId) throws JSONException {
 		processor.deleteUserFromGroup(groupId, userId);
 		return Response.ok().build();
 	}
 
-	@Path("{" + GROUP_ID + "}/" + ROLE_PATH_ELEMENT + "")
+	@Path("{" + GROUP_ID + "}/" + ROLE_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRoleFromUser(@PathParam(GROUP_ID) GroupId groupId, @QueryParam(ROLE_ID) RoleId roleId) throws JSONException {
+	public Response deleteRoleFromUser(@PathParam(GROUP_ID) GroupId groupId, @PathParam(ROLE_ID) RoleId roleId) throws JSONException {
 		processor.deleteRoleFrom(groupId, roleId);
 		return Response.ok().build();
 	}
 
-	@Path("{" + GROUP_ID + "}/" + ROLE_PATH_ELEMENT + "")
+	@Path("{" + GROUP_ID + "}/" + ROLE_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
-	public Response addRoleToUser(@PathParam(GROUP_ID) GroupId groupId, @QueryParam(ROLE_ID) RoleId roleId) throws JSONException {
+	public Response addRoleToUser(@PathParam(GROUP_ID) GroupId groupId, @PathParam(ROLE_ID) RoleId roleId) throws JSONException {
 		processor.addRoleTo(groupId, roleId);
 		return Response.ok().build();
 	}

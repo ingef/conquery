@@ -32,23 +32,4 @@
 		</div>
 
 	</div>
-	<script type="application/javascript">
-	function addRole() {
-		event.preventDefault(); 
-		fetch(
-			'./${c.owner.id}/${c.staticUriElem.ROLE_PATH_ELEMENT}?${c.staticUriElem.ROLE_ID}='+document.getElementById('role_id').value,
-			{
-				method: 'post',
-				headers: {'Content-Type': 'application/json'}
-			}).then(function(){location.reload()});
-	}
-
-	function removeRole(path){
-		event.preventDefault();
-		fetch(
-			path,
-			{method: 'delete'})
-			.then(function(){location.reload();});
-	}
-	</script>
 </@layout.layout>

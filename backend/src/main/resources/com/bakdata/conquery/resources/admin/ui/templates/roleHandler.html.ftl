@@ -11,7 +11,7 @@
 				<tr>
 					<td><a href="/admin/roles/${role.id}">${role.label}</a></td>
 					<td><a href="#"
-							onclick="removeRole('./${c.owner.id}/${c.staticUriElem.ROLE_PATH_ELEMENT}?${c.staticUriElem.ROLE_ID}=${role.id}')">Remove
+							onclick="removeRole('./${c.owner.id}/${c.staticUriElem.ROLE_PATH_ELEMENT}/${role.id}')">Remove
 							from user<i class="fas fa-trash-alt text-danger"></i></a></td>
 				</tr>
 			</#list>
@@ -33,7 +33,7 @@
 		function addRole() {
 			event.preventDefault();
 			fetch(
-				'./${c.owner.id}/${c.staticUriElem.ROLE_PATH_ELEMENT}?${c.staticUriElem.ROLE_ID}=' + document.getElementById('role_id').value,
+				'./${c.owner.id}/${c.staticUriElem.ROLE_PATH_ELEMENT}/' + document.getElementById('role_id').value,
 				{
 					method: 'post',
 					headers: { 'Content-Type': 'application/json' }

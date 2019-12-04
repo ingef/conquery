@@ -33,7 +33,7 @@ public class ResourceConstants {
 				.get(ResourceConstants.class.getName());
 		}
 		catch (TemplateModelException e) {
-			throw new IllegalStateException("Could not generate template model for " + ResourceConstants.class.getName());
+			throw new IllegalStateException("Could not generate template model for " + ResourceConstants.class.getName(), e);
 		}
 	}
 }
