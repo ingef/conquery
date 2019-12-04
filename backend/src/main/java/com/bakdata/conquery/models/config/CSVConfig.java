@@ -25,7 +25,7 @@ public class CSVConfig {
 	@NotNull
 	private Charset encoding = StandardCharsets.UTF_8;
 	private boolean skipHeader = true;
-	private int maxColumns = -1;
+	private int maxColumns = 1_000_000; // This should be sufficiently enough.
 	/**
 	 * Script used to generate the CSV column names from CQConcept and Select information.
 	 * The script has an instance of SelectResultInfo named columnInfo available to construct the name.
