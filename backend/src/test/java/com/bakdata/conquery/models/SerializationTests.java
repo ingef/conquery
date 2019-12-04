@@ -60,10 +60,15 @@ public class SerializationTests {
 			.addPermission(
 				storage,
 				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
-		user.addRole(storage, new Role("company", "company"));
+		Role role = new Role("company", "company");
+		user.addRole(storage, role);
+
+		CentralRegistry registry = new CentralRegistry();
+		registry.register(role);
 		
 		SerializationTestUtil
 			.forType(User.class)
+			.registry(registry)
 			.test(user);
 	}
 	
@@ -78,7 +83,16 @@ public class SerializationTests {
 				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
 		group.addRole(storage, new Role("company", "company"));
 
-		SerializationTestUtil.forType(Group.class).test(group);
+		Role role = new Role("company", "company");
+		group.addRole(storage, role);
+		User user = new User("userName", "userLabel");
+		group.addMember(storage, user);
+
+		CentralRegistry registry = new CentralRegistry();
+		registry.register(role);
+		registry.register(user);
+
+		SerializationTestUtil.forType(Group.class).registry(registry).test(group);
 	}
 
 	@Test
