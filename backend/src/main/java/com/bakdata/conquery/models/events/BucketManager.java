@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.events;
 
-import java.util.Optional;
-
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -24,7 +22,9 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 
-public class BlockManager {
+import java.util.Optional;
+
+public class BucketManager {
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
 	private final JobManager jobManager;

@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.events.BucketEntry;
+import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
@@ -22,7 +23,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.CalculatedValue;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
