@@ -78,7 +78,7 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the
 	 * owner and the permission of the roles it inherits.
-	 * 
+	 *
 	 * @return Owned and inherited permissions.
 	 */
 	private Set<ConqueryPermission> getEffectiveUserPermissions(UserId userId) {
