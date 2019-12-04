@@ -423,11 +423,9 @@ public class AdminProcessor {
 		PermissionOwner<?> owner = null;
 		Role role = null;
 		synchronized (storage) {
-			owner = ownerId.getPermissionOwner(storage);
-			role = storage.getRole(roleId);
+			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+			role = Objects.requireNonNull(storage.getRole(roleId));
 		}
-		Objects.requireNonNull(owner);
-		Objects.requireNonNull(role);
 		if (!(owner instanceof RoleOwner)) {
 			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
 		}
@@ -439,11 +437,9 @@ public class AdminProcessor {
 		PermissionOwner<?> owner = null;
 		Role role = null;
 		synchronized (storage) {
-			owner = ownerId.getPermissionOwner(storage);
-			role = storage.getRole(roleId);
+			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+			role = Objects.requireNonNull(storage.getRole(roleId));
 		}
-		Objects.requireNonNull(owner);
-		Objects.requireNonNull(role);
 		if (!(owner instanceof RoleOwner)) {
 			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
 		}
