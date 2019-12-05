@@ -40,8 +40,8 @@
 					<tbody>
 					<#list c.members as member>
 						<tr>
-							<td><a href="/admin/users/${member.id}">${member.label}</a></td>
-							<td><a href="#" onclick="removeMember('./${c.owner.id}/${c.staticUriElem.USER_PATH_ELEMENT}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
+							<td><a href="/admin/${ctx.staticUriElem.USERS_PATH_ELEMENT}/${member.id}">${member.label}</a></td>
+							<td><a href="#" onclick="removeMember('./${c.owner.id}/${ctx.staticUriElem.USER_PATH_ELEMENT}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
 						</tr>
 					</#list>
 					</tbody>
@@ -69,7 +69,7 @@
 	function addMember() {
 		event.preventDefault(); 
 		fetch(
-			'./${c.owner.id}/${c.staticUriElem.USER_PATH_ELEMENT}/'+document.getElementById('member_id').value,
+			'./${c.owner.id}/${ctx.staticUriElem.USER_PATH_ELEMENT}/'+document.getElementById('member_id').value,
 			{
 				method: 'post',
 				headers: {'Content-Type': 'application/json'}

@@ -65,13 +65,14 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
+import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
 import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.fasterxml.jackson.databind.ObjectWriter;
-import com.google.common.collect.HashBasedTable;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -313,7 +314,7 @@ public class AdminProcessor {
 	}
 
 	public UIContext getUIContext() {
-		return new UIContext(namespaces);
+		return new UIContext(namespaces, ResourceConstants.getAsTemplateModel());
 	}
 
 	public List<User> getAllUsers() {
@@ -329,7 +330,6 @@ public class AdminProcessor {
 			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(user.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
-			.staticUriElem(ResourceConstants.getAsTemplateModel())
 			.build();
 	}
 
@@ -374,7 +374,6 @@ public class AdminProcessor {
 			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(group.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
-			.staticUriElem(ResourceConstants.getAsTemplateModel())
 			.build();
 	}
 
@@ -423,7 +422,7 @@ public class AdminProcessor {
 		}
 		log.trace("Removed group {}", groupId.getPermissionOwner(getStorage()));
 	}
-	
+
 	public void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
 		PermissionOwner<?> owner = null;
 		Role role = null;
@@ -452,11 +451,18 @@ public class AdminProcessor {
 		log.trace("Deleted role {} from {}", role, owner);
 	}
 
-	public Object getAuthOverview() {
-		HashBasedTable<User, String, List<PermissionOwner<?>>> overview = HashBasedTable.create();
-		storage.getAllUsers();
-		// TODO Auto-generated method stub
-		return null;
+	public FEAuthOverview getAuthOverview() {
+		Collection<OverviewRow> overview = new ArrayList<>();
+		for (User user : storage.getAllUsers()) {
+			Collection<Group> userGroups = getGroups(user);
+			ArrayList<Role> effectiveRoles = new ArrayList<>(user.getRoles());
+			userGroups.forEach(g -> {
+				effectiveRoles.addAll(((Group) g).getRoles());
+			});
+			overview.add(OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
+		}
+
+		return FEAuthOverview.builder().overview(overview).build();
 	}
 
 	private Collection<Group> getGroups(User user) {
