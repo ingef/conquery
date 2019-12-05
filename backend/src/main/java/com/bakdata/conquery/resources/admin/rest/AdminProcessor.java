@@ -454,7 +454,7 @@ public class AdminProcessor {
 	public FEAuthOverview getAuthOverview() {
 		Collection<OverviewRow> overview = new ArrayList<>();
 		for (User user : storage.getAllUsers()) {
-			Collection<Group> userGroups = getGroups(user);
+			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
 			ArrayList<Role> effectiveRoles = new ArrayList<>(user.getRoles());
 			userGroups.forEach(g -> {
 				effectiveRoles.addAll(((Group) g).getRoles());
@@ -465,14 +465,7 @@ public class AdminProcessor {
 		return FEAuthOverview.builder().overview(overview).build();
 	}
 
-	private Collection<Group> getGroups(User user) {
-		Collection<Group> allGroups = storage.getAllGroups();
-		List<Group> userGroups = new ArrayList<>();
-		allGroups.forEach(g -> {
-			if (g.containsMember(user)) {
-				userGroups.add(g);
-			}
-		});
-		return userGroups;
+	public void getPermissionOverviewAsCSV() {
+
 	}
 }
