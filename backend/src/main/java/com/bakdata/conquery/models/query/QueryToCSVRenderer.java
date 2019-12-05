@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query;
 
-import com.bakdata.conquery.apiv1.CsvParsing;
+import com.bakdata.conquery.io.csv.CsvIO;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -47,7 +47,7 @@ public class QueryToCSVRenderer {
 		ResultInfoCollector infos = queries.iterator().next().collectResultInfos(cfg);
 		
 		//build header
-		CsvWriter writer = CsvParsing.createWriter();
+		CsvWriter writer = CsvIO.createWriter();
 		writer.addStringValues(HEADER);
 		for(ResultInfo info : infos.getInfos()) {
 			writer.addValue(info.getUniqueName(cfg));

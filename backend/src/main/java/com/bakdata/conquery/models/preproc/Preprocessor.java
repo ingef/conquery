@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.preproc;
 
 import com.bakdata.conquery.ConqueryConstants;
-import com.bakdata.conquery.apiv1.CsvParsing;
 import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.csv.PrefetchingIterator;
+import com.bakdata.conquery.io.PrefetchingIterator;
+import com.bakdata.conquery.io.csv.CsvIO;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -115,9 +115,9 @@ public class Preprocessor {
 				try(CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
 
-					final CsvParser parser = CsvParsing.createParser();
+					final CsvParser parser = CsvIO.createParser();
 					final Iterator<String[]> it = new PrefetchingIterator<>(
-							parser.iterate(CsvParsing.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn).iterator(),
+							parser.iterate(CsvIO.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn).iterator(),
 							1_000
 					);
 

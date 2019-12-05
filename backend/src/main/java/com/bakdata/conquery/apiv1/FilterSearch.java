@@ -1,5 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
+import com.bakdata.conquery.io.csv.CsvIO;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -124,7 +125,7 @@ public class FilterSearch {
 							   .build();
 
 		try {
-			CsvParser parser = CsvParsing.createParser();
+			CsvParser parser = CsvIO.createParser();
 			IterableResult<String[], ParsingContext> it = parser.iterate(In.file(file).withUTF8().asReader());
 			String[] header = it.getContext().parsedHeaders();
 

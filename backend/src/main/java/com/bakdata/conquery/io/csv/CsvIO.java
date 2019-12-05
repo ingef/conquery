@@ -1,4 +1,4 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.io.csv;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.univocity.parsers.csv.CsvParser;
@@ -6,7 +6,7 @@ import com.univocity.parsers.csv.CsvWriter;
 
 import java.io.File;
 
-public class CsvParsing {
+public class CsvIO {
 
 	public static CsvParser createParser() {
 		return new CsvParser(ConqueryConfig.getInstance().getCsv().createCsvParserSettings());

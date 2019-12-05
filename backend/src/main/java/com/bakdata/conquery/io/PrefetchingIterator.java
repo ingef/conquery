@@ -1,4 +1,4 @@
-package com.bakdata.conquery.io.csv;
+package com.bakdata.conquery.io;
 
 import com.google.common.collect.AbstractIterator;
 import lombok.extern.slf4j.Slf4j;
