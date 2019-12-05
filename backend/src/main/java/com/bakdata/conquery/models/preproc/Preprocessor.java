@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.preproc;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.CsvParsing;
 import com.bakdata.conquery.io.HCFile;
+import com.bakdata.conquery.io.csv.PrefetchingIterator;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -20,8 +21,6 @@ import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
-import com.univocity.parsers.common.IterableResult;
-import com.univocity.parsers.common.ParsingContext;
 import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +37,7 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
@@ -116,11 +116,17 @@ public class Preprocessor {
 					long progress = 0;
 
 					final CsvParser parser = CsvParsing.createParser();
-					IterableResult<String[], ParsingContext> it = parser.iterate(CsvParsing.isGZipped(input.getSourceFile())?new GZIPInputStream(countingIn):countingIn );
+					final Iterator<String[]> it = new PrefetchingIterator<>(
+							parser.iterate(CsvParsing.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn).iterator(),
+							1_000
+					);
 
-					for (String[] row : it) {
+					while (it.hasNext()) {
+
+						String[] row = it.next();
+
 						Integer primary = getPrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
-						if(primary != null) {
+						if (primary != null) {
 							int primaryId = result.addPrimary(primary);
 							parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
 						}
