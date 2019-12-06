@@ -128,10 +128,6 @@ public class AuthorizationHelper {
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the
 	 * owner and the permission of the roles it inherits.
-	 * 
-	 * @param storage
-	 *
-	 * @return Owned and inherited permissions.
 	 */
 	public static Set<ConqueryPermission> getEffectiveUserPermissions(UserId userId, MasterMetaStorage storage) {
 		User user = storage.getUser(userId);
