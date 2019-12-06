@@ -15,6 +15,7 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
+
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -26,11 +27,14 @@ public class QueryProcessor {
 	private final MasterMetaStorage storage;
 
 	/**
-	 * Create query for all datasets, then submit it for execution it on selected dataset.
+	 * Create query for all datasets, then submit it for execution it on
+	 * selected dataset.
+	 * 
 	 * @param dataset
 	 * @param query
 	 * @param urlb
 	 * @param user
+	 * @param allowDownload
 	 * @return
 	 * @throws JSONException
 	 */
@@ -66,11 +70,12 @@ public class QueryProcessor {
 		}
 		
 		//return status
-		return getStatus(dataset, mq, urlb);
+		return getStatus(dataset, mq, urlb, user.isPermitted(
+			DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId())));
 	}
 
-	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution query, URLBuilder urlb) {
-		return query.buildStatus(urlb);
+	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution query, URLBuilder urlb, boolean allowDownload) {
+		return query.buildStatus(urlb, allowDownload);
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution query, URLBuilder urlb) {

@@ -46,7 +46,7 @@ public class StoredQueriesProcessor {
 		this.storage = namespaces.getMetaStorage();
 	}
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
+	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, boolean allowDownload) {
 		Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
 		return allQueries
@@ -56,7 +56,10 @@ public class StoredQueriesProcessor {
 			.filter(q -> q.getDataset().equals(dataset.getId()))
 			.flatMap(mq -> {
 				try {
-					return Stream.of(mq.buildStatus(URLBuilder.fromRequest(req)));
+					return Stream.of(
+						mq.buildStatus(
+							URLBuilder.fromRequest(req),
+							allowDownload));
 				}
 				catch (Exception e) {
 					log.warn("Could not build status of " + mq, e);

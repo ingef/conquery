@@ -1,5 +1,18 @@
 package com.bakdata.conquery.models.execution;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+
+import javax.annotation.Nullable;
+
+import org.hibernate.validator.constraints.NotEmpty;
+
 import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.ResultCSVResource;
 import com.bakdata.conquery.apiv1.URLBuilder;
@@ -15,23 +28,13 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
-
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 @NoArgsConstructor
 @Getter
@@ -114,7 +117,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		}
 	}
 	
-	public ExecutionStatus buildStatus(URLBuilder url) {
+	public ExecutionStatus buildStatus(URLBuilder url, boolean allowDownload) {
 		return ExecutionStatus
 			.builder()
 			.label(label)
@@ -128,7 +131,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			.owner(Optional.ofNullable(owner).orElse(null))
 			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user)).map(User::getLabel).orElse(null))
 			.resultUrl(
-				url != null && state != ExecutionState.NEW
+				isReadyToDownload(url, allowDownload)
 				? url
 					.set(ResourceConstants.DATASET, dataset.getName())
 					.set(ResourceConstants.QUERY, getId().toString())
@@ -137,9 +140,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			)
 			.build();
 	}
+	
+	public boolean isReadyToDownload(URLBuilder url, boolean allowDownload) {
+		return url != null && state != ExecutionState.NEW && allowDownload;
+	}
 
 	public ExecutionStatus buildStatus() {
-		return buildStatus(null);
+		return buildStatus(null, false);
 	}
 
 	public abstract ManagedQuery toResultQuery();
