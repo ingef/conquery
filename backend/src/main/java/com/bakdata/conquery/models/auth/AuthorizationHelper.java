@@ -151,13 +151,12 @@ public class AuthorizationHelper {
 	 * Returns the groups a user belongs to.
 	 */
 	public static Collection<Group> getGroupsOf(User user, MasterMetaStorage storage) {
-		Collection<Group> allGroups = storage.getAllGroups();
 		List<Group> userGroups = new ArrayList<>();
-		allGroups.forEach(g -> {
-			if (g.containsMember(user)) {
-				userGroups.add(g);
+		for (Group group : storage.getAllGroups()) {
+			if (group.containsMember(user)) {
+				userGroups.add(group);
 			}
-		});
+		}
 		return userGroups;
 	}
 }
