@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth.permissions;
 import java.util.Collections;
 import java.util.Set;
 
-@AbilityContainer
 public enum Ability {
 	DELETE,
 	READ,
