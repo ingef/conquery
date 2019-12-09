@@ -7,7 +7,10 @@ import java.nio.file.Files;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
+@UtilityClass @Slf4j
 public class CsvIo {
 
 	public static CsvParser createParser() {
@@ -19,6 +22,11 @@ public class CsvIo {
 	}
 
 	public static boolean isGZipped(File file) throws IOException {
-		return Files.probeContentType(file.toPath()).equalsIgnoreCase("application/x-gzip");
+
+		final String contentType = Files.probeContentType(file.toPath());
+
+		log.trace("File `{}` - `{}`", file, contentType);
+
+		return contentType.equals("application/x-gzip");
 	}
 }
