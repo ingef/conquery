@@ -1,10 +1,12 @@
 package com.bakdata.conquery.io.csv;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
-
-import java.io.File;
 
 public class CsvIO {
 
@@ -16,7 +18,7 @@ public class CsvIO {
 		return new CsvWriter(ConqueryConfig.getInstance().getCsv().createCsvWriterSettings());
 	}
 
-	public static boolean isGZipped(File file) {
-		return file.getName().endsWith(".gz");
+	public static boolean isGZipped(File file) throws IOException {
+		return Files.probeContentType(file.toPath()).equalsIgnoreCase("application/x-gzip");
 	}
 }
