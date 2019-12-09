@@ -2,11 +2,9 @@ package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
-
-import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import org.apache.commons.lang3.ArrayUtils;
 
 
 public interface IdMappingAccessor {
@@ -51,13 +49,6 @@ public interface IdMappingAccessor {
 	 * @return the dataLine without the unused fields.
 	 */
 	String[] extract(String[] dataLine);
-
-	default void collectSufficientEntityIds(PersistentIdMap mapping) {
-		for (Map.Entry<CsvEntityId, ExternalEntityId> entry : mapping.getCsvIdToExternalIdMap().entrySet()) {
-			mapping.getExternalIdPartCsvIdMap()
-				.put(new SufficientExternalEntityId(extract(entry.getValue().getExternalId())), entry.getKey());
-		}
-	}
 
 	CsvEntityId getFallbackCsvId(String[] reorderedCsvLine);
 }

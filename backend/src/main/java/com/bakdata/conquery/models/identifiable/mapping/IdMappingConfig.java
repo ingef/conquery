@@ -2,22 +2,22 @@ package com.bakdata.conquery.models.identifiable.mapping;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @CPSBase
 @RequiredArgsConstructor
@@ -27,7 +27,7 @@ public abstract class IdMappingConfig {
 	public PersistentIdMap generateIdMapping(CSV csvData) throws IOException, IllegalArgumentException {
 		Iterator<String[]> csvIterator = csvData.iterateContent();
 
-		PersistentIdMap mapping = new PersistentIdMap(new HashMap<>(), new HashMap<>());
+		PersistentIdMap mapping = new PersistentIdMap();
 
 
 		if (!Arrays.equals(this.getHeader(), csvIterator.next(), StringUtils::compareIgnoreCase)) {
@@ -36,13 +36,14 @@ public abstract class IdMappingConfig {
 
 		// first column is the external key, the rest is part of the csv id
 		csvIterator.forEachRemaining(
-			(s)-> mapping.getCsvIdToExternalIdMap().put(new CsvEntityId(s[0]), new ExternalEntityId(Arrays.copyOfRange(s,1,s.length)))
+			(s) -> mapping.addMapping(
+				new CsvEntityId(s[0]),
+				new ExternalEntityId(Arrays.copyOfRange(s, 1, s.length)),
+				getIdAccessors())
 		);
 
-		checkIntegrity(mapping.getCsvIdToExternalIdMap());
-		for (IdMappingAccessor accessor : getIdAccessors()) {
-			accessor.collectSufficientEntityIds(mapping);
-		}
+		mapping.checkIntegrity(Arrays.asList(getIdAccessors()));
+
 		return mapping;
 	}
 
@@ -62,10 +63,27 @@ public abstract class IdMappingConfig {
 	@JsonIgnore
 	public abstract String[] getHeader();
 
-	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace) {
+	/**
+	 * Is called once before a mapping is used before a query result is created
+	 * to allow the mapping to have state information.
+	 */
+	public Map<String, Object> initToExternal(User user, ManagedExecution execution) {
+		return Collections.emptyMap();
+	}
+
+	/**
+	 * Converts the internal ID to the an external.
+	 * 
+	 * @param csvEntityId
+	 * @param namespace
+	 * @param state
+	 * @return
+	 */
+	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace, Map<String, Object> state) {
+		// The state may be uses by implementations of this class
 		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null) {
-			ExternalEntityId externalEntityId = mapping.getCsvIdToExternalIdMap().get(csvEntityId);
+			ExternalEntityId externalEntityId = mapping.toExternal(csvEntityId);
 			if (externalEntityId != null) {
 				return externalEntityId;
 			}
@@ -81,23 +99,5 @@ public abstract class IdMappingConfig {
 			}
 		}
 		return DefaultIdAccessorImpl.INSTANCE;
-	}
-
-
-	/**
-	 * Checks if the given CsvContent produces unique results in perspective to all IdMappingAccessors.
-	 * @param data Map of CsvEntityId to External Ids as read from the given CSV.
-	 * @throws IllegalArgumentException if the inserted Ids are not unique.
-	 */
-	private void checkIntegrity(Map<CsvEntityId, ExternalEntityId> data) {
-		// check that each idMappingAccessor leads to at most one tuple
-		for (IdMappingAccessor idMappingAccessor : getIdAccessors()) {
-			long distinctSize = data.values().stream().map(p -> idMappingAccessor.extract(p.getExternalId())).distinct().count();
-			// check if we still have the same size as before
-			if (distinctSize != data.size()) {
-				throw new IllegalArgumentException("The inserted IDs are not unique respective to the idMapping Accessor "
-					+ idMappingAccessor);
-			}
-		}
 	}
 }

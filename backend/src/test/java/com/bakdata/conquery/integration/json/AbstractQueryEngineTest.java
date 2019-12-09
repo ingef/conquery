@@ -1,5 +1,13 @@
 package com.bakdata.conquery.integration.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -17,14 +25,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
 
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
@@ -69,7 +69,11 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
 
 		List<String> actual = new QueryToCSVRenderer()
-			.toCSV(PRINT_SETTINGS, managed)
+			.toCSV(
+				PRINT_SETTINGS,
+				managed,
+				standaloneSupport.getConfig().getIdMapping()
+					.initToExternal(DevAuthConfig.USER, managed))
 			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();

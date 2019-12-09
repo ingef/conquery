@@ -5,7 +5,6 @@ import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -37,13 +36,13 @@ public class IntegrationUtils {
 	
 
 
-	public static void clearAuthStorage(MasterMetaStorage storage) {
+	public static void clearAuthStorage(MasterMetaStorage storage, Role[] roles, RequiredUser[] rUsers) {
 		// Clear MasterStorage
-		for(Role mandator : storage.getAllRoles()) {
+		for (Role mandator : roles) {
 			storage.removeRole(mandator.getId());
 		}
-		for(User user : storage.getAllUsers()) {
-			storage.removeUser(user.getId());
+		for (RequiredUser rUser : rUsers) {
+			storage.removeUser(rUser.getUser().getId());
 		}
 	}
 }

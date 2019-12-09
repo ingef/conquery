@@ -10,6 +10,7 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
@@ -23,8 +24,6 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
-import org.eclipse.jetty.io.EofException;
-
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -36,10 +35,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
-
 import io.dropwizard.auth.Auth;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.eclipse.jetty.io.EofException;
 
 @AllArgsConstructor
 @Path("datasets/{" + DATASET + "}/result/")
@@ -50,7 +49,8 @@ public class ResultCSVResource {
 	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(
 		true,
 		ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
-	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(ResultCSVResource.class, "getAsCSV");
+	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(
+		ResultCSVResource.class, "getAsCSV");
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
 
@@ -59,14 +59,15 @@ public class ResultCSVResource {
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCSV(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @HeaderParam("user-agent") String userAgent) {
 		authorize(user, datasetId, Ability.READ);
-		authorize(
-			user,
-			DatasetPermission.onInstance(Ability.DOWNLOAD, datasetId));
+		authorize(user, DatasetPermission.onInstance(Ability.DOWNLOAD, datasetId));
 		authorize(user, queryId, Ability.READ);
 
+		ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
+
+		Map<String, Object> mappingState = config.getIdMapping().initToExternal(user, exec);
+
 		try {
-			ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
-			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery());
+			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
