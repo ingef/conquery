@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.query;
 
+import javax.validation.constraints.NotNull;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Stream;
+
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -19,11 +25,6 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
-
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Stream;
 
 @NoArgsConstructor
 @Getter
@@ -60,10 +61,6 @@ public class ManagedQuery extends ManagedExecution {
 	public void initExecutable(Namespace namespace) {
 		super.initExecutable(namespace);
 		this.executingThreads = namespace.getWorkers().size();
-		if(results != null)
-			results.clear();
-		else
-			results = new ArrayList<>();
 	}
 
 	public void addResult(ShardResult result) {
@@ -81,6 +78,16 @@ public class ManagedQuery extends ManagedExecution {
 				finish();
 			}
 		}
+	}
+
+	@Override
+	public void start() {
+		super.start();
+
+		if(results != null)
+			results.clear();
+		else
+			results = new ArrayList<>();
 	}
 
 	@Override
