@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvWriter;
 
-public class CsvIO {
+public class CsvIo {
 
 	public static CsvParser createParser() {
 		return new CsvParser(ConqueryConfig.getInstance().getCsv().createCsvParserSettings());

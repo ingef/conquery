@@ -1,9 +1,23 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.file.Files;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.zip.GZIPInputStream;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.PrefetchingIterator;
-import com.bakdata.conquery.io.csv.CsvIO;
+import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -27,20 +41,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
-
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.nio.file.Files;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.atomic.AtomicLong;
-import java.util.zip.GZIPInputStream;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -103,10 +103,9 @@ public class Preprocessor {
 
 		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
 		Preprocessed result = new Preprocessed(config.getPreprocessor(), descriptor);
+		long lineId = config.getCsv().isSkipHeader()?1:0;
 
 		try (HCFile outFile = new HCFile(tmp, true)) {
-			
-			long lineId = config.getCsv().isSkipHeader()?1:0;
 			for(int inputSource=0;inputSource<descriptor.getInputs().length;inputSource++) {
 				Input input = descriptor.getInputs()[inputSource];
 				final String name = descriptor.toString()+":"+descriptor.getTable()+"["+inputSource+"]";
@@ -115,9 +114,9 @@ public class Preprocessor {
 				try(CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
 
-					final CsvParser parser = CsvIO.createParser();
+					final CsvParser parser = CsvIo.createParser();
 					final Iterator<String[]> it = new PrefetchingIterator<>(
-							parser.iterate(CsvIO.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn).iterator(),
+							parser.iterate(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn).iterator(),
 							1_000
 					);
 
@@ -132,9 +131,8 @@ public class Preprocessor {
 						}
 
 						//report progress
-						long newProgress = countingIn.getCount();
-						totalProgress.addCurrentValue(newProgress - progress);
-						progress = newProgress;
+						totalProgress.addCurrentValue(countingIn.getCount() - progress);
+						progress = countingIn.getCount();
 						lineId++;
 					}
 
@@ -168,6 +166,7 @@ public class Preprocessor {
 					+ result.getPrimaryColumn().getType().estimateTypeSize()
 				)
 			);
+
 			for(PPColumn c:ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
 				long typeConsumption = c.getType().estimateTypeSize();
 				log.info("\t{}.{}: {}{}",
@@ -187,6 +186,9 @@ public class Preprocessor {
 			}
 		}
 
+		if(errorCounter.get() > 0 && log.isWarnEnabled()) {
+			log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errorCounter.get(), lineId);
+		}
 
 		//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, descriptor.getInputFile().getPreprocessedFile());

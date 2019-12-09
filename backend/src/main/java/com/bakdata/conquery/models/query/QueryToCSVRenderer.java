@@ -1,6 +1,15 @@
 package com.bakdata.conquery.models.query;
 
-import com.bakdata.conquery.io.csv.CsvIO;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Stream;
+
+import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -14,15 +23,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.univocity.parsers.csv.CsvWriter;
 import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.tuple.Pair;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.stream.Stream;
 
 @RequiredArgsConstructor
 public class QueryToCSVRenderer {
@@ -47,7 +47,7 @@ public class QueryToCSVRenderer {
 		ResultInfoCollector infos = queries.iterator().next().collectResultInfos(cfg);
 		
 		//build header
-		CsvWriter writer = CsvIO.createWriter();
+		CsvWriter writer = CsvIo.createWriter();
 		writer.addStringValues(HEADER);
 		for(ResultInfo info : infos.getInfos()) {
 			writer.addValue(info.getUniqueName(cfg));

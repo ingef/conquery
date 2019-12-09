@@ -1,6 +1,15 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.io.csv.CsvIO;
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -12,15 +21,6 @@ import com.univocity.parsers.csv.CsvParser;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 
 @Slf4j
@@ -125,7 +125,7 @@ public class FilterSearch {
 							   .build();
 
 		try {
-			CsvParser parser = CsvIO.createParser();
+			CsvParser parser = CsvIo.createParser();
 			IterableResult<String[], ParsingContext> it = parser.iterate(In.file(file).withUTF8().asReader());
 			String[] header = it.getContext().parsedHeaders();
 

@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.config;
 
+import javax.validation.constraints.NotNull;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
 import com.univocity.parsers.csv.CsvWriterSettings;
@@ -9,10 +14,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.With;
 import org.hibernate.validator.constraints.Length;
-
-import javax.validation.constraints.NotNull;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 
 @Getter @Setter @With @AllArgsConstructor @NoArgsConstructor
 public class CSVConfig {
@@ -26,7 +27,7 @@ public class CSVConfig {
 	private Charset encoding = StandardCharsets.UTF_8;
 	private boolean skipHeader = false;
 	private boolean parseHeaders = true;
-	private int maxColumns = 1_000_000; // This should be sufficiently enough.
+	private int maxColumns = 1_000_000; // This should be sufficiently large.
 	/**
 	 * Script used to generate the CSV column names from CQConcept and Select information.
 	 * The script has an instance of SelectResultInfo named columnInfo available to construct the name.
