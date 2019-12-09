@@ -11,10 +11,10 @@ public class QueryPermission extends StringPermissionBuilder {
 
 	private static final String DOMAIN = "queries";
 
-	public final static EnumSet<Ability> ALLOWED_ABILITIES = EnumSet
+	public static final EnumSet<Ability> ALLOWED_ABILITIES = EnumSet
 		.of(Ability.READ, Ability.DELETE, Ability.SHARE, Ability.TAG, Ability.CANCEL, Ability.LABEL);
 
-	public final static QueryPermission INSTANCE = new QueryPermission();
+	public static final QueryPermission INSTANCE = new QueryPermission();
 
 	private ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
 		return instancePermission(ability, instance.toString());

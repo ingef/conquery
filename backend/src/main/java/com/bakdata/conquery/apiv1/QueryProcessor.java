@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -27,8 +26,8 @@ public class QueryProcessor {
 	private final MasterMetaStorage storage;
 
 	/**
-	 * Create query for all datasets, then submit it for execution it on
-	 * selected dataset.
+	 * Create query for all datasets, then submit it for execution it on selected
+	 * dataset.
 	 * 
 	 * @param dataset
 	 * @param query
@@ -40,23 +39,23 @@ public class QueryProcessor {
 	 */
 	public ExecutionStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());
-		
+
 		ManagedQuery mq = namespace.getQueryManager().runQuery(query, user);
-		
+
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
-		
-		//translate the query for all other datasets of user and submit it.
-		for(Namespace targetNamespace : namespaces.getNamespaces()) {
+
+		// translate the query for all other datasets of user and submit it.
+		for (Namespace targetNamespace : namespaces.getNamespaces()) {
 			if (!user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
 				|| targetNamespace.getDataset().equals(dataset)) {
 				continue;
 			}
 
 			// Ensure that user is allowed to read all sub-queries of the actual query.
-			if(!query.collectRequiredQueries().stream().allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid))))
+			if (!query.collectRequiredQueries().stream()
+				.allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid))))
 				continue;
-
 
 			try {
 				IQuery translated = QueryTranslator.replaceDataset(namespaces, query, targetNamespace.getDataset().getId());
@@ -64,14 +63,13 @@ public class QueryProcessor {
 
 				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}
-			catch(Exception e) {
+			catch (Exception e) {
 				log.trace("Could not translate " + query + " to dataset " + targetNamespace.getDataset(), e);
 			}
 		}
-		
-		//return status
-		return getStatus(dataset, mq, urlb, user.isPermitted(
-			DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId())));
+
+		// return status
+		return getStatus(dataset, mq, urlb, user.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId())));
 	}
 
 	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution query, URLBuilder urlb, boolean allowDownload) {
@@ -79,7 +77,7 @@ public class QueryProcessor {
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution query, URLBuilder urlb) {
-		
+
 		return null;
 	}
 }

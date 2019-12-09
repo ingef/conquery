@@ -29,18 +29,13 @@ public abstract class IdMappingConfig {
 
 		PersistentIdMap mapping = new PersistentIdMap();
 
-
 		if (!Arrays.equals(this.getHeader(), csvIterator.next(), StringUtils::compareIgnoreCase)) {
 			throw new IllegalArgumentException("The uploaded CSVs Header does not match the expected");
 		}
 
 		// first column is the external key, the rest is part of the csv id
 		csvIterator.forEachRemaining(
-			(s) -> mapping.addMapping(
-				new CsvEntityId(s[0]),
-				new ExternalEntityId(Arrays.copyOfRange(s, 1, s.length)),
-				getIdAccessors())
-		);
+			(s) -> mapping.addMapping(new CsvEntityId(s[0]), new ExternalEntityId(Arrays.copyOfRange(s, 1, s.length)), getIdAccessors()));
 
 		mapping.checkIntegrity(Arrays.asList(getIdAccessors()));
 
@@ -56,16 +51,16 @@ public abstract class IdMappingConfig {
 	public abstract IdMappingAccessor[] getIdAccessors();
 
 	@JsonIgnore
-	public String[] getPrintIdFields(){
-		return ArrayUtils.subarray(getHeader(),1,getHeaderSize());
+	public String[] getPrintIdFields() {
+		return ArrayUtils.subarray(getHeader(), 1, getHeaderSize());
 	}
 
 	@JsonIgnore
 	public abstract String[] getHeader();
 
 	/**
-	 * Is called once before a mapping is used before a query result is created
-	 * to allow the mapping to have state information.
+	 * Is called once before a mapping is used before a query result is created to
+	 * allow the mapping to have state information.
 	 */
 	public Map<String, Object> initToExternal(User user, ManagedExecution execution) {
 		return Collections.emptyMap();
