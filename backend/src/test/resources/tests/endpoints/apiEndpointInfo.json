@@ -6,11 +6,6 @@
     },
     {
       "method": "GET",
-      "path": "/me/groups",
-      "clazz": "MeResource"
-    },
-    {
-      "method": "GET",
       "path": "/me",
       "clazz": "MeResource"
     },
