@@ -26,16 +26,8 @@ public class QueryProcessor {
 	private final MasterMetaStorage storage;
 
 	/**
-	 * Create query for all datasets, then submit it for execution it on selected
-	 * dataset.
-	 * 
-	 * @param dataset
-	 * @param query
-	 * @param urlb
-	 * @param user
-	 * @param allowDownload
-	 * @return
-	 * @throws JSONException
+	 * Creates a query for all datasets, then submits it for execution on the
+	 * intended dataset.
 	 */
 	public ExecutionStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());

@@ -68,11 +68,6 @@ public abstract class IdMappingConfig {
 
 	/**
 	 * Converts the internal ID to the an external.
-	 * 
-	 * @param csvEntityId
-	 * @param namespace
-	 * @param state
-	 * @return
 	 */
 	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace, Map<String, Object> state) {
 		// The state may be uses by implementations of this class

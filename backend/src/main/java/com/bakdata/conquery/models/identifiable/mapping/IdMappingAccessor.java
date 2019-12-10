@@ -13,7 +13,7 @@ public interface IdMappingAccessor {
 	/**
 	 * Check whether all Fields used for the mapping by this id mapping accessor are
 	 * present.
-	 * 
+	 *
 	 * @param csvHeader
 	 *            List of the header Strings.
 	 * @return whether the mapping can be applied to the header.
@@ -30,7 +30,7 @@ public interface IdMappingAccessor {
 	/**
 	 * Retrieves an applicationMapping which maps from CsvHeader to IdMappingCsv
 	 * Indices. Assumes that canBeApplied has been checked before and returned True.
-	 * 
+	 *
 	 * @param csvHeader
 	 *            Array of the header Strings.
 	 * @param storage
@@ -51,6 +51,9 @@ public interface IdMappingAccessor {
 	}
 
 	/**
+	 * Extracts the Id information from a CSV line using this accessor
+	 * configuration.
+	 *
 	 * @param dataLine
 	 *            A Line from a CSV.
 	 * @return the dataLine without the unused fields.
