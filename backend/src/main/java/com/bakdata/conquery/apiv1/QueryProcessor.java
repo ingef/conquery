@@ -10,13 +10,22 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
+import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.query.concept.specific.CQAnd;
+import com.bakdata.conquery.models.query.concept.specific.CQOr;
+import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+
+import java.util.ArrayDeque;
+import java.util.ArrayList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -24,6 +33,35 @@ public class QueryProcessor {
 
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
+
+	/**
+	 * Find first and only directly ReusedQuery in the queries tree, and return its Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
+	 */
+	private static ManagedExecutionId getOnlyReused(IQuery query) {
+
+		if(!(query instanceof ConceptQuery))
+			return null;
+
+		final ArrayList<CQReusedQuery> queries = new ArrayList<>();
+
+		final ArrayDeque<CQElement> search = new ArrayDeque<>();
+
+		search.add(((ConceptQuery) query).getRoot());
+		CQElement element;
+
+		while((element = search.poll()) != null) {
+			if(element instanceof CQReusedQuery)
+				queries.add(((CQReusedQuery) element));
+			else if (element instanceof CQAnd) {
+				search.addAll(((CQAnd) element).getChildren());
+			}
+			else if (element instanceof CQOr) {
+				search.addAll(((CQOr) element).getChildren());
+			}
+		}
+
+		return queries.size() == 1 ? queries.get(0).getQuery() : null;
+	}
 
 	/**
 	 * Create query for all datasets, then submit it for execution it on selected dataset.
@@ -36,6 +74,20 @@ public class QueryProcessor {
 	 */
 	public ExecutionStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());
+
+		// If this is only a re-executing query, execute the underlying query instead.
+		{
+			final ManagedExecutionId executionId = getOnlyReused(query);
+
+			if (executionId != null) {
+				log.info("Re-executing Query {}", executionId);
+
+
+				final ManagedQuery mq = namespace.getQueryManager().executeQuery(namespace.getQueryManager().getQuery(executionId));
+
+				return getStatus(dataset, mq, urlb);
+			}
+		}
 		
 		ManagedQuery mq = namespace.getQueryManager().runQuery(query, user);
 		
