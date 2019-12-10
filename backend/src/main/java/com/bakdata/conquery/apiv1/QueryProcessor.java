@@ -34,6 +34,9 @@ public class QueryProcessor {
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
 
+	/**
+	 * Find first and only directly ReusedQuery in the queries tree, and return its Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
+	 */
 	private static ManagedExecutionId getOnlyReused(IQuery query) {
 
 		if(!(query instanceof ConceptQuery))
@@ -45,8 +48,6 @@ public class QueryProcessor {
 
 		search.add(((ConceptQuery) query).getRoot());
 		CQElement element;
-
-		//TODO generify for all classes to be a reusable component. Maybe implement as visitor pattern.
 
 		while((element = search.poll()) != null) {
 			if(element instanceof CQReusedQuery)
