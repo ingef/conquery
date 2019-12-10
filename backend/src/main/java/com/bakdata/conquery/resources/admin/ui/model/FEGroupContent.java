@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.ui.model;
 import java.util.Collection;
 
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 
 import lombok.Getter;
@@ -13,8 +14,11 @@ import lombok.experimental.SuperBuilder;
  */
 @Getter
 @SuperBuilder
-public class FEGroupContent extends FEPermissionOwnerContent<Group> {
+public class FEGroupContent extends FEPermissionOwnerContent<Group> implements FERoleOwner {
 
-	public Collection<User> members;
-	public Collection<User> availableMembers;
+	public final Collection<User> members;
+	public final Collection<User> availableMembers;
+
+	public final Collection<Role> roles;
+	public final Collection<Role> availableRoles;
 }
