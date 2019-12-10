@@ -9,7 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 @CPSType(id = "QUERY", base = StringPermissionBuilder.class)
 public class QueryPermission extends StringPermissionBuilder{
 
-	private static final String DOMAIN = "queries";
+	public static final String DOMAIN = "queries";
 	
 
 	public final static EnumSet<Ability> ALLOWED_ABILITIES = EnumSet.of(

@@ -1,16 +1,13 @@
 package com.bakdata.conquery.apiv1;
 
-import java.util.List;
-
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 
-import com.bakdata.conquery.apiv1.MeProcessor.FEGroup;
+import com.bakdata.conquery.apiv1.MeProcessor.FEMeInformation;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
-
 import lombok.Setter;
 
 /**
@@ -27,15 +24,7 @@ public class MeResource extends HAuthorized {
 
 	@Produces(MediaType.APPLICATION_JSON)
 	@GET
-	public String myName() {
-		return processor.getMyName(user);
+	public FEMeInformation getUserInformation() {
+		return processor.getUserInformation(user);
 	}
-
-	@Path("groups")
-	@Produces(MediaType.APPLICATION_JSON)
-	@GET
-	public List<FEGroup> getMyGroups() {
-		return processor.getMyGroups(user);
-	}
-
 }

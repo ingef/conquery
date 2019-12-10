@@ -1,10 +1,11 @@
 package com.bakdata.conquery.resources.admin.ui.model;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
-
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +43,10 @@ public class FEPermission {
 			domains,
 			abilities,
 			targets);
+	}
+	
+	public static List<FEPermission> from(Collection<WildcardPermission> permissions) {
+		return permissions.stream().map(FEPermission::from).collect(Collectors.toList());
 	}
 
 }

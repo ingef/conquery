@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.auth.permissions;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
-
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,7 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 public final class SuperPermission extends StringPermissionBuilder {	
 
 
-	private static final String DOMAIN = "*";
+	public static final String DOMAIN = "*";
 	
 	public final static SuperPermission INSTANCE = new SuperPermission();
 

@@ -8,7 +8,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 @CPSType(id = "DATASETS", base = StringPermissionBuilder.class)
 public class DatasetPermission extends StringPermissionBuilder {
 
-	private static final String DOMAIN = "datasets";
+	public static final String DOMAIN = "datasets";
 
 	private static final Set<Ability> ALLOWED_ABILITIES = AbilitySets.DATASET_CREATOR;
 	
