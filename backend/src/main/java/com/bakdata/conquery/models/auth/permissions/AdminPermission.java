@@ -18,7 +18,7 @@ public final class AdminPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "admin";
 
-	public final static AdminPermission INSTANCE = new AdminPermission();
+	public static final AdminPermission INSTANCE = new AdminPermission();
 
 	@Override
 	public String getDomain() {
@@ -32,7 +32,7 @@ public final class AdminPermission extends StringPermissionBuilder {
 	public Set<Ability> getAllowedAbilities() {
 		return Collections.emptySet();
 	}
-	
+
 	public static ConqueryPermission onDomain() {
 		return INSTANCE.domainPermission();
 	}

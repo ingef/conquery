@@ -11,7 +11,8 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Frontend Permission -- special type that allows easier handling of permission in Freemarker. 
+ * Frontend Permission -- special type that allows easier handling of permission
+ * in Freemarker.
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
@@ -20,7 +21,7 @@ public class FEPermission {
 	private final Set<String> domains;
 	private final Set<String> abilities;
 	private final Set<String> targets;
-	
+
 	public static FEPermission from(WildcardPermission cPermission) {
 		Set<String> domains = null;
 		Set<String> abilities = null;
@@ -39,12 +40,9 @@ public class FEPermission {
 				throw new IllegalStateException(
 					String.format("Permission %c has an unhandled number of parts: %d", cPermission, parts.size()));
 		}
-		return new FEPermission(
-			domains,
-			abilities,
-			targets);
+		return new FEPermission(domains, abilities, targets);
 	}
-	
+
 	public static List<FEPermission> from(Collection<WildcardPermission> permissions) {
 		return permissions.stream().map(FEPermission::from).collect(Collectors.toList());
 	}

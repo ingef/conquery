@@ -13,11 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @ToString(callSuper = true)
 @CPSType(id = "SUPER", base = StringPermissionBuilder.class)
-public final class SuperPermission extends StringPermissionBuilder {	
-
+public final class SuperPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "*";
-	
+
 	public final static SuperPermission INSTANCE = new SuperPermission();
 
 	@Override
@@ -29,7 +28,7 @@ public final class SuperPermission extends StringPermissionBuilder {
 	public Set<Ability> getAllowedAbilities() {
 		return Set.of();
 	}
-	
+
 	public static ConqueryPermission onDomain() {
 		return INSTANCE.domainPermission();
 	}

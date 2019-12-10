@@ -7,12 +7,12 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 
 @CPSType(id = "QUERY", base = StringPermissionBuilder.class)
-public class QueryPermission extends StringPermissionBuilder{
+public class QueryPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "queries";
 	
 
-	public final static EnumSet<Ability> ALLOWED_ABILITIES = EnumSet.of(
+	public static final EnumSet<Ability> ALLOWED_ABILITIES = EnumSet.of(
 		Ability.READ,
 		Ability.DELETE,
 		Ability.SHARE,
@@ -22,7 +22,7 @@ public class QueryPermission extends StringPermissionBuilder{
 		Ability.DOWNLOAD
 		);
 	
-	public final static QueryPermission INSTANCE = new QueryPermission();
+	public static final QueryPermission INSTANCE = new QueryPermission();
 	
 	
 	private ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
