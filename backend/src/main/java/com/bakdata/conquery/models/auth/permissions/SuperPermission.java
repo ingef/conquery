@@ -17,7 +17,7 @@ public final class SuperPermission extends StringPermissionBuilder {
 
 	public static final String DOMAIN = "*";
 
-	public final static SuperPermission INSTANCE = new SuperPermission();
+	public static final SuperPermission INSTANCE = new SuperPermission();
 
 	@Override
 	public String getDomain() {
