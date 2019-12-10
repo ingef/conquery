@@ -56,12 +56,22 @@
     },
     {
         "method": "DELETE",
-        "path": "/groups/{groupId}/{userId}",
+        "path": "/groups/{groupId}/user/{userId}",
         "clazz": "GroupResource"
     },
     {
         "method": "POST",
-        "path": "/groups/{groupId}/{userId}",
+        "path": "/groups/{groupId}/user/{userId}",
+        "clazz": "GroupResource"
+    },
+    {
+        "method": "DELETE",
+        "path": "/groups/{groupId}/role/{roleId}",
+        "clazz": "GroupResource"
+    },
+    {
+        "method": "POST",
+        "path": "/groups/{groupId}/role/{roleId}",
         "clazz": "GroupResource"
     },
     {
@@ -96,7 +106,7 @@
     },
     {
         "method": "DELETE",
-        "path": "/roles/{roleName}",
+        "path": "/roles/{roleId}",
         "clazz": "RoleResource"
     },
     {
@@ -116,12 +126,12 @@
     },
     {
         "method": "POST",
-        "path": "/users/{userId}/{roleName}",
+        "path": "/users/{userId}/role/{roleId}",
         "clazz": "UserResource"
     },
     {
         "method": "DELETE",
-        "path": "/users/{userId}/{roleName}",
+        "path": "/users/{userId}/role/{roleId}",
         "clazz": "UserResource"
     },
     {
@@ -206,7 +216,7 @@
     },
     {
         "method": "GET",
-        "path": "/roles/{roleName}",
+        "path": "/roles/{roleId}",
         "clazz": "RoleUIResource"
     },
     {

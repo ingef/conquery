@@ -17,7 +17,7 @@ import lombok.experimental.SuperBuilder;
  */
 @Getter
 @SuperBuilder
-public class FEPermissionOwnerContent<OWNER extends PermissionOwner<?>> {
+public class FEPermissionOwnerContent<OWNER extends PermissionOwner<?>> extends FEContent {
 	private OWNER owner;
 
 	/**

@@ -1,6 +1,7 @@
 <#import "templates/template.html.ftl" as layout>
 <#import "templates/permissionTable.html.ftl" as permissionTable>
 <#import "templates/permissionCreator.html.ftl" as permissionCreator>
+<#import "templates/roleHandler.html.ftl" as roleHandler>
 <@layout.layout>
 	<div class="row">
 		<div class="col">
@@ -16,6 +17,9 @@
 			</li>
 			<li class="nav-item">
 				<a class="nav-link" id="members-tab" data-toggle="tab" href="#member" role="tab" aria-controls="member" aria-selected="false">Members</a>
+			</li>
+			<li class="nav-item">
+				<a class="nav-link" id="roles-tab" data-toggle="tab" href="#roles" role="tab" aria-controls="roles" aria-selected="false">Roles</a>
 			</li>
 		</ul>
 		<div class="tab-content" id="myTabContent">
@@ -37,7 +41,7 @@
 					<#list c.members as member>
 						<tr>
 							<td><a href="/admin/users/${member.id}">${member.label}</a></td>
-							<td><a href="#" onclick="removeMember('./${c.owner.id}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
+							<td><a href="#" onclick="removeMember('./${c.owner.id}/${c.staticUriElem.USER_PATH_ELEMENT}/${member.id}')">Remove from ${c.owner.label}<i class="fas fa-trash-alt text-danger"></i></a></td>
 						</tr>
 					</#list>
 					</tbody>
@@ -55,6 +59,9 @@
 					</div>
 				</form>
 			</div>
+			<div class="tab-pane fade" id="roles" role="tabpanel" aria-labelledby="roles-tab">
+				<@roleHandler.roleHandler c=c />
+			</div>
 		</div>
 
 	</div>
@@ -62,7 +69,7 @@
 	function addMember() {
 		event.preventDefault(); 
 		fetch(
-			'./${c.owner.id}/'+document.getElementById('member_id').value,
+			'./${c.owner.id}/${c.staticUriElem.USER_PATH_ELEMENT}/'+document.getElementById('member_id').value,
 			{
 				method: 'post',
 				headers: {'Content-Type': 'application/json'}

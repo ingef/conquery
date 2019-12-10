@@ -25,7 +25,7 @@ public class Freemarker {
 	public static Configuration createForJavaTemplates() {
 		Configuration cfg = new Configuration(Configuration.VERSION_2_3_27);
 		cfg.setClassForTemplateLoading(ClassGenerator.class, "/");
-		for(Entry<String, String> e:asMap().entrySet()) {
+		for (Entry<String, String> e : asMap().entrySet()) {
 			try {
 				cfg.setSetting(e.getKey(), e.getValue());
 			}

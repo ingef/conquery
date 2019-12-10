@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
@@ -24,14 +24,14 @@ public class RoleUIResource extends HRoles {
 
 	/**
 	 * End point for retrieving information about a specific role.
-	 * 
+	 *
 	 * @param roleId
 	 *            Unique id of the role.
 	 * @return A view holding the information about the role.
 	 */
-	@Path("{" + ROLE_NAME + "}")
+	@Path("{" + ROLE_ID + "}")
 	@GET
-	public View getRole(@PathParam(ROLE_NAME) RoleId roleId) {
+	public View getRole(@PathParam(ROLE_ID) RoleId roleId) {
 		return new UIView<>("role.html.ftl", processor.getUIContext(), processor.getRoleContent(roleId));
 	}
 }

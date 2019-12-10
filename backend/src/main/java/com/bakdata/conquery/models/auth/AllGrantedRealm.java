@@ -29,25 +29,26 @@ import lombok.extern.slf4j.Slf4j;
  */
 @Slf4j
 public class AllGrantedRealm extends AuthorizingRealm {
+
 	/**
 	 * The warning that is displayed, when the realm is instantiated.
 	 */
-	private static final String WARNING = "\n" +
-			"           §§\n" +
-			"          §  §\n" +
-			"         §    §\n" +
-			"        §      §\n" +
-			"       §  §§§§  §       You instantiated and are probably using a Shiro realm\n" +
-			"      §   §§§§   §      that does not do any permission checks or authentication.\n" +
-			"     §     §§     §     Access to all resources is granted to everyone.\n" +
-			"    §      §§      §    DO NOT USE THIS REALM IN PRODUCTION\n" +
-			"   $                §\n" +
-			"  §        §§        §\n" +
-			" §                    §\n" +
-			" §§§§§§§§§§§§§§§§§§§§§§";
-	
+	private static final String WARNING = "\n"
+		+ "           §§\n"
+		+ "          §  §\n"
+		+ "         §    §\n"
+		+ "        §      §\n"
+		+ "       §  §§§§  §       You instantiated and are probably using a Shiro realm\n"
+		+ "      §   §§§§   §      that does not do any permission checks or authentication.\n"
+		+ "     §     §§     §     Access to all resources is granted to everyone.\n"
+		+ "    §      §§      §    DO NOT USE THIS REALM IN PRODUCTION\n"
+		+ "   $                §\n"
+		+ "  §        §§        §\n"
+		+ " §                    §\n"
+		+ " §§§§§§§§§§§§§§§§§§§§§§";
+
 	private final MasterMetaStorage storage;
-	
+
 	/**
 	 * Standard constructor.
 	 */
@@ -61,22 +62,23 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
 		Objects.requireNonNull(principals, "No principal info was provided");
 		UserId userId = UserId.class.cast(principals.getPrimaryPrincipal());
-		SimpleAuthorizationInfo info =  new SimpleAuthorizationInfo();
-		
-		if(userId.equals(DevAuthConfig.USER.getId())) {
+		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+
+		if (userId.equals(DevAuthConfig.USER.getId())) {
 			// It's the default superuser, give her/him the ultimate permission
 			info.addObjectPermissions(Set.of(SuperPermission.onDomain()));
-		} else {
+		}
+		else {
 			// currently only used for test cases
 			info.addObjectPermissions(new HashSet<Permission>(getEffectiveUserPermissions(userId)));
 		}
 		return info;
 	}
 
-	
 	/**
-	 * Returns a list of the effective permissions. These are the permissions of the owner and
-	 * the permission of the roles it inherits.
+	 * Returns a list of the effective permissions. These are the permissions of the
+	 * owner and the permission of the roles it inherits.
+	 *
 	 * @return Owned and inherited permissions.
 	 */
 	private Set<ConqueryPermission> getEffectiveUserPermissions(UserId userId) {
@@ -85,10 +87,13 @@ public class AllGrantedRealm extends AuthorizingRealm {
 		for (Role role : user.getRoles()) {
 			permissions.addAll(role.getPermissions());
 		}
-		
+
 		for (Group group : storage.getAllGroups()) {
-			if(group.containsMember(user)) {
+			if (group.containsMember(user)) {
+				// Get Permissions of the group
 				permissions.addAll(group.getPermissions());
+				// And all of all roles a group holds
+				group.getRoles().forEach(r -> permissions.addAll(r.getPermissions()));
 			}
 		}
 		return permissions;
@@ -97,6 +102,6 @@ public class AllGrantedRealm extends AuthorizingRealm {
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		// Authenticate every token as the superuser
-		return new SingleAuthenticationInfo(DevAuthConfig.USER.getId(),token.getCredentials());
+		return new SingleAuthenticationInfo(DevAuthConfig.USER.getId(), token.getCredentials());
 	}
 }
