@@ -22,7 +22,6 @@ import javax.ws.rs.core.Context;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -80,14 +79,12 @@ public class QueryResource {
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		boolean allowDownload = user.isPermitted(
-			DatasetPermission.onInstance(Ability.DOWNLOAD, datasetId));
 		ManagedQuery query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
 			dsUtil.getDataset(datasetId),
 			query,
 			URLBuilder.fromRequest(req),
-			allowDownload);
+			user);
 	}
 }

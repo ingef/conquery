@@ -48,8 +48,9 @@ public class PersistentIdMap implements IdMapper {
 		// Map internal to external
 		csvIdToExternalIdMap.put(internal, external);
 		// Map the inverse with different unique shapes
-		for (IdMappingAccessor accessor : idMappingAccessors)
+		for (IdMappingAccessor accessor : idMappingAccessors) {
 			externalIdPartCsvIdMap.put(new SufficientExternalEntityId(accessor.extract(external.getExternalId())), internal);
+		}
 	}
 
 	/**

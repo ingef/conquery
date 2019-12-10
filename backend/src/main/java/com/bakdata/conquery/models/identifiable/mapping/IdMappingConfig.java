@@ -63,6 +63,7 @@ public abstract class IdMappingConfig {
 	 * allow the mapping to have state information.
 	 */
 	public Map<String, Object> initToExternal(User user, ManagedExecution execution) {
+		// This mapping does not need a per-query state, so we return an immutable empty map.
 		return Collections.emptyMap();
 	}
 

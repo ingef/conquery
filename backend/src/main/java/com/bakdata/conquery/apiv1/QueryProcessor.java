@@ -61,11 +61,11 @@ public class QueryProcessor {
 		}
 
 		// return status
-		return getStatus(dataset, mq, urlb, user.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset.getId())));
+		return getStatus(dataset, mq, urlb, user);
 	}
 
-	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution query, URLBuilder urlb, boolean allowDownload) {
-		return query.buildStatus(urlb, allowDownload);
+	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution query, URLBuilder urlb, User user) {
+		return query.buildStatus(urlb, user);
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution query, URLBuilder urlb) {

@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -96,8 +97,8 @@ public class ManagedQuery extends ManagedExecution {
 	}
 	
 	@Override
-	public ExecutionStatus buildStatus(URLBuilder url, boolean allowDownload) {
-		ExecutionStatus status = super.buildStatus(url, allowDownload);
+	public ExecutionStatus buildStatus(URLBuilder url, User user) {
+		ExecutionStatus status = super.buildStatus(url, user);
 		status.setTags(tags);
 		status.setQuery(query);
 		status.setNumberOfResults(lastResultCount);
