@@ -148,7 +148,7 @@ Returns: [ExecutionStatus](#Type-ExecutionStatus)
 
 Java Type: `com.bakdata.conquery.apiv1.ResultCSVResource`
 
-Method: `getAsCSV`
+Method: `getAsCsv`
 
 Expects: `String`
 Returns: `Response`

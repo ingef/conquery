@@ -7,7 +7,6 @@ import java.util.Iterator;
 import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -19,13 +18,13 @@ import lombok.RequiredArgsConstructor;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
+
 @CPSBase
 @RequiredArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class IdMappingConfig {
 
-	public PersistentIdMap generateIdMapping(CSV csvData) throws IOException, IllegalArgumentException {
-		Iterator<String[]> csvIterator = csvData.iterateContent();
+	public PersistentIdMap generateIdMapping(Iterator<String[]> csvIterator) throws IOException, IllegalArgumentException {
 
 		PersistentIdMap mapping = new PersistentIdMap();
 

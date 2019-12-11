@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.query;
 
+import javax.validation.constraints.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
@@ -79,6 +81,16 @@ public class ManagedQuery extends ManagedExecution {
 				finish();
 			}
 		}
+	}
+
+	@Override
+	public void start() {
+		super.start();
+
+		if(results != null)
+			results.clear();
+		else
+			results = new ArrayList<>();
 	}
 
 	@Override

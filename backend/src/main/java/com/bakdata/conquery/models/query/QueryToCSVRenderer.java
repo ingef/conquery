@@ -9,12 +9,14 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Stream;
 
+import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.dictionary.DirectDictionary;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfo;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -26,7 +28,6 @@ import org.apache.commons.lang3.tuple.Pair;
 @RequiredArgsConstructor
 public class QueryToCSVRenderer {
 
-	private static final CsvWriterSettings CSV_SETTINGS =  ConqueryConfig.getInstance().getCsv().createCsvWriterSettings();
 	private static final IdMappingConfig ID_MAPPING = ConqueryConfig.getInstance().getIdMapping();
 	private static final Collection<String> HEADER = Arrays.asList(ID_MAPPING.getPrintIdFields());
 	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true, ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
@@ -44,12 +45,13 @@ public class QueryToCSVRenderer {
 			.anyMatch(q -> q.getState() != ExecutionState.DONE)) {
 			throw new IllegalArgumentException("Can only create a CSV from a successfully finished Query " + queries.iterator().next().getId());
 		}
+
 		ResultInfoCollector infos = queries.iterator().next().collectResultInfos(cfg);
 		
 		//build header
-		CsvWriter writer = new CsvWriter(CSV_SETTINGS);
+		CsvWriter writer = CsvIo.createWriter();
 		writer.addStringValues(HEADER);
-		for(var info : infos.getInfos()) {
+		for(ResultInfo info : infos.getInfos()) {
 			writer.addValue(info.getUniqueName(cfg));
 		}
 		
