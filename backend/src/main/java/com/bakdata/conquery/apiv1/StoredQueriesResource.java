@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
-
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import lombok.Data;
@@ -56,7 +55,7 @@ public class StoredQueriesResource {
 	public List<ExecutionStatus> getAllQueries(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @Context HttpServletRequest req) {
 		authorize(user, datasetId, Ability.READ);
 
-		return processor.getAllQueries(dsUtil.getDataset(datasetId), req)
+		return processor.getAllQueries(dsUtil.getDataset(datasetId), req, user)
 			.filter(status -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), status.getId())))
 			.collect(Collectors.toList());
 	}
@@ -68,9 +67,9 @@ public class StoredQueriesResource {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
-		ExecutionStatus status = processor.getQueryWithSource(dataset, queryId);
-		if(status == null) {
-			throw new WebApplicationException("Unknown query "+queryId, Status.NOT_FOUND);
+		ExecutionStatus status = processor.getQueryWithSource(dataset, queryId, user);
+		if (status == null) {
+			throw new WebApplicationException("Unknown query " + queryId, Status.NOT_FOUND);
 		}
 		return status;
 	}
@@ -84,23 +83,26 @@ public class StoredQueriesResource {
 
 		MasterMetaStorage storage = processor.getNamespaces().get(dataset.getId()).getStorage().getMetaStorage();
 		ManagedExecution exec = storage.getExecution(queryId);
-		if(!(exec instanceof ManagedQuery)) {
-			throw new IllegalArgumentException(queryId+" is not a patchable query");
+		if (!(exec instanceof ManagedQuery)) {
+			throw new IllegalArgumentException(queryId + " is not a patchable query");
 		}
 		ManagedQuery query = (ManagedQuery) exec;
 		if (patch.getTags() != null) {
 			processor.tagQuery(user, query, patch.getTags());
-		} else if (patch.getLabel() != null) {
+		}
+		else if (patch.getLabel() != null) {
 			processor.updateQueryLabel(user, query, patch.getLabel());
-		} else if (patch.getShared() != null) {
+		}
+		else if (patch.getShared() != null) {
 			processor.shareQuery(user, query, patch.getGroups(), patch.getShared());
 		}
-		
+
 		return getQueryWithSource(user, datasetId, queryId);
 	}
-	
+
 	@Data
 	public static class QueryPatch {
+
 		private String[] tags;
 		private String label;
 		private Boolean shared;

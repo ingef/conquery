@@ -30,20 +30,20 @@ public class SuperPermissionTest implements ProgrammaticIntegrationTest, Integra
 			user1.addPermission(storage,  SuperPermission.onDomain());
 		
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DELETE, dataset1.getId()))).isTrue();
+			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isTrue();
 		
 			// Add SuperPermission to mandator and remove from user
 			user1.removePermission(storage, SuperPermission.onDomain());
 			mandator1.addPermission(storage, SuperPermission.onDomain());
 		
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isTrue();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DELETE, dataset1.getId()))).isTrue();
+			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isTrue();
 		
 			// Add SuperPermission to mandator and remove from user
 			mandator1.removePermission(storage, SuperPermission.onDomain());
 		
 			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.READ, dataset1.getId()))).isFalse();
-			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DELETE, dataset1.getId()))).isFalse();
+			assertThat(user1.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset1.getId()))).isFalse();
 		}
 		finally {
 			storage.removeUser(user1.getId());

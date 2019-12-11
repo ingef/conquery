@@ -12,8 +12,12 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -189,6 +193,15 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			.withProperty(ClientProperties.CONNECT_TIMEOUT, 10000)
 			.withProperty(ClientProperties.READ_TIMEOUT, 10000)
 			.build("test client");
+
+		// SuperUser
+		registerSuperUser();
+	}
+
+	private void registerSuperUser() throws JSONException {
+		MasterMetaStorage storage = standaloneCommand.getMaster().getStorage();
+		storage.updateUser(DevAuthConfig.USER);
+		DevAuthConfig.USER.addPermission(storage, SuperPermission.onDomain());
 	}
 
 	@Override
