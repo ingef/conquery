@@ -1,31 +1,27 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
+import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
+
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
-
-import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.csv.CSV;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 @CPSBase
 @RequiredArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class IdMappingConfig {
 
-	public PersistentIdMap generateIdMapping(CSV csvData) throws IOException, IllegalArgumentException {
-		Iterator<String[]> csvIterator = csvData.iterateContent();
+	public PersistentIdMap generateIdMapping(Iterator<String[]> csvIterator) throws IOException, IllegalArgumentException {
 
 		PersistentIdMap mapping = new PersistentIdMap(new HashMap<>(), new HashMap<>());
 
