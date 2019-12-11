@@ -1,5 +1,22 @@
 package com.bakdata.conquery.resources.admin.rest;
 
+import javax.validation.Validator;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -57,22 +74,6 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
-
-import javax.validation.Validator;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
 
 @Getter
 @Slf4j
@@ -176,7 +177,10 @@ public class AdminProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		CsvParser parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withSkipHeader(false).createCsvParserSettings());
+		CsvParser parser = new CsvParser(ConqueryConfig.getInstance().getCsv()
+													   .withSkipHeader(false)
+													   .withParseHeaders(false)
+													   .createCsvParserSettings());
 
 		PersistentIdMap mapping = config.getIdMapping().generateIdMapping(parser.iterate(data).iterator());
 
