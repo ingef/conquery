@@ -1,5 +1,11 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.Arrays;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -22,12 +28,6 @@ import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
-import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-
 /**
  * Test if Imports can be deleted and safely queried.
  *
@@ -35,9 +35,10 @@ import static org.assertj.core.api.Assertions.assertThat;
 @Slf4j
 public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
-
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
+
+
 		MasterMetaStorage storage = null;
 
 		final DatasetId dataset;
@@ -112,6 +113,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 
 			for (WorkerInformation w : namespace.getWorkers()) {
+
 			}
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
