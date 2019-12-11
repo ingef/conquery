@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.ROLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 
 import java.util.List;
 
@@ -19,15 +19,13 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.resources.hierarchies.HRoles;
 
-public class RoleResource extends HRoles{
-
+public class RoleResource extends HRoles {
 
 	@POST
 	public Response postRole(Role role) throws JSONException {
 		processor.addRole(role);
 		return Response.ok().build();
 	}
-	
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -35,17 +33,16 @@ public class RoleResource extends HRoles{
 		processor.addRoles(roles);
 		return Response.ok().build();
 	}
-	
+
 	@GET
 	@Produces(MediaType.APPLICATION_JSON)
 	public List<Role> getRoles() throws JSONException {
 		return processor.getAllRoles();
 	}
-	
-	
-	@Path("{" + ROLE_NAME + "}")
+
+	@Path("{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRole(@PathParam(ROLE_NAME) RoleId roleId) throws JSONException {
+	public Response deleteRole(@PathParam(ROLE_ID) RoleId roleId) throws JSONException {
 		processor.deleteRole(roleId);
 		return Response.ok().build();
 	}

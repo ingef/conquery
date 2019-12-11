@@ -2,9 +2,6 @@ package com.bakdata.conquery.integration.tests;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import javax.validation.Validator;
 
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
@@ -17,15 +14,12 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.mapping.CsvEntityId;
-import com.bakdata.conquery.models.identifiable.mapping.ExternalEntityId;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
-import com.bakdata.conquery.models.identifiable.mapping.SufficientExternalEntityId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
-
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
 
@@ -45,7 +39,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		Validator validator = Validators.newValidator();
 		DatasetId dataset;
 		ConqueryTestSpec test;
-		PersistentIdMap persistentIdMap = getPersistentIdMap();
+		PersistentIdMap persistentIdMap = IdMapSerialisationTest
+			.createTestPersistentMap();
 
 
 		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
@@ -104,23 +99,5 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 				.getIdMapping();
 			assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 		}
-
-	}
-
-	private PersistentIdMap getPersistentIdMap() {
-		Map<CsvEntityId, ExternalEntityId> csvIdToExternalIdMap = new HashMap<>();
-		Map<SufficientExternalEntityId, CsvEntityId> externalIdPartCsvIdMap = new HashMap<>();
-
-		csvIdToExternalIdMap.put(new CsvEntityId("test1"), new ExternalEntityId(new String[] { "a", "b" }));
-		csvIdToExternalIdMap.put(new CsvEntityId("test2"), new ExternalEntityId(new String[] { "c", "d" }));
-		csvIdToExternalIdMap.put(new CsvEntityId("test3"), new ExternalEntityId(new String[] { "e", "f" }));
-		csvIdToExternalIdMap.put(new CsvEntityId("test4"), new ExternalEntityId(new String[] { "g", "h" }));
-
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "a", "b" }), new CsvEntityId("test1"));
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "c", "d" }), new CsvEntityId("test2"));
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "e", "f" }), new CsvEntityId("test3"));
-		externalIdPartCsvIdMap.put(new SufficientExternalEntityId(new String[] { "g", "h" }), new CsvEntityId("test4"));
-
-		return new PersistentIdMap(csvIdToExternalIdMap, externalIdPartCsvIdMap);
 	}
 }

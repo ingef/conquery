@@ -5,10 +5,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -22,9 +21,12 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import org.junit.jupiter.api.Test;
 
 public class SerializationTests {
 
@@ -59,12 +61,40 @@ public class SerializationTests {
 			.addPermission(
 				storage,
 				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		Role role = new Role("company", "company");
+		user.addRole(storage, role);
+
+		CentralRegistry registry = new CentralRegistry();
+		registry.register(role);
 		
 		SerializationTestUtil
 			.forType(User.class)
+			.registry(registry)
 			.test(user);
 	}
 	
+	@Test
+	public void group() throws IOException, JSONException {
+		MasterMetaStorage storage = mock(MasterMetaStorage.class);
+		Group group = new Group("group", "group");
+		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
+		group
+			.addPermission(
+				storage,
+				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		group.addRole(storage, new Role("company", "company"));
+
+		Role role = new Role("company", "company");
+		group.addRole(storage, role);
+		User user = new User("userName", "userLabel");
+		group.addMember(storage, user);
+
+		CentralRegistry registry = new CentralRegistry();
+		registry.register(role);
+		registry.register(user);
+
+		SerializationTestUtil.forType(Group.class).registry(registry).test(group);
+	}
 
 	@Test
 	public void treeConcept() throws IOException, JSONException{
@@ -119,5 +149,12 @@ public class SerializationTests {
 			.forType(TreeConcept.class)
 			.registry(registry)
 			.test(concept);
+	}
+
+	@Test
+	public void persistentIdMap() throws JSONException, IOException {
+		SerializationTestUtil.forType(PersistentIdMap.class)
+			.test(IdMapSerialisationTest.createTestPersistentMap());
+
 	}
 }

@@ -13,9 +13,11 @@ import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jersey.RESTServer;
+import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthCookieFilter;
+import com.bakdata.conquery.models.auth.TokenExtractorFilter;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
@@ -25,6 +27,7 @@ import com.bakdata.conquery.resources.admin.rest.PermissionResource;
 import com.bakdata.conquery.resources.admin.rest.RoleResource;
 import com.bakdata.conquery.resources.admin.rest.UserResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
+import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.GroupUIResource;
@@ -105,7 +108,8 @@ public class AdminServlet {
 			.register(DatasetsUIResource.class)
 			.register(TablesUIResource.class)
 			.register(ConceptsUIResource.class)
-			.register(PermissionResource.class);
+			.register(PermissionResource.class)
+			.register(AuthOverviewUIResource.class);
 
 		// Scan calsspath for Admin side plugins and register them.
 		for (Class<? extends AdminServletResource> resourceProvider : CPSTypeIdResolver.listImplementations(AdminServletResource.class)) {
@@ -121,6 +125,12 @@ public class AdminServlet {
 		jerseyConfig
 			.register(new MultiPartFeature())
 			.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)))
+			.register(new TokenExtractorFilter(masterCommand.getConfig().getAuthentication().getTokenExtractor()))
+			/*
+			 * register CORS-Preflight filter inbetween token extraction and authentication
+			 * to intercept unauthenticated OPTIONS requests
+			 */
+			.register(new CORSPreflightRequestFilter())
 			.register(masterCommand.getAuthDynamicFeature())
 			.register(IdParamConverter.Provider.INSTANCE)
 			.register(CORSResponseFilter.class)

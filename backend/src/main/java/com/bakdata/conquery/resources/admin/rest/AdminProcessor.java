@@ -1,35 +1,17 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.stream.Collectors;
-
-import javax.validation.Validator;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.lang3.tuple.Pair;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
-import com.bakdata.conquery.io.csv.CSV;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
@@ -49,7 +31,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -62,16 +43,36 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
+import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
 import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
 import com.fasterxml.jackson.databind.ObjectWriter;
-
+import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.tuple.Pair;
+
+import javax.validation.Validator;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.stream.Collectors;
 
 @Getter
 @Slf4j
@@ -175,11 +176,11 @@ public class AdminProcessor {
 	}
 
 	public void setIdMapping(InputStream data, Namespace namespace) throws JSONException, IOException {
-		try (CSV csvData = new CSV(ConqueryConfig.getInstance().getCsv().withSkipHeader(false), data)) {
-			IdMappingConfig mappingConfig = config.getIdMapping();
-			PersistentIdMap mapping = mappingConfig.generateIdMapping(csvData);
-			namespace.getStorage().updateIdMapping(mapping);
-		}
+		CsvParser parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withSkipHeader(false).createCsvParserSettings());
+
+		PersistentIdMap mapping = config.getIdMapping().generateIdMapping(parser.iterate(data).iterator());
+
+		namespace.getStorage().updateIdMapping(mapping);
 	}
 
 	public void setStructure(Dataset dataset, StructureNode[] structure) throws JSONException {
@@ -207,7 +208,7 @@ public class AdminProcessor {
 	/**
 	 * Deletes the mandator, that is identified by the id. Its references are
 	 * removed from the users and from the storage.
-	 * 
+	 *
 	 * @param mandatorId
 	 *            The id belonging to the mandator
 	 * @throws JSONException
@@ -231,6 +232,11 @@ public class AdminProcessor {
 		return user.stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
 	}
 
+	private List<Group> getGroups(Role role) {
+		Collection<Group> groups = storage.getAllGroups();
+		return groups.stream().filter(g -> g.getRoles().contains(role)).collect(Collectors.toList());
+	}
+
 	public FERoleContent getRoleContent(RoleId roleId) {
 		Role role = Objects.requireNonNull(storage.getRole(roleId));
 		return FERoleContent
@@ -238,6 +244,7 @@ public class AdminProcessor {
 			.permissions(wrapInFEPermission(role.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.users(getUsers(role))
+			.groups(getGroups(role))
 			.owner(roleId.getPermissionOwner(storage))
 			.build();
 	}
@@ -292,7 +299,7 @@ public class AdminProcessor {
 
 	/**
 	 * Handles deletion of permissions.
-	 * 
+	 *
 	 * @param permission
 	 *            The permission to delete.
 	 * @throws JSONException
@@ -303,22 +310,22 @@ public class AdminProcessor {
 	}
 
 	public UIContext getUIContext() {
-		return new UIContext(namespaces);
+		return new UIContext(namespaces, ResourceConstants.getAsTemplateModel());
 	}
 
 	public List<User> getAllUsers() {
 		return new ArrayList<>(storage.getAllUsers());
 	}
 
-	public Object getUserContent(UserId userId) {
+	public FEUserContent getUserContent(UserId userId) {
 		User user = Objects.requireNonNull(storage.getUser(userId));
 		return FEUserContent
 			.builder()
 			.owner(user)
+			.roles(user.getRoles())
 			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(user.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
-			.roles(user.getRoles())
 			.build();
 	}
 
@@ -345,34 +352,6 @@ public class AdminProcessor {
 		}
 	}
 
-	public void deleteRoleFromUser(UserId userId, RoleId roleId) throws JSONException {
-		User user = null;
-		Role role = null;
-		synchronized (storage) {
-			user = storage.getUser(userId);
-			role = storage.getRole(roleId);
-		}
-		Objects.requireNonNull(user);
-		Objects.requireNonNull(role);
-		user.removeRole(storage, role);
-		log.trace("Deleted role {} to user {}", role, user);
-
-	}
-
-	public void addRoleToUser(UserId userId, RoleId roleId) throws JSONException {
-		User user = null;
-		Role role = null;
-		synchronized (storage) {
-			user = storage.getUser(userId);
-			role = storage.getRole(roleId);
-		}
-		Objects.requireNonNull(user);
-		Objects.requireNonNull(role);
-		user.addRole(storage, role);
-		log.trace("Added role {} to user {}", role, user);
-
-	}
-
 	public Collection<Group> getAllGroups() {
 		return storage.getAllGroups();
 	}
@@ -387,6 +366,8 @@ public class AdminProcessor {
 			.owner(group)
 			.members(members)
 			.availableMembers(availableMembers)
+			.roles(group.getRoles())
+			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(group.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.build();
@@ -415,14 +396,18 @@ public class AdminProcessor {
 
 	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
 		synchronized (storage) {
-			Objects.requireNonNull(groupId.getPermissionOwner(storage)).addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+			Objects
+				.requireNonNull(groupId.getPermissionOwner(storage))
+				.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
 		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
 		synchronized (storage) {
-			Objects.requireNonNull(groupId.getPermissionOwner(storage)).removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+			Objects
+				.requireNonNull(groupId.getPermissionOwner(storage))
+				.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
@@ -432,5 +417,51 @@ public class AdminProcessor {
 			storage.removeGroup(groupId);
 		}
 		log.trace("Removed group {}", groupId.getPermissionOwner(getStorage()));
+	}
+
+	public void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
+		PermissionOwner<?> owner = null;
+		Role role = null;
+		synchronized (storage) {
+			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+			role = Objects.requireNonNull(storage.getRole(roleId));
+		}
+		if (!(owner instanceof RoleOwner)) {
+			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
+		}
+		((RoleOwner) owner).removeRole(storage, role);
+		log.trace("Deleted role {} from {}", role, owner);
+	}
+
+	public void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
+		PermissionOwner<?> owner = null;
+		Role role = null;
+		synchronized (storage) {
+			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+			role = Objects.requireNonNull(storage.getRole(roleId));
+		}
+		if (!(owner instanceof RoleOwner)) {
+			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
+		}
+		((RoleOwner) owner).addRole(storage, role);
+		log.trace("Deleted role {} from {}", role, owner);
+	}
+
+	public FEAuthOverview getAuthOverview() {
+		Collection<OverviewRow> overview = new ArrayList<>();
+		for (User user : storage.getAllUsers()) {
+			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
+			ArrayList<Role> effectiveRoles = new ArrayList<>(user.getRoles());
+			userGroups.forEach(g -> {
+				effectiveRoles.addAll(((Group) g).getRoles());
+			});
+			overview.add(OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
+		}
+
+		return FEAuthOverview.builder().overview(overview).build();
+	}
+
+	public void getPermissionOverviewAsCSV() {
+
 	}
 }

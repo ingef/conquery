@@ -62,7 +62,7 @@ public class FilterResolutionContainsTest implements ProgrammaticIntegrationTest
 
 		// Copy search csv from resources to tmp folder.
 		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
-		Out.file(tmpCSv.toFile()).writeLines(lines);
+		Out.file(tmpCSv.toFile()).withUTF8().writeLines(lines);
 
 		filter.setSearchType(FilterSearch.FilterSearchType.CONTAINS);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));

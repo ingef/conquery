@@ -43,6 +43,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
@@ -56,7 +57,7 @@ import lombok.RequiredArgsConstructor;
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Path("/")
 @RequiredArgsConstructor(onConstructor_=@Inject)
-public class AdminUIResource {
+public class AdminUIResource extends HAdmin {
 	
 	public static final String[] AUTO_IMPORTS = Stream
 		.of(
