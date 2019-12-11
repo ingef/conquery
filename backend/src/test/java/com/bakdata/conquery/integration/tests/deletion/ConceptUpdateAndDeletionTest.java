@@ -94,6 +94,10 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
 						final WorkerStorage workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
@@ -136,6 +140,11 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
+
 						final WorkerStorage workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
@@ -176,6 +185,10 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
 						final WorkerStorage workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))
@@ -217,6 +230,10 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
 						final WorkerStorage workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getCentralRegistry().getOptional(conceptId))

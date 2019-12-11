@@ -22,7 +22,6 @@ import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import com.github.powerlibraries.io.In;
@@ -37,8 +36,6 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
-
-
 		MasterMetaStorage storage = null;
 
 		final DatasetId dataset;
@@ -89,6 +86,10 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
 						final WorkerStorage workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getAllCBlocks())
@@ -108,13 +109,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Issuing deletion of import {}", tableId);
 
 			// Delete the import.
-//			namespace.getStorage().removeTable(tableId);
-//			namespace.getStorage().removeImport(new ImportId(new TableId(dataset, ConqueryConstants.ALL_IDS_TABLE), tableId.toString()));
+			conquery.getDatasetsProcessor().deleteTable(tableId);
 
 
-			for (WorkerInformation w : namespace.getWorkers()) {
-
-			}
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
 
@@ -131,6 +128,10 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
 						final WorkerStorage workerStorage = value.getStorage();
 
 						// No bucket should be found referencing the import.
@@ -201,6 +202,10 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
 						final WorkerStorage workerStorage = value.getStorage();
 
 						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(tableId)))
