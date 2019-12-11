@@ -1,5 +1,8 @@
 package com.bakdata.conquery.apiv1;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -23,9 +26,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -80,7 +80,7 @@ public class QueryProcessor {
 
 				final ManagedQuery mq = namespace.getQueryManager().executeQuery(namespace.getQueryManager().getQuery(executionId));
 
-				return getStatus(dataset, mq, urlb);
+				return getStatus(dataset, mq, urlb, user);
 			}
 		}
 		
