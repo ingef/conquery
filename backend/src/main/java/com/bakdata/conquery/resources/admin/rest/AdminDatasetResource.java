@@ -1,11 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
@@ -21,9 +16,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import org.glassfish.jersey.media.multipart.BodyPart;
-import org.glassfish.jersey.media.multipart.FormDataBodyPart;
-import org.glassfish.jersey.media.multipart.FormDataParam;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -34,15 +29,18 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.Getter;
 import lombok.Setter;
+import org.glassfish.jersey.media.multipart.BodyPart;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -100,6 +98,13 @@ public class AdminDatasetResource extends HAdmin {
 			throw new WebApplicationException("Could not find file " + selectedFile, Status.NOT_FOUND);
 		}
 		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
+	}
+
+	@DELETE
+	@Path("import/{"+IMPORT_ID+"}")
+	public void deleteImportView(@PathParam(IMPORT_ID) ImportId importId) {
+
+		processor.deleteImport(importId);
 	}
 	
 	@POST

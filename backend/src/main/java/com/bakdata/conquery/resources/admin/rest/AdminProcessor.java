@@ -44,6 +44,7 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -52,6 +53,7 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
@@ -60,6 +62,7 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
@@ -467,5 +470,17 @@ public class AdminProcessor {
 
 	public void getPermissionOverviewAsCSV() {
 
+	}
+
+	public void deleteImport(ImportId importId) {
+
+		final Namespace namespace = namespaces.get(importId.getDataset());
+
+		namespace.getStorage().removeImport(importId);
+		namespace.getStorage().removeImport(new ImportId(new TableId(importId.getDataset(), ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
+
+		for (WorkerInformation w : namespace.getWorkers()) {
+			w.send(new RemoveImportJob(importId));
+		}
 	}
 }
