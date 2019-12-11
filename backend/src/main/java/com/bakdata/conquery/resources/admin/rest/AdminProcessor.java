@@ -44,6 +44,8 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
+import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
 import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
@@ -308,7 +310,7 @@ public class AdminProcessor {
 	}
 
 	public UIContext getUIContext() {
-		return new UIContext(namespaces);
+		return new UIContext(namespaces, ResourceConstants.getAsTemplateModel());
 	}
 
 	public List<User> getAllUsers() {
@@ -324,7 +326,6 @@ public class AdminProcessor {
 			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(user.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
-			.staticUriElem(ResourceConstants.getAsTemplateModel())
 			.build();
 	}
 
@@ -369,7 +370,6 @@ public class AdminProcessor {
 			.availableRoles(storage.getAllRoles())
 			.permissions(wrapInFEPermission(group.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
-			.staticUriElem(ResourceConstants.getAsTemplateModel())
 			.build();
 	}
 
@@ -396,14 +396,18 @@ public class AdminProcessor {
 
 	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
 		synchronized (storage) {
-			Objects.requireNonNull(groupId.getPermissionOwner(storage)).addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+			Objects
+				.requireNonNull(groupId.getPermissionOwner(storage))
+				.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
 		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
 		synchronized (storage) {
-			Objects.requireNonNull(groupId.getPermissionOwner(storage)).removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+			Objects
+				.requireNonNull(groupId.getPermissionOwner(storage))
+				.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
@@ -441,5 +445,23 @@ public class AdminProcessor {
 		}
 		((RoleOwner) owner).addRole(storage, role);
 		log.trace("Deleted role {} from {}", role, owner);
+	}
+
+	public FEAuthOverview getAuthOverview() {
+		Collection<OverviewRow> overview = new ArrayList<>();
+		for (User user : storage.getAllUsers()) {
+			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
+			ArrayList<Role> effectiveRoles = new ArrayList<>(user.getRoles());
+			userGroups.forEach(g -> {
+				effectiveRoles.addAll(((Group) g).getRoles());
+			});
+			overview.add(OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
+		}
+
+		return FEAuthOverview.builder().overview(overview).build();
+	}
+
+	public void getPermissionOverviewAsCSV() {
+
 	}
 }

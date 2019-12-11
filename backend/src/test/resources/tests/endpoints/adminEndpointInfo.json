@@ -238,5 +238,10 @@
         "method": "GET",
         "path": "/users/{userId}",
         "clazz": "UserUIResource"
+    },
+    {
+        "method": "GET",
+        "path": "/auth-overview",
+        "clazz": "AuthOverviewUIResource"
     }
 ]

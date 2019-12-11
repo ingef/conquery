@@ -27,6 +27,7 @@ import com.bakdata.conquery.resources.admin.rest.PermissionResource;
 import com.bakdata.conquery.resources.admin.rest.RoleResource;
 import com.bakdata.conquery.resources.admin.rest.UserResource;
 import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
+import com.bakdata.conquery.resources.admin.ui.AuthOverviewUIResource;
 import com.bakdata.conquery.resources.admin.ui.ConceptsUIResource;
 import com.bakdata.conquery.resources.admin.ui.DatasetsUIResource;
 import com.bakdata.conquery.resources.admin.ui.GroupUIResource;
@@ -107,7 +108,8 @@ public class AdminServlet {
 			.register(DatasetsUIResource.class)
 			.register(TablesUIResource.class)
 			.register(ConceptsUIResource.class)
-			.register(PermissionResource.class);
+			.register(PermissionResource.class)
+			.register(AuthOverviewUIResource.class);
 
 		// Scan calsspath for Admin side plugins and register them.
 		for (Class<? extends AdminServletResource> resourceProvider : CPSTypeIdResolver.listImplementations(AdminServletResource.class)) {
