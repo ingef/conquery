@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.getEffectiveUserPermissions;
+
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -14,10 +16,6 @@ import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.auth.util.SingleAuthenticationInfo;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -70,33 +68,9 @@ public class AllGrantedRealm extends AuthorizingRealm {
 		}
 		else {
 			// currently only used for test cases
-			info.addObjectPermissions(new HashSet<Permission>(getEffectiveUserPermissions(userId)));
+			info.addObjectPermissions(new HashSet<Permission>(getEffectiveUserPermissions(userId, storage)));
 		}
 		return info;
-	}
-
-	/**
-	 * Returns a list of the effective permissions. These are the permissions of the
-	 * owner and the permission of the roles it inherits.
-	 *
-	 * @return Owned and inherited permissions.
-	 */
-	private Set<ConqueryPermission> getEffectiveUserPermissions(UserId userId) {
-		User user = storage.getUser(userId);
-		Set<ConqueryPermission> permissions = new HashSet<>(user.getPermissions());
-		for (Role role : user.getRoles()) {
-			permissions.addAll(role.getPermissions());
-		}
-
-		for (Group group : storage.getAllGroups()) {
-			if (group.containsMember(user)) {
-				// Get Permissions of the group
-				permissions.addAll(group.getPermissions());
-				// And all of all roles a group holds
-				group.getRoles().forEach(r -> permissions.addAll(r.getPermissions()));
-			}
-		}
-		return permissions;
 	}
 
 	@Override

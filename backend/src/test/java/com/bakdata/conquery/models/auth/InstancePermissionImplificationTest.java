@@ -5,9 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.EnumSet;
 import java.util.UUID;
 
-import org.apache.shiro.authz.Permission;
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
@@ -15,6 +12,8 @@ import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import org.apache.shiro.authz.Permission;
+import org.junit.jupiter.api.Test;
 
 public class InstancePermissionImplificationTest {
 	
@@ -53,7 +52,7 @@ public class InstancePermissionImplificationTest {
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
-				Ability.DELETE.asSet(),
+			Ability.DOWNLOAD.asSet(),
 				new DatasetId(DATASET1));
 		assert !pStored.implies(pRequested);
 	}
@@ -77,7 +76,7 @@ public class InstancePermissionImplificationTest {
 				Ability.READ.asSet(),
 				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
-				EnumSet.of(Ability.READ, Ability.DELETE),
+			EnumSet.of(Ability.READ, Ability.DOWNLOAD),
 				new DatasetId(DATASET1));
 		// Should not imply, since one access is missing
 		assert !pStored.implies(pRequested);
@@ -87,7 +86,7 @@ public class InstancePermissionImplificationTest {
 	public void testMultipleAccessesPermit() {
 		// Test different Instances
 		Permission pStored = DatasetPermission.onInstance(
-				EnumSet.of(Ability.READ, Ability.DELETE),
+			EnumSet.of(Ability.READ, Ability.DOWNLOAD),
 				new DatasetId(DATASET1));
 		Permission pRequested = DatasetPermission.onInstance(
 				Ability.READ.asSet(),

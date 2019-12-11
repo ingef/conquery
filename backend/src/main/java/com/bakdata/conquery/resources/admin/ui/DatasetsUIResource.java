@@ -29,7 +29,6 @@ import com.bakdata.conquery.resources.admin.ui.model.FileView;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.bakdata.conquery.util.io.FileTreeReduction;
-
 import io.dropwizard.views.View;
 import lombok.AllArgsConstructor;
 import lombok.Data;
