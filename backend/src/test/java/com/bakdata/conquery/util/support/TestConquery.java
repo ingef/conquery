@@ -3,21 +3,13 @@ package com.bakdata.conquery.util.support;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import javax.ws.rs.client.Client;
+
 import java.io.File;
 import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.ws.rs.client.Client;
-
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.io.FileUtils;
-import org.glassfish.jersey.client.ClientProperties;
-import org.junit.jupiter.api.extension.AfterAllCallback;
-import org.junit.jupiter.api.extension.BeforeAllCallback;
-import org.junit.jupiter.api.extension.Extension;
-import org.junit.jupiter.api.extension.ExtensionContext;
 
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -29,7 +21,6 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.Wait;
 import com.bakdata.conquery.util.io.Cloner;
 import com.google.common.io.Files;
-
 import io.dropwizard.client.JerseyClientBuilder;
 import io.dropwizard.jetty.ConnectorFactory;
 import io.dropwizard.jetty.HttpConnectorFactory;
@@ -37,6 +28,13 @@ import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.io.FileUtils;
+import org.glassfish.jersey.client.ClientProperties;
+import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.BeforeAllCallback;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.ExtensionContext;
 
 /**
  * Represents the test instance of Conquery.
@@ -137,7 +135,6 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		config.getStorage().setDirectory(tmpDir);
-		config.getStorage().setPreprocessedRoot(tmpDir);
 		config.getStandalone().setNumberOfSlaves(2);
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());

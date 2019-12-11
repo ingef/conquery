@@ -1,12 +1,11 @@
 package com.bakdata.conquery.models.config;
 
-import java.io.File;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
+import java.io.File;
 
+import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 import io.dropwizard.util.Duration;
 import lombok.Getter;
 import lombok.Setter;
@@ -16,8 +15,7 @@ import lombok.ToString;
 public class StorageConfig {
 	@ExistingFile(directory = true)
 	private File directory = new File("storage");
-	@ExistingFile(directory = true)
-	private File preprocessedRoot;
+
 	private boolean validateOnWrite = false;
 	@NotNull @Valid
 	private XodusConfig xodus = new XodusConfig();
