@@ -1,12 +1,10 @@
 package com.bakdata.conquery.models.query;
 
+import javax.validation.constraints.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
-
-import javax.validation.constraints.NotNull;
-
-import org.apache.commons.lang3.ArrayUtils;
 
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -21,12 +19,12 @@ import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 
 @NoArgsConstructor
 @Getter
@@ -80,6 +78,16 @@ public class ManagedQuery extends ManagedExecution {
 				finish();
 			}
 		}
+	}
+
+	@Override
+	public void start() {
+		super.start();
+
+		if(results != null)
+			results.clear();
+		else
+			results = new ArrayList<>();
 	}
 
 	@Override
