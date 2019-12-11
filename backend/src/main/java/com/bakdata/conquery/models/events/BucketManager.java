@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.events;
 
+import java.util.Optional;
+
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -21,8 +23,6 @@ import com.bakdata.conquery.models.worker.Worker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
-
-import java.util.Optional;
 
 public class BucketManager {
 
@@ -84,8 +84,7 @@ public class BucketManager {
 
 	private void registerBucket(Bucket bucket) {
 		for (int entity : bucket) {
-			entities
-					.computeIfAbsent(entity, Entity::new)
+			entities.computeIfAbsent(entity, Entity::new)
 					.addBucket(storage.getCentralRegistry().resolve(bucket.getImp().getTable()), bucket);
 		}
 	}
@@ -93,8 +92,7 @@ public class BucketManager {
 	private void registerCBlock(CBlock cBlock) {
 		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
 		for (int entity : bucket) {
-			entities
-					.computeIfAbsent(entity, Entity::new)
+			entities.computeIfAbsent(entity, Entity::new)
 					.addCBlock(
 							storage.getCentralRegistry().resolve(cBlock.getConnector()),
 							storage.getImport(cBlock.getBucket().getImp()),
