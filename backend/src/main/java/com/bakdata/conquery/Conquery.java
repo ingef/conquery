@@ -66,7 +66,7 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void initialize(Bootstrap<?> bootstrap) {
 				// Allow overriding of config from environment variables.
-				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(false)));
+				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(true)));
 			}
 		});
 		//register frontend
