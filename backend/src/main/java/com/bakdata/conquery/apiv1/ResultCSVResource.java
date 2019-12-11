@@ -4,6 +4,17 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
+
+
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -14,19 +25,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
-import java.io.BufferedWriter;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -48,7 +51,8 @@ public class ResultCSVResource {
 	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(
 		true,
 		ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
-	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(ResultCSVResource.class, "getAsCSV");
+	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(
+		ResultCSVResource.class, "getAsCSV");
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
 
@@ -57,12 +61,15 @@ public class ResultCSVResource {
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCsv(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @HeaderParam("user-agent") String userAgent) {
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, QueryPermission.onInstance(Ability.DOWNLOAD, queryId));
+		authorize(user, DatasetPermission.onInstance(Ability.DOWNLOAD, datasetId));
 		authorize(user, queryId, Ability.READ);
 
+		ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
+
+		Map<String, Object> mappingState = config.getIdMapping().initToExternal(user, exec);
+
 		try {
-			ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
-			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery());
+			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
