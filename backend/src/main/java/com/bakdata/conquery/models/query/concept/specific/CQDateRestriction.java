@@ -40,7 +40,7 @@ public class CQDateRestriction implements CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		QPNode childAgg = child.createQueryPlan(context, plan);
+		QPNode childAgg = child.createQueryPlan(context.withDateRestriction(CDateRange.of(dateRange)), plan);
 
 		//insert behind every ValidityDateNode
 		List<QPNode> openList = new ArrayList<>();

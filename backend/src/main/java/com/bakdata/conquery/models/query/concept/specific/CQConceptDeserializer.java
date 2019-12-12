@@ -11,6 +11,7 @@ import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonDeserializer;
 import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.module.afterburner.deser.SuperSonicBeanDeserializer;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
@@ -82,7 +83,7 @@ public class CQConceptDeserializer extends JsonDeserializer<CQConcept> {
 
 		// Read tree starting at token.
 		final ObjectCodec codec = parser.getCodec();
-		final TreeNode treeNode = codec.readValue(parser, TreeNode.class);
+		final TreeNode treeNode = codec.readValue(parser, JsonNode.class);
 
 		// Try to read id's field as that contains the information specifying the targeted concept.
 		final ConceptElementId<?>[] elements = treeNode.get(CQConcept.Fields.ids).traverse(codec).readValueAs(ConceptElementId[].class);
