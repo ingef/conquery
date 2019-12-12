@@ -27,8 +27,10 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.FieldNameConstants;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -42,6 +44,8 @@ import java.util.Set;
 @Getter @Setter
 @CPSType(id="CONCEPT", base=CQElement.class)
 @Slf4j
+@FieldNameConstants
+@JsonDeserialize(using = CQConceptDeserializer.class)
 public class CQConcept implements CQElement {
 
 	private String label;
@@ -86,7 +90,7 @@ public class CQConcept implements CQElement {
 				}
 			}
 
-			List<QPNode> aggregators = new ArrayList<>();
+			List<AggregatorNode<?>> aggregators = new ArrayList<>();
 			//add aggregators
 
 			aggregators.addAll(conceptAggregators);
@@ -94,21 +98,21 @@ public class CQConcept implements CQElement {
 
 			if(!excludeFromTimeAggregation && context.isGenerateSpecialDateUnion()) {
 				aggregators.add(new SpecialDateUnionAggregatorNode(
-					table.getResolvedConnector().getTable().getId(),
-					plan.getSpecialDateUnion()
+						table.getResolvedConnector().getTable().getId(),
+						plan.getSpecialDateUnion()
 				));
 			}
 
 			tableNodes.add(
-				new ConceptNode(
-					concepts,
-					calculateBitMask(concepts),
-					table,
-					new ValidityDateNode(
-						selectValidityDateColumn(table),
-						conceptChild(filters, aggregators)
+					new ConceptNode(
+							concepts,
+							calculateBitMask(concepts),
+							table,
+							new ValidityDateNode(
+									selectValidityDateColumn(table),
+									conceptChild(concept, context, filters, aggregators)
+							)
 					)
-				)
 			);
 		}
 
@@ -127,15 +131,15 @@ public class CQConcept implements CQElement {
 		return mask;
 	}
 
-	private ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
+	public static ConceptElement[] resolveConcepts(List<ConceptElementId<?>> ids, CentralRegistry centralRegistry) {
 		return
 				ids
-					.stream()
-					.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
-					.toArray(ConceptElement[]::new);
+						.stream()
+						.map(id -> centralRegistry.resolve(id.findConcept()).getElementById(id))
+						.toArray(ConceptElement[]::new);
 	}
 
-	private QPNode conceptChild(List<FilterNode<?>> filters, List<QPNode> aggregators) {
+	protected QPNode conceptChild(Concept<?> concept, QueryPlanContext context, List<FilterNode<?>> filters, List<AggregatorNode<?>> aggregators) {
 		QPNode result = AndNode.of(aggregators);
 		if(!filters.isEmpty()) {
 			result = new FiltersNode(filters, result);
@@ -158,8 +162,8 @@ public class CQConcept implements CQElement {
 	private Column selectValidityDateColumn(CQTable t) {
 		if(t.selectedValidityDate() != null) {
 			return t
-				.getResolvedConnector()
-				.getValidityDateColumn(t.selectedValidityDate());
+						   .getResolvedConnector()
+						   .getValidityDateColumn(t.selectedValidityDate());
 		}
 
 		//else use this first defined validity date column
@@ -184,9 +188,9 @@ public class CQConcept implements CQElement {
 		namespacedIds.addAll(ids);
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
-		
+
 	}
-	
+
 	@Override
 	public void visit(QueryVisitor visitor) {
 		visitor.visitConcept(this);

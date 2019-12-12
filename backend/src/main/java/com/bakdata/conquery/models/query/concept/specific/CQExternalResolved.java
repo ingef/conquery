@@ -38,7 +38,7 @@ public class CQExternalResolved implements CQElement {
 
 	@Override
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
-		DatasetId dataset = context.getWorker().getStorage().getDataset().getId();
+		DatasetId dataset = context.getDataset();
 		return new ExternalNode(
 			new SpecialDateUnionAggregatorNode(
 				new TableId(

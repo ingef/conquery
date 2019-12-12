@@ -37,7 +37,7 @@ public class AndNode extends QPParentNode {
 		return currently;
 	}
 
-	public static QPNode of(Collection<QPNode> children) {
+	public static QPNode of(Collection<AggregatorNode<?>> children) {
 		switch (children.size()) {
 			case 0:
 				return new Leaf();

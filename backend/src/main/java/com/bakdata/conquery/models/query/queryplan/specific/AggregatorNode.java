@@ -13,12 +13,14 @@ import com.bakdata.conquery.models.query.queryplan.clone.CloneContext;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @RequiredArgsConstructor @Getter @ToString(of = "aggregator")
 public class AggregatorNode<T> extends QPNode  {
 
 	private final Aggregator<T> aggregator;
+	@Setter
 	private boolean triggered = false;
 	
 	@Override
