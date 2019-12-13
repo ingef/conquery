@@ -1,8 +1,13 @@
 [
     {
-        "method": "DELETE",
-        "path": "/datasets/{datasetName}/concepts/{conceptName}",
-        "clazz": "AdminConceptsResource"
+      "method": "DELETE",
+      "path": "/datasets/{datasetName}/import/{importId}",
+      "clazz": "AdminDatasetResource"
+    },
+    {
+      "method": "DELETE",
+      "path": "/datasets/{datasetName}/concepts/{conceptName}",
+      "clazz": "AdminConceptsResource"
     },
     {
         "method": "POST",
