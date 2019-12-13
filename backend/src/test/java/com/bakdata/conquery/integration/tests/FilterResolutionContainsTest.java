@@ -1,5 +1,15 @@
 package com.bakdata.conquery.integration.tests;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -9,6 +19,7 @@ import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
@@ -17,15 +28,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
 import com.github.powerlibraries.io.Out;
 import lombok.extern.slf4j.Slf4j;
-
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @Slf4j
 public class FilterResolutionContainsTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
@@ -61,8 +63,10 @@ public class FilterResolutionContainsTest implements ProgrammaticIntegrationTest
 		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilter();
 
 		// Copy search csv from resources to tmp folder.
-		final Path tmpCSv = Files.createTempFile("conquery_search", "csv");
+		final Path tmpCSv = Files.createTempFile("conquery_search", ".csv");
 		Out.file(tmpCSv.toFile()).withUTF8().writeLines(lines);
+
+		Files.write(tmpCSv, String.join(ConqueryConfig.getInstance().getCsv().getLineSeparator(), lines).getBytes(), StandardOpenOption.TRUNCATE_EXISTING, StandardOpenOption.CREATE, StandardOpenOption.WRITE);
 
 		filter.setSearchType(FilterSearch.FilterSearchType.CONTAINS);
 		filter.setTemplate(new FilterTemplate(tmpCSv.toString(), Arrays.asList("HEADER"), "HEADER", "", ""));
