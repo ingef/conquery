@@ -2,7 +2,6 @@ package com.bakdata.conquery.models.auth.permissions;
 
 import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
@@ -13,7 +12,6 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Needed for (de)serialization with Jackson.
- *
  */
 @SuppressWarnings("serial")
 @Getter
@@ -24,10 +22,14 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	private final Instant creationTime;
 	
 	@JsonCreator
-	public WildcardPermission(SerializationContianer serCtx) {
+	public WildcardPermission(SerializationContainer serCtx) {
 		this.setParts(serCtx.getParts());
 		// Optional for backward compatibility TODO remove
-		creationTime = Optional.ofNullable(serCtx.getCreationTime()).orElse(Instant.now());	
+		if(serCtx.getCreationTime() == null) {
+			creationTime = Instant.now();
+			return;
+		}
+		creationTime = serCtx.getCreationTime();
 	}
 
 	public WildcardPermission(String wildcardString){
@@ -40,7 +42,7 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	}
 	
 	@Getter @Setter
-	public static class SerializationContianer {
+	public static class SerializationContainer {
 		@NotEmpty
 		private List<Set<String>> parts;
 		// Commented for backward compatibility: @NotNull
