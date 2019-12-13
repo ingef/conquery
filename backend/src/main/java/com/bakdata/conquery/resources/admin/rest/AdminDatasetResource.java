@@ -21,6 +21,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -93,8 +94,8 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Path("imports")
 	public void addImport(@QueryParam("file") File selectedFile) throws IOException, JSONException {
-		if(!selectedFile.canRead() || !selectedFile.exists() || !selectedFile.isAbsolute() || !selectedFile.getPath().endsWith(".cqpp")) {
-			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Needs to be absolute path, readable and be a .cqpp-file." + selectedFile, Status.BAD_REQUEST);
+		if(!selectedFile.canRead() || !selectedFile.exists() || !selectedFile.isAbsolute() || !selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)) {
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Needs to be absolute path, readable and be a .cqpp-file.", Status.BAD_REQUEST);
 		}
 
 		processor.addImport(namespace.getStorage().getDataset(), selectedFile);

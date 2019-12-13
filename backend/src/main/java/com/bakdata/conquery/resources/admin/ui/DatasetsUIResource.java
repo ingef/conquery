@@ -14,7 +14,6 @@ import javax.ws.rs.core.Response.Status;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -26,7 +25,6 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.ui.model.FileView;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.views.View;
@@ -58,7 +56,7 @@ public class DatasetsUIResource extends HAdmin {
 
 	@GET
 	public View getDataset() {
-		return new FileView<>(
+		return new UIView<>(
 			"dataset.html.ftl",
 			processor.getUIContext(),
 			new DatasetInfos(
@@ -79,8 +77,7 @@ public class DatasetsUIResource extends HAdmin {
 					.mapToLong(l -> l.get(0).estimateTypeSize())
 					.sum(),
 				// total size of entries
-				namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()),
-			Collections.emptyList()
+				namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum())
 		);
 	}
 
