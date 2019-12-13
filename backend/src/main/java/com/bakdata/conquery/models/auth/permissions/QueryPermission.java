@@ -28,7 +28,7 @@ public class QueryPermission extends StringPermissionBuilder {
 	private ConqueryPermission instancePermission(Ability ability, ManagedExecutionId instance) {
 		return instancePermission(ability, instance.toString());
 	}
-	
+
 	private ConqueryPermission instancePermission(Set<Ability> abilities, ManagedExecutionId instance) {
 		return instancePermission(abilities, instance.toString());
 	}
@@ -42,13 +42,12 @@ public class QueryPermission extends StringPermissionBuilder {
 	public Set<Ability> getAllowedAbilities() {
 		return ALLOWED_ABILITIES;
 	}
-	
-	
+
 	//// Helper functions
 	public static ConqueryPermission onInstance(Ability ability, ManagedExecutionId instance) {
 		return INSTANCE.instancePermission(ability, instance);
 	}
-	
+
 	public static ConqueryPermission onInstance(Set<Ability> abilities, ManagedExecutionId instance) {
 		return INSTANCE.instancePermission(abilities, instance);
 	}

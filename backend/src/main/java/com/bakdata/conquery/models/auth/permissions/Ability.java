@@ -13,7 +13,10 @@ public enum Ability {
 	CANCEL,
 	LABEL,
 	SHARE,
-	DOWNLOAD
+
+	// Dataset Specific
+	DOWNLOAD,
+	PRESERVE_ID
 	;
 	
 	private final Set<Ability> asSet = Collections.singleton(this);

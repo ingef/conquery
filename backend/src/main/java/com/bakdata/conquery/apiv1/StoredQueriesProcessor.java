@@ -30,7 +30,6 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
-
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -46,7 +45,7 @@ public class StoredQueriesProcessor {
 		this.storage = namespaces.getMetaStorage();
 	}
 
-	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req) {
+	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
 		Collection<ManagedExecution> allQueries = storage.getAllExecutions();
 
 		return allQueries
@@ -56,7 +55,10 @@ public class StoredQueriesProcessor {
 			.filter(q -> q.getDataset().equals(dataset.getId()))
 			.flatMap(mq -> {
 				try {
-					return Stream.of(mq.buildStatus(URLBuilder.fromRequest(req)));
+					return Stream.of(
+						mq.buildStatus(
+							URLBuilder.fromRequest(req),
+							user));
 				}
 				catch (Exception e) {
 					log.warn("Could not build status of " + mq, e);
@@ -166,12 +168,12 @@ public class StoredQueriesProcessor {
 		}
 	}
 
-	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId) {
+	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId, User user) {
 		ManagedExecution query = storage.getExecution(queryId);
 		if (query == null) {
 			return null;
 		}
-		return query.buildStatus();
+		return query.buildStatus(user);
 	}
 
 	public void shareQuery(User user, ManagedQuery query, Collection<GroupId> groupIds, Boolean shared) throws JSONException {

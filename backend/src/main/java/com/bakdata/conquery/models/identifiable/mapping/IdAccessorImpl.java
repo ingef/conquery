@@ -4,13 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 
 /**
  * The standard Implementation for an IdAccessor.
@@ -57,8 +55,7 @@ public class IdAccessorImpl implements IdAccessor {
 		String[] reorderedCsvLine = reorder(csvLine);
 		return Optional
 			.ofNullable(storage.getIdMapping())
-			.map(PersistentIdMap::getExternalIdPartCsvIdMap)
-			.map(m->m.get(new SufficientExternalEntityId(reorderedCsvLine)))
+			.map(m -> m.toInternal(new SufficientExternalEntityId(reorderedCsvLine)))
 			// fallback: we join everything relevant together
 			.orElseGet(()->accessor.getFallbackCsvId(reorderedCsvLine));
 	}

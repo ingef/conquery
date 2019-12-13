@@ -5,8 +5,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Test;
-
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -23,9 +21,12 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import org.junit.jupiter.api.Test;
 
 public class SerializationTests {
 
@@ -148,5 +149,12 @@ public class SerializationTests {
 			.forType(TreeConcept.class)
 			.registry(registry)
 			.test(concept);
+	}
+
+	@Test
+	public void persistentIdMap() throws JSONException, IOException {
+		SerializationTestUtil.forType(PersistentIdMap.class)
+			.test(IdMapSerialisationTest.createTestPersistentMap());
+
 	}
 }

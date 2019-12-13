@@ -164,7 +164,7 @@ public class AuthorizationHelper {
 	
 	/**
 	 * Returns a list of the effective permissions. These are the permissions of the owner and
-	 * the permission of the roles it inherits.
+	 * the permission of the roles it inherits. The query can be filtered by the Permission domain.
 	 * @return Owned and inherited permissions.
 	 */
 	public static Set<WildcardPermission> getEffectiveUserPermissions(UserId userId, List<String> domainSpecifier, MasterMetaStorage storage) {
