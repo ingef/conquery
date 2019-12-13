@@ -14,7 +14,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
 /**
- * Frontend Permission -- special type that allows easier handling of permission in Freemarker. 
+ * Frontend Permission -- special type that allows easier handling of permission in Freemarker.
  */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter

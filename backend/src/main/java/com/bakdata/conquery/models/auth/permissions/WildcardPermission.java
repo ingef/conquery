@@ -19,7 +19,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Getter
 @Setter
 @CPSType(id = "WILDCARD_PERMISSION", base = ConqueryPermission.class)
-public class WildcardPermission extends org.apache.shiro.authz.permission.WildcardPermission implements ConqueryPermission{
+public class WildcardPermission extends org.apache.shiro.authz.permission.WildcardPermission implements ConqueryPermission {
 	
 	private final Instant creationTime;
 	
@@ -27,7 +27,7 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	public WildcardPermission(SerializationContianer serCtx) {
 		this.setParts(serCtx.getParts());
 		// Optional for backward compatibility TODO remove
-		creationTime = Optional.ofNullable(serCtx.getCreationTime()).orElse(Instant.now());		
+		creationTime = Optional.ofNullable(serCtx.getCreationTime()).orElse(Instant.now());	
 	}
 
 	public WildcardPermission(String wildcardString){
@@ -40,7 +40,7 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	}
 	
 	@Getter @Setter
-	public static class SerializationContianer{
+	public static class SerializationContianer {
 		@NotEmpty
 		private List<Set<String>> parts;
 		// Commented for backward compatibility: @NotNull
