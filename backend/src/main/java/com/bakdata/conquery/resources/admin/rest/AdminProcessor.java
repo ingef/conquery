@@ -35,14 +35,17 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
@@ -53,6 +56,7 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
@@ -482,5 +486,35 @@ public class AdminProcessor {
 		for (WorkerInformation w : namespace.getWorkers()) {
 			w.send(new RemoveImportJob(importId));
 		}
+	}
+
+	public void deleteTable(TableId tableId) throws JSONException {
+		final Namespace namespace = namespaces.get(tableId.getDataset());
+		final Dataset dataset = namespace.getDataset();
+
+		final List<? extends Connector> connectors = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+															  .filter(con -> con.getTable().getId().equals(tableId))
+															  .collect(Collectors.toList());
+
+		if(!connectors.isEmpty())
+			throw new IllegalArgumentException(String.format("Cannot delete table `%s`, because it still has connectors: `%s`", tableId, connectors));
+
+		namespace.getStorage().getAllImports().stream()
+				  .filter(imp -> imp.getTable().equals(tableId))
+				  .map(Import::getId)
+				  .forEach(this::deleteImport);
+
+		dataset.getTables().remove(tableId);
+		namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
+		namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
+	}
+
+	public void deleteConcept(ConceptId conceptId) {
+		final Namespace namespace = namespaces.get(conceptId.getDataset());
+
+		getJobManager()
+				.addSlowJob(new SimpleJob("Removing concept " + conceptId, () -> namespace.getStorage().removeConcept(conceptId)));
+		getJobManager()
+				.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(conceptId))));
 	}
 }

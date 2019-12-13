@@ -1,25 +1,23 @@
 package com.bakdata.conquery.integration.tests.deletion;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -103,14 +101,18 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				log.info("Executing query before deletion");
 
-				assertQueryResult(conquery, query, 2L);
+				ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 			}
 
 			log.info("Issuing deletion of import {}", tableId);
 
 			// Delete the import.
-			conquery.getDatasetsProcessor().deleteTable(tableId);
+			// But, we do not allow deletion of tables with associated connectors, so this should throw!
+			assertThatThrownBy(() -> conquery.getDatasetsProcessor().deleteTable(tableId))
+					.isInstanceOf(IllegalArgumentException.class);
 
+			conquery.getDatasetsProcessor().deleteConcept(conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId());
+			conquery.getDatasetsProcessor().deleteTable(tableId);
 
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
@@ -123,7 +125,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				// The deleted import should not be found.
 				assertThat(namespace.getStorage().getAllImports())
-						.filteredOn(imp -> imp.getId().equals(tableId))
+						.filteredOn(imp -> imp.getId().getTable().equals(tableId))
 						.isEmpty();
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
@@ -137,13 +139,13 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 						// No bucket should be found referencing the import.
 						assertThat(workerStorage.getAllBuckets())
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
-								.filteredOn(bucket -> bucket.getImp().getId().equals(tableId))
+								.filteredOn(bucket -> bucket.getImp().getId().getTable().equals(tableId))
 								.isEmpty();
 
 						// No CBlock associated with import may exist
 						assertThat(workerStorage.getAllCBlocks())
 								.describedAs("CBlocks for Worker %s", value.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getBucket().getImp().equals(tableId))
+								.filteredOn(cBlock -> cBlock.getBucket().getImp().getTable().equals(tableId))
 								.isEmpty();
 					}
 				}
@@ -151,18 +153,46 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after deletion");
 
 				// Issue a query and asseert that it has less content.
-				assertQueryResult(conquery, query, 1L);
+				ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 0L, ExecutionState.FAILED);
 			}
 
 			conquery.waitUntilWorkDone();
 
 			// Load the same import into the same table, with only the deleted import/table
 			{
+
+
 				// only import the deleted import/table
+				conquery.getDatasetsProcessor().addTable(namespace.getDataset(), Arrays.stream(test.getContent().getTables())
+																					   .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+																					   .map(RequiredTable::toTable).findFirst().get());
+				conquery.waitUntilWorkDone();
+
 				test.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
 														 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
 														 .collect(Collectors.toList()));
 				conquery.waitUntilWorkDone();
+
+				test.importConcepts(conquery);
+				conquery.waitUntilWorkDone();
+
+				assertThat(namespace.getDataset().getTables().getOptional(tableId))
+						.describedAs("Table after re-import.")
+						.isPresent();
+
+				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
+						final WorkerStorage workerStorage = value.getStorage();
+
+						assertThat(value.getStorage().getCentralRegistry().resolve(tableId))
+								.describedAs("Table in worker storage.")
+								.isNotNull();
+					}
+				}
 			}
 
 			log.info("Checking state after re-import");
@@ -172,18 +202,22 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
+						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
+							continue;
+						}
+
 						final WorkerStorage workerStorage = value.getStorage();
 
-//						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(tableId)))
-//								.describedAs("Buckets for Worker %s", value.getInfo().getId())
-//								.isNotEmpty();
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().getTable().equals(tableId)))
+								.describedAs("Buckets for Worker %s", value.getInfo().getId())
+								.isNotEmpty();
 					}
 				}
 
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				assertQueryResult(conquery, query, 2L);
+				ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 			}
 		}
 
@@ -208,7 +242,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 						final WorkerStorage workerStorage = value.getStorage();
 
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(tableId)))
+						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().getTable().equals(tableId)))
 								.describedAs("Buckets for Worker %s", value.getInfo().getId())
 								.isNotEmpty();
 					}
@@ -217,20 +251,8 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				assertQueryResult(conquery, query, 2L);
+				ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 			}
 		}
-	}
-
-	/**
-	 * Send a query onto the conquery instance and assert the result's size.
-	 */
-	private void assertQueryResult(StandaloneSupport conquery, IQuery query, long size) throws JSONException {
-		final ManagedQuery managedQuery = conquery.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
-
-		managedQuery.awaitDone(2, TimeUnit.MINUTES);
-		assertThat(managedQuery.getState()).isEqualTo(ExecutionState.DONE);
-
-		assertThat(managedQuery.getLastResultCount()).isEqualTo(size);
 	}
 }

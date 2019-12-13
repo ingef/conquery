@@ -1,15 +1,7 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.concepts.Concept;
-import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.hierarchies.HAdmin;
-import lombok.Getter;
-import lombok.Setter;
+import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
@@ -20,8 +12,14 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
-import static com.bakdata.conquery.resources.ResourceConstants.CONCEPT_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import lombok.Getter;
+import lombok.Setter;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -50,12 +48,6 @@ public class AdminConceptsResource extends HAdmin {
 
 	@DELETE
 	public void removeConcept() {
-		processor
-			.getJobManager()
-			.addSlowJob(new SimpleJob("Removing concept " + conceptId, () -> namespace.getStorage().removeConcept(conceptId)));
-
-		processor
-			.getJobManager()
-			.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(conceptId))));
+		processor.deleteConcept(conceptId);
 	}
 }
