@@ -112,7 +112,7 @@ export default function createQueryRunnerReducer(type: string): Function {
       case QUERY_RESULT_START:
         return { ...state, queryResult: { loading: true } };
       case QUERY_RESULT_RESET:
-        return { ...state, queryResult: null };
+        return { ...state, queryResult: { loading: false } };
       case QUERY_RESULT_SUCCESS:
         const { data } = action.payload;
 

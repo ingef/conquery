@@ -87,7 +87,7 @@ const QueryRunner = (props: PropsType) => {
           <QueryRunningSpinner isQueryRunning={isQueryRunning} />
           <QueryRunnerInfo queryRunner={queryRunner} />
         </LoadingGroup>
-        {!!queryRunner.queryResult && !queryRunner.queryResult.loading && (
+        {!!queryRunner.queryResult && !isQueryRunning && (
           <QueryResults
             resultCount={queryRunner.queryResult.resultCount}
             resultUrl={queryRunner.queryResult.resultUrl}

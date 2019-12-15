@@ -36,7 +36,12 @@ const getMessage = (queryRunner: StateType) => {
 const QueryRunnerInfo = ({ queryRunner, className }: PropsType) => {
   const message = getMessage(queryRunner);
 
-  return message && !queryRunner.queryResult ? (
+  const { queryResult } = queryRunner;
+
+  const noQueryResultOrError =
+    !queryResult || (!!queryResult && queryResult.error);
+
+  return !!message && noQueryResultOrError ? (
     <Status
       className={className}
       success={message.type === "success"}
