@@ -14,7 +14,7 @@ import QueryRunnerInfo from "./QueryRunnerInfo";
 import QueryRunnerButton from "./QueryRunnerButton";
 
 type PropsType = {
-  queryRunner: Object,
+  queryRunner?: Object,
   isQueryRunning: boolean,
   isButtonEnabled: boolean,
   buttonTooltipKey?: ?string,
@@ -59,7 +59,8 @@ const QueryRunner = (props: PropsType) => {
   const btnAction = isQueryRunning ? stopQuery : startQuery;
 
   const isStartStopLoading =
-    queryRunner.startQuery.loading || queryRunner.stopQuery.loading;
+    !!queryRunner &&
+    (queryRunner.startQuery.loading || queryRunner.stopQuery.loading);
 
   return (
     <Root>
@@ -85,12 +86,14 @@ const QueryRunner = (props: PropsType) => {
       <Right>
         <LoadingGroup>
           <QueryRunningSpinner isQueryRunning={isQueryRunning} />
-          <QueryRunnerInfo queryRunner={queryRunner} />
+          {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
         </LoadingGroup>
-        <QueryResults
-          resultCount={queryRunner.queryResult.resultCount}
-          resultUrl={queryRunner.queryResult.resultUrl}
-        />
+        {!!queryRunner && (
+          <QueryResults
+            resultCount={queryRunner.queryResult.resultCount}
+            resultUrl={queryRunner.queryResult.resultUrl}
+          />
+        )}
       </Right>
     </Root>
   );
