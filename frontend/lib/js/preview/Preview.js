@@ -286,7 +286,7 @@ export default connect(
                 <Stat>{T.translate("preview.min")}:</Stat>
               </td>
               <td>
-                <BStat>{formatStdDate(min)}</BStat>
+                <BStat>{min ? formatStdDate(min) : "-"}</BStat>
               </td>
             </Tr>
             <Tr>
@@ -294,7 +294,7 @@ export default connect(
                 <Stat>{T.translate("preview.max")}:</Stat>
               </td>
               <td>
-                <BStat>{formatStdDate(max)}</BStat>
+                <BStat>{max ? formatStdDate(max) : "-"}</BStat>
               </td>
             </Tr>
             <Tr>
@@ -302,7 +302,9 @@ export default connect(
                 <Stat>{T.translate("preview.span")}:</Stat>
               </td>
               <td>
-                <BStat>{formatDateDistance(min, max)}</BStat>
+                <BStat>
+                  {!!min && !!max ? formatDateDistance(min, max) : "-"}
+                </BStat>
               </td>
             </Tr>
           </tbody>
