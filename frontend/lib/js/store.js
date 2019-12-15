@@ -1,4 +1,5 @@
 // @flow
+
 import { applyMiddleware, compose, createStore, type Store } from "redux";
 
 import buildAppReducer from "./app/reducers";
