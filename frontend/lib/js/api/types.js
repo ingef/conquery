@@ -293,3 +293,20 @@ export type PostFilterSuggestionsResponseT = {
   optionValue: ?string,
   templateValues: string[] // unclear whether that's correct
 }[];
+
+export type Permission = {
+  domains: string[],
+  abilities: string[],
+  targets: string[]
+};
+
+export type UserGroup = {
+  groupId: string,
+  label: string
+};
+
+export type GetMeResponseT = {
+  userName: string,
+  permissions: Permission[],
+  groups: UserGroup[]
+};
