@@ -23,7 +23,7 @@ const getMessage = (queryRunner: StateType) => {
     return { type: "error", value: T.translate("queryRunner.startError") };
   else if (queryRunner.stopQuery.error)
     return { type: "error", value: T.translate("queryRunner.stopError") };
-  else if (queryRunner.queryResult && queryRunner.queryResult.error)
+  else if (!!queryRunner.queryResult && queryRunner.queryResult.error)
     return { type: "error", value: T.translate("queryRunner.resultError") };
   else if (queryRunner.startQuery.success)
     return { type: "success", value: T.translate("queryRunner.startSuccess") };
@@ -36,7 +36,12 @@ const getMessage = (queryRunner: StateType) => {
 const QueryRunnerInfo = ({ queryRunner, className }: PropsType) => {
   const message = getMessage(queryRunner);
 
-  return message && !queryRunner.queryResult.resultUrl ? (
+  const { queryResult } = queryRunner;
+
+  const noQueryResultOrError =
+    !queryResult || (!!queryResult && queryResult.error);
+
+  return !!message && noQueryResultOrError ? (
     <Status
       className={className}
       success={message.type === "success"}
