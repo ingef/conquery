@@ -3,6 +3,8 @@ package com.bakdata.conquery.resources.admin.ui.model;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -53,6 +55,14 @@ public class FEPermission {
 			abilities,
 			targets,
 			LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(FORMATTER));
+	}
+	
+	public static List<FEPermission> from(Collection<WildcardPermission> cPermission) {
+		List<FEPermission> fePerms = new ArrayList<>();
+		for(WildcardPermission perm : cPermission) {
+			fePerms.add(from(perm));
+		}
+		return fePerms;
 	}
 
 }
