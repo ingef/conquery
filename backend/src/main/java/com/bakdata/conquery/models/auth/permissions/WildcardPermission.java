@@ -8,7 +8,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.Setter;
-import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Needed for (de)serialization with Jackson.
@@ -22,14 +21,14 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	private final Instant creationTime;
 	
 	@JsonCreator
-	public WildcardPermission(SerializationContainer serCtx) {
-		this.setParts(serCtx.getParts());
+	public WildcardPermission(List<Set<String>> parts, Instant creationTime) {
+		this.setParts(parts);
 		// Optional for backward compatibility TODO remove
-		if(serCtx.getCreationTime() == null) {
-			creationTime = Instant.now();
+		if(creationTime == null) {
+			this.creationTime = Instant.now();
 			return;
 		}
-		creationTime = serCtx.getCreationTime();
+		this.creationTime = creationTime;
 	}
 
 	public WildcardPermission(String wildcardString){
@@ -39,13 +38,5 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 
 	public List<Set<String>> getParts() {
 		return super.getParts();
-	}
-	
-	@Getter @Setter
-	public static class SerializationContainer {
-		@NotEmpty
-		private List<Set<String>> parts;
-		// Commented for backward compatibility: @NotNull
-		private Instant creationTime;
 	}
 }
