@@ -15,6 +15,7 @@ import type {
   PostConceptResolveResponseT,
   PostFilterResolveResponseT,
   PostFilterSuggestionsResponseT,
+  GetFormQueriesResponseT,
   GetMeResponseT
 } from "./types";
 
@@ -108,6 +109,12 @@ export function getFormQuery(
   queryId: QueryIdT
 ): Promise<GetQueryResponseT> {
   return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`);
+}
+
+export function getForms(
+  datasetId: DatasetIdT
+): Promise<GetFormQueriesResponseT> {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries`);
 }
 
 export function getStoredQueries(
