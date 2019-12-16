@@ -112,6 +112,10 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 					.isInstanceOf(IllegalArgumentException.class);
 
 			conquery.getDatasetsProcessor().deleteConcept(conquery.getNamespace().getStorage().getAllConcepts().iterator().next().getId());
+
+			Thread.sleep(100);
+			conquery.waitUntilWorkDone();
+
 			conquery.getDatasetsProcessor().deleteTable(tableId);
 
 			Thread.sleep(100);
