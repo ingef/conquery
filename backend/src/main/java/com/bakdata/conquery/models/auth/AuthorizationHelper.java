@@ -145,7 +145,7 @@ public class AuthorizationHelper {
 	public static Set<ConqueryPermission> getEffectiveUserPermissions(UserId userId, MasterMetaStorage storage) {
 		User user = Objects.requireNonNull(
 			storage.getUser(userId),
-			String.format("User with id %s was not found", userId));
+			() -> String.format("User with id %s was not found", userId));
 		Set<ConqueryPermission> permissions = new HashSet<>(user.getPermissions());
 		for (Role role : user.getRoles()) {
 			permissions.addAll(role.getPermissions());
