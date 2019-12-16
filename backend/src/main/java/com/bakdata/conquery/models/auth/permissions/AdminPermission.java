@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
-
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
@@ -17,9 +16,9 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(id = "ADMIN", base = StringPermissionBuilder.class)
 public final class AdminPermission extends StringPermissionBuilder {
 
-	private static final String DOMAIN = "admin";
+	public static final String DOMAIN = "admin";
 
-	public final static AdminPermission INSTANCE = new AdminPermission();
+	public static final AdminPermission INSTANCE = new AdminPermission();
 
 	@Override
 	public String getDomain() {
@@ -33,7 +32,7 @@ public final class AdminPermission extends StringPermissionBuilder {
 	public Set<Ability> getAllowedAbilities() {
 		return Collections.emptySet();
 	}
-	
+
 	public static ConqueryPermission onDomain() {
 		return INSTANCE.domainPermission();
 	}
