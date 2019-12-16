@@ -14,7 +14,8 @@ import type {
   GetStoredQueryResponseT,
   PostConceptResolveResponseT,
   PostFilterResolveResponseT,
-  PostFilterSuggestionsResponseT
+  PostFilterSuggestionsResponseT,
+  GetMeResponseT
 } from "./types";
 
 import fetchJson from "./fetchJson";
@@ -198,4 +199,8 @@ export function postFilterValuesResolve(
       body: { values }
     }
   );
+}
+
+export function getMe(): Promise<GetMeResponseT> {
+  return fetchJson(apiUrl() + `/me`);
 }
