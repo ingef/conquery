@@ -1,6 +1,7 @@
 // @flow
 
 import React from "react";
+import { connect } from "react-redux";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
@@ -8,6 +9,7 @@ import DownloadButton from "../button/DownloadButton";
 import PreviewButton from "../button/PreviewButton";
 import FaIcon from "../icon/FaIcon";
 import { isEmpty } from "../common/helpers/commonHelper";
+import { canDownloadResult } from "../user/selectors";
 
 const Root = styled("div")`
   display: flex;
@@ -39,14 +41,15 @@ const Bold = styled("span")`
 
 type PropsType = {
   resultCount: number,
-  resultUrl: string
+  resultUrl: string,
+  userCanDownloadResult: Boolean
 };
 
 const QueryResults = (props: PropsType) => {
-  if (isEmpty(props.resultUrl)) return null;
-
-  const isDownload = !!props.resultUrl;
-  const ending = props.resultUrl.split(".").reverse()[0];
+  const isDownloadAllowed = !!props.resultUrl && props.userCanDownloadResult;
+  const ending = isDownloadAllowed
+    ? props.resultUrl.split(".").reverse()[0]
+    : null;
 
   return (
     <Root>
@@ -62,7 +65,7 @@ const QueryResults = (props: PropsType) => {
         </LgText>
       )}
       {ending === "csv" && <SxPreviewButton url={props.resultUrl} />}
-      {isDownload && (
+      {isDownloadAllowed && ending && (
         <StyledDownloadButton
           frame
           primary
@@ -76,4 +79,6 @@ const QueryResults = (props: PropsType) => {
   );
 };
 
-export default QueryResults;
+export default connect(state => ({
+  userCanDownloadResult: canDownloadResult(state)
+}))(QueryResults);
