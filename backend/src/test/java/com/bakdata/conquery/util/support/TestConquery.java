@@ -3,13 +3,13 @@ package com.bakdata.conquery.util.support;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.fail;
 
+import javax.ws.rs.client.Client;
+
 import java.io.File;
 import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -139,7 +139,6 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 		config.getPreprocessor().setDirectories(new PreprocessingDirectories[] { new PreprocessingDirectories(tmpDir, tmpDir, tmpDir) });
 		config.getStorage().setDirectory(tmpDir);
-		config.getStorage().setPreprocessedRoot(tmpDir);
 		config.getStandalone().setNumberOfSlaves(2);
 		// configure logging
 		config.setLoggingFactory(new TestLoggingFactory());

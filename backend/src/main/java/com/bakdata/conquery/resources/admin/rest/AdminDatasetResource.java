@@ -2,6 +2,10 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -16,9 +20,10 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import com.bakdata.conquery.ConqueryConstants;
+import org.glassfish.jersey.media.multipart.BodyPart;
+import org.glassfish.jersey.media.multipart.FormDataBodyPart;
+import org.glassfish.jersey.media.multipart.FormDataParam;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -36,6 +41,7 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
 import lombok.Getter;
 import lombok.Setter;
 import org.glassfish.jersey.media.multipart.BodyPart;
@@ -92,10 +98,9 @@ public class AdminDatasetResource extends HAdmin {
 
 	@POST
 	@Path("imports")
-	public void addImport(@QueryParam("file") File file) throws IOException, JSONException {
-		File selectedFile = new File(processor.getConfig().getStorage().getPreprocessedRoot(), file.toString());
-		if (!selectedFile.exists()) {
-			throw new WebApplicationException("Could not find file " + selectedFile, Status.NOT_FOUND);
+	public void addImport(@QueryParam("file") File selectedFile) throws IOException, JSONException {
+		if(!selectedFile.canRead() || !selectedFile.exists() || !selectedFile.isAbsolute() || !selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)) {
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Needs to be absolute path, readable and be a .cqpp-file.", Status.BAD_REQUEST);
 		}
 		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
 	}
@@ -106,7 +111,7 @@ public class AdminDatasetResource extends HAdmin {
 
 		processor.deleteImport(importId);
 	}
-	
+
 	@POST
 	@Path("concepts")
 	public void addConcept(Concept<?> concept) throws IOException, JSONException, ConfigurationException {

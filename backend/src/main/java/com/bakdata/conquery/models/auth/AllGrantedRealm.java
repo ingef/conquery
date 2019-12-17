@@ -6,6 +6,11 @@ import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
+import com.bakdata.conquery.models.auth.util.SingleAuthenticationInfo;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -14,13 +19,6 @@ import org.apache.shiro.authz.Permission;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.permissions.SuperPermission;
-import com.bakdata.conquery.models.auth.util.SingleAuthenticationInfo;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * This realm authenticates and authorizes all requests given to it positive.

@@ -58,8 +58,10 @@ const mapStateToProps = state => {
   return {
     isModalOpen: state.uploadQueryResults.isModalOpen,
     loading: queryRunner.startQuery.loading || !!queryRunner.runningQuery,
-    success: queryRunner.queryResult.success,
-    error: queryRunner.startQuery.error || queryRunner.queryResult.error
+    success: queryRunner.queryResult && queryRunner.queryResult.success,
+    error:
+      queryRunner.startQuery.error ||
+      (!!queryRunner.queryResult && queryRunner.queryResult.error)
   };
 };
 
