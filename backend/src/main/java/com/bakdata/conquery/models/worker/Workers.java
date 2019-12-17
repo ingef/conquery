@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
@@ -7,12 +13,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @Slf4j
 public class Workers extends NamespaceCollection {
@@ -51,10 +51,10 @@ public class Workers extends NamespaceCollection {
 		
 		workers.remove(removed.getInfo().getId());
 		try {
-			removed.getStorage().close();
+			removed.getStorage().remove();
 		}
 		catch(Exception e) {
-			log.error("Failed to shutdown storage "+removed, e);
+			log.error("Failed to remove storage "+removed, e);
 		}
 	}
 }

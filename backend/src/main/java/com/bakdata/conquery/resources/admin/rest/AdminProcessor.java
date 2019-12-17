@@ -490,7 +490,7 @@ public class AdminProcessor {
 		}
 	}
 
-	public void deleteTable(TableId tableId) throws JSONException {
+	public void deleteTable(TableId tableId)  {
 		final Namespace namespace = namespaces.get(tableId.getDataset());
 		final Dataset dataset = namespace.getDataset();
 
@@ -507,8 +507,13 @@ public class AdminProcessor {
 				  .forEach(this::deleteImport);
 
 		dataset.getTables().remove(tableId);
-		namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
-		namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
+
+		getJobManager()
+				.addSlowJob(new SimpleJob("Removing table " + tableId, () -> namespaces.get(dataset.getId()).getStorage().updateDataset(dataset)));
+
+		getJobManager()
+				.addSlowJob(new SimpleJob("Removing table " + tableId,
+										  () -> 		namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset))));
 	}
 
 	public void deleteConcept(ConceptId conceptId) {

@@ -1,18 +1,17 @@
 package com.bakdata.conquery.io.xodus;
 
+import javax.validation.Validator;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-
-import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.util.functions.Collector;
 import com.google.common.base.Stopwatch;
-
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
@@ -54,5 +53,14 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 			store.close();
 		}
 		environment.close();
+	}
+
+	/**
+	 * clears the environment the closes it.
+	 * @throws IOException
+	 */
+	public void remove() throws IOException {
+		environment.clear();
+		close();
 	}
 }

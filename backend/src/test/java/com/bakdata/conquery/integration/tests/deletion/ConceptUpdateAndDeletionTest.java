@@ -49,7 +49,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final IQuery query;
 
 
-		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
+		StandaloneSupport conquery = testConquery.getSupport(name);
+		{
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 
 			// Read two JSONs with different Trees
@@ -76,7 +77,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				test.importConcepts(conquery);
 				conquery.waitUntilWorkDone();
 
-				test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()));
+				test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
 				conquery.waitUntilWorkDone();
 			}
 
@@ -216,7 +217,8 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		//restart
 		testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-		try (StandaloneSupport conquery = testConquery.openDataset(dataset)) {
+		StandaloneSupport conquery2 = testConquery.openDataset(dataset);
+		 {
 			log.info("Checking state after re-start");
 
 			{
@@ -228,7 +230,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 				assertThat(namespace.getStorage().getCentralRegistry().getOptional(conceptId))
 						.isNotEmpty();
 
-				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 							continue;
@@ -248,7 +250,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 
 				log.info("Executing query after restart.");
 				// Re-assert state.
-				assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+				assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 			}
 		}
 	}

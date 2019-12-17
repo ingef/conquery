@@ -43,16 +43,17 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			.createTestPersistentMap();
 
 
-		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
-			dataset = conquery.getDataset().getId();
+		StandaloneSupport conquery = testConquery.getSupport(name);
+		dataset = conquery.getDataset().getId();
 
-			test = JsonIntegrationTest.readJson(dataset, testJson);
-			ValidatorHelper.failOnError(log, validator.validate(test));
+		test = JsonIntegrationTest.readJson(dataset, testJson);
+		ValidatorHelper.failOnError(log, validator.validate(test));
 
-			test.importRequiredData(conquery);
+		test.importRequiredData(conquery);
 
-			test.executeTest(conquery);
+		test.executeTest(conquery);
 
+		{
 			// Auth testing
 			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
 			storage.addRole(mandator);
@@ -71,18 +72,21 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			storage.addGroup(group);
 			group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset")));
 			group.addMember(storage, user);
-
 		}
+		testConquery.shutdown(conquery);
 
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
 		testConquery.getDropwizard().after();
 		//restart
 		testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-		try (StandaloneSupport conquery = testConquery.openDataset(dataset)) {
-			test.executeTest(conquery);
+		final StandaloneSupport support = testConquery.openDataset(dataset);
 
-			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+		test.executeTest(support);
+
+
+		{
+			MasterMetaStorage storage = support.getStandaloneCommand().getMaster().getStorage();
 			User userStored = storage.getUser(user.getId());
 			Role mandatorStored = storage.getRole(mandator.getId());
 			Role userRefMand = userStored.getRoles().iterator().next();
@@ -91,12 +95,12 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 			// Check if user still is permitted to the permission from its group
 			assertThat(user.isPermitted(DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset")))).isTrue();
-			PersistentIdMap persistentIdMapAfterRestart = conquery.getStandaloneCommand()
-				.getMaster()
-				.getNamespaces()
-				.get(dataset)
-				.getStorage()
-				.getIdMapping();
+			PersistentIdMap persistentIdMapAfterRestart = support.getStandaloneCommand()
+																  .getMaster()
+																  .getNamespaces()
+																  .get(dataset)
+																  .getStorage()
+																  .getIdMapping();
 			assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 		}
 	}

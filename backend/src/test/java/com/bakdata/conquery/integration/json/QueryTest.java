@@ -1,5 +1,20 @@
 package com.bakdata.conquery.integration.json;
 
+import static org.assertj.core.api.Assertions.fail;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -37,20 +52,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
-import java.util.concurrent.TimeUnit;
-
-import static org.assertj.core.api.Assertions.fail;
-
 @Slf4j
 @Getter
 @Setter
@@ -81,7 +82,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		support.waitUntilWorkDone();
 		query = parseQuery(support);
 
-		importTableContents(support, Arrays.asList(content.getTables()));
+		importTableContents(support, Arrays.asList(content.getTables()), support.getDataset());
 		support.waitUntilWorkDone();
 		importIdMapping(support);
 		importPreviousQueries(support);
@@ -128,7 +129,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables) throws IOException, JSONException {
+	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException, JSONException {
 		CsvParserSettings settings = new CsvParserSettings();
 		CsvFormat format = new CsvFormat();
 		format.setLineSeparator("\n");
@@ -166,7 +167,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 		//import preprocessedFiles
 		for (File file : preprocessedFiles) {
-			support.getDatasetsProcessor().addImport(support.getDataset(), file);
+			support.getDatasetsProcessor().addImport(dataset, file);
 		}
 	}
 

@@ -45,7 +45,9 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		final IQuery query;
 
 
-		try (StandaloneSupport conquery = testConquery.getSupport(name)) {
+		StandaloneSupport conquery = testConquery.getSupport(name);
+
+		{
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
 
 			final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
@@ -68,7 +70,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				test.importConcepts(conquery);
 				conquery.waitUntilWorkDone();
 
-				test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()));
+				test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
 				conquery.waitUntilWorkDone();
 			}
 
@@ -174,7 +176,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 
 				test.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
 														 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-														 .collect(Collectors.toList()));
+														 .collect(Collectors.toList()), conquery.getDataset());
 				conquery.waitUntilWorkDone();
 
 				test.importConcepts(conquery);
@@ -232,13 +234,15 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		//restart
 		testConquery.beforeAll(testConquery.getBeforeAllContext());
 
-		try (StandaloneSupport conquery = testConquery.openDataset(dataset)) {
+		StandaloneSupport conquery2 = testConquery.openDataset(dataset);
+
+		{
 			log.info("Checking state after re-start");
 
 			{
 				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(4);
 
-				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
 					for (Worker value : slave.getWorkers().getWorkers().values()) {
 						if (!value.getInfo().getDataset().getDataset().equals(dataset)) {
 							continue;
@@ -255,7 +259,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
+				ConceptUpdateAndDeletionTest.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 			}
 		}
 	}

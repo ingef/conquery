@@ -1,13 +1,12 @@
 package com.bakdata.conquery.util.support;
 
+import javax.validation.Validator;
+import javax.ws.rs.client.Client;
+
 import java.io.Closeable;
 import java.io.File;
 import java.time.Duration;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
@@ -19,7 +18,6 @@ import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +74,7 @@ public class StandaloneSupport implements Closeable {
 
 	@Override
 	public void close() {
-		testConquery.stop(this);
+//		testConquery.stop(this);
 	}
 
 	public Validator getValidator() {

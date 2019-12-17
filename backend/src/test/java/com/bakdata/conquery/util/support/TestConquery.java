@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import javax.ws.rs.client.Client;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashSet;
 import java.util.Set;
@@ -19,6 +20,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.network.NetworkMessageContext;
+import com.bakdata.conquery.models.messages.network.SlaveMessage;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -36,6 +39,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FileUtils;
 import org.glassfish.jersey.client.ClientProperties;
 import org.junit.jupiter.api.extension.AfterAllCallback;
+import org.junit.jupiter.api.extension.AfterEachCallback;
 import org.junit.jupiter.api.extension.BeforeAllCallback;
 import org.junit.jupiter.api.extension.Extension;
 import org.junit.jupiter.api.extension.ExtensionContext;
@@ -45,7 +49,7 @@ import org.junit.jupiter.api.extension.ExtensionContext;
  *
  */
 @Slf4j
-public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallback {
+public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallback, AfterEachCallback {
 
 	private static final ConcurrentHashMap<String, Integer> NAME_COUNTS = new ConcurrentHashMap<>();
 
@@ -124,6 +128,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		return support;
 	}
 
+
+
 	/* package */ synchronized void stop(StandaloneSupport support) {
 		log.info("Tearing down dataset");
 
@@ -132,6 +138,33 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 
 		openSupports.remove(support);
+	}
+
+	public synchronized void shutdown(StandaloneSupport support) {
+		log.info("Tearing down dataset");
+
+
+		DatasetId dataset = support.getDataset().getId();
+		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new SlaveMessage() {
+			@Override
+			public void react(NetworkMessageContext.Slave context) throws Exception {
+				context.getWorkers().getWorkers().values().stream()
+					   .filter(worker -> worker.getInfo().getDataset().equals(dataset))
+					   .forEach(worker -> {
+						   try {
+							   worker.getStorage().close();
+						   } catch (IOException e) {
+							   log.error("Failed closing down worker", e);
+						   }
+					   });
+
+			}
+		}));
+		try {
+			standaloneCommand.getMaster().getStorage().close();
+		} catch (IOException e) {
+			log.error("",e);
+		}
 	}
 
 	protected ConqueryConfig getConfig() throws Exception {
@@ -211,4 +244,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 		FileUtils.deleteQuietly(tmpDir);
 	}
 
+	@Override
+	public void afterEach(ExtensionContext context) throws Exception {
+		openSupports.forEach(this::stop);
+	}
 }
