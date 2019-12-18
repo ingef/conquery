@@ -473,7 +473,6 @@ public class AdminProcessor {
 	public String getPermissionOverviewAsCSV() {
 		StringWriter sWriter = new StringWriter();
 		CsvWriter writer = CsvIo.createWriter(sWriter);
-		StringBuilder sb = new StringBuilder();
 		List<String> scope = ConqueryConfig.getInstance()
 			.getAuthentication()
 			.getOverviewScope();
@@ -487,7 +486,9 @@ public class AdminProcessor {
 
 			writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 			for(String domain : scope) {				
-				writer.addValue(permissions.get(domain));
+				writer.addValue(permissions.get(domain).stream()
+					.map(Object::toString)
+					.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
 			}
 			writer.writeValuesToRow();
 		}
