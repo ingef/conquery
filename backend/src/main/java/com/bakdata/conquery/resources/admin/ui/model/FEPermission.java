@@ -24,7 +24,7 @@ public class FEPermission {
 	/**
 	 * The standard format, that Freemarker understands.
 	 */
-	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM d, y, h:mm:ss a", Locale.US);
+	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd.MM.y, HH:mm:ss", Locale.US);
 	private static final ZoneId TIMEZONE = TimeZone.getDefault().toZoneId();
 
 	private final Set<String> domains;

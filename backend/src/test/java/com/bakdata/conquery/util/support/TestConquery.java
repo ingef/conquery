@@ -9,6 +9,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -129,17 +130,6 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 	}
 
 
-
-	/* package */ synchronized void stop(StandaloneSupport support) {
-		log.info("Tearing down dataset");
-
-		DatasetId dataset = support.getDataset().getId();
-		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
-		standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
-
-		openSupports.remove(support);
-	}
-
 	public synchronized void shutdown(StandaloneSupport support) {
 		log.info("Tearing down dataset");
 
@@ -246,6 +236,14 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 
 	@Override
 	public void afterEach(ExtensionContext context) throws Exception {
-		openSupports.forEach(this::stop);
+		for (Iterator<StandaloneSupport> it = openSupports.iterator(); it.hasNext(); ) {
+			StandaloneSupport openSupport = it.next();
+
+			log.info("Tearing down dataset");
+			DatasetId dataset = openSupport.getDataset().getId();
+			standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+			standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
+			it.remove();
+		}
 	}
 }
