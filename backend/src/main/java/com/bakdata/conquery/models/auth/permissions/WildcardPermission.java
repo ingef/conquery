@@ -7,6 +7,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -42,11 +43,12 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	}
 
 	@Override
+	@JsonIgnore
 	public Set<String> getDomains() {
 		return getParts().get(0);
 	}
-
 	@Override
+	@JsonIgnore
 	public Set<String> getAbilities() {
 		if(getParts().size()>1) {
 			return getParts().get(1);
@@ -55,6 +57,7 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	}
 
 	@Override
+	@JsonIgnore
 	public Set<String> getInstances() {
 		if(getParts().size()>2) {
 			return getParts().get(2);
