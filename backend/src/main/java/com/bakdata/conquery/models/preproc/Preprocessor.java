@@ -101,13 +101,15 @@ public class Preprocessor {
 
 		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
 		Preprocessed result = new Preprocessed(config.getPreprocessor(), descriptor);
-		long lineId = config.getCsv().isSkipHeader()?1:0;
+		long lineId = 0;
 
 		try (HCFile outFile = new HCFile(tmp, true)) {
 			for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
-				Input input = descriptor.getInputs()[inputSource];
+
 				final String name = descriptor.toString() + ":" + descriptor.getTable() + "[" + inputSource + "]";
 				ConqueryMDC.setLocation(name);
+
+				Input input = descriptor.getInputs()[inputSource];
 
 				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
@@ -121,7 +123,7 @@ public class Preprocessor {
 
 					input.setHeaders(Input.buildHeadersMap(headers));
 
-					String[] row = null;
+					String[] row;
 
 					while ((row = parser.parseNext()) != null) {
 
