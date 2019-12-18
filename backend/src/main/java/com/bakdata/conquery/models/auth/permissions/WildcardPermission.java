@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth.permissions;
 
 import java.time.Instant;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -38,5 +39,26 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 
 	public List<Set<String>> getParts() {
 		return super.getParts();
+	}
+
+	@Override
+	public Set<String> getDomains() {
+		return getParts().get(0);
+	}
+
+	@Override
+	public Set<String> getAbilities() {
+		if(getParts().size()>1) {
+			return getParts().get(1);
+		}
+		return Collections.emptySet();
+	}
+
+	@Override
+	public Set<String> getInstances() {
+		if(getParts().size()>2) {
+			return getParts().get(2);
+		}
+		return Collections.emptySet();
 	}
 }

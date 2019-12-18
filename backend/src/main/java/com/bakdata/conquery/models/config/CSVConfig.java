@@ -1,9 +1,9 @@
 package com.bakdata.conquery.models.config;
 
-import javax.validation.constraints.NotNull;
-
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+
+import javax.validation.constraints.NotNull;
 
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;

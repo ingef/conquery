@@ -2,6 +2,7 @@ package com.bakdata.conquery.io.csv;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -19,6 +20,10 @@ public class CsvIo {
 
 	public static CsvWriter createWriter() {
 		return new CsvWriter(ConqueryConfig.getInstance().getCsv().createCsvWriterSettings());
+	}
+
+	public static CsvWriter createWriter(Writer writer) {
+		return new CsvWriter(writer, ConqueryConfig.getInstance().getCsv().createCsvWriterSettings());
 	}
 
 	public static boolean isGZipped(File file) throws IOException {

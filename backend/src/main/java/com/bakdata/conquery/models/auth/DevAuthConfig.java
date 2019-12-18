@@ -1,14 +1,17 @@
 package com.bakdata.conquery.models.auth;
 
-import org.apache.shiro.realm.AuthorizingRealm;
+import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.AdminPermission;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
+import org.apache.shiro.realm.AuthorizingRealm;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.
@@ -50,6 +53,14 @@ public class DevAuthConfig extends AuthConfig {
 		catch (JSONException e) {
 			throw new IllegalStateException(e);
 		}
+	}
+
+	@Override
+	public List<String> getOverviewScope() {
+		return List.of(
+			DatasetPermission.DOMAIN,
+			AdminPermission.DOMAIN,
+			SuperPermission.DOMAIN);
 	}
 
 }

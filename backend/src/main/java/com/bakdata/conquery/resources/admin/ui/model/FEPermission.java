@@ -10,7 +10,7 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 
-import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
+import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -32,34 +32,17 @@ public class FEPermission {
 	private final Set<String> targets;
 	private final String creationTime;
 	
-	public static FEPermission from(WildcardPermission cPermission) {
-		Set<String> domains = null;
-		Set<String> abilities = null;
-		Set<String> targets = null;
-		List<Set<String>> parts = cPermission.getParts();
-		switch (parts.size()) {
-			// Using fall-through here to fill the object
-			case 3:
-				targets = parts.get(2);
-			case 2:
-				abilities = parts.get(1);
-			case 1:
-				domains = parts.get(0);
-				break;
-			default:
-				throw new IllegalStateException(
-					String.format("Permission %c has an unhandled number of parts: %d", cPermission, parts.size()));
-		}
+	public static FEPermission from(ConqueryPermission cPermission) {
 		return new FEPermission(
-			domains,
-			abilities,
-			targets,
+			cPermission.getDomains(),
+			cPermission.getAbilities(),
+			cPermission.getInstances(),
 			LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(FORMATTER));
 	}
 	
-	public static List<FEPermission> from(Collection<WildcardPermission> cPermission) {
+	public static List<FEPermission> from(Collection<ConqueryPermission> cPermission) {
 		List<FEPermission> fePerms = new ArrayList<>();
-		for(WildcardPermission perm : cPermission) {
+		for(ConqueryPermission perm : cPermission) {
 			fePerms.add(from(perm));
 		}
 		return fePerms;

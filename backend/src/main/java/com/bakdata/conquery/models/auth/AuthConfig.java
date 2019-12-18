@@ -1,10 +1,11 @@
 package com.bakdata.conquery.models.auth;
 
-import org.apache.shiro.realm.AuthorizingRealm;
+import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import org.apache.shiro.realm.AuthorizingRealm;
 
 /**
  * This interface represents the basic modules that conquery's authentication and authorization system needs.
@@ -31,4 +32,10 @@ public abstract class AuthConfig {
 	 * @return The extractor
 	 */
 	public abstract TokenExtractor getTokenExtractor();
+	
+	/**
+	 * Returns an ordered list of Permission scopes that are used to generate an permission overview for a user.
+	 * @return
+	 */
+	public abstract List<String> getOverviewScope();
 }

@@ -25,7 +25,7 @@ public class MeProcessor {
 		return FEMeInformation.builder()
 			.userName(user.getLabel())
 			.groups(FEGroup.from(AuthorizationHelper.getGroupsOf(user, storage)))
-			.permissions( FEPermission.from(AuthorizationHelper.getEffectiveUserPermissions(user.getId(), List.of(DatasetPermission.DOMAIN), storage)))
+			.permissions( FEPermission.from(AuthorizationHelper.getEffectiveUserPermissions(user.getId(), List.of(DatasetPermission.DOMAIN), storage).values()))
 			.build();
 	}
 
