@@ -217,6 +217,7 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			.withProperty(ClientProperties.READ_TIMEOUT, 10000)
 			.build("test client");
 
+
 		// SuperUser
 		registerSuperUser();
 	}

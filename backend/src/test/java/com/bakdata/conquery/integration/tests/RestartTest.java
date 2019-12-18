@@ -73,6 +73,7 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 			group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset")));
 			group.addMember(storage, user);
 		}
+
 		testConquery.shutdown(conquery);
 
 		//stop dropwizard directly so ConquerySupport does not delete the tmp directory

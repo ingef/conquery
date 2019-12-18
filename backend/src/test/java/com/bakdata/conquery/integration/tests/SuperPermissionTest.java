@@ -12,7 +12,7 @@ import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
-public class SuperPermissionTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple  {
+public class SuperPermissionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private final Role mandator1 = new Role("company", "company");
 	private final User user1 = new User("user", "user");

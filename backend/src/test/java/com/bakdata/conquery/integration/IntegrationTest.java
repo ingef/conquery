@@ -1,23 +1,24 @@
 package com.bakdata.conquery.integration;
 
-import org.junit.jupiter.api.function.Executable;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.function.Executable;
 
 public interface IntegrationTest {
 
 	void execute(String name, TestConquery testConquery) throws Exception;
 
-	static interface Simple extends IntegrationTest {
-		void execute(StandaloneSupport conquery) throws Exception;
+	static abstract class Simple implements IntegrationTest {
+		public abstract void execute(StandaloneSupport conquery) throws Exception;
 		
 		@Override
-		default void execute(String name, TestConquery testConquery) throws Exception {
+		public void execute(String name, TestConquery testConquery) throws Exception {
 			try(StandaloneSupport conquery = testConquery.getSupport(name)) {
+				assertThat(conquery.getStandaloneCommand().getMaster().getStorage().getEnvironment().isOpen()).isTrue();
 				execute(conquery);
 			}
 		}

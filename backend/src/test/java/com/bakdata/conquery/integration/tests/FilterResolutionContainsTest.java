@@ -30,7 +30,7 @@ import com.github.powerlibraries.io.Out;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FilterResolutionContainsTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class FilterResolutionContainsTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private String[] lines = new String[]{
 			"HEADER",

@@ -14,6 +14,8 @@ import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -74,7 +76,9 @@ public class StandaloneSupport implements Closeable {
 
 	@Override
 	public void close() {
-//		testConquery.stop(this);
+		DatasetId dataset = getDataset().getId();
+		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+		standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 	}
 
 	public Validator getValidator() {

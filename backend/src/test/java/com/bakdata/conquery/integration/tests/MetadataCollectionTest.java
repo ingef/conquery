@@ -15,11 +15,10 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class MetadataCollectionTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class MetadataCollectionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {

@@ -29,7 +29,7 @@ import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class FilterResolutionPrefixTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class FilterResolutionPrefixTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private String[] lines = new String[]{
 			"HEADER",

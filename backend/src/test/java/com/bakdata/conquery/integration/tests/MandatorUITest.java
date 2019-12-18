@@ -4,11 +4,11 @@ import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
+import javax.ws.rs.core.Response;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
-
-import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -31,7 +31,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
  * tested against the created entities.
  *
  */
-public class MandatorUITest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class MandatorUITest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
 	private MasterMetaStorage storage;
