@@ -29,7 +29,6 @@ import lombok.extern.slf4j.Slf4j;
 
 /**
  * Test if Imports can be deleted and safely queried.
- *
  */
 @Slf4j
 public class ImportDeletionTest implements ProgrammaticIntegrationTest {
@@ -37,178 +36,171 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(String name, TestConquery testConquery) throws Exception {
-		MasterMetaStorage storage = null;
-
-		final DatasetId dataset;
-		final Namespace namespace;
-
-		final ImportId importId;
-
-		final QueryTest test;
-		final IQuery query;
 
 
-		StandaloneSupport conquery = testConquery.getSupport(name);
+		final StandaloneSupport conquery = testConquery.getSupport(name);
+		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
+
+		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+
+		final DatasetId dataset = conquery.getDataset().getId();
+		final Namespace namespace = storage.getNamespaces().get(dataset);
+
+		final ImportId importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2_import");
+
+		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
+		final IQuery query = test.parseQuery(conquery);
+
+		// Manually import data, so we can do our own work.
 		{
-			storage = conquery.getStandaloneCommand().getMaster().getStorage();
+			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
+			test.importTables(conquery);
+			conquery.waitUntilWorkDone();
 
-			dataset = conquery.getDataset().getId();
-			namespace = storage.getNamespaces().get(dataset);
+			test.importConcepts(conquery);
+			conquery.waitUntilWorkDone();
 
-			importId = ImportId.Parser.INSTANCE.parse(dataset.getName(), "test_table2", "test_table2_import");
+			test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			conquery.waitUntilWorkDone();
+		}
 
-			test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-			query = test.parseQuery(conquery);
+		final int nImports = namespace.getStorage().getAllImports().size();
 
-			// Manually import data, so we can do our own work.
-			{
-				ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-				test.importTables(conquery);
-				conquery.waitUntilWorkDone();
-
-				test.importConcepts(conquery);
-				conquery.waitUntilWorkDone();
-
-				test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
-				conquery.waitUntilWorkDone();
-			}
-
-			final int nImports = namespace.getStorage().getAllImports().size();
-
+		// State before deletion.
+		{
 			log.info("Checking state before deletion");
 
-			// State before deletion.
-			{
-				// Must contain the import.
-				assertThat(namespace.getStorage().getAllImports())
-						.filteredOn(imp -> imp.getId().equals(importId))
-						.isNotEmpty();
+			// Must contain the import.
+			assertThat(namespace.getStorage().getAllImports())
+					.filteredOn(imp -> imp.getId().equals(importId))
+					.isNotEmpty();
 
-				assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId))
-						.isNotEmpty();
+			assertThat(namespace.getStorage().getCentralRegistry().getOptional(importId))
+					.isNotEmpty();
 
-				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
-					for (Worker worker : slave.getWorkers().getWorkers().values()) {
-						if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
-							continue;
-						}
-
-						final WorkerStorage workerStorage = worker.getStorage();
-
-						assertThat(workerStorage.getAllCBlocks())
-								.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-								.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
-								.isNotEmpty();
-						assertThat(workerStorage.getAllBuckets())
-								.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
-								.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-								.isNotEmpty();
+			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+				for (Worker worker : slave.getWorkers().getWorkers().values()) {
+					if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
+						continue;
 					}
+
+					final WorkerStorage workerStorage = worker.getStorage();
+
+					assertThat(workerStorage.getAllCBlocks())
+							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
+							.filteredOn(block -> block.getBucket().getDataset().equals(dataset))
+							.isNotEmpty();
+					assertThat(workerStorage.getAllBuckets())
+							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
+							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
+							.isNotEmpty();
 				}
-
-				log.info("Executing query before deletion");
-
-				assertQueryResult(conquery, query, 2L);
 			}
 
+			log.info("Executing query before deletion");
+
+			assertQueryResult(conquery, query, 2L);
+		}
+
+		// Delete the import.
+		{
 			log.info("Issuing deletion of import {}", importId);
 
-			// Delete the import.
 			conquery.getDatasetsProcessor().deleteImport(importId);
 
 			Thread.sleep(100);
 			conquery.waitUntilWorkDone();
 
+		}
+
+		// State after deletion.
+		{
 			log.info("Checking state after deletion");
+			// We have deleted an import now there should be two less!
+			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 2);
 
-			{
-				// We have deleted an import now there should be two less!
-				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports - 2);
+			// The deleted import should not be found.
+			assertThat(namespace.getStorage().getAllImports())
+					.filteredOn(imp -> imp.getId().equals(importId))
+					.isEmpty();
 
-				// The deleted import should not be found.
-				assertThat(namespace.getStorage().getAllImports())
-						.filteredOn(imp -> imp.getId().equals(importId))
-						.isEmpty();
-
-				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
-					for (Worker worker : slave.getWorkers().getWorkers().values()) {
-						if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
-							continue;
-						}
-
-						final WorkerStorage workerStorage = worker.getStorage();
-
-						// No bucket should be found referencing the import.
-						assertThat(workerStorage.getAllBuckets())
-								.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-								.filteredOn(bucket -> bucket.getImp().getId().equals(importId))
-								.isEmpty();
-
-						// No CBlock associated with import may exist
-						assertThat(workerStorage.getAllCBlocks())
-								.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
-								.filteredOn(cBlock -> cBlock.getBucket().getImp().equals(importId))
-								.isEmpty();
+			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+				for (Worker worker : slave.getWorkers().getWorkers().values()) {
+					if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
+						continue;
 					}
+
+					final WorkerStorage workerStorage = worker.getStorage();
+
+					// No bucket should be found referencing the import.
+					assertThat(workerStorage.getAllBuckets())
+							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
+							.filteredOn(bucket -> bucket.getImp().getId().equals(importId))
+							.isEmpty();
+
+					// No CBlock associated with import may exist
+					assertThat(workerStorage.getAllCBlocks())
+							.describedAs("CBlocks for Worker %s", worker.getInfo().getId())
+							.filteredOn(cBlock -> cBlock.getBucket().getImp().equals(importId))
+							.isEmpty();
 				}
-
-				log.info("Executing query after deletion");
-
-				// Issue a query and asseert that it has less content.
-				assertQueryResult(conquery, query, 1L);
 			}
 
+			log.info("Executing query after deletion");
+
+			// Issue a query and asseert that it has less content.
+			assertQueryResult(conquery, query, 1L);
+		}
+
+		conquery.waitUntilWorkDone();
+
+		// Load the same import into the same table, with only the deleted import/table
+		{
+			// only import the deleted import/table
+			test.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
+													 .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
+													 .collect(Collectors.toList()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
+		}
 
-			// Load the same import into the same table, with only the deleted import/table
-			{
-				// only import the deleted import/table
-				test.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
-														 .filter(table -> table.getName().equalsIgnoreCase(importId.getTable().getTable()))
-														 .collect(Collectors.toList()), conquery.getDataset());
-				conquery.waitUntilWorkDone();
-			}
-
+		// State after reimport.
+		{
 			log.info("Checking state after re-import");
 
-			{
-				assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
+			assertThat(namespace.getStorage().getAllImports().size()).isEqualTo(nImports);
 
-				for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
-					for (Worker worker : slave.getWorkers().getWorkers().values()) {
-						if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
-							continue;
-						}
-
-						final WorkerStorage workerStorage = worker.getStorage();
-
-						assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(importId)))
-								.describedAs("Buckets for Worker %s", worker.getInfo().getId())
-								.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
-								.isNotEmpty();
+			for (SlaveCommand slave : conquery.getStandaloneCommand().getSlaves()) {
+				for (Worker worker : slave.getWorkers().getWorkers().values()) {
+					if (!worker.getInfo().getDataset().getDataset().equals(dataset)) {
+						continue;
 					}
+
+					final WorkerStorage workerStorage = worker.getStorage();
+
+					assertThat(workerStorage.getAllBuckets().stream().filter(bucket -> bucket.getImp().getId().equals(importId)))
+							.describedAs("Buckets for Worker %s", worker.getInfo().getId())
+							.filteredOn(bucket -> bucket.getId().getDataset().equals(dataset))
+							.isNotEmpty();
 				}
-
-				log.info("Executing query after re-import");
-
-				// Issue a query and assert that it has the same content as the first time around.
-				assertQueryResult(conquery, query, 2L);
 			}
+
+			log.info("Executing query after re-import");
+
+			// Issue a query and assert that it has the same content as the first time around.
+			assertQueryResult(conquery, query, 2L);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
-
-		//stop dropwizard directly so ConquerySupport does not delete the tmp directory
-		testConquery.getDropwizard().after();
-		//restart
-		testConquery.beforeAll(testConquery.getBeforeAllContext());
-
-
-		StandaloneSupport conquery2 = testConquery.openDataset(dataset);
 		{
+
+			//stop dropwizard directly so ConquerySupport does not delete the tmp directory
+			testConquery.getDropwizard().after();
+			//restart
+			testConquery.beforeAll(testConquery.getBeforeAllContext());
+
+			StandaloneSupport conquery2 = testConquery.openDataset(dataset);
 			log.info("Checking state after re-start");
 
 			{
@@ -217,7 +209,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				for (SlaveCommand slave : conquery2.getStandaloneCommand().getSlaves()) {
 					for (Worker worker : slave.getWorkers().getWorkers().values()) {
 
-						if(!worker.getInfo().getDataset().getDataset().equals(dataset))
+						if (!worker.getInfo().getDataset().getDataset().equals(dataset))
 							continue;
 
 						final WorkerStorage workerStorage = worker.getStorage();
