@@ -9,14 +9,12 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.PrefetchingIterator;
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -106,25 +104,29 @@ public class Preprocessor {
 		long lineId = config.getCsv().isSkipHeader()?1:0;
 
 		try (HCFile outFile = new HCFile(tmp, true)) {
-			for(int inputSource=0;inputSource<descriptor.getInputs().length;inputSource++) {
+			for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
 				Input input = descriptor.getInputs()[inputSource];
-				final String name = descriptor.toString()+":"+descriptor.getTable()+"["+inputSource+"]";
+				final String name = descriptor.toString() + ":" + descriptor.getTable() + "[" + inputSource + "]";
 				ConqueryMDC.setLocation(name);
 
-				try(CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
+				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
 
-					final CsvParser parser = CsvIo.createParser();
-					final Iterator<String[]> it = new PrefetchingIterator<>(
-							parser.iterate(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn).iterator(),
-							1_000
-					);
+					final CsvParser parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
+					// STOPSHIP: 18.12.2019 wrap with prefetching iterator
 
-					while (it.hasNext()) {
+					parser.beginParsing(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn);
 
-						String[] row = it.next();
+					final String[] headers = parser.getContext().parsedHeaders();
 
-						Integer primary = getPrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
+					input.setHeaders(Input.buildHeadersMap(headers));
+
+					String[] row = null;
+
+					while ((row = parser.parseNext()) != null) {
+
+						Integer primary = parsePrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
+
 						if (primary != null) {
 							int primaryId = result.addPrimary(primary);
 							parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
@@ -205,10 +207,12 @@ public class Preprocessor {
 				}
 			}
 			else {
-				if (input.filter(row)) {
-					for (Object[] outRow : generateOutput(input, columns, row, inputSource, lineId)) {
-						result.addRow(primaryId, columns, outRow);
-					}
+				if (!input.filter(row)) {
+					return;
+				}
+
+				for (Object[] outRow : generateOutput(input, columns, row, inputSource, lineId)) {
+					result.addRow(primaryId, columns, outRow);
 				}
 			}
 		}
@@ -227,13 +231,15 @@ public class Preprocessor {
 		}
 	}
 
-	private Integer getPrimary(StringParser primaryType, String[] row, long lineId, int source, Output primaryOutput) {
+	private Integer parsePrimary(StringParser primaryType, String[] row, long lineId, int source, Output primaryOutput) {
 		try {
 			List<Object> primary = primaryOutput.createOutput(primaryType, row, source, lineId);
-			if(primary.size()!=1 || !(primary.get(0) instanceof Integer)) {
-				throw new IllegalStateException("The returned primary was the illegal value "+primary+" in "+Arrays.toString(row));
+
+			if (primary.size() != 1 || !(primary.get(0) instanceof Integer)) {
+				throw new IllegalStateException("The returned primary was the illegal value " + primary + " in " + Arrays.toString(row));
 			}
-			return (int)primary.get(0);
+			return (int) primary.get(0);
+
 		} catch (ParsingException e) {
 			long errors = errorCounter.getAndIncrement();
 			if(errors<config.getPreprocessor().getMaximumPrintedErrors()) {
@@ -246,52 +252,53 @@ public class Preprocessor {
 		}
 	}
 
+	/**
+	 * Apply each output for a single row. Returning all resulting values.
+	 */
 	private static List<Object[]> generateOutput(Input input, PPColumn[] columns, String[] row, int source, long lineId) throws ParsingException {
 		List<Object[]> resultRows = new ArrayList<>();
-		int oid = 0;
-		for(int c = 0; c<input.getOutput().length; c++) {
-			Output out = input.getOutput()[c];
-			Parser<?> parser = columns[c].getParser();
 
-			List<Object> result;
-			result = out.createOutput(parser, row, source, lineId);
-			if(result==null) {
-				throw new IllegalStateException(out+" returned null result for "+Arrays.toString(row));
+		for (int c = 0; c < input.getOutput().length; c++) {
+
+			final Output out = input.getOutput()[c];
+			final Parser<?> parser = columns[c].getParser();
+
+			final List<Object> result = out.createOutput(parser, row, source, lineId);
+
+			if (result == null) {
+				throw new IllegalStateException(out + " returned null result for " + Arrays.toString(row));
 			}
 
 
 			//if the result is a single NULL and we don't want to include such rows
-			if(result.size()==1 && result.get(0)==null && out.isRequired()) {
+			if (result.size() == 1 && result.get(0) == null && out.isRequired()) {
 				return Collections.emptyList();
 			}
-			else {
-				if(resultRows.isEmpty()) {
-					for(Object v:result) {
-						Object[] newRow = new Object[input.getOutput().length];
-						newRow[oid]=v;
-						resultRows.add(newRow);
-					}
-				}
-				else {
-					if(result.size()==1) {
-						for(Object[] resultRow:resultRows) {
-							resultRow[oid]=result.get(0);
-						}
-					}
-					else {
-						List<Object[]> newResultRows = new ArrayList<>(resultRows.size()*result.size());
-						for(Object v:result) {
-							for(Object[] resultRow:resultRows) {
-								Object[] newResultRow = Arrays.copyOf(resultRow,resultRow.length);
-								newResultRow[oid]=v;
-								newResultRows.add(newResultRow);
-							}
-						}
-						resultRows = newResultRows;
-					}
+
+			if (resultRows.isEmpty()) {
+				for (Object v : result) {
+					Object[] newRow = new Object[input.getOutput().length];
+					newRow[c] = v;
+					resultRows.add(newRow);
 				}
 			}
-			oid++;
+			else if (result.size() == 1) {
+				for (Object[] resultRow : resultRows) {
+					resultRow[c] = result.get(0);
+				}
+			}
+			else {
+				List<Object[]> newResultRows = new ArrayList<>(resultRows.size() * result.size());
+				for (Object v : result) {
+					for (Object[] resultRow : resultRows) {
+						Object[] newResultRow = Arrays.copyOf(resultRow, resultRow.length);
+						newResultRow[c] = v;
+						newResultRows.add(newResultRow);
+					}
+				}
+				resultRows = newResultRows;
+			}
+
 		}
 		return resultRows;
 	}

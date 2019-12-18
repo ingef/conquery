@@ -2,9 +2,9 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.InputMismatchException;
 import java.util.List;
-
-import org.hibernate.validator.constraints.NotEmpty;
+import java.util.StringJoiner;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.exceptions.ParsingException;
@@ -13,23 +13,38 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @Data
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="operation")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "operation")
 @CPSBase
 public abstract class Output implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
 	public static final List<Object> NULL = Collections.singletonList(null);
-	
-	
+
 	@NotEmpty
 	private String name;
 	private boolean required = false;
 
 	public abstract List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException;
+
+	protected void assertRequiredHeaders(Object2IntArrayMap<String> actualHeaders, String... headers) {
+		StringJoiner missing = new StringJoiner(", ");
+
+		for (String h : headers) {
+			if (!actualHeaders.containsKey(h))
+				missing.add(h);
+		}
+
+		if (missing.length() != 0) {
+			throw new InputMismatchException(String.format("Did not find headers `[%s]` in `[%s]`", missing.toString(), actualHeaders.keySet()));
+		}
+	}
+
+	public abstract void setHeaders(Object2IntArrayMap<String> headers);
 
 	@JsonIgnore
 	public abstract MajorTypeId getResultType();

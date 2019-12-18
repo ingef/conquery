@@ -1,5 +1,7 @@
 package com.bakdata.conquery.integration.json.filter;
 
+import javax.validation.constraints.NotNull;
+
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalDate;
@@ -120,11 +122,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 			desc.setTable(rTable.getName());
 			Input input = new Input();
 			{
-				input.setPrimary(copyOutput(0, rTable.getPrimaryColumn()));
+				input.setPrimary(copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
 				input.setOutput(new Output[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = copyOutput(i + 1, rTable.getColumns()[i]);
+					input.getOutput()[i] = copyOutput(rTable.getColumns()[i]);
 				}
 			}
 			desc.setInputs(new Input[]{input});
@@ -140,9 +142,9 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	private Output copyOutput(int columnPosition, RequiredColumn column) {
+	private Output copyOutput(RequiredColumn column) {
 		CopyOutput out = new CopyOutput();
-		out.setInputColumn(columnPosition);
+		out.setInputColumn(column.getName());
 		out.setInputType(column.getType());
 		out.setName(column.getName());
 		return out;

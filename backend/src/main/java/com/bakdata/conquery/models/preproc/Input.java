@@ -1,16 +1,14 @@
 package com.bakdata.conquery.models.preproc;
 
-import java.io.File;
-import java.io.Serializable;
-import java.time.LocalDate;
-import java.util.stream.IntStream;
-import java.util.stream.Stream;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
+import java.io.File;
+import java.io.Serializable;
+import java.time.LocalDate;
+import java.util.Objects;
+import java.util.stream.IntStream;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
@@ -18,10 +16,12 @@ import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import groovy.lang.GroovyShell;
 import io.dropwizard.validation.ValidationMethod;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 @Data
 public class Input implements Serializable {
@@ -78,22 +78,22 @@ public class Input implements Serializable {
 		if(filter == null) {
 			return true;
 		}
-		else {
-			if(script==null) {
-				try {
-					CompilerConfiguration config = new CompilerConfiguration();
-					config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
-					config.setScriptBaseClass(GroovyPredicate.class.getName());
-					GroovyShell groovy = new GroovyShell(config);
-					
-					script = (GroovyPredicate) groovy.parse(filter);
-				} catch(Exception|Error e) {
-					throw new RuntimeException("Failed to compile filter '" + filter + "'", e);
-				}
+
+		if(script==null) {
+			try {
+				CompilerConfiguration config = new CompilerConfiguration();
+				config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
+				config.setScriptBaseClass(GroovyPredicate.class.getName());
+				GroovyShell groovy = new GroovyShell(config);
+
+				script = (GroovyPredicate) groovy.parse(filter);
+			} catch(Exception|Error e) {
+				throw new RuntimeException("Failed to compile filter '" + filter + "'", e);
 			}
-			script.setRow(row);
-			return script.run();
 		}
+
+		script.setRow(row);
+		return script.run();
 	}
 
 	@JsonIgnore
@@ -103,5 +103,29 @@ public class Input implements Serializable {
 
 	public ColumnDescription getColumnDescription(int i) {
 		return checkAutoOutput()? autoOutput.getColumnDescription(i) : output[i].getColumnDescription();
+	}
+
+	private Object2IntArrayMap<String> headers;
+
+	@JsonIgnore
+	public void setHeaders(Object2IntArrayMap<String> headersMap) {
+		this.headers = Objects.requireNonNull(headersMap, "Headers may not be null.");
+
+		primary.setHeaders(headersMap);
+
+		for (Output op : output) {
+			op.setHeaders(headersMap);
+		}
+	}
+
+	public static Object2IntArrayMap<String> buildHeadersMap(String[] headers) {
+		final Object2IntArrayMap<String> headersMap = new Object2IntArrayMap<>();
+		headersMap.defaultReturnValue(-1);
+
+		// TODO: 18.12.2019 consider pulling this up.
+		for (int index = 0; index < headers.length; index++) {
+			headersMap.put(headers[index], index);
+		}
+		return headersMap;
 	}
 }
