@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.util.Map;
+
 import groovy.lang.Script;
 import lombok.Getter;
 import lombok.Setter;
@@ -10,8 +12,9 @@ import lombok.Setter;
 public abstract class GroovyPredicate extends Script {
 	
 	@Getter @Setter
-	private String[] row;
-	
+	private Map<String, String> row;
+
+
 	@Override
 	public abstract Boolean run();
 	

@@ -115,13 +115,13 @@ public class Preprocessor {
 					long progress = 0;
 
 					final CsvParser parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
-					// STOPSHIP: 18.12.2019 wrap with prefetching iterator
+					// TODO wrap with prefetching iterator
 
 					parser.beginParsing(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn);
 
 					final String[] headers = parser.getContext().parsedHeaders();
 
-					input.setHeaders(Input.buildHeadersMap(headers));
+					input.setHeaders(headers);
 
 					String[] row;
 

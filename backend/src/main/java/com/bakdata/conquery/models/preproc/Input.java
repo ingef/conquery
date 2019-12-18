@@ -6,6 +6,7 @@ import javax.validation.constraints.NotNull;
 import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.Objects;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -25,36 +26,38 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 @Data
 public class Input implements Serializable {
-	
+
 	private static final long serialVersionUID = 1L;
 	private static final String[] AUTO_IMPORTS = Stream.of(
 			LocalDate.class,
 			Range.class
-		).map(Class::getName).toArray(String[]::new);
+	).map(Class::getName).toArray(String[]::new);
 
-	@NotNull @ExistingFile
+	@NotNull
+	@ExistingFile
 	private File sourceFile;
 	private String filter;
 	@Valid
 	private AutoOutput autoOutput;
-	@NotNull @Valid
+	@NotNull
+	@Valid
 	private Output primary;
 	@Valid
 	private Output[] output;
-	
+
 	@JsonIgnore
 	private transient GroovyPredicate script;
 
 	@JsonIgnore
-	@ValidationMethod(message="Each column requires a unique name")
+	@ValidationMethod(message = "Each column requires a unique name")
 	public boolean isEachNameUnique() {
 		return IntStream
-			.range(0, this.getWidth())
-			.mapToObj(this::getColumnDescription)
-			.map(ColumnDescription::getName)
-			.distinct()
-			.count()
-			== this.getWidth();
+					   .range(0, this.getWidth())
+					   .mapToObj(this::getColumnDescription)
+					   .map(ColumnDescription::getName)
+					   .distinct()
+					   .count()
+			   == this.getWidth();
 	}
 
 	@JsonIgnore
@@ -69,56 +72,69 @@ public class Input implements Serializable {
 	}
 
 	@JsonIgnore
-	@ValidationMethod(message="The primary column must be of type STRING")
+	@ValidationMethod(message = "The primary column must be of type STRING")
 	public boolean isPrimaryString() {
-		return primary.getResultType()==MajorTypeId.STRING;
+		return primary.getResultType() == MajorTypeId.STRING;
 	}
-	
+
 	public boolean filter(String[] row) {
-		if(filter == null) {
+		if (filter == null) {
 			return true;
 		}
 
-		if(script==null) {
-			try {
-				CompilerConfiguration config = new CompilerConfiguration();
-				config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
-				config.setScriptBaseClass(GroovyPredicate.class.getName());
-				GroovyShell groovy = new GroovyShell(config);
-
-				script = (GroovyPredicate) groovy.parse(filter);
-			} catch(Exception|Error e) {
-				throw new RuntimeException("Failed to compile filter '" + filter + "'", e);
-			}
+		if (script == null) {
+			script = initializeScript();
 		}
 
-		script.setRow(row);
+		final HashMap<String, String> rowMap = new HashMap<>();
+
+		for (int col = 0; col < header.length; col++) {
+			rowMap.put(header[col], row[col]);
+		}
+
+		script.setRow(rowMap);
 		return script.run();
+	}
+
+	private GroovyPredicate initializeScript() {
+		try {
+			CompilerConfiguration config = new CompilerConfiguration();
+			config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
+			config.setScriptBaseClass(GroovyPredicate.class.getName());
+			GroovyShell groovy = new GroovyShell(config);
+
+			return  (GroovyPredicate) groovy.parse(filter);
+		} catch (Exception | Error e) {
+			throw new RuntimeException("Failed to compile filter `" + filter + "`", e);
+		}
 	}
 
 	@JsonIgnore
 	public int getWidth() {
-		return checkAutoOutput()? autoOutput.getWidth() : getOutput().length;
+		return checkAutoOutput() ? autoOutput.getWidth() : getOutput().length;
 	}
 
 	public ColumnDescription getColumnDescription(int i) {
-		return checkAutoOutput()? autoOutput.getColumnDescription(i) : output[i].getColumnDescription();
+		return checkAutoOutput() ? autoOutput.getColumnDescription(i) : output[i].getColumnDescription();
 	}
 
-	private Object2IntArrayMap<String> headers;
+	private String[] header;
+
 
 	@JsonIgnore
-	public void setHeaders(Object2IntArrayMap<String> headersMap) {
-		this.headers = Objects.requireNonNull(headersMap, "Headers may not be null.");
+	public void setHeaders(String[] header) {
+		this.header = Objects.requireNonNull(header);
 
-		primary.setHeaders(headersMap);
+		final Object2IntArrayMap<String> headerMap = buildHeaderMap(header);
+
+		primary.setHeaders(headerMap);
 
 		for (Output op : output) {
-			op.setHeaders(headersMap);
+			op.setHeaders(headerMap);
 		}
 	}
 
-	public static Object2IntArrayMap<String> buildHeadersMap(String[] headers) {
+	public static Object2IntArrayMap<String> buildHeaderMap(String[] headers) {
 		final Object2IntArrayMap<String> headersMap = new Object2IntArrayMap<>();
 		headersMap.defaultReturnValue(-1);
 
