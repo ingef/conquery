@@ -88,7 +88,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		}
 
 
-		jobs.removeIf(Predicate.not(Preprocessor::requiresProcessing));
+		jobs.removeIf(Predicate.not(preprocessor -> preprocessor.requiresProcessing(preprocessor.getDescriptor())));
 
 		long totalSize = jobs.stream().mapToLong(Preprocessor::getTotalCsvSize).sum();
 
@@ -100,7 +100,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 			pool.submit(() -> {
 				ConqueryMDC.setLocation(job.getDescriptor().toString());
 				try {
-					job.preprocess(totalProgress);
+					job.preprocess(totalProgress, job.getDescriptor());
 				} catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(job.getDescriptor().getInputFile().getDescriptionFile()), e);
 				}
@@ -124,7 +124,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 				try {
 					ImportDescriptor descr = file.readDescriptor(validator);
 					descr.setInputFile(file);
-					l.add(new Preprocessor(config, descr));
+					l.add(new Preprocessor(descr));
 				} catch (Exception e) {
 					log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
 				}

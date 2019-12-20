@@ -7,7 +7,6 @@ import java.util.List;
 
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.config.PreprocessingConfig;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.ImportColumn;
 import com.bakdata.conquery.models.events.Bucket;
@@ -35,7 +34,7 @@ public class Preprocessed {
 	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
 	private Import imp;
 
-	public Preprocessed(PreprocessingConfig config, ImportDescriptor descriptor) throws IOException {
+	public Preprocessed(ImportDescriptor descriptor) throws IOException {
 		this.file = descriptor.getInputFile();
 		this.name = descriptor.getName();
 		this.descriptor = descriptor;

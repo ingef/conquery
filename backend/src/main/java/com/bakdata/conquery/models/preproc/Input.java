@@ -138,7 +138,6 @@ public class Input implements Serializable {
 		final Object2IntArrayMap<String> headersMap = new Object2IntArrayMap<>();
 		headersMap.defaultReturnValue(-1);
 
-		// TODO: 18.12.2019 consider pulling this up.
 		for (int index = 0; index < headers.length; index++) {
 			headersMap.put(headers[index], index);
 		}
