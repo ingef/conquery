@@ -1,24 +1,22 @@
 package com.bakdata.conquery.models.preproc;
 
+import javax.validation.Valid;
+
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import javax.validation.Valid;
-
-import org.apache.commons.lang3.builder.HashCodeBuilder;
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportDescriptorId;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import io.dropwizard.validation.ValidationMethod;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.builder.HashCodeBuilder;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @Getter @Setter
 public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Serializable {
@@ -43,7 +41,7 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 		for(int i=0;i<inputs.length;i++) {
 			MajorTypeId[] inp = Arrays
 				.stream(inputs[i].getOutput())
-				.map(Output::getResultType)
+				.map(OutputDescription::getResultType)
 				.toArray(MajorTypeId[]::new);
 			
 			for(MajorTypeId[] o:types) {

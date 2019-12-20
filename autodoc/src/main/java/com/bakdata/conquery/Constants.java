@@ -1,13 +1,5 @@
 package com.bakdata.conquery;
 
-import java.net.InetAddress;
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-import java.time.ZonedDateTime;
-import java.util.Currency;
-import java.util.Locale;
-import java.util.Set;
-
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
@@ -15,6 +7,14 @@ import javax.ws.rs.PUT;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
+
+import java.net.InetAddress;
+import java.nio.charset.Charset;
+import java.nio.file.Path;
+import java.time.ZonedDateTime;
+import java.util.Currency;
+import java.util.Locale;
+import java.util.Set;
 
 import com.bakdata.conquery.apiv1.ConfigResource;
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -64,7 +64,7 @@ import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -79,7 +79,6 @@ import com.bakdata.conquery.util.Doc;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import io.dropwizard.util.Duration;
@@ -102,7 +101,7 @@ public class Constants {
 			.build(),
 		Group.builder().name("Import JSONs")
 			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).")
-			.base(new Base(Output.class, ""))
+			.base(new Base(OutputDescription.class, ""))
 			.otherClass(ImportDescriptor.class)
 			.otherClass(Input.class)
 			.hide(AutoOutput.class)

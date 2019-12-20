@@ -20,16 +20,18 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "operation")
 @CPSBase
-public abstract class Output implements Serializable {
+public abstract class OutputDescription implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	public static final List<Object> NULL = Collections.singletonList(null);
 
 	@NotEmpty
 	private String name;
-	private boolean required = false;
 
-	public abstract List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException;
+	@FunctionalInterface
+	public interface Output {
+		List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException;
+	}
 
 	protected void assertRequiredHeaders(Object2IntArrayMap<String> actualHeaders, String... headers) {
 		StringJoiner missing = new StringJoiner(", ");
@@ -44,7 +46,7 @@ public abstract class Output implements Serializable {
 		}
 	}
 
-	public abstract void setHeaders(Object2IntArrayMap<String> headers);
+	public abstract Output createForHeaders(Object2IntArrayMap<String> headers);
 
 	@JsonIgnore
 	public abstract MajorTypeId getResultType();

@@ -21,7 +21,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
 import com.bakdata.conquery.models.types.parser.specific.string.MapTypeGuesser;
@@ -34,6 +34,7 @@ import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import com.univocity.parsers.csv.CsvParser;
+import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -137,21 +138,30 @@ public class Preprocessor {
 
 					final String[] headers = parser.getContext().parsedHeaders();
 
-					input.setHeaders(headers);
+
+					final Object2IntArrayMap<String> headerMap = Input.buildHeaderMap(headers);
+
+					final OutputDescription.Output primary = input.getPrimary().createForHeaders(headerMap);
+					final List<OutputDescription.Output> outputs = new ArrayList<>();
+
+					for (OutputDescription op : input.getOutput()) {
+						outputs.add(op.createForHeaders(headerMap));
+					}
+
+					final GroovyPredicate filter = input.createFilter(headers);
 
 					String[] row;
 
 					while ((row = parser.parseNext()) != null) {
 						try {
 
-							Integer primary = parsePrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
+							Integer primaryId = parsePrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, primary);
 
-							if (primary == null) {
+							if (primaryId == null) {
 								continue;
 							}
 
-							int primaryId = result.addPrimary(primary);
-							parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
+							parseRow(result.addPrimary(primaryId), result.getColumns(), row, input, lineId, result, inputSource, outputs, filter);
 
 						} catch (ParsingException e) {
 
@@ -241,7 +251,7 @@ public class Preprocessor {
 		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
 	}
 
-	private static void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource) throws ParsingException {
+	private static void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource, List<OutputDescription.Output> outputs, GroovyPredicate filter) throws ParsingException {
 
 		if (input.checkAutoOutput()) {
 			List<AutoOutput.OutRow> outRows = input.getAutoOutput().createOutput(primaryId, row, columns, inputSource, lineId);
@@ -249,16 +259,15 @@ public class Preprocessor {
 				result.addRow(primaryId, columns, outRow.getData());
 			}
 		}
-		else if (input.filter(row)) {
-
-			for (Object[] outRow : generateOutput(input, columns, row, inputSource, lineId)) {
+		else if (filter.filterRow(row)) {
+			for (Object[] outRow : applyOutputs(outputs, columns, row, inputSource, lineId)) {
 				result.addRow(primaryId, columns, outRow);
 			}
 		}
 
 	}
 
-	private static Integer parsePrimary(StringParser primaryType, String[] row, long lineId, int source, Output primaryOutput) throws ParsingException {
+	private static Integer parsePrimary(StringParser primaryType, String[] row, long lineId, int source, OutputDescription.Output primaryOutput) throws ParsingException {
 		List<Object> primary = primaryOutput.createOutput(primaryType, row, source, lineId);
 
 		// Assert that primary produces single strings
@@ -272,12 +281,12 @@ public class Preprocessor {
 	/**
 	 * Apply each output for a single row. Returning all resulting values.
 	 */
-	private static List<Object[]> generateOutput(Input input, PPColumn[] columns, String[] row, int source, long lineId) throws ParsingException {
+	private static List<Object[]> applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, int source, long lineId) throws ParsingException {
 		List<Object[]> resultRows = new ArrayList<>();
 
-		for (int c = 0; c < input.getOutput().length; c++) {
+		for (int c = 0; c < outputs.size(); c++) {
 
-			final Output out = input.getOutput()[c];
+			final OutputDescription.Output out = outputs.get(c);
 			final Parser<?> parser = columns[c].getParser();
 
 			final List<Object> result = out.createOutput(parser, row, source, lineId);
@@ -288,13 +297,13 @@ public class Preprocessor {
 
 
 			//if the result is a single NULL and we don't want to include such rows
-			if (result.size() == 1 && result.get(0) == null && out.isRequired()) {
+			if (result.size() == 1 && result.get(0) == null) {
 				return Collections.emptyList();
 			}
 
 			if (resultRows.isEmpty()) {
 				for (Object v : result) {
-					Object[] newRow = new Object[input.getOutput().length];
+					Object[] newRow = new Object[outputs.size()];
 					newRow[c] = v;
 					resultRows.add(newRow);
 				}

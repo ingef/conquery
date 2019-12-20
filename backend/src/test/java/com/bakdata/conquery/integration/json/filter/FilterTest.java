@@ -31,7 +31,7 @@ import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -124,7 +124,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 			{
 				input.setPrimary(copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
-				input.setOutput(new Output[rTable.getColumns().length]);
+				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
 					input.getOutput()[i] = copyOutput(rTable.getColumns()[i]);
 				}
@@ -142,7 +142,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	private Output copyOutput(RequiredColumn column) {
+	private OutputDescription copyOutput(RequiredColumn column) {
 		CopyOutput out = new CopyOutput();
 		out.setInputColumn(column.getName());
 		out.setInputType(column.getType());

@@ -12,6 +12,14 @@ import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionState;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.preproc.DateFormats;
+import com.bakdata.conquery.models.preproc.ImportDescriptor;
+import com.bakdata.conquery.models.preproc.Input;
+import com.bakdata.conquery.models.preproc.InputFile;
+import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -128,7 +136,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 			{
 				input.setPrimary(copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
-				input.setOutput(new Output[rTable.getColumns().length]);
+				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
 					input.getOutput()[i] = copyOutput(rTable.getColumns()[i]);
 				}
@@ -146,7 +154,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	public static Output copyOutput(RequiredColumn column) {
+	public static OutputDescription copyOutput(RequiredColumn column) {
 		CopyOutput out = new CopyOutput();
 		out.setInputColumn(column.getName());
 		out.setInputType(column.getType());
