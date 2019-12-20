@@ -34,22 +34,25 @@ import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import com.univocity.parsers.csv.CsvParser;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import lombok.experimental.UtilityClass;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.ArrayUtils;
 
 @Slf4j
-@RequiredArgsConstructor
-@Getter
+@UtilityClass
 public class Preprocessor {
 
-	private final ImportDescriptor descriptor;
-	private final AtomicLong errorCounter = new AtomicLong(0L);
-	private long totalCsvSize;
+	public static long getTotalCsvSize(ImportDescriptor descriptor) {
+		long totalCsvSize = 0;
+		for (Input input : descriptor.getInputs()) {
+			totalCsvSize += input.getSourceFile().length();
+		}
 
-	public boolean requiresProcessing(ImportDescriptor descriptor) {
+		return totalCsvSize;
+	}
+
+	public static boolean requiresProcessing(ImportDescriptor descriptor) {
 		ConqueryMDC.setLocation(descriptor.toString());
 		if (descriptor.getInputFile().getPreprocessedFile().exists()) {
 
@@ -78,14 +81,11 @@ public class Preprocessor {
 			log.info("DOES NOT EXIST");
 		}
 
-		for (Input input : descriptor.getInputs()) {
-			totalCsvSize += input.getSourceFile().length();
-		}
-
 		return true;
 	}
 
-	public void preprocess(ProgressBar totalProgress, ImportDescriptor descriptor) throws IOException, JSONException, ParsingException {
+	public static void preprocess(ProgressBar totalProgress, ImportDescriptor descriptor) throws IOException, JSONException, ParsingException {
+
 		ConqueryMDC.setLocation(descriptor.toString());
 
 		//create temporary folders and check for correct permissions
@@ -110,6 +110,8 @@ public class Preprocessor {
 
 
 		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
+
+		final AtomicLong errorCounter = new AtomicLong(0);
 
 		final Preprocessed result = new Preprocessed(descriptor);
 
@@ -183,9 +185,12 @@ public class Preprocessor {
 			}
 			//find the optimal subtypes
 			log.info("finding optimal column types");
-			log.info("\t{}.{}: {} -> {}", result.getName(), result.getPrimaryColumn().getName(), result.getPrimaryColumn().getParser(), result
-																																				.getPrimaryColumn()
-																																				.getType());
+			log.info("\t{}.{}: {} -> {}",
+					 result.getName(),
+					 result.getPrimaryColumn().getName(),
+					 result.getPrimaryColumn().getParser(),
+					 result.getPrimaryColumn().getType()
+			);
 
 			StringParser parser = (StringParser) result.getPrimaryColumn().getParser();
 			parser.setEncoding(Encoding.UTF8);
@@ -236,7 +241,7 @@ public class Preprocessor {
 		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
 	}
 
-	private void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource) throws ParsingException {
+	private static void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource) throws ParsingException {
 
 		if (input.checkAutoOutput()) {
 			List<AutoOutput.OutRow> outRows = input.getAutoOutput().createOutput(primaryId, row, columns, inputSource, lineId);
@@ -253,7 +258,7 @@ public class Preprocessor {
 
 	}
 
-	private Integer parsePrimary(StringParser primaryType, String[] row, long lineId, int source, Output primaryOutput) throws ParsingException {
+	private static Integer parsePrimary(StringParser primaryType, String[] row, long lineId, int source, Output primaryOutput) throws ParsingException {
 		List<Object> primary = primaryOutput.createOutput(primaryType, row, source, lineId);
 
 		// Assert that primary produces single strings

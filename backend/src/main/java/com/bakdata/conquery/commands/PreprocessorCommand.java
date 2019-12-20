@@ -74,35 +74,35 @@ public class PreprocessorCommand extends ConqueryCommand {
 			pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
 		}
 
-		Collection<Preprocessor> jobs = null;
+		final Collection<ImportDescriptor> descriptors;
 
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
-			jobs = findPreprocessingJobs(config, environment.getValidator(), new PreprocessingDirectories[]{
+			descriptors = findPreprocessingJobs(environment.getValidator(), new PreprocessingDirectories[]{
 					new PreprocessingDirectories(namespace.get("in"), namespace.get("desc"), namespace.get("out"))
 			});
 		}
 		else {
 			log.info("Preprocessing from config.json");
-			jobs = findPreprocessingJobs(config, environment.getValidator(), config.getPreprocessor().getDirectories());
+			descriptors = findPreprocessingJobs(environment.getValidator(), config.getPreprocessor().getDirectories());
 		}
 
 
-		jobs.removeIf(Predicate.not(preprocessor -> preprocessor.requiresProcessing(preprocessor.getDescriptor())));
+		descriptors.removeIf(Predicate.not(Preprocessor::requiresProcessing));
 
-		long totalSize = jobs.stream().mapToLong(Preprocessor::getTotalCsvSize).sum();
+		long totalSize = descriptors.stream().mapToLong(Preprocessor::getTotalCsvSize).sum();
 
 		log.info("Required to preprocess {} in total", BinaryByteUnit.format(totalSize));
 
 		ProgressBar totalProgress = new ProgressBar(totalSize, System.out);
 
-		for (Preprocessor job : jobs) {
+		for (ImportDescriptor descriptor : descriptors) {
 			pool.submit(() -> {
-				ConqueryMDC.setLocation(job.getDescriptor().toString());
+				ConqueryMDC.setLocation(descriptor.toString());
 				try {
-					job.preprocess(totalProgress, job.getDescriptor());
+					Preprocessor.preprocess(totalProgress, descriptor);
 				} catch (Exception e) {
-					log.error("Failed to preprocess " + LogUtil.printPath(job.getDescriptor().getInputFile().getDescriptionFile()), e);
+					log.error("Failed to preprocess " + LogUtil.printPath(descriptor.getInputFile().getDescriptionFile()), e);
 				}
 			});
 		}
@@ -111,8 +111,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 		pool.awaitTermination(24, TimeUnit.HOURS);
 	}
 
-	public static List<Preprocessor> findPreprocessingJobs(ConqueryConfig config, Validator validator, PreprocessingDirectories[] directories) throws IOException, JSONException {
-		List<Preprocessor> l = new ArrayList<>();
+	public static List<ImportDescriptor> findPreprocessingJobs(Validator validator, PreprocessingDirectories[] directories) throws IOException, JSONException {
+		List<ImportDescriptor> l = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
 			File in = description.getDescriptions().getAbsoluteFile();
 			for (File descriptionFile : in.listFiles()) {
@@ -124,7 +124,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 				try {
 					ImportDescriptor descr = file.readDescriptor(validator);
 					descr.setInputFile(file);
-					l.add(new Preprocessor(descr));
+					l.add(descr);
 				} catch (Exception e) {
 					log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
 				}
