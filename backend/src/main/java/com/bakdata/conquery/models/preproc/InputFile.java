@@ -15,10 +15,12 @@ import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.github.powerlibraries.io.In;
+import lombok.Builder;
 import lombok.Value;
 import lombok.extern.slf4j.Slf4j;
 
 @Value
+@Builder
 @Slf4j
 public class InputFile implements Serializable {
 
@@ -54,10 +56,10 @@ public class InputFile implements Serializable {
 	}
 
 	public static InputFile fromName(PreprocessingDirectories dirs, String extensionlessName) {
-		return new InputFile(
-				new File(dirs.getDescriptions(), extensionlessName + EXTENSION_DESCRIPTION),
-				new File(dirs.getPreprocessedOutput(), extensionlessName + EXTENSION_PREPROCESSED),
-				dirs.getCsv().getAbsoluteFile()
-		);
+		return builder()
+				.descriptionFile(new File(dirs.getDescriptions(), extensionlessName + EXTENSION_DESCRIPTION))
+				.preprocessedFile(new File(dirs.getPreprocessedOutput(), extensionlessName + EXTENSION_PREPROCESSED))
+				.csvDirectory(dirs.getCsv().getAbsoluteFile())
+				.build();
 	}
 }
