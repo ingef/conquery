@@ -52,7 +52,7 @@ public class ResultCSVResource {
 		true,
 		ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(
-		ResultCSVResource.class, "getAsCSV");
+		ResultCSVResource.class, "getAsCsv");
 	private final Namespaces namespaces;
 	private final ConqueryConfig config;
 
