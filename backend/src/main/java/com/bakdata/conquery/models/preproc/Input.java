@@ -74,6 +74,9 @@ public class Input implements Serializable {
 	}
 
 	public GroovyPredicate createFilter(String[] headers){
+		if(filter == null)
+			return null;
+
 		try {
 			CompilerConfiguration config = new CompilerConfiguration();
 			config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));

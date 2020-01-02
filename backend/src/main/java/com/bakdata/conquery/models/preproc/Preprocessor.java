@@ -259,7 +259,7 @@ public class Preprocessor {
 				result.addRow(primaryId, columns, outRow.getData());
 			}
 		}
-		else if (filter.filterRow(row)) {
+		else if (filter == null || filter.filterRow(row)) {
 			for (Object[] outRow : applyOutputs(outputs, columns, row, inputSource, lineId)) {
 				result.addRow(primaryId, columns, outRow);
 			}

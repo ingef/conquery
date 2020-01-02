@@ -4,17 +4,6 @@ import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 
-import java.io.BufferedWriter;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.stream.Stream;
-
-
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.Path;
@@ -25,6 +14,15 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -70,16 +68,16 @@ public class ResultCSVResource {
 
 		try {
 			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);
+			final Charset charset = determineCharset(userAgent);
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {
-
 				@Override
 				public void write(OutputStream os) throws WebApplicationException {
-					try (BufferedWriter writer = new BufferedWriter(
-						new OutputStreamWriter(
+					try (BufferedWriter writer = new BufferedWriter(new OutputStreamWriter(
 							os,
-							determineCharset(userAgent)))) {
+							charset
+						))) {
 						Iterator<String> it = csv.iterator();
 						while (it.hasNext()) {
 							writer.write(it.next());
