@@ -1,27 +1,23 @@
 package com.bakdata.conquery.models.config;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.NoSuchElementException;
-
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang3.ArrayUtils;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.bakdata.conquery.models.auth.AuthConfig;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
-import com.bakdata.conquery.models.preproc.DateFormats;
-import com.bakdata.conquery.util.DebugMode;
 import com.google.common.collect.MoreCollectors;
-
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Getter @Setter
 public class ConqueryConfig extends Configuration {
@@ -80,10 +76,4 @@ public class ConqueryConfig extends Configuration {
 			.orElseThrow(()-> new NoSuchElementException("No plugin config of type "+type.getClass().getSimpleName()+" configured"));
 	}
 
-	public void initialize() {
-		if(debugMode != null) {
-			DebugMode.setActive(debugMode);
-		}
-		DateFormats.initialize(additionalFormats);
-	}
 }

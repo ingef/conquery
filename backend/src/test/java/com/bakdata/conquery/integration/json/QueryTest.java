@@ -7,14 +7,34 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.common.IntegrationUtils;
+import static org.assertj.core.api.Assertions.fail;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.List;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+
+import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
@@ -118,7 +138,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		format.setLineSeparator("\n");
 		settings.setFormat(format);
 		settings.setHeaderExtractionEnabled(true);
-		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
+		ConqueryConfig.getInstance().setAdditionalFormats(ArrayUtils.EMPTY_STRING_ARRAY);
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : tables) {

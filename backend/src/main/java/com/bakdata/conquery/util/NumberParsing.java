@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.preproc;
+package com.bakdata.conquery.util;
 
 import java.math.BigDecimal;
 

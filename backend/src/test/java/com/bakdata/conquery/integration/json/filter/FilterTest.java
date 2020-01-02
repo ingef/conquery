@@ -23,10 +23,10 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
@@ -106,7 +106,9 @@ public class FilterTest extends AbstractQueryEngineTest {
 		format.setLineSeparator("\n");
 		settings.setFormat(format);
 		settings.setHeaderExtractionEnabled(true);
-		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
+
+		ConqueryConfig.getInstance().setAdditionalFormats(ArrayUtils.EMPTY_STRING_ARRAY);
+
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : content.getTables()) {

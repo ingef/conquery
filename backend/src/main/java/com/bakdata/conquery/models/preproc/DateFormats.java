@@ -11,25 +11,17 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
 
 public class DateFormats {
 
-	private static ThreadLocal<DateFormats> INSTANCE;
-	private static String[] ADDITIONAL_FORMATS;
+	private static ThreadLocal<DateFormats> INSTANCE = ThreadLocal.withInitial(() -> new DateFormats(ConqueryConfig.getInstance().getAdditionalFormats()));
 	private static final LocalDate ERROR_DATE = LocalDate.MIN;
 	private static final ConcurrentHashMap<String, LocalDate> DATE_CACHE = new ConcurrentHashMap<>(64000, 0.75f, 10);
 
 	public static DateFormats instance() {
-		if (ADDITIONAL_FORMATS == null) {
-			throw new IllegalStateException("DateFormats was not initialized");
-		}
 		return INSTANCE.get();
-	}
-
-	public static void initialize(String[] additionalFormats) {
-		ADDITIONAL_FORMATS = additionalFormats;
-		INSTANCE = ThreadLocal.withInitial(() -> new DateFormats(ADDITIONAL_FORMATS));
 	}
 
 	private final Set<DateTimeFormatter> formats = new HashSet<>();

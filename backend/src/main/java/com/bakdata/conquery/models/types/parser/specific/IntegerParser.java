@@ -1,7 +1,6 @@
 package com.bakdata.conquery.models.types.parser.specific;
 
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.NumberParsing;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.NoopTransformer;
@@ -10,7 +9,7 @@ import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.IntegerTypeLong;
 import com.bakdata.conquery.models.types.specific.IntegerTypeVarInt;
 import com.bakdata.conquery.models.types.specific.VarIntType;
-
+import com.bakdata.conquery.util.NumberParsing;
 import lombok.NonNull;
 
 public class IntegerParser extends Parser<Long> {
