@@ -120,7 +120,7 @@ public class AdminDatasetResource extends HAdmin {
 	}
 	
 	@DELETE
-	@Path("tables/{" + TABLE_NAME + "}/")
+	@Path("tables/{" + TABLE_NAME + "}")
 	public void removeTable(@PathParam(TABLE_NAME) TableId tableParam) throws IOException, JSONException {
 		namespace.getDataset().getTables().remove(tableParam);
 		namespace.getStorage().updateDataset(namespace.getDataset());
