@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -52,7 +51,7 @@ public class EpochDateRangeOutput extends OutputDescription {
 				throw new ParsingException("date range start " + start + " is after end " + end);
 			}
 
-			return Collections.singletonList(CDateRange.of(start, end));
+			return CDateRange.of(start, end);
 		};
 	}
 

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
-import java.util.Collections;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -15,7 +13,7 @@ public class LineOutput extends OutputDescription {
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
-		return (type, row, source, sourceLine) -> Collections.singletonList(sourceLine);
+		return (type, row, source, sourceLine) -> (sourceLine);
 	}
 
 	@Override

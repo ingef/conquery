@@ -1,9 +1,7 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.InputMismatchException;
-import java.util.List;
 import java.util.StringJoiner;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -23,14 +21,14 @@ import org.hibernate.validator.constraints.NotEmpty;
 public abstract class OutputDescription implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	public static final List<Object> NULL = Collections.singletonList(null);
+	public static final Object NULL = null;
 
 	@NotEmpty
 	private String name;
 
 	@FunctionalInterface
 	public interface Output {
-		List<Object> createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException;
+		Object createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException;
 	}
 
 	protected void assertRequiredHeaders(Object2IntArrayMap<String> actualHeaders, String... headers) {

@@ -8,7 +8,6 @@ import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
@@ -130,8 +129,7 @@ public class Preprocessor {
 					long progress = 0;
 
 					final CsvParser
-							parser =
-							new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
+							parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
 					// TODO wrap with prefetching iterator
 
 					parser.beginParsing(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn);
@@ -260,72 +258,45 @@ public class Preprocessor {
 			}
 		}
 		else if (filter == null || filter.filterRow(row)) {
-			for (Object[] outRow : applyOutputs(outputs, columns, row, inputSource, lineId)) {
-				result.addRow(primaryId, columns, outRow);
-			}
+			result.addRow(primaryId, columns, applyOutputs(outputs, columns, row, inputSource, lineId));
 		}
 
 	}
 
 	private static Integer parsePrimary(StringParser primaryType, String[] row, long lineId, int source, OutputDescription.Output primaryOutput) throws ParsingException {
-		List<Object> primary = primaryOutput.createOutput(primaryType, row, source, lineId);
+		Object primary = primaryOutput.createOutput(primaryType, row, source, lineId);
 
 		// Assert that primary produces single strings
-		if (primary.size() != 1 || !(primary.get(0) instanceof Integer)) {
+		if (primary == null || !(primary instanceof Integer)) {
 			throw new IllegalStateException("The returned primary was the illegal value " + primary + " in " + Arrays.toString(row));
 		}
 
-		return (int) primary.get(0);
+		return (int) primary;
 	}
 
 	/**
 	 * Apply each output for a single row. Returning all resulting values.
 	 */
-	private static List<Object[]> applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, int source, long lineId) throws ParsingException {
-		List<Object[]> resultRows = new ArrayList<>();
+	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, int source, long lineId) throws ParsingException {
+		Object[] outRow = new Object[outputs.size()];
 
 		for (int c = 0; c < outputs.size(); c++) {
 
 			final OutputDescription.Output out = outputs.get(c);
 			final Parser<?> parser = columns[c].getParser();
 
-			final List<Object> result = out.createOutput(parser, row, source, lineId);
+			final Object result = out.createOutput(parser, row, source, lineId);
 
 			if (result == null) {
-				throw new IllegalStateException(out + " returned null result for " + Arrays.toString(row));
+				continue;
 			}
 
-
-			//if the result is a single NULL and we don't want to include such rows
-			if (result.size() == 1 && result.get(0) == null) {
-				return Collections.emptyList();
+			if (outRow == null) {
+				outRow = new Object[outputs.size()];
 			}
 
-			if (resultRows.isEmpty()) {
-				for (Object v : result) {
-					Object[] newRow = new Object[outputs.size()];
-					newRow[c] = v;
-					resultRows.add(newRow);
-				}
-			}
-			else if (result.size() == 1) {
-				for (Object[] resultRow : resultRows) {
-					resultRow[c] = result.get(0);
-				}
-			}
-			else {
-				List<Object[]> newResultRows = new ArrayList<>(resultRows.size() * result.size());
-				for (Object v : result) {
-					for (Object[] resultRow : resultRows) {
-						Object[] newResultRow = Arrays.copyOf(resultRow, resultRow.length);
-						newResultRow[c] = v;
-						newResultRows.add(newResultRow);
-					}
-				}
-				resultRows = newResultRows;
-			}
-
+			outRow[c] = result;
 		}
-		return resultRows;
+		return outRow;
 	}
 }

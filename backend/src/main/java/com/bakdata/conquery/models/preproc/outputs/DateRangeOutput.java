@@ -3,7 +3,6 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import java.time.LocalDate;
-import java.util.Collections;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -54,7 +53,7 @@ public class DateRangeOutput extends OutputDescription {
 				throw new ParsingException(String.format("DateRange begin `%s` is after end `%s`", begin, end));
 			}
 
-			return Collections.singletonList(CDateRange.of(begin, end));
+			return CDateRange.of(begin, end);
 		};
 	}
 

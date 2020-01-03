@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import javax.validation.constraints.NotNull;
 
-import java.util.Collections;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -32,9 +30,7 @@ public class EpochOutput extends OutputDescription {
 				return NULL;
 			}
 
-			return Collections.singletonList(
-					Integer.parseInt(row[columnIndex])
-			);
+			return Integer.parseInt(row[columnIndex]);
 		};
 	}
 

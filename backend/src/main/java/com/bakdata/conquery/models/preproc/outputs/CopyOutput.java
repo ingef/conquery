@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import javax.validation.constraints.NotNull;
 
-import java.util.Collections;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
@@ -34,7 +32,7 @@ public class CopyOutput extends OutputDescription {
 				return NULL;
 			}
 
-			return Collections.singletonList(type.parse(row[column]));
+			return type.parse(row[column]);
 		};
 	}
 
