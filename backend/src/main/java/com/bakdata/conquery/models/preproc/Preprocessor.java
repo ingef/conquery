@@ -10,9 +10,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
@@ -155,53 +152,38 @@ public class Preprocessor {
 
 					String[] row;
 
-					ExecutorService executorService = Executors.newWorkStealingPool(ConqueryConfig.getInstance().getPreprocessor().getThreads());
-
 					while ((row = parser.parseNext()) != null) {
+						try {
 
-						final String[] finalRow = row;
-						final long currentLine = lineId++;
-						final int finalInputSource = inputSource;
+							Integer primaryId = parsePrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, primary);
 
-						executorService.submit(() -> {
-							try {
-
-								Integer primaryId = parsePrimary((StringParser) result.getPrimaryColumn().getParser(), finalRow, currentLine, finalInputSource, primary);
-
-								if (primaryId == null) {
-									return;
-								}
-
-								parseRow(result.addPrimary(primaryId), result.getColumns(), finalRow, input, currentLine, result, finalInputSource, outputs, filter);
-
-							} catch (ParsingException e) {
-
-								long errors = errorCounter.getAndIncrement();
-
-								if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
-									log.warn("Failed to parse primary from line:" + currentLine + " content:" + Arrays.toString(finalRow), e);
-								}
-								else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
-									log.warn("More erroneous lines occurred. Only the first "
-											 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
-											 + " were printed.");
-								}
-							} finally {
-								//report progress
-//								totalProgress.addCurrentValue(countingIn.getCount() - progress);
-//								progress = countingIn.getCount();
-
+							if (primaryId == null) {
+								continue;
 							}
-						});
+
+							parseRow(result.addPrimary(primaryId), result.getColumns(), row, input, lineId, result, inputSource, outputs, filter);
+
+						} catch (ParsingException e) {
+
+							long errors = errorCounter.getAndIncrement();
+
+							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+								log.warn("Failed to parse primary from line:" + lineId + " content:" + Arrays.toString(row), e);
+							}
+							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+								log.warn("More erroneous lines occurred. Only the first "
+										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
+										 + " were printed.");
+							}
+						} finally {
+							//report progress
+							totalProgress.addCurrentValue(countingIn.getCount() - progress);
+							progress = countingIn.getCount();
+							lineId++;
+						}
 					}
 
 					parser.stopParsing();
-
-					executorService.shutdown();
-
-					while(!executorService.isTerminated()){
-						executorService.awaitTermination(1, TimeUnit.SECONDS);
-					}
 
 					if (input.checkAutoOutput()) {
 						List<AutoOutput.OutRow> outRows = input.getAutoOutput().finish();
@@ -209,8 +191,6 @@ public class Preprocessor {
 							result.addRow(outRow.getPrimaryId(), outRow.getTypes(), outRow.getData());
 						}
 					}
-				} catch (InterruptedException e) {
-					e.printStackTrace();
 				}
 			}
 			//find the optimal subtypes
