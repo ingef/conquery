@@ -1,9 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import javax.validation.Validator;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -425,7 +421,7 @@ public class AdminProcessor {
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
-	public void removeGroup(GroupId groupId) {
+	public void deleteGroup(GroupId groupId) {
 		synchronized (storage) {
 			storage.removeGroup(groupId);
 		}
