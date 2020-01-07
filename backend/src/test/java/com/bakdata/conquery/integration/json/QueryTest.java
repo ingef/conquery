@@ -46,6 +46,8 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -133,12 +135,6 @@ public class QueryTest extends AbstractQueryEngineTest {
 	}
 
 	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException, JSONException {
-		CsvParserSettings settings = new CsvParserSettings();
-		CsvFormat format = new CsvFormat();
-
-		format.setLineSeparator("\n");
-		settings.setFormat(format);
-		settings.setHeaderExtractionEnabled(true);
 
 		ConqueryConfig.getInstance().setAdditionalFormats(ArrayUtils.EMPTY_STRING_ARRAY);
 		List<File> preprocessedFiles = new ArrayList<>();

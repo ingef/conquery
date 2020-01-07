@@ -39,8 +39,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.univocity.parsers.csv.CsvFormat;
-import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -98,11 +96,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 	private void importTableContents(StandaloneSupport support) throws IOException, JSONException {
-		CsvParserSettings settings = new CsvParserSettings();
-		CsvFormat format = new CsvFormat();
-		format.setLineSeparator("\n");
-		settings.setFormat(format);
-		settings.setHeaderExtractionEnabled(true);
 
 		ConqueryConfig.getInstance().setAdditionalFormats(ArrayUtils.EMPTY_STRING_ARRAY);
 
