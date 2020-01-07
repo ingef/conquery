@@ -202,7 +202,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 				// Sleep thirty seconds then retry.
 				TimeUnit.SECONDS.sleep(30);
 
-			} 
+			}
 			catch(RuntimeIoException e) {
 				log.warn("Failed to connect to "+address, e);
 			}
@@ -214,7 +214,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 		for(Worker w : new ArrayList<>(workers.getWorkers().values())) {
 			try {
 				w.close();
-			} 
+			}
 			catch(Exception e) {
 				log.error(w+" could not be closed", e);
 			}
@@ -231,7 +231,7 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			if(context!= null && context.isConnected()) {
 				context.trySend(new UpdateJobManagerStatus(jobManager.reportStatus()));
 			}
-		} 
+		}
 		catch(Exception e) {
 			log.warn("Failed to report job manager status", e);
 		}
