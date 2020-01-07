@@ -25,9 +25,9 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
@@ -120,7 +120,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 			desc.setInputFile(inputFile);
 			desc.setName(rTable.getName() + "_import");
 			desc.setTable(rTable.getName());
-			Input input = new Input();
+			TableInputDescriptor input = new TableInputDescriptor();
 			{
 				input.setPrimary(copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
@@ -129,7 +129,7 @@ public class FilterTest extends AbstractQueryEngineTest {
 					input.getOutput()[i] = copyOutput(rTable.getColumns()[i]);
 				}
 			}
-			desc.setInputs(new Input[]{input});
+			desc.setInputs(new TableInputDescriptor[]{input});
 			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 			preprocessedFiles.add(inputFile.getPreprocessedFile());
 		}

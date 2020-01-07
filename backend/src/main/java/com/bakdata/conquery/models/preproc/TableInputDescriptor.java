@@ -29,7 +29,7 @@ import org.codehaus.groovy.control.customizers.ImportCustomizer;
  * Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
  */
 @Data
-public class Input implements Serializable {
+public class TableInputDescriptor implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 	private static final String[] AUTO_IMPORTS = Stream.of(
@@ -92,8 +92,9 @@ public class Input implements Serializable {
 	}
 
 	public GroovyPredicate createFilter(String[] headers){
-		if(filter == null)
+		if(filter == null) {
 			return null;
+		}
 
 		try {
 			CompilerConfiguration config = new CompilerConfiguration();

@@ -44,7 +44,7 @@ public class Preprocessor {
 
 	public static long getTotalCsvSize(TableImportDescriptor descriptor) {
 		long totalCsvSize = 0;
-		for (Input input : descriptor.getInputs()) {
+		for (TableInputDescriptor input : descriptor.getInputs()) {
 			totalCsvSize += input.getSourceFile().length();
 		}
 
@@ -125,7 +125,7 @@ public class Preprocessor {
 				final String name = String.format("%s:%s[%d]", descriptor.toString(), descriptor.getTable(), inputSource);
 				ConqueryMDC.setLocation(name);
 
-				final Input input = descriptor.getInputs()[inputSource];
+				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
 
 				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
@@ -139,7 +139,7 @@ public class Preprocessor {
 
 					final String[] headers = parser.getContext().parsedHeaders();
 
-					final Object2IntArrayMap<String> headerMap = Input.buildHeaderMap(headers);
+					final Object2IntArrayMap<String> headerMap = TableInputDescriptor.buildHeaderMap(headers);
 
 					// Compile filter.
 					final GroovyPredicate filter = input.createFilter(headers);

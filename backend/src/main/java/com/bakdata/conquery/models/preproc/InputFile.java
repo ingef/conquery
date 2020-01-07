@@ -33,7 +33,7 @@ public class InputFile implements Serializable {
 	public TableImportDescriptor readDescriptor(Validator validator) throws IOException, JSONException {
 		try (Reader in = In.file(descriptionFile).withUTF8().asReader()) {
 			TableImportDescriptor descriptor = Jackson.MAPPER.readerFor(TableImportDescriptor.class).readValue(in);
-			for (Input i : descriptor.getInputs()) {
+			for (TableInputDescriptor i : descriptor.getInputs()) {
 				i.setSourceFile(csvDirectory.toPath().resolve(i.getSourceFile().toPath()).toFile());
 			}
 			if (validator != null) {

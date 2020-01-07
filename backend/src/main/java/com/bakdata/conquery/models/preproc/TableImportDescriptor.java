@@ -21,7 +21,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 /**
  * Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs.
  *
- * For further detail see {@link Input}, and {@link Preprocessor}.
+ * For further detail see {@link TableInputDescriptor}, and {@link Preprocessor}.
  */
 @Getter
 @Setter
@@ -40,7 +40,7 @@ public class TableImportDescriptor extends Labeled<ImportDescriptorId> implement
 	 */
 	@NotEmpty
 	@Valid
-	private Input[] inputs;
+	private TableInputDescriptor[] inputs;
 
 	@JsonIgnore
 	private transient InputFile inputFile;
@@ -53,7 +53,7 @@ public class TableImportDescriptor extends Labeled<ImportDescriptorId> implement
 		}
 		List<MajorTypeId[]> types = new ArrayList<>();
 
-		for (Input input : inputs) {
+		for (TableInputDescriptor input : inputs) {
 			MajorTypeId[] inp = Arrays.stream(input.getOutput())
 									  .map(OutputDescription::getResultType)
 									  .toArray(MajorTypeId[]::new);
@@ -76,7 +76,7 @@ public class TableImportDescriptor extends Labeled<ImportDescriptorId> implement
 													  .append(this.getInputFile().getDescriptionFile().length())
 													  .append(20);
 
-		for (Input input : this.getInputs()) {
+		for (TableInputDescriptor input : this.getInputs()) {
 			validityHashBuilder
 					.append(input.getSourceFile().length());
 		}

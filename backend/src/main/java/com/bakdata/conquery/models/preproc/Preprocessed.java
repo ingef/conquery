@@ -40,7 +40,7 @@ public class Preprocessed {
 		this.name = descriptor.getName();
 		this.descriptor = descriptor;
 		
-		Input input = descriptor.getInputs()[0];
+		TableInputDescriptor input = descriptor.getInputs()[0];
 		columns = new PPColumn[input.getWidth()];
 		
 		

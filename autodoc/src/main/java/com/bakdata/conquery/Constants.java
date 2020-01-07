@@ -61,8 +61,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
@@ -103,7 +103,7 @@ public class Constants {
 			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).")
 			.base(new Base(OutputDescription.class, ""))
 			.otherClass(TableImportDescriptor.class)
-			.otherClass(Input.class)
+			.otherClass(TableInputDescriptor.class)
 			.hide(AutoOutput.class)
 			.build(),
 		Group.builder().name("Table JSONs")
