@@ -5,11 +5,12 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.Data;
 
-@Getter
-@Setter
+/**
+ * Parse column as type.
+ */
+@Data
 @CPSType(id = "COPY", base = OutputDescription.class)
 public class CopyOutput extends OutputDescription {
 
@@ -27,9 +28,9 @@ public class CopyOutput extends OutputDescription {
 
 		int column = headers.getInt(inputColumn);
 
-		return (type, row, source, sourceLine) -> {
+		return (row, type, sourceLine) -> {
 			if (row[column] == null) {
-				return NULL;
+				return null;
 			}
 
 			return type.parse(row[column]);

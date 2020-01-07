@@ -17,8 +17,7 @@ public abstract class BlockFactory {
 	public abstract Bucket construct(int bucketNumber, Import imp, int[] offsets);
 	
 	public Bucket readSingleValue(int bucketNumber, Import imp, InputStream inputStream) throws IOException {
-		InputStream inputStream1 = inputStream;
-		try (Input input = new Input(inputStream1)){
+		try (Input input = new Input(inputStream)){
 			Bucket bucket = construct(bucketNumber, imp, new int[] {0});
 			bucket.read(input);
 			return bucket;

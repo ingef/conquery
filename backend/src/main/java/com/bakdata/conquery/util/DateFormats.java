@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.preproc;
+package com.bakdata.conquery.util;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
@@ -11,6 +11,7 @@ import java.util.Set;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.google.common.base.Strings;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -50,6 +51,10 @@ public class DateFormats {
 	 * Try parsing the String value to a LocalDate.
 	 */
 	public static LocalDate parseToLocalDate(String value) throws ParsingException {
+		if(Strings.isNullOrEmpty(value)) {
+			return null;
+		}
+
 		return DATE_CACHE.getUnchecked(value);
 	}
 
@@ -59,6 +64,7 @@ public class DateFormats {
 	 * Method is private as it is only directly accessed via the Cache.
 	 */
 	private static LocalDate tryParse(String value) {
+
 		if (formats == null) {
 			initializeFormatters();
 		}

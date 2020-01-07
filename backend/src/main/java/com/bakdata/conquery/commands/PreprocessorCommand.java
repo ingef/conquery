@@ -16,9 +16,9 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.Preprocessor;
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
@@ -74,7 +74,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 			pool = Executors.newFixedThreadPool(config.getPreprocessor().getThreads());
 		}
 
-		final Collection<ImportDescriptor> descriptors;
+		final Collection<TableImportDescriptor> descriptors;
 
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
@@ -96,11 +96,11 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		ProgressBar totalProgress = new ProgressBar(totalSize, System.out);
 
-		for (ImportDescriptor descriptor : descriptors) {
+		for (TableImportDescriptor descriptor : descriptors) {
 			pool.submit(() -> {
 				ConqueryMDC.setLocation(descriptor.toString());
 				try {
-					Preprocessor.preprocess(totalProgress, descriptor);
+					Preprocessor.preprocess(descriptor, totalProgress);
 				} catch (Exception e) {
 					log.error("Failed to preprocess " + LogUtil.printPath(descriptor.getInputFile().getDescriptionFile()), e);
 				}
@@ -111,8 +111,8 @@ public class PreprocessorCommand extends ConqueryCommand {
 		pool.awaitTermination(24, TimeUnit.HOURS);
 	}
 
-	public static List<ImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories) throws IOException, JSONException {
-		List<ImportDescriptor> l = new ArrayList<>();
+	public static List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories) throws IOException, JSONException {
+		List<TableImportDescriptor> l = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
 			File in = description.getDescriptions().getAbsoluteFile();
 			for (File descriptionFile : in.listFiles()) {
@@ -122,7 +122,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 				InputFile file = InputFile.fromDescriptionFile(descriptionFile, description);
 				try {
-					ImportDescriptor descr = file.readDescriptor(validator);
+					TableImportDescriptor descr = file.readDescriptor(validator);
 					descr.setInputFile(file);
 					l.add(descr);
 				} catch (Exception e) {

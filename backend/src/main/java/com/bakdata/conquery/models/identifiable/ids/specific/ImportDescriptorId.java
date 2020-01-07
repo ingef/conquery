@@ -5,14 +5,13 @@ import java.util.List;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class ImportDescriptorId extends AId<ImportDescriptor> {
+public class ImportDescriptorId extends AId<TableImportDescriptor> {
 
 	private final String importDescriptor;
 	

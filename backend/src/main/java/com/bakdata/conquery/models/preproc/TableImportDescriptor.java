@@ -1,11 +1,11 @@
 package com.bakdata.conquery.models.preproc;
 
-import javax.validation.Valid;
-
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+
+import javax.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportDescriptorId;
@@ -18,34 +18,48 @@ import lombok.Setter;
 import org.apache.commons.lang3.builder.HashCodeBuilder;
 import org.hibernate.validator.constraints.NotEmpty;
 
-@Getter @Setter
-public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Serializable {
-	
+/**
+ * Combines potentially multiple input files to be loaded into a single table. Describing their respective transformation. All Inputs must produce the same types of outputs.
+ *
+ * For further detail see {@link Input}, and {@link Preprocessor}.
+ */
+@Getter
+@Setter
+public class TableImportDescriptor extends Labeled<ImportDescriptorId> implements Serializable {
+
 	private static final long serialVersionUID = 1L;
-	
+
+	/**
+	 * Target table to load the import to.
+	 */
 	@NotEmpty
 	private String table;
-	@NotEmpty @Valid
+
+	/**
+	 * A single source input.
+	 */
+	@NotEmpty
+	@Valid
 	private Input[] inputs;
-	
+
 	@JsonIgnore
 	private transient InputFile inputFile;
-	
+
 	@JsonIgnore
-	@ValidationMethod(message="The output of each input needs the same number of output columns of the same type and name")
+	@ValidationMethod(message = "The output of each input needs the same number of output columns of the same type and name")
 	public boolean isSameTypesInEachInput() {
-		if(inputs.length==1) {
+		if (inputs.length == 1) {
 			return true;
 		}
 		List<MajorTypeId[]> types = new ArrayList<>();
-		for(int i=0;i<inputs.length;i++) {
-			MajorTypeId[] inp = Arrays
-				.stream(inputs[i].getOutput())
-				.map(OutputDescription::getResultType)
-				.toArray(MajorTypeId[]::new);
-			
-			for(MajorTypeId[] o:types) {
-				if(!Arrays.equals(inp, o)) {
+
+		for (Input input : inputs) {
+			MajorTypeId[] inp = Arrays.stream(input.getOutput())
+									  .map(OutputDescription::getResultType)
+									  .toArray(MajorTypeId[]::new);
+
+			for (MajorTypeId[] out : types) {
+				if (!Arrays.equals(inp, out)) {
 					return false;
 				}
 			}
@@ -53,15 +67,18 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 		}
 		return true;
 	}
-	
+
+	/**
+	 * Calculate a hash of the descriptor. This is used to only recompute the import when files change.
+	 */
 	public int calculateValidityHash() {
 		HashCodeBuilder validityHashBuilder = new HashCodeBuilder()
-			.append(this.getInputFile().getDescriptionFile().length())
-			.append(20);
-		
-		for(Input input:this.getInputs()) {
+													  .append(this.getInputFile().getDescriptionFile().length())
+													  .append(20);
+
+		for (Input input : this.getInputs()) {
 			validityHashBuilder
-				.append(input.getSourceFile().length());
+					.append(input.getSourceFile().length());
 		}
 		return validityHashBuilder.toHashCode();
 	}
@@ -75,5 +92,5 @@ public class ImportDescriptor extends Labeled<ImportDescriptorId> implements Ser
 	public String toString() {
 		return "ImportDescriptor [table=" + table + ", name=" + getName() + "]";
 	}
-	
+
 }

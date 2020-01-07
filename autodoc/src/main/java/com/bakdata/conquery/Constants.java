@@ -1,13 +1,5 @@
 package com.bakdata.conquery;
 
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.PUT;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.core.Context;
-import javax.ws.rs.core.Response;
-
 import java.net.InetAddress;
 import java.nio.charset.Charset;
 import java.nio.file.Path;
@@ -15,6 +7,14 @@ import java.time.ZonedDateTime;
 import java.util.Currency;
 import java.util.Locale;
 import java.util.Set;
+
+import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.ConfigResource;
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -61,8 +61,8 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
@@ -102,7 +102,7 @@ public class Constants {
 		Group.builder().name("Import JSONs")
 			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).")
 			.base(new Base(OutputDescription.class, ""))
-			.otherClass(ImportDescriptor.class)
+			.otherClass(TableImportDescriptor.class)
 			.otherClass(Input.class)
 			.hide(AutoOutput.class)
 			.build(),

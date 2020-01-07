@@ -2,20 +2,16 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import javax.validation.constraints.NotNull;
 
-import java.time.LocalDate;
-
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
 
-@Slf4j
-@Getter
-@Setter
+/**
+ * Parse input columns as {@link CDateRange}. Input values must be {@link com.bakdata.conquery.models.common.CDate} based ints.
+ */
+@Data
 @CPSType(id = "EPOCH_DATE_RANGE", base = OutputDescription.class)
 public class EpochDateRangeOutput extends OutputDescription {
 
@@ -31,25 +27,14 @@ public class EpochDateRangeOutput extends OutputDescription {
 		int startIndex = headers.getInt(startColumn);
 		int endIndex = headers.getInt(endColumn);
 
-		return (type, row, source, sourceLine) -> {
+		return (row, type, sourceLine) -> {
 			if (row[startIndex] == null && row[endIndex] == null) {
-				return NULL;
+				return null;
 			}
 
-			if (row[startIndex] == null) {
-				throw new ParsingException("No start date at " + startColumn + " while there is an end date at " + endColumn);
-			}
-
-			if (row[endIndex] == null) {
-				throw new ParsingException("No end date at " + endColumn + " while there is a start date at " + startColumn);
-			}
 
 			int start = Integer.parseInt(row[startIndex]);
 			int end = Integer.parseInt(row[endIndex]);
-
-			if (LocalDate.ofEpochDay(end).isBefore(LocalDate.ofEpochDay(start))) {
-				throw new ParsingException("date range start " + start + " is after end " + end);
-			}
 
 			return CDateRange.of(start, end);
 		};

@@ -8,6 +8,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 
+/**
+ * Parse input column as {@link com.bakdata.conquery.models.common.CDate} based int.
+ */
 @Data
 @CPSType(id = "EPOCH", base = OutputDescription.class)
 public class EpochOutput extends OutputDescription {
@@ -25,9 +28,9 @@ public class EpochOutput extends OutputDescription {
 		assertRequiredHeaders(headers, column);
 		columnIndex = headers.getInt(column);
 
-		return (type, row, source, sourceLine) -> {
+		return (row, type, sourceLine) -> {
 			if (row[columnIndex] == null) {
-				return NULL;
+				return null;
 			}
 
 			return Integer.parseInt(row[columnIndex]);

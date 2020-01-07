@@ -4,11 +4,11 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
@@ -19,7 +19,6 @@ import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Parser;
@@ -43,7 +42,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @UtilityClass
 public class Preprocessor {
 
-	public static long getTotalCsvSize(ImportDescriptor descriptor) {
+	public static long getTotalCsvSize(TableImportDescriptor descriptor) {
 		long totalCsvSize = 0;
 		for (Input input : descriptor.getInputs()) {
 			totalCsvSize += input.getSourceFile().length();
@@ -52,7 +51,7 @@ public class Preprocessor {
 		return totalCsvSize;
 	}
 
-	public static boolean requiresProcessing(ImportDescriptor descriptor) {
+	public static boolean requiresProcessing(TableImportDescriptor descriptor) {
 		ConqueryMDC.setLocation(descriptor.toString());
 		if (descriptor.getInputFile().getPreprocessedFile().exists()) {
 
@@ -84,9 +83,13 @@ public class Preprocessor {
 		return true;
 	}
 
-	public static void preprocess(ProgressBar totalProgress, ImportDescriptor descriptor) throws IOException, JSONException, ParsingException {
+	/**
+	 * Apply transformations in descriptor, then write them out to CQPP file for imports.
+	 *
+	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link CType}.
+	 */
+	public static void preprocess(TableImportDescriptor descriptor, ProgressBar totalProgress) throws IOException, JSONException, ParsingException {
 
-		ConqueryMDC.setLocation(descriptor.toString());
 
 		//create temporary folders and check for correct permissions
 		File tmp = ConqueryFileUtil.createTempFile(descriptor
@@ -108,7 +111,6 @@ public class Preprocessor {
 			FileUtils.forceDelete(descriptor.getInputFile().getPreprocessedFile());
 		}
 
-
 		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
 
 		final AtomicLong errorCounter = new AtomicLong(0);
@@ -128,40 +130,47 @@ public class Preprocessor {
 				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
 
-					final CsvParser
-							parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
-					// TODO wrap with prefetching iterator
+					// Create CSV parser according to config, but overriding some behaviour.
+					final CsvParser parser =
+							new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
+					// TODO wrap with pre-fetching iterator?
 
 					parser.beginParsing(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn);
 
 					final String[] headers = parser.getContext().parsedHeaders();
 
-
 					final Object2IntArrayMap<String> headerMap = Input.buildHeaderMap(headers);
 
-					final OutputDescription.Output primary = input.getPrimary().createForHeaders(headerMap);
+					// Compile filter.
+					final GroovyPredicate filter = input.createFilter(headers);
+
+					final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap);
 					final List<OutputDescription.Output> outputs = new ArrayList<>();
 
+					// Instantiate Outputs based on descriptors (apply header positions)
 					for (OutputDescription op : input.getOutput()) {
 						outputs.add(op.createForHeaders(headerMap));
 					}
 
-					final GroovyPredicate filter = input.createFilter(headers);
-
 					String[] row;
 
+					// Read all CSV lines, apply Output transformations and add the to preprocessed.
 					while ((row = parser.parseNext()) != null) {
 						try {
 
-							Integer primaryId = parsePrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, primary);
+							int primaryId = (int) Objects.requireNonNull(primaryOut.createOutput(row, result.getPrimaryColumn().getParser(), lineId), "primaryId may not be null");
 
-							if (primaryId == null) {
+							if (filter != null && !filter.filterRow(row)) {
 								continue;
 							}
 
-							parseRow(result.addPrimary(primaryId), result.getColumns(), row, input, lineId, result, inputSource, outputs, filter);
+							final int primary = result.addPrimary(primaryId);
+							final PPColumn[] columns = result.getColumns();
 
-						} catch (ParsingException e) {
+							result.addRow(primary, columns, applyOutputs(outputs, columns, row, lineId));
+
+						}
+						catch (ParsingException e) {
 
 							long errors = errorCounter.getAndIncrement();
 
@@ -173,7 +182,8 @@ public class Preprocessor {
 										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
 										 + " were printed.");
 							}
-						} finally {
+						}
+						finally {
 							//report progress
 							totalProgress.addCurrentValue(countingIn.getCount() - progress);
 							progress = countingIn.getCount();
@@ -182,62 +192,55 @@ public class Preprocessor {
 					}
 
 					parser.stopParsing();
-
-					if (input.checkAutoOutput()) {
-						List<AutoOutput.OutRow> outRows = input.getAutoOutput().finish();
-						for (AutoOutput.OutRow outRow : outRows) {
-							result.addRow(outRow.getPrimaryId(), outRow.getTypes(), outRow.getData());
-						}
-					}
 				}
 			}
+
 			//find the optimal subtypes
-			log.info("finding optimal column types");
-			log.info("\t{}.{}: {} -> {}",
-					 result.getName(),
-					 result.getPrimaryColumn().getName(),
-					 result.getPrimaryColumn().getParser(),
-					 result.getPrimaryColumn().getType()
-			);
-
-			StringParser parser = (StringParser) result.getPrimaryColumn().getParser();
-			parser.setEncoding(Encoding.UTF8);
-			result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
-			for (PPColumn c : result.getColumns()) {
-				c.findBestType();
-				log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
-			}
-			//estimate memory weight
-			log.info(
-					"estimated total memory consumption: {} + n*{}",
-					BinaryByteUnit.format(
-							Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateMemoryConsumption).sum()
-							+ result.getPrimaryColumn().getType().estimateMemoryConsumption()
-					),
-					BinaryByteUnit.format(
-							Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateTypeSize).sum()
-							+ result.getPrimaryColumn().getType().estimateTypeSize()
-					)
-			);
-
-			for (PPColumn c : ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
-				long typeConsumption = c.getType().estimateTypeSize();
+			{
+				log.info("finding optimal column types");
 				log.info(
-						"\t{}.{}: {}{}",
+						"\t{}.{}: {} -> {}",
 						result.getName(),
-						c.getName(),
-						BinaryByteUnit.format(c.getType().estimateMemoryConsumption()),
-						typeConsumption == 0 ? "" : (" + n*" + BinaryByteUnit.format(typeConsumption))
+						result.getPrimaryColumn().getName(),
+						result.getPrimaryColumn().getParser(),
+						result.getPrimaryColumn().getType()
 				);
+
+				StringParser parser = (StringParser) result.getPrimaryColumn().getParser();
+				parser.setEncoding(Encoding.UTF8);
+				result.getPrimaryColumn().setType(new MapTypeGuesser(parser).createGuess().getType());
+
+				for (PPColumn c : result.getColumns()) {
+					c.findBestType();
+					log.info("\t{}.{}: {} -> {}", result.getName(), c.getName(), c.getParser(), c.getType());
+				}
+
+				//estimate memory weight
+				log.info(
+						"estimated total memory consumption: {} + n*{}",
+						BinaryByteUnit.format(
+								Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateMemoryConsumption).sum()
+								+ result.getPrimaryColumn().getType().estimateMemoryConsumption()
+						),
+						BinaryByteUnit.format(
+								Arrays.stream(result.getColumns()).map(PPColumn::getType).mapToLong(CType::estimateTypeSize).sum()
+								+ result.getPrimaryColumn().getType().estimateTypeSize()
+						)
+				);
+
+				for (PPColumn c : ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
+					long typeConsumption = c.getType().estimateTypeSize();
+					log.info(
+							"\t{}.{}: {}{}",
+							result.getName(),
+							c.getName(),
+							BinaryByteUnit.format(c.getType().estimateMemoryConsumption()),
+							typeConsumption == 0 ? "" : (" + n*" + BinaryByteUnit.format(typeConsumption))
+					);
+				}
 			}
 
-			try (com.esotericsoftware.kryo.io.Output out = new com.esotericsoftware.kryo.io.Output(outFile.writeContent())) {
-				result.writeToFile(out);
-			}
-
-			try (OutputStream out = outFile.writeHeader()) {
-				result.writeHeader(out);
-			}
+			result.write(outFile);
 		}
 
 		if (errorCounter.get() > 0 && log.isWarnEnabled()) {
@@ -249,35 +252,10 @@ public class Preprocessor {
 		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
 	}
 
-	private static void parseRow(int primaryId, PPColumn[] columns, String[] row, Input input, long lineId, Preprocessed result, int inputSource, List<OutputDescription.Output> outputs, GroovyPredicate filter) throws ParsingException {
-
-		if (input.checkAutoOutput()) {
-			List<AutoOutput.OutRow> outRows = input.getAutoOutput().createOutput(primaryId, row, columns, inputSource, lineId);
-			for (AutoOutput.OutRow outRow : outRows) {
-				result.addRow(primaryId, columns, outRow.getData());
-			}
-		}
-		else if (filter == null || filter.filterRow(row)) {
-			result.addRow(primaryId, columns, applyOutputs(outputs, columns, row, inputSource, lineId));
-		}
-
-	}
-
-	private static Integer parsePrimary(StringParser primaryType, String[] row, long lineId, int source, OutputDescription.Output primaryOutput) throws ParsingException {
-		Object primary = primaryOutput.createOutput(primaryType, row, source, lineId);
-
-		// Assert that primary produces single strings
-		if (primary == null || !(primary instanceof Integer)) {
-			throw new IllegalStateException("The returned primary was the illegal value " + primary + " in " + Arrays.toString(row));
-		}
-
-		return (int) primary;
-	}
-
 	/**
 	 * Apply each output for a single row. Returning all resulting values.
 	 */
-	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, int source, long lineId) throws ParsingException {
+	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId) throws ParsingException {
 		Object[] outRow = new Object[outputs.size()];
 
 		for (int c = 0; c < outputs.size(); c++) {
@@ -285,7 +263,7 @@ public class Preprocessor {
 			final OutputDescription.Output out = outputs.get(c);
 			final Parser<?> parser = columns[c].getParser();
 
-			final Object result = out.createOutput(parser, row, source, lineId);
+			final Object result = out.createOutput(row, parser, lineId);
 
 			if (result == null) {
 				continue;

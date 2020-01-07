@@ -15,28 +15,40 @@ import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 import org.hibernate.validator.constraints.NotEmpty;
 
+/**
+ * Output's are used for preprocessing to generate cqpp files. Their main function is to selectivley read data from an Input CSV and prepare it for fast reading into a live Conquery instance. An output describes the transformation of an input row into an output row. It can do some transformation but should avoid complex work.
+ *
+ * @apiNote we are currently aiming to reduce the functionality of the preprocessing step to provide basically only a mapping from input to table fields.
+ */
 @Data
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "operation")
 @CPSBase
 public abstract class OutputDescription implements Serializable {
 
 	private static final long serialVersionUID = 1L;
-	public static final Object NULL = null;
 
 	@NotEmpty
 	private String name;
 
+	/**
+	 * Describes a transformation of an input row to a single value.
+	 */
 	@FunctionalInterface
-	public interface Output {
-		Object createOutput(Parser<?> type, String[] row, int source, long sourceLine) throws ParsingException;
+	public static interface Output {
+		Object createOutput(String[] row, Parser<?> type, long sourceLine) throws ParsingException;
 	}
 
+	/**
+	 * Helper function to verify that all headers are present.
+	 * Throws an exception of one is missing.
+	 */
 	protected void assertRequiredHeaders(Object2IntArrayMap<String> actualHeaders, String... headers) {
 		StringJoiner missing = new StringJoiner(", ");
 
 		for (String h : headers) {
-			if (!actualHeaders.containsKey(h))
+			if (!actualHeaders.containsKey(h)) {
 				missing.add(h);
+			}
 		}
 
 		if (missing.length() != 0) {
@@ -44,11 +56,22 @@ public abstract class OutputDescription implements Serializable {
 		}
 	}
 
+	/**
+	 * Instantiate the corresponding {@link Output} for the rows.
+	 * @param headers A map from column names to column indices.
+	 * @return the output for the specific headers.
+	 */
 	public abstract Output createForHeaders(Object2IntArrayMap<String> headers);
 
+	/**
+	 * The resulting type after {@link Output} has been applied.
+	 */
 	@JsonIgnore
 	public abstract MajorTypeId getResultType();
 
+	/**
+	 * Create a new description for the column.
+	 */
 	@JsonIgnore
 	public ColumnDescription getColumnDescription() {
 		return new ColumnDescription(name, getResultType());

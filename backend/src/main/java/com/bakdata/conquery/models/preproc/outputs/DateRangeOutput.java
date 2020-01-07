@@ -6,17 +6,16 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.util.DateFormats;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.extern.slf4j.Slf4j;
+import lombok.Data;
 
-@Slf4j
-@Getter
-@Setter
+
+/**
+ * Parse input columns as {@link CDateRange}. Columns must be string values.
+ */
+@Data
 @CPSType(id = "DATE_RANGE", base = OutputDescription.class)
 public class DateRangeOutput extends OutputDescription {
 
@@ -32,25 +31,14 @@ public class DateRangeOutput extends OutputDescription {
 		int startIndex = headers.getInt(startColumn);
 		int endIndex = headers.getInt(endColumn);
 
-		return (type, row, source, sourceLine) -> {
+		return (row, type, sourceLine) -> {
 			if (row[startIndex] == null && row[endIndex] == null) {
-				return NULL;
-			}
-
-			if (row[startIndex] == null) {
-				throw new ParsingException("No start date at `" + startColumn + "` while there is an end date at `" + endColumn + "`");
-			}
-
-			if (row[endIndex] == null) {
-				throw new ParsingException("No end date at `" + endColumn + "` while there is a start date at `" + startColumn + "`");
+				return null;
 			}
 
 			LocalDate begin = DateFormats.parseToLocalDate(row[startIndex]);
 			LocalDate end = DateFormats.parseToLocalDate(row[endIndex]);
 
-			if (end.isBefore(begin)) {
-				throw new ParsingException(String.format("DateRange begin `%s` is after end `%s`", begin, end));
-			}
 
 			return CDateRange.of(begin, end);
 		};

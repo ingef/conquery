@@ -1,17 +1,16 @@
 package com.bakdata.conquery.models.preproc;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import java.io.File;
 import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
-import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -22,6 +21,13 @@ import lombok.Data;
 import org.codehaus.groovy.control.CompilerConfiguration;
 import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
+/**
+ * An input describes transformations on a single CSV file to be loaded into the table described in {@link TableImportDescriptor}.
+ *
+ * It requires a primary Output and at least one normal output.
+ *
+ * Input data can be filter using the field filter, which is evaluated as a groovy script on every row.
+ */
 @Data
 public class Input implements Serializable {
 
@@ -34,14 +40,31 @@ public class Input implements Serializable {
 	@NotNull
 	@ExistingFile
 	private File sourceFile;
+
 	private String filter;
-	@Valid
-	private AutoOutput autoOutput;
+
 	@NotNull
 	@Valid
 	private OutputDescription primary;
 	@Valid
 	private OutputDescription[] output;
+
+	/**
+	 * Empty array to be used only for validation of groovy script.
+	 */
+	public static final String[] FAKE_HEADERS = new String[50];
+
+	@JsonIgnore @ValidationMethod(message = "Groovy script is not valid.")
+	public boolean isValidGroovyScript(){
+		try{
+			createFilter(FAKE_HEADERS);
+		}
+		catch (Exception ignored) {
+			return false;
+		}
+
+		return true;
+	}
 
 
 	@JsonIgnore
@@ -59,12 +82,7 @@ public class Input implements Serializable {
 	@JsonIgnore
 	@ValidationMethod(message = "Outputs must not be empty")
 	public boolean isOutputsNotEmpty() {
-		return checkAutoOutput() || (output != null && output.length > 0);
-	}
-
-	@JsonIgnore
-	public boolean checkAutoOutput() {
-		return autoOutput != null;
+		return output != null && output.length > 0;
 	}
 
 	@JsonIgnore
@@ -96,11 +114,11 @@ public class Input implements Serializable {
 
 	@JsonIgnore
 	public int getWidth() {
-		return checkAutoOutput() ? autoOutput.getWidth() : getOutput().length;
+		return getOutput().length;
 	}
 
 	public ColumnDescription getColumnDescription(int i) {
-		return checkAutoOutput() ? autoOutput.getColumnDescription(i) : output[i].getColumnDescription();
+		return output[i].getColumnDescription();
 	}
 
 
