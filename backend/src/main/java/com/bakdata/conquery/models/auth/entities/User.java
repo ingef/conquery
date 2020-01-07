@@ -81,21 +81,17 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 
 	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
-		synchronized (roles) {
-			if(roles.add(role)) {
-				log.trace("Added role {} to user {}", role.getId(), getId());
-				updateStorage(storage);
-			}
+		if(roles.add(role)) {
+			log.trace("Added role {} to user {}", role.getId(), getId());
+			updateStorage(storage);
 		}
 	}
 	
 	@Override
 	public void removeRole(MasterMetaStorage storage, Role role) throws JSONException {
-		synchronized (roles) {
-			if(roles.remove(role)) {
-				log.trace("Removed role {} from user {}", role.getId(), getId());				
-				updateStorage(storage);
-			}
+		if(roles.remove(role)) {
+			log.trace("Removed role {} from user {}", role.getId(), getId());				
+			updateStorage(storage);
 		}
 	}
 
@@ -104,7 +100,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 	
 	@Override
-	protected synchronized void updateStorage(MasterMetaStorage storage) throws JSONException {
+	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateUser(this);
 	}
 
