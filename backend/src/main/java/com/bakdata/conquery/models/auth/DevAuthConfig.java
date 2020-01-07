@@ -34,6 +34,12 @@ public class DevAuthConfig extends AuthConfig {
 	 * The superuser.
 	 */
 	public static final User USER = new User(EMAIL, LABEL);
+	
+	@Getter
+	public final List<String> OverviewScope = List.of(
+		DatasetPermission.DOMAIN,
+		AdminPermission.DOMAIN,
+		SuperPermission.DOMAIN);
 
 	
 	@Getter
@@ -53,14 +59,6 @@ public class DevAuthConfig extends AuthConfig {
 		catch (JSONException e) {
 			throw new IllegalStateException(e);
 		}
-	}
-
-	@Override
-	public List<String> getOverviewScope() {
-		return List.of(
-			DatasetPermission.DOMAIN,
-			AdminPermission.DOMAIN,
-			SuperPermission.DOMAIN);
 	}
 
 }
