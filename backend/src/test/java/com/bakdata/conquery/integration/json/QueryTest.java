@@ -135,9 +135,11 @@ public class QueryTest extends AbstractQueryEngineTest {
 	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException, JSONException {
 		CsvParserSettings settings = new CsvParserSettings();
 		CsvFormat format = new CsvFormat();
+
 		format.setLineSeparator("\n");
 		settings.setFormat(format);
 		settings.setHeaderExtractionEnabled(true);
+
 		ConqueryConfig.getInstance().setAdditionalFormats(ArrayUtils.EMPTY_STRING_ARRAY);
 		List<File> preprocessedFiles = new ArrayList<>();
 

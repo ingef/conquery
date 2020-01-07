@@ -9,12 +9,12 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.Range;
@@ -28,7 +28,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.preproc.InputFile;
 import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.models.preproc.TableInputDescriptor;
-import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
@@ -122,11 +121,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 			desc.setTable(rTable.getName());
 			TableInputDescriptor input = new TableInputDescriptor();
 			{
-				input.setPrimary(copyOutput(rTable.getPrimaryColumn()));
+				input.setPrimary(QueryTest.copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
 				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = copyOutput(rTable.getColumns()[i]);
+					input.getOutput()[i] = QueryTest.copyOutput(rTable.getColumns()[i]);
 				}
 			}
 			desc.setInputs(new TableInputDescriptor[]{input});
@@ -140,14 +139,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 		for (File file : preprocessedFiles) {
 			support.getDatasetsProcessor().addImport(support.getDataset(), file);
 		}
-	}
-
-	private OutputDescription copyOutput(RequiredColumn column) {
-		CopyOutput out = new CopyOutput();
-		out.setInputColumn(column.getName());
-		out.setInputType(column.getType());
-		out.setName(column.getName());
-		return out;
 	}
 
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
