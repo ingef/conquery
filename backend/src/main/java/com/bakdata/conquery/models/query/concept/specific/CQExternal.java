@@ -129,17 +129,16 @@ public class CQExternal implements CQElement {
 		EVENT_DATE {
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.instance()
-					.parseToLocalDate(row[dateIndices[0]]))));
+				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.parseToLocalDate(row[dateIndices[0]]))));
 			}
 		},
 		START_END_DATE {
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
-				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.instance().parseToLocalDate(row[dateIndices[0]]);
+				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.parseToLocalDate(row[dateIndices[0]]);
 				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
 					null :
-					DateFormats.instance().parseToLocalDate(row[dateIndices[1]]);
+								 DateFormats.parseToLocalDate(row[dateIndices[1]]);
 
 				CDateRange range;
 				if (start != null && end != null) {

@@ -4,59 +4,82 @@ import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeFormatterBuilder;
 import java.time.format.DateTimeParseException;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Locale;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.ParsingException;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Utility class for parsing multiple dateformats. Parsing is cached in two ways: First parsed values are cached. Second, the last used parser is cached since it's likely that it will be used again, we therefore try to use it first, then try all others.
+ */
+@UtilityClass
+@Slf4j
 public class DateFormats {
 
-	private static ThreadLocal<DateFormats> INSTANCE = ThreadLocal.withInitial(() -> new DateFormats(ConqueryConfig.getInstance().getAdditionalFormats()));
+	/**
+	 * All available formats for parsing.
+	 */
+	private static Set<DateTimeFormatter> formats;
+
+	/**
+	 * Last successfully parsed dateformat.
+	 */
+	private static ThreadLocal<DateTimeFormatter> lastFormat = new ThreadLocal<>();
+
 	private static final LocalDate ERROR_DATE = LocalDate.MIN;
-	private static final ConcurrentHashMap<String, LocalDate> DATE_CACHE = new ConcurrentHashMap<>(64000, 0.75f, 10);
 
-	public static DateFormats instance() {
-		return INSTANCE.get();
+	/**
+	 * Parsed values cache.
+	 */
+	private static final LoadingCache<String, LocalDate> DATE_CACHE = CacheBuilder.newBuilder()
+																				  .weakKeys().weakValues()
+																				  // TODO: 07.01.2020 fk: Tweak this number?
+																				  .concurrencyLevel(10)
+																				  .initialCapacity(64000)
+																				  .build(CacheLoader.from(DateFormats::tryParse));
+
+	/**
+	 * Try parsing the String value to a LocalDate.
+	 */
+	public static LocalDate parseToLocalDate(String value) throws ParsingException {
+		return DATE_CACHE.getUnchecked(value);
 	}
 
-	private final Set<DateTimeFormatter> formats = new HashSet<>();
-	private DateTimeFormatter lastFormat;
-
-	public DateFormats(String[] additionalFormats) {
-		formats.add(toFormat("yyyy-MM-dd"));
-		formats.add(toFormat("ddMMMyyyy"));
-		formats.add(toFormat("yyyyMMdd"));
-		for (String p : additionalFormats) {
-			formats.add(toFormat(p));
+	/**
+	 * Try and parse with the last successful parser. If not successful try and parse with other parsers and update the last successful parser.
+	 *
+	 * Method is private as it is only directly accessed via the Cache.
+	 */
+	private static LocalDate tryParse(String value) {
+		if (formats == null) {
+			initializeFormatters();
 		}
-	}
 
-	private DateTimeFormatter toFormat(String pattern) {
-		return new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(pattern).toFormatter(Locale.US);
-	}
+		final DateTimeFormatter formatter = lastFormat.get();
 
-	private LocalDate tryParse(String value) {
-		if (lastFormat != null) {
+		if (formatter != null) {
 			try {
-				return LocalDate.parse(value, lastFormat);
-			}
-			catch (DateTimeParseException e) {
+				return LocalDate.parse(value, formatter);
+			} catch (DateTimeParseException e) {
 				//intentionally left blank
 			}
 		}
+
 		for (DateTimeFormatter format : formats) {
-			if (lastFormat != format) {
+			if (formatter != format) {
 				try {
 					LocalDate res = LocalDate.parse(value, format);
-					lastFormat = format;
+					lastFormat.set(format);
 					return res;
-				}
-				catch (DateTimeParseException e) {
+				} catch (DateTimeParseException e) {
 					//intentionally left blank
 				}
 			}
@@ -64,38 +87,23 @@ public class DateFormats {
 		return ERROR_DATE;
 	}
 
-	public boolean isValidDate(String value) {
-		try {
-			parseToLocalDate(value);
-			return true;
-		} catch (ParsingException e) {
-			return false;
-		}
+	private static DateTimeFormatter createFormatter(String pattern) {
+		return new DateTimeFormatterBuilder().parseCaseInsensitive().appendPattern(pattern).toFormatter(Locale.US);
 	}
 
-	public LocalDate parseToLocalDate(String value) throws ParsingException {
-		try {
-			LocalDate d = DATE_CACHE.computeIfAbsent(value, this::tryParse);
-			
-			if(DATE_CACHE.size()>64000) {
-				Iterator<Entry<String, LocalDate>> it = DATE_CACHE.entrySet().iterator();
-				it.next();
-				it.remove();
-			}
-			
-			if(d!=ERROR_DATE) {
-				return d;
-			}
-			else {
-				throw ParsingException.of(value, "date");
-			}
-		} catch(Exception e) {
-			if(e instanceof ParsingException) {
-				throw e;
-			}
-			else {
-				throw ParsingException.of(value, "date", e);
-			}
+	/**
+	 * Lazy-initialize all formatters. Load additional formatters via ConqueryConfig.
+	 */
+	private static void initializeFormatters() {
+		final HashSet<DateTimeFormatter> formatters = new HashSet<>();
+
+		formatters.add(createFormatter("yyyy-MM-dd"));
+		formatters.add(createFormatter("ddMMMyyyy"));
+		formatters.add(createFormatter("yyyyMMdd"));
+		for (String p : ConqueryConfig.getInstance().getAdditionalFormats()) {
+			formatters.add(createFormatter(p));
 		}
+
+		formats = Collections.unmodifiableSet(formatters);
 	}
 }

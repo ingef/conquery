@@ -1,8 +1,8 @@
 package com.bakdata.conquery.models.preproc.outputs;
 
-import javax.validation.constraints.NotNull;
-
 import java.time.LocalDate;
+
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
@@ -45,9 +45,8 @@ public class DateRangeOutput extends OutputDescription {
 				throw new ParsingException("No end date at `" + endColumn + "` while there is a start date at `" + startColumn + "`");
 			}
 
-			LocalDate begin = DateFormats.instance().parseToLocalDate(row[startIndex]);
-
-			LocalDate end = DateFormats.instance().parseToLocalDate(row[endIndex]);
+			LocalDate begin = DateFormats.parseToLocalDate(row[startIndex]);
+			LocalDate end = DateFormats.parseToLocalDate(row[endIndex]);
 
 			if (end.isBefore(begin)) {
 				throw new ParsingException(String.format("DateRange begin `%s` is after end `%s`", begin, end));

@@ -1,7 +1,5 @@
 package com.bakdata.conquery.commands;
 
-import javax.validation.Validator;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -11,6 +9,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -78,13 +78,13 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
-			descriptors = findPreprocessingJobs(environment.getValidator(), new PreprocessingDirectories[]{
+			descriptors = findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
 					new PreprocessingDirectories(namespace.get("in"), namespace.get("desc"), namespace.get("out"))
 			});
 		}
 		else {
 			log.info("Preprocessing from config.json");
-			descriptors = findPreprocessingJobs(environment.getValidator(), config.getPreprocessor().getDirectories());
+			descriptors = findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories());
 		}
 
 
@@ -111,7 +111,7 @@ public class PreprocessorCommand extends ConqueryCommand {
 		pool.awaitTermination(24, TimeUnit.HOURS);
 	}
 
-	public static List<ImportDescriptor> findPreprocessingJobs(Validator validator, PreprocessingDirectories[] directories) throws IOException, JSONException {
+	public static List<ImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories) throws IOException, JSONException {
 		List<ImportDescriptor> l = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
 			File in = description.getDescriptions().getAbsoluteFile();

@@ -16,7 +16,7 @@ public class DateParser extends Parser<Integer> {
 	
 	@Override
 	protected Integer parseValue(@Nonnull String value) throws ParsingException {
-		return CDate.ofLocalDate(DateFormats.instance().parseToLocalDate(value));
+		return CDate.ofLocalDate(DateFormats.parseToLocalDate(value));
 	}
 	
 	@Override
