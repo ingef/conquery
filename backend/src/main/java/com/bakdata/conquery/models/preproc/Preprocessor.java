@@ -14,12 +14,10 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.zip.GZIPInputStream;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
-import com.bakdata.conquery.io.csv.CSV;
+import com.bakdata.conquery.io.PrefetchingIterator;
+import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -35,13 +33,14 @@ import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
-import com.bakdata.conquery.util.io.SmallOut;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
-
+import com.univocity.parsers.csv.CsvParser;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -104,10 +103,9 @@ public class Preprocessor {
 
 		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
 		Preprocessed result = new Preprocessed(config.getPreprocessor(), descriptor);
+		long lineId = config.getCsv().isSkipHeader()?1:0;
 
 		try (HCFile outFile = new HCFile(tmp, true)) {
-			
-			long lineId = config.getCsv().isSkipHeader()?1:0;
 			for(int inputSource=0;inputSource<descriptor.getInputs().length;inputSource++) {
 				Input input = descriptor.getInputs()[inputSource];
 				final String name = descriptor.toString()+":"+descriptor.getTable()+"["+inputSource+"]";
@@ -115,32 +113,33 @@ public class Preprocessor {
 
 				try(CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
-					try(CSV csv = new CSV(
-						config.getCsv(),
-						CSV.isGZipped(input.getSourceFile())?new GZIPInputStream(countingIn):countingIn
-					)){
-						Iterator<String[]> it = csv.iterateContent();
-	
-						while(it.hasNext()) {
-							String[] row = it.next();
-							Integer primary = getPrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
-							if(primary != null) {
-								int primaryId = result.addPrimary(primary);
-								parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
-							}
-							
-							//report progress
-							long newProgress = countingIn.getCount();
-							totalProgress.addCurrentValue(newProgress - progress);
-							progress = newProgress;
-							lineId++;
+
+					final CsvParser parser = CsvIo.createParser();
+					final Iterator<String[]> it = new PrefetchingIterator<>(
+							parser.iterate(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn).iterator(),
+							1_000
+					);
+
+					while (it.hasNext()) {
+
+						String[] row = it.next();
+
+						Integer primary = getPrimary((StringParser) result.getPrimaryColumn().getParser(), row, lineId, inputSource, input.getPrimary());
+						if (primary != null) {
+							int primaryId = result.addPrimary(primary);
+							parseRow(primaryId, result.getColumns(), row, input, lineId, result, inputSource);
 						}
-	
-						if (input.checkAutoOutput()) {
-							List<AutoOutput.OutRow> outRows = input.getAutoOutput().finish();
-							for (AutoOutput.OutRow outRow : outRows) {
-								result.addRow(outRow.getPrimaryId(), outRow.getTypes(), outRow.getData());
-							}
+
+						//report progress
+						totalProgress.addCurrentValue(countingIn.getCount() - progress);
+						progress = countingIn.getCount();
+						lineId++;
+					}
+
+					if (input.checkAutoOutput()) {
+						List<AutoOutput.OutRow> outRows = input.getAutoOutput().finish();
+						for (AutoOutput.OutRow outRow : outRows) {
+							result.addRow(outRow.getPrimaryId(), outRow.getTypes(), outRow.getData());
 						}
 					}
 				}
@@ -167,6 +166,7 @@ public class Preprocessor {
 					+ result.getPrimaryColumn().getType().estimateTypeSize()
 				)
 			);
+
 			for(PPColumn c:ArrayUtils.add(result.getColumns(), result.getPrimaryColumn())) {
 				long typeConsumption = c.getType().estimateTypeSize();
 				log.info("\t{}.{}: {}{}",
@@ -177,7 +177,7 @@ public class Preprocessor {
 				);
 			}
 
-			try (SmallOut out = new SmallOut(outFile.writeContent())) {
+			try (com.esotericsoftware.kryo.io.Output out = new com.esotericsoftware.kryo.io.Output(outFile.writeContent())) {
 				result.writeToFile(out);
 			}
 
@@ -186,6 +186,9 @@ public class Preprocessor {
 			}
 		}
 
+		if(errorCounter.get() > 0 && log.isWarnEnabled()) {
+			log.warn("File `{}` contained {} faulty lines of ~{} total.", descriptor.getInputFile().getDescriptionFile(), errorCounter.get(), lineId);
+		}
 
 		//if successful move the tmp file to the target location
 		FileUtils.moveFile(tmp, descriptor.getInputFile().getPreprocessedFile());

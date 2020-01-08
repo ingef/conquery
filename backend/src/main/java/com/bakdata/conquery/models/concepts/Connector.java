@@ -166,6 +166,4 @@ public abstract class Connector extends Labeled<ConnectorId> implements Serializ
 			f.addImport(imp);
 		}
 	}
-
-	//public abstract EventProcessingResult processEvent(Event r) throws ConceptConfigurationException;
 }

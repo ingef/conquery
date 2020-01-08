@@ -14,7 +14,9 @@ import type {
   GetStoredQueryResponseT,
   PostConceptResolveResponseT,
   PostFilterResolveResponseT,
-  PostFilterSuggestionsResponseT
+  PostFilterSuggestionsResponseT,
+  GetFormQueriesResponseT,
+  GetMeResponseT
 } from "./types";
 
 import fetchJson from "./fetchJson";
@@ -121,6 +123,12 @@ export function getFormQuery(
   return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries/${queryId}`);
 }
 
+export function getForms(
+  datasetId: DatasetIdT
+): Promise<GetFormQueriesResponseT> {
+  return fetchJson(apiUrl() + `/datasets/${datasetId}/form-queries`);
+}
+
 export function getStoredQueries(
   datasetId: DatasetIdT
 ): Promise<GetStoredQueriesResponseT> {
@@ -210,4 +218,8 @@ export function postFilterValuesResolve(
       body: { values }
     }
   );
+}
+
+export function getMe(): Promise<GetMeResponseT> {
+  return fetchJson(apiUrl() + `/me`);
 }

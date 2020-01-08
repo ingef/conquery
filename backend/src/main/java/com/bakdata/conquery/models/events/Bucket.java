@@ -1,15 +1,5 @@
 package com.bakdata.conquery.models.events;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.math.BigDecimal;
-import java.util.Map;
-import java.util.PrimitiveIterator;
-import java.util.stream.IntStream;
-
-import javax.validation.constraints.Min;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.jackson.serializer.BucketDeserializer;
 import com.bakdata.conquery.io.jackson.serializer.NsIdRef;
 import com.bakdata.conquery.models.common.CDateSet;
@@ -18,19 +8,27 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
-import com.bakdata.conquery.util.io.SmallIn;
-import com.bakdata.conquery.util.io.SmallOut;
+import com.esotericsoftware.kryo.io.Input;
+import com.esotericsoftware.kryo.io.Output;
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.databind.JsonSerializable;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.jsontype.TypeSerializer;
 import com.tomgibara.bits.BitStore;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.FieldNameConstants;
+
+import javax.validation.constraints.Min;
+import javax.validation.constraints.NotNull;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.math.BigDecimal;
+import java.util.Map;
+import java.util.PrimitiveIterator;
+import java.util.stream.IntStream;
 
 @FieldNameConstants
 @Getter @Setter @ToString @JsonDeserialize(using = BucketDeserializer.class)
@@ -98,8 +96,9 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	@Override
 	public void serialize(JsonGenerator gen, SerializerProvider serializers) throws IOException {		
 		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		
-		try (SmallOut output = new SmallOut(baos)){
+
+		java.io.OutputStream outputStream = baos;
+		try (Output output = new Output(outputStream)){
 			writeContent(output);
 		}
 		byte[] content = baos.toByteArray();
@@ -159,7 +158,7 @@ public abstract class Bucket extends IdentifiableImpl<BucketId> implements Itera
 	}
 	
 	public abstract Map<String, Object> calculateMap(int event, Import imp);
-	public abstract void writeContent(SmallOut output) throws IOException;
+	public abstract void writeContent(Output output) throws IOException;
 
-	public abstract void read(SmallIn input) throws IOException;
+	public abstract void read(Input input) throws IOException;
 }

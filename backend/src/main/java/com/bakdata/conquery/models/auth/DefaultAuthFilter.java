@@ -6,15 +6,15 @@ import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
-import javax.ws.rs.ext.Provider;
 
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.realm.AuthorizingRealm;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
 
 import io.dropwizard.auth.AuthFilter;
+import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -27,17 +27,15 @@ import lombok.extern.slf4j.Slf4j;
  * security management is then also used for authorizations based on
  * permissions, that the handling of a request triggers.
  */
-@Provider
-@Slf4j @PreMatching
+@Slf4j
+@PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
-
-	private final TokenExtractor tokenExtractor;
 
 	@Override
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
 
-		ConqueryToken credentials = tokenExtractor.extract(requestContext);
+		ConqueryToken credentials = ConquerySecurityContext.class.cast(requestContext.getSecurityContext()).getToken();
 
 		try {
 			// sets the security context in the request AND does the authentication
@@ -46,36 +44,38 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 			}
 		}
 		catch (AuthenticationException e) {
-			log.warn("Shiro failed to authenticate the request. See the following trace:", e);
-			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.", e);
+			log
+				.warn(
+					"Shiro failed to authenticate the request. See the following message by {}:\n\t{}",
+					e.getStackTrace()[0],
+					e.getMessage());
+			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 		}
 	}
 
-	private static class DefaultAuthFilterBuilder extends AuthFilterBuilder<ConqueryToken, User, DefaultAuthFilter> {
-
-		private TokenExtractor tokenExtractor = new DefaultTokenExtractor();
-
-		public DefaultAuthFilterBuilder setTokenExtractor(TokenExtractor tokenExtractor) {
-			this.tokenExtractor = tokenExtractor;
-			return this;
-		}
+	/**
+	 * Builder for {@link DefaultAuthFilter}.
+	 * <p>
+	 * An {@link Authenticator} must be provided during the building process.
+	 * </p>
+	 *
+	 * @param <P>
+	 *            the principal
+	 */
+	public static class Builder extends AuthFilterBuilder<ConqueryToken, User, DefaultAuthFilter> {
 
 		@Override
 		protected DefaultAuthFilter newInstance() {
-			return new DefaultAuthFilter(tokenExtractor);
+			return new DefaultAuthFilter();
 		}
-	}
-
-	public static DefaultAuthFilterBuilder builder() {
-		return new DefaultAuthFilterBuilder();
 	}
 
 	public static AuthFilter<ConqueryToken, User> asDropwizardFeature(MasterMetaStorage storage, AuthConfig config) {
 		AuthorizingRealm realm = config.getRealm(storage);
 
-		DefaultAuthFilterBuilder builder = DefaultAuthFilter.builder();
+
+		Builder builder = new Builder();
 		AuthFilter<ConqueryToken, User> authFilter = builder
-			.setTokenExtractor(config.getTokenExtractor())
 			.setAuthenticator(new ConqueryAuthenticator(storage, realm))
 			.setUnauthorizedHandler(new DefaultUnauthorizedHandler())
 			.buildAuthFilter();

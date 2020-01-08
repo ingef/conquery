@@ -1,32 +1,33 @@
 package com.bakdata.conquery.models.query;
 
+import javax.validation.constraints.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.concept.ResultInfo;
+import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 
 @NoArgsConstructor
 @Getter
@@ -83,6 +84,16 @@ public class ManagedQuery extends ManagedExecution {
 	}
 
 	@Override
+	public void start() {
+		super.start();
+
+		if(results != null)
+			results.clear();
+		else
+			results = new ArrayList<>();
+	}
+
+	@Override
 	protected void finish() {
 		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
 		super.finish();
@@ -93,13 +104,13 @@ public class ManagedQuery extends ManagedExecution {
 	}
 
 	@JsonIgnore
-	public List<ResultInfo> getResultInfos(PrintSettings config) {
+	public ResultInfoCollector collectResultInfos(PrintSettings config) {
 		return query.collectResultInfos(config);
 	}
 	
 	@Override
-	public ExecutionStatus buildStatus(URLBuilder url) {
-		ExecutionStatus status = super.buildStatus(url);
+	public ExecutionStatus buildStatus(URLBuilder url, User user) {
+		ExecutionStatus status = super.buildStatus(url, user);
 		status.setTags(tags);
 		status.setQuery(query);
 		status.setNumberOfResults(lastResultCount);

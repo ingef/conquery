@@ -1,4 +1,6 @@
-import { applyMiddleware, compose, createStore } from "redux";
+// @flow
+
+import { applyMiddleware, compose, createStore, type Store } from "redux";
 
 import buildAppReducer from "./app/reducers";
 import { isProduction } from "./environment";
@@ -13,23 +15,30 @@ export function makeStore(
 
   let enhancer;
 
-  if (!isProduction())
+  if (!isProduction()) {
     enhancer = compose(
       middleware,
       // Use the Redux devtools extention, but only in development
       window.devToolsExtension ? window.devToolsExtension() : f => f
     );
-  else enhancer = compose(middleware);
+  } else {
+    enhancer = compose(middleware);
+  }
 
   const store = createStore(buildAppReducer(tabs), initialState, enhancer);
 
-  if (module.hot)
+  if (module.hot) {
     // Enable Webpack hot module replacement for reducers
     module.hot.accept("./app/reducers", () => {
       const nextRootReducer = buildAppReducer(tabs);
 
       store.replaceReducer(nextRootReducer);
     });
+  }
 
   return store;
+}
+
+export function updateReducers(store: Store, tabs: TabT[]) {
+  store.replaceReducer(buildAppReducer(tabs));
 }

@@ -1,12 +1,15 @@
 // @flow
 
 import React from "react";
+import { connect } from "react-redux";
 import styled from "@emotion/styled";
 import T from "i18n-react";
 
 import DownloadButton from "../button/DownloadButton";
 import PreviewButton from "../button/PreviewButton";
+import FaIcon from "../icon/FaIcon";
 import { isEmpty } from "../common/helpers/commonHelper";
+import { canDownloadResult } from "../user/selectors";
 
 const Root = styled("div")`
   display: flex;
@@ -15,9 +18,13 @@ const Root = styled("div")`
 `;
 
 const Text = styled("p")`
-  font-size: ${({ theme }) => theme.font.lg};
   margin: 0 10px 0 0;
   line-height: 1;
+  font-size: ${({ theme }) => theme.font.sm};
+`;
+
+const LgText = styled(Text)`
+  font-size: ${({ theme }) => theme.font.lg};
 `;
 
 const StyledDownloadButton = styled(DownloadButton)`
@@ -28,24 +35,37 @@ const SxPreviewButton = styled(PreviewButton)`
   margin-right: 10px;
 `;
 
+const Bold = styled("span")`
+  font-weight: 700;
+`;
+
 type PropsType = {
   resultCount: number,
-  resultUrl: string
+  resultUrl: string,
+  userCanDownloadResult: Boolean
 };
 
 const QueryResults = (props: PropsType) => {
-  if (isEmpty(props.resultCount) && isEmpty(props.resultUrl)) return null;
-
-  const isDownload = props.resultCount > 0 || !!props.resultUrl;
-  const ending = props.resultUrl.split(".").reverse()[0];
+  const isDownloadAllowed = !!props.resultUrl && props.userCanDownloadResult;
+  const ending = isDownloadAllowed
+    ? props.resultUrl.split(".").reverse()[0]
+    : null;
 
   return (
     <Root>
-      <Text>
-        {T.translate("queryRunner.resultCount", { count: props.resultCount })}
-      </Text>
+      {isEmpty(props.resultCount) ? (
+        <Text>
+          <FaIcon icon="check" left />
+          {T.translate("queryRunner.endSuccess")}
+        </Text>
+      ) : (
+        <LgText>
+          <Bold>{props.resultCount}</Bold>{" "}
+          {T.translate("queryRunner.resultCount")}
+        </LgText>
+      )}
       {ending === "csv" && <SxPreviewButton url={props.resultUrl} />}
-      {isDownload && (
+      {isDownloadAllowed && ending && (
         <StyledDownloadButton
           frame
           primary
@@ -59,4 +79,6 @@ const QueryResults = (props: PropsType) => {
   );
 };
 
-export default QueryResults;
+export default connect(state => ({
+  userCanDownloadResult: canDownloadResult(state)
+}))(QueryResults);

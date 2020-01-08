@@ -34,7 +34,6 @@ import {
   LOAD_FILTER_SUGGESTIONS_START,
   LOAD_FILTER_SUGGESTIONS_SUCCESS,
   LOAD_FILTER_SUGGESTIONS_ERROR,
-  TOGGLE_INCLUDE_SUBNODES,
   SET_DATE_COLUMN
 } from "./actionTypes";
 
@@ -173,11 +172,6 @@ export const switchFilterMode = (tableIdx, filterIdx, mode) => ({
 export const toggleTimestamps = (andIdx, orIdx) => ({
   type: TOGGLE_TIMESTAMPS,
   payload: { andIdx, orIdx }
-});
-
-export const toggleIncludeSubnodes = includeSubnodes => ({
-  type: TOGGLE_INCLUDE_SUBNODES,
-  payload: { includeSubnodes }
 });
 
 export const loadFilterSuggestionsStart = (tableIdx, filterIdx) => ({

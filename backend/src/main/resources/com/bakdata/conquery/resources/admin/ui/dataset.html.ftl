@@ -62,11 +62,4 @@
 		</div>
 		<input class="btn btn-primary" type="submit"/>
 	</form>
-	
-	
-	<h3>Import Files</h3>
-	<#macro linkCreator>
-		<a href="#" onclick="event.preventDefault(); fetch('/admin/datasets/${c.ds.id}/imports?file='+encodeURIComponent('<#nested/>'.trim()), {method: 'post'}).then(function(){location.reload();});">
-	</#macro>
-	<#include "templates/fileChooser.html.ftl"/>
 </@layout.layout>

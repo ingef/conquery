@@ -76,6 +76,7 @@ const QueryGroupModal = (props: PropsType) => {
       <InputDateRange
         large
         inline
+        label={T.translate("queryGroupModal.dateRange")}
         labelSuffix={
           <>
             {hasActiveDate && (

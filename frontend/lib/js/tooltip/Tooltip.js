@@ -5,7 +5,8 @@ import styled from "@emotion/styled";
 import type { Dispatch } from "redux-thunk";
 import T from "i18n-react";
 import { connect } from "react-redux";
-import Markdown from "react-markdown";
+import Markdown from "react-markdown/with-html";
+
 import Highlighter from "react-highlight-words";
 
 import IconButton from "../button/IconButton";
@@ -57,7 +58,7 @@ const Head = styled("div")`
   padding: 10px 20px;
   background-color: white;
   margin: 20px -20px;
-  box-shadow: 0 0 5px 0 rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 3px 0 rgba(0, 0, 0, 0.2);
 `;
 
 const StyledFaIcon = styled(FaIcon)`
@@ -99,6 +100,10 @@ const PieceOfInfo = styled("div")`
 
   /* Markdown */
   font-size: ${({ theme }) => theme.font.xs};
+
+  a {
+    text-decoration: underline;
+  }
 
   p {
     line-height: 1.3;
@@ -169,6 +174,10 @@ const Tooltip = (props: PropsType) => {
     );
   };
 
+  const renderers = {
+    text: ({ value, children, nodeKey }) => searchHighlight(value)
+  };
+
   return (
     <Root>
       <StyledIconButton
@@ -207,9 +216,13 @@ const Tooltip = (props: PropsType) => {
         <Infos>
           {infos &&
             infos.map((info, i) => (
-              <PieceOfInfo key={info.key}>
+              <PieceOfInfo key={info.key + i}>
                 <InfoHeadline>{searchHighlight(info.key)}</InfoHeadline>
-                <Markdown source={info.value} escapeHtml={true} />
+                <Markdown
+                  escapeHtml={true}
+                  renderers={renderers}
+                  source={info.value}
+                />
               </PieceOfInfo>
             ))}
         </Infos>

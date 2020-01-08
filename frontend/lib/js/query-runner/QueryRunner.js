@@ -3,8 +3,10 @@
 import React from "react";
 import styled from "@emotion/styled";
 import Hotkeys from "react-hot-keys";
+import T from "i18n-react";
 
 import Preview from "../preview/Preview";
+import WithTooltip from "../tooltip/WithTooltip";
 
 import QueryResults from "./QueryResults";
 import QueryRunningSpinner from "./QueryRunningSpinner";
@@ -12,9 +14,10 @@ import QueryRunnerInfo from "./QueryRunnerInfo";
 import QueryRunnerButton from "./QueryRunnerButton";
 
 type PropsType = {
-  queryRunner: Object,
+  queryRunner?: Object,
   isQueryRunning: boolean,
   isButtonEnabled: boolean,
+  buttonTooltipKey?: ?string,
   startQuery: Function,
   stopQuery: Function
 };
@@ -40,6 +43,7 @@ const LoadingGroup = styled("div")`
   display: flex;
   flex-direction: row;
   align-items: center;
+  justify-content: flex-end;
 `;
 
 const QueryRunner = (props: PropsType) => {
@@ -47,6 +51,7 @@ const QueryRunner = (props: PropsType) => {
     queryRunner,
     startQuery,
     stopQuery,
+    buttonTooltipKey,
     isQueryRunning,
     isButtonEnabled
   } = props;
@@ -54,7 +59,8 @@ const QueryRunner = (props: PropsType) => {
   const btnAction = isQueryRunning ? stopQuery : startQuery;
 
   const isStartStopLoading =
-    queryRunner.startQuery.loading || queryRunner.stopQuery.loading;
+    !!queryRunner &&
+    (queryRunner.startQuery.loading || queryRunner.stopQuery.loading);
 
   return (
     <Root>
@@ -66,22 +72,31 @@ const QueryRunner = (props: PropsType) => {
       />
       <Preview />
       <Left>
-        <QueryRunnerButton
-          onClick={btnAction}
-          isStartStopLoading={isStartStopLoading}
-          isQueryRunning={isQueryRunning}
-          disabled={!isButtonEnabled}
-        />
+        <WithTooltip
+          text={buttonTooltipKey ? T.translate(buttonTooltipKey) : null}
+        >
+          <QueryRunnerButton
+            onClick={btnAction}
+            isStartStopLoading={isStartStopLoading}
+            isQueryRunning={isQueryRunning}
+            disabled={!isButtonEnabled}
+          />
+        </WithTooltip>
       </Left>
       <Right>
         <LoadingGroup>
           <QueryRunningSpinner isQueryRunning={isQueryRunning} />
-          <QueryRunnerInfo queryRunner={queryRunner} />
+          {!!queryRunner && <QueryRunnerInfo queryRunner={queryRunner} />}
         </LoadingGroup>
-        <QueryResults
-          resultCount={queryRunner.queryResult.resultCount}
-          resultUrl={queryRunner.queryResult.resultUrl}
-        />
+        {!!queryRunner &&
+          !!queryRunner.queryResult &&
+          !queryRunner.queryResult.error &&
+          !isQueryRunning && (
+            <QueryResults
+              resultCount={queryRunner.queryResult.resultCount}
+              resultUrl={queryRunner.queryResult.resultUrl}
+            />
+          )}
       </Right>
     </Root>
   );

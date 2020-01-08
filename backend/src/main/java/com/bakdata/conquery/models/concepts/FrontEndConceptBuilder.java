@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.concepts;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -21,19 +22,21 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
-import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.exceptions.ConceptConfigurationException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.IId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptTreeChildId;
 import com.bakdata.conquery.models.identifiable.ids.specific.StructureNodeId;
 
 import lombok.AllArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * This class constructs the concept tree as it is presented to the front end.
  */
 @AllArgsConstructor
+@Slf4j
 public class FrontEndConceptBuilder {
 
 	public static FERoot createRoot(NamespaceStorage storage) {
@@ -65,7 +68,7 @@ public class FrontEndConceptBuilder {
 			.orElse(null);
 
 		FENode n = FENode.builder()
-				.active(c instanceof VirtualConcept)
+				.active(true)
 				.description(c.getDescription())
 				.label(c.getLabel())
 				.additionalInfos(c.getAdditionalInfos())
@@ -104,6 +107,15 @@ public class FrontEndConceptBuilder {
 	}
 
 	private static FENode createStructureNode(StructureNode cn, NamespaceStorage storage) {
+		List<ConceptId> unstructured = new ArrayList<>();
+		for(ConceptId id : cn.getContainedRoots()) {
+			if(!storage.hasConcept(id)) {
+				log.warn("Concept from structure node can not be found: {}", id);
+				continue;
+			}
+			unstructured.add(id);
+		}
+		
 		return FENode.builder()
 			.active(false)
 			.description(cn.getDescription())
@@ -117,9 +129,7 @@ public class FrontEndConceptBuilder {
 					cn.getChildren().stream()
 						.map(IdentifiableImpl::getId)
 						.toArray(IId[]::new),
-					cn.getContainedRoots().stream()
-						.filter(id->storage.getConcept(id)!=null)
-						.toArray(IId[]::new)
+						unstructured.toArray(IId[]::new)
 				)
 			)
 			.build();
@@ -170,12 +180,11 @@ public class FrontEndConceptBuilder {
 			result.setDateColumn(
 				new FEValidityDate(
 					null,
-					FEValue.fromLabels(
 						con
 						.getValidityDates()
 						.stream()
-						.collect(Collectors.toMap(vd->vd.getId().toString(), ValidityDate::getLabel))
-					)
+							.map(vd -> new FEValue(vd.getLabel(), vd.getId().toString()))
+							.collect(Collectors.toList())
 				)
 			);
 			

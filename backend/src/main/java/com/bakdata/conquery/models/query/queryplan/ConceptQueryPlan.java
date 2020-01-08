@@ -9,7 +9,7 @@ import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.events.Bucket;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.query.QueryContext;
+import com.bakdata.conquery.models.query.QueryExecutionContext;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
@@ -97,7 +97,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 	
 	@Override
-	public EntityResult execute(QueryContext ctx, Entity entity) {
+	public EntityResult execute(QueryExecutionContext ctx, Entity entity) {
 		checkRequiredTables(ctx.getStorage());
 		init(entity);
 		if (requiredTables.isEmpty()) {
@@ -120,8 +120,11 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 				}
 			}
 		}
-
-		//ugly workaround which we should find a fix for
+		
+		/*
+		 * ugly workaround which we should find a fix for,
+		 * because the jackson serializer can't deal with NaN or infinity
+		 */
 		EntityResult result = createResult();
 		if(result instanceof ContainedEntityResult) {
 			result.asContained().streamValues().forEach(row -> {
@@ -140,7 +143,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 	}
 	
 	@Override
-	public void nextTable(QueryContext ctx, Table currentTable) {
+	public void nextTable(QueryExecutionContext ctx, Table currentTable) {
 		child.nextTable(ctx, currentTable);
 	}
 	

@@ -39,6 +39,7 @@ import { reducer as deletePreviousQueryModal } from "../previous-queries/delete-
 import { reducer as snackMessage } from "../snack-message";
 import { reducer as preview } from "../preview";
 import { reducer as queryUploadConceptListModal } from "../query-upload-concept-list-modal";
+import { reducer as user } from "../user";
 
 import { createQueryNodeEditorReducer } from "../query-node-editor";
 
@@ -70,6 +71,7 @@ const buildAppReducer = (tabs: TabT[]) => {
     snackMessage,
     preview,
     queryUploadConceptListModal,
+    user,
     ...tabs.reduce((all, tab) => {
       all[tab.key] = tab.reducer;
       return all;

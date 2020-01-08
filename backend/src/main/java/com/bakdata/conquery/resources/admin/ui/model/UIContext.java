@@ -5,6 +5,7 @@ import java.util.Collection;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 
+import freemarker.template.TemplateModel;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
@@ -13,6 +14,9 @@ public class UIContext {
 
 	@Getter
 	private final Namespaces namespaces;
+
+	@Getter
+	public final TemplateModel staticUriElem;
 
 	public boolean[] getWorkerStatuses() {
 		boolean[] result = new boolean[namespaces.getSlaves().values().size()];

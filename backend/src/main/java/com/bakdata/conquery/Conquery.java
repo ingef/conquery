@@ -1,37 +1,31 @@
 package com.bakdata.conquery;
 
-import java.nio.charset.StandardCharsets;
-import java.util.Collections;
-import java.util.Locale;
-import java.util.Map;
-
 import javax.tools.ToolProvider;
 
-import org.apache.commons.lang3.StringUtils;
+import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
+import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
 import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
-import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.UrlRewriteBundle;
-
-import ch.qos.logback.classic.Level;
 import io.dropwizard.Application;
-import io.dropwizard.Configuration;
 import io.dropwizard.ConfiguredBundle;
+import io.dropwizard.configuration.EnvironmentVariableSubstitutor;
 import io.dropwizard.configuration.JsonConfigurationFactory;
+import io.dropwizard.configuration.SubstitutingSourceProvider;
 import io.dropwizard.servlets.assets.AssetServlet;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
-import io.dropwizard.views.ViewBundle;
-import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -63,6 +57,7 @@ public class Conquery extends Application<ConqueryConfig> {
 
 		//do some setup in other classes after initialization but before running a command
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
+
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
 				configuration.initialize();
@@ -70,6 +65,8 @@ public class Conquery extends Application<ConqueryConfig> {
 
 			@Override
 			public void initialize(Bootstrap<?> bootstrap) {
+				// Allow overriding of config from environment variables.
+				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(true)));
 			}
 		});
 		//register frontend
@@ -114,6 +111,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		master = new MasterCommand();
 		master.run(configuration, environment);
 	}
+
 
 	public static void main(String... args) throws Exception {
 		new Conquery().run(args);

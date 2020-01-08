@@ -30,7 +30,9 @@ public class PersistentIdMapDeserializer extends JsonDeserializer<PersistentIdMa
 		mapAsList.forEach(externalIdMapEntry -> {
 			externalIdPartCsvIdMap.put(externalIdMapEntry.getSufficientExternalEntityId(), externalIdMapEntry.getCsvEntityId());
 		});
-
-		return new PersistentIdMap(csvIdToExternalIdMap, externalIdPartCsvIdMap);
+		PersistentIdMap map = new PersistentIdMap();
+		map.getCsvIdToExternalIdMap().putAll(csvIdToExternalIdMap);
+		map.getExternalIdPartCsvIdMap().putAll(externalIdPartCsvIdMap);
+		return map;
 	}
 }

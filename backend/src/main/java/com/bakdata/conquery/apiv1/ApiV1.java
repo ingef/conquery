@@ -5,7 +5,10 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
+import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
+import com.bakdata.conquery.models.auth.TokenExtractorFilter;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
@@ -25,6 +28,12 @@ public class ApiV1 implements ResourcesProvider {
 		Namespaces namespaces = master.getNamespaces();
 		JerseyEnvironment environment = master.getEnvironment().jersey();
 
+		environment.register(new TokenExtractorFilter(ConqueryConfig.getInstance().getAuthentication().getTokenExtractor()));
+		/*
+		 * register CORS-Preflight filter inbetween token extraction and authentication
+		 * to intercept unauthenticated OPTIONS requests
+		 */
+		environment.register(new CORSPreflightRequestFilter());
 		environment.register(master.getAuthDynamicFeature());
 		environment.register(new QueryResource(namespaces, master.getStorage()));
 		environment.register(new ResultCSVResource(namespaces, master.getConfig()));
@@ -44,14 +53,17 @@ public class ApiV1 implements ResourcesProvider {
 						master.getStorage(),
 						master.getNamespaces(),
 						master.getJobManager(),
-						master.getMaintenanceService()
+						master.getMaintenanceService(),
+						master.getValidator()
 					)
 				).to(AdminProcessor.class);
+				bind(new MeProcessor(namespaces.getMetaStorage())).to(MeProcessor.class);
 			}
 		});
 		environment.register(APIResource.class);
 		environment.register(ConceptResource.class);
 		environment.register(DatasetResource.class);
 		environment.register(FilterResource.class);
+		environment.register(MeResource.class);
 	}
 }

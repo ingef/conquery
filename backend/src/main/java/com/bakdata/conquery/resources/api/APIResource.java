@@ -10,7 +10,7 @@ import javax.ws.rs.Produces;
 
 import com.bakdata.conquery.apiv1.IdLabel;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 
 import io.dropwizard.auth.Auth;

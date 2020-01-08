@@ -39,10 +39,10 @@ const ClearZone = styled(IconButton)`
 `;
 
 type InputPropsType = {
-  pattern?: RegExp,
+  pattern?: string,
   step?: number,
-  min?: string,
-  max?: string
+  min?: number,
+  max?: number
 };
 
 type PropsType = {
@@ -57,6 +57,7 @@ type PropsType = {
 };
 
 const BaseInput = (props: PropsType) => {
+  const inputProps = props.inputProps || {};
   const { pattern } = props.inputProps || {};
 
   const handleKeyPress = event => {
@@ -89,7 +90,7 @@ const BaseInput = (props: PropsType) => {
           onChange={e => props.onChange(e.target.value)}
           onKeyPress={e => handleKeyPress(e)}
           value={props.value || ""}
-          {...props.inputProps}
+          {...inputProps}
         />
       )}
       {!isEmpty(props.value) && (
