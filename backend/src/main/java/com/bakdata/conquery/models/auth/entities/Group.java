@@ -6,16 +6,15 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * A group consists of users and permissions. The permissions held by the group
@@ -23,6 +22,7 @@ import lombok.Setter;
  * query it is currently shared with all groups a user is in.
  *
  */
+@Slf4j
 public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 
 	@Getter
@@ -51,7 +51,6 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	@Override
 	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateGroup(this);
-
 	}
 
 	@Override
@@ -60,13 +59,17 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	public void addMember(MasterMetaStorage storage, User user) throws JSONException {
-		members.add(user);
-		updateStorage(storage);
+		if(members.add(user)) {
+			log.trace("Added user {} to group {}", user.getId(), getId());
+			updateStorage(storage);
+		}
 	}
 
 	public void removeMember(MasterMetaStorage storage, User user) throws JSONException {
-		members.remove(user);
-		updateStorage(storage);
+		if(members.remove(user)) {
+			log.trace("Removed user {} from group {}", user.getId(), getId());				
+			updateStorage(storage);
+		}
 	}
 
 	public boolean containsMember(User user) {
@@ -78,20 +81,16 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
-		synchronized (roles) {
-			if (!roles.contains(role)) {
-				roles.add(role);
-				updateStorage(storage);
-			}
+		if (roles.add(role)) {
+			log.trace("Added role {} to group {}", role.getId(), getId());
+			updateStorage(storage);
 		}
 	}
 
 	public void removeRole(MasterMetaStorage storage, Role role) throws JSONException {
-		synchronized (roles) {
-			if (roles.contains(role)) {
-				roles.remove(role);
-				updateStorage(storage);
-			}
+		if (roles.remove(role)) {
+			log.trace("Removed role {} from group {}", role.getId(), getId());
+			updateStorage(storage);
 		}
 	}
 
