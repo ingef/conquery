@@ -2,16 +2,14 @@ package com.bakdata.conquery.models.auth.entities;
 
 import javax.validation.constraints.NotNull;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @AllArgsConstructor
 public class Role extends PermissionOwner<RoleId> {
@@ -28,7 +26,7 @@ public class Role extends PermissionOwner<RoleId> {
 	}
 	
 	@Override
-	protected synchronized void updateStorage(MasterMetaStorage storage) throws JSONException {
+	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateRole(this);
 		
 	}
