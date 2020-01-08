@@ -65,7 +65,7 @@
 				<version>2.22.2</version>
 				<configuration>
 					<trimStackTrace>false</trimStackTrace>
-					<argLine>-Xmx6G</argLine>
+					<argLine>-Xmx4G</argLine>
                     <properties>
 						<configurationParameters>
 							junit.jupiter.execution.parallel.enabled=false

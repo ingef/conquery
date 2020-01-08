@@ -44,10 +44,12 @@ import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+@Slf4j
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter @Setter
@@ -99,9 +101,27 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Path("imports")
 	public void addImport(@QueryParam("file") File selectedFile) throws IOException, JSONException {
-		if(!selectedFile.canRead() || !selectedFile.exists() || !selectedFile.isAbsolute() || !selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
-			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Needs to be absolute path, readable and be a .cqpp-file.", Status.BAD_REQUEST);
-		}
+
+		if(!selectedFile.exists())
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Does not exist.", Status.BAD_REQUEST);
+
+		if(!selectedFile.canRead())
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Cannot read file.", Status.BAD_REQUEST);
+
+		if(!selectedFile.isAbsolute())
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Is not absolute.", Status.BAD_REQUEST);
+
+		if(!selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED))
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Is not a CQPP file.", Status.BAD_REQUEST);
+
+		log.warn("read={}, exists={}, abs={}, cqpp={}",
+				 selectedFile.canRead(),
+				 selectedFile.exists(),
+				 selectedFile.isAbsolute(),
+				 selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)
+		);
+
+
 		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
 	}
 
