@@ -2,11 +2,19 @@ package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -15,10 +23,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -29,6 +33,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -103,7 +108,6 @@ public class AdminDatasetResource extends HAdmin {
 	@DELETE
 	@Path("import/{"+IMPORT_ID+"}")
 	public void deleteImportView(@PathParam(IMPORT_ID) ImportId importId) {
-
 		processor.deleteImport(importId);
 	}
 
@@ -128,4 +132,17 @@ public class AdminDatasetResource extends HAdmin {
 			w.send(new UpdateDataset(namespace.getDataset()));
 		}
 	}
+
+	@GET
+	@Path("tables")
+	public List<TableId> listTables(){
+		return new ArrayList<>(namespace.getDataset().getTables().keySet());
+	}
+
+	@GET
+	@Path("concepts")
+	public List<ConceptId> listConcepts(){
+		return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
 }
