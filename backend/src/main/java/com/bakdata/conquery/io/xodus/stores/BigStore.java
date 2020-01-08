@@ -12,13 +12,9 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.function.Consumer;
 import java.util.stream.Stream;
 
 import javax.validation.Validator;
-
-import org.apache.commons.collections4.IteratorUtils;
-import org.hibernate.validator.constraints.NotEmpty;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -29,18 +25,19 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.databind.ObjectWriter;
 import com.google.common.primitives.Ints;
-
 import io.dropwizard.util.Size;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.IteratorUtils;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @Slf4j @Getter
 public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
-	private final MPStore<KEY, BigStoreMeta> metaStore;
-	private final MPStore<UUID, byte[]> dataStore;
+	private final SerializingStore<KEY, BigStoreMeta> metaStore;
+	private final SerializingStore<UUID, byte[]> dataStore;
 	private final ObjectWriter valueWriter;
 	private ObjectReader valueReader;
 	@Getter @Setter
@@ -51,24 +48,24 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
 	public BigStore(Validator validator, Environment env, StoreInfo storeInfo) {
 		this.storeInfo = storeInfo;
-		metaStore = new MPStore<>(
-				validator,
-				env,
-				new SimpleStoreInfo(
-					storeInfo.getXodusName()+"_META",
-					storeInfo.getKeyType(),
-					BigStoreMeta.class
-				)
-			);
-		dataStore = new MPStore<>(
-				validator,
-				env,
-				new SimpleStoreInfo(
-					storeInfo.getXodusName()+"_DATA",
-					UUID.class,
-					byte[].class
-				)
-			);
+		final SimpleStoreInfo storeInfo1 = new SimpleStoreInfo(
+				storeInfo.getXodusName() + "_META",
+				storeInfo.getKeyType(),
+				BigStoreMeta.class
+		);
+		metaStore = new SerializingStore<>(
+				new XodusStore(env, storeInfo1), validator,
+				storeInfo1
+		);
+		final SimpleStoreInfo storeInfo2 = new SimpleStoreInfo(
+				storeInfo.getXodusName() + "_DATA",
+				UUID.class,
+				byte[].class
+		);
+		dataStore = new SerializingStore<>(
+				new XodusStore(env, storeInfo2), validator,
+				storeInfo2
+		);
 		this.valueWriter = Jackson.BINARY_MAPPER.writerFor(storeInfo.getValueType());
 		this.valueReader = Jackson.BINARY_MAPPER.readerFor(storeInfo.getValueType());
 	}
@@ -100,14 +97,9 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer) {
-		metaStore.forEach(e -> {
-			
-			StoreEntry<KEY, VALUE> entry = new StoreEntry<>();
-			entry.setKey(e.getKey());
-			entry.setValue(createValue(e.getKey(), e.getValue()));
-			entry.setByteSize(e.getValue().getSize().get());
-			consumer.accept(entry);
+	public void forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
+		metaStore.forEach((key, value, length) -> {
+			consumer.accept(key, createValue(key, value), length);
 		});
 	}
 
@@ -140,12 +132,12 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	public Collection<VALUE> getAll() {
 		throw new UnsupportedOperationException();
 	}
-	
+
 	@Override
 	public Collection<KEY> getAllKeys() {
-		List<KEY> l = new ArrayList<>();
-		metaStore.forEach(e -> l.add(e.getKey()));
-		return l;
+		List<KEY> out = new ArrayList<>();
+		metaStore.forEach((key, value, size) -> out.add(key));
+		return out;
 	}
 	
 	private Collection<UUID> writeValue(VALUE value) {
@@ -194,7 +186,7 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		@JsonIgnore
 		private transient AtomicLong size;
 		
-		public Stream<byte[]> loadData(MPStore<UUID, byte[]> dataStore) {
+		public Stream<byte[]> loadData(SerializingStore<UUID, byte[]> dataStore) {
 			size = new AtomicLong(0);
 			return parts
 				.stream()

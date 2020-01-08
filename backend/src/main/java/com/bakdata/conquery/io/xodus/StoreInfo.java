@@ -8,9 +8,10 @@ import com.bakdata.conquery.io.xodus.stores.CachedStore;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableCachedStore;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
-import com.bakdata.conquery.io.xodus.stores.MPStore;
+import com.bakdata.conquery.io.xodus.stores.SerializingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.io.xodus.stores.WeakCachedStore;
+import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -37,7 +38,6 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -95,7 +95,10 @@ public enum StoreInfo implements IStoreInfo {
 	 */
 	public <KEY, VALUE> CachedStore<KEY, VALUE> cached(Environment environment, Validator validator) {
 		return new CachedStore<>(
-				new MPStore<>(validator, environment, this)
+				new SerializingStore<>(
+						new XodusStore(environment, this),
+						validator,
+						this)
 		);
 	}
 

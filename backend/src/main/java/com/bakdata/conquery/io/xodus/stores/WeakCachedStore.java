@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -12,7 +11,6 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,7 +63,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer) {
+	public void forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		throw new UnsupportedOperationException();
 	}
 
