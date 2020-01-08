@@ -4,16 +4,13 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.apache.shiro.authz.Permission;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.Permission;
 
 /**
  * The base class of security subjects in this project. Used to represent
@@ -47,17 +44,19 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		return addedPermissions;
 	}
 	
-	public synchronized ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
-		permissions.add(permission);
-		updateStorage(storage);
+	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
+		if(permissions.add(permission)) {			
+			updateStorage(storage);
+			log.trace("Added permission {} to owner {}", permission, getId());	
+		}
 		return permission;
 	}
 
 	public void removePermission(MasterMetaStorage storage, Permission delPermission) throws JSONException {
-		synchronized (permissions) {
-			permissions.remove(delPermission);
+		if(permissions.remove(delPermission)) {
+			this.updateStorage(storage);
+			log.trace("Removed permission {} from owner {}", delPermission, getId());		
 		}
-		this.updateStorage(storage);
 	}
 
 
@@ -70,11 +69,9 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 	
 	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) throws JSONException {
-		synchronized (permissions) {
-			permissions.clear();
-			permissions.addAll(permissionsNew);
-			updateStorage(storage);
-		}
+		permissions.clear();
+		permissions.addAll(permissionsNew);
+		updateStorage(storage);
 	}
 	
 	/**

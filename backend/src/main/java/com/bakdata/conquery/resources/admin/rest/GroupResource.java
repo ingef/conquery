@@ -37,7 +37,7 @@ public class GroupResource extends HGroups {
 	@Path("{" + GROUP_ID + "}")
 	@DELETE
 	public Response deleteGroup(@PathParam(GROUP_ID) GroupId groupId) throws JSONException {
-		processor.removeGroup(groupId);
+		processor.deleteGroup(groupId);
 		return Response.ok().build();
 	}
 
