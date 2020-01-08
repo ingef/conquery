@@ -25,7 +25,8 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	@JsonCreator
 	public WildcardPermission(List<Set<String>> parts, Instant creationTime) {
 		this.setParts(parts);
-		// Optional for backward compatibility TODO remove
+		// Optional for backward compatibility
+		// TODO remove later
 		if(creationTime == null) {
 			this.creationTime = Instant.now();
 			return;

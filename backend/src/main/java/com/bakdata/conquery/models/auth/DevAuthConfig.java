@@ -36,7 +36,7 @@ public class DevAuthConfig extends AuthConfig {
 	public static final User USER = new User(EMAIL, LABEL);
 	
 	@Getter
-	public final List<String> OverviewScope = List.of(
+	public final List<String> overviewScope = List.of(
 		DatasetPermission.DOMAIN,
 		AdminPermission.DOMAIN,
 		SuperPermission.DOMAIN);
