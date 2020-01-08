@@ -6,7 +6,6 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.TimeZone;
 
@@ -21,10 +20,6 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 public class FEPermission {
-	/**
-	 * The standard format, that Freemarker understands.
-	 */
-	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMM d, y, h:mm:ss a", Locale.US);
 	private static final ZoneId TIMEZONE = TimeZone.getDefault().toZoneId();
 
 	private final Set<String> domains;
@@ -54,7 +49,7 @@ public class FEPermission {
 			domains,
 			abilities,
 			targets,
-			LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(FORMATTER));
+			LocalDateTime.ofInstant(cPermission.getCreationTime(), TIMEZONE).format(DateTimeFormatter.ISO_DATE_TIME));
 	}
 	
 	public static List<FEPermission> from(Collection<WildcardPermission> cPermission) {
