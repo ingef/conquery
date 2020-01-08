@@ -36,10 +36,10 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 *             When the permission object could not be formed in to the
 	 *             appropriate JSON format.
 	 */
-	public Set<ConqueryPermission> addPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissions) throws JSONException {
+	public Set<ConqueryPermission> addPermissions(Set<ConqueryPermission> permissions) throws JSONException {
 		HashSet<ConqueryPermission> addedPermissions = new HashSet<>();
 		for(ConqueryPermission permission : permissions) {
-			addedPermissions.add(addPermission(storage, permission));
+			addedPermissions.add(addPermission(permission));
 		}
 		return addedPermissions;
 	}
