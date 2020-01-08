@@ -9,21 +9,21 @@ import java.util.Set;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authz.AuthorizationException;
-import org.apache.shiro.authz.Permission;
-import org.apache.shiro.subject.PrincipalCollection;
-
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authz.AuthorizationException;
+import org.apache.shiro.authz.Permission;
+import org.apache.shiro.subject.PrincipalCollection;
 
+@Slf4j
 public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 
 	@MetaIdRefCollection
@@ -81,20 +81,17 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 
 	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
-		synchronized (roles) {
-			if(!roles.contains(role)) {
-				roles.add(role);
-				updateStorage(storage);
-			}
+		if(roles.add(role)) {
+			log.trace("Added role {} to user {}", role.getId(), getId());
+			updateStorage(storage);
 		}
 	}
 	
+	@Override
 	public void removeRole(MasterMetaStorage storage, Role role) throws JSONException {
-		synchronized (roles) {
-			if(roles.contains(role)) {
-				roles.remove(role);
-				updateStorage(storage);
-			}
+		if(roles.remove(role)) {
+			log.trace("Removed role {} from user {}", role.getId(), getId());				
+			updateStorage(storage);
 		}
 	}
 
@@ -103,7 +100,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 	
 	@Override
-	protected synchronized void updateStorage(MasterMetaStorage storage) throws JSONException {
+	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
 		storage.updateUser(this);
 	}
 
