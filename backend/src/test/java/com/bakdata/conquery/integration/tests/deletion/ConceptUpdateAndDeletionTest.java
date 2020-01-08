@@ -55,16 +55,16 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 		final QueryTest test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
 
-		final IQuery query = test.parseQuery(conquery);
+		final IQuery query = test.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			test.importTables(conquery);
+			test.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery);
+			test.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
@@ -163,7 +163,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// Load a different concept with the same id (it has different children "C1" that are more than "A1")
 		{
 			// only import the deleted concept
-			test2.importConcepts(conquery);
+			test2.importConcepts(conquery, test2.getRawConcepts());
 			conquery.waitUntilWorkDone();
 		}
 

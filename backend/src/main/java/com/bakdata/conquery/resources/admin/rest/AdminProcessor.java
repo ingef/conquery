@@ -1,9 +1,5 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import javax.validation.Validator;
-import javax.ws.rs.WebApplicationException;
-import javax.ws.rs.core.Response.Status;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -16,6 +12,10 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.stream.Collectors;
+
+import javax.validation.Validator;
+import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
@@ -482,12 +482,22 @@ public class AdminProcessor {
 
 		final Namespace namespace = namespaces.get(importId.getDataset());
 
-		namespace.getStorage().removeImport(importId);
-		namespace.getStorage().removeImport(new ImportId(new TableId(importId.getDataset(), ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
+		jobManager.addSlowJob(new SimpleJob(
+				"Delete Import" + importId,
+				() -> {
+					namespace.getStorage().removeImport(importId);
+					namespace.getStorage().removeImport(new ImportId(new TableId(importId.getDataset(), ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
+				}
+		));
 
-		for (WorkerInformation w : namespace.getWorkers()) {
-			w.send(new RemoveImportJob(importId));
-		}
+		jobManager.addSlowJob(new SimpleJob(
+				"Import delete on " + importId,
+				() -> {
+					for (WorkerInformation w : namespace.getWorkers()) {
+						w.send(new RemoveImportJob(importId));
+					}
+				}
+		));
 	}
 
 	public void deleteTable(TableId tableId)  {
@@ -498,22 +508,29 @@ public class AdminProcessor {
 															  .filter(con -> con.getTable().getId().equals(tableId))
 															  .collect(Collectors.toList());
 
-		if(!connectors.isEmpty())
-			throw new IllegalArgumentException(String.format("Cannot delete table `%s`, because it still has connectors: `%s`", tableId, connectors));
+		if(!connectors.isEmpty()) {
+			throw new IllegalArgumentException(String.format("Cannot delete table `%s`, because it still has connectors for Concepts: `%s`", tableId, connectors.stream().map(Connector::getConcept).collect(Collectors.toList())));
+		}
 
-		namespace.getStorage().getAllImports().stream()
-				  .filter(imp -> imp.getTable().equals(tableId))
-				  .map(Import::getId)
-				  .forEach(this::deleteImport);
-
-		dataset.getTables().remove(tableId);
 
 		getJobManager()
-				.addSlowJob(new SimpleJob("Removing table " + tableId, () -> namespaces.get(dataset.getId()).getStorage().updateDataset(dataset)));
+				.addSlowJob(new SimpleJob("Removing table " + tableId, () -> {
+					namespace.getStorage().getAllImports().stream()
+							 .filter(imp -> imp.getTable().equals(tableId))
+							 .map(Import::getId)
+							 .forEach(this::deleteImport);
+
+					dataset.getTables().remove(tableId);
+					namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
+				}));
 
 		getJobManager()
-				.addSlowJob(new SimpleJob("Removing table " + tableId,
-										  () -> 		namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset))));
+				.addSlowJob(new SimpleJob(
+						"Removing table " + tableId,
+						() -> {
+							namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
+						}
+				));
 	}
 
 	public void deleteConcept(ConceptId conceptId) {

@@ -46,16 +46,16 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		final TableId tableId = TableId.Parser.INSTANCE.parse(dataset.getName(), "test_table2");
 
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final IQuery query = test.parseQuery(conquery);
+		final IQuery query = test.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			test.importTables(conquery);
+			test.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery);
+			test.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
@@ -169,7 +169,7 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 													 .collect(Collectors.toList()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery);
+			test.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			assertThat(namespace.getDataset().getTables().getOptional(tableId))

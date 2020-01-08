@@ -1,7 +1,5 @@
 package com.bakdata.conquery.integration;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import lombok.RequiredArgsConstructor;
@@ -18,7 +16,6 @@ public interface IntegrationTest {
 		@Override
 		public void execute(String name, TestConquery testConquery) throws Exception {
 			try(StandaloneSupport conquery = testConquery.getSupport(name)) {
-				assertThat(conquery.getStandaloneCommand().getMaster().getStorage().getEnvironment().isOpen()).isTrue();
 				execute(conquery);
 			}
 		}

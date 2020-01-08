@@ -2,9 +2,6 @@ package com.bakdata.conquery.integration.json;
 
 import static org.assertj.core.api.Assertions.fail;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -14,6 +11,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
@@ -43,7 +43,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Getter;
@@ -74,13 +73,18 @@ public class QueryTest extends AbstractQueryEngineTest {
 	private IQuery query;
 
 	@Override
+	public IQuery getQuery() {
+		return query;
+	}
+
+	@Override
 	public void importRequiredData(StandaloneSupport support) throws IOException, JSONException, ConfigurationException {
-		importTables(support);
+		importTables(support, content);
 		support.waitUntilWorkDone();
 
-		importConcepts(support);
+		importConcepts(support, rawConcepts);
 		support.waitUntilWorkDone();
-		query = parseQuery(support);
+		query = parseQuery(support, rawQuery);
 
 		importTableContents(support, Arrays.asList(content.getTables()), support.getDataset());
 		support.waitUntilWorkDone();
@@ -129,12 +133,8 @@ public class QueryTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	public void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException, JSONException {
-		CsvParserSettings settings = new CsvParserSettings();
-		CsvFormat format = new CsvFormat();
-		format.setLineSeparator("\n");
-		settings.setFormat(format);
-		settings.setHeaderExtractionEnabled(true);
+	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException, JSONException {
+
 		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
 		List<File> preprocessedFiles = new ArrayList<>();
 
@@ -179,7 +179,7 @@ public class QueryTest extends AbstractQueryEngineTest {
 		return out;
 	}
 
-	public void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {
+	public static void importConcepts(StandaloneSupport support, ArrayNode rawConcepts) throws JSONException, IOException, ConfigurationException {
 		Dataset dataset = support.getDataset();
 
 		List<Concept<?>> concepts = parseSubTree(
@@ -194,16 +194,12 @@ public class QueryTest extends AbstractQueryEngineTest {
 		}
 	}
 
-	public IQuery parseQuery(StandaloneSupport support) throws JSONException, IOException {
+	public static IQuery parseQuery(StandaloneSupport support, JsonNode rawQuery) throws JSONException, IOException {
 		return parseSubTree(support, rawQuery, IQuery.class);
 	}
 
-	@Override
-	public IQuery getQuery() {
-		return query;
-	}
 
-	public void importTables(StandaloneSupport support) throws JSONException {
+	public static void importTables(StandaloneSupport support, RequiredData content) throws JSONException {
 		Dataset dataset = support.getDataset();
 
 		for (RequiredTable rTable : content.getTables()) {

@@ -45,16 +45,16 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		Namespace namespace = storage.getNamespaces().get(dataset);
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final IQuery query = test.parseQuery(conquery);
+		final IQuery query = test.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			test.importTables(conquery);
+			test.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery);
+			test.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
@@ -204,7 +204,7 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery2);
+			test.importConcepts(conquery2, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			assertThat(conquery2.getDatasetsProcessor().getNamespaces().get(dataset))
