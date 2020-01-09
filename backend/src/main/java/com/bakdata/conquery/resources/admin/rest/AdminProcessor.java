@@ -222,20 +222,23 @@ public class AdminProcessor {
 
 	/**
 	 * Deletes the mandator, that is identified by the id. Its references are
-	 * removed from the users and from the storage.
+	 * removed from the users, the groups, and from the storage.
 	 *
-	 * @param mandatorId
+	 * @param roleId
 	 *            The id belonging to the mandator
 	 * @throws JSONException
 	 *             is thrown on JSON validation form the storage.
 	 */
-	public synchronized void deleteRole(RoleId mandatorId) throws JSONException {
-		log.info("Deleting mandator: {}", mandatorId);
-		Role mandator = storage.getRole(mandatorId);
+	public synchronized void deleteRole(RoleId roleId) throws JSONException {
+		log.info("Deleting mandator: {}", roleId);
+		Role role = storage.getRole(roleId);
 		for (User user : storage.getAllUsers()) {
-			user.removeRole(storage, mandator);
+			user.removeRole(storage, role);
 		}
-		storage.removeRole(mandatorId);
+		for (Group group : storage.getAllGroups()) {
+			group.removeRole(storage, role);
+		}
+		storage.removeRole(roleId);
 	}
 
 	public List<Role> getAllRoles() {
@@ -344,7 +347,11 @@ public class AdminProcessor {
 			.build();
 	}
 
-	public synchronized void deleteUser(UserId userId) {
+	public synchronized void deleteUser(UserId userId) throws JSONException {
+		User user = storage.getUser(userId);
+		for (Group group : storage.getAllGroups()) {
+			group.removeMember(storage, user);
+		}
 		storage.removeUser(userId);
 		log.trace("Removed user {} from the storage.", userId);
 	}
@@ -389,10 +396,8 @@ public class AdminProcessor {
 	}
 
 	public synchronized void addGroup(Group group) throws JSONException {
-		synchronized (storage) {
-			ValidatorHelper.failOnError(log, validator.validate(group));
-			storage.addGroup(group);
-		}
+		ValidatorHelper.failOnError(log, validator.validate(group));
+		storage.addGroup(group);
 		log.trace("New group:\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
 
 	}
@@ -427,7 +432,7 @@ public class AdminProcessor {
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
-	public void removeGroup(GroupId groupId) {
+	public void deleteGroup(GroupId groupId) {
 		synchronized (storage) {
 			storage.removeGroup(groupId);
 		}

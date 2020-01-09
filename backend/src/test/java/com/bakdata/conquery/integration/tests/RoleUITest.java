@@ -31,7 +31,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
  * tested against the created entities.
  *
  */
-public class MandatorUITest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
+public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 
 	private MasterMetaStorage storage;

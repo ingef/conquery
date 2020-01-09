@@ -26,7 +26,7 @@
                             <#list permission.left.targets as target> ${target} </#list>
                         </#if>
                     </td>
-                    <td>${permission.left.creationTime?datetime}</td>
+                    <td>${permission.left.creationTime}</td>
                     <td><a href="#" onclick="handleDeletePermission('${permission.right}')"><i class="fas fa-trash-alt text-danger"></i></a></td>
                 </tr>
             </#list>
