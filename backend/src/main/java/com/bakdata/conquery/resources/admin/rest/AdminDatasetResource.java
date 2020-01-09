@@ -94,9 +94,23 @@ public class AdminDatasetResource extends HAdmin {
 	@POST
 	@Path("imports")
 	public void addImport(@QueryParam("file") File selectedFile) throws IOException, JSONException {
-		if(!selectedFile.canRead() || !selectedFile.exists() || !selectedFile.isAbsolute() || !selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)) {
-			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Needs to be absolute path, readable and be a .cqpp-file.", Status.BAD_REQUEST);
+
+		if(!selectedFile.canRead()) {
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Cannot read.", Status.BAD_REQUEST);
 		}
+
+		if(!selectedFile.exists()) {
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Does not exist.", Status.BAD_REQUEST);
+		}
+
+		if(!selectedFile.isAbsolute()) {
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Is not absolute.", Status.BAD_REQUEST);
+		}
+
+		if(!selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
+			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Does not end with CQPP.", Status.BAD_REQUEST);
+		}
+
 
 		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
 	}
