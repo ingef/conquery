@@ -3,6 +3,11 @@ package com.bakdata.conquery.resources.admin.rest;
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
 import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.StringJoiner;
+
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -16,10 +21,6 @@ import javax.ws.rs.QueryParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.Status;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -45,14 +46,15 @@ import org.glassfish.jersey.media.multipart.FormDataParam;
 
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-@Getter @Setter
+@Getter
+@Setter
 @Path("datasets/{" + DATASET_NAME + "}")
 public class AdminDatasetResource extends HAdmin {
 
 	@PathParam(DATASET_NAME)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
-	
+
 	@PostConstruct
 	@Override
 	public void init() {
@@ -77,7 +79,7 @@ public class AdminDatasetResource extends HAdmin {
 		ds.setLabel(label);
 		namespace.getStorage().updateDataset(ds);
 	}
-	
+
 	@POST
 	@Path("tables")
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -95,38 +97,44 @@ public class AdminDatasetResource extends HAdmin {
 	@Path("imports")
 	public void addImport(@QueryParam("file") File selectedFile) throws IOException, JSONException {
 
-		if(!selectedFile.canRead()) {
-			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Cannot read.", Status.BAD_REQUEST);
+		StringJoiner errors = new StringJoiner("\n");
+
+		if (!selectedFile.canRead()) {
+			errors.add("Cannot read.");
 		}
 
-		if(!selectedFile.exists()) {
-			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Does not exist.", Status.BAD_REQUEST);
+		if (!selectedFile.exists()) {
+			errors.add("Does not exist.");
 		}
 
-		if(!selectedFile.isAbsolute()) {
-			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Is not absolute.", Status.BAD_REQUEST);
+		if (!selectedFile.isAbsolute()) {
+			errors.add("Is not absolute.");
 		}
 
-		if(!selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
-			throw new WebApplicationException("Invalid file (`" + selectedFile + "`) specified: Does not end with CQPP.", Status.BAD_REQUEST);
+		if (!selectedFile.getPath().endsWith(ConqueryConstants.EXTENSION_PREPROCESSED)) {
+			errors.add(String.format("Does not end with `%s`.", ConqueryConstants.EXTENSION_PREPROCESSED));
+		}
+
+		if (errors.length() > 0) {
+			throw new WebApplicationException(String.format("Invalid file (`%s`) supplied:\n%s.", selectedFile, errors.toString()), Status.BAD_REQUEST);
 		}
 
 
 		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
 	}
-	
+
 	@POST
 	@Path("concepts")
 	public void addConcept(Concept<?> concept) throws IOException, JSONException, ConfigurationException {
 		processor.addConcept(namespace.getDataset(), concept);
 	}
-	
+
 	@POST
 	@Path("structure")
-	public void setStructure(@NotNull@Valid StructureNode[] structure) throws JSONException {
+	public void setStructure(@NotNull @Valid StructureNode[] structure) throws JSONException {
 		processor.setStructure(namespace.getDataset(), structure);
 	}
-	
+
 	@DELETE
 	@Path("tables/{" + TABLE_NAME + "}")
 	public void removeTable(@PathParam(TABLE_NAME) TableId tableParam) throws IOException, JSONException {
