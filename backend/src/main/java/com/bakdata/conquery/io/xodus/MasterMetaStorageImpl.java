@@ -1,5 +1,11 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.Collection;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
@@ -19,11 +25,6 @@ import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.util.Collection;
 
 @Slf4j
 public class MasterMetaStorageImpl extends ConqueryStorageImpl implements MasterMetaStorage, ConqueryStorage {
@@ -96,7 +97,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
 
-		authGroup = StoreInfo.AUTH_GROUP.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());
+		authGroup = StoreInfo.AUTH_GROUP.identifiable(getGroupsEnvironment(), getValidator(), getCentralRegistry());
 
 		collector
 				.collect(meta)
