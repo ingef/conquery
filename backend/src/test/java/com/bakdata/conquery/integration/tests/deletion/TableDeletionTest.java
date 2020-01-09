@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -46,19 +47,19 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 		final TableId tableId = TableId.Parser.INSTANCE.parse(dataset.getName(), "test_table2");
 
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final IQuery query = test.parseQuery(conquery, test.getRawQuery());
+		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			test.importTables(conquery, test.getContent());
+			IntegrationUtils.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery, test.getRawConcepts());
+			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -164,12 +165,12 @@ public class TableDeletionTest implements ProgrammaticIntegrationTest {
 																				   .map(RequiredTable::toTable).findFirst().get());
 			conquery.waitUntilWorkDone();
 
-			test.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
-													 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
-													 .collect(Collectors.toList()), conquery.getDataset());
+			IntegrationUtils.importTableContents(conquery, Arrays.stream(test.getContent().getTables())
+																 .filter(table -> table.getName().equalsIgnoreCase(tableId.getTable()))
+																 .collect(Collectors.toList()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery, test.getRawConcepts());
+			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			assertThat(namespace.getDataset().getTables().getOptional(tableId))

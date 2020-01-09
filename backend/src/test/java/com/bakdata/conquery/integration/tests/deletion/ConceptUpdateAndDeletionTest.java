@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
@@ -55,19 +56,19 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
 		final QueryTest test2 = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson2);
 
-		final IQuery query = test.parseQuery(conquery, test.getRawQuery());
+		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			test.importTables(conquery, test.getContent());
+			IntegrationUtils.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery, test.getRawConcepts());
+			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -163,7 +164,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		// Load a different concept with the same id (it has different children "C1" that are more than "A1")
 		{
 			// only import the deleted concept
-			test2.importConcepts(conquery, test2.getRawConcepts());
+			IntegrationUtils.importConcepts(conquery, test2.getRawConcepts());
 			conquery.waitUntilWorkDone();
 		}
 

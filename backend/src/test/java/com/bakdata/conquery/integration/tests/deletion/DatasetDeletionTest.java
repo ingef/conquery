@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import java.util.Arrays;
 
 import com.bakdata.conquery.commands.SlaveCommand;
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.json.JsonIntegrationTest;
 import com.bakdata.conquery.integration.json.QueryTest;
@@ -45,19 +46,19 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 		Namespace namespace = storage.getNamespaces().get(dataset);
 		final String testJson = In.resource("/tests/query/DELETE_IMPORT_TESTS/SIMPLE_TREECONCEPT_Query.test.json").withUTF8().readAll();
 		final QueryTest test = (QueryTest) JsonIntegrationTest.readJson(dataset, testJson);
-		final IQuery query = test.parseQuery(conquery, test.getRawQuery());
+		final IQuery query = IntegrationUtils.parseQuery(conquery, test.getRawQuery());
 
 		// Manually import data, so we can do our own work.
 		{
 			ValidatorHelper.failOnError(log, conquery.getValidator().validate(test));
 
-			test.importTables(conquery, test.getContent());
+			IntegrationUtils.importTables(conquery, test.getContent());
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery, test.getRawConcepts());
+			IntegrationUtils.importConcepts(conquery, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
-			test.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
+			IntegrationUtils.importTableContents(conquery, Arrays.asList(test.getContent().getTables()), conquery.getDataset());
 			conquery.waitUntilWorkDone();
 		}
 
@@ -200,11 +201,11 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 			assertThat(newDataset.getTables().values()).isNotEmpty();
 
 			conquery.waitUntilWorkDone();
-			test.importTableContents(conquery2, Arrays.asList(test.getContent().getTables()), newDataset);
+			IntegrationUtils.importTableContents(conquery2, Arrays.asList(test.getContent().getTables()), newDataset);
 
 			conquery.waitUntilWorkDone();
 
-			test.importConcepts(conquery2, test.getRawConcepts());
+			IntegrationUtils.importConcepts(conquery2, test.getRawConcepts());
 			conquery.waitUntilWorkDone();
 
 			assertThat(conquery2.getDatasetsProcessor().getNamespaces().get(dataset))
