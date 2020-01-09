@@ -110,7 +110,9 @@ public class AdminProcessor {
 		for (int p = 0; p < table.getColumns().length; p++) {
 			table.getColumns()[p].setPosition(p);
 		}
+
 		table.getPrimaryColumn().setPosition(Column.PRIMARY_POSITION);
+
 		dataset.getTables().add(table);
 		namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
 		namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));

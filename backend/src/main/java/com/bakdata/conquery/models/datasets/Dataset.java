@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.identifiable.Labeled;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -18,7 +17,8 @@ public class Dataset extends Labeled<DatasetId> implements Injectable {
 
 	@JsonManagedReference @Valid
 	private IdMap<TableId, Table> tables = new IdMap<>();
-	
+
+	// TODO: 09.01.2020 fk: Maintain concepts in dataset as well, or get rid of tables, but don't do both.
 	
 	@Override
 	public MutableInjectableValues inject(MutableInjectableValues mutableInjectableValues) {

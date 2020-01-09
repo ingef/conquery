@@ -142,7 +142,7 @@ public class AdminDatasetResource extends HAdmin {
 	public void setStructure(@NotNull@Valid StructureNode[] structure) throws JSONException {
 		processor.setStructure(namespace.getDataset(), structure);
 	}
-	
+
 	@DELETE
 	@Path("tables/{" + TABLE_NAME + "}")
 	public void removeTable(@PathParam(TABLE_NAME) TableId tableParam) throws IOException, JSONException {
@@ -163,6 +163,12 @@ public class AdminDatasetResource extends HAdmin {
 	@Path("concepts")
 	public List<ConceptId> listConcepts(){
 		return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+
+	@DELETE
+	public void delete(){
+		processor.deleteDataset(datasetId);
 	}
 
 }

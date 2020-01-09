@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -102,10 +101,5 @@ public class DatasetsUIResource extends HAdmin {
 		else {
 			return new UIView<>("add_idmapping.html.ftl", processor.getUIContext(), namespace.getDataset().getId());
 		}
-	}
-
-	@DELETE
-	public void delete(){
-		processor.deleteDataset(datasetId);
 	}
 }
