@@ -1,11 +1,11 @@
 package com.bakdata.conquery.io.xodus;
 
-import javax.validation.Validator;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.models.config.StorageConfig;
@@ -35,7 +35,10 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {
 	}
-	
+
+	/**
+	 * Load all stores from disk.
+	 */
 	@Override
 	public void loadData() {
 		createStores(stores::add);
@@ -56,8 +59,7 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 	}
 
 	/**
-	 * clears the environment the closes it.
-	 * @throws IOException
+	 * Clears the environment then closes it.
 	 */
 	public void remove() throws IOException {
 		environment.clear();

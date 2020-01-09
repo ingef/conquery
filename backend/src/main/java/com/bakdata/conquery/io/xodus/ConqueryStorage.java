@@ -1,10 +1,10 @@
 package com.bakdata.conquery.io.xodus;
 
-import javax.validation.Validator;
-
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+
+import javax.validation.Validator;
 
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import jetbrains.exodus.env.Environment;
@@ -18,5 +18,8 @@ public interface ConqueryStorage extends Closeable {
 	
 	void loadData();
 
+	/**
+	 * Completely remove the Storage, deleting its contents.
+	 */
 	void remove() throws IOException;
 }
