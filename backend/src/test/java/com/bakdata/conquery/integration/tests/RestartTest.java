@@ -68,59 +68,49 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 
 		test.executeTest(conquery);
 
-		{
-			// Auth testing
-			MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
-			storage.addRole(mandator);
-			storage.addRole(deleteMandator);
-			storage.removeRole(deleteMandator.getId());
+		// IDMapping Testing
+		NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
 
-			// IDMapping Testing
-			NamespaceStorage namespaceStorage = conquery.getStandaloneCommand().getMaster().getNamespaces().get(dataset).getStorage();
+		namespaceStorage.updateIdMapping(persistentIdMap);
 
+		{// Auth testing (deletion and permission grant)
+			// build constellation
+			adminProcessor.addUser(user);
+			adminProcessor.addUser(userToDelete);
+			adminProcessor.addRole(role);
+			adminProcessor.addRole(roleToDelete);
+			adminProcessor.addGroup(group);
+			adminProcessor.addGroup(groupToDelete);
 
-			namespaceStorage.updateIdMapping(persistentIdMap);
+			adminProcessor.addRoleTo(user.getId(), role.getId());
+			adminProcessor.addRoleTo(user.getId(), roleToDelete.getId());
+			adminProcessor.addRoleTo(userToDelete.getId(), role.getId());
+			adminProcessor.addRoleTo(userToDelete.getId(), roleToDelete.getId());
 
-			{// Auth testing (deletion and permission grant)
-				// build constellation
-				adminProcessor.addUser(user);
-				adminProcessor.addUser(userToDelete);
-				adminProcessor.addRole(role);
-				adminProcessor.addRole(roleToDelete);
-				adminProcessor.addGroup(group);
-				adminProcessor.addGroup(groupToDelete);
+			adminProcessor.addRoleTo(group.getId(), role.getId());
+			adminProcessor.addRoleTo(group.getId(), roleToDelete.getId());
+			adminProcessor.addRoleTo(groupToDelete.getId(), role.getId());
+			adminProcessor.addRoleTo(groupToDelete.getId(), roleToDelete.getId());
 
-				adminProcessor.addRoleTo(user.getId(), role.getId());
-				adminProcessor.addRoleTo(user.getId(), roleToDelete.getId());
-				adminProcessor.addRoleTo(userToDelete.getId(), role.getId());
-				adminProcessor.addRoleTo(userToDelete.getId(), roleToDelete.getId());
+			adminProcessor.addUserToGroup(group.getId(), user.getId());
+			adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());
+			adminProcessor.addUserToGroup(groupToDelete.getId(), user.getId());
+			adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
 
-				adminProcessor.addRoleTo(group.getId(), role.getId());
-				adminProcessor.addRoleTo(group.getId(), roleToDelete.getId());
-				adminProcessor.addRoleTo(groupToDelete.getId(), role.getId());
-				adminProcessor.addRoleTo(groupToDelete.getId(), roleToDelete.getId());
+			// Adding Permissions
+			adminProcessor.createPermission(user.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")));
+			adminProcessor.createPermission(userToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")));
 
-				adminProcessor.addUserToGroup(group.getId(), user.getId());
-				adminProcessor.addUserToGroup(group.getId(), userToDelete.getId());
-				adminProcessor.addUserToGroup(groupToDelete.getId(), user.getId());
-				adminProcessor.addUserToGroup(groupToDelete.getId(), userToDelete.getId());
+			adminProcessor.createPermission(role.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")));
+			adminProcessor.createPermission(roleToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")));
 
-				// Adding Permissions
-				adminProcessor.createPermission(user.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset1")));
-				adminProcessor.createPermission(userToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset2")));
+			adminProcessor.createPermission(group.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")));
+			adminProcessor.createPermission(groupToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")));
 
-				adminProcessor.createPermission(role.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset3")));
-				adminProcessor.createPermission(roleToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset4")));
-
-				adminProcessor.createPermission(group.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset5")));
-				adminProcessor.createPermission(groupToDelete.getId(), DatasetPermission.onInstance(Ability.READ, new DatasetId("testDataset6")));
-
-				// Delete entities
-				adminProcessor.deleteUser(userToDelete.getId());
-				adminProcessor.deleteRole(roleToDelete.getId());
-				adminProcessor.deleteGroup(groupToDelete.getId());
-			}
-
+			// Delete entities
+			adminProcessor.deleteUser(userToDelete.getId());
+			adminProcessor.deleteRole(roleToDelete.getId());
+			adminProcessor.deleteGroup(groupToDelete.getId());
 		}
 
 		testConquery.shutdown(conquery);
@@ -164,4 +154,4 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 		assertThat(persistentIdMapAfterRestart).isEqualTo(persistentIdMap);
 	}
 }
-}
+

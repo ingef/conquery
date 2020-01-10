@@ -1,7 +1,9 @@
 package com.bakdata.conquery.resources.admin.ui;
 
 import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -15,9 +17,13 @@ import javax.ws.rs.core.MediaType;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HTables;
@@ -99,5 +105,15 @@ public class TablesUIResource extends HTables {
 						.filter(imp -> imp.getTable().equals(table.getId()))
 						.map(Import::getId)
 						.collect(Collectors.toList());
+	}
+
+	//@DELETE
+	public void removeTable(@PathParam(TABLE_NAME) TableId tableParam) throws IOException, JSONException {
+		log.info("Hallo max");
+		namespace.getDataset().getTables().remove(tableParam);
+		namespace.getStorage().updateDataset(namespace.getDataset());
+		for (WorkerInformation w : namespace.getWorkers()) {
+			w.send(new UpdateDataset(namespace.getDataset()));
+		}
 	}
 }

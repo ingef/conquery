@@ -164,7 +164,8 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 							UUID id = UUID.randomUUID();
 							uuids.add(id);
 							dataStore.add(id, chunk);
-						} catch (Exception e) {
+						}
+						catch (Exception e) {
 							throw new RuntimeException("Failed to write chunk", e);
 						}
 					}
@@ -182,10 +183,9 @@ public class BigStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	private VALUE createValue(KEY key, BigStoreMetaKey meta) {
-		Iterator<ByteArrayInputStream> it = meta
-													.loadData(dataStore)
-													.map(ByteArrayInputStream::new)
-													.iterator();
+		Iterator<ByteArrayInputStream> it = meta.loadData(dataStore)
+												.map(ByteArrayInputStream::new)
+												.iterator();
 
 		try (InputStream in = new BufferedInputStream(new SequenceInputStream(IteratorUtils.asEnumeration(it)))) {
 			return valueReader.readValue(in);
