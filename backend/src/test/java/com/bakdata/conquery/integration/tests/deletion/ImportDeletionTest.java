@@ -3,7 +3,6 @@ package com.bakdata.conquery.integration.tests.deletion;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Arrays;
-import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.commands.SlaveCommand;
@@ -13,14 +12,11 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.util.support.StandaloneSupport;
@@ -102,7 +98,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 
 			log.info("Executing query before deletion");
 
-			assertQueryResult(conquery, query, 2L);
+			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Delete the import.
@@ -152,7 +148,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after deletion");
 
 			// Issue a query and asseert that it has less content.
-			assertQueryResult(conquery, query, 1L);
+			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 1L, ExecutionState.DONE);
 		}
 
 		conquery.waitUntilWorkDone();
@@ -190,7 +186,7 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 			log.info("Executing query after re-import");
 
 			// Issue a query and assert that it has the same content as the first time around.
-			assertQueryResult(conquery, query, 2L);
+			ConceptUpdateAndDeletionTest.assertQueryResult(conquery, query, 2L, ExecutionState.DONE);
 		}
 
 		// Finally, restart conquery and assert again, that the data is correct.
@@ -226,20 +222,9 @@ public class ImportDeletionTest implements ProgrammaticIntegrationTest {
 				log.info("Executing query after re-import");
 
 				// Issue a query and assert that it has the same content as the first time around.
-				assertQueryResult(conquery2, query, 2L);
+				ConceptUpdateAndDeletionTest.assertQueryResult(conquery2, query, 2L, ExecutionState.DONE);
 			}
 		}
 	}
 
-	/**
-	 * Send a query onto the conquery instance and assert the result's size.
-	 */
-	private void assertQueryResult(StandaloneSupport conquery, IQuery query, long size) throws JSONException {
-		final ManagedQuery managedQuery = conquery.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
-
-		managedQuery.awaitDone(2, TimeUnit.MINUTES);
-		assertThat(managedQuery.getState()).isEqualTo(ExecutionState.DONE);
-
-		assertThat(managedQuery.getLastResultCount()).isEqualTo(size);
-	}
 }
