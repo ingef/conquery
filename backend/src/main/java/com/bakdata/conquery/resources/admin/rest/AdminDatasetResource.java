@@ -1,18 +1,21 @@
 package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.StringJoiner;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
+import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
@@ -31,19 +34,20 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 import org.glassfish.jersey.media.multipart.BodyPart;
 import org.glassfish.jersey.media.multipart.FormDataBodyPart;
 import org.glassfish.jersey.media.multipart.FormDataParam;
 
+@Slf4j
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Getter
@@ -123,6 +127,7 @@ public class AdminDatasetResource extends HAdmin {
 		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
 	}
 
+
 	@POST
 	@Path("concepts")
 	public void addConcept(Concept<?> concept) throws IOException, JSONException, ConfigurationException {
@@ -135,13 +140,22 @@ public class AdminDatasetResource extends HAdmin {
 		processor.setStructure(namespace.getDataset(), structure);
 	}
 
-	@DELETE
-	@Path("tables/{" + TABLE_NAME + "}")
-	public void removeTable(@PathParam(TABLE_NAME) TableId tableParam) throws IOException, JSONException {
-		namespace.getDataset().getTables().remove(tableParam);
-		namespace.getStorage().updateDataset(namespace.getDataset());
-		for (WorkerInformation w : namespace.getWorkers()) {
-			w.send(new UpdateDataset(namespace.getDataset()));
-		}
+
+	@GET
+	@Path("tables")
+	public List<TableId> listTables(){
+		return new ArrayList<>(namespace.getDataset().getTables().keySet());
 	}
+
+	@GET
+	@Path("concepts")
+	public List<ConceptId> listConcepts(){
+		return namespace.getStorage().getAllConcepts().stream().map(Concept::getId).collect(Collectors.toList());
+	}
+
+	@DELETE
+	public void delete(){
+		processor.deleteDataset(datasetId);
+	}
+
 }

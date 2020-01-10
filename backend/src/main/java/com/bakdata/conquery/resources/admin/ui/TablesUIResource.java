@@ -1,5 +1,7 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -19,12 +21,10 @@ import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HTables;
-
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -74,9 +74,9 @@ public class TablesUIResource extends HTables {
 			)
 		);
 	}
-	
+
 	@GET
-	@Path("import/{"+IMPORT_ID+"}")
+	@Path("import/{" + IMPORT_ID + "}")
 	public View getImportView(@PathParam(IMPORT_ID)ImportId importId) {
 		Import imp = namespace
 			.getStorage()

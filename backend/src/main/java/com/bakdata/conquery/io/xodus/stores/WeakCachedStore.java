@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -12,10 +11,12 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Weakly cached store, using {@link LoadingCache} to maintain values. Is a wrapper around the supplied {@link Store}.
+ */
 @RequiredArgsConstructor @Slf4j
 public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 
@@ -28,7 +29,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		.build(new CacheLoader<KEY, Optional<VALUE>>() {
 			@Override
 			public Optional<VALUE> load(KEY key) throws Exception {
-				log.debug("Needing to load entry "+key+" in "+this);
+				log.trace("Needing to load entry "+key+" in "+this);
 				return Optional.ofNullable(store.get(key));
 			}
 		});
@@ -44,7 +45,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 		try {
 			Optional<VALUE> old = cache.get(key);
 			if(old.isPresent()) {
-				throw new IllegalStateException("The id "+key+" is alread part of this store");
+				throw new IllegalStateException("The id "+key+" is already part of this store");
 			}
 			cache.put(key, Optional.of(value));
 			store.add(key, value);
@@ -65,7 +66,7 @@ public class WeakCachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	}
 
 	@Override
-	public void forEach(Consumer<StoreEntry<KEY, VALUE>> consumer) {
+	public void forEach(StoreEntryConsumer<KEY, VALUE> consumer) {
 		throw new UnsupportedOperationException();
 	}
 
