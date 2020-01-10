@@ -1,20 +1,19 @@
 package com.bakdata.conquery.io.xodus.stores;
 
-import java.io.Closeable;
-import java.io.IOException;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.function.BiConsumer;
-
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.google.common.primitives.Ints;
-
 import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.env.Cursor;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Store;
 import jetbrains.exodus.env.StoreConfig;
 import lombok.extern.slf4j.Slf4j;
+
+import java.io.Closeable;
+import java.io.IOException;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 
 @Slf4j
 public class XodusStore implements Closeable {
@@ -37,6 +36,11 @@ public class XodusStore implements Closeable {
 		return environment.computeInReadonlyTransaction(t -> store.get(t, key));
 	}
 
+	/**
+	 * Iterate over all key-value pairs in a consistent manner.
+	 * The transaction is read only!
+	 * @param consumer function called for-each key-value pair.
+	 */
 	public void forEach(BiConsumer<ByteIterable, ByteIterable> consumer) {
 		AtomicReference<ByteIterable> lastKey = new AtomicReference<>();
 		AtomicBoolean done = new AtomicBoolean(false);

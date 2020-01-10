@@ -17,7 +17,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
  * Tests if roles are correctly added and removed from a subject.
  *
  */
-public class RoleHandlingOnGroupTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple  {
+public class RoleHandlingOnGroupTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private final Group group1 = new Group("company", "company");
 	private final Role role = new Role("role1", "role1");

@@ -16,11 +16,8 @@ import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.jobs.SimpleJob;
-import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -51,11 +48,6 @@ public class AdminConceptsResource extends HAdmin {
 
 	@DELETE
 	public void removeConcept() {
-		processor
-			.getJobManager()
-			.addSlowJob(new SimpleJob("Adding concept " + conceptId, () -> namespace.getStorage().removeConcept(conceptId)));
-		processor
-			.getJobManager()
-			.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(conceptId))));
+		processor.deleteConcept(conceptId);
 	}
 }

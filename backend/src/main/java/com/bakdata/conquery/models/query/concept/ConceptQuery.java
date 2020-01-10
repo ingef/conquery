@@ -14,13 +14,15 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @CPSType(id = "CONCEPT_QUERY", base = IQuery.class)
+@AllArgsConstructor(onConstructor = @__({@JsonCreator}))
 public class ConceptQuery implements IQuery {
 
 	@Valid
