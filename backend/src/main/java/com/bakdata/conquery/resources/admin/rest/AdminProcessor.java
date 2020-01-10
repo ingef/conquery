@@ -63,7 +63,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
 import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
-import com.bakdata.conquery.models.preproc.PreprocessedHeader;
+import com.bakdata.conquery.models.preproc.PPHeader;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -173,7 +173,7 @@ public class AdminProcessor {
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
 		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
-			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
+			PPHeader header = Jackson.BINARY_MAPPER.readValue(in, PPHeader.class);
 
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);

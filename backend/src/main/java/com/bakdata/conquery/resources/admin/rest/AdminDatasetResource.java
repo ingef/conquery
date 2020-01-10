@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
 
 import java.io.File;
 import java.io.IOException;
@@ -37,7 +36,6 @@ import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
@@ -129,11 +127,6 @@ public class AdminDatasetResource extends HAdmin {
 		processor.addImport(namespace.getStorage().getDataset(), selectedFile);
 	}
 
-	@DELETE
-	@Path("import/{"+IMPORT_ID+"}")
-	public void deleteImportView(@PathParam(IMPORT_ID) ImportId importId) {
-		processor.deleteImport(importId);
-	}
 
 	@POST
 	@Path("concepts")

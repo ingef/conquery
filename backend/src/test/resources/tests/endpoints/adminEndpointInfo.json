@@ -2,17 +2,37 @@
   {
     "method": "DELETE",
     "path": "/datasets/{datasetName}/tables/{tableName}",
-    "clazz": "TablesUIResource"
+    "clazz": "AdminTablesResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{datasetName}/tables/{tableName}/imports",
+    "clazz": "AdminTablesResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets",
+    "clazz": "AdminResource"
   },
   {
     "method": "DELETE",
     "path": "/datasets/{datasetName}",
-    "clazz": "DatasetsUIResource"
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{datasetName}/concepts",
+    "clazz": "AdminDatasetResource"
+  },
+  {
+    "method": "GET",
+    "path": "/datasets/{datasetName}/tables",
+    "clazz": "AdminDatasetResource"
   },
   {
     "method": "DELETE",
-    "path": "/datasets/{datasetName}/import/{importId}",
-    "clazz": "AdminDatasetResource"
+    "path": "/datasets/{datasetName}/tables/{tableName}/import/{importId}",
+    "clazz": "AdminTablesResource"
   },
   {
     "method": "DELETE",
@@ -42,11 +62,6 @@
   {
     "method": "POST",
     "path": "/datasets/{datasetName}/structure",
-    "clazz": "AdminDatasetResource"
-  },
-  {
-    "method": "DELETE",
-    "path": "/datasets/{datasetName}/tables/{tableName}",
     "clazz": "AdminDatasetResource"
   },
   {

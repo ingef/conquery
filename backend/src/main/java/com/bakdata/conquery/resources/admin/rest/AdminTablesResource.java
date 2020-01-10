@@ -1,7 +1,6 @@
 package com.bakdata.conquery.resources.admin.rest;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.*;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -68,6 +67,12 @@ public class AdminTablesResource extends HAdmin {
 						.filter(imp -> imp.getTable().equals(table.getId()))
 						.map(Import::getId)
 						.collect(Collectors.toList());
+	}
+
+	@DELETE
+	@Path("import/{"+IMPORT_ID+"}")
+	public void deleteImportView(@PathParam(IMPORT_ID) ImportId importId) {
+		processor.deleteImport(importId);
 	}
 
 }
