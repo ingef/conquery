@@ -8,7 +8,6 @@ import java.util.stream.Collectors;
 
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
-import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
@@ -75,8 +74,8 @@ public class TablesUIResource extends HTables {
 		);
 	}
 
-	@GET
-	@Path("import/{"+IMPORT_ID+"}")
+//	@GET
+//	@Path("import/{"+IMPORT_ID+"}")
 	public View getImportView(@PathParam(IMPORT_ID)ImportId importId) {
 		Import imp = namespace
 			.getStorage()

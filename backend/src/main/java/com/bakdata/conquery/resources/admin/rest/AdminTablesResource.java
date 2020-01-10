@@ -70,9 +70,12 @@ public class AdminTablesResource extends HAdmin {
 	}
 
 	@DELETE
-	@Path("import/{"+IMPORT_ID+"}")
+	@Path("imports/{"+IMPORT_ID+"}")
 	public void deleteImportView(@PathParam(IMPORT_ID) ImportId importId) {
 		processor.deleteImport(importId);
 	}
+
+
+
 
 }
