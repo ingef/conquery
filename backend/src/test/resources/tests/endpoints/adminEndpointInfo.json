@@ -10,6 +10,11 @@
     "clazz": "AdminTablesResource"
   },
   {
+    "method": "DELETE",
+    "path": "/datasets/{datasetName}/tables/{tableName}/imports/{importId}",
+    "clazz": "AdminTablesResource"
+  },
+  {
     "method": "GET",
     "path": "/datasets",
     "clazz": "AdminResource"
@@ -28,11 +33,6 @@
     "method": "GET",
     "path": "/datasets/{datasetName}/tables",
     "clazz": "AdminDatasetResource"
-  },
-  {
-    "method": "DELETE",
-    "path": "/datasets/{datasetName}/tables/{tableName}/import/{importId}",
-    "clazz": "AdminTablesResource"
   },
   {
     "method": "DELETE",
