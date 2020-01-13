@@ -36,6 +36,8 @@ public class QueryProcessor {
 
 	/**
 	 * Find first and only directly ReusedQuery in the queries tree, and return its Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
+	 *
+	 * @return Null if not only a single {@link CQReusedQuery} was found beside {@link CQAnd} / {@link CQOr}.
 	 */
 	private static ManagedExecutionId getOnlyReused(IQuery query) {
 
@@ -57,6 +59,9 @@ public class QueryProcessor {
 			}
 			else if (element instanceof CQOr) {
 				search.addAll(((CQOr) element).getChildren());
+			}
+			else {
+				return null;
 			}
 		}
 
