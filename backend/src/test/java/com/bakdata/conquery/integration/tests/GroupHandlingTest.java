@@ -6,14 +6,13 @@ import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
 /**
  * Tests if Groups are correctly added and removed from a subject.
  *
  */
-public class GroupHandlingTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple  {
+public class GroupHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private final Group group1 = new Group("company", "company");
 	private final User user1 = new User("user", "user");
@@ -23,8 +22,6 @@ public class GroupHandlingTest implements ProgrammaticIntegrationTest, Integrati
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
-		Dataset dataset1 = new Dataset();
-		dataset1.setLabel("dataset1");
 		MasterMetaStorage storage = conquery.getStandaloneCommand().getMaster().getStorage();
 		
 		try {

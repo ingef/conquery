@@ -13,7 +13,7 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
  * Tests if roles are correctly added and removed from a subject.
  *
  */
-public class RoleHandlingTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple  {
+public class RoleHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private final Role mandator1 = new Role("company", "company");
 	private final Role mandator1Copy = new Role("company", "company");

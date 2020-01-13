@@ -1,13 +1,12 @@
 package com.bakdata.conquery.util.support;
 
+import javax.validation.Validator;
+import javax.ws.rs.client.Client;
+
 import java.io.Closeable;
 import java.io.File;
 import java.time.Duration;
-import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
 
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
@@ -15,11 +14,12 @@ import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import io.dropwizard.testing.DropwizardTestSupport;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +76,9 @@ public class StandaloneSupport implements Closeable {
 
 	@Override
 	public void close() {
-		testConquery.stop(this);
+		DatasetId dataset = getDataset().getId();
+		standaloneCommand.getMaster().getNamespaces().getSlaves().values().forEach(s -> s.send(new RemoveWorker(dataset)));
+		standaloneCommand.getMaster().getNamespaces().removeNamespace(dataset);
 	}
 
 	public Validator getValidator() {

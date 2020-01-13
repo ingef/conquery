@@ -5,13 +5,14 @@ import com.bakdata.conquery.io.xodus.stores.KeyIncludingStore;
 import com.bakdata.conquery.io.xodus.stores.SingletonStore;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.events.BlockManager;
 import com.bakdata.conquery.models.events.Bucket;
+import com.bakdata.conquery.models.events.BucketManager;
 import com.bakdata.conquery.models.events.CBlock;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.util.functions.Collector;
 import lombok.Getter;
@@ -28,15 +29,15 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	private IdentifiableStore<Bucket> blocks;
 	private IdentifiableStore<CBlock> cBlocks;
 	@Getter
-	private BlockManager blockManager;
+	private BucketManager bucketManager;
 	
 	public WorkerStorageImpl(Validator validator, StorageConfig config, File directory) {
 		super(validator, config, directory);
 	}
 	
 	@Override
-	public void setBlockManager(BlockManager blockManager) {
-		this.blockManager = blockManager;
+	public void setBucketManager(BucketManager bucketManager) {
+		this.bucketManager = bucketManager;
 	}
 
 	@Override
@@ -80,8 +81,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void addBucket(Bucket bucket) throws JSONException {
 		blocks.add(bucket);
-		if(getBlockManager()!=null) {
-			getBlockManager().addBucket(bucket);
+		if(this.getBucketManager() != null) {
+			this.getBucketManager().addBucket(bucket);
 		}
 	}
 
@@ -93,8 +94,8 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void removeBucket(BucketId id) {
 		blocks.remove(id);
-		if(getBlockManager()!=null) {
-			getBlockManager().removeBucket(id);
+		if(this.getBucketManager() != null) {
+			this.getBucketManager().removeBucket(id);
 		}
 	}
 	
@@ -122,17 +123,26 @@ public class WorkerStorageImpl extends NamespacedStorageImpl implements WorkerSt
 	@Override
 	public void updateConcept(Concept<?> concept) throws JSONException {
 		concepts.update(concept);
-		if(blockManager!=null) {
-			blockManager.removeConcept(concept.getId());
-			blockManager.addConcept(concept);
+		if(bucketManager != null) {
+			bucketManager.removeConcept(concept.getId());
+			bucketManager.addConcept(concept);
 		}
 	}
 
 	@Override
 	public void removeConcept(ConceptId id) {
 		concepts.remove(id);
-		if(blockManager!=null) {
-			blockManager.removeConcept(id);
+		if(bucketManager != null) {
+			bucketManager.removeConcept(id);
+		}
+	}
+
+	@Override
+	public void removeImport(ImportId id){
+		imports.remove(id);
+
+		if (bucketManager != null){
+			bucketManager.removeImport(id);
 		}
 	}
 }

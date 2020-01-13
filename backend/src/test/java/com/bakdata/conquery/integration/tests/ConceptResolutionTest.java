@@ -18,11 +18,10 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ConceptResolutionTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class ConceptResolutionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
