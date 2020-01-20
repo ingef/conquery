@@ -53,6 +53,7 @@ public class StoredQueriesProcessor {
 			// to exclude subtypes from somewhere else
 			.filter(q -> (q instanceof ManagedQuery) && ((ManagedQuery) q).getQuery().getClass().equals(ConceptQuery.class))
 			.filter(q -> q.getDataset().equals(dataset.getId()))
+			.filter(q -> user.isPermitted(QueryPermission.onInstance(Ability.READ, q.getId())))
 			.flatMap(mq -> {
 				try {
 					return Stream.of(
