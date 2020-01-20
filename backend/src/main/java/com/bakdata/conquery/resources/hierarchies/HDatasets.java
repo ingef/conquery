@@ -10,12 +10,11 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response.Status;
 
+import com.bakdata.conquery.apiv1.QueryProcessor;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import lombok.Setter;
 
 @Setter
@@ -23,7 +22,7 @@ import lombok.Setter;
 public abstract class HDatasets extends HAuthorized {
 	
 	@Inject
-	protected AdminProcessor processor;
+	protected QueryProcessor processor;
 	@PathParam(DATASET_NAME)
 	protected DatasetId datasetId;
 	protected Namespace namespace;
@@ -34,7 +33,7 @@ public abstract class HDatasets extends HAuthorized {
 	public void init() {
 		super.init();
 		authorize(user, datasetId, Ability.READ);
-		this.namespace = processor.getNamespaces().get(datasetId);
+		this.namespace = processor.getNamespace(datasetId);
 		if(namespace == null) {
 			throw new WebApplicationException("Could not find dataset "+datasetId, Status.NOT_FOUND);
 		}

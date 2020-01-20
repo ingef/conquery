@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -13,6 +14,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -128,5 +130,21 @@ public class QueryProcessor {
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution query, URLBuilder urlb) {
 
 		return null;
+	}
+	
+	public Namespace getNamespace(DatasetId dataset) {
+		return namespaces.get(dataset);
+	}
+	
+	public Dataset getDataset(DatasetId id) {
+		return namespaces.get(id).getStorage().getDataset();
+	}
+
+	public NamespaceStorage getStorage(DatasetId id) {
+		return namespaces.get(id).getStorage();
+	}
+
+	public ManagedQuery getManagedQuery(ManagedExecutionId queryId) {
+		return namespaces.get(queryId.getDataset()).getQueryManager().getQuery(queryId);
 	}
 }

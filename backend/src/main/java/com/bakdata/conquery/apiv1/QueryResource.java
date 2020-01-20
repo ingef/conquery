@@ -7,6 +7,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -28,8 +29,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 
 @Path("datasets/{" + DATASET + "}/queries")
@@ -38,12 +37,11 @@ import io.dropwizard.auth.Auth;
 
 public class QueryResource {
 
+	@Inject
 	private final QueryProcessor processor;
-	private final ResourceUtil dsUtil;
 
-	public QueryResource(Namespaces namespaces, MasterMetaStorage storage) {
-		this.processor = new QueryProcessor(namespaces, storage);
-		this.dsUtil = new ResourceUtil(namespaces);
+	public QueryResource(QueryProcessor queryProcessor, MasterMetaStorage storage) {
+		this.processor = queryProcessor;
 	}
 
 	@POST
@@ -56,7 +54,7 @@ public class QueryResource {
 		}
 
 		return processor.postQuery(
-			dsUtil.getDataset(datasetId),
+			processor.getDataset(datasetId),
 			query,
 			URLBuilder.fromRequest(req),
 			user);
@@ -69,8 +67,8 @@ public class QueryResource {
 		authorize(user, queryId, Ability.READ);
 
 		return processor.cancel(
-			dsUtil.getDataset(datasetId),
-			dsUtil.getManagedQuery(queryId),
+			processor.getDataset(datasetId),
+			processor.getManagedQuery(queryId),
 			URLBuilder.fromRequest(req));
 	}
 
@@ -79,10 +77,10 @@ public class QueryResource {
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		ManagedQuery query = dsUtil.getManagedQuery(queryId);
+		ManagedQuery query = processor.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
-			dsUtil.getDataset(datasetId),
+			processor.getDataset(datasetId),
 			query,
 			URLBuilder.fromRequest(req),
 			user);
