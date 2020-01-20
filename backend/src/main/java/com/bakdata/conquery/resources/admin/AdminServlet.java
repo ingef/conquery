@@ -19,6 +19,7 @@ import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
 import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
+import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.admin.rest.GroupResource;
 import com.bakdata.conquery.resources.admin.rest.PermissionResource;
 import com.bakdata.conquery.resources.admin.rest.RoleResource;
@@ -101,6 +102,7 @@ public class AdminServlet {
 			.register(AdminResource.class)
 			.register(AdminDatasetResource.class)
 			.register(AdminConceptsResource.class)
+			.register(AdminTablesResource.class)
 			.register(AdminUIResource.class)
 			.register(RoleResource.class)
 			.register(RoleUIResource.class)

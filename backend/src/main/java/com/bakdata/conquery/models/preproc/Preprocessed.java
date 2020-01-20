@@ -1,5 +1,10 @@
 package com.bakdata.conquery.models.preproc;
 
+import java.io.IOException;
+import java.io.OutputStream;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.config.PreprocessingConfig;
@@ -13,11 +18,6 @@ import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
 import com.esotericsoftware.kryo.io.Output;
 import io.dropwizard.util.Size;
 import lombok.Data;
-
-import java.io.IOException;
-import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.List;
 
 @Data
 public class Preprocessed {
@@ -136,17 +136,17 @@ public class Preprocessed {
 	public void writeHeader(OutputStream out) throws IOException {
 		int hash = descriptor.calculateValidityHash();
 		
-		PPHeader header = PPHeader.builder()
-				.name(descriptor.getName())
-				.table(descriptor.getTable())
-				.rows(rows)
-				.eventRange(eventRange)
-				.primaryColumn(primaryColumn)
-				.columns(columns)
-				.groups(writtenGroups)
-				.validityHash(hash)
-				.suffix(imp.getSuffix())
-				.build();
+		PreprocessedHeader header = PreprocessedHeader.builder()
+													  .name(descriptor.getName())
+													  .table(descriptor.getTable())
+													  .rows(rows)
+													  .eventRange(eventRange)
+													  .primaryColumn(primaryColumn)
+													  .columns(columns)
+													  .groups(writtenGroups)
+													  .validityHash(hash)
+													  .suffix(imp.getSuffix())
+													  .build();
 		
 		try {
 			Jackson.BINARY_MAPPER.writeValue(out, header);

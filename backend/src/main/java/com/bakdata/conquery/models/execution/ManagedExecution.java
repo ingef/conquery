@@ -53,6 +53,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@Nullable
 	protected UserId owner;
 
+	protected boolean machineGenerated;
+
 	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	protected transient ExecutionState state = ExecutionState.NEW;

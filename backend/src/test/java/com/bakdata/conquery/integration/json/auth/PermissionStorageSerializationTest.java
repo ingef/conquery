@@ -4,9 +4,7 @@ package com.bakdata.conquery.integration.json.auth;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
 import java.util.stream.Collectors;
 
 import javax.validation.Valid;
@@ -18,18 +16,14 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
-import com.bakdata.conquery.io.xodus.stores.MPStore;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;

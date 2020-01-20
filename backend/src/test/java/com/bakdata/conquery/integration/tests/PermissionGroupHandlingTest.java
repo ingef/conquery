@@ -15,7 +15,7 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 
-public class PermissionGroupHandlingTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class PermissionGroupHandlingTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	private final Role role1 = new Role("role", "role");
 	private final User user1 = new User("user", "user");

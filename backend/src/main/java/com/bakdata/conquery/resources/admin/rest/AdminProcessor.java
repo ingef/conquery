@@ -37,15 +37,20 @@ import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
@@ -54,14 +59,18 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.jobs.ImportJob;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.SimpleJob;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveConcept;
+import com.bakdata.conquery.models.messages.namespaces.specific.RemoveImportJob;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateConcept;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDataset;
 import com.bakdata.conquery.models.messages.network.specific.AddWorker;
-import com.bakdata.conquery.models.preproc.PPHeader;
+import com.bakdata.conquery.models.messages.network.specific.RemoveWorker;
+import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.resources.ResourceConstants;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview;
 import com.bakdata.conquery.resources.admin.ui.model.FEAuthOverview.OverviewRow;
@@ -110,7 +119,9 @@ public class AdminProcessor {
 		for (int p = 0; p < table.getColumns().length; p++) {
 			table.getColumns()[p].setPosition(p);
 		}
+
 		table.getPrimaryColumn().setPosition(Column.PRIMARY_POSITION);
+
 		dataset.getTables().add(table);
 		namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
 		namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
@@ -171,7 +182,7 @@ public class AdminProcessor {
 
 	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
 		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
-			PPHeader header = Jackson.BINARY_MAPPER.readValue(in, PPHeader.class);
+			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
 
 			TableId tableName = new TableId(dataset.getId(), header.getTable());
 			Table table = dataset.getTables().getOrFail(tableName);
@@ -220,20 +231,23 @@ public class AdminProcessor {
 
 	/**
 	 * Deletes the mandator, that is identified by the id. Its references are
-	 * removed from the users and from the storage.
+	 * removed from the users, the groups, and from the storage.
 	 *
-	 * @param mandatorId
+	 * @param roleId
 	 *            The id belonging to the mandator
 	 * @throws JSONException
 	 *             is thrown on JSON validation form the storage.
 	 */
-	public synchronized void deleteRole(RoleId mandatorId) throws JSONException {
-		log.info("Deleting mandator: {}", mandatorId);
-		Role mandator = storage.getRole(mandatorId);
+	public synchronized void deleteRole(RoleId roleId) throws JSONException {
+		log.info("Deleting mandator: {}", roleId);
+		Role role = storage.getRole(roleId);
 		for (User user : storage.getAllUsers()) {
-			user.removeRole(storage, mandator);
+			user.removeRole(storage, role);
 		}
-		storage.removeRole(mandatorId);
+		for (Group group : storage.getAllGroups()) {
+			group.removeRole(storage, role);
+		}
+		storage.removeRole(roleId);
 	}
 
 	public List<Role> getAllRoles() {
@@ -342,7 +356,11 @@ public class AdminProcessor {
 			.build();
 	}
 
-	public synchronized void deleteUser(UserId userId) {
+	public synchronized void deleteUser(UserId userId) throws JSONException {
+		User user = storage.getUser(userId);
+		for (Group group : storage.getAllGroups()) {
+			group.removeMember(storage, user);
+		}
 		storage.removeUser(userId);
 		log.trace("Removed user {} from the storage.", userId);
 	}
@@ -387,10 +405,8 @@ public class AdminProcessor {
 	}
 
 	public synchronized void addGroup(Group group) throws JSONException {
-		synchronized (storage) {
-			ValidatorHelper.failOnError(log, validator.validate(group));
-			storage.addGroup(group);
-		}
+		ValidatorHelper.failOnError(log, validator.validate(group));
+		storage.addGroup(group);
 		log.trace("New group:\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
 
 	}
@@ -425,7 +441,7 @@ public class AdminProcessor {
 		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
-	public void removeGroup(GroupId groupId) {
+	public void deleteGroup(GroupId groupId) {
 		synchronized (storage) {
 			storage.removeGroup(groupId);
 		}
@@ -497,5 +513,85 @@ public class AdminProcessor {
 			writer.writeValuesToRow();
 		}
 		return sWriter.toString();
+	}
+
+	public void deleteImport(ImportId importId) {
+
+		final Namespace namespace = namespaces.get(importId.getDataset());
+
+		jobManager.addSlowJob(new SimpleJob(
+				"Delete Import" + importId,
+				() -> {
+					namespace.getStorage().removeImport(importId);
+					namespace.getStorage().removeImport(new ImportId(new TableId(importId.getDataset(), ConqueryConstants.ALL_IDS_TABLE), importId.toString()));
+				}
+		));
+
+		jobManager.addSlowJob(new SimpleJob(
+				"Import delete on " + importId,
+				() -> {
+					for (WorkerInformation w : namespace.getWorkers()) {
+						w.send(new RemoveImportJob(importId));
+					}
+				}
+		));
+	}
+
+	public void deleteTable(TableId tableId)  {
+		final Namespace namespace = namespaces.get(tableId.getDataset());
+		final Dataset dataset = namespace.getDataset();
+
+		final List<? extends Connector> connectors = namespace.getStorage().getAllConcepts().stream().flatMap(c -> c.getConnectors().stream())
+															  .filter(con -> con.getTable().getId().equals(tableId))
+															  .collect(Collectors.toList());
+
+		if(!connectors.isEmpty()) {
+			throw new IllegalArgumentException(String.format("Cannot delete table `%s`, because it still has connectors for Concepts: `%s`", tableId, connectors.stream().map(Connector::getConcept).collect(Collectors.toList())));
+		}
+
+
+		getJobManager()
+				.addSlowJob(new SimpleJob("Removing table " + tableId, () -> {
+					namespace.getStorage().getAllImports().stream()
+							 .filter(imp -> imp.getTable().equals(tableId))
+							 .map(Import::getId)
+							 .forEach(this::deleteImport);
+
+					dataset.getTables().remove(tableId);
+					namespaces.get(dataset.getId()).getStorage().updateDataset(dataset);
+				}));
+
+		getJobManager()
+				.addSlowJob(new SimpleJob(
+						"Removing table " + tableId,
+						() -> {
+							namespaces.get(dataset.getId()).sendToAll(new UpdateDataset(dataset));
+						}
+				));
+	}
+
+	public void deleteConcept(ConceptId conceptId) {
+		final Namespace namespace = namespaces.get(conceptId.getDataset());
+
+		getJobManager()
+				.addSlowJob(new SimpleJob("Removing concept " + conceptId, () -> namespace.getStorage().removeConcept(conceptId)));
+		getJobManager()
+				.addSlowJob(new SimpleJob("sendToAll: remove " + conceptId, () -> namespace.sendToAll(new RemoveConcept(conceptId))));
+	}
+
+	public void deleteDataset(DatasetId datasetId) {
+		final Namespace namespace = namespaces.get(datasetId);
+
+		if(!namespace.getDataset().getTables().isEmpty()){
+			throw new IllegalArgumentException(String.format("Cannot delete dataset `%s`, because it still has tables: `%s`", datasetId, namespace.getDataset().getTables().values()));
+		}
+
+		getJobManager()
+				.addSlowJob(new SimpleJob("Removing dataset " + datasetId, () -> namespaces.removeNamespace(datasetId)));
+		getJobManager()
+				.addSlowJob(new SimpleJob("sendToAll: remove " + datasetId,
+										  () -> namespaces.getSlaves().forEach((__, slave) -> slave.send(new RemoveWorker(datasetId))))
+				);
+
 	}
 }

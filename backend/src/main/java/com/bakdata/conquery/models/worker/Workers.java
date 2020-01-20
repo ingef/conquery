@@ -10,13 +10,12 @@ import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Workers implements NamespaceCollection {
+public class Workers extends NamespaceCollection {
 	@Getter @Setter
 	private AtomicInteger nextWorker = new AtomicInteger(0);
 	@Getter
@@ -52,10 +51,10 @@ public class Workers implements NamespaceCollection {
 		
 		workers.remove(removed.getInfo().getId());
 		try {
-			removed.getStorage().close();
+			removed.getStorage().remove();
 		}
 		catch(Exception e) {
-			log.error("Failed to shutdown storage "+removed, e);
+			log.error("Failed to remove storage "+removed, e);
 		}
 	}
 }

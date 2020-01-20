@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.worker;
 
+import javax.validation.constraints.NotNull;
+
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.List;
@@ -7,8 +9,6 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
-
-import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -18,13 +18,12 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Namespaces implements NamespaceCollection {
+public class Namespaces extends NamespaceCollection {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
@@ -48,13 +47,17 @@ public class Namespaces implements NamespaceCollection {
 	
 	public void removeNamespace(DatasetId id) {
 		Namespace removed = datasets.remove(id);
+
 		if(removed != null) {
+			metaStorage.getCentralRegistry().remove(id);
+
 			workers.keySet().removeIf(w->w.getDataset().equals(id));
 			try {
-				removed.getStorage().close();
+				// remove all associated data.
+				removed.getStorage().remove();
 			}
 			catch(Exception e) {
-				log.error("Failed to shutdown storage "+removed, e);
+				log.error("Failed to delete storage "+removed, e);
 			}
 		}
 	}
