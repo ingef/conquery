@@ -43,6 +43,10 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+/**
+ * Organizational class to provide a single implementation point for configuring
+ * the admin servlet container and registering resources for it.
+ */
 @Getter
 @Slf4j
 public class AdminServlet {

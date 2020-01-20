@@ -14,14 +14,22 @@ import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
+import lombok.NonNull;
 
+/**
+ * This class holds the logic to back the endpoints provided by {@link MeResource}.
+ */
 @AllArgsConstructor
 public class MeProcessor {
 
 	private final MasterMetaStorage storage;
 	
-	public FEMeInformation getUserInformation(User user){
+	/**
+	 * Generates a summary of a user. It contains its name, the groups it belongs to and its permissions on a dataset.
+	 * @param user The user object to gather informations about
+	 * @return The information about the user
+	 */
+	public FEMeInformation getUserInformation(@NonNull User user){
 		return FEMeInformation.builder()
 			.userName(user.getLabel())
 			.groups(FEGroup.from(AuthorizationHelper.getGroupsOf(user, storage)))
@@ -29,14 +37,18 @@ public class MeProcessor {
 			.build();
 	}
 
+	
+	/**
+	 * Front end (API) data container to describe a single group.
+	 */
 	@AllArgsConstructor(access = AccessLevel.PRIVATE)
-	@Getter
+	@Data
 	public static class FEGroup {
 
 		private GroupId groupId;
 		private String label;
 
-		public static FEGroup from(Group group) {
+		public static FEGroup from(@NonNull Group group) {
 			return new FEGroup(group.getId(), group.getLabel());
 		}
 		
@@ -45,6 +57,9 @@ public class MeProcessor {
 		}
 	}
 	
+	/**
+	 * Front end (API) data container to describe a single user.
+	 */
 	@Data
 	@Builder
 	public static class FEMeInformation {

@@ -15,10 +15,10 @@ import org.apache.shiro.realm.AuthorizingRealm;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.
- *
+ * This configuration causes that every request is handled as invoked by the super user.
  */
 @CPSType(base = AuthConfig.class, id = "DEVELOPMENT")
-public class DevAuthConfig extends AuthConfig {
+public class DevAuthConfig implements AuthConfig {
 
 	/**
 	 * The label of the superuser that is used in the frontend.

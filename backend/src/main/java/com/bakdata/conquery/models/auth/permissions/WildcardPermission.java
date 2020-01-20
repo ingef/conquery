@@ -12,7 +12,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 /**
- * Needed for (de)serialization with Jackson.
+ * A wrapper for the actual {@link org.apache.shiro.authz.permission.WildcardPermission}
+ * class to use it in the {@link CPSType} system and enable (de)serialization with Jackson.
  */
 @SuppressWarnings("serial")
 @Getter
@@ -22,6 +23,11 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 	
 	private final Instant creationTime;
 	
+	/**
+	 * Constructor used for deserialization.
+	 * @param parts String parts that hold the [domains (, abilities (, instances))].
+	 * @param creationTime The creation time of the permission.
+	 */
 	@JsonCreator
 	public WildcardPermission(List<Set<String>> parts, Instant creationTime) {
 		this.setParts(parts);
@@ -34,11 +40,19 @@ public class WildcardPermission extends org.apache.shiro.authz.permission.Wildca
 		this.creationTime = creationTime;
 	}
 
+	/**
+	 * Creates a permission from a String.
+	 * The creation time is set automatically.
+	 * @param wildcardString Permission representation as a string in the format of {@link org.apache.shiro.authz.permission.WildcardPermission}.
+	 */
 	public WildcardPermission(String wildcardString){
 		super(wildcardString);
 		creationTime = Instant.now();
 	}
 
+	/**
+	 * Proxies the protected super implementation
+	 */
 	public List<Set<String>> getParts() {
 		return super.getParts();
 	}

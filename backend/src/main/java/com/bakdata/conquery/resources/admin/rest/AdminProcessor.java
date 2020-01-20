@@ -80,6 +80,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+/**
+ * This class holds the logic for several admin http endpoints.
+ */
+// TODO clean up methods and refactor
 @Getter
 @Slf4j
 @RequiredArgsConstructor
