@@ -40,6 +40,7 @@ const Bold = styled("span")`
 `;
 
 type PropsType = {
+  datasetId: string,
   resultCount: number,
   resultUrl: string,
   userCanDownloadResult: Boolean
@@ -79,6 +80,6 @@ const QueryResults = (props: PropsType) => {
   );
 };
 
-export default connect(state => ({
-  userCanDownloadResult: canDownloadResult(state)
+export default connect((state, ownProps) => ({
+  userCanDownloadResult: canDownloadResult(state, ownProps.datasetId)
 }))(QueryResults);
