@@ -50,5 +50,7 @@ public interface CQElement {
 	
 	void collectResultInfos(ResultInfoCollector collector);
 
-	void visit(QueryVisitor visitor);
+	default void visit(QueryVisitor visitor) {
+		visitor.visit(this);
+	}
 }

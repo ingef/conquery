@@ -7,12 +7,11 @@ import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface IQuery {
+public interface IQuery extends Visitable{
 
 	IQuery resolve(QueryResolveContext context);
 	QueryPlan createQueryPlan(QueryPlanContext context);
@@ -33,5 +32,4 @@ public interface IQuery {
 	
 	void collectResultInfos(ResultInfoCollector collector);
 
-	void visit(QueryVisitor visitor);
 }

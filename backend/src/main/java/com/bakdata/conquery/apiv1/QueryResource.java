@@ -29,6 +29,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 
 @Path("datasets/{" + DATASET + "}/queries")
@@ -39,9 +40,11 @@ public class QueryResource {
 
 	@Inject
 	private final QueryProcessor processor;
+	private final ResourceUtil dsUtil;
 
 	public QueryResource(QueryProcessor queryProcessor, MasterMetaStorage storage) {
 		this.processor = queryProcessor;
+		dsUtil = new ResourceUtil(queryProcessor.getNamespaces());
 	}
 
 	@POST
@@ -54,7 +57,7 @@ public class QueryResource {
 		}
 
 		return processor.postQuery(
-			processor.getDataset(datasetId),
+			dsUtil.getDataset(datasetId),
 			query,
 			URLBuilder.fromRequest(req),
 			user);
@@ -67,8 +70,8 @@ public class QueryResource {
 		authorize(user, queryId, Ability.READ);
 
 		return processor.cancel(
-			processor.getDataset(datasetId),
-			processor.getManagedQuery(queryId),
+			dsUtil.getDataset(datasetId),
+			dsUtil.getManagedQuery(queryId),
 			URLBuilder.fromRequest(req));
 	}
 
@@ -77,10 +80,10 @@ public class QueryResource {
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		ManagedQuery query = processor.getManagedQuery(queryId);
+		ManagedQuery query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
-			processor.getDataset(datasetId),
+			dsUtil.getDataset(datasetId),
 			query,
 			URLBuilder.fromRequest(req),
 			user);

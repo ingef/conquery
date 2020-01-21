@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.util.Objects;
+import java.util.Set;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -18,11 +24,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.util.Objects;
-import java.util.Set;
 
 @CPSType(id="SAVED_QUERY", base=CQElement.class)
 @RequiredArgsConstructor @AllArgsConstructor(onConstructor_=@JsonCreator)
@@ -56,6 +57,7 @@ public class CQReusedQuery implements CQElement {
 	
 	@Override
 	public void visit(QueryVisitor visitor) {
+		CQElement.super.visit(visitor);
 		if(resolvedQuery != null) {
 			resolvedQuery.visit(visitor);
 		}

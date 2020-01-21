@@ -4,7 +4,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -30,6 +29,7 @@ public abstract class CQAbstractTemporalQuery implements CQElement {
 	
 	@Override
 	public void visit(QueryVisitor visitor) {
+		CQElement.super.visit(visitor);
 		index.getChild().visit(visitor);
 		preceding.getChild().visit(visitor);
 	}

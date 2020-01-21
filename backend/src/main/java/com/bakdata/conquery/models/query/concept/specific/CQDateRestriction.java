@@ -1,5 +1,14 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
+import java.time.LocalDate;
+import java.util.ArrayDeque;
+import java.util.Collections;
+import java.util.Queue;
+import java.util.Set;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.common.Range;
@@ -17,14 +26,6 @@ import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import lombok.Getter;
 import lombok.Setter;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-import java.time.LocalDate;
-import java.util.ArrayDeque;
-import java.util.Collections;
-import java.util.Queue;
-import java.util.Set;
 
 @CPSType(id = "DATE_RESTRICTION", base = CQElement.class)
 @Setter
@@ -84,6 +85,7 @@ public class CQDateRestriction implements CQElement {
 	
 	@Override
 	public void visit(QueryVisitor visitor) {
+		CQElement.super.visit(visitor);
 		child.visit(visitor);		
 	}
 }

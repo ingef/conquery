@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration;
 
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import lombok.RequiredArgsConstructor;
@@ -30,14 +31,17 @@ public interface IntegrationTest {
 		
 		@Override
 		public void execute() throws Throwable {
+			ConqueryMDC.setLocation(name);
 			log.info("STARTING integration test {}", name);
 			try {
 				test.execute(name, testConquery);
 			}
 			catch(Exception e) {
+				ConqueryMDC.setLocation(name);
 				log.info("FAILED integration test "+name, e);
 				throw e;
 			}
+			ConqueryMDC.setLocation(name);
 			log.info("SUCCESS integration test {}", name);
 		}
 	}

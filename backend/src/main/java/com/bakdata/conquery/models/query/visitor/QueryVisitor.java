@@ -1,8 +1,11 @@
 package com.bakdata.conquery.models.query.visitor;
 
-import com.bakdata.conquery.models.query.concept.specific.CQConcept;
+import com.bakdata.conquery.models.query.concept.CQElement;
 
+/**
+ * Visits the elements of which a query consist.
+ */
 public interface QueryVisitor {
-
-	public default void visitConcept(CQConcept concept) {}
+	
+	void visit(CQElement element);
 }

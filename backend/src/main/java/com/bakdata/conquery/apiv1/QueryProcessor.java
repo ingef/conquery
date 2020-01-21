@@ -4,7 +4,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -14,11 +13,11 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
@@ -26,13 +25,14 @@ import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
+import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 @Slf4j
 @RequiredArgsConstructor
 public class QueryProcessor {
 
+	@Getter
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
 
@@ -70,6 +70,7 @@ public class QueryProcessor {
 		return queries.size() == 1 ? queries.get(0).getQuery() : null;
 	}
 
+
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
@@ -88,6 +89,13 @@ public class QueryProcessor {
 				final ManagedQuery mq = namespace.getQueryManager().executeQuery(namespace.getQueryManager().getQuery(executionId));
 
 				return getStatus(dataset, mq, urlb, user);
+			}
+		}
+		
+		// Check if the query contains parts that require to resolve external ids. If so the user must have the preserve_id permission on the dataset.
+		{
+			if(Visitable.usesExternalIds(query)) {
+				user.checkPermission(DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId()));
 			}
 		}
 		
@@ -130,21 +138,5 @@ public class QueryProcessor {
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution query, URLBuilder urlb) {
 
 		return null;
-	}
-	
-	public Namespace getNamespace(DatasetId dataset) {
-		return namespaces.get(dataset);
-	}
-	
-	public Dataset getDataset(DatasetId id) {
-		return namespaces.get(id).getStorage().getDataset();
-	}
-
-	public NamespaceStorage getStorage(DatasetId id) {
-		return namespaces.get(id).getStorage();
-	}
-
-	public ManagedQuery getManagedQuery(ManagedExecutionId queryId) {
-		return namespaces.get(queryId.getDataset()).getQueryManager().getQuery(queryId);
 	}
 }

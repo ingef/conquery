@@ -15,7 +15,6 @@ import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -50,6 +49,7 @@ public class CQNegation implements CQElement {
 	
 	@Override
 	public void visit(QueryVisitor visitor) {
+		CQElement.super.visit(visitor);
 		child.visit(visitor);		
 	}
 }
