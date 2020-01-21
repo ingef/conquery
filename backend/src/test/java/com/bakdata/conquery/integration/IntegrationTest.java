@@ -1,5 +1,6 @@
 package com.bakdata.conquery.integration;
 
+import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
 import lombok.RequiredArgsConstructor;
@@ -10,7 +11,7 @@ public interface IntegrationTest {
 
 	void execute(String name, TestConquery testConquery) throws Exception;
 
-	static abstract class Simple implements IntegrationTest {
+	abstract class Simple implements IntegrationTest {
 		public abstract void execute(StandaloneSupport conquery) throws Exception;
 		
 		@Override
@@ -23,21 +24,24 @@ public interface IntegrationTest {
 	
 	@Slf4j
 	@RequiredArgsConstructor
-	static final class Wrapper implements Executable {
+	final class Wrapper implements Executable {
 		private final String name;
 		private final TestConquery testConquery;
 		private final IntegrationTest test;
 		
 		@Override
 		public void execute() throws Throwable {
+			ConqueryMDC.setLocation(name);
 			log.info("STARTING integration test {}", name);
 			try {
 				test.execute(name, testConquery);
 			}
 			catch(Exception e) {
+				ConqueryMDC.setLocation(name);
 				log.info("FAILED integration test "+name, e);
 				throw e;
 			}
+			ConqueryMDC.setLocation(name);
 			log.info("SUCCESS integration test {}", name);
 		}
 	}

@@ -7,6 +7,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -28,7 +29,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 
@@ -38,12 +38,13 @@ import io.dropwizard.auth.Auth;
 
 public class QueryResource {
 
+	@Inject
 	private final QueryProcessor processor;
 	private final ResourceUtil dsUtil;
 
-	public QueryResource(Namespaces namespaces, MasterMetaStorage storage) {
-		this.processor = new QueryProcessor(namespaces, storage);
-		this.dsUtil = new ResourceUtil(namespaces);
+	public QueryResource(QueryProcessor queryProcessor, MasterMetaStorage storage) {
+		this.processor = queryProcessor;
+		dsUtil = new ResourceUtil(queryProcessor.getNamespaces());
 	}
 
 	@POST

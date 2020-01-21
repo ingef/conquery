@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
@@ -12,7 +13,6 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
@@ -50,5 +50,7 @@ public interface CQElement {
 	
 	void collectResultInfos(ResultInfoCollector collector);
 
-	void visit(QueryVisitor visitor);
+	default void visit(Consumer<CQElement> visitor) {
+		visitor.accept(this);
+	}
 }
