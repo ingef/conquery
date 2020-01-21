@@ -22,11 +22,6 @@ public class CsvIo {
 	}
 
 	public static boolean isGZipped(File file) throws IOException {
-
-		final String contentType = Files.probeContentType(file.toPath());
-
-		log.trace("File `{}` - `{}`", file, contentType);
-
-		return contentType.equals("application/x-gzip");
+		return Files.probeContentType(file.toPath()).contains("gzip");
 	}
 }
