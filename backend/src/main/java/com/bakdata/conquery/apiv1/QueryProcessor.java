@@ -38,12 +38,16 @@ public class QueryProcessor {
 	public ExecutionStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());
 		
+		// Initialize checks that need to traverse the query tree
 		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
 		SingleReusedChecker singleReusedChecker = new QueryUtils.SingleReusedChecker();
 
+		// Chain the checks and apply them to the tree
 		query.visit(externalIdChecker.andThen(singleReusedChecker));
-		// If this is only a re-executing query, execute the underlying query instead.
+		
+		// Evaluate the checks and take action
 		{
+			// If this is only a re-executing query, execute the underlying query instead.
 			final ManagedExecutionId executionId = singleReusedChecker.getOnlyReused();
 
 			if (executionId != null) {
@@ -54,10 +58,8 @@ public class QueryProcessor {
 
 				return getStatus(dataset, mq, urlb, user);
 			}
-		}
-		
-		// Check if the query contains parts that require to resolve external ids. If so the user must have the preserve_id permission on the dataset.
-		{
+			
+			// Check if the query contains parts that require to resolve external ids. If so the user must have the preserve_id permission on the dataset.
 			if(externalIdChecker.resolvesExternalIds()) {
 				user.checkPermission(DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId()));
 			}
