@@ -50,6 +50,6 @@ public class CQNegation implements CQElement {
 	@Override
 	public void visit(QueryVisitor visitor) {
 		CQElement.super.visit(visitor);
-		child.visit(visitor);		
+		child.visit(visitor);
 	}
 }

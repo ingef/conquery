@@ -16,7 +16,7 @@ public interface Visitable {
 	 * Checks if the query requires to resolve external ids.
 	 * @return True if a {@link CQExternal} is found.
 	 */
-	public static boolean usesExternalIds(Visitable query) {
+	static boolean usesExternalIds(Visitable query) {
 		
 		final List<CQExternal> elements = new ArrayList<>();
 		
@@ -24,7 +24,7 @@ public interface Visitable {
 			
 			@Override
 			public void visit(CQElement element) {
-				if (element instanceof CQExternal) {					
+				if (element instanceof CQExternal) {	
 					elements.add((CQExternal)element);
 				}
 			}

@@ -176,7 +176,7 @@ public class CQExternal implements CQElement {
 
 	@RequiredArgsConstructor
 	@Getter
-	public static enum FormatColumn {
+	public enum FormatColumn {
 		ID(true, null),
 		EVENT_DATE(false, DateFormat.EVENT_DATE),
 		START_DATE(false, DateFormat.START_END_DATE),

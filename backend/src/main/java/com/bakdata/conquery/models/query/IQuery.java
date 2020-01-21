@@ -11,7 +11,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface IQuery extends Visitable{
+public interface IQuery extends Visitable {
 
 	IQuery resolve(QueryResolveContext context);
 	QueryPlan createQueryPlan(QueryPlanContext context);

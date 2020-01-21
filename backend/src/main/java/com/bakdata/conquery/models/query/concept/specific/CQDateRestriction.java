@@ -86,6 +86,6 @@ public class CQDateRestriction implements CQElement {
 	@Override
 	public void visit(QueryVisitor visitor) {
 		CQElement.super.visit(visitor);
-		child.visit(visitor);		
+		child.visit(visitor);
 	}
 }
