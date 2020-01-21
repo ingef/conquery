@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -19,7 +20,6 @@ import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -56,7 +56,7 @@ public class CQReusedQuery implements CQElement {
 	}
 	
 	@Override
-	public void visit(QueryVisitor visitor) {
+	public void visit(Consumer<CQElement> visitor) {
 		CQElement.super.visit(visitor);
 		if(resolvedQuery != null) {
 			resolvedQuery.visit(visitor);

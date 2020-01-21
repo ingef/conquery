@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -14,7 +15,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -48,7 +48,7 @@ public class CQNegation implements CQElement {
 	}
 	
 	@Override
-	public void visit(QueryVisitor visitor) {
+	public void visit(Consumer<CQElement> visitor) {
 		CQElement.super.visit(visitor);
 		child.visit(visitor);
 	}

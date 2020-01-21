@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import java.util.Collections;
 import java.util.Queue;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -23,7 +24,6 @@ import com.bakdata.conquery.models.query.queryplan.specific.DateRestrictingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.NegatingNode;
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -84,7 +84,7 @@ public class CQDateRestriction implements CQElement {
 	}
 	
 	@Override
-	public void visit(QueryVisitor visitor) {
+	public void visit(Consumer<CQElement> visitor) {
 		CQElement.super.visit(visitor);
 		child.visit(visitor);
 	}

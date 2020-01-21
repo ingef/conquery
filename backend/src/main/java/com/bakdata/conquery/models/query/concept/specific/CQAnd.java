@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept.specific;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.validation.Valid;
 
@@ -16,7 +17,6 @@ import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.AndNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.validator.constraints.NotEmpty;
@@ -63,7 +63,7 @@ public class CQAnd implements CQElement {
 	}
 	
 	@Override
-	public void visit(QueryVisitor visitor) {
+	public void visit(Consumer<CQElement> visitor) {
 		CQElement.super.visit(visitor);
 		for(CQElement c:children) {
 			c.visit(visitor);

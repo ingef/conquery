@@ -1,8 +1,5 @@
 package com.bakdata.conquery.apiv1;
 
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -17,14 +14,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
-import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.ConceptQuery;
-import com.bakdata.conquery.models.query.concept.specific.CQAnd;
-import com.bakdata.conquery.models.query.concept.specific.CQOr;
-import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.QueryUtils;
+import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
+import com.bakdata.conquery.util.QueryUtils.SingleReusedChecker;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -36,40 +30,6 @@ public class QueryProcessor {
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
 
-	/**
-	 * Find first and only directly ReusedQuery in the queries tree, and return its Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
-	 *
-	 * @return Null if not only a single {@link CQReusedQuery} was found beside {@link CQAnd} / {@link CQOr}.
-	 */
-	private static ManagedExecutionId getOnlyReused(IQuery query) {
-
-		if(!(query instanceof ConceptQuery))
-			return null;
-
-		final ArrayList<CQReusedQuery> queries = new ArrayList<>();
-
-		final ArrayDeque<CQElement> search = new ArrayDeque<>();
-
-		search.add(((ConceptQuery) query).getRoot());
-		CQElement element;
-
-		while((element = search.poll()) != null) {
-			if(element instanceof CQReusedQuery)
-				queries.add(((CQReusedQuery) element));
-			else if (element instanceof CQAnd) {
-				search.addAll(((CQAnd) element).getChildren());
-			}
-			else if (element instanceof CQOr) {
-				search.addAll(((CQOr) element).getChildren());
-			}
-			else {
-				return null;
-			}
-		}
-
-		return queries.size() == 1 ? queries.get(0).getQuery() : null;
-	}
-
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -77,10 +37,14 @@ public class QueryProcessor {
 	 */
 	public ExecutionStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());
+		
+		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
+		SingleReusedChecker singleReusedChecker = new QueryUtils.SingleReusedChecker();
 
+		query.visit(externalIdChecker.andThen(singleReusedChecker));
 		// If this is only a re-executing query, execute the underlying query instead.
 		{
-			final ManagedExecutionId executionId = getOnlyReused(query);
+			final ManagedExecutionId executionId = singleReusedChecker.getOnlyReused();
 
 			if (executionId != null) {
 				log.info("Re-executing Query {}", executionId);
@@ -94,7 +58,7 @@ public class QueryProcessor {
 		
 		// Check if the query contains parts that require to resolve external ids. If so the user must have the preserve_id permission on the dataset.
 		{
-			if(Visitable.usesExternalIds(query)) {
+			if(externalIdChecker.resolvesExternalIds()) {
 				user.checkPermission(DatasetPermission.onInstance(Ability.PRESERVE_ID, dataset.getId()));
 			}
 		}
