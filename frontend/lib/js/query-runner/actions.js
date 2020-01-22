@@ -94,7 +94,8 @@ export default function createQueryRunnerActions(
   const queryResultStart = () => ({ type: QUERY_RESULT_START });
   const queryResultReset = () => ({ type: QUERY_RESULT_RESET });
   const queryResultError = err => defaultError(QUERY_RESULT_ERROR, err);
-  const queryResultSuccess = res => defaultSuccess(QUERY_RESULT_SUCCESS, res);
+  const queryResultSuccess = (res, datasetId) =>
+    defaultSuccess(QUERY_RESULT_SUCCESS, res, { datasetId });
   const queryResult = (datasetId, queryId) => {
     return dispatch => {
       dispatch(queryResultStart());
@@ -108,7 +109,7 @@ export default function createQueryRunnerActions(
           dispatch(queryResultReset());
 
           if (r.status === "DONE") {
-            dispatch(queryResultSuccess(r));
+            dispatch(queryResultSuccess(r, datasetId));
 
             // Now there should be a new result that can be queried
             dispatch(loadPreviousQueries(datasetId));

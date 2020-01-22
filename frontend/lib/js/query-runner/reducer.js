@@ -16,6 +16,7 @@ export type StateType = {
   startQuery: APICallType,
   stopQuery: APICallType,
   queryResult: ?(APICallType & {
+    datasetId?: string,
     resultCount?: number,
     resultUrl?: string
   })
@@ -46,7 +47,7 @@ export default function createQueryRunnerReducer(type: string): Function {
     actionTypes[`QUERY_${capitalType}_RESULT_SUCCESS`];
   const QUERY_RESULT_ERROR = actionTypes[`QUERY_${capitalType}_RESULT_ERROR`];
 
-  const getQueryResult = data => {
+  const getQueryResult = (data, datasetId) => {
     if (data.status === "CANCELED")
       return {
         loading: false,
@@ -57,6 +58,7 @@ export default function createQueryRunnerReducer(type: string): Function {
 
     // E.G. STATUS DONE
     return {
+      datasetId,
       loading: false,
       success: true,
       error: null,
@@ -114,9 +116,9 @@ export default function createQueryRunnerReducer(type: string): Function {
       case QUERY_RESULT_RESET:
         return { ...state, queryResult: { loading: false } };
       case QUERY_RESULT_SUCCESS:
-        const { data } = action.payload;
+        const { data, datasetId } = action.payload;
 
-        const queryResult = getQueryResult(data);
+        const queryResult = getQueryResult(data, datasetId);
 
         return {
           ...state,
