@@ -42,7 +42,7 @@ public class QueryResource {
 	
 	@Inject
 	public QueryResource(QueryProcessor processor) {
-		this.processor= processor; 
+		this.processor= processor;
 		dsUtil = new ResourceUtil(processor.getNamespaces());
 	}
 
