@@ -20,7 +20,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -37,14 +36,14 @@ import io.dropwizard.auth.Auth;
 @Produces(AdditionalMediaTypes.JSON)
 
 public class QueryResource {
-
+	
+	private QueryProcessor processor;
+	private ResourceUtil dsUtil;
+	
 	@Inject
-	private final QueryProcessor processor;
-	private final ResourceUtil dsUtil;
-
-	public QueryResource(QueryProcessor queryProcessor, MasterMetaStorage storage) {
-		this.processor = queryProcessor;
-		dsUtil = new ResourceUtil(queryProcessor.getNamespaces());
+	public QueryResource(QueryProcessor processor) {
+		this.processor= processor;
+		dsUtil = new ResourceUtil(processor.getNamespaces());
 	}
 
 	@POST
