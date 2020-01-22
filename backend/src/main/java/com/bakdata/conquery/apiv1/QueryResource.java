@@ -7,6 +7,7 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -20,7 +21,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -39,12 +39,12 @@ import io.dropwizard.auth.Auth;
 public class QueryResource {
 
 	@Inject
-	private final QueryProcessor processor;
-	private final ResourceUtil dsUtil;
-
-	public QueryResource(QueryProcessor queryProcessor, MasterMetaStorage storage) {
-		this.processor = queryProcessor;
-		dsUtil = new ResourceUtil(queryProcessor.getNamespaces());
+	private QueryProcessor processor;
+	private ResourceUtil dsUtil;
+	
+	@PostConstruct
+	void init() {
+		dsUtil = new ResourceUtil(processor.getNamespaces());		
 	}
 
 	@POST
