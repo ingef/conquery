@@ -44,7 +44,7 @@ public class QueryProcessor {
 
 		// Chain the checks and apply them to the tree
 		query.visit(externalIdChecker.andThen(singleReusedChecker));
-		
+
 		// Evaluate the checks and take action
 		{
 			// If this is only a re-executing query, execute the underlying query instead.

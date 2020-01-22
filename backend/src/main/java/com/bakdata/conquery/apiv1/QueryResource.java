@@ -44,7 +44,7 @@ public class QueryResource {
 	
 	@PostConstruct
 	void init() {
-		dsUtil = new ResourceUtil(processor.getNamespaces());		
+		dsUtil = new ResourceUtil(processor.getNamespaces());
 	}
 
 	@POST
