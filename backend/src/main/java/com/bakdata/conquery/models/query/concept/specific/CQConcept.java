@@ -33,7 +33,6 @@ import com.bakdata.conquery.models.query.queryplan.specific.SpecialDateUnionAggr
 import com.bakdata.conquery.models.query.queryplan.specific.ValidityDateNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import lombok.Getter;
@@ -193,10 +192,5 @@ public class CQConcept implements CQElement {
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
 		
-	}
-	
-	@Override
-	public void visit(QueryVisitor visitor) {
-		visitor.visitConcept(this);
 	}
 }

@@ -22,7 +22,6 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -56,7 +55,6 @@ public class StoredQueriesResource {
 		authorize(user, datasetId, Ability.READ);
 
 		return processor.getAllQueries(dsUtil.getDataset(datasetId), req, user)
-			.filter(status -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), status.getId())))
 			.collect(Collectors.toList());
 	}
 
