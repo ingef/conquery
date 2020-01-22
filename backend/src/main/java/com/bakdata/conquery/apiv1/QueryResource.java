@@ -7,7 +7,6 @@ import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
-import javax.annotation.PostConstruct;
 import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -37,13 +36,13 @@ import io.dropwizard.auth.Auth;
 @Produces(AdditionalMediaTypes.JSON)
 
 public class QueryResource {
-
-	@Inject
+	
 	private QueryProcessor processor;
 	private ResourceUtil dsUtil;
 	
-	@PostConstruct
-	void init() {
+	@Inject
+	public QueryResource(QueryProcessor processor) {
+		this.processor= processor; 
 		dsUtil = new ResourceUtil(processor.getNamespaces());
 	}
 
