@@ -18,6 +18,7 @@ import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
+import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
 import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
 import com.bakdata.conquery.resources.admin.rest.GroupResource;
 import com.bakdata.conquery.resources.admin.rest.PermissionResource;
@@ -43,6 +44,10 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 import org.glassfish.jersey.media.multipart.MultiPartFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
 
+/**
+ * Organizational class to provide a single implementation point for configuring
+ * the admin servlet container and registering resources for it.
+ */
 @Getter
 @Slf4j
 public class AdminServlet {
@@ -109,7 +114,8 @@ public class AdminServlet {
 			.register(TablesUIResource.class)
 			.register(ConceptsUIResource.class)
 			.register(PermissionResource.class)
-			.register(AuthOverviewUIResource.class);
+			.register(AuthOverviewUIResource.class)
+			.register(AuthOverviewResource.class);
 
 		// Scan calsspath for Admin side plugins and register them.
 		for (Class<? extends AdminServletResource> resourceProvider : CPSTypeIdResolver.listImplementations(AdminServletResource.class)) {

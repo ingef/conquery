@@ -1,21 +1,24 @@
 package com.bakdata.conquery.models.auth;
 
-import org.apache.shiro.realm.AuthorizingRealm;
+import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.AdminPermission;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
+import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
+import org.apache.shiro.realm.AuthorizingRealm;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.
- *
+ * This configuration causes that every request is handled as invoked by the super user.
  */
 @CPSType(base = AuthConfig.class, id = "DEVELOPMENT")
-public class DevAuthConfig extends AuthConfig {
+public class DevAuthConfig implements AuthConfig {
 
 	/**
 	 * The label of the superuser that is used in the frontend.
@@ -31,6 +34,12 @@ public class DevAuthConfig extends AuthConfig {
 	 * The superuser.
 	 */
 	public static final User USER = new User(EMAIL, LABEL);
+	
+	@Getter
+	public final List<String> overviewScope = List.of(
+		DatasetPermission.DOMAIN,
+		AdminPermission.DOMAIN,
+		SuperPermission.DOMAIN);
 
 	
 	@Getter

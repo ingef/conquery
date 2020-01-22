@@ -1,12 +1,12 @@
 package com.bakdata.conquery.models.auth;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -17,12 +17,13 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.Multimap;
 import org.apache.shiro.authz.Permission;
 
 /**
@@ -167,12 +168,17 @@ public class AuthorizationHelper {
 	 * the permission of the roles it inherits. The query can be filtered by the Permission domain.
 	 * @return Owned and inherited permissions.
 	 */
-	public static Set<WildcardPermission> getEffectiveUserPermissions(UserId userId, List<String> domainSpecifier, MasterMetaStorage storage) {
+	public static Multimap<String, ConqueryPermission> getEffectiveUserPermissions(UserId userId, List<String> domainSpecifier, MasterMetaStorage storage) {
 		Set<ConqueryPermission> permissions = getEffectiveUserPermissions(userId, storage);
-		return permissions.stream()
-			.filter(WildcardPermission.class::isInstance)
-			.map(WildcardPermission.class::cast)
-			.filter(p -> domainSpecifier.containsAll(p.getParts().get(0)))
-			.collect(Collectors.toSet());
+		Multimap<String, ConqueryPermission> mappedPerms = ArrayListMultimap.create();
+		for(ConqueryPermission perm : permissions) {
+			Set<String> domains = perm.getDomains();
+			if(!Collections.disjoint(domainSpecifier, perm.getDomains())) {
+				for(String domain : domains) {
+					mappedPerms.put(domain, perm);
+				}
+			}
+		}
+		return mappedPerms;
 	}
 }

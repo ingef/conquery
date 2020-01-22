@@ -3,6 +3,7 @@ package com.bakdata.conquery.resources.admin.rest;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -20,6 +21,7 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
+import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -77,13 +79,20 @@ import com.bakdata.conquery.resources.admin.ui.model.FEPermission;
 import com.bakdata.conquery.resources.admin.ui.model.FERoleContent;
 import com.bakdata.conquery.resources.admin.ui.model.FEUserContent;
 import com.bakdata.conquery.resources.admin.ui.model.UIContext;
+import com.bakdata.conquery.util.ConqueryEscape;
 import com.fasterxml.jackson.databind.ObjectWriter;
+import com.google.common.collect.Multimap;
 import com.univocity.parsers.csv.CsvParser;
+import com.univocity.parsers.csv.CsvWriter;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
 
+/**
+ * This class holds the logic for several admin http endpoints.
+ */
+// TODO clean up methods and refactor
 @Getter
 @Slf4j
 @RequiredArgsConstructor
@@ -481,8 +490,29 @@ public class AdminProcessor {
 		return FEAuthOverview.builder().overview(overview).build();
 	}
 
-	public void getPermissionOverviewAsCSV() {
+	public String getPermissionOverviewAsCSV() {
+		StringWriter sWriter = new StringWriter();
+		CsvWriter writer = CsvIo.createWriter(sWriter);
+		List<String> scope = ConqueryConfig.getInstance()
+			.getAuthentication()
+			.getOverviewScope();
+		// Header
+		writer.addValue("User");
+		writer.addValues(scope);
+		writer.writeValuesToRow();
+		// Body
+		for (User user : storage.getAllUsers()) {
+			Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
 
+			writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
+			for(String domain : scope) {				
+				writer.addValue(permissions.get(domain).stream()
+					.map(Object::toString)
+					.collect(Collectors.joining(ConqueryConfig.getInstance().getCsv().getLineSeparator())));
+			}
+			writer.writeValuesToRow();
+		}
+		return sWriter.toString();
 	}
 
 	public void deleteImport(ImportId importId) {

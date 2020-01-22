@@ -12,7 +12,6 @@ import javax.ws.rs.core.Response.Status;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,7 +29,6 @@ public abstract class HConcepts extends HDatasets {
 	@Override
 	public void init() {
 		super.init();
-		this.namespace = processor.getNamespaces().get(datasetId);
 		this.concept = namespace.getStorage().getConcept(conceptId);
 		if(this.concept == null) {
 			throw new WebApplicationException("Could not find concept "+conceptId, Status.NOT_FOUND);
