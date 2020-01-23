@@ -1,15 +1,20 @@
 package com.bakdata.conquery.util;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.HasNamespacedIds;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import lombok.Getter;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -23,7 +28,7 @@ public class QueryUtils {
 		private final List<CQExternal> elements = new ArrayList<>();
 		
 		@Override
-		public void accept(CQElement element) {
+		public void accept(Visitable element) {
 			if (element instanceof CQExternal) {	
 				elements.add((CQExternal)element);
 			}
@@ -44,7 +49,7 @@ public class QueryUtils {
 		private boolean containsOthersElements = false;
 		
 		@Override
-		public void accept(CQElement element) {
+		public void accept(Visitable element) {
 			if (element instanceof CQReusedQuery) {	
 				reusedElements.add((CQReusedQuery)element);
 			}
@@ -59,5 +64,21 @@ public class QueryUtils {
 		public ManagedExecutionId getOnlyReused(){
 			return (reusedElements.size() == 1 && !containsOthersElements)? reusedElements.get(0).getQuery() : null;
 		}
+	}
+	
+	/**
+	 * Collects all {@link NamespacedId} references provided by a user from a {@link Visitable}.
+	 */
+	public static class NamespacedIdCollector implements QueryVisitor{
+		@Getter
+		private Set<NamespacedId> ids = new HashSet<>();
+
+		@Override
+		public void accept(Visitable element) {
+			if (element instanceof HasNamespacedIds) {	
+				HasNamespacedIds idHolder = (HasNamespacedIds)element;
+				ids.addAll(idHolder.collectNamespacedIds());
+			}
+		}		
 	}
 }

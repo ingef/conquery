@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
@@ -19,6 +20,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.concept.HasNamespacedIds;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -48,7 +50,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @FieldNameConstants
 @JsonDeserialize(using = CQConceptDeserializer.class)
 @ToString
-public class CQConcept implements CQElement {
+public class CQConcept implements CQElement, HasNamespacedIds {
 
 	@ToString.Include
 	private String label;
@@ -187,10 +189,11 @@ public class CQConcept implements CQElement {
 	}
 
 	@Override
-	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
+	public Set<NamespacedId> collectNamespacedIds() {
+		Set<NamespacedId> namespacedIds = new HashSet<>();
 		namespacedIds.addAll(ids);
 		selects.forEach(select -> namespacedIds.add(select.getId()));
 		tables.forEach(table -> namespacedIds.add(table.getId()));
-		
+		return namespacedIds;
 	}
 }

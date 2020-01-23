@@ -1,9 +1,8 @@
 package com.bakdata.conquery.models.query;
 
-import javax.validation.constraints.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
@@ -14,6 +13,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -121,5 +122,12 @@ public class ManagedQuery extends ManagedExecution {
 	@Override
 	public ManagedQuery toResultQuery() {
 		return this;
+	}
+
+	@Override
+	public Set<NamespacedId> getUsedNamespacedIds() {
+		NamespacedIdCollector collector = new NamespacedIdCollector();
+		query.visit(collector);
+		return collector.getIds();
 	}
 }

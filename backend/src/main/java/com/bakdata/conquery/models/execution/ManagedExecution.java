@@ -5,9 +5,11 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -20,6 +22,7 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -141,7 +144,14 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public boolean isReadyToDownload(URLBuilder url, User user) {
-		return url != null && state != ExecutionState.NEW && user.isPermitted(DatasetPermission.onInstance(Ability.DOWNLOAD, dataset));
+		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
+		 * The member this.dataset only associates the 
+		 */
+		boolean isPermittedDownload = user.isPermittedAll(getUsedNamespacedIds().stream()
+			.map(NamespacedId::getDataset)
+			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
+			.collect(Collectors.toList()));
+		return url != null && state != ExecutionState.NEW && isPermittedDownload;
 	}
 
 	public ExecutionStatus buildStatus(User user) {
@@ -149,4 +159,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public abstract ManagedQuery toResultQuery();
+	
+	/**
+	 * Gives all {@link NamespacedId}s that were required in the execution.
+	 * @return A List of all {@link NamespacedId}s needed for the execution.
+	 */
+	@JsonIgnore
+	public abstract Set<NamespacedId> getUsedNamespacedIds();
 }
