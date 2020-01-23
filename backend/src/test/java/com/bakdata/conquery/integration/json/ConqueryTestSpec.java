@@ -67,7 +67,7 @@ public abstract class ConqueryTestSpec {
 		return result;
 	}
 	
-	public <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectInto(
 			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
 				Jackson.MAPPER.copy()

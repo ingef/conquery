@@ -3,7 +3,7 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
-import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownload;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
 
 import java.io.BufferedWriter;
 import java.io.OutputStream;
@@ -64,7 +64,7 @@ public class ResultCSVResource {
 		ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
 		
 		// Check if user is permitted to download on all datasets that were referenced by the query
-		authorizeDownload(user, exec);
+		authorizeDownloadDatasets(user, exec);
 
 		Map<String, Object> mappingState = config.getIdMapping().initToExternal(user, exec);
 
