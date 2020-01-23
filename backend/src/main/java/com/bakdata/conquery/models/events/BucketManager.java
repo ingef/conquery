@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.events;
 
 import java.util.Optional;
+import java.util.function.IntFunction;
 
+import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
@@ -10,6 +12,8 @@ import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.IdMutex;
 import com.bakdata.conquery.models.identifiable.IdMutex.Locked;
+import com.bakdata.conquery.models.identifiable.Identifiable;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.BucketId;
 import com.bakdata.conquery.models.identifiable.ids.specific.CBlockId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -23,7 +27,11 @@ import com.bakdata.conquery.models.worker.Worker;
 import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
+import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 
+
+@Slf4j
 public class BucketManager {
 
 	private final IdMutex<ConnectorId> cBlockLocks = new IdMutex<>();
@@ -84,15 +92,30 @@ public class BucketManager {
 
 	private void registerBucket(Bucket bucket) {
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, Entity::new)
+			entities.computeIfAbsent(entity, createEntityFor(bucket))
 					.addBucket(storage.getCentralRegistry().resolve(bucket.getImp().getTable()), bucket);
 		}
+	}
+
+	@NotNull
+	private IntFunction<Entity> createEntityFor(Identifiable<?> idable) {
+
+		return id -> {
+
+			if(idable.getId() instanceof NamespacedId){
+				byte[] thename = this.storage.getDictionary(ConqueryConstants.getPrimaryDictionary(((NamespacedId) idable.getId()).getDataset())).getElement(id);
+
+				log.debug("Creating new Entitiy[{}]=`{}` for Bucket[{}]", id, new String(thename), idable.getId());
+			}
+
+			return new Entity(id);
+		};
 	}
 
 	private void registerCBlock(CBlock cBlock) {
 		Bucket bucket = buckets.getOrFail(cBlock.getBucket());
 		for (int entity : bucket) {
-			entities.computeIfAbsent(entity, Entity::new)
+			entities.computeIfAbsent(entity, createEntityFor(cBlock))
 					.addCBlock(
 							storage.getCentralRegistry().resolve(cBlock.getConnector()),
 							storage.getImport(cBlock.getBucket().getImp()),
