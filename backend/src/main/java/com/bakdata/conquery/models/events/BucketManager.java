@@ -99,7 +99,6 @@ public class BucketManager {
 		}
 	}
 
-	@NotNull
 	private IntFunction<Entity> createEntityFor(Identifiable<?> idable) {
 
 		return id -> {
