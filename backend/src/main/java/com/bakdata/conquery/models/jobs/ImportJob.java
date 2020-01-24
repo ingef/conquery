@@ -96,6 +96,11 @@ public class ImportJob extends Job {
 			//partition the new IDs between the slaves
 			log.debug("\tpartition new IDs");
 			for (int bucket : primaryMapping.getNewBuckets()) {
+				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
+					log.error("Bucket[{}] marked as new, but already owned by Worker[{}]", bucket, namespace.getResponsibleWorkerForBucket(bucket).getId());
+					continue;
+				}
+
 				namespace.addResponsibility(bucket);
 			}
 			for (WorkerInformation w : namespace.getWorkers()) {

@@ -28,9 +28,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectAVLTreeMap;
 import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 
-
+/**
+ *
+ * @implNote This class is only used per {@link Worker}. And NOT in the Master.
+ */
 @Slf4j
 public class BucketManager {
 
