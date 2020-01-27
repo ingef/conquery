@@ -27,6 +27,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
+import com.bakdata.conquery.models.auth.AuthorizationStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -100,6 +101,7 @@ public class AdminProcessor {
 
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;
+	private final AuthorizationStorage authStorage;
 	private final Namespaces namespaces;
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
@@ -238,16 +240,8 @@ public class AdminProcessor {
 	 * @throws JSONException
 	 *             is thrown on JSON validation form the storage.
 	 */
-	public synchronized void deleteRole(RoleId roleId) throws JSONException {
-		log.info("Deleting mandator: {}", roleId);
-		Role role = storage.getRole(roleId);
-		for (User user : storage.getAllUsers()) {
-			user.removeRole(storage, role);
-		}
-		for (Group group : storage.getAllGroups()) {
-			group.removeRole(storage, role);
-		}
-		storage.removeRole(roleId);
+	public void deleteRole(RoleId roleId) throws JSONException {
+		AuthorizationHelper.deleteRole(authStorage, roleId);
 	}
 
 	public List<Role> getAllRoles() {
@@ -265,14 +259,14 @@ public class AdminProcessor {
 	}
 
 	public FERoleContent getRoleContent(RoleId roleId) {
-		Role role = Objects.requireNonNull(storage.getRole(roleId));
+		Role role = Objects.requireNonNull(roleId.getPermissionOwner(authStorage));
 		return FERoleContent
 			.builder()
 			.permissions(wrapInFEPermission(role.getPermissions()))
 			.permissionTemplateMap(preparePermissionTemplate())
 			.users(getUsers(role))
 			.groups(getGroups(role))
-			.owner(roleId.getPermissionOwner(storage))
+			.owner(role)
 			.build();
 	}
 
@@ -321,7 +315,7 @@ public class AdminProcessor {
 	 *             is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.addPermission(ownerId.getPermissionOwner(storage), permission, storage);
+		AuthorizationHelper.addPermission(ownerId.getPermissionOwner(authStorage), permission, authStorage);
 	}
 
 	/**
@@ -333,7 +327,7 @@ public class AdminProcessor {
 	 *             is thrown upon processing JSONs.
 	 */
 	public void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.removePermission(ownerId.getPermissionOwner(storage), permission, storage);
+		AuthorizationHelper.removePermission(ownerId.getPermissionOwner(authStorage), permission, authStorage);
 	}
 
 	public UIContext getUIContext() {
@@ -357,9 +351,9 @@ public class AdminProcessor {
 	}
 
 	public synchronized void deleteUser(UserId userId) throws JSONException {
-		User user = storage.getUser(userId);
-		for (Group group : storage.getAllGroups()) {
-			group.removeMember(storage, user);
+		User user = authStorage.getUser(userId);
+		for (Group group : authStorage.getAllGroups()) {
+			group.removeMember(authStorage, user);
 		}
 		storage.removeUser(userId);
 		log.trace("Removed user {} from the storage.", userId);
@@ -424,41 +418,39 @@ public class AdminProcessor {
 	}
 
 	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
-		synchronized (storage) {
+		synchronized (authStorage) {
 			Objects
-				.requireNonNull(groupId.getPermissionOwner(storage))
-				.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+				.requireNonNull(groupId.getPermissionOwner(authStorage))
+				.addMember(authStorage, Objects.requireNonNull(userId.getPermissionOwner(authStorage)));
 		}
-		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
+		log.trace("Added user {} to group {}", userId.getPermissionOwner(authStorage), groupId.getPermissionOwner(authStorage));
 	}
 
 	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
-		synchronized (storage) {
+		synchronized (authStorage) {
 			Objects
-				.requireNonNull(groupId.getPermissionOwner(storage))
-				.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
+				.requireNonNull(groupId.getPermissionOwner(authStorage))
+				.removeMember(authStorage, Objects.requireNonNull(userId.getPermissionOwner(authStorage)));
 		}
-		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
+		log.trace("Removed user {} from group {}", userId.getPermissionOwner(authStorage), groupId.getPermissionOwner(authStorage));
 	}
 
 	public void deleteGroup(GroupId groupId) {
-		synchronized (storage) {
-			storage.removeGroup(groupId);
-		}
-		log.trace("Removed group {}", groupId.getPermissionOwner(getStorage()));
+		storage.removeGroup(groupId);
+		log.trace("Removed group {}", groupId.getPermissionOwner(authStorage));
 	}
 
 	public void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
 		PermissionOwner<?> owner = null;
 		Role role = null;
 		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+			owner = Objects.requireNonNull(ownerId.getPermissionOwner(authStorage));
 			role = Objects.requireNonNull(storage.getRole(roleId));
 		}
 		if (!(owner instanceof RoleOwner)) {
 			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
 		}
-		((RoleOwner) owner).removeRole(storage, role);
+		((RoleOwner) owner).removeRole(authStorage, role);
 		log.trace("Deleted role {} from {}", role, owner);
 	}
 
@@ -466,20 +458,20 @@ public class AdminProcessor {
 		PermissionOwner<?> owner = null;
 		Role role = null;
 		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+			owner = Objects.requireNonNull(ownerId.getPermissionOwner(authStorage));
 			role = Objects.requireNonNull(storage.getRole(roleId));
 		}
 		if (!(owner instanceof RoleOwner)) {
 			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
 		}
-		((RoleOwner) owner).addRole(storage, role);
+		((RoleOwner) owner).addRole(authStorage, role);
 		log.trace("Deleted role {} from {}", role, owner);
 	}
 
 	public FEAuthOverview getAuthOverview() {
 		Collection<OverviewRow> overview = new ArrayList<>();
 		for (User user : storage.getAllUsers()) {
-			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
+			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, authStorage);
 			ArrayList<Role> effectiveRoles = new ArrayList<>(user.getRoles());
 			userGroups.forEach(g -> {
 				effectiveRoles.addAll(((Group) g).getRoles());
@@ -502,7 +494,7 @@ public class AdminProcessor {
 		writer.writeValuesToRow();
 		// Body
 		for (User user : storage.getAllUsers()) {
-			Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
+			Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , authStorage);
 
 			writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 			for(String domain : scope) {				

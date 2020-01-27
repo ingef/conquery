@@ -16,6 +16,7 @@ import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.auth.AuthorizationStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;

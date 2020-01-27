@@ -20,6 +20,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.datasets.Dataset;
@@ -45,8 +46,8 @@ public class StoredQueriesResource {
 	private final StoredQueriesProcessor processor;
 	private final ResourceUtil dsUtil;
 
-	public StoredQueriesResource(Namespaces namespaces) {
-		this.processor = new StoredQueriesProcessor(namespaces);
+	public StoredQueriesResource(Namespaces namespaces, AuthorizationStorage authStorage) {
+		this.processor = new StoredQueriesProcessor(namespaces, authStorage);
 		this.dsUtil = new ResourceUtil(namespaces);
 	}
 

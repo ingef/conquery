@@ -2,20 +2,16 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.Optional;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
-
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-
 import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
 
 /**
  * This dropwizard authenticator and the shiro realm are conceptually the same.
@@ -25,20 +21,13 @@ import lombok.extern.slf4j.Slf4j;
  * We need this authenticator to plug in the security, and hereby shiro, into the AuthFilter.
  */
 @Slf4j
-public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>{
+@RequiredArgsConstructor
+public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, User>{
 	
-	private final MasterMetaStorage storage;
-	
-	public ConqueryAuthenticator(MasterMetaStorage storage, Realm realm) {
-		this.storage = storage;
-		
-		SecurityManager securityManager = new DefaultSecurityManager(realm);
-		SecurityUtils.setSecurityManager(securityManager);
-		log.debug("Security manager registered");
-	}
+	private final AuthorizationStorage storage;
 
 	@Override
-	public Optional<User> authenticate(ConqueryToken token) throws AuthenticationException {
+	public Optional<User> authenticate(AuthenticationToken token) throws AuthenticationException {
 		
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();

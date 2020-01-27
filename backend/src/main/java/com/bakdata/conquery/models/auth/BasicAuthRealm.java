@@ -1,76 +1,72 @@
 package com.bakdata.conquery.models.auth;
 
 import java.io.File;
-import java.util.Collection;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
-import javax.validation.Validator;
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
 
-import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
-import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
-import com.bakdata.conquery.models.config.StorageConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.exceptions.ValidatorHelper;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
-import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
-import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
+import com.bakdata.conquery.models.config.XodusConfig;
+import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.io.BaseEncoding;
+import io.dropwizard.auth.basic.BasicCredentialAuthFilter;
+import jetbrains.exodus.bindings.StringBinding;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
+import jetbrains.exodus.env.Store;
+import jetbrains.exodus.env.StoreConfig;
+import jetbrains.exodus.env.TransactionalComputable;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authc.UsernamePasswordToken;
-import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.subject.SimplePrincipalCollection;
+import org.hibernate.validator.constraints.NotEmpty;
 
+@CPSType(id = "LOCAL_BASIC_CREDENTIAL", base = ConqueryRealm.class)
 @Slf4j
 public class BasicAuthRealm extends ConqueryRealm {
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = UsernamePasswordToken.class;
-	private final Validator validator;
-	private IdentifiableStore<User> authUser;
-	private IdentifiableStore<Role> authRole;
-	private IdentifiableStore<Group> authGroup;
-
+	private static final String STORENAME =  "BasicCredentialStore";
+	private static final String PREFIX =  "Basic";
+	
 	@Getter
-	private final Environment usersEnvironment;
-
+	@NotEmpty
+	private String storageId;
 	@Getter
-	private final Environment rolesEnvironment;
-
+	@ExistingFile
+	private File passwordStoreFile;
 	@Getter
-	private final Environment groupsEnvironment;
-	 
-	public BasicAuthRealm(StorageConfig config, Validator validator) {
+	private XodusConfig passwordStoreConfig;
+	
+	@JsonIgnore
+	private Environment passwordEnvironment;
+	@JsonIgnore
+	private Store passwordStore;
+		 
+	public BasicAuthRealm() {
 		this.setAuthenticationTokenClass(TOKEN_CLASS);
-		this.validator = validator;
-
-
-		usersEnvironment = Environments.newInstance(
-				new File(config.getDirectory(), "users"),
-				config.getXodus().createConfig()
-		);
-
-		rolesEnvironment = Environments.newInstance(
-				new File(config.getDirectory(), "roles"),
-				config.getXodus().createConfig()
-		);
-
-		groupsEnvironment = Environments.newInstance(
-			new File(config.getDirectory(), "groups"),
-			config.getXodus().createConfig()
-			);
 	}
-
+	
 	@Override
-	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-		// TODO Auto-generated method stub
-		return null;
+	protected void onInit() {
+		super.onInit();
+		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
+		passwordStore = passwordEnvironment.computeInTransaction(new TransactionalComputable<Store>(){
+			@Override
+			public Store compute(jetbrains.exodus.env.Transaction txn) {
+				return passwordEnvironment.openStore(STORENAME, StoreConfig.WITH_DUPLICATES, txn);
+			};
+		});
 	}
 
 	@Override
@@ -79,140 +75,74 @@ public class BasicAuthRealm extends ConqueryRealm {
 			// Incompatible token
 			return null;
 		}
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	void addRole(Role role) {
-		try {
-			ValidatorHelper.failOnError(log, validator.validate(role));
-			log.trace("New role:\tLabel: {}\tName: {}\tId: {} ", role.getLabel(), role.getName(), role.getId());
-			authRole.add(role);
+		
+		String username = (String) token.getPrincipal();
+		String providedCredentials = new String((char[]) token.getCredentials());
+		
+		String storedCredentials = passwordEnvironment.computeInReadonlyTransaction(new TransactionalComputable<String>() {
+			@Override
+			public String compute(jetbrains.exodus.env.Transaction txn) {
+				return StringBinding.entryToString(passwordStore.get(txn, StringBinding.stringToEntry(username)));
+			};
+		});
+		
+		if(!isCredentialValid(providedCredentials, storedCredentials)) {
+			return null;
 		}
-		catch (JSONException e) {
-			throw new IllegalArgumentException("Validation or storing failed for " + role, e);
+		UserId userId = new UserId(username);
+		User user = getStorage().getUser(userId);
+		// try to construct a new User if none could be found in the storage
+		if(user == null) {
+			log.warn("Provided credentials were valid, but a corresponding user was not found in the System. Add a user to the system with the id: {}", userId);
+			return null;
 		}
+		PrincipalCollection principals  = new SimplePrincipalCollection(List.of(userId), getName());
+		return new SimpleAuthenticationInfo(principals, token.getCredentials());
 	}
 
-	@Override
-	void addRoles(List<Role> roles) {
-		for (Role role : roles) {
-			try {
-				addRole(role);
-			}
-			catch (Exception e) {
-				log.error(String.format("Failed to add Role: %s", role), e);
-			}
-		}
+	private static boolean isCredentialValid(String providedCredentials, String storedCredentials) {
+		return providedCredentials.equals(storedCredentials);
 	}
 
+	/**
+	 * Code obtained from the Dropwizard project {@link BasicCredentialAuthFilter}.
+	 */
 	@Override
-	void deleteRole(RoleId mandatorId) {
-		// TODO Auto-generated method stub
+	public AuthenticationToken extractToken(ContainerRequestContext request) {
 
-	}
+        final String header = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
+        
+		if (header == null) {
+            return null;
+        }
 
-	@Override
-	List<Role> getAllRoles() {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        final int space = header.indexOf(' ');
+        if (space <= 0) {
+            return null;
+        }
 
-	@Override
-	List<User> getUsers(Role role) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        final String method = header.substring(0, space);
+        if (!PREFIX.equalsIgnoreCase(method)) {
+            return null;
+        }
 
-	@Override
-	List<Group> getGroups(Role role) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+        final String decoded;
+        try {
+            decoded = new String(BaseEncoding.base64().decode(header.substring(space + 1)), StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            log.warn("Error decoding credentials", e);
+            return null;
+        }
 
-	@Override
-	void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) {
-		// TODO Auto-generated method stub
+        // Decoded credentials is 'username:password'
+        final int i = decoded.indexOf(':');
+        if (i <= 0) {
+            return null;
+        }
 
-	}
-
-	@Override
-	void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	List<User> getAllUsers() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	void deleteUser(UserId userId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	void addUser(User user) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	void addUsers(List<User> users) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	Collection<Group> getAllGroups() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	void addGroup(Group group) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	void addGroups(List<Group> groups) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	void addUserToGroup(GroupId groupId, UserId userId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	void deleteUserFromGroup(GroupId groupId, UserId userId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	void removeGroup(GroupId groupId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) {
-		// TODO Auto-generated method stub
-
-	}
-
-	@Override
-	void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) {
-		// TODO Auto-generated method stub
-
+        final String username = decoded.substring(0, i);
+        final String password = decoded.substring(i + 1);
+		return new UsernamePasswordToken(username, password);
 	}
 
 }

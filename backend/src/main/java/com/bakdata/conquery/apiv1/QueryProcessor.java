@@ -1,6 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -28,7 +28,7 @@ public class QueryProcessor {
 
 	@Getter
 	private final Namespaces namespaces;
-	private final MasterMetaStorage storage;
+	private final AuthorizationStorage storage;
 
 
 	/**

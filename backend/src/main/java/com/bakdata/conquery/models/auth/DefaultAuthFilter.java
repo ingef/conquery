@@ -7,18 +7,15 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
 
-import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.realm.AuthorizingRealm;
-
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationToken;
 
 /**
  * This filter hooks into dropwizard's request handling to extract and process
@@ -30,16 +27,24 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
-public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
+public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 	@Override
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
 
-		ConqueryToken credentials = ConquerySecurityContext.class.cast(requestContext.getSecurityContext()).getToken();
-
+		
+		AuthenticationToken token = null;
+		for(ConqueryRealm realm : AuthorizationController.getInstance().getRealms()) {
+			if ((token = realm.extractToken(requestContext)) != null){
+				log.trace("Realm {} extract a token form the request: {}", realm.getName(), token);
+				break;
+			}
+			log.trace("Realm {} did not extract a token form the request.", realm.getName());
+		}
+		
 		try {
 			// sets the security context in the request AND does the authentication
-			if (!authenticate(requestContext, credentials, SecurityContext.BASIC_AUTH)) {
+			if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
 				throw new NotAuthorizedException("Failed to authenticate request");
 			}
 		}
@@ -62,7 +67,7 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 	 * @param <P>
 	 *            the principal
 	 */
-	public static class Builder extends AuthFilterBuilder<ConqueryToken, User, DefaultAuthFilter> {
+	public static class Builder extends AuthFilterBuilder<AuthenticationToken, User, DefaultAuthFilter> {
 
 		@Override
 		protected DefaultAuthFilter newInstance() {
@@ -70,13 +75,10 @@ public class DefaultAuthFilter extends AuthFilter<ConqueryToken, User> {
 		}
 	}
 
-	public static AuthFilter<ConqueryToken, User> asDropwizardFeature(MasterMetaStorage storage, AuthConfig config) {
-		AuthorizingRealm realm = config.getRealm(storage);
-
-
+	public static AuthFilter<AuthenticationToken, User> asDropwizardFeature(AuthConfig config) {
 		Builder builder = new Builder();
-		AuthFilter<ConqueryToken, User> authFilter = builder
-			.setAuthenticator(new ConqueryAuthenticator(storage, realm))
+		AuthFilter<AuthenticationToken, User> authFilter = builder
+			.setAuthenticator(AuthorizationController.getInstance().getAuthenticator())
 			.setUnauthorizedHandler(new DefaultUnauthorizedHandler())
 			.buildAuthFilter();
 		return authFilter;

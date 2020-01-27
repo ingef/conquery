@@ -13,6 +13,7 @@ import java.util.stream.Stream;
 import javax.servlet.http.HttpServletRequest;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.AuthorizationStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -39,10 +40,12 @@ public class StoredQueriesProcessor {
 	@Getter
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
+	private final AuthorizationStorage authStorage;
 
-	public StoredQueriesProcessor(Namespaces namespaces) {
+	public StoredQueriesProcessor(Namespaces namespaces, AuthorizationStorage authStorage) {
 		this.namespaces = namespaces;
 		this.storage = namespaces.getMetaStorage();
+		this.authStorage =authStorage;
 	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
@@ -121,11 +124,11 @@ public class StoredQueriesProcessor {
 			}
 			try {
 				if (shared) {
-					addPermission(shareGroup, queryPermission, storage);
+					addPermission(shareGroup, queryPermission, authStorage);
 					log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, shareGroup);
 				}
 				else {
-					removePermission(shareGroup, queryPermission, storage);
+					removePermission(shareGroup, queryPermission, authStorage);
 					log
 						.trace(
 							"User {} unshares query {}. Removing permission {} from group {}.",

@@ -5,26 +5,24 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import javax.validation.Validator;
 
+import com.bakdata.conquery.io.xodus.StoreInfo;
 import com.bakdata.conquery.io.xodus.stores.IdentifiableStore;
 import com.bakdata.conquery.models.auth.entities.Group;
-import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
-import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
+import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.resources.admin.ui.model.FEGroupContent;
 import com.bakdata.conquery.util.functions.ThrowingRunnable;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -32,7 +30,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class LocalAuthStorage implements AuthStorage{
+public class LocalAuthStorage implements AuthorizationStorage{
+	private final static Function<PermissionOwnerId<?>, UnsupportedOperationException> UNSUPPORTED_TYPE = (id) -> new UnsupportedOperationException(String.format("The type of %s (%s) is not supported", id, id.getClass().getName()));
 	private final Validator validator;
 	private IdentifiableStore<User> authUser;
 	private IdentifiableStore<Role> authRole;
@@ -47,8 +46,11 @@ public class LocalAuthStorage implements AuthStorage{
 	@Getter
 	private final Environment groupsEnvironment;
 	
+	@Getter
+	private String id;
 	
-	public LocalAuthStorage(StorageConfig config, Validator validator) {
+	
+	public LocalAuthStorage(StorageConfig config, Validator validator, CentralRegistry registry) {
 		this.validator = validator;
 
 
@@ -66,6 +68,12 @@ public class LocalAuthStorage implements AuthStorage{
 			new File(config.getDirectory(), "groups"),
 			config.getXodus().createConfig()
 			);
+		
+		authRole = StoreInfo.AUTH_ROLE.identifiable(getRolesEnvironment(), validator, registry);
+
+		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), validator, registry);
+
+		authGroup = StoreInfo.AUTH_GROUP.identifiable(getUsersEnvironment(), validator, registry);
 	}
 	
 	public void addRole(Role role){
@@ -85,13 +93,12 @@ public class LocalAuthStorage implements AuthStorage{
 		}
 	}
 
-	public void deleteRole(RoleId roleId) {
+	public void removeRole(RoleId roleId) {
 		log.info("Deleting mandator: {}", roleId);
 		Role role = authRole.get(roleId);
 		for (User user : authUser.getAll()) {
 			asRuntimeException(() -> {
-				user.removeRole(role);
-				authUser.update(user);
+				user.removeRole(this, role);
 			});
 		}
 		authRole.remove(roleId);
@@ -105,171 +112,62 @@ public class LocalAuthStorage implements AuthStorage{
 		return authUser.getAll().stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
 	}
 
-	private List<Group> getGroupsByRole(Role role) {
+	public List<Group> getGroupsByRole(Role role) {
 		return authGroup.getAll().stream().filter(g -> g.getRoles().contains(role)).collect(Collectors.toList());
-	}
-
-
-	public void createPermission(UserId ownerId, ConqueryPermission permission) {
-		createPermission(authUser, ownerId, permission);
-	}
-	
-	public void deletePermission(UserId ownerId, ConqueryPermission permission) throws JSONException {
-		deletePermission(authUser, ownerId, permission);
-	}
-	
-	public void createPermission(RoleId ownerId, ConqueryPermission permission) {
-		createPermission(authRole, ownerId, permission);
-	}
-	
-	public void deletePermission(RoleId ownerId, ConqueryPermission permission) throws JSONException {
-		deletePermission(authRole, ownerId, permission);
-	}
-	
-	public void createPermission(GroupId ownerId, ConqueryPermission permission) {
-		createPermission(authGroup, ownerId, permission);
-	}
-	
-	public void deletePermission(GroupId ownerId, ConqueryPermission permission) throws JSONException {
-		deletePermission(authGroup, ownerId, permission);
-	}
-	
-	private static <P extends PermissionOwner<?>> void createPermission(IdentifiableStore<P> store, PermissionOwnerId<P> ownerId, ConqueryPermission permission) {
-		P owner = store.get(ownerId);
-		asRuntimeException(() -> {
-			owner.addPermission(permission);
-			store.update(owner);
-		});
-	}
-	
-	private static <P extends PermissionOwner<?>> void deletePermission(IdentifiableStore<P> store, PermissionOwnerId<P> ownerId, ConqueryPermission permission) {
-		P owner = store.get(ownerId);
-		asRuntimeException(() -> {
-			owner.removePermission(permission);
-			store.update(owner);
-		});
 	}
 
 	public List<User> getAllUsers() {
 		return new ArrayList<>(authUser.getAll());
 	}
 
-	public synchronized void deleteUser(UserId userId) {
-		storage.removeUser(userId);
+	public void deleteUser(UserId userId) {
+		User user = authUser.get(userId);
+		for (Group group : getAllGroups()) {
+			asRuntimeException(() -> {
+				group.removeMember(this, user);
+			});
+		}
+		authUser.remove(userId);
 		log.trace("Removed user {} from the storage.", userId);
 	}
 
-	public synchronized void addUser(User user) throws JSONException {
-		ValidatorHelper.failOnError(log, validator.validate(user));
-		storage.addUser(user);
+	public void addUser(User user){
+		asRuntimeException(() -> {
+			ValidatorHelper.failOnError(log, validator.validate(user));
+			authUser.add(user);
+		});
 		log.trace("New user:\tLabel: {}\tName: {}\tId: {} ", user.getLabel(), user.getName(), user.getId());
 	}
 
 	public void addUsers(List<User> users) {
 		Objects.requireNonNull(users, "User list was empty.");
 		for (User user : users) {
-			try {
-				addUser(user);
-			}
-			catch (Exception e) {
-				log.error(String.format("Failed to add User: %s", user), e);
-			}
+			addUser(user);
 		}
 	}
 
 	public Collection<Group> getAllGroups() {
-		return storage.getAllGroups();
+		return authGroup.getAll();
 	}
 
-	public FEGroupContent getGroupContent(GroupId groupId) {
-		Group group = Objects.requireNonNull(storage.getGroup(groupId));
-		Set<User> members = group.getMembers();
-		ArrayList<User> availableMembers = new ArrayList<>(storage.getAllUsers());
-		availableMembers.removeAll(members);
-		return FEGroupContent
-			.builder()
-			.owner(group)
-			.members(members)
-			.availableMembers(availableMembers)
-			.roles(group.getRoles())
-			.availableRoles(storage.getAllRoles())
-			.permissions(wrapInFEPermission(group.getPermissions()))
-			.permissionTemplateMap(preparePermissionTemplate())
-			.build();
-	}
-
-	public synchronized void addGroup(Group group) throws JSONException {
-		synchronized (storage) {
+	public void addGroup(Group group){
+		asRuntimeException(() -> {
 			ValidatorHelper.failOnError(log, validator.validate(group));
-			storage.addGroup(group);
-		}
+			authGroup.add(group);
+		});
 		log.trace("New group:\tLabel: {}\tName: {}\tId: {} ", group.getLabel(), group.getName(), group.getId());
 
 	}
 
 	public void addGroups(List<Group> groups) {
-		Objects.requireNonNull(groups, "Group list was null.");
 		for (Group group : groups) {
-			try {
-				addGroup(group);
-			}
-			catch (Exception e) {
-				log.error(String.format("Failed to add Group: %s", group), e);
-			}
+			addGroup(group);
 		}
-	}
-
-	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
-		synchronized (storage) {
-			Objects
-				.requireNonNull(groupId.getPermissionOwner(storage))
-				.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
-		}
-		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
-	}
-
-	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
-		synchronized (storage) {
-			Objects
-				.requireNonNull(groupId.getPermissionOwner(storage))
-				.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
-		}
-		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(getStorage()));
 	}
 
 	public void removeGroup(GroupId groupId) {
-		synchronized (storage) {
-			storage.removeGroup(groupId);
-		}
-		log.trace("Removed group {}", groupId.getPermissionOwner(getStorage()));
-	}
-
-	public void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
-		PermissionOwner<?> owner = null;
-		Role role = null;
-		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-			role = Objects.requireNonNull(storage.getRole(roleId));
-		}
-		if (!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
-		}
-		((RoleOwner) owner).removeRole(storage, role);
-		log.trace("Deleted role {} from {}", role, owner);
-	}
-
-	public void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
-		PermissionOwner<?> owner = null;
-		Role role = null;
-		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-			role = Objects.requireNonNull(storage.getRole(roleId));
-		}
-		if (!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
-		}
-		((RoleOwner) owner).addRole(storage, role);
-		log.trace("Deleted role {} from {}", role, owner);
+		authGroup.remove(groupId);
+		log.trace("Removed group {}", groupId);
 	}
 	
 	public static void asRuntimeException(ThrowingRunnable runnable) {
@@ -279,5 +177,36 @@ public class LocalAuthStorage implements AuthStorage{
 			throw new IllegalArgumentException("Cannot validate or store the given Argument.", e);
 		}
 		
+	}
+
+	@Override
+	public User getUser(UserId userId) {
+		return authUser.get(userId);
+	}
+	
+
+	@Override
+	public Role getRole(RoleId roleId) {
+		return authRole.get(roleId);
+	}
+
+	@Override
+	public void updateUser(User user) {
+		asRuntimeException(() -> authUser.update(user));
+	}
+
+	@Override
+	public void updateRole(Role role) {
+		asRuntimeException(() -> authRole.update(role));
+	}
+
+	@Override
+	public void updateGroup(Group group) {
+		asRuntimeException(() -> authGroup.update(group));
+	}
+
+	@Override
+	public Group getGroup(GroupId groupId) {
+		return authGroup.get(groupId);
 	}
 }

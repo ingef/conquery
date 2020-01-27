@@ -13,13 +13,13 @@ import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthCookieFilter;
-import com.bakdata.conquery.models.auth.TokenExtractorFilter;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.resources.admin.rest.AdminResource;
-import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
 import com.bakdata.conquery.resources.admin.rest.AdminTablesResource;
+import com.bakdata.conquery.resources.admin.rest.AuthOverviewResource;
 import com.bakdata.conquery.resources.admin.rest.GroupResource;
 import com.bakdata.conquery.resources.admin.rest.PermissionResource;
 import com.bakdata.conquery.resources.admin.rest.RoleResource;
@@ -83,6 +83,7 @@ public class AdminServlet {
 		adminProcessor = new AdminProcessor(
 			masterCommand.getConfig(),
 			masterCommand.getStorage(),
+			AuthorizationController.getInstance().getAuthStorage(),
 			masterCommand.getNamespaces(),
 			masterCommand.getJobManager(),
 			masterCommand.getMaintenanceService(),
@@ -131,11 +132,6 @@ public class AdminServlet {
 		jerseyConfig
 			.register(new MultiPartFeature())
 			.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)))
-			.register(new TokenExtractorFilter(masterCommand.getConfig().getAuthentication().getTokenExtractor()))
-			/*
-			 * register CORS-Preflight filter inbetween token extraction and authentication
-			 * to intercept unauthenticated OPTIONS requests
-			 */
 			.register(new CORSPreflightRequestFilter())
 			.register(masterCommand.getAuthDynamicFeature())
 			.register(IdParamConverter.Provider.INSTANCE)

@@ -3,15 +3,12 @@ package com.bakdata.conquery.models.auth;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
-import org.apache.shiro.realm.AuthorizingRealm;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.
@@ -42,23 +39,21 @@ public class DevAuthConfig implements AuthConfig {
 		SuperPermission.DOMAIN);
 
 	
-	@Getter
-	@JsonIgnore
-	private final TokenExtractor tokenExtractor = new DefaultTokenExtractor();
+	private ConqueryRealm realm = new AllGrantedRealm();
 
 	@Override
-	public AuthorizingRealm getRealm(MasterMetaStorage storage) {
-		return new AllGrantedRealm(storage);
+	public List<ConqueryRealm> getRealms() {
+		return List.of(realm);
 	}
 
 	@Override
-	public void initializeAuthConstellation(MasterMetaStorage storage) {
+	public void initializeAuthConstellation(AuthorizationStorage storage) {
 		try {
 			storage.updateUser(USER);
+			USER.addPermission(storage, SuperPermission.onDomain());
 		}
 		catch (JSONException e) {
 			throw new IllegalStateException(e);
 		}
 	}
-
 }
