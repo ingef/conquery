@@ -72,7 +72,7 @@ public class FrontEndConceptBuilder {
 				.matchingEntries(matchingStats.countEvents())
 				.dateRange(matchingStats.spanEvents() != null ? matchingStats.spanEvents().toSimpleRange() : null)
 				.detailsAvailable(Boolean.TRUE)
-				.codeListResolvable(c.countElements() != 1)
+				.codeListResolvable(c.countElements() > 1)
 				.parent(structureParent)
 				.selects(c
 					.getSelects()
