@@ -8,7 +8,7 @@ import java.util.List;
 import javax.validation.Valid;
 
 import com.bakdata.conquery.models.identifiable.Labeled;
-import com.bakdata.conquery.models.identifiable.ids.specific.ImportDescriptorId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableImportDescriptorId;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,7 +25,7 @@ import org.hibernate.validator.constraints.NotEmpty;
  */
 @Getter
 @Setter
-public class TableImportDescriptor extends Labeled<ImportDescriptorId> implements Serializable {
+public class TableImportDescriptor extends Labeled<TableImportDescriptorId> implements Serializable {
 
 	private static final long serialVersionUID = 1L;
 
@@ -84,8 +84,8 @@ public class TableImportDescriptor extends Labeled<ImportDescriptorId> implement
 	}
 
 	@Override
-	public ImportDescriptorId createId() {
-		return new ImportDescriptorId(getName());
+	public TableImportDescriptorId createId() {
+		return new TableImportDescriptorId(getName());
 	}
 
 	@Override

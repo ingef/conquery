@@ -62,7 +62,7 @@ public class Preprocessor {
 			try (HCFile outFile = new HCFile(descriptor.getInputFile().getPreprocessedFile(), false);
 				 InputStream is = outFile.readHeader()) {
 
-				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PPHeader.class);
+				PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(is, PreprocessedHeader.class);
 
 				if (header.getValidityHash() == currentHash) {
 					log.info("\tHASH STILL VALID");

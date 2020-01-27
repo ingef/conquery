@@ -1,12 +1,5 @@
 package com.bakdata.conquery.integration.json;
 
-import java.io.IOException;
-import java.util.Arrays;
-
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
-import com.bakdata.conquery.integration.common.IntegrationUtils;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.File;
@@ -22,13 +15,14 @@ import java.util.concurrent.TimeUnit;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.integration.common.IntegrationUtils;
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
+import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
-import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -41,6 +35,8 @@ import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -51,6 +47,8 @@ import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Slf4j
 @Getter
@@ -117,9 +115,8 @@ public class QueryTest extends AbstractQueryEngineTest {
 
 			String[][] data = parser.parseAll(queryResults.stream()).toArray(String[][]::new);
 
-			ConceptQuery q = new ConceptQuery();
-			q.setRoot(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
-			
+			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data));
+
 			ManagedExecution managed = support.getNamespace().getQueryManager().runQuery(q, queryId, DevAuthConfig.USER);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
@@ -170,6 +167,9 @@ public class QueryTest extends AbstractQueryEngineTest {
 		for (File file : preprocessedFiles) {
 			support.getDatasetsProcessor().addImport(dataset, file);
 		}
+
+		IntegrationUtils.importIdMapping(support, content);
+		IntegrationUtils.importPreviousQueries(support, content);
 	}
 
 	public static OutputDescription copyOutput(RequiredColumn column) {
@@ -178,8 +178,6 @@ public class QueryTest extends AbstractQueryEngineTest {
 		out.setInputType(column.getType());
 		out.setName(column.getName());
 		return out;
-		IntegrationUtils.importIdMapping(support, content);
-		IntegrationUtils.importPreviousQueries(support, content);
 	}
 
 }

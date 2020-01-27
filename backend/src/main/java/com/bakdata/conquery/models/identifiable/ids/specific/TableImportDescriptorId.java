@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
 @AllArgsConstructor @Getter @EqualsAndHashCode(callSuper=false)
-public class ImportDescriptorId extends AId<TableImportDescriptor> {
+public class TableImportDescriptorId extends AId<TableImportDescriptor> {
 
 	private final String importDescriptor;
 	
@@ -20,12 +20,12 @@ public class ImportDescriptorId extends AId<TableImportDescriptor> {
 		components.add(importDescriptor);
 	}
 	
-	public static enum Parser implements IId.Parser<ImportDescriptorId> {
+	public static enum Parser implements IId.Parser<TableImportDescriptorId> {
 		INSTANCE;
 		
 		@Override
-		public ImportDescriptorId parseInternally(IdIterator parts) {
-			return new ImportDescriptorId(parts.next());
+		public TableImportDescriptorId parseInternally(IdIterator parts) {
+			return new TableImportDescriptorId(parts.next());
 		}
 	}
 }
