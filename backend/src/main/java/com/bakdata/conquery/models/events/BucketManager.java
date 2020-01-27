@@ -99,11 +99,14 @@ public class BucketManager {
 		}
 	}
 
+	/**
+	* Logic for tracing the creation of new Entities.
+	*/
 	private IntFunction<Entity> createEntityFor(Identifiable<?> idable) {
 
 		return id -> {
 
-			if(idable.getId() instanceof NamespacedId){
+			if(log.isDebugEnabled() && idable.getId() instanceof NamespacedId){
 				byte[] thename = this.storage.getDictionary(ConqueryConstants.getPrimaryDictionary(((NamespacedId) idable.getId()).getDataset())).getElement(id);
 
 				log.debug("Creating new Entitiy[{}]=`{}` for Bucket[{}]", id, new String(thename), idable.getId());
