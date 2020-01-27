@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.ScheduledExecutorService;
+
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
@@ -9,13 +15,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
 
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Objects;
-import java.util.concurrent.ScheduledExecutorService;
-
+@Slf4j
 @Setter @Getter @NoArgsConstructor
 public class Namespace {
 
@@ -63,7 +65,9 @@ public class Namespace {
 			.mapToInt(WorkerInformation::findLargestEntityId)
 			.max()
 			.orElse(-1);
+
 		bucket2WorkerMap = new ArrayList<>(maximumEntityId+1);
+
 		if(maximumEntityId >= 0) {
 			for(int i=0;i<=maximumEntityId;i++) {
 				bucket2WorkerMap.add(null);
@@ -71,8 +75,11 @@ public class Namespace {
 		}
 			
 		for(WorkerInformation wi:workers) {
-			for(int i = wi.getIncludedBuckets().size()-1; i>=0; i--) {
-				bucket2WorkerMap.set(wi.getIncludedBuckets().getInt(i), wi);
+			for (int index = wi.getIncludedBuckets().size() - 1; index >= 0; index--) {
+				WorkerInformation prior;
+				if ((prior = bucket2WorkerMap.set(wi.getIncludedBuckets().getInt(index), wi)) != null) {
+					log.warn("Already have prior responsibility for Bucket[{}] to Worker[{}], trying to assign to new Worker[{}]", wi.getIncludedBuckets().getInt(index), prior.getId(), wi.getId());
+				}
 			}
 		}
 		
