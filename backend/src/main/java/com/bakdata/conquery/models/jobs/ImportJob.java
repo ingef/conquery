@@ -95,18 +95,24 @@ public class ImportJob extends Job {
 
 			//partition the new IDs between the slaves
 			log.debug("\tpartition new IDs");
-			for (int bucket : primaryMapping.getNewBuckets()) {
-				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
-					log.error("Bucket[{}] marked as new, but already owned by Worker[{}]", bucket, namespace.getResponsibleWorkerForBucket(bucket).getId());
-					continue;
-				}
 
-				namespace.addResponsibility(bucket);
+			// Allocate a responsibility for all yet unassigned buckets.
+			synchronized (namespace) {
+				for (int bucket : primaryMapping.getUsedBuckets()) {
+					if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
+						continue;
+					}
+
+					namespace.addResponsibility(bucket);
+				}
 			}
+
 			for (WorkerInformation w : namespace.getWorkers()) {
 				w.send(new UpdateWorkerBucket(w));
 			}
-			namespace.updateWorkerMap();
+
+			synchronized (namespace) {
+			}
 
 			//update the allIdsTable
 			log.info("\tupdating id information");
@@ -265,7 +271,7 @@ public class ImportJob extends Job {
 		Dictionary oldPrimaryDict = namespace.getStorage().computeDictionary(ConqueryConstants.getPrimaryDictionary(namespace.getStorage().getDataset()));
 		Dictionary primaryDict = Dictionary.copyUncompressed(oldPrimaryDict);
 		log.debug("\tmap values");
-		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict, namespace);
+		DictionaryMapping primaryMapping = DictionaryMapping.create(entities, primaryDict);
 		
 		//if no new ids we shouldn't recompress and store
 		if(primaryMapping.getNewIds() == null) {
@@ -325,8 +331,7 @@ public class ImportJob extends Job {
 		Dictionary shared = namespace.getStorage().computeDictionary(sharedId);
 		DictionaryMapping mapping = DictionaryMapping.create(
 			source,
-			shared,
-			namespace
+			shared
 		);
 		
 		AStringType<?> newType = Cloner.clone(oldType);

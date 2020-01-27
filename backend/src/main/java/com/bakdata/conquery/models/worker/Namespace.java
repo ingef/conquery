@@ -2,8 +2,10 @@ package com.bakdata.conquery.models.worker;
 
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ScheduledExecutorService;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -12,108 +14,103 @@ import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.QueryManager;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import it.unimi.dsi.fastutil.ints.Int2ObjectArrayMap;
+import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
+
+/**
+ * Keep track of all data assigned to a single dataset. Each Namespace has one {@link Worker} per {@link Dataset} / {@link Namespace}.
+ * Every Worker is assigned a partition of the loaded {@link Entity}s via {@link Entity::getBucket}.
+ */
 @Slf4j
-@Setter @Getter @NoArgsConstructor
+@Setter
+@Getter
+@NoArgsConstructor
 public class Namespace {
 
 	@JsonIgnore
 	private transient NamespaceStorage storage;
 	@JsonIgnore
 	private transient QueryManager queryManager;
-	private List<WorkerInformation> workers = new ArrayList<>();
+
+	/**
+	 * All known {@link Worker}s that are part of this Namespace.
+	 */
+	private Set<WorkerInformation> workers = new HashSet<>();
+
+	/**
+	 * Map storing the buckets each Worker has been assigned.
+	 */
 	@JsonIgnore
-	private transient List<WorkerInformation> bucket2WorkerMap = new ArrayList<>();
+	private transient Int2ObjectMap<WorkerInformation> bucket2WorkerMap = new Int2ObjectArrayMap<>();
 	@JsonIgnore
 	private transient Namespaces namespaces;
-	private int entityBucketSize;
-	
-	public Namespace(int entityBucketSize, NamespaceStorage storage) {
-		this.entityBucketSize = entityBucketSize;
+
+	public Namespace(NamespaceStorage storage) {
 		this.storage = storage;
 		this.queryManager = new QueryManager(this);
 	}
-	
+
 	public void initMaintenance(ScheduledExecutorService maintenanceService) {
 	}
-	
+
 	public void checkConnections() {
 		List<WorkerInformation> l = new ArrayList<>(workers);
-		l.removeIf(w->w.getConnectedSlave()!=null);
-			
-		if(!l.isEmpty()) {
-			throw new IllegalStateException("Not all known slaves are connected. Missing "+l);
+		l.removeIf(w -> w.getConnectedSlave() != null);
+
+		if (!l.isEmpty()) {
+			throw new IllegalStateException("Not all known slaves are connected. Missing " + l);
 		}
 	}
-	
+
 	public void sendToAll(WorkerMessage msg) {
-		if(workers.isEmpty()) {
+		if (workers.isEmpty()) {
 			throw new IllegalStateException("There are no workers yet");
 		}
-		for(WorkerInformation w:workers) {
+		for (WorkerInformation w : workers) {
 			w.send(msg);
 		}
 	}
-	
-	public synchronized void updateWorkerMap() {
-		int maximumEntityId = workers
-			.stream()
-			.mapToInt(WorkerInformation::findLargestEntityId)
-			.max()
-			.orElse(-1);
 
-		bucket2WorkerMap = new ArrayList<>(maximumEntityId+1);
 
-		if(maximumEntityId >= 0) {
-			for(int i=0;i<=maximumEntityId;i++) {
-				bucket2WorkerMap.add(null);
-			}
-		}
-			
-		for(WorkerInformation wi:workers) {
-			for (int index = wi.getIncludedBuckets().size() - 1; index >= 0; index--) {
-				WorkerInformation prior;
-				if ((prior = bucket2WorkerMap.set(wi.getIncludedBuckets().getInt(index), wi)) != null) {
-					log.warn("Already have prior responsibility for Bucket[{}] to Worker[{}], trying to assign to new Worker[{}]", wi.getIncludedBuckets().getInt(index), prior.getId(), wi.getId());
-				}
-			}
-		}
-		
-		for(int i = bucket2WorkerMap.size()-1; i>=0; i--) {
-			if(bucket2WorkerMap.get(i) == null) {
-				throw new IllegalStateException("The id "+i+" is not mapped to a slave although larger ones are");
-			}
-		}
-	}
-	
-	public synchronized WorkerInformation getResponsibleWorker(int entityId) {
-		return getResponsibleWorkerForBucket(Entity.getBucket(entityId, entityBucketSize));
-	}
-	
+	/**
+	 * Find the assigned worker for the bucket. If there is none return null.
+	 */
 	public synchronized WorkerInformation getResponsibleWorkerForBucket(int bucket) {
-		if(bucket < bucket2WorkerMap.size()) {
+		if (bucket < bucket2WorkerMap.size()) {
 			return bucket2WorkerMap.get(bucket);
 		}
 		else {
 			return null;
 		}
 	}
-	
+
+	/**
+	 * Assign responsibility of a bucket to a Worker.
+	 *
+	 * @implNote Currently the least occupied Worker receives a new Bucket, this can change in later implementations. (For example for dedicated Workers, or entity weightings)
+	 */
 	public synchronized void addResponsibility(int bucket) {
 		WorkerInformation smallest = workers
-				.stream()
-				.min(Comparator.comparing(si->si.getIncludedBuckets().size()))
-				.orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
+											 .stream()
+											 .min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
+											 .orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
+
+		log.debug("Assigning Bucket[{}] to Worker[{}]", bucket, smallest.getId());
+
+		bucket2WorkerMap.put(bucket, smallest);
+
 		smallest.getIncludedBuckets().add(bucket);
 	}
 
 	public synchronized void addWorker(WorkerInformation info) {
-		Objects.requireNonNull(info.getConnectedSlave());
-		List<WorkerInformation> l = new ArrayList<>(workers);
+		Objects.requireNonNull(info.getConnectedSlave(), () -> String.format("No open connections found for Worker[%s]", info.getId()));
+
+		Set<WorkerInformation> l = new HashSet<>(workers);
 		l.add(info);
 		workers = l;
 	}
