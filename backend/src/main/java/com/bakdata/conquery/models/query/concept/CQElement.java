@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface CQElement extends Visitable{
+public interface CQElement extends Visitable {
 
 	default CQElement resolve(QueryResolveContext context) {
 		return this;

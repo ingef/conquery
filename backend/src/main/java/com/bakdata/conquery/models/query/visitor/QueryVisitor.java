@@ -12,5 +12,5 @@ import com.bakdata.conquery.util.QueryUtils;
  * Reference implementations can be found in {@link QueryUtils}.
  */
 @FunctionalInterface
-public interface QueryVisitor extends Consumer<Visitable>{
+public interface QueryVisitor extends Consumer<Visitable> {
 }

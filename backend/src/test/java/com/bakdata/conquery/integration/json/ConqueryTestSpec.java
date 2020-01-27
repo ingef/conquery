@@ -78,7 +78,8 @@ public abstract class ConqueryTestSpec {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
-			} catch(Exception e) {
+			}
+			catch(Exception e) {
 				if(child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {

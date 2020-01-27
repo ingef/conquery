@@ -145,7 +145,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	public boolean isReadyToDownload(URLBuilder url, User user) {
 		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
-		 * The member this.dataset only associates the 
+		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
 		 */
 		boolean isPermittedDownload = user.isPermittedAll(getUsedNamespacedIds().stream()
 			.map(NamespacedId::getDataset)

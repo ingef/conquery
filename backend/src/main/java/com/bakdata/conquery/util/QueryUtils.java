@@ -19,66 +19,73 @@ import lombok.experimental.UtilityClass;
 
 @UtilityClass
 public class QueryUtils {
-	
+
 	/**
 	 * Checks if the query requires to resolve external ids.
+	 * 
 	 * @return True if a {@link CQExternal} is found.
 	 */
-	public static class ExternalIdChecker implements QueryVisitor{
+	public static class ExternalIdChecker implements QueryVisitor {
+
 		private final List<CQExternal> elements = new ArrayList<>();
-		
+
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof CQExternal) {	
-				elements.add((CQExternal)element);
+			if (element instanceof CQExternal) {
+				elements.add((CQExternal) element);
 			}
 		}
-		
+
 		public boolean resolvesExternalIds() {
 			return elements.size() > 0;
 		}
 	}
-	
+
 	/**
-	 * Find first and only directly ReusedQuery in the queries tree, and return its Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
+	 * Find first and only directly ReusedQuery in the queries tree, and return its
+	 * Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
 	 *
-	 * @return Null if not only a single {@link CQReusedQuery} was found beside {@link CQAnd} / {@link CQOr}.
+	 * @return Null if not only a single {@link CQReusedQuery} was found beside
+	 *         {@link CQAnd} / {@link CQOr}.
 	 */
-	public static class SingleReusedChecker implements QueryVisitor{
+	public static class SingleReusedChecker implements QueryVisitor {
+
 		final List<CQReusedQuery> reusedElements = new ArrayList<>();
 		private boolean containsOthersElements = false;
-		
+
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof CQReusedQuery) {	
-				reusedElements.add((CQReusedQuery)element);
+			if (element instanceof CQReusedQuery) {
+				reusedElements.add((CQReusedQuery) element);
 			}
-			else if(element instanceof CQAnd || element instanceof CQOr) {
+			else if (element instanceof CQAnd || element instanceof CQOr) {
 				// Ignore these elements
 			}
 			else {
 				containsOthersElements = true;
 			}
 		}
-		
-		public ManagedExecutionId getOnlyReused(){
-			return (reusedElements.size() == 1 && !containsOthersElements)? reusedElements.get(0).getQuery() : null;
+
+		public ManagedExecutionId getOnlyReused() {
+			return (reusedElements.size() == 1 && !containsOthersElements) ? reusedElements.get(0).getQuery() : null;
 		}
 	}
-	
+
 	/**
-	 * Collects all {@link NamespacedId} references provided by a user from a {@link Visitable}.
+	 * Collects all {@link NamespacedId} references provided by a user from a
+	 * {@link Visitable}.
 	 */
-	public static class NamespacedIdCollector implements QueryVisitor{
+	public static class NamespacedIdCollector implements QueryVisitor {
+
 		@Getter
 		private Set<NamespacedId> ids = new HashSet<>();
 
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof HasNamespacedIds) {	
-				HasNamespacedIds idHolder = (HasNamespacedIds)element;
+			if (element instanceof HasNamespacedIds) {
+				HasNamespacedIds idHolder = (HasNamespacedIds) element;
 				ids.addAll(idHolder.collectNamespacedIds());
 			}
-		}		
+		}
 	}
 }
