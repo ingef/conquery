@@ -15,10 +15,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
 
 
+@Slf4j
 @CPSBase
 @RequiredArgsConstructor
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
@@ -85,9 +87,11 @@ public abstract class IdMappingConfig {
 	public IdAccessor mappingFromCsvHeader(String[] csvHeader, NamespaceStorage namespaceStorage) {
 		for (IdMappingAccessor accessor : getIdAccessors()) {
 			if (accessor.canBeApplied(Arrays.asList(csvHeader))) {
+				log.info("Using accessor (with required headers {}) to extract mapping from CSV with the header containing the ID columns: {}", accessor.getHeader(), csvHeader);
 				return accessor.getApplicationMapping(csvHeader, namespaceStorage);
 			}
 		}
+		log.info("Using the default accessor implementation.");
 		return DefaultIdAccessorImpl.INSTANCE;
 	}
 }
