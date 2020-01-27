@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
  * that were supplied by a User before the structure was initialized.
  * These ids are than used to e.g. check permissions.
  */
-public interface HasNamespacedIds {
+public interface NamespacedIdHolding {
 
 	Set<NamespacedId> collectNamespacedIds();
 }

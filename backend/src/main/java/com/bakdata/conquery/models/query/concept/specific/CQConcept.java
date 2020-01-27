@@ -20,7 +20,7 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptElementId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.concept.CQElement;
-import com.bakdata.conquery.models.query.concept.HasNamespacedIds;
+import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -50,7 +50,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @FieldNameConstants
 @JsonDeserialize(using = CQConceptDeserializer.class)
 @ToString
-public class CQConcept implements CQElement, HasNamespacedIds {
+public class CQConcept implements CQElement, NamespacedIdHolding {
 
 	@ToString.Include
 	private String label;

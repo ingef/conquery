@@ -8,7 +8,7 @@ import java.util.Set;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.Visitable;
-import com.bakdata.conquery.models.query.concept.HasNamespacedIds;
+import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
@@ -82,8 +82,8 @@ public class QueryUtils {
 
 		@Override
 		public void accept(Visitable element) {
-			if (element instanceof HasNamespacedIds) {
-				HasNamespacedIds idHolder = (HasNamespacedIds) element;
+			if (element instanceof NamespacedIdHolding) {
+				NamespacedIdHolding idHolder = (NamespacedIdHolding) element;
 				ids.addAll(idHolder.collectNamespacedIds());
 			}
 		}
