@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.query.visitor;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.apiv1.QueryProcessor;
-import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.util.QueryUtils;
 
 /**
@@ -12,5 +12,5 @@ import com.bakdata.conquery.util.QueryUtils;
  * Reference implementations can be found in {@link QueryUtils}.
  */
 @FunctionalInterface
-public interface QueryVisitor extends Consumer<CQElement>{
+public interface QueryVisitor extends Consumer<Visitable> {
 }

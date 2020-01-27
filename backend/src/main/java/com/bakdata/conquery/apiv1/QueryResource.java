@@ -3,6 +3,7 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeReadDatasets;
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
@@ -49,6 +50,8 @@ public class QueryResource {
 	@POST
 	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
+		// Also look into the query and check the datasets
+		authorizeReadDatasets(user, query);
 		// Check reused query
 		for (ManagedExecutionId requiredQueryId : query
 			.collectRequiredQueries()) {

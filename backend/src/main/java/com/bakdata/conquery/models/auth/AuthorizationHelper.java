@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -17,11 +18,16 @@ import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
+import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import org.apache.shiro.authz.Permission;
@@ -180,5 +186,37 @@ public class AuthorizationHelper {
 			}
 		}
 		return mappedPerms;
+	}
+	
+
+
+	/**
+	 * Checks if an execution is allowed to be downloaded by a user.
+	 * This checks all used {@link DatasetId}s for the {@link Ability.DOWNLOAD} on the user.
+	 */
+	public static void authorizeDownloadDatasets(User user, ManagedExecution exec) {
+		List<Permission> perms = exec.getUsedNamespacedIds().stream()
+			.map(NamespacedId::getDataset)
+			.distinct()
+			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
+			.map(Permission.class::cast)
+			.collect(Collectors.toList());
+		user.checkPermissions(perms);
+	}
+	
+	/**
+	 * Checks if a {@link Visitable} has only references to {@link Dataset}s a user is allowed to read.
+	 * This checks all used {@link DatasetId}s for the {@link Ability.READ} on the user.
+	 */
+	public static void authorizeReadDatasets(User user, Visitable visitable) {
+		NamespacedIdCollector collector = new NamespacedIdCollector();
+		visitable.visit(collector);
+		List<Permission> perms = collector.getIds().stream()
+			.map(NamespacedId::getDataset)
+			.distinct()
+			.map(d -> DatasetPermission.onInstance(Ability.READ, d))
+			.map(Permission.class::cast)
+			.collect(Collectors.toList());
+		user.checkPermissions(perms);
 	}
 }
