@@ -314,3 +314,7 @@ export type GetMeResponseT = {
   permissions: Permission[],
   groups: UserGroup[]
 };
+
+export type PostLoginResponseT = {
+  access_token: string
+};

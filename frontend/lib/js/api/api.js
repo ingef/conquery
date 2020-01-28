@@ -16,10 +16,11 @@ import type {
   PostFilterResolveResponseT,
   PostFilterSuggestionsResponseT,
   GetFormQueriesResponseT,
-  GetMeResponseT
+  GetMeResponseT,
+  PostLoginResponseT
 } from "./types";
 
-import fetchJson from "./fetchJson";
+import fetchJson, { fetchJsonUnauthorized } from "./fetchJson";
 import { transformQueryToApi } from "./apiHelper";
 import { transformFormQueryToApi } from "./apiExternalFormsHelper";
 
@@ -210,4 +211,17 @@ export function postFilterValuesResolve(
 
 export function getMe(): Promise<GetMeResponseT> {
   return fetchJson(apiUrl() + `/me`);
+}
+
+export function postLogin(
+  user: string,
+  password: string
+): Promise<PostLoginResponseT> {
+  return fetchJsonUnauthorized(apiUrl() + "/login", {
+    method: "POST",
+    body: {
+      user,
+      password
+    }
+  });
 }

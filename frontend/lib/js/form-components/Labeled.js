@@ -22,6 +22,7 @@ type PropsType = {
   label: React.Node,
   className?: string,
   tinyLabel?: boolean,
+  largeLabel?: boolean,
   fullWidth?: boolean,
   valueChanged?: boolean,
   disabled?: boolean,
@@ -35,6 +36,7 @@ const Labeled = ({
   disabled,
   label,
   tinyLabel,
+  largeLabel,
   children
 }: PropsType) => {
   return (
@@ -44,7 +46,7 @@ const Labeled = ({
       fullWidth={fullWidth}
       disabled={disabled}
     >
-      <Label fullWidth={fullWidth} tiny={tinyLabel}>
+      <Label fullWidth={fullWidth} tiny={tinyLabel} large={largeLabel}>
         {label}
       </Label>
       {children}

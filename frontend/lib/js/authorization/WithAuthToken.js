@@ -1,10 +1,14 @@
 // @flow
 
 import React from "react";
-import { storeAuthToken } from "./helper";
+import { storeAuthToken, getStoredAuthToken } from "./helper";
+import { connect } from "react-redux";
+import { push } from "react-router-redux";
+import { isLoginDisabled } from "../environment";
 
 const WithAuthToken = (Component: any) => {
   type PropsType = {
+    goToLogin: () => void,
     location: {
       search: Object
     }
@@ -21,6 +25,16 @@ const WithAuthToken = (Component: any) => {
       const accessToken = params.get("access_token");
 
       if (accessToken) storeAuthToken(accessToken);
+
+      if (!isLoginDisabled()) {
+        const authToken = getStoredAuthToken();
+
+        if (!authToken) {
+          this.props.goToLogin();
+
+          return null;
+        }
+      }
     }
 
     render() {
@@ -30,7 +44,12 @@ const WithAuthToken = (Component: any) => {
     }
   }
 
-  return AuthToken;
+  return connect(
+    () => ({}),
+    dispatch => ({
+      goToLogin: () => dispatch(push("/login"))
+    })
+  )(AuthToken);
 };
 
 export default WithAuthToken;

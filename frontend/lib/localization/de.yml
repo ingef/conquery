@@ -289,3 +289,10 @@ preview:
   min: "Min Datum"
   max: "Max Datum"
   span: "Datumsbereich"
+
+login:
+  headline: "Anfragen und Analyse"
+  username: "Nutzername"
+  password: "Passwort"
+  error: "Einloggen fehlgeschlagen. Bitte Nutzernamen und Passwort überprüfen."
+  submit: "Starten"
