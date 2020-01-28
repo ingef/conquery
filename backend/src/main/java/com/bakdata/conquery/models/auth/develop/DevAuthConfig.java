@@ -1,8 +1,11 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.auth.develop;
 
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.AuthConfig;
+import com.bakdata.conquery.models.auth.ConqueryRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
@@ -38,16 +41,11 @@ public class DevAuthConfig implements AuthConfig {
 		AdminPermission.DOMAIN,
 		SuperPermission.DOMAIN);
 
-	
-	private ConqueryRealm realm = new AllGrantedRealm();
+	@Getter
+	private List<ConqueryRealm> realms = List.of(new AllGrantedRealm());
 
 	@Override
-	public List<ConqueryRealm> getRealms() {
-		return List.of(realm);
-	}
-
-	@Override
-	public void initializeAuthConstellation(AuthorizationStorage storage) {
+	public void initializeAuthConstellation(MasterMetaStorage storage) {
 		try {
 			storage.updateUser(USER);
 			USER.addPermission(storage, SuperPermission.onDomain());

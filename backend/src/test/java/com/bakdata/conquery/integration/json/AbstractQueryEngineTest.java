@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.IQuery;

@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.Optional;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.io.ConqueryMDC;
@@ -24,7 +25,7 @@ import org.apache.shiro.authc.AuthenticationToken;
 @RequiredArgsConstructor
 public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, User>{
 	
-	private final AuthorizationStorage storage;
+	private final MasterMetaStorage storage;
 
 	@Override
 	public Optional<User> authenticate(AuthenticationToken token) throws AuthenticationException {

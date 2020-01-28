@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.functions.Collector;
+import com.bakdata.conquery.util.functions.ThrowingRunnable;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
@@ -134,8 +135,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void addUser(User user) throws JSONException {
-		authUser.add(user);
+	public void addUser(User user) {
+		asRuntimeException(() -> authUser.add(user));
 	}
 
 	@Override
@@ -154,8 +155,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void addRole(Role role) throws JSONException {
-		authRole.add(role);
+	public void addRole(Role role) {
+		asRuntimeException(() -> authRole.add(role));
 	}
 
 	@Override
@@ -174,13 +175,13 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void updateUser(User user) throws JSONException {
-		authUser.update(user);
+	public void updateUser(User user) {
+		asRuntimeException(() -> authUser.update(user));
 	}
 
 	@Override
-	public void updateRole(Role role) throws JSONException {
-		authRole.update(role);
+	public void updateRole(Role role) {
+		asRuntimeException(() -> authRole.update(role));
 	}
 
 	@Override
@@ -194,8 +195,8 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void addGroup(Group group) throws JSONException {
-		authGroup.add(group);
+	public void addGroup(Group group) {
+		asRuntimeException(() -> authGroup.add(group));
 	}
 
 	@Override
@@ -214,7 +215,16 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 	}
 
 	@Override
-	public void updateGroup(Group group) throws JSONException {
-		authGroup.update(group);
+	public void updateGroup(Group group) {
+		asRuntimeException(() -> authGroup.update(group));
+	}
+	
+	public static void asRuntimeException(ThrowingRunnable runnable) {
+		try {
+			runnable.run();
+		} catch (Exception e) {
+			throw new IllegalArgumentException("Cannot validate or store the given Argument.", e);
+		}
+		
 	}
 }

@@ -27,7 +27,6 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorageImpl;
 import com.bakdata.conquery.models.auth.AuthorizationHelper;
-import com.bakdata.conquery.models.auth.AuthorizationStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
@@ -45,7 +44,6 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
-import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
@@ -101,7 +99,6 @@ public class AdminProcessor {
 
 	private final ConqueryConfig config;
 	private final MasterMetaStorage storage;
-	private final AuthorizationStorage authStorage;
 	private final Namespaces namespaces;
 	private final JobManager jobManager;
 	private final ScheduledExecutorService maintenanceService;
@@ -130,7 +127,7 @@ public class AdminProcessor {
 		// see #143 check duplicate names
 	}
 
-	public void addConcept(Dataset dataset, Concept<?> c) throws JSONException, ConfigurationException {
+	public void addConcept(Dataset dataset, Concept<?> c) {
 		c.setDataset(dataset.getId());
 		if (namespaces.get(dataset.getId()).getStorage().hasConcept(c.getId())) {
 			throw new WebApplicationException("Can't replace already existing concept " + c.getId(), Status.CONFLICT);
@@ -182,7 +179,7 @@ public class AdminProcessor {
 		return dataset;
 	}
 
-	public void addImport(Dataset dataset, File selectedFile) throws IOException, JSONException {
+	public void addImport(Dataset dataset, File selectedFile) throws IOException {
 		try (HCFile hcFile = new HCFile(selectedFile, false); InputStream in = hcFile.readHeader()) {
 			PreprocessedHeader header = Jackson.BINARY_MAPPER.readValue(in, PreprocessedHeader.class);
 
@@ -241,7 +238,7 @@ public class AdminProcessor {
 	 *             is thrown on JSON validation form the storage.
 	 */
 	public void deleteRole(RoleId roleId) throws JSONException {
-		AuthorizationHelper.deleteRole(authStorage, roleId);
+		AuthorizationHelper.deleteRole(storage, roleId);
 	}
 
 	public List<Role> getAllRoles() {
@@ -259,7 +256,7 @@ public class AdminProcessor {
 	}
 
 	public FERoleContent getRoleContent(RoleId roleId) {
-		Role role = Objects.requireNonNull(roleId.getPermissionOwner(authStorage));
+		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
 		return FERoleContent
 			.builder()
 			.permissions(wrapInFEPermission(role.getPermissions()))
@@ -275,7 +272,7 @@ public class AdminProcessor {
 
 		for (ConqueryPermission permission : permissions) {
 			if (permission instanceof WildcardPermission) {
-				fePermissions.add(Pair.of(FEPermission.from((WildcardPermission) permission), permission.toString()));
+				fePermissions.add(Pair.of(FEPermission.from(permission), permission.toString()));
 
 			}
 			else {
@@ -315,7 +312,7 @@ public class AdminProcessor {
 	 *             is thrown upon processing JSONs.
 	 */
 	public void createPermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.addPermission(ownerId.getPermissionOwner(authStorage), permission, authStorage);
+		AuthorizationHelper.addPermission(ownerId.getPermissionOwner(storage), permission, storage);
 	}
 
 	/**
@@ -327,7 +324,7 @@ public class AdminProcessor {
 	 *             is thrown upon processing JSONs.
 	 */
 	public void deletePermission(PermissionOwnerId<?> ownerId, ConqueryPermission permission) throws JSONException {
-		AuthorizationHelper.removePermission(ownerId.getPermissionOwner(authStorage), permission, authStorage);
+		AuthorizationHelper.removePermission(ownerId.getPermissionOwner(storage), permission, storage);
 	}
 
 	public UIContext getUIContext() {
@@ -350,10 +347,10 @@ public class AdminProcessor {
 			.build();
 	}
 
-	public synchronized void deleteUser(UserId userId) throws JSONException {
-		User user = authStorage.getUser(userId);
-		for (Group group : authStorage.getAllGroups()) {
-			group.removeMember(authStorage, user);
+	public synchronized void deleteUser(UserId userId) {
+		User user = storage.getUser(userId);
+		for (Group group : storage.getAllGroups()) {
+			group.removeMember(storage, user);
 		}
 		storage.removeUser(userId);
 		log.trace("Removed user {} from the storage.", userId);
@@ -417,64 +414,64 @@ public class AdminProcessor {
 		}
 	}
 
-	public void addUserToGroup(GroupId groupId, UserId userId) throws JSONException {
-		synchronized (authStorage) {
+	public void addUserToGroup(GroupId groupId, UserId userId) {
+		synchronized (storage) {
 			Objects
-				.requireNonNull(groupId.getPermissionOwner(authStorage))
-				.addMember(authStorage, Objects.requireNonNull(userId.getPermissionOwner(authStorage)));
+				.requireNonNull(groupId.getPermissionOwner(storage))
+				.addMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
-		log.trace("Added user {} to group {}", userId.getPermissionOwner(authStorage), groupId.getPermissionOwner(authStorage));
+		log.trace("Added user {} to group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
 	}
 
-	public void deleteUserFromGroup(GroupId groupId, UserId userId) throws JSONException {
-		synchronized (authStorage) {
+	public void deleteUserFromGroup(GroupId groupId, UserId userId) {
+		synchronized (storage) {
 			Objects
-				.requireNonNull(groupId.getPermissionOwner(authStorage))
-				.removeMember(authStorage, Objects.requireNonNull(userId.getPermissionOwner(authStorage)));
+				.requireNonNull(groupId.getPermissionOwner(storage))
+				.removeMember(storage, Objects.requireNonNull(userId.getPermissionOwner(storage)));
 		}
-		log.trace("Removed user {} from group {}", userId.getPermissionOwner(authStorage), groupId.getPermissionOwner(authStorage));
+		log.trace("Removed user {} from group {}", userId.getPermissionOwner(storage), groupId.getPermissionOwner(storage));
 	}
 
 	public void deleteGroup(GroupId groupId) {
 		storage.removeGroup(groupId);
-		log.trace("Removed group {}", groupId.getPermissionOwner(authStorage));
+		log.trace("Removed group {}", groupId.getPermissionOwner(storage));
 	}
 
-	public void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
+	public void deleteRoleFrom(PermissionOwnerId<?> ownerId, RoleId roleId) {
 		PermissionOwner<?> owner = null;
 		Role role = null;
 		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(authStorage));
+			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
 			role = Objects.requireNonNull(storage.getRole(roleId));
 		}
 		if (!(owner instanceof RoleOwner)) {
 			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
 		}
-		((RoleOwner) owner).removeRole(authStorage, role);
+		((RoleOwner) owner).removeRole(storage, role);
 		log.trace("Deleted role {} from {}", role, owner);
 	}
 
-	public void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) throws JSONException {
+	public void addRoleTo(PermissionOwnerId<?> ownerId, RoleId roleId) {
 		PermissionOwner<?> owner = null;
 		Role role = null;
 		synchronized (storage) {
-			owner = Objects.requireNonNull(ownerId.getPermissionOwner(authStorage));
+			owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
 			role = Objects.requireNonNull(storage.getRole(roleId));
 		}
 		if (!(owner instanceof RoleOwner)) {
 			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));
 		}
-		((RoleOwner) owner).addRole(authStorage, role);
+		((RoleOwner) owner).addRole(storage, role);
 		log.trace("Deleted role {} from {}", role, owner);
 	}
 
 	public FEAuthOverview getAuthOverview() {
 		Collection<OverviewRow> overview = new ArrayList<>();
 		for (User user : storage.getAllUsers()) {
-			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, authStorage);
+			Collection<Group> userGroups = AuthorizationHelper.getGroupsOf(user, storage);
 			ArrayList<Role> effectiveRoles = new ArrayList<>(user.getRoles());
 			userGroups.forEach(g -> {
-				effectiveRoles.addAll(((Group) g).getRoles());
+				effectiveRoles.addAll(g.getRoles());
 			});
 			overview.add(OverviewRow.builder().user(user).groups(userGroups).effectiveRoles(effectiveRoles).build());
 		}
@@ -494,7 +491,7 @@ public class AdminProcessor {
 		writer.writeValuesToRow();
 		// Body
 		for (User user : storage.getAllUsers()) {
-			Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , authStorage);
+			Multimap<String, ConqueryPermission> permissions = AuthorizationHelper.getEffectiveUserPermissions(user.getId(), scope , storage);
 
 			writer.addValue(String.format("%s %s", user.getLabel(), ConqueryEscape.unescape(user.getName())));
 			for(String domain : scope) {				

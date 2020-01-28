@@ -13,7 +13,6 @@ import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthCookieFilter;
-import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.resources.admin.rest.AdminConceptsResource;
 import com.bakdata.conquery.resources.admin.rest.AdminDatasetResource;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
@@ -83,7 +82,6 @@ public class AdminServlet {
 		adminProcessor = new AdminProcessor(
 			masterCommand.getConfig(),
 			masterCommand.getStorage(),
-			AuthorizationController.getInstance().getAuthStorage(),
 			masterCommand.getNamespaces(),
 			masterCommand.getJobManager(),
 			masterCommand.getMaintenanceService(),

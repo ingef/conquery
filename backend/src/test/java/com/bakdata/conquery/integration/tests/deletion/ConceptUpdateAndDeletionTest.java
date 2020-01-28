@@ -12,7 +12,7 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth;
 import java.util.HashSet;
 import java.util.Objects;
 
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
 import org.apache.shiro.authc.AuthenticationException;
@@ -17,7 +18,7 @@ import org.apache.shiro.subject.PrincipalCollection;
 @RequiredArgsConstructor
 public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	
-	public final AuthorizationStorage storage;
+	public final MasterMetaStorage storage;
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {

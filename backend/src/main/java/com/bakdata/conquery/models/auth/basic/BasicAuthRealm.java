@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.auth.basic;
 
 import java.io.File;
 import java.nio.charset.StandardCharsets;
@@ -8,6 +8,7 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.HttpHeaders;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.auth.ConqueryRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile;

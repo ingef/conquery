@@ -26,7 +26,7 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param user The user to add.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void addUser(User user) throws JSONException;
+	void addUser(User user) ;
 	
 	/**
 	 * Gets the user with the specified id from the storage.
@@ -46,7 +46,7 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param user The user, which holds the values, to be updated.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void updateUser(User user) throws JSONException;
+	void updateUser(User user);
 	
 	/**
 	 * Removes a user from the storage that has the given id.
@@ -60,7 +60,7 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param role The role to add.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void addRole(Role role) throws JSONException;
+	void addRole(Role role) ;
 	
 	/**
 	 * Gets the role with the specified id from the storage.
@@ -86,14 +86,14 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param role The role, which holds the values, to be updated.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void updateRole(Role role) throws JSONException;
+	void updateRole(Role role) ;
 	
 	/**
 	 * Adds a role to the storage.
 	 * @param role The role to add.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void addGroup(Group group) throws JSONException;
+	void addGroup(Group group) ;
 	
 	/**
 	 * Gets the Group with the specified id from the storage.
@@ -119,7 +119,7 @@ public interface MasterMetaStorage extends ConqueryStorage {
 	 * @param Group The Group, which holds the values, to be updated.
 	 * @throws JSONException Is throw on a JSON related failure.
 	 */
-	void updateGroup(Group group) throws JSONException;
+	void updateGroup(Group group);
 	
 	/**
 	 * Return the namespaces used in the instance of conquery.

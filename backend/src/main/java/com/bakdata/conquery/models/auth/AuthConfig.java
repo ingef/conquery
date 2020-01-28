@@ -3,8 +3,10 @@ package com.bakdata.conquery.models.auth;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 /**
@@ -23,13 +25,14 @@ public interface AuthConfig {
 	 * @param storage (Unused) A storage from which a realm can query information about subjects and permissions.
 	 * @return The realm.
 	 */
+	@JsonIgnore
 	public abstract List<ConqueryRealm> getRealms();
 	
 	/**
 	 * Sets up the initial subjects and permissions for the authentication system.
 	 * @param storage A storage, where the handler might add a new users.
 	 */
-	void initializeAuthConstellation(AuthorizationStorage storage);
+	void initializeAuthConstellation(MasterMetaStorage storage);
 	
 	/**
 	 * Returns an ordered list of Permission scopes that are used to generate an permission overview for a user (in {@link AdminProcessor}).

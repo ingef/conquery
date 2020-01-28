@@ -1,7 +1,9 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.auth.develop;
 
 import javax.ws.rs.container.ContainerRequestContext;
 
+import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.auth.ConqueryRealm;
 import com.bakdata.conquery.models.auth.util.SingleAuthenticationInfo;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.extern.slf4j.Slf4j;
@@ -14,6 +16,7 @@ import org.apache.shiro.authc.UsernamePasswordToken;
  * This realm authenticates and authorizes all requests given to it positive.
  */
 @Slf4j
+@CPSType(id="ALL_GRANTED", base=ConqueryRealm.class)
 public class AllGrantedRealm extends ConqueryRealm {
 
 	/**
@@ -38,6 +41,7 @@ public class AllGrantedRealm extends ConqueryRealm {
 	 * Standard constructor.
 	 */
 	public AllGrantedRealm() {
+		super();
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(AuthenticationToken.class);
 	}

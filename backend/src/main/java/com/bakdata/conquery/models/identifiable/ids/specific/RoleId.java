@@ -2,7 +2,7 @@ package com.bakdata.conquery.models.identifiable.ids.specific;
 
 import java.util.List;
 
-import com.bakdata.conquery.models.auth.AuthorizationStorage;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
@@ -37,7 +37,7 @@ public class RoleId extends PermissionOwnerId<Role> {
 	}
 
 	@Override
-	public Role getPermissionOwner(AuthorizationStorage storage) {
+	public Role getPermissionOwner(MasterMetaStorage storage) {
 		return storage.getRole(this);
 	}
 }

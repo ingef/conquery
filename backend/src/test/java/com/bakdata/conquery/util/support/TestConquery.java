@@ -15,7 +15,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import com.bakdata.conquery.commands.StandaloneCommand;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
