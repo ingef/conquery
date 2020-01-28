@@ -294,5 +294,5 @@ login:
   headline: "Anfragen und Analyse"
   username: "Nutzername"
   password: "Passwort"
-  error: "Einloggen fehlgeschlagen. Bitte Nutzernamen und Passwort überprüfen."
+  error: "Einloggen fehlgeschlagen. Bitte die Eingabe überprüfen."
   submit: "Starten"

@@ -69,6 +69,10 @@ const SxFaIcon = styled(FaIcon)`
   margin-right: 10px;
 `;
 
+const SxErrorMessage = styled(ErrorMessage)`
+  margin: 20px 10px 0;
+`;
+
 const LoginPage = () => {
   const [user, setUser] = useState("");
   const [password, setPassword] = useState("");
@@ -104,7 +108,7 @@ const LoginPage = () => {
       <Wrap>
         <Logo />
         <Headline>{T.translate("login.headline")}</Headline>
-        {error && <ErrorMessage>{T.translate("login.error")}</ErrorMessage>}
+        {!!error && <SxErrorMessage message={T.translate("login.error")} />}
         <Form onSubmit={onSubmit}>
           <SxInputText
             inputType="text"
