@@ -81,12 +81,7 @@ public class Namespace {
 	 * Find the assigned worker for the bucket. If there is none return null.
 	 */
 	public synchronized WorkerInformation getResponsibleWorkerForBucket(int bucket) {
-		if (bucket < bucket2WorkerMap.size()) {
-			return bucket2WorkerMap.get(bucket);
-		}
-		else {
-			return null;
-		}
+		return bucket2WorkerMap.get(bucket);
 	}
 
 	/**
@@ -95,10 +90,9 @@ public class Namespace {
 	 * @implNote Currently the least occupied Worker receives a new Bucket, this can change in later implementations. (For example for dedicated Workers, or entity weightings)
 	 */
 	public synchronized void addResponsibility(int bucket) {
-		WorkerInformation smallest = workers
-											 .stream()
-											 .min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
-											 .orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
+		WorkerInformation smallest = workers.stream()
+											.min(Comparator.comparing(si -> si.getIncludedBuckets().size()))
+											.orElseThrow(() -> new IllegalStateException("Unable to find minimum."));
 
 		log.debug("Assigning Bucket[{}] to Worker[{}]", bucket, smallest.getId());
 
