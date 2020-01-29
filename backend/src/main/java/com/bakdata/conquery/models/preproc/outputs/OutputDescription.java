@@ -30,6 +30,9 @@ public abstract class OutputDescription implements Serializable {
 	@NotEmpty
 	private String name;
 
+	private boolean required = false;
+	// TODO: 29.01.2020 This does not do anything at the moment.
+
 	/**
 	 * Describes a transformation of an input row to a single value.
 	 */
