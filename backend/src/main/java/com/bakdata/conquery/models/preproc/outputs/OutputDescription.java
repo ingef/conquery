@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.preproc.outputs;
 
 import java.io.Serializable;
 import java.util.InputMismatchException;
+import java.util.Objects;
 import java.util.StringJoiner;
 
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -31,14 +32,34 @@ public abstract class OutputDescription implements Serializable {
 	private String name;
 
 	private boolean required = false;
-	// TODO: 29.01.2020 This does not do anything at the moment.
 
 	/**
 	 * Describes a transformation of an input row to a single value.
 	 */
-	@FunctionalInterface
-	public static interface Output {
-		Object createOutput(String[] row, Parser<?> type, long sourceLine) throws ParsingException;
+	public abstract class Output {
+		/**
+		 * Parse the line/row
+		 * @param row the row to parse
+		 * @param type the Parser for the emitted column
+		 * @param sourceLine the linenumber of the row in the input file
+		 * @return a value or null
+		 * @throws ParsingException
+		 */
+		protected abstract Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException;
+
+		/**
+		 * Parse row and test for NULL values, throwing an exception when Required but missing.
+		 */
+		public Object createOutput(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+			if(OutputDescription.this.isRequired()) {
+				return Objects.requireNonNull(
+						parseLine(row, type, sourceLine),
+						() -> String.format("Required Output[%s] produced NULL value at line %d=%s", OutputDescription.this.getName(), sourceLine, row)
+				);
+			}
+
+			return parseLine(row, type, sourceLine);
+		}
 	}
 
 	/**

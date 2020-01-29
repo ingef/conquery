@@ -4,7 +4,9 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 
@@ -24,19 +26,22 @@ public class EpochDateRangeOutput extends OutputDescription {
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
 		assertRequiredHeaders(headers, startColumn, endColumn);
 
-		int startIndex = headers.getInt(startColumn);
-		int endIndex = headers.getInt(endColumn);
+		final int startIndex = headers.getInt(startColumn);
+		final int endIndex = headers.getInt(endColumn);
 
-		return (row, type, sourceLine) -> {
-			if (row[startIndex] == null && row[endIndex] == null) {
-				return null;
+		return new Output() {
+			@Override
+			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+				if (row[startIndex] == null && row[endIndex] == null) {
+					return null;
+				}
+
+
+				int start = Integer.parseInt(row[startIndex]);
+				int end = Integer.parseInt(row[endIndex]);
+
+				return CDateRange.of(start, end);
 			}
-
-
-			int start = Integer.parseInt(row[startIndex]);
-			int end = Integer.parseInt(row[endIndex]);
-
-			return CDateRange.of(start, end);
 		};
 	}
 

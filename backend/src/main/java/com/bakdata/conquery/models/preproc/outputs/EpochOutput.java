@@ -3,8 +3,9 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.MajorTypeId;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.bakdata.conquery.models.types.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 
@@ -20,20 +21,20 @@ public class EpochOutput extends OutputDescription {
 	@NotNull
 	private String column;
 
-	@JsonIgnore
-	private int columnIndex;
-
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
 		assertRequiredHeaders(headers, column);
-		columnIndex = headers.getInt(column);
+		final int columnIndex = headers.getInt(column);
 
-		return (row, type, sourceLine) -> {
-			if (row[columnIndex] == null) {
-				return null;
+		return new Output() {
+			@Override
+			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+				if (row[columnIndex] == null) {
+					return null;
+				}
+
+				return Integer.parseInt(row[columnIndex]);
 			}
-
-			return Integer.parseInt(row[columnIndex]);
 		};
 	}
 

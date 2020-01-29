@@ -3,7 +3,9 @@ package com.bakdata.conquery.models.preproc.outputs;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.exceptions.ParsingException;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import com.bakdata.conquery.models.types.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
 
@@ -26,14 +28,17 @@ public class CopyOutput extends OutputDescription {
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
 		assertRequiredHeaders(headers, inputColumn);
 
-		int column = headers.getInt(inputColumn);
+		final int column = headers.getInt(inputColumn);
 
-		return (row, type, sourceLine) -> {
-			if (row[column] == null) {
-				return null;
+		return new Output() {
+			@Override
+			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+				if (row[column] == null) {
+					return null;
+				}
+
+				return type.parse(row[column]);
 			}
-
-			return type.parse(row[column]);
 		};
 	}
 
