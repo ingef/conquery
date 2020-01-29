@@ -41,7 +41,7 @@ public class AllGrantedRealm extends ConqueryRealm {
 	 * Standard constructor.
 	 */
 	public AllGrantedRealm() {
-		super();
+		super(null);
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(AuthenticationToken.class);
 	}

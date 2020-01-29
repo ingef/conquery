@@ -24,6 +24,7 @@ import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.DefaultAuthFilter;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.web.AuthServlet;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -58,6 +59,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Validator validator;
 	private ConqueryConfig config;
 	private AdminServlet admin;
+	private AuthServlet auth;
 	private ScheduledExecutorService maintenanceService;
 	private Namespaces namespaces = new Namespaces();
 	private Environment environment;
@@ -108,7 +110,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		
 		AuthorizationController.init(config, storage);
 		
-		config.getAuthentication().initializeAuthConstellation(storage);
+		config.getAuthentication().initializeAuthConstellation(storage, AuthorizationController.getInstance());
 
 		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(config.getAuthentication());
 
@@ -125,6 +127,10 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 
 		admin = new AdminServlet();
 		admin.register(this);
+		
+		auth = new AuthServlet();
+		auth.register(this, AuthorizationController.getInstance());
+		
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);

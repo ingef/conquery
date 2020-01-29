@@ -26,13 +26,13 @@ public interface AuthConfig {
 	 * @return The realm.
 	 */
 	@JsonIgnore
-	public abstract List<ConqueryRealm> getRealms();
+	public abstract List<ConqueryRealm> getRealms(MasterMetaStorage storage);
 	
 	/**
 	 * Sets up the initial subjects and permissions for the authentication system.
 	 * @param storage A storage, where the handler might add a new users.
 	 */
-	void initializeAuthConstellation(MasterMetaStorage storage);
+	void initializeAuthConstellation(MasterMetaStorage storage, AuthorizationController controller);
 	
 	/**
 	 * Returns an ordered list of Permission scopes that are used to generate an permission overview for a user (in {@link AdminProcessor}).

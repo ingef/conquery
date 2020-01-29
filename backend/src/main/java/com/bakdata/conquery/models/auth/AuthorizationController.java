@@ -15,6 +15,7 @@ import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
+import org.apache.shiro.util.LifecycleUtils;
 
 @Slf4j
 public class AuthorizationController {
@@ -38,6 +39,7 @@ public class AuthorizationController {
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		List<Realm> allRealms = new ArrayList<>(realms);
 		allRealms.add(authorizingRealm);
+		allRealms.stream().forEach(LifecycleUtils::init);
 
 		SecurityManager securityManager = new DefaultSecurityManager(allRealms);
 		SecurityUtils.setSecurityManager(securityManager);
@@ -56,6 +58,6 @@ public class AuthorizationController {
 		AuthConfig authConfig = config.getAuthentication();
 	
 		
-		INSTANCE =  new AuthorizationController(storage, authConfig.getRealms(), new ConqueryAuthenticator(storage));
+		INSTANCE =  new AuthorizationController(storage, authConfig.getRealms(storage), new ConqueryAuthenticator(storage));
 	}
 }

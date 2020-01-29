@@ -5,12 +5,16 @@ import java.util.List;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthConfig;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryRealm;
+import com.bakdata.conquery.models.auth.UserManageable;
+import com.bakdata.conquery.models.auth.basic.BasicAuthRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.AdminPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.SuperPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
 
 /**
@@ -23,17 +27,25 @@ public class DevAuthConfig implements AuthConfig {
 	/**
 	 * The label of the superuser that is used in the frontend.
 	 */
-	private static final String LABEL = "SUPERUSER";
+	private static final String LABEL = "admin";
 	
 	/**
 	 * The email of the superuser that is used in the frontend.
 	 */
-	private static final String EMAIL = "SUPERUSER@SUPERUSER";
+	private static final String EMAIL = "admin";
+	
+	/**
+	 * 
+	 */
+	private static final String PASSWORD = "admin";
 
 	/**
 	 * The superuser.
 	 */
 	public static final User USER = new User(EMAIL, LABEL);
+	
+	@JsonIgnore
+	private List<ConqueryRealm> realms = null;
 	
 	@Getter
 	public final List<String> overviewScope = List.of(
@@ -41,14 +53,24 @@ public class DevAuthConfig implements AuthConfig {
 		AdminPermission.DOMAIN,
 		SuperPermission.DOMAIN);
 
-	@Getter
-	private List<ConqueryRealm> realms = List.of(new AllGrantedRealm());
+	public List<ConqueryRealm> getRealms(MasterMetaStorage storage){
+		if(realms == null) {
+			realms = List.of(new AllGrantedRealm(), new BasicAuthRealm(storage));
+		}
+		return realms;
+	}
+	
 
 	@Override
-	public void initializeAuthConstellation(MasterMetaStorage storage) {
+	public void initializeAuthConstellation(MasterMetaStorage storage, AuthorizationController controller) {
 		try {
 			storage.updateUser(USER);
 			USER.addPermission(storage, SuperPermission.onDomain());
+			for(ConqueryRealm realm : controller.getRealms()) {
+				if(realm instanceof UserManageable) {
+					((UserManageable) realm).addUser(USER.getId().getEmail(), PASSWORD, true);
+				}
+			}
 		}
 		catch (JSONException e) {
 			throw new IllegalStateException(e);

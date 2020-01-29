@@ -36,7 +36,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 		AuthenticationToken token = null;
 		for(ConqueryRealm realm : AuthorizationController.getInstance().getRealms()) {
 			if ((token = realm.extractToken(requestContext)) != null){
-				log.trace("Realm {} extract a token form the request: {}", realm.getName(), token);
+				log.trace("Realm {} extracted a token form the request: {}", realm.getName(), token);
 				break;
 			}
 			log.trace("Realm {} did not extract a token form the request.", realm.getName());
@@ -45,7 +45,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 		try {
 			// sets the security context in the request AND does the authentication
 			if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
-				throw new NotAuthorizedException("Failed to authenticate request");
+				throw new NotAuthorizedException("Authentication failed","Bearer");
 			}
 		}
 		catch (AuthenticationException e) {

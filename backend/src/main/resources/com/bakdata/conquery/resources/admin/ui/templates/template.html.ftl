@@ -87,6 +87,12 @@
 	<div class="container">
 		<#nested/>
 	</div>
+
+	
+	<script type="application/javascript">
+		const headerTemplate = new Headers();
+		headerTemplate.append('Authorization', $(ctx.getToken));
+	</script>
 	
 	<script type="application/javascript">
 		const rest = axios.create({
