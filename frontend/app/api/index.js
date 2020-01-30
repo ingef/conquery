@@ -348,7 +348,7 @@ module.exports = function(app, port) {
     res.send(config);
   });
 
-  app.post("/api/login", function response(req, res) {
+  app.post("/auth", function response(req, res) {
     setTimeout(() => {
       res.setHeader("Content-Type", "application/json");
 
