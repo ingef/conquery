@@ -8,12 +8,12 @@ import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.RESTServer;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthorizationController;
-import com.bakdata.conquery.models.auth.ConqueryRealm;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
 import io.dropwizard.views.ViewMessageBodyWriter;
 import io.dropwizard.views.freemarker.FreemarkerViewRenderer;
+import org.apache.shiro.realm.Realm;
 import org.glassfish.jersey.servlet.ServletContainer;
 
 public class AuthServlet {
@@ -47,7 +47,7 @@ public class AuthServlet {
 		
 
 		// Scan realms if they need to add resources
-		for (ConqueryRealm realm : controller.getRealms()) {
+		for (Realm realm : controller.getRealms()) {
 			if(realm instanceof AuthResourceProvider) {
 				((AuthResourceProvider)realm).registerResources(jerseyConfig);
 			}

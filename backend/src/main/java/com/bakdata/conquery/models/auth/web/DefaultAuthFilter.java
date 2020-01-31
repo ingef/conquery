@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.auth.web;
 
 import java.io.IOException;
 
@@ -7,6 +7,9 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
 
+import com.bakdata.conquery.models.auth.AuthorizationConfig;
+import com.bakdata.conquery.models.auth.AuthorizationController;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.Authenticator;
@@ -28,13 +31,15 @@ import org.apache.shiro.authc.AuthenticationToken;
 @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
+	
+	private final AuthorizationController controller;
 
 	@Override
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
 
 		
 		AuthenticationToken token = null;
-		for(ConqueryRealm realm : AuthorizationController.getInstance().getRealms()) {
+		for(ConqueryAuthenticationRealm realm : controller.getAuthenticationRealms()) {
 			if ((token = realm.extractToken(requestContext)) != null){
 				log.trace("Realm {} extracted a token form the request: {}", realm.getName(), token);
 				break;
@@ -75,7 +80,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 		}
 	}
 
-	public static AuthFilter<AuthenticationToken, User> asDropwizardFeature(AuthConfig config) {
+	public static AuthFilter<AuthenticationToken, User> asDropwizardFeature(AuthorizationConfig config) {
 		Builder builder = new Builder();
 		AuthFilter<AuthenticationToken, User> authFilter = builder
 			.setAuthenticator(AuthorizationController.getInstance().getAuthenticator())

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.auth.web;
 
 import java.io.IOException;
 import java.util.concurrent.TimeUnit;

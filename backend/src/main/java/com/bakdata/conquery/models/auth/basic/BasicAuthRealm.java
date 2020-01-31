@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.auth.basic;
 
+
 import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
@@ -7,6 +8,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -21,9 +23,10 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
-import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.ConqueryRealm;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.CredentialType;
+import com.bakdata.conquery.models.auth.PasswordCredential;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.AuthServlet.AuthResourceProvider;
@@ -32,6 +35,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.collect.MoreCollectors;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import jetbrains.exodus.ArrayByteIterable;
@@ -52,38 +56,42 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
+import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.apache.shiro.subject.SimplePrincipalCollection;
 
-@CPSType(id = "LOCAL_BASIC_CREDENTIAL", base = ConqueryRealm.class)
 @Slf4j
-public class BasicAuthRealm extends ConqueryRealm implements UserManageable, AuthResourceProvider{
+public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AuthResourceProvider{
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JWTToken.class;
 	private static final String STORENAME =  "BasicCredentialStore";
 	private static final String PREFIX =  "Bearer";
 	private static final int EXPIRATION_PERIOD = 12; //Hours
-//	
-	private XodusConfig passwordStoreConfig = new XodusConfig();
+	
+	private final XodusConfig passwordStoreConfig;
+	private final String storeName;
 	
 	@JsonIgnore
 	private Environment passwordEnvironment;
 	@JsonIgnore
 	private Store passwordStore;
 	
-	//HMAC
 	@JsonIgnore
-	private Algorithm algorithmHS;
+	private Algorithm tokenSignAlgorithm;
 	@JsonIgnore
 	private JWTVerifier oauthTokenVerifier;
+	@JsonIgnore
+	private MasterMetaStorage storage;
 	
 		 
-	public BasicAuthRealm(MasterMetaStorage storage) {
-		super(storage);
+	public BasicAuthRealm(MasterMetaStorage storage, BasicAuthConfig config) {
 		this.setAuthenticationTokenClass(TOKEN_CLASS);
+		this.storage = storage;
+		this.storeName = config.getStoreName();
+		this.passwordStoreConfig = config.getPasswordStoreConfig();
 		
-		algorithmHS = Algorithm.HMAC256("secret");
-		oauthTokenVerifier = JWT.require(algorithmHS)
+		tokenSignAlgorithm = Algorithm.HMAC256(config.getTokenSecret());
+		oauthTokenVerifier = JWT.require(tokenSignAlgorithm)
 			.withIssuer(getName())
 			.build();
 	}
@@ -91,7 +99,7 @@ public class BasicAuthRealm extends ConqueryRealm implements UserManageable, Aut
 	@Override
 	protected void onInit() {
 		super.onInit();
-		File passwordStoreFile = new File(ConqueryConfig.getInstance().getStorage().getDirectory(),"AuthorizationStorage");
+		File passwordStoreFile = new File(ConqueryConfig.getInstance().getStorage().getDirectory(),storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
 		passwordStore = passwordEnvironment.computeInTransaction(new TransactionalComputable<Store>(){
 			@Override
@@ -124,7 +132,7 @@ public class BasicAuthRealm extends ConqueryRealm implements UserManageable, Aut
 		String username = decodedToken.getSubject();
 		
 		UserId userId = new UserId(username);
-		User user = getStorage().getUser(userId);
+		User user = storage.getUser(userId);
 		// try to construct a new User if none could be found in the storage
 		if(user == null) {
 			log.warn("Provided credentials were valid, but a corresponding user was not found in the System. Add a user to the system with the id: {}", userId);
@@ -149,7 +157,7 @@ public class BasicAuthRealm extends ConqueryRealm implements UserManageable, Aut
 			.withSubject(username)
 			.withIssuedAt(issueDate)
 			.withExpiresAt(expDate)
-			.sign(algorithmHS);
+			.sign(tokenSignAlgorithm);
 		return token;
 	}
 
@@ -173,24 +181,30 @@ public class BasicAuthRealm extends ConqueryRealm implements UserManageable, Aut
 		return isCredentialValid(new String(providedCredentials), storedCredentials);
 	}
 	
-	public void addUser(String username, String password, boolean overrideOld) {
+	public void addUser(User user, List<CredentialType> credentials, boolean overrideOld) {
+		Optional<PasswordCredential> optPassword = credentials.stream().filter(PasswordCredential.class::isInstance).map(PasswordCredential.class::cast).collect(MoreCollectors.toOptional());
+		if(!optPassword.isPresent()) {
+			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
+			return;
+		}
+		
 		passwordEnvironment.executeInExclusiveTransaction(new TransactionalExecutable() {
 			
 			@Override
 			public void execute(Transaction txn) {
-				ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(username);
-				ArrayByteIterable passwordByteIt = StringBinding.stringToEntry(password);
+				ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getName());
+				ArrayByteIterable passwordByteIt = StringBinding.stringToEntry(optPassword.get().getPassword());
 				if(overrideOld) {
 					if(passwordStore.put(txn, usernameByteIt, passwordByteIt)) {
-						log.info("Added/overrided {} successfully to the authentication store.", username);
+						log.info("Added/overrided {} successfully to the authentication store.", user.getName());
 						
 					}
 					
 				}
 				else if(passwordStore.add(txn, usernameByteIt, passwordByteIt)) {
-					log.info("Added {} successfully to the authentication store.", username);
+					log.info("Added {} successfully to the authentication store.", user.getName());
 				} else {
-					log.info("The user {} was not added to the authentication store. Entry already existed", username);
+					log.info("The user {} was not added to the authentication store. Entry already existed", user.getName());
 				}
 			}
 			

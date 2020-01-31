@@ -3,6 +3,8 @@ package com.bakdata.conquery.models.auth;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.activation.UnsupportedDataTypeException;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -24,40 +26,45 @@ public class AuthorizationController {
 	@Getter
 	private MasterMetaStorage storage;
 	@Getter
-	private List<ConqueryRealm> realms;
+	private List<ConqueryAuthenticationRealm> authenticationRealms;
+
+	private List<Realm> realms;
 	
 	
 	private static AuthorizationController INSTANCE = null;
 	
 	private AuthorizationController(
 		MasterMetaStorage storage,
-		List<ConqueryRealm> realms, 
+		ConqueryConfig config,
 		Authenticator<AuthenticationToken, User> authenticator) {
 		this.authenticator = authenticator;
 		this.storage = storage;
-		this.realms = realms;
+		realms = new ArrayList<>(realms);
+		
+		// Init authentication realms provided by with the config.
+		for(AuthenticationConfig authenticationConf : config.getAuthentication()) {
+			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
+			
+			// Register user if realm supports it
+			if(realm instanceof UserManageable) {
+				// TODO ...
+			}
+			authenticationRealms.add(realm);
+			if(!(realm instanceof Realm)) {
+				throw new UnsupportedDataTypeException("");
+			}
+			realms.add(realm);
+		}
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
-		List<Realm> allRealms = new ArrayList<>(realms);
-		allRealms.add(authorizingRealm);
-		allRealms.stream().forEach(LifecycleUtils::init);
-
-		SecurityManager securityManager = new DefaultSecurityManager(allRealms);
+		realms.add(authorizingRealm);
+		
+		// Call Shiros init on all realms
+		realms.stream().forEach(LifecycleUtils::init);
+		
+		// Register all realms in Shiro
+		SecurityManager securityManager = new DefaultSecurityManager(realms);
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");
 	}
 	
-	public static AuthorizationController getInstance() {
-		if(INSTANCE == null) {
-			throw new IllegalStateException(String.format("%s has not been initialized yet.", AuthorizationController.class.getSimpleName()));
-		}
-		return INSTANCE;
-	}
-	
-	
-	public static void init(ConqueryConfig config, MasterMetaStorage storage) {
-		AuthConfig authConfig = config.getAuthentication();
-	
-		
-		INSTANCE =  new AuthorizationController(storage, authConfig.getRealms(storage), new ConqueryAuthenticator(storage));
-	}
 }
