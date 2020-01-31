@@ -10,6 +10,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
+import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.models.preproc.DateFormats;
@@ -54,7 +55,7 @@ public class ConqueryConfig extends Configuration {
 
 	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
 	
-	private AuthorizationConfig authorization = new AuthorizationConfig();
+	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
 	
 	private List<PluginConfig> plugins = new ArrayList<>();
 	/**

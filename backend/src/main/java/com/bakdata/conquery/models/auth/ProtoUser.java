@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.auth.basic.BasicAuthRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.Builder;
 import lombok.Getter;
 import org.hibernate.validator.constraints.NotEmpty;
 
@@ -16,29 +17,33 @@ import org.hibernate.validator.constraints.NotEmpty;
  * Container class for holding information about initial users.
  */
 @Getter
+@Builder
 public class ProtoUser {
 
 	private String label;
 	@NotEmpty
-	private String name;
+	@Builder.Default
+	private String name = "DefaultUserName";
 
 	/**
 	 * String permissions in the form of
 	 * {@link org.apache.shiro.authz.permission.WildcardPermission}, that the user
 	 * should hold after initialization.
 	 */
+	@Builder.Default
 	private Set<String> permissions = Collections.emptySet();
 
 	/**
 	 * These are passed to realms that are able to manage users (implementing
 	 * {@link UserManageable}, such as {@link BasicAuthRealm}).
 	 */
+	@Builder.Default
 	private List<CredentialType> credentials = Collections.emptyList();
 	
 	@JsonIgnore
 	private User user = null;
 
-	private User getUser() {
+	public User getUser() {
 		if(user != null) {
 			return user;
 		}

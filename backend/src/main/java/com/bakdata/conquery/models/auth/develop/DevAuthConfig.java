@@ -3,7 +3,7 @@ package com.bakdata.conquery.models.auth.develop;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
-import org.apache.shiro.realm.AuthenticatingRealm;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 
 /**
  * Default configuration for the auth system. Sets up all other default components.
@@ -13,7 +13,7 @@ import org.apache.shiro.realm.AuthenticatingRealm;
 public class DevAuthConfig implements AuthenticationConfig {
 		
 
-	public AuthenticatingRealm createRealm(MasterMetaStorage storage){
+	public ConqueryAuthenticationRealm createRealm(MasterMetaStorage storage){
 		return new AllGrantedRealm();
 	}
 }

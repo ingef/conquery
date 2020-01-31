@@ -34,7 +34,7 @@ public class ApiV1 implements ResourcesProvider {
 		});
 		
 		environment.register(new CORSPreflightRequestFilter());
-		environment.register(master.getAuthDynamicFeature());
+		environment.register(master.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
 		environment.register(new ResultCSVResource(namespaces, master.getConfig()));
 		environment.register(new StoredQueriesResource(namespaces));

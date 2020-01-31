@@ -3,13 +3,12 @@ package com.bakdata.conquery.models.auth.basic;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
-import com.bakdata.conquery.models.auth.AuthorizationConfig;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.config.XodusConfig;
 import lombok.Getter;
-import org.apache.shiro.realm.AuthenticatingRealm;
 import org.hibernate.validator.constraints.NotEmpty;
 
-@CPSType(base = AuthorizationConfig.class, id = "LOCAL_AUTHENTICATION")
+@CPSType(base = AuthenticationConfig.class, id = "LOCAL_AUTHENTICATION")
 @Getter
 public class BasicAuthConfig implements AuthenticationConfig {
 	
@@ -20,7 +19,7 @@ public class BasicAuthConfig implements AuthenticationConfig {
 	private String storeName = "authenticationStore";
 	
 	@Override
-	public AuthenticatingRealm createRealm(MasterMetaStorage storage) {
+	public ConqueryAuthenticationRealm createRealm(MasterMetaStorage storage) {
 		return new BasicAuthRealm(storage, this);
 	}
 }

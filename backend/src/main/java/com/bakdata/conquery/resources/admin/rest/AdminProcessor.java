@@ -483,7 +483,7 @@ public class AdminProcessor {
 		StringWriter sWriter = new StringWriter();
 		CsvWriter writer = CsvIo.createWriter(sWriter);
 		List<String> scope = ConqueryConfig.getInstance()
-			.getAuthentication()
+			.getAuthorization()
 			.getOverviewScope();
 		// Header
 		writer.addValue("User");

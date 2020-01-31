@@ -41,7 +41,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
 
-		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
+		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().runQuery(query, standaloneSupport.getTestUser());
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
 		while(managed.getState()!=ExecutionState.DONE && managed.getState()!=ExecutionState.FAILED) {
@@ -73,7 +73,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 				PRINT_SETTINGS,
 				managed,
 				standaloneSupport.getConfig().getIdMapping()
-					.initToExternal(DevAuthConfig.USER, managed))
+					.initToExternal(standaloneSupport.getTestUser(), managed))
 			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();

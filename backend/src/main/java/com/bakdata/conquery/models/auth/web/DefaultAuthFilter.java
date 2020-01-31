@@ -7,18 +7,20 @@ import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
 
-import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
 import com.bakdata.conquery.models.auth.entities.User;
 import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.realm.Realm;
 
 /**
  * This filter hooks into dropwizard's request handling to extract and process
@@ -41,10 +43,10 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 		AuthenticationToken token = null;
 		for(ConqueryAuthenticationRealm realm : controller.getAuthenticationRealms()) {
 			if ((token = realm.extractToken(requestContext)) != null){
-				log.trace("Realm {} extracted a token form the request: {}", realm.getName(), token);
+				log.trace("Realm {} extracted a token form the request: {}", ((Realm)realm).getName(), token);
 				break;
 			}
-			log.trace("Realm {} did not extract a token form the request.", realm.getName());
+			log.trace("Realm {} did not extract a token form the request.", ((Realm)realm).getName());
 		}
 		
 		try {
@@ -72,18 +74,21 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	 * @param <P>
 	 *            the principal
 	 */
-	public static class Builder extends AuthFilterBuilder<AuthenticationToken, User, DefaultAuthFilter> {
+	@Setter()
+	private static class Builder extends AuthFilterBuilder<AuthenticationToken, User, DefaultAuthFilter> {
+		
+		private AuthorizationController controller;
 
 		@Override
 		protected DefaultAuthFilter newInstance() {
-			return new DefaultAuthFilter();
+			return new DefaultAuthFilter(controller);
 		}
 	}
 
-	public static AuthFilter<AuthenticationToken, User> asDropwizardFeature(AuthorizationConfig config) {
+	public static  AuthFilter<AuthenticationToken, User> asDropwizardFeature(AuthorizationController controller) {
 		Builder builder = new Builder();
-		AuthFilter<AuthenticationToken, User> authFilter = builder
-			.setAuthenticator(AuthorizationController.getInstance().getAuthenticator())
+		DefaultAuthFilter authFilter = builder
+			.setAuthenticator(new ConqueryAuthenticator(controller.getStorage()))
 			.setUnauthorizedHandler(new DefaultUnauthorizedHandler())
 			.buildAuthFilter();
 		return authFilter;

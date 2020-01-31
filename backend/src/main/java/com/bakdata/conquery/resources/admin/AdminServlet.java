@@ -131,7 +131,7 @@ public class AdminServlet {
 			.register(new MultiPartFeature())
 			.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), ServiceLoader.load(ViewRenderer.class)))
 			.register(new CORSPreflightRequestFilter())
-			.register(masterCommand.getAuthDynamicFeature())
+			.register(masterCommand.getAuthController().getAuthenticationFilter())
 			.register(IdParamConverter.Provider.INSTANCE)
 			.register(CORSResponseFilter.class)
 			.register(AuthCookieFilter.class);

@@ -3,18 +3,18 @@ package com.bakdata.conquery.models.auth;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.activation.UnsupportedDataTypeException;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import io.dropwizard.auth.Authenticator;
+import io.dropwizard.auth.AuthFilter;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
+import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.util.LifecycleUtils;
@@ -22,24 +22,16 @@ import org.apache.shiro.util.LifecycleUtils;
 @Slf4j
 public class AuthorizationController {
 	@Getter
-	private Authenticator<AuthenticationToken, User> authenticator;
-	@Getter
 	private MasterMetaStorage storage;
 	@Getter
-	private List<ConqueryAuthenticationRealm> authenticationRealms;
-
-	private List<Realm> realms;
+	private List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
+	@Getter
+	AuthFilter<AuthenticationToken, User> authenticationFilter;
+	@Getter
+	private List<Realm> realms = new ArrayList<>();
 	
-	
-	private static AuthorizationController INSTANCE = null;
-	
-	private AuthorizationController(
-		MasterMetaStorage storage,
-		ConqueryConfig config,
-		Authenticator<AuthenticationToken, User> authenticator) {
-		this.authenticator = authenticator;
+	public AuthorizationController(MasterMetaStorage storage, ConqueryConfig config) {
 		this.storage = storage;
-		realms = new ArrayList<>(realms);
 		
 		// Init authentication realms provided by with the config.
 		for(AuthenticationConfig authenticationConf : config.getAuthentication()) {
@@ -50,10 +42,14 @@ public class AuthorizationController {
 				// TODO ...
 			}
 			authenticationRealms.add(realm);
-			if(!(realm instanceof Realm)) {
-				throw new UnsupportedDataTypeException("");
+			if (!(realm instanceof Realm)) {
+				throw new IllegalStateException(String.format(
+					"For this application objects of classes that implement %s must also extend %s. The object %s doesn't.",
+					ConqueryAuthenticationRealm.class.getName(),
+					AuthenticatingRealm.class.getName(),
+					realm));
 			}
-			realms.add(realm);
+			realms.add((Realm) realm);
 		}
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		realms.add(authorizingRealm);
@@ -65,6 +61,28 @@ public class AuthorizationController {
 		SecurityManager securityManager = new DefaultSecurityManager(realms);
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");
+		
+		// Create Jersey filter for authentication
+		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(this);
+		
+		
+		// Register initial users for authorization and authentication (if the realm is able to)
+		initializeAuthConstellation(config.getAuthorization(), realms, storage);
+	}
+	
+	/**
+	 * Sets up the initial subjects and permissions for the authentication system.
+	 * @param storage A storage, where the handler might add a new users.
+	 */
+	private static void initializeAuthConstellation(AuthorizationConfig config, List<Realm> realms, MasterMetaStorage storage) {
+		for (ProtoUser pUser : config.getInitialUsers()) {
+			pUser.registerForAuthorization(storage);
+			for (Realm realm : realms) {
+				if (realm instanceof UserManageable) {
+					pUser.registerForAuthentication((UserManageable) realm);
+				}
+			}
+		}
 	}
 	
 }

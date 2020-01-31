@@ -22,9 +22,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.AuthorizationController;
-import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.AuthServlet;
-import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.JobManager;
@@ -39,7 +37,6 @@ import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -59,11 +56,11 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Validator validator;
 	private ConqueryConfig config;
 	private AdminServlet admin;
+	private AuthorizationController authController;
 	private AuthServlet auth;
 	private ScheduledExecutorService maintenanceService;
 	private Namespaces namespaces = new Namespaces();
 	private Environment environment;
-	private AuthFilter<?, User> authDynamicFeature;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
 	public void run(ConqueryConfig config, Environment environment) throws IOException, JSONException {
@@ -108,11 +105,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			sn.getStorage().setMetaStorage(storage);
 		}
 		
-		AuthorizationController.init(config, storage);
+		authController = new AuthorizationController(storage, config);
 		
-		config.getAuthentication().initializeAuthConstellation(storage, AuthorizationController.getInstance());
-
-		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(config.getAuthentication());
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
@@ -129,7 +123,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		admin.register(this);
 		
 		auth = new AuthServlet();
-		auth.register(this, AuthorizationController.getInstance());
+		auth.register(this, authController);
 		
 
 		ShutdownTask shutdown = new ShutdownTask();
