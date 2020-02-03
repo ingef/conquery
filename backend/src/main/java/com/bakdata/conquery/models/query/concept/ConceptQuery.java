@@ -12,6 +12,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
@@ -23,7 +24,7 @@ import lombok.Setter;
 @Setter
 @CPSType(id = "CONCEPT_QUERY", base = IQuery.class)
 @AllArgsConstructor(onConstructor = @__({@JsonCreator}))
-public class ConceptQuery implements IQuery {
+public class ConceptQuery implements IQuery, Visitable {
 
 	@Valid
 	@NotNull
@@ -54,7 +55,7 @@ public class ConceptQuery implements IQuery {
 	}
 
 	@Override
-	public void visit(Consumer<CQElement> visitor) {
+	public void visit(Consumer<Visitable> visitor) {
 		root.visit(visitor);
 	}
 }
