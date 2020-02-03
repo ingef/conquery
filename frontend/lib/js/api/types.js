@@ -4,6 +4,8 @@
 // - response type provided by the backend API
 // - partial types that the reponses are built from
 
+import type { Forms } from "./form-types";
+
 export type DatasetIdT = string;
 export type DatasetT = {
   id: DatasetIdT,
@@ -293,3 +295,22 @@ export type PostFilterSuggestionsResponseT = {
   optionValue: ?string,
   templateValues: string[] // unclear whether that's correct
 }[];
+
+export type GetFormQueriesResponseT = Forms;
+
+export type Permission = {
+  domains: string[],
+  abilities: string[],
+  targets: string[]
+};
+
+export type UserGroup = {
+  groupId: string,
+  label: string
+};
+
+export type GetMeResponseT = {
+  userName: string,
+  permissions: Permission[],
+  groups: UserGroup[]
+};

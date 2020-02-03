@@ -4,6 +4,7 @@ import React, { useEffect } from "react";
 import { connect } from "react-redux";
 
 import { startup, loadConfig } from "./actions";
+import { startup as userStartup } from "../user/actions";
 
 type PropsType = {
   startup: Function
@@ -24,6 +25,7 @@ const mapDispatchToProps = dispatch => {
     startup: () => {
       dispatch(loadConfig());
       dispatch(startup());
+      dispatch(userStartup());
     }
   };
 };

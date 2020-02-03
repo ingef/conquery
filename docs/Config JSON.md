@@ -298,7 +298,6 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | directory | `File` | `"./storage"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | preprocessedRoot | `File` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | useWeakDictionaryCaching | `boolean` | `true` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | validateOnWrite | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | weakCacheDuration | `Duration` | `"48 hours"` |  |  | 

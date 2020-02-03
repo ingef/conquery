@@ -23,6 +23,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import { EditableText, EditableTags } from "../../form-components";
 
 import { deletePreviousQueryModalOpen } from "../delete-modal/actions";
+import { canDownloadResult } from "../../user/selectors";
 
 import { type DraggedQueryType } from "../../standard-query-editor/types";
 
@@ -131,6 +132,7 @@ const StyledWithTooltip = styled(WithTooltip)`
 `;
 
 type PropsType = {
+  userCanDownloadResults: boolean,
   query: {
     id: number | string,
     label: string,
@@ -165,7 +167,8 @@ class PreviousQuery extends React.Component {
       onToggleEditPreviousQueryTags,
       onToggleEditPreviousQueryLabel,
       onRetagPreviousQuery,
-      onToggleSharePreviousQuery
+      onToggleSharePreviousQuery,
+      userCanDownloadResults
     } = this.props;
 
     const peopleFound = isEmpty(query.numberOfResults)
@@ -191,7 +194,7 @@ class PreviousQuery extends React.Component {
       >
         <TopInfos>
           <div>
-            {query.resultUrl ? (
+            {!!query.resultUrl && userCanDownloadResults ? (
               <WithTooltip text={T.translate("previousQuery.downloadResults")}>
                 <DownloadButton tight bare url={query.resultUrl}>
                   {peopleFound}
@@ -280,7 +283,8 @@ class PreviousQuery extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  availableTags: state.previousQueries.tags
+  availableTags: state.previousQueries.tags,
+  userCanDownloadResults: canDownloadResult(state)
 });
 
 const mapDispatchToProps = dispatch => ({

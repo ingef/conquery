@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import org.apache.commons.lang3.ArrayUtils;
 
 public interface IdMappingAccessor {
 
@@ -42,13 +41,20 @@ public interface IdMappingAccessor {
 		Arrays.fill(applicationMapping, -1);
 		for (int indexInHeader = 0; indexInHeader < csvHeader.length; indexInHeader++) {
 			String csvHeaderField = csvHeader[indexInHeader];
-			int indexInCsvHeader = ArrayUtils.indexOf(getHeader(), csvHeaderField);
+			int indexInCsvHeader = findIndexfromMappingHeader(csvHeaderField);
 			if (indexInCsvHeader != -1) {
 				applicationMapping[indexInHeader] = indexInCsvHeader;
 			}
 		}
 		return new IdAccessorImpl(this, applicationMapping, storage);
 	}
+	
+	/**
+	 * Returns the index of the header in the setted mapping that maps best to the provided header in the CSV.
+	 * @param csvHeaderField The header field in the CSV that is machted to the predefined required headers.
+	 * @return The index of the predefined header that matched best.
+	 */
+	int findIndexfromMappingHeader(String csvHeaderField);
 
 	/**
 	 * Extracts the Id information from a CSV line using this accessor

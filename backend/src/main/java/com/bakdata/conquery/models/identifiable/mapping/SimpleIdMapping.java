@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import org.apache.commons.lang3.ArrayUtils;
 
 @CPSType(base= IdMappingConfig.class, id="SIMPLE")
 public class SimpleIdMapping extends IdMappingConfig {
@@ -11,6 +12,11 @@ public class SimpleIdMapping extends IdMappingConfig {
 			@Override
 			public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
 				return new CsvEntityId(reorderedCsvLine[0]);
+			}
+
+			@Override
+			public int findIndexfromMappingHeader(String csvHeaderField) {
+				return ArrayUtils.indexOf(getHeader(), csvHeaderField);
 			}
 		}};
 	}

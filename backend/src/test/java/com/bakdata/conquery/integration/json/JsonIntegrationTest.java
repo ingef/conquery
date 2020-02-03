@@ -1,10 +1,8 @@
 package com.bakdata.conquery.integration.json;
 
-import java.io.IOException;
-
 import javax.validation.Validator;
 
-import org.apache.commons.lang3.StringUtils;
+import java.io.IOException;
 
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -15,13 +13,13 @@ import com.bakdata.conquery.models.jobs.UpdateMatchingStats;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
-
 import io.dropwizard.jersey.validation.Validators;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 
 @Slf4j @RequiredArgsConstructor
-public class JsonIntegrationTest implements IntegrationTest.Simple {
+public class JsonIntegrationTest extends IntegrationTest.Simple {
 	
 	public static final ObjectReader TEST_SPEC_READER = Jackson.MAPPER.readerFor(ConqueryTestSpec.class);
 	

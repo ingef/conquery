@@ -1,5 +1,16 @@
 package com.bakdata.conquery.models.jobs;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Objects;
+import java.util.function.Consumer;
+
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.HCFile;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -22,7 +33,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ImportBucket;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateDictionary;
 import com.bakdata.conquery.models.messages.namespaces.specific.UpdateWorkerBucket;
 import com.bakdata.conquery.models.preproc.PPColumn;
-import com.bakdata.conquery.models.preproc.PPHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Decision;
@@ -47,22 +58,11 @@ import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Objects;
-import java.util.function.Consumer;
-
 @RequiredArgsConstructor
 @Slf4j
 public class ImportJob extends Job {
 
-	private final ObjectReader headerReader = Jackson.BINARY_MAPPER.readerFor(PPHeader.class);
+	private final ObjectReader headerReader = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class);
 
 	private final Namespace namespace;
 	private final TableId table;
@@ -81,7 +81,7 @@ public class ImportJob extends Job {
 						BinaryByteUnit.format(file.getContentSize())
 				);
 			}
-			PPHeader header = readHeader(file);
+			PreprocessedHeader header = readHeader(file);
 
 			//see #161  match to table check if it exists and columns are of the right type
 
@@ -96,6 +96,11 @@ public class ImportJob extends Job {
 			//partition the new IDs between the slaves
 			log.debug("\tpartition new IDs");
 			for (int bucket : primaryMapping.getNewBuckets()) {
+				if (namespace.getResponsibleWorkerForBucket(bucket) != null) {
+					log.error("Bucket[{}] marked as new, but already owned by Worker[{}]", bucket, namespace.getResponsibleWorkerForBucket(bucket).getId());
+					continue;
+				}
+
 				namespace.addResponsibility(bucket);
 			}
 			for (WorkerInformation w : namespace.getWorkers()) {
@@ -205,7 +210,7 @@ public class ImportJob extends Job {
 		}
 	}
 	
-	private Import createImport(PPHeader header, boolean useOldType) {
+	private Import createImport(PreprocessedHeader header, boolean useOldType) {
 		Import imp = new Import();
 		imp.setName(header.getName());
 		imp.setTable(table);
@@ -252,7 +257,7 @@ public class ImportJob extends Job {
 		}
 	}
 
-	private boolean createMappings(PPHeader header) throws JSONException {
+	private boolean createMappings(PreprocessedHeader header) throws JSONException {
 		log.debug("\tupdating primary dictionary");
 		Dictionary entities = ((StringTypeEncoded)header.getPrimaryColumn().getType()).getSubType().getDictionary();
 		this.progressReporter.report(1);
@@ -343,13 +348,14 @@ public class ImportJob extends Job {
 		return true;
 	}
 
-	private PPHeader readHeader(HCFile file) throws JsonParseException, IOException {
+	private PreprocessedHeader readHeader(HCFile file) throws JsonParseException, IOException {
 		try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(file.readHeader())) {
-			PPHeader header = headerReader.readValue(in);
+			PreprocessedHeader header = headerReader.readValue(in);
 
 			log.info("Importing {} into {}", header.getName(), table);
 			Table tab = namespace.getStorage().getDataset().getTables().getOrFail(table);
-			if (!tab.matches(header)) {
+
+			if (!header.matches(tab)) {
 				throw new IllegalArgumentException("The given header " + header + " does not match the table structure of " + table);
 			}
 

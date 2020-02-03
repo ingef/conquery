@@ -1,8 +1,5 @@
 package com.bakdata.conquery.models.query.entity;
 
-import java.util.List;
-import java.util.Map;
-
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.datasets.Table;
@@ -13,10 +10,12 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorId;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ListMultimap;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
+
+import java.util.List;
+import java.util.Map;
 
 @RequiredArgsConstructor @ToString(of="id")
 public class Entity {
@@ -33,6 +32,10 @@ public class Entity {
 		if(cBlocks.put(con.getId(), bucket.getId(), new EntityRow(bucket, cBlock, con, imp, table)) != null) {
 			throw new IllegalStateException("multiple CBlocks for block "+bucket+" & connector "+con);
 		}
+	}
+
+	public boolean isEmpty(){
+		return cBlocks.isEmpty() && buckets.isEmpty();
 	}
 
 	public void removeBucket(BucketId id) {

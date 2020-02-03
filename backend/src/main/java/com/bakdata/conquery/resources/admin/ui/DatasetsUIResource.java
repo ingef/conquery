@@ -25,10 +25,8 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.resources.admin.ui.model.FileView;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
 import com.bakdata.conquery.resources.hierarchies.HAdmin;
-import com.bakdata.conquery.util.io.FileTreeReduction;
 import io.dropwizard.views.View;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -58,7 +56,7 @@ public class DatasetsUIResource extends HAdmin {
 
 	@GET
 	public View getDataset() {
-		return new FileView<>(
+		return new UIView<>(
 			"dataset.html.ftl",
 			processor.getUIContext(),
 			new DatasetInfos(
@@ -79,8 +77,8 @@ public class DatasetsUIResource extends HAdmin {
 					.mapToLong(l -> l.get(0).estimateTypeSize())
 					.sum(),
 				// total size of entries
-				namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum()),
-			FileTreeReduction.reduceByExtension(processor.getConfig().getStorage().getPreprocessedRoot(), ".cqpp"));
+				namespace.getStorage().getAllImports().stream().mapToLong(Import::estimateMemoryConsumption).sum())
+		);
 	}
 
 	@Data

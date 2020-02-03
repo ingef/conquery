@@ -1,36 +1,65 @@
 package com.bakdata.conquery.resources.admin.ui;
 
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
+import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
+
 import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import javax.annotation.PostConstruct;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.datasets.Import;
+import com.bakdata.conquery.models.datasets.Table;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ImportId;
+import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.specific.AStringType;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.resources.admin.ui.model.TableStatistics;
 import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import com.bakdata.conquery.resources.hierarchies.HTables;
-
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import io.dropwizard.views.View;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
-import static com.bakdata.conquery.resources.ResourceConstants.IMPORT_ID;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
-
+@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
 @Getter @Setter @Slf4j
-public class TablesUIResource extends HTables {
+public class TablesUIResource extends HAdmin {
+	
+	@PathParam(DATASET_NAME)
+	protected DatasetId datasetId;
+	protected Namespace namespace;
+	@PathParam(TABLE_NAME)
+	protected TableId tableId;
+	protected Table table;
+	
+	@PostConstruct
+	@Override
+	public void init() {
+		super.init();
+		this.namespace = processor.getNamespaces().get(datasetId);
+		this.table = namespace
+			.getStorage()
+			.getDataset()
+			.getTables()
+			.getOptional(tableId)
+			.orElseThrow(() -> new WebApplicationException("Could not find table "+tableId, Status.NOT_FOUND));
+	}
 	
 	@GET
 	public View getTableView() {
@@ -74,9 +103,9 @@ public class TablesUIResource extends HTables {
 			)
 		);
 	}
-	
+
 	@GET
-	@Path("import/{"+IMPORT_ID+"}")
+	@Path("import/{" + IMPORT_ID + "}")
 	public View getImportView(@PathParam(IMPORT_ID)ImportId importId) {
 		Import imp = namespace
 			.getStorage()

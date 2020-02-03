@@ -4,27 +4,25 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.validation.Valid;
 
-import org.hibernate.validator.constraints.NotEmpty;
-
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.queryplan.specific.OrNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.hibernate.validator.constraints.NotEmpty;
 
 @NoArgsConstructor @AllArgsConstructor
 @CPSType(id="OR", base=CQElement.class)
@@ -61,16 +59,10 @@ public class CQOr implements CQElement {
 			c.collectResultInfos(collector);
 		}
 	}
-
-	@Override
-	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
-		for(CQElement c:children) {
-			c.collectNamespacedIds(namespacedIds);
-		}
-	}
 	
 	@Override
-	public void visit(QueryVisitor visitor) {
+	public void visit(Consumer<Visitable> visitor) {
+		CQElement.super.visit(visitor);
 		for(CQElement c:children) {
 			c.visit(visitor);
 		}

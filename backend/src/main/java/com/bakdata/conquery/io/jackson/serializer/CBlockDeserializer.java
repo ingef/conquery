@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.deser.ContextualDeserializer;
 import com.fasterxml.jackson.databind.deser.ResolvableDeserializer;
 import com.fasterxml.jackson.databind.jsontype.TypeDeserializer;
-
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
@@ -34,7 +33,7 @@ public class CBlockDeserializer extends JsonDeserializer<CBlock> implements Cont
 		
 		Connector con = NamespaceCollection.get(ctxt).getOptional(block.getConnector()).get();
 		Concept<?> concept = con.getConcept();
-		if(concept instanceof TreeConcept) {
+		if(concept instanceof TreeConcept && block.getMostSpecificChildren() != null) {
 			TreeConcept tree = (TreeConcept) concept;
 			block.getMostSpecificChildren().replaceAll(c->c==null?c:tree.getElementByLocalId(c).getPrefix());
 		}

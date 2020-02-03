@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query.concept;
 
 import java.util.Set;
+import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -11,17 +12,19 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-
+import com.fasterxml.jackson.annotation.JsonCreator;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @CPSType(id = "CONCEPT_QUERY", base = IQuery.class)
-public class ConceptQuery implements IQuery {
+@AllArgsConstructor(onConstructor = @__({@JsonCreator}))
+public class ConceptQuery implements IQuery, Visitable {
 
 	@Valid
 	@NotNull
@@ -52,7 +55,7 @@ public class ConceptQuery implements IQuery {
 	}
 
 	@Override
-	public void visit(QueryVisitor visitor) {
+	public void visit(Consumer<Visitable> visitor) {
 		root.visit(visitor);
 	}
 }

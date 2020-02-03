@@ -3,10 +3,12 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeReadDatasets;
 
 import java.sql.SQLException;
 import java.util.concurrent.TimeUnit;
 
+import javax.inject.Inject;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
@@ -19,7 +21,6 @@ import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -28,7 +29,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 
@@ -37,18 +37,21 @@ import io.dropwizard.auth.Auth;
 @Produces(AdditionalMediaTypes.JSON)
 
 public class QueryResource {
-
-	private final QueryProcessor processor;
-	private final ResourceUtil dsUtil;
-
-	public QueryResource(Namespaces namespaces, MasterMetaStorage storage) {
-		this.processor = new QueryProcessor(namespaces, storage);
-		this.dsUtil = new ResourceUtil(namespaces);
+	
+	private QueryProcessor processor;
+	private ResourceUtil dsUtil;
+	
+	@Inject
+	public QueryResource(QueryProcessor processor) {
+		this.processor= processor;
+		dsUtil = new ResourceUtil(processor.getNamespaces());
 	}
 
 	@POST
 	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
+		// Also look into the query and check the datasets
+		authorizeReadDatasets(user, query);
 		// Check reused query
 		for (ManagedExecutionId requiredQueryId : query
 			.collectRequiredQueries()) {
