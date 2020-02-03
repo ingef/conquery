@@ -117,8 +117,8 @@ public class TestConquery implements Extension, BeforeAllCallback, AfterAllCallb
 			localTmpDir,
 			localCfg,
 			standaloneCommand.getMaster().getAdmin().getAdminProcessor(),
-			// Getting the User from DevelopmentAuthorizationConfig
-			config.getAuthorization().getInitialUsers().get(0).getUser());
+			// Getting the User from AuthorizationConfig
+			standaloneCommand.getMaster().getConfig().getAuthorization().getInitialUsers().get(0).getUser());
 
 		Wait.builder().attempts(100).stepTime(50).build().until(() -> ns.getWorkers().size() == ns.getNamespaces().getSlaves().size());
 
