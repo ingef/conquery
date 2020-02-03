@@ -11,12 +11,13 @@ import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticator;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.google.common.base.Preconditions;
 import io.dropwizard.auth.AuthFilter;
-import io.dropwizard.auth.Authenticator;
 import io.dropwizard.auth.DefaultUnauthorizedHandler;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
+import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -68,19 +69,21 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	/**
 	 * Builder for {@link DefaultAuthFilter}.
 	 * <p>
-	 * An {@link Authenticator} must be provided during the building process.
+	 * An {@link AuthorizationController} must be provided during the building process.
 	 * </p>
 	 *
 	 * @param <P>
 	 *            the principal
 	 */
-	@Setter()
+	@Accessors(chain = true)
+	@Setter
 	private static class Builder extends AuthFilterBuilder<AuthenticationToken, User, DefaultAuthFilter> {
 		
 		private AuthorizationController controller;
 
 		@Override
 		protected DefaultAuthFilter newInstance() {
+			Preconditions.checkNotNull(controller);
 			return new DefaultAuthFilter(controller);
 		}
 	}
@@ -88,6 +91,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	public static  AuthFilter<AuthenticationToken, User> asDropwizardFeature(AuthorizationController controller) {
 		Builder builder = new Builder();
 		DefaultAuthFilter authFilter = builder
+			.setController(controller)
 			.setAuthenticator(new ConqueryAuthenticator(controller.getStorage()))
 			.setUnauthorizedHandler(new DefaultUnauthorizedHandler())
 			.buildAuthFilter();

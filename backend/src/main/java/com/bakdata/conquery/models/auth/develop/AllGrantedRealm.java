@@ -1,28 +1,29 @@
 package com.bakdata.conquery.models.auth.develop;
 
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Set;
-
 import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.HttpHeaders;
 
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.permissions.SuperPermission;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authz.AuthorizationInfo;
-import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.realm.AuthorizingRealm;
-import org.apache.shiro.subject.PrincipalCollection;
+import org.apache.shiro.authc.credential.CredentialsMatcher;
+import org.apache.shiro.realm.AuthenticatingRealm;
 
 /**
  * This realm authenticates and authorizes all requests given to it positive.
  */
 @Slf4j
-public class AllGrantedRealm extends AuthorizingRealm implements ConqueryAuthenticationRealm {
+public class AllGrantedRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm {
+	private static final String UID_QUERY_STRING_PARAMETER = "access_token";	
+
+	// Not allowed to be empty to take the first user as default
+	private final User defaultUser = ConqueryConfig.getInstance().getAuthorization().getInitialUsers().get(0).getUser();
 
 	/**
 	 * The warning that is displayed, when the realm is instantiated.
@@ -48,102 +49,47 @@ public class AllGrantedRealm extends AuthorizingRealm implements ConqueryAuthent
 	public AllGrantedRealm() {
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(DevelopmentToken.class);
+		this.setCredentialsMatcher(new DevelopmentCredentialsMatcher());
 	}
 
 	@Override
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-		return new DevelopmentAuthenticationInfo();		
+		if(!(token instanceof DevelopmentToken)) {
+			return null;
+		}
+		DevelopmentToken devToken = (DevelopmentToken) token;
+		return new ConqueryAuthenticationInfo(devToken.getPrincipal(), devToken.getCredentials(), this);
 	}
 	
 	@Override
-	public AuthenticationToken extractToken(ContainerRequestContext request) {
-		return new DevelopmentToken();
-	}
-	
-	@SuppressWarnings("serial")
-	private static class DevelopmentToken implements AuthenticationToken{
+	public AuthenticationToken extractToken(ContainerRequestContext requestContext) {
+		// Check if the developer passed a UserId under whose the Request should be executed 
+		
+		// Check the Authorization header for a String which can be parsed as a UserId
+		String uid = requestContext.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
 
-		@Override
-		public Object getPrincipal() {
-			throw new UnsupportedOperationException(String.format("This is just a developer token, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public Object getCredentials() {
-			throw new UnsupportedOperationException(String.format("This is just a developer token, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
+		if (uid == null) {
+			// Check also the query parameter "access_token" for a UserId
+			uid = requestContext.getUriInfo().getQueryParameters().getFirst(UID_QUERY_STRING_PARAMETER);
 		}
 		
+		UserId userId = null;
+		
+		if (uid != null) {
+			userId = UserId.Parser.INSTANCE.parse(uid);
+		} else {
+			// If nothing was found execute the request as the default user
+			userId = defaultUser.getId();
+		}
+		return new DevelopmentToken(userId, uid);
 	}
 	
-	@SuppressWarnings("serial")
-	private static class DevelopmentAuthenticationInfo implements AuthenticationInfo {
+	private static class DevelopmentCredentialsMatcher implements CredentialsMatcher {
 
 		@Override
-		public PrincipalCollection getPrincipals() {
-			return new DevelopmentPrincipalCollection();
-		}
-
-		@Override
-		public Object getCredentials() {
-			throw new UnsupportedOperationException(String.format("This is just a developer authentication info, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
+		public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
+			return true;
 		}
 		
-	}
-	
-	@SuppressWarnings("serial")
-	private static class DevelopmentPrincipalCollection implements PrincipalCollection{
-
-		@Override
-		public Iterator iterator() {
-			throw new UnsupportedOperationException(String.format("This is just a developer principal collection, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public Object getPrimaryPrincipal() {
-			throw new UnsupportedOperationException(String.format("This is just a developer principal collection, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public <T> T oneByType(Class<T> type) {
-			throw new UnsupportedOperationException(String.format("This is just a developer principal collection, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public <T> Collection<T> byType(Class<T> type) {
-			throw new UnsupportedOperationException(String.format("This is just a developer principal collection, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public List asList() {
-			throw new UnsupportedOperationException(String.format("This is just a developer principal collection, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public Set asSet() {
-			throw new UnsupportedOperationException(String.format("This is just a developer principal collection, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public Collection fromRealm(String realmName) {
-			throw new UnsupportedOperationException(String.format("This is just a developer principal collection, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public Set<String> getRealmNames() {
-			throw new UnsupportedOperationException(String.format("This is just a developer principal collection, which bypasses authentication when the %s is in use.", AllGrantedRealm.class.getName()));
-		}
-
-		@Override
-		public boolean isEmpty() {
-			return false;
-		}
-		
-	}
-
-	@Override
-	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
-		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
-		info.addObjectPermission(SuperPermission.onDomain());
-		return info;
 	}
 }

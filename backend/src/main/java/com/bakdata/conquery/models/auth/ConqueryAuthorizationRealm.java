@@ -19,6 +19,12 @@ import org.apache.shiro.subject.PrincipalCollection;
 public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	
 	public final MasterMetaStorage storage;
+	
+	@Override
+	protected void onInit() {
+		super.onInit();
+		this.setAuthenticationTokenClass(UnusedAuthenticationToken.class);
+	}
 
 	@Override
 	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
@@ -35,6 +41,21 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		// This Realm only authorizes
 		return null;
+	}
+	
+	@SuppressWarnings("serial")
+	private static class UnusedAuthenticationToken implements AuthenticationToken {
+
+		@Override
+		public Object getPrincipal() {
+			throw new UnsupportedOperationException(String.format("This realm (%s) only handles authorization. So this token's functions should never be called.", this.getClass().getName()));
+		}
+
+		@Override
+		public Object getCredentials() {
+			throw new UnsupportedOperationException(String.format("This realm (%s) only handles authorization. So this token's functions should never be called.", this.getClass().getName()));
+		}
+		
 	}
 
 }

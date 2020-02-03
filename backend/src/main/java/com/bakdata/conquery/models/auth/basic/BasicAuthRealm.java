@@ -24,6 +24,7 @@ import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.CredentialType;
 import com.bakdata.conquery.models.auth.PasswordCredential;
@@ -55,10 +56,7 @@ import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.realm.AuthenticatingRealm;
-import org.apache.shiro.subject.PrincipalCollection;
-import org.apache.shiro.subject.SimplePrincipalCollection;
 
 @Slf4j
 public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AuthResourceProvider{
@@ -135,11 +133,11 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 		User user = storage.getUser(userId);
 		// try to construct a new User if none could be found in the storage
 		if(user == null) {
-			log.warn("Provided credentials were valid, but a corresponding user was not found in the System. Add a user to the system with the id: {}", userId);
+			log.warn("Provided credentials were valid, but a corresponding user was not found in the System. You need to add a user to the system with the id: {}", userId);
 			return null;
 		}
-		PrincipalCollection principals  = new SimplePrincipalCollection(List.of(userId), getName());
-		return new SimpleAuthenticationInfo(principals, token.getCredentials());
+
+		return new ConqueryAuthenticationInfo(userId, token, this);
 	}
 	
 	public String checkCredentialsAndCreateJWT(String username, char[] password) {

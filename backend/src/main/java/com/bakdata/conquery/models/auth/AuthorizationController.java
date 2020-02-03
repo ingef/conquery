@@ -37,10 +37,6 @@ public class AuthorizationController {
 		for(AuthenticationConfig authenticationConf : config.getAuthentication()) {
 			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
 			
-			// Register user if realm supports it
-			if(realm instanceof UserManageable) {
-				// TODO ...
-			}
 			authenticationRealms.add(realm);
 			if (!(realm instanceof Realm)) {
 				throw new IllegalStateException(String.format(
