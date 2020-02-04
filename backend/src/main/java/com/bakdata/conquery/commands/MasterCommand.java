@@ -120,7 +120,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		}
 
 		admin = new AdminServlet();
-		admin.register(this);
+		admin.register(this, authController);
 		
 		auth = new AuthServlet();
 		auth.register(this, authController);

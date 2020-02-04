@@ -5,6 +5,7 @@ import javax.ws.rs.core.HttpHeaders;
 
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
+import com.bakdata.conquery.models.auth.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -12,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.realm.AuthenticatingRealm;
 
 /**
@@ -49,7 +49,7 @@ public class AllGrantedRealm extends AuthenticatingRealm implements ConqueryAuth
 	public AllGrantedRealm() {
 		log.warn(WARNING);
 		this.setAuthenticationTokenClass(DevelopmentToken.class);
-		this.setCredentialsMatcher(new DevelopmentCredentialsMatcher());
+		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
 	}
 
 	@Override
@@ -82,14 +82,5 @@ public class AllGrantedRealm extends AuthenticatingRealm implements ConqueryAuth
 			userId = defaultUser.getId();
 		}
 		return new DevelopmentToken(userId, uid);
-	}
-	
-	private static class DevelopmentCredentialsMatcher implements CredentialsMatcher {
-
-		@Override
-		public boolean doCredentialsMatch(AuthenticationToken token, AuthenticationInfo info) {
-			return true;
-		}
-		
 	}
 }

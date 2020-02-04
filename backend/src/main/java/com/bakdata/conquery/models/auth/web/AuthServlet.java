@@ -24,8 +24,8 @@ public class AuthServlet {
 	 * registered in the admin jerseyconfig.
 	 */
 	@CPSBase
-	public interface AuthResourceProvider {
-		void registerResources(DropwizardResourceConfig jerseyConfig);
+	public interface AuthUnprotectedResourceProvider {
+		void registerAuthenticationResources(DropwizardResourceConfig jerseyConfig);
 	}
 	
 	public void register(MasterCommand masterCommand, AuthorizationController controller) {
@@ -48,8 +48,8 @@ public class AuthServlet {
 
 		// Scan realms if they need to add resources
 		for (Realm realm : controller.getRealms()) {
-			if(realm instanceof AuthResourceProvider) {
-				((AuthResourceProvider)realm).registerResources(jerseyConfig);
+			if(realm instanceof AuthUnprotectedResourceProvider) {
+				((AuthUnprotectedResourceProvider)realm).registerAuthenticationResources(jerseyConfig);
 			}
 		}
 	}

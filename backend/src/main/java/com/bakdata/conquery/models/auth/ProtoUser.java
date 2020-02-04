@@ -4,6 +4,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.basic.BasicAuthRealm;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -31,6 +33,7 @@ public class ProtoUser {
 	 * should hold after initialization.
 	 */
 	@Builder.Default
+	@NotNull
 	private Set<String> permissions = Collections.emptySet();
 
 	/**
@@ -38,9 +41,11 @@ public class ProtoUser {
 	 * {@link UserManageable}, such as {@link BasicAuthRealm}).
 	 */
 	@Builder.Default
+	@NotNull
 	private List<CredentialType> credentials = Collections.emptyList();
 	
 	@JsonIgnore
+	// Let this be ignored by the builder
 	private User user = null;
 
 	public User getUser() {
@@ -54,16 +59,23 @@ public class ProtoUser {
 		return user;
 	}
 
-	public void registerForAuthorization(MasterMetaStorage storage) {
+	public void registerForAuthorization(MasterMetaStorage storage, boolean override) {
 		User user = this.getUser();
-		// Possibly overriding a user
-		storage.updateUser(user);
+		if(override) {			
+			storage.updateUser(user);
+		} else {
+			// Should throw an exception, if the user already existed
+			storage.addUser(user);
+		}
 		for (String sPermission : permissions) {
 			user.addPermission(storage, new WildcardPermission(sPermission));
 		}
 	}
 	
-	public void registerForAuthentication(UserManageable userManager) {
-		userManager.addUser(getUser(), credentials, true);
+	public boolean registerForAuthentication(UserManageable userManager, boolean override) {
+		if(override) {			
+			return userManager.updateUser(getUser(), credentials);
+		}
+		return userManager.addUser(getUser(), credentials);
 	}
 }
