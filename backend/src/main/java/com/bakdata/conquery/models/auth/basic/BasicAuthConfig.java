@@ -1,5 +1,7 @@
 package com.bakdata.conquery.models.auth.basic;
 
+import javax.validation.constraints.NotNull;
+
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.AuthenticationConfig;
@@ -15,7 +17,9 @@ public class BasicAuthConfig implements AuthenticationConfig {
 	@NotEmpty
 	private String tokenSecret;
 	
+	@NotNull
 	private XodusConfig passwordStoreConfig = new XodusConfig();
+	@NotEmpty
 	private String storeName = "authenticationStore";
 	
 	@Override
