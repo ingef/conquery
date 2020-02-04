@@ -12,7 +12,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 @CPSType(base = AuthenticationConfig.class, id = "LOCAL_AUTHENTICATION")
 @Getter
-public class BasicAuthConfig implements AuthenticationConfig {
+public class LocalAuthenticationConfig implements AuthenticationConfig {
 	
 	@NotEmpty
 	private String tokenSecret;
@@ -24,6 +24,6 @@ public class BasicAuthConfig implements AuthenticationConfig {
 	
 	@Override
 	public ConqueryAuthenticationRealm createRealm(MasterMetaStorage storage) {
-		return new BasicAuthRealm(storage, this);
+		return new LocalAuthenticationRealm(storage, this);
 	}
 }

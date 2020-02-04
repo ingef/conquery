@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.auth.util;
 
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;

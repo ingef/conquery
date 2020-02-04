@@ -14,6 +14,6 @@ public class DevAuthConfig implements AuthenticationConfig {
 		
 
 	public ConqueryAuthenticationRealm createRealm(MasterMetaStorage storage){
-		return new AllGrantedRealm();
+		return new DefaultInitialUserRealm();
 	}
 }

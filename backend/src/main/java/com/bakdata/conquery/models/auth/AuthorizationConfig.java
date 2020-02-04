@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;

@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.web.api;
+package com.bakdata.conquery.apiv1.auth;
 
 import lombok.Data;
 

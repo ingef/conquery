@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.auth;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
@@ -14,11 +15,14 @@ import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.AuthenticatingRealm;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.realm.Realm;
 import org.apache.shiro.util.LifecycleUtils;
 
+/**
+ * The central class for the initialization of authorization and authentication.
+ * Conquery uses a permission based authorization.
+ */
 @Slf4j
 public class AuthorizationController {
 	@Getter
@@ -38,14 +42,7 @@ public class AuthorizationController {
 			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
 			
 			authenticationRealms.add(realm);
-			if (!(realm instanceof Realm)) {
-				throw new IllegalStateException(String.format(
-					"For this application objects of classes that implement %s must also extend %s. The object %s doesn't.",
-					ConqueryAuthenticationRealm.class.getName(),
-					AuthenticatingRealm.class.getName(),
-					realm));
-			}
-			realms.add((Realm) realm);
+			realms.add(realm);
 		}
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		realms.add(authorizingRealm);

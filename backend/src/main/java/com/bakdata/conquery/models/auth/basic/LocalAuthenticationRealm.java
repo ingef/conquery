@@ -25,24 +25,23 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.bakdata.conquery.apiv1.auth.CredentialType;
+import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
 import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
-import com.bakdata.conquery.models.auth.CredentialType;
-import com.bakdata.conquery.models.auth.PasswordCredential;
-import com.bakdata.conquery.models.auth.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.auth.UserManageable;
-import com.bakdata.conquery.models.auth.basic.web.UserAuthenticationManagementProcessor;
-import com.bakdata.conquery.models.auth.basic.web.UserAuthenticationManagementResource;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.web.AuthServlet.AuthUnprotectedResourceProvider;
-import com.bakdata.conquery.models.auth.web.TokenResource;
+import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.AdminServlet.AuthAdminResourceProvider;
+import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
+import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthUnprotectedResourceProvider;
+import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
@@ -57,15 +56,13 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.AuthenticationException;
-import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
-import org.apache.shiro.realm.AuthenticatingRealm;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @Slf4j
-public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AuthUnprotectedResourceProvider, AuthAdminResourceProvider{
+public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthUnprotectedResourceProvider, AuthAdminResourceProvider{
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JWTToken.class;
 	private static final String STORENAME =  "BasicCredentialStore";
@@ -88,7 +85,7 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 	private MasterMetaStorage storage;
 	
 		 
-	public BasicAuthRealm(MasterMetaStorage storage, BasicAuthConfig config) {
+	public LocalAuthenticationRealm(MasterMetaStorage storage, LocalAuthenticationConfig config) {
 		this.setAuthenticationTokenClass(TOKEN_CLASS);
 		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
 		this.storage = storage;
@@ -122,7 +119,7 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 	}
 
 	@Override
-	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
 		if(!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
 			// Incompatible token
 			return null;
@@ -333,7 +330,7 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 
 	@Override
 	public void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig) {
-		BasicAuthRealm thisRealm = this;
+		LocalAuthenticationRealm thisRealm = this;
 		jerseyConfig.register(new AbstractBinder() {
 
 			@Override

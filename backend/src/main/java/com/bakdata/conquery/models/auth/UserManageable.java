@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 

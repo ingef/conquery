@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.web;
+package com.bakdata.conquery.resources.unprotected;
 
 import java.util.Collections;
 

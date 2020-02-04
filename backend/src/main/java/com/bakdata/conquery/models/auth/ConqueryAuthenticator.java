@@ -29,13 +29,20 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 
 	@Override
 	public Optional<User> authenticate(AuthenticationToken token) throws AuthenticationException {
-		
+	
+		// Submit the token to Shiro (to all realms that were registered)
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
+		
+		// All authenticating realms must return a UserId as identifying principal
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
+		// The UserId is queried in the MasterMetaStorage, the central place for authorization information
 		User user = storage.getUser(userId);
 		
-		ConqueryMDC.setLocation(user.getId().toString());
+		if(user != null) {
+			ConqueryMDC.setLocation(user.getId().toString());
+		}
+		// If the user was present, all further authorization can know be perfomed on the user object
 		return Optional.ofNullable(user);
 	}
 

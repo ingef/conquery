@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth.basic.web;
+package com.bakdata.conquery.resources.admin.rest;
 
 import static com.bakdata.conquery.resources.ResourceConstants.USER_ID;
 
@@ -13,7 +13,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import com.bakdata.conquery.models.auth.ProtoUser;
+import com.bakdata.conquery.apiv1.auth.ProtoUser;
+import com.bakdata.conquery.models.auth.basic.UserAuthenticationManagementProcessor;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.hierarchies.HAuthorized;
 

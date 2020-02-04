@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.apiv1.auth;
 
 import java.util.Collections;
 import java.util.List;
@@ -7,7 +7,8 @@ import java.util.Set;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.basic.BasicAuthRealm;
+import com.bakdata.conquery.models.auth.UserManageable;
+import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -38,7 +39,7 @@ public class ProtoUser {
 
 	/**
 	 * These are passed to realms that are able to manage users (implementing
-	 * {@link UserManageable}, such as {@link BasicAuthRealm}).
+	 * {@link UserManageable}, such as {@link LocalAuthenticationRealm}).
 	 */
 	@Builder.Default
 	@NotNull

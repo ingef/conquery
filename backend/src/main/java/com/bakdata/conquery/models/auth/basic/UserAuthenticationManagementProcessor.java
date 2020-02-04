@@ -1,10 +1,9 @@
-package com.bakdata.conquery.models.auth.basic.web;
+package com.bakdata.conquery.models.auth.basic;
 
 import java.util.Objects;
 
+import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.ProtoUser;
-import com.bakdata.conquery.models.auth.basic.BasicAuthRealm;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.RequiredArgsConstructor;
@@ -14,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class UserAuthenticationManagementProcessor {
 
-	private final BasicAuthRealm realm;
+	private final LocalAuthenticationRealm realm;
 	private final MasterMetaStorage storage;
 
 	public boolean addUser(ProtoUser pUser) {

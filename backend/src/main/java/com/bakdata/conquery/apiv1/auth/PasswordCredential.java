@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.apiv1.auth;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.fasterxml.jackson.annotation.JsonCreator;

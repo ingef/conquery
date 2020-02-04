@@ -1,6 +1,8 @@
 package com.bakdata.conquery.models.auth.web;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.NotAuthorizedException;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -19,7 +21,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.realm.Realm;
 
@@ -41,29 +42,40 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 	public void filter(final ContainerRequestContext requestContext) throws IOException {
 
 		
-		AuthenticationToken token = null;
+		// The token extraction process
+		List<AuthenticationToken> tokens = new ArrayList<>();
 		for(ConqueryAuthenticationRealm realm : controller.getAuthenticationRealms()) {
+			AuthenticationToken token = null;
 			if ((token = realm.extractToken(requestContext)) != null){
 				log.trace("Realm {} extracted a token form the request: {}", ((Realm)realm).getName(), token);
-				break;
+				tokens.add(token);
 			}
 			log.trace("Realm {} did not extract a token form the request.", ((Realm)realm).getName());
 		}
 		
-		try {
-			// sets the security context in the request AND does the authentication
-			if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
-				throw new NotAuthorizedException("Authentication failed","Bearer");
+		Throwable exceptions = new Throwable("Authentication failed with");
+		
+		// The authentication process
+		for(AuthenticationToken token :tokens) {
+			try {
+					// Submit the token to dropwizard which forwards it to Shiro
+					if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
+						throw new NotAuthorizedException("Authentication failed","Bearer");
+					}
+					// Success an extracted token could be authenticated
+					log.trace("Authentication was successfull for token type {}", token.getClass().getName());
+					return;
+					
+			}
+			catch (Exception e) {
+				exceptions.addSuppressed(e);
 			}
 		}
-		catch (AuthenticationException e) {
-			log
-				.warn(
-					"Shiro failed to authenticate the request. See the following message by {}:\n\t{}",
-					e.getStackTrace()[0],
-					e.getMessage());
-			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
-		}
+		log
+		.warn(
+			"Shiro failed to authenticate the request. See the following message by {}:\n\t{}",
+			exceptions);
+		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}
 
 	/**
