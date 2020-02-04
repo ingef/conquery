@@ -1,5 +1,14 @@
 package com.bakdata.conquery.commands;
 
+import java.io.File;
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
@@ -37,14 +46,6 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
 @Getter
@@ -89,7 +90,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			if (directory.getName().startsWith("dataset_")) {
 				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
 				if (datasetStorage != null) {
-					Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
+					Namespace ns = new Namespace(datasetStorage);
 					ns.initMaintenance(maintenanceService);
 					namespaces.add(ns);
 				}
