@@ -23,7 +23,7 @@ import lombok.extern.slf4j.Slf4j;
 
 
 /**
- * Keep track of all data assigned to a single dataset. Each Namespace has one {@link Worker} per {@link Dataset} / {@link Namespace}.
+ * Keep track of all data assigned to a single dataset. Each Namespace has one {@link Worker} per {@link Dataset} / {@link Namespace} per Slave.
  * Every Worker is assigned a partition of the loaded {@link Entity}s via {@link Entity::getBucket}.
  */
 @Slf4j
