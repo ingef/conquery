@@ -5,10 +5,12 @@ import java.io.File;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.ws.rs.container.ContainerRequestContext;
@@ -24,17 +26,23 @@ import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.io.xodus.stores.IStoreInfo;
+import com.bakdata.conquery.io.xodus.stores.XodusStore;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.CredentialType;
 import com.bakdata.conquery.models.auth.PasswordCredential;
+import com.bakdata.conquery.models.auth.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.auth.UserManageable;
+import com.bakdata.conquery.models.auth.basic.web.UserAuthenticationManagementProcessor;
+import com.bakdata.conquery.models.auth.basic.web.UserAuthenticationManagementResource;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.auth.web.AuthServlet.AuthResourceProvider;
+import com.bakdata.conquery.models.auth.web.AuthServlet.AuthUnprotectedResourceProvider;
 import com.bakdata.conquery.models.auth.web.TokenResource;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.resources.admin.AdminServlet.AuthAdminResourceProvider;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
@@ -43,12 +51,9 @@ import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.bindings.StringBinding;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
-import jetbrains.exodus.env.Store;
-import jetbrains.exodus.env.StoreConfig;
-import jetbrains.exodus.env.Transaction;
-import jetbrains.exodus.env.TransactionalComputable;
-import jetbrains.exodus.env.TransactionalExecutable;
 import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.DateUtils;
 import org.apache.shiro.authc.AuthenticationException;
@@ -57,9 +62,10 @@ import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.realm.AuthenticatingRealm;
+import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @Slf4j
-public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AuthResourceProvider{
+public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthenticationRealm, UserManageable, AuthUnprotectedResourceProvider, AuthAdminResourceProvider{
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JWTToken.class;
 	private static final String STORENAME =  "BasicCredentialStore";
@@ -72,7 +78,7 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 	@JsonIgnore
 	private Environment passwordEnvironment;
 	@JsonIgnore
-	private Store passwordStore;
+	private XodusStore passwordStore;
 	
 	@JsonIgnore
 	private Algorithm tokenSignAlgorithm;
@@ -84,6 +90,7 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 		 
 	public BasicAuthRealm(MasterMetaStorage storage, BasicAuthConfig config) {
 		this.setAuthenticationTokenClass(TOKEN_CLASS);
+		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
 		this.storage = storage;
 		this.storeName = config.getStoreName();
 		this.passwordStoreConfig = config.getPasswordStoreConfig();
@@ -94,17 +101,24 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 			.build();
 	}
 	
+	@RequiredArgsConstructor
+	@Getter
+	private static class StoreInfo implements IStoreInfo {
+		
+		private final String xodusName;
+		// Not used
+		private final Class<?> keyType = String.class;
+		// Not used
+		private final Class<?> valueType = String.class;
+		
+	}
+	
 	@Override
 	protected void onInit() {
 		super.onInit();
 		File passwordStoreFile = new File(ConqueryConfig.getInstance().getStorage().getDirectory(),storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
-		passwordStore = passwordEnvironment.computeInTransaction(new TransactionalComputable<Store>(){
-			@Override
-			public Store compute(Transaction txn) {
-				return passwordEnvironment.openStore(STORENAME, StoreConfig.WITHOUT_DUPLICATES, txn);
-			};
-		});
+		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"));
 	}
 
 	@Override
@@ -160,17 +174,14 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 	}
 
 	private boolean validUsernamePassword(String username, char[] providedCredentials) {
-		// Get rid of Strings
-		String storedCredentials = passwordEnvironment.computeInReadonlyTransaction(new TransactionalComputable<String>() {
-			
-			@Override
-			public String compute(jetbrains.exodus.env.Transaction txn) {
-				return StringBinding.entryToString(
-					passwordStore.get(txn, StringBinding.stringToEntry(username))
-					);
-			};
-			
-		});
+		if(username.isEmpty()) {
+			throw new IncorrectCredentialsException("Username was empty");
+		}
+		if(providedCredentials.length < 1) {
+			throw new IncorrectCredentialsException("Password was empty");			
+		}
+		// TODO Get rid of Strings
+		String storedCredentials = StringBinding.entryToString(passwordStore.get(StringBinding.stringToEntry(username)));
 		
 		if(storedCredentials == null) {
 			throw new IncorrectCredentialsException();
@@ -179,34 +190,30 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 		return isCredentialValid(new String(providedCredentials), storedCredentials);
 	}
 	
-	public void addUser(User user, List<CredentialType> credentials, boolean overrideOld) {
-		Optional<PasswordCredential> optPassword = credentials.stream().filter(PasswordCredential.class::isInstance).map(PasswordCredential.class::cast).collect(MoreCollectors.toOptional());
+	public boolean addUser(User user, List<CredentialType> credentials) {
+		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
 		if(!optPassword.isPresent()) {
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
-			return;
+			return false;
 		}
+		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getName());
+		ArrayByteIterable passwordByteIt = StringBinding.stringToEntry(optPassword.get().getPassword());
+
+		return passwordStore.add(usernameByteIt, passwordByteIt);
+	}
+
+
+	public boolean updateUser(User user, List<CredentialType> credentials) {
+		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
+		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getName());
+		ArrayByteIterable passwordByteIt = StringBinding.stringToEntry(optPassword.get().getPassword());
+		return passwordStore.update(usernameByteIt, passwordByteIt);
 		
-		passwordEnvironment.executeInExclusiveTransaction(new TransactionalExecutable() {
-			
-			@Override
-			public void execute(Transaction txn) {
-				ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getName());
-				ArrayByteIterable passwordByteIt = StringBinding.stringToEntry(optPassword.get().getPassword());
-				if(overrideOld) {
-					if(passwordStore.put(txn, usernameByteIt, passwordByteIt)) {
-						log.info("Added/overrided {} successfully to the authentication store.", user.getName());
-						
-					}
-					
-				}
-				else if(passwordStore.add(txn, usernameByteIt, passwordByteIt)) {
-					log.info("Added {} successfully to the authentication store.", user.getName());
-				} else {
-					log.info("The user {} was not added to the authentication store. Entry already existed", user.getName());
-				}
-			}
-			
-		});
+	}
+
+	private Optional<PasswordCredential> getTypePassword(List<CredentialType> credentials) {
+		Optional<PasswordCredential> optPassword = credentials.stream().filter(PasswordCredential.class::isInstance).map(PasswordCredential.class::cast).collect(MoreCollectors.toOptional());
+		return optPassword;
 	}
 
 	private static boolean isCredentialValid(String providedCredentials, String storedCredentials) {
@@ -302,9 +309,41 @@ public class BasicAuthRealm extends AuthenticatingRealm implements ConqueryAuthe
 		Arrays.fill(byteBuffer.array(), (byte) 0); // clear sensitive data
 		return bytes;
 	}
+	
+	
+
 
 	@Override
-	public void registerResources(DropwizardResourceConfig jerseyConfig) {
+	public boolean removeUser(User user) {
+		return passwordStore.remove(StringBinding.stringToEntry(user.getName()));
+	}
+
+	@Override
+	public List<UserId> getAllUsers() {
+		List<String> listId = new ArrayList<>();
+		passwordStore.forEach((k,v) -> listId.add(StringBinding.entryToString(k)));
+		
+		return listId.stream().map(UserId::new).collect(Collectors.toList());
+	}
+
+	@Override
+	public void registerAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
 		jerseyConfig.register(new TokenResource(this));
 	}
+
+	@Override
+	public void registerAuthenticationAdminResources(DropwizardResourceConfig jerseyConfig) {
+		BasicAuthRealm thisRealm = this;
+		jerseyConfig.register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				this.bind(new UserAuthenticationManagementProcessor(thisRealm, storage)).to(UserAuthenticationManagementProcessor.class);
+			}
+			
+		});
+		jerseyConfig.register(UserAuthenticationManagementResource.class);
+	}
+	
+	
 }
