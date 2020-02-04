@@ -72,10 +72,10 @@ public class AuthorizationController {
 	 */
 	private static void initializeAuthConstellation(AuthorizationConfig config, List<Realm> realms, MasterMetaStorage storage) {
 		for (ProtoUser pUser : config.getInitialUsers()) {
-			pUser.registerForAuthorization(storage);
+			pUser.registerForAuthorization(storage, true);
 			for (Realm realm : realms) {
 				if (realm instanceof UserManageable) {
-					pUser.registerForAuthentication((UserManageable) realm);
+					pUser.registerForAuthentication((UserManageable) realm, true);
 				}
 			}
 		}
