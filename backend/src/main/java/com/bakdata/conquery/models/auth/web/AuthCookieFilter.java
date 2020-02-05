@@ -46,23 +46,21 @@ public class AuthCookieFilter implements ContainerRequestFilter, ContainerRespon
 	public void filter(ContainerRequestContext requestContext) throws IOException {
 		Cookie cookie = requestContext.getCookies().get(ACCESS_TOKEN);
 		String queryToken = requestContext.getUriInfo().getQueryParameters().getFirst(ACCESS_TOKEN);
-		if (cookie == null && queryToken == null) {
+		if (cookie == null) {
 			return;
 		}
 		
-		if(cookie != null && (cookie.getValue().equals(queryToken) || queryToken == null)) {
-			log.trace("Token in Cookie and QueryString was the same.");
-			// Get the token from the cookie and put it into the header
-			requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, String.join(" ", PREFIX, cookie.getValue()));
-			// Remove the cookie for the rest of this processing
-			requestContext.getCookies().remove(ACCESS_TOKEN);
-			// Remove the query parameter
-			UriBuilder uriBuilder = requestContext.getUriInfo().getRequestUriBuilder().replaceQueryParam(ACCESS_TOKEN, new Object[] {});
-			requestContext.setRequestUri(uriBuilder.build());
-			return;
+		if(cookie != null && !cookie.getValue().isEmpty() && queryToken != null && !cookie.getValue().equals(queryToken)) {
+			throw new IllegalStateException("Different tokens have been provided in cookie and query string");			
 		}
 		
-		throw new IllegalStateException("Different tokens have been provided in cookie and query string");
+		// Get the token from the cookie and put it into the header
+		requestContext.getHeaders().add(HttpHeaders.AUTHORIZATION, String.join(" ", PREFIX, cookie.getValue()));
+		// Remove the cookie for the rest of this processing
+		requestContext.getCookies().remove(ACCESS_TOKEN);
+		// Remove the query parameter
+		UriBuilder uriBuilder = requestContext.getUriInfo().getRequestUriBuilder().replaceQueryParam(ACCESS_TOKEN, new Object[] {});
+		requestContext.setRequestUri(uriBuilder.build());
 
 	}
 
