@@ -11,5 +11,5 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(onConstructor = @__({@JsonCreator}))
 @AllArgsConstructor
 public class PasswordCredential implements CredentialType {
-	private String password;
+	private char[] password;
 }
