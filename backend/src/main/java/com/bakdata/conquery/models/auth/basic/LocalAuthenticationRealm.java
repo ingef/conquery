@@ -47,6 +47,7 @@ import com.google.common.collect.MoreCollectors;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import jetbrains.exodus.ArrayByteIterable;
+import jetbrains.exodus.ByteIterable;
 import jetbrains.exodus.bindings.StringBinding;
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
@@ -178,7 +179,12 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			throw new IncorrectCredentialsException("Password was empty");			
 		}
 		// TODO Get rid of Strings
-		String storedCredentials = StringBinding.entryToString(passwordStore.get(StringBinding.stringToEntry(username)));
+		ByteIterable storedCredentialsEntry = passwordStore.get(StringBinding.stringToEntry(username));
+		if(storedCredentialsEntry == null) {
+			return false;
+		}
+		
+		String storedCredentials = StringBinding.entryToString(storedCredentialsEntry);
 		
 		if(storedCredentials == null) {
 			throw new IncorrectCredentialsException();
