@@ -57,7 +57,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private ConqueryConfig config;
 	private AdminServlet admin;
 	private AuthorizationController authController;
-	private AuthServlet auth;
+	private AuthServlet authServletApp;
+	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
 	private Namespaces namespaces = new Namespaces();
 	private Environment environment;
@@ -122,8 +123,13 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		admin = new AdminServlet();
 		admin.register(this, authController);
 		
-		auth = new AuthServlet();
-		auth.register(this, authController);
+		// Register an unprotected servlet for logins on the app port
+		authServletApp = new AuthServlet();
+		authServletApp.register(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+
+		// Register an unprotected servlet for logins on the admin port
+		authServletAdmin = new AuthServlet();
+		authServletAdmin.register(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 		
 
 		ShutdownTask shutdown = new ShutdownTask();

@@ -41,6 +41,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.AdminServlet.AuthAdminResourceProvider;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
 import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthUnprotectedResourceProvider;
+import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.MoreCollectors;
@@ -332,6 +333,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	@Override
 	public void registerAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
 		jerseyConfig.register(new TokenResource(this));
+		jerseyConfig.register(LoginResource.class);
 	}
 
 	@Override
