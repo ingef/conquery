@@ -6,6 +6,8 @@ import com.bakdata.conquery.commands.MasterCommand;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.freemarker.Freemarker;
 import com.bakdata.conquery.io.jersey.RESTServer;
+import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
+import com.bakdata.conquery.io.jetty.CORSResponseFilter;
 import com.bakdata.conquery.io.jetty.JettyConfigurationUtil;
 import com.bakdata.conquery.models.auth.AuthorizationController;
 import io.dropwizard.jersey.DropwizardResourceConfig;
@@ -45,6 +47,9 @@ public class AuthServlet {
 		freemarker.configure(Freemarker.asMap());
 		jerseyConfig.register(new ViewMessageBodyWriter(masterCommand.getEnvironment().metrics(), Collections.singleton(freemarker)));
 		
+
+		jerseyConfig.register(new CORSPreflightRequestFilter());
+		jerseyConfig.register(CORSResponseFilter.class);
 
 		// Scan realms if they need to add resources
 		for (Realm realm : controller.getRealms()) {
