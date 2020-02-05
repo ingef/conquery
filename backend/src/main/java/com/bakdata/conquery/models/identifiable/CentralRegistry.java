@@ -1,5 +1,11 @@
 package com.bakdata.conquery.models.identifiable;
 
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.function.Supplier;
+
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.identifiable.ids.IId;
@@ -8,12 +14,6 @@ import com.bakdata.conquery.models.worker.NamespaceCollection;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import lombok.NoArgsConstructor;
-
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.function.Supplier;
 
 @SuppressWarnings({"rawtypes", "unchecked"}) @NoArgsConstructor
 public class CentralRegistry implements Injectable {
