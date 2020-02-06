@@ -61,7 +61,7 @@ public class AuthServlet {
 		freemarker.configure(Freemarker.asMap());
 		jerseyConfig.register(new ViewMessageBodyWriter(metrics, Collections.singleton(freemarker)));
 
-		jerseyConfig.register(new CORSPreflightRequestFilter());
+		jerseyConfig.register(CORSPreflightRequestFilter.class);
 		jerseyConfig.register(CORSResponseFilter.class);
 
 		// Scan realms if they need to add resources
