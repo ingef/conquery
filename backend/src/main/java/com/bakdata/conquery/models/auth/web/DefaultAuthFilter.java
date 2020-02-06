@@ -53,7 +53,12 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 			log.trace("Realm {} did not extract a token form the request.", ((Realm)realm).getName());
 		}
 		
-		Throwable exceptions = new Throwable("Authentication failed with");
+		if(tokens.isEmpty()) {
+			log.warn("No tokens could be parsed from the request");
+			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
+		}
+		
+		List<AuthenticationToken> failedAuthentications = new ArrayList<>();
 		
 		// The authentication process
 		for(AuthenticationToken token :tokens) {
@@ -68,13 +73,12 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 					
 			}
 			catch (Exception e) {
-				exceptions.addSuppressed(e);
+				failedAuthentications.add(token);
 			}
 		}
 		log
 		.warn(
-			"Shiro failed to authenticate the request. See the following message by {}:\n\t{}",
-			exceptions);
+			"Non of the configured realm was able to successfully authenticate the following token(s): {}", tokens);
 		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}
 

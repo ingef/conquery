@@ -20,6 +20,8 @@ import org.apache.shiro.authc.AuthenticationToken;
 public class TokenHandler {
 	private static final String PREFIX =  "Bearer";
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
+	// Pattern from https://www.regextester.com/105777
+	private static final String JWT_PATTERN = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
 
 	/**
 	 * Creates a signed JWT token for the authentication with the {@link LocalAuthenticationRealm}.
@@ -41,9 +43,11 @@ public class TokenHandler {
 		return token;
 	}
 	
+	@Nullable
 	public static AuthenticationToken extractToken(ContainerRequestContext request) {
-		AuthenticationToken tokenHeader = extractTokenFromHeader(request);
-		AuthenticationToken tokenQuery = extractTokenFromQuery(request);
+		String token = null;
+		String tokenHeader = extractTokenFromHeader(request);
+		String tokenQuery = extractTokenFromQuery(request);
 		if(tokenHeader == null && tokenQuery == null) {
 			// No token could be parsed
 			return null;
@@ -52,10 +56,16 @@ public class TokenHandler {
 			return null;
 		} else if (tokenHeader != null) {
 			log.trace("Extraced the request header token");
-			return tokenHeader;
+			token = tokenHeader;
+		} else {
+			log.trace("Extraced the query string token");
+			token = tokenQuery;
 		}
-		log.trace("Extraced the query string token");
-		return tokenQuery;
+		
+		if(token.matches(JWT_PATTERN)) {			
+			return new JWTToken(token);
+		}
+		return null;		
 	}
 	
 	/**
@@ -66,11 +76,9 @@ public class TokenHandler {
 	 * @param header the value of the `Authorization` header
 	 * @return a token
 	 */
-	private static AuthenticationToken extractTokenFromHeader(ContainerRequestContext request) {
+	private static String extractTokenFromHeader(ContainerRequestContext request) {
 
         final String header = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);
-
-
         
 		if (header == null) {
             return null;
@@ -87,16 +95,16 @@ public class TokenHandler {
             return null;
         }
 
-		return new JWTToken(header.substring(space + 1));
+		return header.substring(space + 1);
 	}
 	
 	@Nullable
-	private static JWTToken extractTokenFromQuery(ContainerRequestContext request) {
+	private static String extractTokenFromQuery(ContainerRequestContext request) {
 		// If Authorization header is not used, check query parameter where token can be
 		// passed as well		
 		String credentials = request.getUriInfo().getQueryParameters().getFirst(OAUTH_ACCESS_TOKEN_PARAM);
 		if(credentials != null) {
-			return new JWTToken(credentials);
+			return credentials;
 		}
 		return null;
 	}

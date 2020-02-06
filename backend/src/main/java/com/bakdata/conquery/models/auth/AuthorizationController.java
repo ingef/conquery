@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -40,7 +41,6 @@ public class AuthorizationController {
 		// Init authentication realms provided by with the config.
 		for(AuthenticationConfig authenticationConf : config.getAuthentication()) {
 			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
-			
 			authenticationRealms.add(realm);
 			realms.add(realm);
 		}
@@ -51,6 +51,7 @@ public class AuthorizationController {
 		realms.stream().forEach(LifecycleUtils::init);
 		
 		// Register all realms in Shiro
+		log.info("Registering the following realms to Shiro:\n\t",realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
 		SecurityManager securityManager = new DefaultSecurityManager(realms);
 		SecurityUtils.setSecurityManager(securityManager);
 		log.debug("Security manager registered");

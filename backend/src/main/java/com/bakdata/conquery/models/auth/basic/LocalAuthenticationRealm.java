@@ -12,7 +12,6 @@ import javax.ws.rs.container.ContainerRequestContext;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
-import com.auth0.jwt.exceptions.AlgorithmMismatchException;
 import com.auth0.jwt.exceptions.InvalidClaimException;
 import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
@@ -123,12 +122,15 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			decodedToken = oauthTokenVerifier.verify((String)token.getCredentials());
 		}
 		catch (TokenExpiredException e) {
+			log.trace("The provided token is expired.");
 			throw new ExpiredCredentialsException(e);
 		}
-		catch (SignatureVerificationException|AlgorithmMismatchException|InvalidClaimException e) {
+		catch (SignatureVerificationException|InvalidClaimException e) {
+			log.trace("The provided token was not successfully verified against its signature or claims.");
 			throw new IncorrectCredentialsException(e);
 		}
 		catch (JWTVerificationException e) {
+			log.trace("The provided token could not be verified.");
 			throw new AuthenticationException(e);
 		}
 		
