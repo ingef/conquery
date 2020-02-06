@@ -91,6 +91,7 @@ const QueryRunner = (props: PropsType) => {
         {!!queryRunner &&
           !!queryRunner.queryResult &&
           !queryRunner.queryResult.error &&
+          !queryRunner.queryResult.loading &&
           !isQueryRunning && (
             <QueryResults
               datasetId={queryRunner.queryResult.datasetId}
