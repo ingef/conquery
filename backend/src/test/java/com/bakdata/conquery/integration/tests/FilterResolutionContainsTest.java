@@ -8,7 +8,6 @@ import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterTemplate;
@@ -54,10 +53,10 @@ public class FilterResolutionContainsTest extends IntegrationTest.Simple impleme
 		
 		test.importRequiredData(conquery);
 		FilterSearch
-			.init(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()))
-			.awaitTermination(1, TimeUnit.MINUTES);
+			.init(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
 
-		
+		conquery.waitUntilWorkDone();
+
 		VirtualConcept concept = (VirtualConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();
 		VirtualConceptConnector connector = concept.getConnectors().iterator().next();
 		AbstractSelectFilter<?> filter = (AbstractSelectFilter<?>) connector.getFilter();

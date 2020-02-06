@@ -6,12 +6,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 import com.bakdata.conquery.io.csv.CsvIo;
 import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.datasets.Dataset;
+import com.bakdata.conquery.models.jobs.JobManager;
+import com.bakdata.conquery.models.jobs.SimpleJob;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.search.QuickSearch;
 import com.github.powerlibraries.io.In;
@@ -83,18 +83,14 @@ public class FilterSearch {
 
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
-	public static ExecutorService init(Namespaces namespaces, Collection<Dataset> datasets) {
-		ExecutorService executor = Executors.newSingleThreadExecutor();
-
+	public static void init(Namespaces namespaces, Collection<Dataset> datasets, JobManager jobManager) {
+		// TODO: 06.02.2020 handle this over slowjob queue instead.
 		datasets.stream()
 				.flatMap(ds -> namespaces.get(ds.getId()).getStorage().getAllConcepts().stream())
 				.flatMap(c -> c.getConnectors().stream())
 				.flatMap(co -> co.collectAllFilters().stream())
 				.filter(f -> f instanceof AbstractSelectFilter && f.getTemplate() != null)
-				.forEach(f -> executor.submit(() -> createSourceSearch(((AbstractSelectFilter<?>) f))));
-
-		executor.shutdown();
-		return executor;
+				.forEach(f -> jobManager.addFastJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(((AbstractSelectFilter<?>) f)))));
 	}
 
 	public static void createSourceSearch(AbstractSelectFilter<?> filter) {
