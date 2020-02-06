@@ -124,12 +124,10 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		admin.register(this, authController);
 		
 		// Register an unprotected servlet for logins on the app port
-		authServletApp = new AuthServlet();
-		authServletApp.register(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
 
 		// Register an unprotected servlet for logins on the admin port
-		authServletAdmin = new AuthServlet();
-		authServletAdmin.register(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
+		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
 		
 
 		ShutdownTask shutdown = new ShutdownTask();

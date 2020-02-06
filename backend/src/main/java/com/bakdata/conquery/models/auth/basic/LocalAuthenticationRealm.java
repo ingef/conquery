@@ -34,7 +34,8 @@ import com.bakdata.conquery.models.config.XodusConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.resources.admin.AdminServlet.AuthAdminResourceProvider;
 import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
-import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthUnprotectedResourceProvider;
+import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthAdminUnprotectedResourceProvider;
+import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotectedResourceProvider;
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -55,7 +56,7 @@ import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
 @Slf4j
-public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthUnprotectedResourceProvider, AuthAdminResourceProvider{
+public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, AuthAdminResourceProvider{
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JWTToken.class;
 	private static final int EXPIRATION_PERIOD = 12; //Hours
@@ -232,9 +233,14 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	////////////////////		RESOURCE REGISTRATION		////////////////////
 	
 	@Override
-	public void registerAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
+	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
 		jerseyConfig.register(new TokenResource(this));
 		jerseyConfig.register(LoginResource.class);
+	}
+	
+	@Override
+	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
+		jerseyConfig.register(new TokenResource(this));
 	}
 
 	@Override
