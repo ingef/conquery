@@ -84,7 +84,6 @@ public class FilterSearch {
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
 	public static void init(Namespaces namespaces, Collection<Dataset> datasets, JobManager jobManager) {
-		// TODO: 06.02.2020 handle this over slowjob queue instead.
 		datasets.stream()
 				.flatMap(ds -> namespaces.get(ds.getId()).getStorage().getAllConcepts().stream())
 				.flatMap(c -> c.getConnectors().stream())
