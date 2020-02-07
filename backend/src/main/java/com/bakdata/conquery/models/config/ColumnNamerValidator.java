@@ -3,9 +3,6 @@ package com.bakdata.conquery.models.config;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.control.CompilerConfiguration;
-
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -13,9 +10,6 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.google.common.base.Strings;
-
-import groovy.lang.GroovyShell;
-import groovy.lang.Script;
 import lombok.extern.slf4j.Slf4j;
 
 /**
@@ -43,7 +37,6 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 		SELECT.setHolder(V_CONCEPT);
 	}
 	
-	private final GroovyShell groovyShell = new GroovyShell(new CompilerConfiguration());
 	
 
 	@Override
@@ -57,36 +50,26 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 		String scriptString = value;
 		
 		if(Strings.isNullOrEmpty(scriptString)) {
-			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script is not alloed to be null or empty")).addConstraintViolation();
+			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script is not allowed to be null or empty")).addConstraintViolation();
 			return false;
 		}
+		
+		PrintSettings setting = new PrintSettings(true, value);
 		
 		/*
 		 * Instantiate a column info. Be aware that this instance is not fully resolved (e.g. json backreferences are not set),
 		 * so the validator might fail if the script intents to use these.
 		 * Regarding this aspect, the validator has to be extend.
 		 */
-		SelectResultInfo columnInfo = new SelectResultInfo(SELECT, CQ_CONCEPT);
+		SelectResultInfo columnInfo = new SelectResultInfo(setting,SELECT, CQ_CONCEPT);
 		
-		groovyShell.setProperty(PrintSettings.GROOVY_VARIABLE, columnInfo);
 
-		// Check if script can be parsed
-		Script script;
+		// Check if script can be evaluated
 		try {
-			script  = groovyShell.parse(scriptString);
-		}
-		catch (CompilationFailedException|IllegalArgumentException e) {
-			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script could not be parsed/compiled: %s", e)).addConstraintViolation();
-			return false;
-		}
-		
-		
-		// Check if script handles a simple SelectResultInfo
-		try {
-			script.run();
+			columnInfo.getUniqueName();
 		}
 		catch (Exception e) {
-			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script failed execution: %s",e)).addConstraintViolation();
+			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script could not be parsed/compiled: %s", e)).addConstraintViolation();
 			return false;
 		}
 		

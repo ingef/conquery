@@ -50,7 +50,7 @@ public class ConceptQuery implements IQuery, Visitable {
 
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
-		collector.add(ConqueryConstants.DATES_INFO);
+		collector.add(ConqueryConstants.DATES_INFO.apply(collector.getSettings()));
 		root.collectResultInfos(collector);
 	}
 

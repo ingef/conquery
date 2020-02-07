@@ -1,11 +1,12 @@
 package com.bakdata.conquery.models.execution;
 
 import java.time.ZonedDateTime;
+import java.util.List;
 
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ColumnDescriptor;
 import com.bakdata.conquery.models.query.IQuery;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +32,7 @@ public class ExecutionStatus {
 	private boolean own;
 	private boolean system;
 	private IQuery query;
+	private List<ColumnDescriptor> columnDescriptions;
 
 	private ManagedExecutionId id;
 	private ExecutionState status;

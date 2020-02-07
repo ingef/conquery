@@ -14,6 +14,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.query.resultinfo.SimpleResultInfo;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -52,10 +53,11 @@ public class ArrayConceptQuery implements IQuery {
 	@Override
 	public void collectResultInfos(ResultInfoCollector collector) {
 		childQueries.forEach(q -> q.collectResultInfos(collector));
+		SimpleResultInfo dateInfo = ConqueryConstants.DATES_INFO.apply(collector.getSettings());
 		// Remove DateInfo from each childQuery
-		collector.getInfos().removeAll(List.of(ConqueryConstants.DATES_INFO));
+		collector.getInfos().removeAll(List.of(dateInfo));
 		// Add one DateInfo for the whole Query
-		collector.getInfos().add(0, ConqueryConstants.DATES_INFO);
+		collector.getInfos().add(dateInfo);
 	}
 
 	@Override

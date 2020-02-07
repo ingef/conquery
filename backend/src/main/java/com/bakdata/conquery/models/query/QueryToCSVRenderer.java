@@ -51,7 +51,7 @@ public class QueryToCSVRenderer {
 		CsvWriter writer = CsvIo.createWriter();
 		writer.addStringValues(HEADER);
 		for(ResultInfo info : infos.getInfos()) {
-			writer.addValue(info.getUniqueName(cfg));
+			writer.addValue(info.getUniqueName());
 		}
 		
 		return Stream.concat(

@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
@@ -116,6 +117,12 @@ public class ManagedQuery extends ManagedExecution {
 		status.setQuery(query);
 		status.setNumberOfResults(lastResultCount);
 		status.setShared(shared);
+		status.setColumnDescriptions(collectResultInfos(new PrintSettings(true)).getInfos().stream()
+			.map(i -> ColumnDescriptor.builder()
+				.label(i.getName())
+				.type(i.getType())
+				.build())
+			.collect(Collectors.toList()));
 		return status;
 	}
 	
