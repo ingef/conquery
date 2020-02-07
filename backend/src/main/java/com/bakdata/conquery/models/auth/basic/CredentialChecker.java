@@ -30,7 +30,6 @@ public class CredentialChecker {
 			if(providedPassword.length < 1) {
 				throw new IncorrectCredentialsException("Password was empty");			
 			}
-			// TODO Get rid of Strings
 			ByteIterable storedHashedEntry = passwordStore.get(StringBinding.stringToEntry(username));
 			if(storedHashedEntry == null) {
 				return false;
