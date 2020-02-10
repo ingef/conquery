@@ -51,7 +51,7 @@ public class FilterResolutionExactTest extends IntegrationTest.Simple implements
 		
 		test.importRequiredData(conquery);
 		FilterSearch
-				.init(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
+				.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
 
 		conquery.waitUntilWorkDone();
 

@@ -83,15 +83,22 @@ public class FilterSearch {
 
 	private static Map<String, QuickSearch<FilterSearchItem>> search = new HashMap<>();
 
-	public static void init(Namespaces namespaces, Collection<Dataset> datasets, JobManager jobManager) {
+	/**
+	 * Scan all SelectFilters and submit {@link SimpleJob}s to create interactive searches for them.
+	 */
+	public static void updateSearch(Namespaces namespaces, Collection<Dataset> datasets, JobManager jobManager) {
 		datasets.stream()
 				.flatMap(ds -> namespaces.get(ds.getId()).getStorage().getAllConcepts().stream())
 				.flatMap(c -> c.getConnectors().stream())
 				.flatMap(co -> co.collectAllFilters().stream())
-				.filter(f -> f instanceof AbstractSelectFilter && f.getTemplate() != null)
+				.filter(f -> f instanceof AbstractSelectFilter && ((AbstractSelectFilter<?>) f).getTemplate() != null)
 				.forEach(f -> jobManager.addFastJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(((AbstractSelectFilter<?>) f)))));
 	}
 
+	/***
+	 * Create interactive Search for the selected filter based on its Template.
+	 * @param filter
+	 */
 	public static void createSourceSearch(AbstractSelectFilter<?> filter) {
 		FilterTemplate template = filter.getTemplate();
 

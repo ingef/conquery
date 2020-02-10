@@ -133,7 +133,7 @@ public class AdminUIResource extends HAdmin {
 
 
 
-		FilterSearch.init(processor.getNamespaces(), Collections.singleton(ns.getDataset()), processor.getJobManager());
+		FilterSearch.updateSearch(processor.getNamespaces(), Collections.singleton(ns.getDataset()), processor.getJobManager());
 	}
 
 	@POST
