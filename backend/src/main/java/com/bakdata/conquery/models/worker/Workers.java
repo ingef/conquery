@@ -2,6 +2,7 @@ package com.bakdata.conquery.models.worker;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -35,6 +36,10 @@ public class Workers extends NamespaceCollection {
 
 	@Override
 	public CentralRegistry findRegistry(DatasetId dataset) {
+		if (!dataset2Worker.containsKey(dataset)) {
+			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, dataset2Worker.keySet()));
+		}
+
 		return dataset2Worker.get(dataset).getStorage().getCentralRegistry();
 	}
 
