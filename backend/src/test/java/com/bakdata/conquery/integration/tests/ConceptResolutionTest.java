@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -35,8 +34,9 @@ public class ConceptResolutionTest extends IntegrationTest.Simple implements Pro
 		
 		test.importRequiredData(conquery);
 		FilterSearch
-			.init(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()))
-			.awaitTermination(1, TimeUnit.MINUTES);
+			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
+
+		conquery.waitUntilWorkDone();
 
 		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();

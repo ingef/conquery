@@ -17,7 +17,7 @@ public class FilterTemplate implements Serializable {
 	 */
 	private String filePath;
 	/**
-	 * Columns to search see @FilterSearch.
+	 * Columns to search see {@link FilterSearch}.
 	 */
 	private List<String> columns;
 	/**
