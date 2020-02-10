@@ -217,7 +217,7 @@ export function postLogin(
   user: string,
   password: string
 ): Promise<PostLoginResponseT> {
-  return fetchJsonUnauthorized("/auth", {
+  return fetchJsonUnauthorized(apiUrl() + "/auth", {
     method: "POST",
     body: {
       user,
