@@ -92,7 +92,8 @@ public class FilterSearch {
 				.flatMap(c -> c.getConnectors().stream())
 				.flatMap(co -> co.collectAllFilters().stream())
 				.filter(f -> f instanceof AbstractSelectFilter && ((AbstractSelectFilter<?>) f).getTemplate() != null)
-				.forEach(f -> jobManager.addFastJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(((AbstractSelectFilter<?>) f)))));
+				.map(AbstractSelectFilter.class::cast)
+				.forEach(f -> jobManager.addSlowJob(new SimpleJob(String.format("SourceSearch[%s]", f.getId()), () -> createSourceSearch(f))));
 	}
 
 	/***
