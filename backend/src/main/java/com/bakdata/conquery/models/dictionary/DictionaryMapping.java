@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.worker.Namespace;
-
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
 import it.unimi.dsi.fastutil.ints.IntSet;
 import lombok.AccessLevel;
@@ -15,6 +14,9 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Create a mapping from one {@link Dictionary} to the other (Map source to target). Adding all ids in target, not in source, to source. Additionally, gather all encountered Buckets (see {@link Namespace}) and all not yet used Buckets.
+ */
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
 @Slf4j
@@ -23,32 +25,24 @@ public class DictionaryMapping {
 	private final Dictionary sourceDictionary;
 	private final Dictionary targetDictionary;
 
-	private int[] source2TargetMap;
-	private Range<Integer> newIds;
-	private IntSet newBuckets = new IntOpenHashSet();
-	private IntSet usedBuckets = new IntOpenHashSet();
-	private int bucketSize = ConqueryConfig.getInstance().getCluster().getEntityBucketSize();
+	private final int[] source2TargetMap;
+	private final Range<Integer> newIds;
+	private final IntSet usedBuckets;
 
-	public static DictionaryMapping create(Dictionary from, Dictionary to, Namespace namespace){
-		DictionaryMapping mapping = new DictionaryMapping(from, to);
+	public static DictionaryMapping create(Dictionary from, Dictionary to) {
 
-		mapping.mapValues(namespace);
-		if(Arrays.stream(mapping.source2TargetMap).distinct().count() < mapping.source2TargetMap.length) {
-			throw new IllegalStateException("Multiple source ids map to the same target");
-		}
+		int[] source2TargetMap = new int[from.size()];
+		Range<Integer> newIds = null;
+		IntSet buckets = new IntOpenHashSet();
 
-		return mapping;
-	}
+		for (int id = 0; id < from.size(); id++) {
 
-	private void mapValues(Namespace namespace) {
-		source2TargetMap = new int[sourceDictionary.size()];
+			byte[] value = from.getElement(id);
+			int targetId = to.getId(value);
 
-		for (int id = 0; id < sourceDictionary.size(); id++) {
-			byte[] value = sourceDictionary.getElement(id);
-			int targetId = targetDictionary.getId(value);
 			//if id was unknown until now
 			if (targetId == -1L) {
-				targetId = targetDictionary.add(value);
+				targetId = to.add(value);
 				if (newIds == null) {
 					newIds = Range.exactly(targetId);
 				}
@@ -57,13 +51,15 @@ public class DictionaryMapping {
 				}
 			}
 			source2TargetMap[id] = targetId;
-			
-			int bucket = Entity.getBucket(targetId, bucketSize);
-			usedBuckets.add(bucket);
-			if (namespace.getResponsibleWorker(targetId) == null) {
-				newBuckets.add(bucket);
-			}
+
+			int bucket = Entity.getBucket(targetId, ConqueryConfig.getInstance().getCluster().getEntityBucketSize());
+			buckets.add(bucket);
 		}
+		if (Arrays.stream(source2TargetMap).distinct().count() < source2TargetMap.length) {
+			throw new IllegalStateException("Multiple source ids map to the same target");
+		}
+
+		return new DictionaryMapping(from, to, source2TargetMap, newIds, buckets);
 	}
 
 	public int source2Target(int sourceId) {
@@ -71,7 +67,7 @@ public class DictionaryMapping {
 	}
 
 	public int getNumberOfNewIds() {
-		if(newIds == null) {
+		if (newIds == null) {
 			return 0;
 		}
 		else {
