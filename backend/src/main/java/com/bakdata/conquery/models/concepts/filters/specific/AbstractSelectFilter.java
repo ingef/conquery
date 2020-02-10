@@ -56,6 +56,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+		f.setTemplate(getTemplate());
 		f.setType(filterType);
 		// TODO: 20.11.2019 Upgrade to BigMultiSelect if more than maximumSize values are found.
 		if (values != null) {

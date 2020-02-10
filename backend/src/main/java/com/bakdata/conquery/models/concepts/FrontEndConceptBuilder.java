@@ -16,7 +16,6 @@ import com.bakdata.conquery.models.api.description.FETable;
 import com.bakdata.conquery.models.api.description.FEValidityDate;
 import com.bakdata.conquery.models.api.description.FEValue;
 import com.bakdata.conquery.models.concepts.filters.Filter;
-import com.bakdata.conquery.models.concepts.filters.specific.AbstractSelectFilter;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeChild;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeNode;
@@ -210,7 +209,6 @@ public class FrontEndConceptBuilder {
 			.unit(filter.getUnit())
 			.allowDropFile(filter.getAllowDropFile())
 			.pattern(filter.getPattern())
-			.template(filter instanceof AbstractSelectFilter ? ((AbstractSelectFilter<?>) filter).getTemplate() : null)
 			.build();
 		try {
 			filter.configureFrontend(f);

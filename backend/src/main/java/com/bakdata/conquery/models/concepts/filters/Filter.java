@@ -31,7 +31,6 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 	private String description;
 	@JsonBackReference
 	private Connector connector;
-	// TODO: 20.11.2019 Move to AbstractSelectFilter
 	private String pattern;
 	private Boolean allowDropFile;
 
