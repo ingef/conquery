@@ -15,7 +15,7 @@ import org.apache.shiro.realm.AuthenticatingRealm;
 public abstract class ConqueryAuthenticationRealm extends AuthenticatingRealm {
 	
 	@Override
-	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException{
+	protected final AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException{
 		return doGetConqueryAuthenticationInfo(token);
 	}
 	

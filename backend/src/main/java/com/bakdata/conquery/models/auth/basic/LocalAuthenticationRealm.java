@@ -1,6 +1,5 @@
 package com.bakdata.conquery.models.auth.basic;
 
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -17,6 +16,7 @@ import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.SignatureVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.apiv1.auth.CredentialType;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -26,7 +26,7 @@ import com.bakdata.conquery.models.auth.ConqueryAuthenticationInfo;
 import com.bakdata.conquery.models.auth.ConqueryAuthenticationRealm;
 import com.bakdata.conquery.models.auth.UserManageable;
 import com.bakdata.conquery.models.auth.basic.PasswordHasher.HashedEntry;
-import com.bakdata.conquery.models.auth.basic.TokenHandler.JWTToken;
+import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.util.SkippingCredentialsMatcher;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -55,78 +55,90 @@ import org.apache.shiro.authc.ExpiredCredentialsException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
+/**
+ * This realm stores credentials in a local database ({@link XodusStore}). Upon
+ * successful authentication using username and password the authenticated user
+ * is given a signed JWT for further authentication over following requests. The
+ * realm offers a basic user management, which is decoupled form the
+ * authorization related user information that is saved in the
+ * {@link MasterMetaStorage}. So adding or removing a user in this realm does
+ * not change the {@link MasterMetaStorage}. {@link Conquery} interacts with
+ * this realm using the Shiro frame work. However, endusers can interface it
+ * through specific endpoints that are registerd by this realm.
+ */
 @Slf4j
-public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, AuthAdminResourceProvider{
+public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, AuthAdminResourceProvider {
 
-	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JWTToken.class;
-	private static final int EXPIRATION_PERIOD = 12; //Hours
+	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
+	private static final int EXPIRATION_PERIOD = 12; // Hours for JWTs
 
-
-	
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
-	
+
 	@JsonIgnore
 	private Environment passwordEnvironment;
 	@JsonIgnore
 	private XodusStore passwordStore;
-	
+
 	@JsonIgnore
 	private Algorithm tokenSignAlgorithm;
 	@JsonIgnore
 	private JWTVerifier oauthTokenVerifier;
 	@JsonIgnore
 	private MasterMetaStorage storage;
-	
-		 
+
+	@RequiredArgsConstructor
+	@Getter
+	private static class StoreInfo implements IStoreInfo {
+
+		private final String xodusName;
+		// Not used
+		private final Class<?> keyType = String.class;
+		// Not used
+		private final Class<?> valueType = HashedEntry.class;
+
+	}
+
+	//////////////////// INITIALIZATION ////////////////////
+
 	public LocalAuthenticationRealm(MasterMetaStorage storage, LocalAuthenticationConfig config) {
 		this.setAuthenticationTokenClass(TOKEN_CLASS);
 		this.setCredentialsMatcher(new SkippingCredentialsMatcher());
 		this.storage = storage;
 		this.storeName = config.getStoreName();
 		this.passwordStoreConfig = config.getPasswordStoreConfig();
-		
+
 		tokenSignAlgorithm = Algorithm.HMAC256(config.getTokenSecret());
-		oauthTokenVerifier = JWT.require(tokenSignAlgorithm)
-			.withIssuer(getName())
-			.build();
+		oauthTokenVerifier = JWT.require(tokenSignAlgorithm).withIssuer(getName()).build();
 	}
-	
-	@RequiredArgsConstructor
-	@Getter
-	private static class StoreInfo implements IStoreInfo {
-		
-		private final String xodusName;
-		// Not used
-		private final Class<?> keyType = String.class;
-		// Not used
-		private final Class<?> valueType = HashedEntry.class;
-		
-	}
-	
+
 	@Override
 	protected void onInit() {
 		super.onInit();
-		File passwordStoreFile = new File(ConqueryConfig.getInstance().getStorage().getDirectory(),storeName);
+		// Open/create the database/store
+		File passwordStoreFile = new File(ConqueryConfig.getInstance().getStorage().getDirectory(), storeName);
 		passwordEnvironment = Environments.newInstance(passwordStoreFile, passwordStoreConfig.createConfig());
 		passwordStore = new XodusStore(passwordEnvironment, new StoreInfo("passwords"));
 	}
 
+	//////////////////// AUTHENTICATION ////////////////////
+
+	//////////////////// FOR JWT
 	@Override
 	protected ConqueryAuthenticationInfo doGetConqueryAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
-		if(!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
+		if (!(TOKEN_CLASS.isAssignableFrom(token.getClass()))) {
 			// Incompatible token
 			return null;
 		}
 		DecodedJWT decodedToken = null;
 		try {
-			decodedToken = oauthTokenVerifier.verify((String)token.getCredentials());
+			decodedToken = oauthTokenVerifier.verify((String) token.getCredentials());
 		}
 		catch (TokenExpiredException e) {
 			log.trace("The provided token is expired.");
 			throw new ExpiredCredentialsException(e);
 		}
-		catch (SignatureVerificationException|InvalidClaimException e) {
+		catch (SignatureVerificationException | InvalidClaimException e) {
 			log.trace("The provided token was not successfully verified against its signature or claims.");
 			throw new IncorrectCredentialsException(e);
 		}
@@ -134,31 +146,35 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			log.trace("The provided token could not be verified.");
 			throw new AuthenticationException(e);
 		}
-		
+
 		String username = decodedToken.getSubject();
-		
+
 		UserId userId = new UserId(username);
 		User user = storage.getUser(userId);
 		// try to construct a new User if none could be found in the storage
-		if(user == null) {
-			log.warn("Provided credentials were valid, but a corresponding user was not found in the System. You need to add a user to the system with the id: {}", userId);
+		if (user == null) {
+			log.warn(
+				"Provided credentials were valid, but a corresponding user was not found in the System. You need to add a user to the system with the id: {}",
+				userId);
 			return null;
 		}
 
 		return new ConqueryAuthenticationInfo(userId, token, this);
 	}
-	
+
+	//////////////////// FOR USERNAME/PASSWORD
+
 	public String checkCredentialsAndCreateJWT(String username, char[] password) {
 		// Check the password which is afterwards cleared
-		if(!CredentialChecker.validUsernamePassword(username, password, passwordStore)) {
+		if (!CredentialChecker.validUsernamePassword(username, password, passwordStore)) {
 			throw new AuthenticationException("Provided username or password was not valid.");
 		}
 		return TokenHandler.createToken(username, EXPIRATION_PERIOD, getName(), tokenSignAlgorithm);
 	}
-	
 
 	/**
 	 * Converts the provided password to a Xodus compatible hash.
+	 * 
 	 * @param optPassword
 	 * @return
 	 */
@@ -166,78 +182,76 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		return HashedEntry.asByteIterable(PasswordHasher.generateHashedEntry(optPassword.get().getPassword()));
 	}
 
-
 	/**
-	 * Checks the provided credentials for the realm-compatible {@link PasswordCredential}.
-	 * However only one credential of this type is allowed to be provided.
-	 * @param credentials A list of possible credentials.
+	 * Checks the provided credentials for the realm-compatible
+	 * {@link PasswordCredential}. However only one credential of this type is
+	 * allowed to be provided.
+	 * 
+	 * @param credentials
+	 *            A list of possible credentials.
 	 * @return The password credential.
 	 */
 	private static Optional<PasswordCredential> getTypePassword(List<CredentialType> credentials) {
-		Optional<PasswordCredential> optPassword = credentials.stream().filter(PasswordCredential.class::isInstance).map(PasswordCredential.class::cast).collect(MoreCollectors.toOptional());
+		Optional<PasswordCredential> optPassword = credentials.stream().filter(PasswordCredential.class::isInstance)
+			.map(PasswordCredential.class::cast).collect(MoreCollectors.toOptional());
 		return optPassword;
 	}
-	
 
 	@Override
 	public AuthenticationToken extractToken(ContainerRequestContext request) {
 		return TokenHandler.extractToken(request);
 	}
-	
-	
-	////////////////////		USER MANAGEMENT		////////////////////
-	
+
+	//////////////////// USER MANAGEMENT ////////////////////
+
 	@Override
 	public boolean addUser(User user, List<CredentialType> credentials) {
 		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
-		if(!optPassword.isPresent()) {
+		if (!optPassword.isPresent()) {
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
 			return false;
 		}
 		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getName());
 		ByteIterable passwordByteIt = passwordToHashedEntry(optPassword);
-		
-		
-		
+
 		return passwordStore.add(usernameByteIt, passwordByteIt);
 	}
-	
+
 	@Override
 	public boolean updateUser(User user, List<CredentialType> credentials) {
 		Optional<PasswordCredential> optPassword = getTypePassword(credentials);
-		if(!optPassword.isPresent()) {
+		if (!optPassword.isPresent()) {
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
 			return false;
 		}
 		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getName());
 		ByteIterable passwordByteIt = passwordToHashedEntry(optPassword);
-		
+
 		return passwordStore.update(usernameByteIt, passwordByteIt);
-		
+
 	}
 
 	@Override
 	public boolean removeUser(User user) {
 		return passwordStore.remove(StringBinding.stringToEntry(user.getName()));
 	}
-	
+
 	@Override
 	public List<UserId> getAllUsers() {
 		List<String> listId = new ArrayList<>();
-		passwordStore.forEach((k,v) -> listId.add(StringBinding.entryToString(k)));
-		
+		passwordStore.forEach((k, v) -> listId.add(StringBinding.entryToString(k)));
+
 		return listId.stream().map(UserId::new).collect(Collectors.toList());
 	}
-	
 
-	////////////////////		RESOURCE REGISTRATION		////////////////////
-	
+	//////////////////// RESOURCE REGISTRATION ////////////////////
+
 	@Override
 	public void registerAdminUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
 		jerseyConfig.register(new TokenResource(this));
 		jerseyConfig.register(LoginResource.class);
 	}
-	
+
 	@Override
 	public void registerApiUnprotectedAuthenticationResources(DropwizardResourceConfig jerseyConfig) {
 		jerseyConfig.register(new TokenResource(this));
@@ -252,7 +266,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			protected void configure() {
 				this.bind(new UserAuthenticationManagementProcessor(thisRealm, storage)).to(UserAuthenticationManagementProcessor.class);
 			}
-			
+
 		});
 		jerseyConfig.register(UserAuthenticationManagementResource.class);
 	}

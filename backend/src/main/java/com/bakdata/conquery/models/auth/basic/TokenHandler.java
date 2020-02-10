@@ -21,7 +21,7 @@ public class TokenHandler {
 	private static final String PREFIX =  "Bearer";
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
 	// Pattern from https://www.regextester.com/105777
-	private static final String JWT_PATTERN = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
+	public static final String JWT_PATTERN = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
 
 	/**
 	 * Creates a signed JWT token for the authentication with the {@link LocalAuthenticationRealm}.
@@ -63,7 +63,7 @@ public class TokenHandler {
 		}
 		
 		if(token.matches(JWT_PATTERN)) {			
-			return new JWTToken(token);
+			return new JwtToken(token);
 		}
 		return null;		
 	}
@@ -111,7 +111,7 @@ public class TokenHandler {
 
 	@SuppressWarnings("serial")
 	@AllArgsConstructor
-	public static class JWTToken implements AuthenticationToken{
+	public static class JwtToken implements AuthenticationToken{
 		private String token;
 
 		@Override
