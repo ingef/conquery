@@ -20,6 +20,8 @@ import uploadConceptListModal, {
   type StateType as UploadConceptListModalStateType
 } from "../upload-concept-list-modal/reducer";
 
+import user, { type StateType as UserStateT } from "../user/reducer";
+
 import type { StateType as PanesStateType } from "../pane";
 import type { TabT } from "../pane/types";
 
@@ -34,7 +36,6 @@ import { reducer as deletePreviousQueryModal } from "../previous-queries/delete-
 import { reducer as snackMessage } from "../snack-message";
 import { reducer as preview } from "../preview";
 import { reducer as queryUploadConceptListModal } from "../query-upload-concept-list-modal";
-import { reducer as user } from "../user";
 
 import { createQueryNodeEditorReducer } from "../query-node-editor";
 
@@ -44,7 +45,8 @@ export type StateType = {
   datasets: DatasetsStateType,
   tooltip: TooltipStateType,
   panes: PanesStateType,
-  uploadConceptListModal: UploadConceptListModalStateType
+  uploadConceptListModal: UploadConceptListModalStateType,
+  user: UserStateT
 };
 
 const buildAppReducer = (tabs: TabT[]) => {
