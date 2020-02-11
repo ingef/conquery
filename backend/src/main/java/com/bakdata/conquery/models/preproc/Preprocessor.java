@@ -126,14 +126,13 @@ public class Preprocessor {
 				ConqueryMDC.setLocation(name);
 
 				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
+				CsvParser parser = null;
 
 				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
 					long progress = 0;
 
 					// Create CSV parser according to config, but overriding some behaviour.
-					final CsvParser parser =
-							new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
-					// TODO wrap with pre-fetching iterator?
+					parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
 
 					parser.beginParsing(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn);
 
@@ -191,7 +190,10 @@ public class Preprocessor {
 						}
 					}
 
-					parser.stopParsing();
+				}finally {
+					if(parser != null) {
+						parser.stopParsing();
+					}
 				}
 			}
 

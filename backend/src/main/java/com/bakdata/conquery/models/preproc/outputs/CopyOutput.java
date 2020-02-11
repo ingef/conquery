@@ -8,21 +8,23 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * Parse column as type.
  */
 @Data
+@EqualsAndHashCode(callSuper = true)
 @CPSType(id = "COPY", base = OutputDescription.class)
 public class CopyOutput extends OutputDescription {
 
 	private static final long serialVersionUID = 1L;
 
 	@NotNull
-	private String inputColumn;
+	private final String inputColumn;
 
 	@NotNull
-	private MajorTypeId inputType;
+	private final MajorTypeId inputType;
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {

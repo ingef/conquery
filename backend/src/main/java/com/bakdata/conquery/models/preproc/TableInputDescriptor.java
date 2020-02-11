@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
+import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.MajorTypeId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -43,9 +44,13 @@ public class TableInputDescriptor implements Serializable {
 
 	private String filter;
 
+	/**
+	 * Output producing the primary column. This should be the primary key across all tables.
+	 * Default is `COPY("pid", STRING)`
+	 */
 	@NotNull
 	@Valid
-	private OutputDescription primary;
+	private OutputDescription primary = new CopyOutput("pid", MajorTypeId.STRING);
 	@Valid
 	private OutputDescription[] output;
 
