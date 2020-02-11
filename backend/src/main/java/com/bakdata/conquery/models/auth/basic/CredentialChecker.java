@@ -43,6 +43,9 @@ public class CredentialChecker {
 		}
 	}
 
+	/**
+	 * Hashes the provided credentials with the salt of the stored hash and compares both.
+	 */
 	public static boolean isCredentialValid(char[] providedCredentials, HashedEntry hashedEntry) {
 		byte[] hashFromProvided = PasswordHasher.generateHash(providedCredentials, hashedEntry.getSalt()); 
 		return Arrays.equals(hashFromProvided, hashedEntry.getHash());

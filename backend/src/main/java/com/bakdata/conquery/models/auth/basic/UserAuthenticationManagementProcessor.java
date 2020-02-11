@@ -6,9 +6,13 @@ import com.bakdata.conquery.apiv1.auth.ProtoUser;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.resources.admin.rest.UserAuthenticationManagementResource;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+/**
+ * Business logic for the {@link UserAuthenticationManagementResource}.
+ */
 @RequiredArgsConstructor
 @Slf4j
 public class UserAuthenticationManagementProcessor {

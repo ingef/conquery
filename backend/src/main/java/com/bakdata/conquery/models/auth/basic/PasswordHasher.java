@@ -66,9 +66,7 @@ public class PasswordHasher {
 	
 	@Data
 	/**
-	 * Contianer class 
-	 * @author Max.Thonagel
-	 *
+	 * Container class for the entries in the store consisting of the salted password hash and the corresponding salt.
 	 */
 	public static class HashedEntry {
 		byte[] hash;

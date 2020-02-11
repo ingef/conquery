@@ -22,7 +22,7 @@ import org.eclipse.jetty.http.HttpHeader;
  * This filter is only used for the admin endpoints which serve static sites
  * with links to these endpoints. Since it is not possible to set the
  * authorization header from static sites and adding the token to all links and
- * fetches on these sites, we use a cookie that is automatically send from the
+ * fetches on these sites is tedious, we use a cookie that is automatically send from the
  * browser with every request.
  *
  */

@@ -25,11 +25,6 @@ public class TokenHandler {
 
 	/**
 	 * Creates a signed JWT token for the authentication with the {@link LocalAuthenticationRealm}.
-	 * @param username
-	 * @param expiration
-	 * @param issuer
-	 * @param algorithm
-	 * @return
 	 */
 	public String createToken(String username, int expiration, String issuer, Algorithm algorithm) {
 		Date issueDate = new Date();
@@ -43,6 +38,11 @@ public class TokenHandler {
 		return token;
 	}
 	
+	/**
+	 * Tries to extract a JWT form a request according to <a href="https://tools.ietf.org/html/rfc6750">https://tools.ietf.org/html/rfc6750</a>.
+	 * @param request
+	 * @return
+	 */
 	@Nullable
 	public static AuthenticationToken extractToken(ContainerRequestContext request) {
 		String token = null;
@@ -76,6 +76,7 @@ public class TokenHandler {
 	 * @param header the value of the `Authorization` header
 	 * @return a token
 	 */
+	@Nullable
 	private static String extractTokenFromHeader(ContainerRequestContext request) {
 
         final String header = request.getHeaders().getFirst(HttpHeaders.AUTHORIZATION);

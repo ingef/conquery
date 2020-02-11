@@ -15,6 +15,10 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 
+/**
+ * This realms only provides authorization information for a given {@link UserId}.
+ * For now there is only one such authorizing realm. This queries the {@link MasterMetaStorage}.
+ */
 @RequiredArgsConstructor
 public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	
@@ -23,6 +27,11 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 	@Override
 	protected void onInit() {
 		super.onInit();
+		/*
+		 * We don't handle authentication here, thus no token is supported. However we
+		 * need to provide a TokenClass (that is used nowhere else), to not cause a
+		 * NullPointerException (see AuthenticatingRealm#supports).
+		 */
 		this.setAuthenticationTokenClass(UnusedAuthenticationToken.class);
 	}
 
@@ -43,6 +52,9 @@ public class ConqueryAuthorizationRealm extends AuthorizingRealm {
 		return null;
 	}
 	
+	/**
+	 * Dummy class for the TokenClass that is signals that this realm does not authenticate.
+	 */
 	@SuppressWarnings("serial")
 	private static class UnusedAuthenticationToken implements AuthenticationToken {
 
