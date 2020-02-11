@@ -1,9 +1,11 @@
 package com.bakdata.conquery.models.auth.basic;
 
 import java.io.File;
+import java.security.SecureRandom;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.container.ContainerRequestContext;
@@ -39,6 +41,7 @@ import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotected
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import jetbrains.exodus.ArrayByteIterable;
@@ -107,9 +110,24 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		this.storage = storage;
 		this.storeName = config.getStoreName();
 		this.passwordStoreConfig = config.getPasswordStoreConfig();
-
-		tokenSignAlgorithm = Algorithm.HMAC256(config.getTokenSecret());
+		
+		String tokenSecret = config.getTokenSecret();
+		if(Strings.isNullOrEmpty(tokenSecret)) {
+			tokenSecret = generateTokenSecret();
+		}
+		tokenSignAlgorithm = Algorithm.HMAC256(tokenSecret);
 		oauthTokenVerifier = JWT.require(tokenSignAlgorithm).withIssuer(getName()).build();
+	}
+	
+	/**
+	 * Generate a random default token.
+	 * @return The token as a {@link String}
+	 */
+	private static String generateTokenSecret() {
+		Random rand = new SecureRandom();
+		byte[] buffer = new byte[32];
+		rand.nextBytes(buffer);
+		return buffer.toString();
 	}
 
 	@Override

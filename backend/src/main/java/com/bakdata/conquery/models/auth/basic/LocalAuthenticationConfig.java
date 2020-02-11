@@ -22,8 +22,7 @@ public class LocalAuthenticationConfig implements AuthenticationConfig {
 	/**
 	 * The secret to sign the created JWTs.
 	 */
-	@NotEmpty
-	private String tokenSecret = generateToken();
+	private String tokenSecret = null;
 	
 	/**
 	 * Configuration for the password store. An encryption for the store it self might be set here.
