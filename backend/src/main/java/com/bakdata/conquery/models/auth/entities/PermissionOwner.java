@@ -65,6 +65,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return A set of the permissions hold by the owner.
 	 */
 	public Set<ConqueryPermission> getPermissions(){
+		// HashSet uses internally an iterator for copying, so we need to synchronize this
 		synchronized (permissions) {			
 			return Set.copyOf(permissions);
 		}
