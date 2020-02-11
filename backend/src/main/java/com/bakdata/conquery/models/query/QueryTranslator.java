@@ -9,6 +9,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import lombok.experimental.UtilityClass;
 
 @UtilityClass
@@ -27,9 +28,12 @@ public class QueryTranslator {
 	public <T extends CQElement> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		try {
 			String value = Jackson.MAPPER.writeValueAsString(element);
+			
+			NamespacedIdCollector collector = new NamespacedIdCollector();
+			
+			element.visit(collector);
 	
-			Pattern[] patterns = element
-				.collectNamespacedIds()
+			Pattern[] patterns = collector.getIds()
 				.stream()
 				.map(NamespacedId::getDataset)
 				.map(DatasetId::toString)

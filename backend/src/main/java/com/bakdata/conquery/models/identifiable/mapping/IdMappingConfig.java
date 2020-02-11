@@ -1,10 +1,7 @@
 package com.bakdata.conquery.models.identifiable.mapping;
 
-import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.Iterator;
-import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -26,7 +23,7 @@ import org.apache.commons.lang3.StringUtils;
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class IdMappingConfig {
 
-	public PersistentIdMap generateIdMapping(Iterator<String[]> csvIterator) throws IOException, IllegalArgumentException {
+	public PersistentIdMap generateIdMapping(Iterator<String[]> csvIterator) throws IllegalArgumentException {
 
 		PersistentIdMap mapping = new PersistentIdMap();
 
@@ -63,15 +60,15 @@ public abstract class IdMappingConfig {
 	 * Is called once before a mapping is used before a query result is created to
 	 * allow the mapping to have state information.
 	 */
-	public Map<String, Object> initToExternal(User user, ManagedExecution execution) {
+	public IdMappingState initToExternal(User user, ManagedExecution execution) {
 		// This mapping does not need a per-query state, so we return an immutable empty map.
-		return Collections.emptyMap();
+		return null;
 	}
 
 	/**
 	 * Converts the internal ID to the an external.
 	 */
-	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace, Map<String, Object> state) {
+	public ExternalEntityId toExternal(CsvEntityId csvEntityId, Namespace namespace, IdMappingState state) {
 		// The state may be uses by implementations of this class
 		PersistentIdMap mapping = namespace.getStorage().getIdMapping();
 		if (mapping != null) {

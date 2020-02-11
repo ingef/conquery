@@ -1,15 +1,14 @@
 package com.bakdata.conquery.models.query.concept.specific;
 
-import java.util.Set;
 import java.util.function.Consumer;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
@@ -41,14 +40,9 @@ public class CQNegation implements CQElement {
 	public void collectResultInfos(ResultInfoCollector collector) {
 		child.collectResultInfos(collector);
 	}
-
-	@Override
-	public void collectNamespacedIds(Set<NamespacedId> namespacedIds) {
-		child.collectNamespacedIds(namespacedIds);
-	}
 	
 	@Override
-	public void visit(Consumer<CQElement> visitor) {
+	public void visit(Consumer<Visitable> visitor) {
 		CQElement.super.visit(visitor);
 		child.visit(visitor);
 	}

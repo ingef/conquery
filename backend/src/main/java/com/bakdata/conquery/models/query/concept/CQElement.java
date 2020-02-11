@@ -5,11 +5,11 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.QPNode;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface CQElement {
+public interface CQElement extends Visitable {
 
 	default CQElement resolve(QueryResolveContext context) {
 		return this;
@@ -34,14 +34,6 @@ public interface CQElement {
 		return set;
 	}
 
-	default void collectNamespacedIds(Set<NamespacedId> namespacedIds) {}
-
-	default Set<NamespacedId> collectNamespacedIds() {
-		HashSet<NamespacedId> set = new HashSet<>();
-		this.collectNamespacedIds(set);
-		return set;
-	}
-
 	default ResultInfoCollector collectResultInfos(PrintSettings config) {
 		ResultInfoCollector collector = new ResultInfoCollector(config);
 		collectResultInfos(collector);
@@ -50,7 +42,7 @@ public interface CQElement {
 	
 	void collectResultInfos(ResultInfoCollector collector);
 
-	default void visit(Consumer<CQElement> visitor) {
+	default void visit(Consumer<Visitable> visitor) {
 		visitor.accept(this);
 	}
 }

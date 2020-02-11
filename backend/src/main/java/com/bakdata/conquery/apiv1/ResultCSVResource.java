@@ -3,6 +3,16 @@ package com.bakdata.conquery.apiv1;
 import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
 import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
+
+import java.io.BufferedWriter;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.stream.Stream;
 
 import javax.ws.rs.GET;
 import javax.ws.rs.HeaderParam;
@@ -27,11 +37,11 @@ import java.util.stream.Stream;
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
-import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -59,12 +69,14 @@ public class ResultCSVResource {
 	@Produces(AdditionalMediaTypes.CSV)
 	public Response getAsCsv(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @HeaderParam("user-agent") String userAgent) {
 		authorize(user, datasetId, Ability.READ);
-		authorize(user, DatasetPermission.onInstance(Ability.DOWNLOAD, datasetId));
 		authorize(user, queryId, Ability.READ);
 
 		ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
 
-		Map<String, Object> mappingState = config.getIdMapping().initToExternal(user, exec);
+		// Check if user is permitted to download on all datasets that were referenced by the query
+		authorizeDownloadDatasets(user, exec);
+
+		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 
 		try {
 			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);

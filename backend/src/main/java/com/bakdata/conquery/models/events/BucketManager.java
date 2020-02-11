@@ -95,7 +95,7 @@ public class BucketManager {
 	private void registerBucket(Bucket bucket) {
 		for (int entity : bucket) {
 			entities.computeIfAbsent(entity, createEntityFor(bucket))
-					.addBucket(storage.getCentralRegistry().resolve(bucket.getImp().getTable()), bucket);
+					.addBucket(storage.getCentralRegistry().resolve(bucket.getImp().getTable()).getId(), bucket);
 		}
 	}
 

@@ -31,7 +31,7 @@ queryRunner:
   stopSuccess: "Anfrage gestoppt."
   stopError: "Anfrage stoppen fehlgeschlagen."
   startSuccess: "Anfrage gestartet."
-  endSuccess: "Anfrage erfolgreich gestartet" # TODO This is a hotfix
+  endSuccess: "Anfrage erfolgreich"
   startError: "Anfrage starten fehlgeschlagen."
   resultError: "Anfrageergebnis konnte nicht geladen werden."
   resultCount: "Ergebnisse"
