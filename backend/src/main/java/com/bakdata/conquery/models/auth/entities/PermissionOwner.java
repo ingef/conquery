@@ -20,7 +20,7 @@ import org.apache.shiro.authz.Permission;
  *            The id type by which an instance is identified
  */
 @Slf4j
-public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T>{
+public abstract class PermissionOwner<T extends PermissionOwnerId<? extends PermissionOwner<T>>> extends IdentifiableImpl<T> {
 
 	private final Set<ConqueryPermission> permissions = Collections.synchronizedSet(new HashSet<>());
 	
@@ -45,9 +45,9 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	}
 	
 	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
-		if(permissions.add(permission)) {			
+		if(permissions.add(permission)) {
 			updateStorage(storage);
-			log.trace("Added permission {} to owner {}", permission, getId());	
+			log.trace("Added permission {} to owner {}", permission, getId());
 		}
 		return permission;
 	}
@@ -55,7 +55,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	public void removePermission(MasterMetaStorage storage, Permission delPermission) throws JSONException {
 		if(permissions.remove(delPermission)) {
 			this.updateStorage(storage);
-			log.trace("Removed permission {} from owner {}", delPermission, getId());		
+			log.trace("Removed permission {} from owner {}", delPermission, getId());
 		}
 	}
 
@@ -65,7 +65,10 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return A set of the permissions hold by the owner.
 	 */
 	public Set<ConqueryPermission> getPermissions(){
-		return Set.copyOf(permissions);
+		// HashSet uses internally an iterator for copying, so we need to synchronize this
+		synchronized (permissions) {
+			return Set.copyOf(permissions);
+		}
 	}
 	
 	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) throws JSONException {

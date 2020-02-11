@@ -11,7 +11,6 @@ import java.io.OutputStreamWriter;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.stream.Stream;
 
@@ -32,6 +31,7 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -66,7 +66,7 @@ public class ResultCSVResource {
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);
 
-		Map<String, Object> mappingState = config.getIdMapping().initToExternal(user, exec);
+		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 
 		try {
 			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);

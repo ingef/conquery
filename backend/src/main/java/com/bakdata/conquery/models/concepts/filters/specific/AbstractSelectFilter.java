@@ -1,7 +1,13 @@
 package com.bakdata.conquery.models.concepts.filters.specific;
 
+import java.util.EnumSet;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.apiv1.FilterSearchItem;
+import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.models.api.description.FEFilter;
 import com.bakdata.conquery.models.api.description.FEFilterType;
 import com.bakdata.conquery.models.api.description.FEValue;
@@ -18,11 +24,6 @@ import com.google.common.collect.Sets;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -43,6 +44,9 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 	@JsonIgnore
 	private final FEFilterType filterType;
 
+	private FilterTemplate template;
+
+
 	@Override
 	public EnumSet<MajorTypeId> getAcceptedColumnTypes() {
 		return EnumSet.of(MajorTypeId.STRING);
@@ -52,6 +56,7 @@ public abstract class AbstractSelectFilter<FE_TYPE> extends SingleColumnFilter<F
 
 	@Override
 	public void configureFrontend(FEFilter f) throws ConceptConfigurationException {
+		f.setTemplate(getTemplate());
 		f.setType(filterType);
 		// TODO: 20.11.2019 Upgrade to BigMultiSelect if more than maximumSize values are found.
 		if (values != null) {
