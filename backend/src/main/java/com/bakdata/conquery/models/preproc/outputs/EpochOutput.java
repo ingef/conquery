@@ -19,12 +19,12 @@ public class EpochOutput extends OutputDescription {
 	private static final long serialVersionUID = 1L;
 
 	@NotNull
-	private String column;
+	private String inputColumn;
 
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
-		assertRequiredHeaders(headers, column);
-		final int columnIndex = headers.getInt(column);
+		assertRequiredHeaders(headers, inputColumn);
+		final int columnIndex = headers.getInt(inputColumn);
 
 		return new Output() {
 			@Override
