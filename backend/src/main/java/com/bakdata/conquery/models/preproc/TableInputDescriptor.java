@@ -50,7 +50,7 @@ public class TableInputDescriptor implements Serializable {
 	 */
 	@NotNull
 	@Valid
-	private OutputDescription primary = new CopyOutput("pid", MajorTypeId.STRING);
+	private OutputDescription primary = new CopyOutput("pid", "pid", MajorTypeId.STRING);
 	@Valid
 	private OutputDescription[] output;
 
