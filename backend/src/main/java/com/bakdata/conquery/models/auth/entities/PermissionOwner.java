@@ -44,7 +44,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		return addedPermissions;
 	}
 	
-	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) throws JSONException {
+	public ConqueryPermission addPermission(MasterMetaStorage storage, ConqueryPermission permission) {
 		if(permissions.add(permission)) {
 			updateStorage(storage);
 			log.trace("Added permission {} to owner {}", permission, getId());
@@ -52,7 +52,7 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 		return permission;
 	}
 
-	public void removePermission(MasterMetaStorage storage, Permission delPermission) throws JSONException {
+	public void removePermission(MasterMetaStorage storage, Permission delPermission) {
 		if(permissions.remove(delPermission)) {
 			this.updateStorage(storage);
 			log.trace("Removed permission {} from owner {}", delPermission, getId());
