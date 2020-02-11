@@ -1,7 +1,5 @@
 package com.bakdata.conquery.models.worker;
 
-import javax.validation.constraints.NotNull;
-
 import java.net.SocketAddress;
 import java.util.Collection;
 import java.util.List;
@@ -9,6 +7,8 @@ import java.util.NoSuchElementException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
+
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
@@ -63,7 +63,11 @@ public class Namespaces extends NamespaceCollection {
 	}
 
 	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) {
+	public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
+		if (!datasets.containsKey(dataset)) {
+			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, datasets.keySet()));
+		}
+
 		return datasets.get(dataset).getStorage().getCentralRegistry();
 	}
 	
