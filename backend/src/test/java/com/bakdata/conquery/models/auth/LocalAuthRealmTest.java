@@ -22,22 +22,33 @@ import org.apache.commons.io.FileUtils;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.IncorrectCredentialsException;
 import org.apache.shiro.util.LifecycleUtils;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
+import org.junit.jupiter.api.TestInstance.Lifecycle;
 
 /**
  * Tests the basic functionality of the LocalAuthenticationRealm, which stores
  * the credential data in a local database and offers simple user management
  * (add/update/delete).
  */
+@TestInstance(Lifecycle.PER_CLASS)
 public class LocalAuthRealmTest {
 
-	@Test
-	public void test() {
+	private File tmpDir;
+	private LocalAuthenticationRealm realm;
+	private MasterMetaStorage storage;
+	private User user1;
+
+	@BeforeAll
+	public void setupAll() {
 		LocalAuthenticationConfig config = new LocalAuthenticationConfig();
 		config.setTokenSecret("TestTokenSecret");
 
-		MasterMetaStorage storage = mock(MasterMetaStorage.class);
-		LocalAuthenticationRealm realm = config.createRealm(storage);
+		storage = mock(MasterMetaStorage.class);
+		realm = config.createRealm(storage);
 		File tmpDir = Files.createTempDir();
 
 		tmpDir.mkdir();
@@ -46,59 +57,84 @@ public class LocalAuthRealmTest {
 
 		LifecycleUtils.init(realm);
 
+	}
+
+	@BeforeEach
+	public void setupEach() {
 		// Create User in Realm
-		User user1 = new User("TestUser", "Test User");
+		user1 = new User("TestUser", "Test User");
 		PasswordCredential user1Password = new PasswordCredential(new String("testPassword").toCharArray());
 		realm.addUser(user1, List.of(user1Password));
 		// And mock him into the storage
 		when(storage.getUser(user1.getId())).thenReturn(user1);
+	}
 
-		// Check Credentials
-		String jwt = null;
-		{
-			// Empty username
-			assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("", new String("testPassword").toCharArray()))
-				.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Username was empty");
+	@AfterAll
+	public void cleanUpEach() {
+		// Well there is an extra test case for this, but lets do it like this for now.
+		realm.removeUser(user1);
+	}
 
-			// Empty password
-			assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("").toCharArray()))
-				.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was empty");
+	@AfterAll
+	public void cleanUpAll() {
 
-			// Wrong password
-			assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("wrongPassword").toCharArray()))
-				.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+		FileUtils.deleteQuietly(tmpDir);
 
-			// Wrong username
-			assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("NoTestUser", new String("testPassword").toCharArray()))
-				.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+	}
 
-			// Right username and password should yield a JWT
-			jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray());
-			assertThat(jwt).matches(TokenHandler.JWT_PATTERN);
-		}
+	@Test
+	public void testEmptyUsername() {
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("", new String("testPassword").toCharArray()))
+			.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Username was empty");
+	}
+
+	@Test
+	public void testEmptyPassword() {
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("").toCharArray()))
+			.isInstanceOf(IncorrectCredentialsException.class).hasMessageContaining("Password was empty");
+	}
+
+	@Test
+	public void testWrongPassword() {
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("wrongPassword").toCharArray()))
+			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+	}
+
+	@Test
+	public void testWrongUsername() {
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("NoTestUser", new String("testPassword").toCharArray()))
+			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+	}
+
+	@Test
+	public void testValidUsernamePassword() {
+		// Right username and password should yield a JWT
+		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray());
+		assertThat(jwt).matches(TokenHandler.JWT_PATTERN);
 
 		assertThat(realm.doGetAuthenticationInfo(new JwtToken(jwt)).getPrincipals().getPrimaryPrincipal())
 			.isEqualTo(new UserId("TestUser"));
+	}
 
-		// Check password update
-		{
-			realm.updateUser(user1, List.of(new PasswordCredential(new String("newTestPassword").toCharArray())));
-			// Wrong password
-			assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray()))
-				.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+	@Test
+	public void testUserUpdate() {
 
-			jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("newTestPassword").toCharArray());
-			assertThat(jwt).matches(TokenHandler.JWT_PATTERN);
-		}
+		realm.updateUser(user1, List.of(new PasswordCredential(new String("newTestPassword").toCharArray())));
+		// Wrong (old) password
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray()))
+			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
 
-		// Check user delete (from realm only)
-		{
-			realm.removeUser(user1);
-			// Wrong password
-			assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("newTestPassword").toCharArray()))
-				.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
-		}
+		// Right (new) password
+		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("newTestPassword").toCharArray());
+		assertThat(jwt).matches(TokenHandler.JWT_PATTERN);
+	}
 
-		FileUtils.deleteQuietly(tmpDir);
+	@Test
+	public void testRemoveUser() {
+		realm.removeUser(user1);
+		// Wrong password
+		assertThatThrownBy(() -> realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray()))
+			.isInstanceOf(AuthenticationException.class).hasMessageContaining("Provided username or password was not valid.");
+
 	}
 }

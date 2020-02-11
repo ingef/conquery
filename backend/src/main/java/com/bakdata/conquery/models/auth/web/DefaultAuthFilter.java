@@ -48,8 +48,9 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 			if ((token = realm.extractToken(requestContext)) != null) {
 				log.trace("Realm {} extracted a token form the request: {}", ((Realm) realm).getName(), token);
 				tokens.add(token);
+			} else {				
+				log.trace("Realm {} did not extract a token form the request.", ((Realm) realm).getName());
 			}
-			log.trace("Realm {} did not extract a token form the request.", ((Realm) realm).getName());
 		}
 
 		if (tokens.isEmpty()) {

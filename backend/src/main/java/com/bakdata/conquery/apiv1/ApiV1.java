@@ -34,6 +34,11 @@ public class ApiV1 implements ResourcesProvider {
 		});
 		
 		environment.register(new CORSPreflightRequestFilter());
+		/*
+		 * Register the authentication filter which protects all resources registered in this servlet.
+		 * We use the same instance of the filter for the api servlet and the admin servlet to have a single 
+		 * point for authentication.
+		 */
 		environment.register(master.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
 		environment.register(new ResultCSVResource(namespaces, master.getConfig()));
