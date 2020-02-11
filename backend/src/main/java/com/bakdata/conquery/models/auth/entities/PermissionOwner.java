@@ -65,7 +65,9 @@ public abstract class PermissionOwner<T extends PermissionOwnerId<? extends Perm
 	 * @return A set of the permissions hold by the owner.
 	 */
 	public Set<ConqueryPermission> getPermissions(){
-		return Set.copyOf(permissions);
+		synchronized (permissions) {			
+			return Set.copyOf(permissions);
+		}
 	}
 	
 	public void setPermissions(MasterMetaStorage storage, Set<ConqueryPermission> permissionsNew) throws JSONException {
