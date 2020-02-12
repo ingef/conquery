@@ -17,7 +17,7 @@ public class CredentialChecker {
 	 * Checks if the provided username password combination is valid.
 	 * This is done by checking the password's hash with the stored hash.
 	 * NOTE: After this operation the provided password is cleared.
-	 * @param username The submitted username.
+	 * @param username The submitted username, here the email.
 	 * @param providedPassword The submitted password
 	 * @param passwordStore The store that holds the hashed passwords.
 	 * @return True if the username-password combination is valid.

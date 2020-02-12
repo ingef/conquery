@@ -106,8 +106,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			sn.getStorage().setMetaStorage(storage);
 		}
 		
-		authController = new AuthorizationController(storage, config);
-		
+		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
+		authController.init();
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {

@@ -15,6 +15,9 @@ import org.apache.shiro.subject.SimplePrincipalCollection;
 public class ConqueryAuthenticationInfo implements AuthenticationInfo {
 
 	private final SimplePrincipalCollection principals = new SimplePrincipalCollection();
+	/**
+	 * The credential a realm used for authentication.
+	 */
 	private final Object credentials;
 
 	public ConqueryAuthenticationInfo(UserId userId, Object credentials, Realm realm) {

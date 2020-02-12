@@ -14,6 +14,7 @@ import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
 import lombok.Data;
 import lombok.experimental.UtilityClass;
+import lombok.extern.slf4j.Slf4j;
 
 /**
  * Inspired by @see <a href=
@@ -21,12 +22,21 @@ import lombok.experimental.UtilityClass;
  *
  */
 @UtilityClass
+@Slf4j
 public class PasswordHasher {
 
 	private static final SecureRandom RANDOM = new SecureRandom();
 	private static final String ALGORITHM = "PBKDF2WithHmacSHA1";
 	private static final int ITERATIONS = 10000;
 	private static final int KEY_LENGTH = 256;
+	
+	static {
+		log.info(
+			"Using the following settings to generate password hashes:\n\tAlgorithm: {}\n\tIterations: {}\n\tKey length: {}",
+			ALGORITHM,
+			ITERATIONS,
+			KEY_LENGTH);
+	}
 
 	/**
 	 * Returns a random salt to be used to hash a password.
@@ -50,10 +60,9 @@ public class PasswordHasher {
 	public static byte[] generateHash(char[] password, byte[] salt) {
 		PBEKeySpec spec = new PBEKeySpec(password, salt, ITERATIONS, KEY_LENGTH);
 		SecretKeyFactory f = null;
-		byte[] hash = null;
 		try {
 			 f = SecretKeyFactory.getInstance(ALGORITHM);
-			 hash = f.generateSecret(spec).getEncoded();
+			 return f.generateSecret(spec).getEncoded();
 		}
 		catch (NoSuchAlgorithmException e) {
 			throw new IllegalStateException("The indicated algorithm was not found", e);
@@ -61,7 +70,6 @@ public class PasswordHasher {
 		catch (InvalidKeySpecException e) {
 			throw new IllegalStateException("The key specification was invalid", e);
 		}
-		return hash;
 	}
 	
 	@Data

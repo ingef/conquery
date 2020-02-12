@@ -12,6 +12,8 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.auth.AuthFilter;
 import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.AuthenticationToken;
@@ -31,22 +33,48 @@ import org.apache.shiro.util.LifecycleUtils;
  * {@link UserId}s to the permissions they hold.
  */
 @Slf4j
+@RequiredArgsConstructor
 public final class AuthorizationController {
-
+	
+	@NonNull
+	private final AuthorizationConfig authorizationConfig;
+	@NonNull
+	private final List<AuthenticationConfig> authenticationConfigs;
+	@NonNull
 	@Getter
-	private MasterMetaStorage storage;
+	private final MasterMetaStorage storage;
+
 	@Getter
 	private List<ConqueryAuthenticationRealm> authenticationRealms = new ArrayList<>();
 	@Getter
-	AuthFilter<AuthenticationToken, User> authenticationFilter;
+	private AuthFilter<AuthenticationToken, User> authenticationFilter;
 	@Getter
 	private List<Realm> realms = new ArrayList<>();
 
-	public AuthorizationController(MasterMetaStorage storage, ConqueryConfig config) {
-		this.storage = storage;
+	public void init() {
 
+		initializeRealms(storage, authenticationConfigs, authenticationRealms, realms);
+
+		registerShiro(realms);
+
+		// Create Jersey filter for authentication
+		this.authenticationFilter = DefaultAuthFilter.asDropwizardFeature(this);
+
+		// Register initial users for authorization and authentication (if the realm is able to)
+		initializeAuthConstellation(authorizationConfig, realms, storage);
+	}
+
+	private static void registerShiro(List<Realm> realms) {
+		// Register all realms in Shiro
+		log.info("Registering the following realms to Shiro:\n\t", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
+		SecurityManager securityManager = new DefaultSecurityManager(realms);
+		SecurityUtils.setSecurityManager(securityManager);
+		log.debug("Security manager registered");
+	}
+
+	private static void initializeRealms(MasterMetaStorage storage, List<AuthenticationConfig> config, List<ConqueryAuthenticationRealm> authenticationRealms, List<Realm> realms) {
 		// Init authentication realms provided by with the config.
-		for (AuthenticationConfig authenticationConf : config.getAuthentication()) {
+		for (AuthenticationConfig authenticationConf : config) {
 			ConqueryAuthenticationRealm realm = authenticationConf.createRealm(storage);
 			authenticationRealms.add(realm);
 			realms.add(realm);
@@ -56,19 +84,6 @@ public final class AuthorizationController {
 
 		// Call Shiros init on all realms
 		realms.stream().forEach(LifecycleUtils::init);
-
-		// Register all realms in Shiro
-		log.info("Registering the following realms to Shiro:\n\t", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
-		SecurityManager securityManager = new DefaultSecurityManager(realms);
-		SecurityUtils.setSecurityManager(securityManager);
-		log.debug("Security manager registered");
-
-		// Create Jersey filter for authentication
-		authenticationFilter = DefaultAuthFilter.asDropwizardFeature(this);
-
-		// Register initial users for authorization and authentication (if the realm is
-		// able to)
-		initializeAuthConstellation(config.getAuthorization(), realms, storage);
 	}
 
 	/**

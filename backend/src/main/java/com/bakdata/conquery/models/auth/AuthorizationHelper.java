@@ -193,27 +193,19 @@ public class AuthorizationHelper {
 	
 
 	
-	public static <P extends PermissionOwner<?>> void addRoleTo(MasterMetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
-		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
-		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
-		
-		if(!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));			
-		}
+	public static <P extends PermissionOwner<?> & RoleOwner> void addRoleTo(@ NonNull MasterMetaStorage storage, @NonNull PermissionOwnerId<P> ownerId, @NonNull RoleId roleId) {
+		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage), "supplied Role was not found in the storage.");
+		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage), "supplied RoleOwner was not found in the storage.");
 
-		((RoleOwner)owner).addRole(storage, role);
+		owner.addRole(storage, role);
 		log.trace("Added role {} to {}", role, owner);
 	}
 	
-	public static <P extends PermissionOwner<?>> void deleteRoleFrom(MasterMetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
-		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
-		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+	public static <P extends PermissionOwner<?> & RoleOwner> void deleteRoleFrom(@ NonNull MasterMetaStorage storage, @NonNull PermissionOwnerId<P> ownerId, @NonNull RoleId roleId) {
+		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage), "supplied Role was not found in the storage.");
+		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage), "supplied RoleOwner was not found in the storage.");
 		
-		if(!(owner instanceof RoleOwner)) {
-			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));			
-		}
-
-		((RoleOwner)owner).removeRole(storage,role);
+		owner.removeRole(storage,role);
 		
 		log.trace("Deleted role {} from {}", role, owner);
 	}

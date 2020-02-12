@@ -185,6 +185,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		if (!CredentialChecker.validUsernamePassword(username, password, passwordStore)) {
 			throw new AuthenticationException("Provided username or password was not valid.");
 		}
+		// The username is in this case the email
 		return TokenHandler.createToken(username, jwtDuration, getName(), tokenSignAlgorithm);
 	}
 
@@ -205,9 +206,10 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	 * @return The password credential.
 	 */
 	private static Optional<PasswordCredential> getTypePassword(List<CredentialType> credentials) {
-		Optional<PasswordCredential> optPassword = credentials.stream().filter(PasswordCredential.class::isInstance)
-			.map(PasswordCredential.class::cast).collect(MoreCollectors.toOptional());
-		return optPassword;
+		return credentials.stream()
+			.filter(PasswordCredential.class::isInstance)
+			.map(PasswordCredential.class::cast)
+			.collect(MoreCollectors.toOptional());
 	}
 
 	@Override
@@ -224,7 +226,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
 			return false;
 		}
-		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getName());
+		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getId().getEmail());
 		ByteIterable passwordByteIt = passwordToHashedEntry(optPassword);
 
 		return passwordStore.add(usernameByteIt, passwordByteIt);
@@ -237,7 +239,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 			log.trace("No password credential provided. Not adding {} to {}", user.getName(), getName());
 			return false;
 		}
-		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getName());
+		ArrayByteIterable usernameByteIt = StringBinding.stringToEntry(user.getId().getEmail());
 		ByteIterable passwordByteIt = passwordToHashedEntry(optPassword);
 
 		return passwordStore.update(usernameByteIt, passwordByteIt);
@@ -246,14 +248,17 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 	@Override
 	public boolean removeUser(User user) {
-		return passwordStore.remove(StringBinding.stringToEntry(user.getName()));
+		return passwordStore.remove(StringBinding.stringToEntry(user.getId().getEmail()));
 	}
 
 	@Override
 	public List<UserId> getAllUsers() {
 		List<String> listId = new ArrayList<>();
+		// Iterate over the store entries by collecting all keys (UserIds/emails).
+		// These must be turned from their binary format into Strings.
 		passwordStore.forEach((k, v) -> listId.add(StringBinding.entryToString(k)));
 
+		// Finally the Strings are turned into UserIds
 		return listId.stream().map(UserId::new).collect(Collectors.toList());
 	}
 
