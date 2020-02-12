@@ -8,6 +8,7 @@ import javax.ws.rs.core.HttpHeaders;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
+import com.auth0.jwt.exceptions.JWTDecodeException;
 import io.dropwizard.auth.oauth.OAuthCredentialAuthFilter;
 import lombok.AllArgsConstructor;
 import lombok.experimental.UtilityClass;
@@ -21,16 +22,14 @@ public class TokenHandler {
 
 	private static final String PREFIX = "Bearer";
 	private static final String OAUTH_ACCESS_TOKEN_PARAM = "access_token";
-	// Pattern from https://www.regextester.com/105777
-	public static final String JWT_PATTERN = "^[A-Za-z0-9-_=]+\\.[A-Za-z0-9-_=]+\\.?[A-Za-z0-9-_.+/=]*$";
 
 	/**
 	 * Creates a signed JWT token for the authentication with the
 	 * {@link LocalAuthenticationRealm}.
 	 */
-	public String createToken(String username, int expiration, String issuer, Algorithm algorithm) {
+	public String createToken(String username, int duration, String issuer, Algorithm algorithm) {
 		Date issueDate = new Date();
-		Date expDate = DateUtils.addHours(issueDate, expiration);
+		Date expDate = DateUtils.addHours(issueDate, duration);
 		String token = JWT.create().withIssuer(issuer).withSubject(username).withIssuedAt(issueDate).withExpiresAt(expDate).sign(algorithm);
 		return token;
 	}
@@ -65,10 +64,14 @@ public class TokenHandler {
 			token = tokenQuery;
 		}
 
-		if (token.matches(JWT_PATTERN)) {
+		try {
+			JWT.decode(token);
 			return new JwtToken(token);
+
 		}
-		return null;
+		catch (JWTDecodeException e) {
+			return null;
+		}
 	}
 
 	/**

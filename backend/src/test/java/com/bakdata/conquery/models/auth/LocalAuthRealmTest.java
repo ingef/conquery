@@ -8,11 +8,11 @@ import static org.mockito.Mockito.when;
 import java.io.File;
 import java.util.List;
 
+import com.auth0.jwt.JWT;
 import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationConfig;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
-import com.bakdata.conquery.models.auth.basic.TokenHandler;
 import com.bakdata.conquery.models.auth.basic.TokenHandler.JwtToken;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
@@ -45,7 +45,6 @@ public class LocalAuthRealmTest {
 	@BeforeAll
 	public void setupAll() {
 		LocalAuthenticationConfig config = new LocalAuthenticationConfig();
-		config.setTokenSecret("TestTokenSecret");
 
 		storage = mock(MasterMetaStorage.class);
 		realm = config.createRealm(storage);
@@ -110,7 +109,7 @@ public class LocalAuthRealmTest {
 	public void testValidUsernamePassword() {
 		// Right username and password should yield a JWT
 		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray());
-		assertThat(jwt).matches(TokenHandler.JWT_PATTERN);
+		assertThatThrownBy(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
 		assertThat(realm.doGetAuthenticationInfo(new JwtToken(jwt)).getPrincipals().getPrimaryPrincipal())
 			.isEqualTo(new UserId("TestUser"));
@@ -126,7 +125,7 @@ public class LocalAuthRealmTest {
 
 		// Right (new) password
 		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("newTestPassword").toCharArray());
-		assertThat(jwt).matches(TokenHandler.JWT_PATTERN);
+		assertThatThrownBy(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 	}
 
 	@Test

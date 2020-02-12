@@ -41,7 +41,6 @@ import com.bakdata.conquery.resources.unprotected.AuthServlet.AuthApiUnprotected
 import com.bakdata.conquery.resources.unprotected.LoginResource;
 import com.bakdata.conquery.resources.unprotected.TokenResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Strings;
 import com.google.common.collect.MoreCollectors;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import jetbrains.exodus.ArrayByteIterable;
@@ -73,7 +72,7 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, AuthAdminResourceProvider {
 
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
-	private static final int EXPIRATION_PERIOD = 12; // Hours for JWTs
+	private int jwtDuration; // Hours
 
 	private final XodusConfig passwordStoreConfig;
 	private final String storeName;
@@ -110,11 +109,10 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		this.storage = storage;
 		this.storeName = config.getStoreName();
 		this.passwordStoreConfig = config.getPasswordStoreConfig();
+		this.jwtDuration = config.getJwtDuration();
 		
-		String tokenSecret = config.getTokenSecret();
-		if(Strings.isNullOrEmpty(tokenSecret)) {
-			tokenSecret = generateTokenSecret();
-		}
+		String tokenSecret = generateTokenSecret();
+
 		tokenSignAlgorithm = Algorithm.HMAC256(tokenSecret);
 		oauthTokenVerifier = JWT.require(tokenSignAlgorithm).withIssuer(getName()).build();
 	}
@@ -187,14 +185,11 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 		if (!CredentialChecker.validUsernamePassword(username, password, passwordStore)) {
 			throw new AuthenticationException("Provided username or password was not valid.");
 		}
-		return TokenHandler.createToken(username, EXPIRATION_PERIOD, getName(), tokenSignAlgorithm);
+		return TokenHandler.createToken(username, jwtDuration, getName(), tokenSignAlgorithm);
 	}
 
 	/**
 	 * Converts the provided password to a Xodus compatible hash.
-	 * 
-	 * @param optPassword
-	 * @return
 	 */
 	private static ByteIterable passwordToHashedEntry(Optional<PasswordCredential> optPassword) {
 		return HashedEntry.asByteIterable(PasswordHasher.generateHashedEntry(optPassword.get().getPassword()));
@@ -204,7 +199,7 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	 * Checks the provided credentials for the realm-compatible
 	 * {@link PasswordCredential}. However only one credential of this type is
 	 * allowed to be provided.
-	 * 
+	 *
 	 * @param credentials
 	 *            A list of possible credentials.
 	 * @return The password credential.
