@@ -8,9 +8,7 @@ import { css } from "@emotion/core";
 import T from "i18n-react";
 import { DragSource } from "react-dnd";
 import { connect } from "react-redux";
-import { parseISO, formatDistance } from "date-fns";
-
-import { getDateLocale } from "../../localization";
+import { parseISO } from "date-fns";
 
 import { ErrorMessage } from "../../error-message";
 import { dndTypes } from "../../common/constants";
@@ -38,6 +36,7 @@ import {
 } from "./actions";
 
 import PreviousQueryTags from "./PreviousQueryTags";
+import { formatDateDistance } from "../../common/helpers";
 
 const nodeSource = {
   beginDrag(props, monitor, component): DraggedQueryType {
@@ -175,11 +174,11 @@ class PreviousQuery extends React.Component {
     const peopleFound = isEmpty(query.numberOfResults)
       ? T.translate("previousQuery.notExecuted")
       : `${query.numberOfResults} ${T.translate("previousQueries.results")}`;
-    const dateLocale = getDateLocale();
-    const executedAt = formatDistance(parseISO(query.createdAt), new Date(), {
-      locale: dateLocale,
-      addSuffix: true
-    });
+    const executedAt = formatDateDistance(
+      parseISO(query.createdAt),
+      new Date(),
+      true
+    );
     const label = query.label || query.id.toString();
     const mayEditQuery = query.own || query.shared;
     const isNotEditing = !(query.editingLabel || query.editingTags);
