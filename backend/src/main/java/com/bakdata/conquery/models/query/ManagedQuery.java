@@ -11,6 +11,7 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
@@ -54,6 +55,8 @@ public class ManagedQuery extends ManagedExecution {
 	//we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	private transient int executingThreads;
+	@JsonIgnore
+	private transient List<ColumnDescriptor> columnDescriptions;
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
 
@@ -112,18 +115,40 @@ public class ManagedQuery extends ManagedExecution {
 	
 	@Override
 	public ExecutionStatus buildStatus(URLBuilder url, User user) {
+		if(columnDescriptions == null) {
+			columnDescriptions = generateColumnDescriptions();
+		}
+		
 		ExecutionStatus status = super.buildStatus(url, user);
 		status.setTags(tags);
 		status.setQuery(query);
 		status.setNumberOfResults(lastResultCount);
 		status.setShared(shared);
-		status.setColumnDescriptions(collectResultInfos(new PrintSettings(true)).getInfos().stream()
-			.map(i -> ColumnDescriptor.builder()
-				.label(i.getName())
-				.type(i.getType())
-				.build())
-			.collect(Collectors.toList()));
+		status.setColumnDescriptions(columnDescriptions);
 		return status;
+	}
+
+	/**
+	 * Generates a description of each column that will appear in the resulting csv.
+	 */
+	private List<ColumnDescriptor> generateColumnDescriptions() {
+		List<ColumnDescriptor> columnDescriptions = new ArrayList<>();
+		// First add the id columns to the descriptor list. The are the first columns
+		for (String header : ConqueryConfig.getInstance().getIdMapping().getPrintIdFields()) {
+			columnDescriptions.add(ColumnDescriptor.builder()
+				.label(header)
+				// set no type for the ID columns
+				.build());
+		}
+		// Then all columns that originate from selects
+		columnDescriptions.addAll(
+			collectResultInfos(new PrintSettings(true)).getInfos().stream()
+				.map(i -> ColumnDescriptor.builder()
+					.label(i.getName())
+					.type(i.getType())
+					.build())
+				.collect(Collectors.toList()));
+		return columnDescriptions;
 	}
 	
 	@Override
