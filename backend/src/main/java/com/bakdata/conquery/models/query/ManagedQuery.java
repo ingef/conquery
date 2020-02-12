@@ -56,8 +56,8 @@ public class ManagedQuery extends ManagedExecution {
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
 
-	public ManagedQuery(IQuery query, Namespace namespace, UserId owner) {
-		super(namespace, owner);
+	public ManagedQuery(IQuery query, Namespace namespace, UserId owner, boolean persist) {
+		super(namespace, owner, persist);
 		this.query = query;
 	}
 

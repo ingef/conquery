@@ -33,9 +33,8 @@ public class QueryManager {
 				namespace
 		));
 
-		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
+		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId(), persist);
 		managed.setQueryId(queryId);
-		managed.setPersist(persist);
 		namespace.getStorage().getMetaStorage().addExecution(managed);
 
 		return managed;

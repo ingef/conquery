@@ -32,14 +32,12 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
 
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString
@@ -73,11 +71,16 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	/**
 	 * If true, query is stored in Storage.
 	 */
-	private boolean persist = false;
+	private final boolean persist;
 
-	public ManagedExecution(Namespace namespace, UserId owner) {
+	public ManagedExecution() {
+		persist = true;
+	}
+
+	public ManagedExecution(Namespace namespace, UserId owner, boolean persist) {
 		this.owner = owner;
 		initExecutable(namespace);
+		this.persist = persist;
 	}
 
 	public void initExecutable(@NonNull Namespace namespace) {
