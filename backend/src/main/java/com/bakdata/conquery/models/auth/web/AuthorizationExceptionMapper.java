@@ -1,4 +1,4 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.auth.web;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;

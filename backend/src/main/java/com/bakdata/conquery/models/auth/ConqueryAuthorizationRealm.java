@@ -1,0 +1,73 @@
+package com.bakdata.conquery.models.auth;
+
+import java.util.HashSet;
+import java.util.Objects;
+
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import lombok.RequiredArgsConstructor;
+import org.apache.shiro.authc.AuthenticationException;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authz.AuthorizationInfo;
+import org.apache.shiro.authz.Permission;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.realm.AuthorizingRealm;
+import org.apache.shiro.subject.PrincipalCollection;
+
+/**
+ * This realms only provides authorization information for a given {@link UserId}.
+ * For now there is only one such authorizing realm. This queries the {@link MasterMetaStorage}.
+ */
+@RequiredArgsConstructor
+public class ConqueryAuthorizationRealm extends AuthorizingRealm {
+	
+	public final MasterMetaStorage storage;
+	
+	@Override
+	protected void onInit() {
+		super.onInit();
+		/*
+		 * We don't handle authentication here, thus no token is supported. However we
+		 * need to provide a TokenClass (that is used nowhere else), to not cause a
+		 * NullPointerException (see AuthenticatingRealm#supports).
+		 */
+		this.setAuthenticationTokenClass(UnusedAuthenticationToken.class);
+	}
+
+	@Override
+	protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
+		Objects.requireNonNull(principals, "No principal info was provided");
+		UserId userId = UserId.class.cast(principals.getPrimaryPrincipal());
+		SimpleAuthorizationInfo info = new SimpleAuthorizationInfo();
+		
+		info.addObjectPermissions(new HashSet<Permission>(AuthorizationHelper.getEffectiveUserPermissions(userId, storage)));
+		
+		return info;
+	}
+
+	@Override
+	protected AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
+		// This Realm only authorizes
+		return null;
+	}
+	
+	/**
+	 * Dummy class for the TokenClass that is signals that this realm does not authenticate.
+	 */
+	@SuppressWarnings("serial")
+	private static class UnusedAuthenticationToken implements AuthenticationToken {
+
+		@Override
+		public Object getPrincipal() {
+			throw new UnsupportedOperationException(String.format("This realm (%s) only handles authorization. So this token's functions should never be called.", this.getClass().getName()));
+		}
+
+		@Override
+		public Object getCredentials() {
+			throw new UnsupportedOperationException(String.format("This realm (%s) only handles authorization. So this token's functions should never be called.", this.getClass().getName()));
+		}
+		
+	}
+
+}

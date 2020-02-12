@@ -90,9 +90,7 @@ public class ConceptQueryPlan implements QueryPlan, EventIterating {
 		if(isContained()) {
 			return result();
 		}
-		else {
-			return EntityResult.notContained();
-		}
+		return EntityResult.notContained();
 	}
 	
 	@Override

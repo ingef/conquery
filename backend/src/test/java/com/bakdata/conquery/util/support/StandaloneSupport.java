@@ -1,17 +1,18 @@
 package com.bakdata.conquery.util.support;
 
-import javax.validation.Validator;
-import javax.ws.rs.client.Client;
-
 import java.io.Closeable;
 import java.io.File;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.Validator;
+import javax.ws.rs.client.Client;
+
 import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.commands.PreprocessorCommand;
 import com.bakdata.conquery.commands.SlaveCommand;
 import com.bakdata.conquery.commands.StandaloneCommand;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -41,6 +42,8 @@ public class StandaloneSupport implements Closeable {
 	private final ConqueryConfig config;
 	@Getter
 	private final AdminProcessor datasetsProcessor;
+	@Getter
+	private final User testUser;
 
 
 	public void waitUntilWorkDone() {
