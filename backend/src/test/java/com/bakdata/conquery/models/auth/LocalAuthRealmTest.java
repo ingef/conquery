@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.auth;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -109,7 +110,7 @@ public class LocalAuthRealmTest {
 	public void testValidUsernamePassword() {
 		// Right username and password should yield a JWT
 		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("testPassword").toCharArray());
-		assertThatThrownBy(() -> JWT.decode(jwt)).doesNotThrowAnyException();
+		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 
 		assertThat(realm.doGetAuthenticationInfo(new JwtToken(jwt)).getPrincipals().getPrimaryPrincipal())
 			.isEqualTo(new UserId("TestUser"));
@@ -125,7 +126,7 @@ public class LocalAuthRealmTest {
 
 		// Right (new) password
 		String jwt = realm.checkCredentialsAndCreateJWT("TestUser", new String("newTestPassword").toCharArray());
-		assertThatThrownBy(() -> JWT.decode(jwt)).doesNotThrowAnyException();
+		assertThatCode(() -> JWT.decode(jwt)).doesNotThrowAnyException();
 	}
 
 	@Test
