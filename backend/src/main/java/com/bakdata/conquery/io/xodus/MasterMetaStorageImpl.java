@@ -85,7 +85,12 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 
 		meta = StoreInfo.NAMESPACES.singleton(getEnvironment(), getValidator());
 
-		executions = StoreInfo.EXECUTIONS.<ManagedExecution>identifiable(getExecutionsEnvironment(), getValidator(), getCentralRegistry(), namespaces)
+		executions = StoreInfo.EXECUTIONS.<ManagedExecution>identifiable(
+				getCentralRegistry(),
+				// Some executions (for example machine generated queries for forms) should not be persisted between reboots.
+				StoreInfo.EXECUTIONS.cached(getExecutionsEnvironment(), getValidator(), ((key, value) -> value.isPersist())),
+				namespaces
+		)
 							 .onAdd(value -> {
 								 try {
 									 value.initExecutable(namespaces.get(value.getDataset()));
@@ -93,6 +98,7 @@ public class MasterMetaStorageImpl extends ConqueryStorageImpl implements Master
 									 log.error("Failed to load execution `{}`", value.getId(), e);
 								 }
 							 });
+
 		authRole = StoreInfo.AUTH_ROLE.identifiable(getRolesEnvironment(), getValidator(), getCentralRegistry());
 
 		authUser = StoreInfo.AUTH_USER.identifiable(getUsersEnvironment(), getValidator(), getCentralRegistry());

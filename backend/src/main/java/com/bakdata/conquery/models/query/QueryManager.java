@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Objects;
+import java.util.UUID;
+
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -10,24 +13,21 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Objects;
-import java.util.UUID;
-
 @RequiredArgsConstructor
 public class QueryManager {
 
 	@NonNull
 	private final Namespace namespace;
 
-	public ManagedQuery runQuery(IQuery query, User user) throws JSONException {
-		return runQuery(query, UUID.randomUUID(), user);
+	public ManagedQuery runQuery(IQuery query, User user, boolean persist) throws JSONException {
+		return runQuery(query, UUID.randomUUID(), user, persist);
 	}
 
-	public ManagedQuery runQuery(IQuery query, UUID queryId, User user) throws JSONException {
-		return executeQuery(createQuery(query, queryId, user));
+	public ManagedQuery runQuery(IQuery query, UUID queryId, User user, boolean persist) throws JSONException {
+		return executeQuery(createQuery(query, queryId, user, persist));
 	}
 
-	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) throws JSONException {
+	public ManagedQuery createQuery(IQuery query, UUID queryId, User user, boolean persist) throws JSONException {
 		query = query.resolve(new QueryResolveContext(
 				namespace.getStorage().getMetaStorage(),
 				namespace
@@ -35,6 +35,7 @@ public class QueryManager {
 
 		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
 		managed.setQueryId(queryId);
+		managed.setPersist(persist);
 		namespace.getStorage().getMetaStorage().addExecution(managed);
 
 		return managed;

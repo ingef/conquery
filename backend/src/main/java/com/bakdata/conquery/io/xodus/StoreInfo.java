@@ -1,5 +1,7 @@
 package com.bakdata.conquery.io.xodus;
 
+import java.util.function.BiFunction;
+
 import javax.validation.Validator;
 
 import com.bakdata.conquery.io.jackson.Injectable;
@@ -42,6 +44,7 @@ import com.bakdata.conquery.models.worker.SlaveInformation;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import jetbrains.exodus.env.Environment;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -76,8 +79,13 @@ public enum StoreInfo implements IStoreInfo {
 	 * Store for identifiable values, with injectors. Store is also cached.
 	 */
 	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(Environment environment, Validator validator, CentralRegistry centralRegistry, Injectable... injectables) {
+		return identifiable(centralRegistry, cached(environment, validator), injectables);
+	}
 
-		final CachedStore<IId<T>, T> store = cached(environment, validator);
+	/**
+	 * Store for identifiable values, with injectors. Store is also cached.
+	 */
+	public <T extends Identifiable<?>> IdentifiableStore<T> identifiable(CentralRegistry centralRegistry, CachedStore<IId<T>, T> store, Injectable... injectables) {
 
 		for (Injectable injectable : injectables) {
 			store.inject(injectable);
@@ -105,6 +113,20 @@ public enum StoreInfo implements IStoreInfo {
 						validator,
 						this
 				)
+		);
+	}
+
+	/**
+	 * Cached store with test for persistence.
+	 */
+	public <KEY, VALUE> CachedStore<KEY, VALUE> cached(Environment environment, Validator validator, @NonNull BiFunction<KEY, VALUE, Boolean> shouldPersist) {
+		return new CachedStore<>(
+				new SerializingStore<>(
+						new XodusStore(environment, this),
+						validator,
+						this
+				),
+				shouldPersist
 		);
 	}
 

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.BiFunction;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.serializer.IdReferenceResolvingException;
@@ -11,6 +12,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.util.io.ProgressBar;
 import com.google.common.base.Stopwatch;
 import com.jakewharton.byteunits.BinaryByteUnit;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -21,17 +23,35 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	
 	private ConcurrentHashMap<KEY, VALUE> cache = new ConcurrentHashMap<>();
 	private final Store<KEY, VALUE> store;
-	
+
+	/**
+	 * Optional function for testing if the values should be persisted or not.
+	 */
+	@NonNull
+	private final BiFunction<KEY, VALUE, Boolean> shouldPersist;
+
+	/**
+	 * Default constructor passing all values down to the underlying store.
+	 */
+	public CachedStore(Store<KEY, VALUE> store) {
+		this(store, (key, value) -> true);
+	}
+
 	@Override
 	public void close() throws IOException {
 	}
 
+
+
 	@Override
 	public void add(KEY key, VALUE value) throws JSONException {
-		if(cache.putIfAbsent(key, value)!=null) {
-			throw new IllegalStateException("The id "+key+" is alread part of this store");
+		if (cache.putIfAbsent(key, value) != null) {
+			throw new IllegalStateException("The id " + key + " is already part of this store");
 		}
-		store.add(key, value);
+
+		if (shouldPersist == null || shouldPersist.apply(key, value)) {
+			store.add(key, value);
+		}
 	}
 
 	@Override
@@ -48,7 +68,9 @@ public class CachedStore<KEY, VALUE> implements Store<KEY, VALUE> {
 	@Override
 	public void update(KEY key, VALUE value) throws JSONException {
 		cache.put(key, value);
-		store.update(key, value);
+		if (shouldPersist == null || shouldPersist.apply(key, value)) {
+			store.update(key, value);
+		}
 	}
 
 	@Override

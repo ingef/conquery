@@ -70,6 +70,11 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	protected transient Namespace namespace;
 
+	/**
+	 * If true, query is stored in Storage.
+	 */
+	private boolean persist = false;
+
 	public ManagedExecution(Namespace namespace, UserId owner) {
 		this.owner = owner;
 		initExecutable(namespace);

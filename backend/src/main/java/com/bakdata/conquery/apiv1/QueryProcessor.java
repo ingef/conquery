@@ -65,7 +65,7 @@ public class QueryProcessor {
 			}
 		}
 		
-		ManagedQuery mq = namespace.getQueryManager().runQuery(query, user);
+		ManagedQuery mq = namespace.getQueryManager().runQuery(query, user, true);
 
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
@@ -84,7 +84,7 @@ public class QueryProcessor {
 
 			try {
 				IQuery translated = QueryTranslator.replaceDataset(namespaces, query, targetNamespace.getDataset().getId());
-				final ManagedQuery mqTranslated = targetNamespace.getQueryManager().createQuery(translated, mq.getQueryId(), user);
+				final ManagedQuery mqTranslated = targetNamespace.getQueryManager().createQuery(translated, mq.getQueryId(), user, true);
 
 				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}
