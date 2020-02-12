@@ -12,11 +12,19 @@ import {
   formatDistance
 } from "date-fns";
 
+import { getDateLocale } from "../../localization";
+
 // To save the date in this format in the state
 const DATE_FORMAT = "yyyy-MM-dd";
 
-export const formatDateDistance = (d1: Date, d2: Date) => {
-  return formatDistance(d1, d2);
+export const formatDateDistance = (
+  d1: Date,
+  d2: Date,
+  withSuffix: boolean = false
+) => {
+  const dateLocale = getDateLocale();
+
+  return formatDistance(d1, d2, { locale: dateLocale, addSuffix: withSuffix });
 };
 
 export const formatStdDate = (date: Date) => {

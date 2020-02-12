@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 import T from "i18n-react";
 import { connect } from "react-redux";
 import Hotkeys from "react-hot-keys";
@@ -22,7 +23,8 @@ import type { StateT as PreviewStateT } from "./reducer";
 import { closePreview } from "./actions";
 
 type PropsT = {
-  preview: PreviewStateT
+  preview: PreviewStateT,
+  onClose: () => void
 };
 
 const Preview = styled("div")`
@@ -43,13 +45,14 @@ const TopRow = styled("div")`
   width: 100%;
   display: flex;
   align-items: center;
+  justify-content: space-between;
 `;
 
-const StatsRow = styled("div")`
+const StdRow = styled("div")`
   display: flex;
   align-items: center;
 `;
-const Stats = styled("div")``;
+
 const Stat = styled("code")`
   display: block;
   margin: 0;
@@ -57,28 +60,52 @@ const Stat = styled("code")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
+const BStat = styled(Stat)`
+  font-weight: 700;
+`;
+
 const Line = styled("div")`
   display: flex;
   width: 100%;
   align-items: center;
   line-height: 10px;
-  border-bottom: ${({ isHeader }) => (isHeader ? "1px solid #ccc" : "none")};
-  margin: ${({ isHeader }) => (isHeader ? "0 0 10px" : "0")};
+
+  ${({ isHeader }) =>
+    isHeader &&
+    css`
+      border-bottom: "1px solid #ccc";
+      align-items: flex-end;
+      margin: "0 0 10px";
+      overflow-x: auto;
+    `};
 `;
 
 const Cell = styled("code")`
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.xs};
-  display: flex;
-  align-items: center;
+  height: ${({ theme }) => theme.font.xs};
   width: ${({ isDates }) => (isDates ? "auto" : "100px")};
   flex-grow: ${({ isDates }) => (isDates ? "1" : "0")};
   flex-shrink: 0;
   background-color: white;
-  overflow-wrap: ${({ isHeader }) => (isHeader ? "break-word" : "normal")};
-  font-weight: ${({ isHeader }) => (isHeader ? "700" : "400")};
-  margin: ${({ isHeader }) => (isHeader ? "0 0 5px" : "0")};
+  margin: 0;
   position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: ${({ isDates }) => (isDates ? "flex" : "block")};
+  align-items: center;
+  overflow: hidden;
+
+  ${({ isHeader }) =>
+    isHeader &&
+    css`
+      font-weight: 700;
+      overflow-wrap: break-word;
+      margin: 0 0 5px;
+      text-overflow: initial;
+      white-space: initial;
+      height: initial;
+    `};
 `;
 
 const Span = styled("div")`
@@ -89,6 +116,7 @@ const Span = styled("div")`
   margin-right: 10px;
   color: white;
   font-size: ${({ theme }) => theme.font.tiny};
+  min-width: 1px;
 `;
 
 const Headline = styled("h2")`
@@ -110,6 +138,10 @@ const CSVFrame = styled("div")`
   overflow: hidden;
   padding: 10px;
   box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+`;
+
+const Tr = styled("tr")`
+  line-height: 1;
 `;
 
 function detectColumn(cell) {
@@ -166,18 +198,18 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
 }
 
 export default connect(
-  state => ({ csv: state.preview.csv }),
+  state => ({ preview: state.preview }),
   dispatch => ({
     onClose: () => dispatch(closePreview())
   })
-)(({ csv, onClose }: PropsT) => {
-  if (!csv || csv.length < 2) return null;
+)(({ preview, onClose }: PropsT) => {
+  if (!preview.csv || preview.csv.length < 2) return null;
 
-  const columns = detectColumnsByHeader(csv[0]);
+  const columns = detectColumnsByHeader(preview.csv[0]);
 
   // Potentially, limit size:
   // const slice = csv.slice(1000);
-  const slice = csv.slice();
+  const slice = preview.csv.slice();
 
   const { min, max, diff } = getMinMaxDates(slice.slice(1), columns);
 
@@ -217,7 +249,11 @@ export default connect(
           );
         }
 
-        return <Cell key={i}>{cell}</Cell>;
+        return (
+          <Cell title={cell} key={i}>
+            {cell}
+          </Cell>
+        );
       })}
     </Line>
   );
@@ -226,34 +262,63 @@ export default connect(
     <Preview>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
       <TopRow>
-        <TransparentButton icon="times" onClick={onClose}>
-          {T.translate("common.back")}
-        </TransparentButton>
-        <HeadInfo>
-          <Headline>{T.translate("preview.headline")}</Headline>
-          <Explanation>{T.translate("preview.explanation")}</Explanation>
-        </HeadInfo>
-        <StatsRow>
-          <Stats>
-            <Stat>
-              {T.translate("preview.total")}: {csv.length}
-            </Stat>
-            <Stat>
-              {T.translate("preview.min")}: {formatStdDate(min)}
-            </Stat>
-            <Stat>
-              {T.translate("preview.max")}: {formatStdDate(max)}
-            </Stat>
-            <Stat>
-              {T.translate("preview.span")}: {formatDateDistance(min, max)}
-            </Stat>
-          </Stats>
-        </StatsRow>
+        <StdRow>
+          <TransparentButton icon="times" onClick={onClose}>
+            {T.translate("common.back")}
+          </TransparentButton>
+          <HeadInfo>
+            <Headline>{T.translate("preview.headline")}</Headline>
+            <Explanation>{T.translate("preview.explanation")}</Explanation>
+          </HeadInfo>
+        </StdRow>
+        <table>
+          <tbody>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.total")}:</Stat>
+              </td>
+              <td>
+                <BStat>{preview.csv.length}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.min")}:</Stat>
+              </td>
+              <td>
+                <BStat>{min ? formatStdDate(min) : "-"}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.max")}:</Stat>
+              </td>
+              <td>
+                <BStat>{max ? formatStdDate(max) : "-"}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.span")}:</Stat>
+              </td>
+              <td>
+                <BStat>
+                  {!!min && !!max ? formatDateDistance(min, max) : "-"}
+                </BStat>
+              </td>
+            </Tr>
+          </tbody>
+        </table>
       </TopRow>
       <CSVFrame>
         <Line isHeader={true}>
           {slice[0].map((cell, k) => (
-            <Cell key={k} isHeader={true}>
+            <Cell
+              key={k}
+              isHeader={true}
+              title={cell}
+              isDates={columns[k] === "DATE_RANGE"}
+            >
               {cell}
             </Cell>
           ))}
@@ -264,7 +329,7 @@ export default connect(
               height={height}
               width={width}
               itemCount={slice.length - 1}
-              itemSize={10}
+              itemSize={12}
             >
               {Row}
             </List>

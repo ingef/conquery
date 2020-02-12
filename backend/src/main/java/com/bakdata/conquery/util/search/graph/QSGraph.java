@@ -17,10 +17,6 @@
  */
 package com.bakdata.conquery.util.search.graph;
 
-import com.bakdata.conquery.util.search.ImmutableSet;
-import com.bakdata.conquery.util.search.SearchScorer;
-import com.bakdata.conquery.util.search.model.QuickSearchStats;
-
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -28,6 +24,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.locks.StampedLock;
+
+import com.bakdata.conquery.util.search.ImmutableSet;
+import com.bakdata.conquery.util.search.SearchScorer;
+import com.bakdata.conquery.util.search.model.QuickSearchStats;
 
 /**
  * QuickSearch
@@ -277,8 +277,8 @@ public class QSGraph<T extends Comparable<T>> {
     private static final class GraphNode<V extends Comparable<V>> implements Comparable<GraphNode<V>> {
 
         private final String identity;
-        private ImmutableSet<V> items;
-        private ImmutableSet<GraphNode<V>> parents;
+        private Set<V> items;
+        private Set<GraphNode<V>> parents;
 
         /*
          * Track historical results set sizes to avoid
@@ -296,8 +296,8 @@ public class QSGraph<T extends Comparable<T>> {
         private GraphNode(final String fragment) {
             Objects.requireNonNull(fragment);
             this.identity = fragment;
-            this.items = ImmutableSet.emptySet();
-            this.parents = ImmutableSet.emptySet();
+            this.items = new HashSet<>();
+            this.parents = new HashSet<>();
         }
 
         /**
@@ -325,7 +325,7 @@ public class QSGraph<T extends Comparable<T>> {
          * @param item item to add.
          */
         private void addItem(final V item) {
-            items = items.createInstanceByAdding(item);
+            items.add(item);
         }
 
         /**
@@ -334,7 +334,7 @@ public class QSGraph<T extends Comparable<T>> {
          * @param item item to remove.
          */
         private void removeItem(final V item) {
-            items = items.createInstanceByRemoving(item);
+            items.add(item);
         }
 
         /**
@@ -354,7 +354,7 @@ public class QSGraph<T extends Comparable<T>> {
          * @param parent parent to add.
          */
         private void addParent(final GraphNode<V> parent) {
-            parents = parents.createInstanceByAdding(parent);
+            parents.add(parent);
         }
 
         /**
@@ -363,7 +363,7 @@ public class QSGraph<T extends Comparable<T>> {
          * @param parent parent to remove.
          */
         private void removeParent(final GraphNode<V> parent) {
-            parents = parents.createInstanceByRemoving(parent);
+            parents.add(parent);
         }
 
         @Override

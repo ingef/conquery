@@ -1,5 +1,8 @@
 package com.bakdata.conquery.models.worker;
 
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
@@ -10,9 +13,6 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
-
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 public abstract class NamespaceCollection implements Injectable {
 
@@ -32,7 +32,7 @@ public abstract class NamespaceCollection implements Injectable {
 		return values.add(NamespaceCollection.class, this);
 	}
 
-	public abstract CentralRegistry findRegistry(DatasetId dataset);
+	public abstract CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException;
 	@JsonIgnore
 	public abstract CentralRegistry getMetaRegistry();
 
