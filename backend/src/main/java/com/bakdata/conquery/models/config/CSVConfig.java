@@ -39,7 +39,7 @@ public class CSVConfig {
 	 * The script has an instance of SelectResultInfo named columnInfo available to construct the name.
 	 */
 	@ValidColumnNamer
-	private String columnNamerScript = "java.lang.String.format(\"%s %s %s\",columnInfo.getSelect().getHolder().findConcept().getLabel(), columnInfo.getCqConcept().getLabel(),columnInfo.getSelect().getLabel())";
+	private String columnNamerScript = null;
 	
 	/**
 	 * Helper method to generate parser settings from the provided options in this class.

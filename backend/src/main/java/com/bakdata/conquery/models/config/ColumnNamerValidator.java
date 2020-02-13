@@ -3,9 +3,6 @@ package com.bakdata.conquery.models.config;
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
-import org.codehaus.groovy.control.CompilationFailedException;
-import org.codehaus.groovy.control.CompilerConfiguration;
-
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.query.PrintSettings;
@@ -13,10 +10,11 @@ import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.queryplan.aggregators.Aggregator;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import com.google.common.base.Strings;
-
 import groovy.lang.GroovyShell;
 import groovy.lang.Script;
 import lombok.extern.slf4j.Slf4j;
+import org.codehaus.groovy.control.CompilationFailedException;
+import org.codehaus.groovy.control.CompilerConfiguration;
 
 /**
  * This validator checks a common use case for the column name creation. It may be extended.
@@ -52,14 +50,15 @@ public class ColumnNamerValidator implements ConstraintValidator<ValidColumnName
 	}
 
 	@Override
-	public boolean isValid(String value, ConstraintValidatorContext context) {
-		context.disableDefaultConstraintViolation();
-		String scriptString = value;
+	public boolean isValid(String value, ConstraintValidatorContext context) {		
+				String scriptString = value;
 		
 		if(Strings.isNullOrEmpty(scriptString)) {
-			context.buildConstraintViolationWithTemplate(String.format("Column Namer Script is not alloed to be null or empty")).addConstraintViolation();
-			return false;
+			// No script provided defaults to PrintSettings#standardColumnName
+			return true;
 		}
+		
+		context.disableDefaultConstraintViolation();
 		
 		/*
 		 * Instantiate a column info. Be aware that this instance is not fully resolved (e.g. json backreferences are not set),
