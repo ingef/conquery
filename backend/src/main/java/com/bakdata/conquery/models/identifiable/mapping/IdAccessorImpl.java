@@ -31,6 +31,7 @@ public class IdAccessorImpl implements IdAccessor {
 	/**
 	 * The used namespace storage.
 	 */
+	@Getter
 	private final NamespaceStorage storage;
 
 	/**
@@ -65,7 +66,7 @@ public class IdAccessorImpl implements IdAccessor {
 	 * @param csvLine The csv line.
 	 * @return Outputs a csvLine like the one in the original uploaded id mapping CSV
 	 */
-	private String[] reorder(String[] csvLine) {
+	protected String[] reorder(String[] csvLine) {
 		String[] reorderedCsvLine = new String[accessor.getHeader().length];
 		for (int i = 0; i < csvLine.length; i++) {
 			int indexInHeader = applicationMapping[i];
