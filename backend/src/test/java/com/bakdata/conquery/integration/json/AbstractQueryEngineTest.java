@@ -9,7 +9,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.IQuery;
@@ -35,7 +34,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	protected abstract ResourceFile getExpectedCsv();
 
 	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,"columnInfo.getSelect().getId().toStringWithoutDataset()");
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,columnInfo -> columnInfo.getSelect().getId().toStringWithoutDataset());
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {

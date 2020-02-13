@@ -46,9 +46,7 @@ import org.eclipse.jetty.io.EofException;
 @Slf4j
 public class ResultCSVResource {
 
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(
-		true,
-		ConqueryConfig.getInstance().getCsv().getColumnNamerScript());
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(true);
 	public static final URLBuilderPath GET_CSV_PATH = new URLBuilderPath(
 		ResultCSVResource.class, "getAsCsv");
 	private final Namespaces namespaces;
