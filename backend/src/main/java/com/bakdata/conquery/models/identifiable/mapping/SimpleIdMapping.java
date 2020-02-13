@@ -8,14 +8,14 @@ public class SimpleIdMapping extends IdMappingConfig {
 
 	@Override
 	public IdMappingAccessor[] getIdAccessors() {
-		return new IdMappingAccessor[]{new DefaultIdMappingAccessor(this, new int[]{0}) {
+		return new IdMappingAccessor[]{new DefaultIdMappingAccessor(getPrintIdFields(), new int[]{0}) {
 			@Override
 			public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
 				return new CsvEntityId(reorderedCsvLine[0]);
 			}
 
 			@Override
-			public int findIndexfromMappingHeader(String csvHeaderField) {
+			public int findIndexFromMappingHeader(String csvHeaderField) {
 				return ArrayUtils.indexOf(getHeader(), csvHeaderField);
 			}
 		}};
