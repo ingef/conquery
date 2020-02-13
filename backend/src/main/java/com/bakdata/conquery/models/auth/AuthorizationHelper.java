@@ -13,17 +13,19 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
 import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.RoleOwner;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.PermissionOwnerId;
+import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.Visitable;
@@ -31,12 +33,14 @@ import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import lombok.NonNull;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.Permission;
 
 /**
  * Helper for easier and cleaner authorization.
  *
  */
+@Slf4j
 public class AuthorizationHelper {
 	
 	// Dataset Instances
@@ -116,9 +120,8 @@ public class AuthorizationHelper {
 	 * @param owner The subject to own the new permission.
 	 * @param permission The permission to add.
 	 * @param storage A storage where the permission are added for persistence.
-	 * @throws JSONException When the permission object could not be formed in to the appropriate JSON format.
 	 */
-	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission, @NonNull MasterMetaStorage storage) throws JSONException {
+	public static void addPermission(@NonNull PermissionOwner<?> owner, @NonNull ConqueryPermission permission, @NonNull MasterMetaStorage storage) {
 		owner.addPermission(storage, permission);
 	}
 	
@@ -127,10 +130,9 @@ public class AuthorizationHelper {
 	 * @param owner The subject to own the new permission.
 	 * @param permission The permission to remove.
 	 * @param storage A storage where the permission is removed from.
-	 * @throws JSONException When the permission object could not be formed in to the appropriate JSON format.
 	 */
-	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission, @NonNull MasterMetaStorage storage) throws JSONException {
-		Objects.requireNonNull(owner).removePermission(storage, permission);
+	public static void removePermission(@NonNull PermissionOwner<?> owner, @NonNull Permission permission, @NonNull MasterMetaStorage storage) {
+		owner.removePermission(storage, permission);
 	}
 	
 	public static List<Group> getGroupsOf(@NonNull User user, @NonNull MasterMetaStorage storage){
@@ -190,6 +192,53 @@ public class AuthorizationHelper {
 	}
 	
 
+	
+	public static <P extends PermissionOwner<?>> void addRoleTo(MasterMetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
+		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
+		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+		
+		if(!(owner instanceof RoleOwner)) {
+			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));			
+		}
+
+		((RoleOwner)owner).addRole(storage, role);
+		log.trace("Added role {} to {}", role, owner);
+	}
+	
+	public static <P extends PermissionOwner<?>> void deleteRoleFrom(MasterMetaStorage storage, PermissionOwnerId<P> ownerId, RoleId roleId) {
+		Role role = Objects.requireNonNull(roleId.getPermissionOwner(storage));
+		P owner = Objects.requireNonNull(ownerId.getPermissionOwner(storage));
+		
+		if(!(owner instanceof RoleOwner)) {
+			throw new IllegalStateException(String.format("Provided entity %s cannot hold any roles", owner));			
+		}
+
+		((RoleOwner)owner).removeRole(storage,role);
+		
+		log.trace("Deleted role {} from {}", role, owner);
+	}
+
+	public static void deleteRole(MasterMetaStorage storage, RoleId roleId) {
+		log.info("Deleting mandator: {}", roleId);
+		Role role = storage.getRole(roleId);
+		for (User user : storage.getAllUsers()) {
+			user.removeRole(storage, role);
+		}
+		for (Group group : storage.getAllGroups()) {
+			group.removeRole(storage, role);
+		}
+		storage.removeRole(roleId);
+	}
+	
+
+
+	public static List<User> getUsersByRole(MasterMetaStorage storage, Role role) {
+		return storage.getAllUsers().stream().filter(u -> u.getRoles().contains(role)).collect(Collectors.toList());
+	}
+
+	public static List<Group> getGroupsByRole(MasterMetaStorage storage, Role role) {
+		return storage.getAllGroups().stream().filter(g -> g.getRoles().contains(role)).collect(Collectors.toList());
+	}
 
 	/**
 	 * Checks if an execution is allowed to be downloaded by a user.

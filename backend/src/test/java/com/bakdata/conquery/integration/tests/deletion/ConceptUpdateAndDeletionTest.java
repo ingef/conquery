@@ -12,7 +12,6 @@ import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.integration.tests.ProgrammaticIntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.WorkerStorage;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.exceptions.ValidatorHelper;
 import com.bakdata.conquery.models.execution.ExecutionState;
@@ -253,7 +252,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
 	public static void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState state) throws JSONException {
-		final ManagedQuery managedQuery = conquery.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
+		final ManagedQuery managedQuery = conquery.getNamespace().getQueryManager().runQuery(query, conquery.getTestUser());
 
 		managedQuery.awaitDone(2, TimeUnit.MINUTES);
 		assertThat(managedQuery.getState()).isEqualTo(state);

@@ -187,7 +187,8 @@ public class DatasetDeletionTest implements ProgrammaticIntegrationTest {
 							newDataset,
 							conquery.getTmpDir(),
 							conquery.getConfig(),
-							conquery.getDatasetsProcessor()
+							conquery.getDatasetsProcessor(),
+							conquery.getTestUser()
 					);
 
 

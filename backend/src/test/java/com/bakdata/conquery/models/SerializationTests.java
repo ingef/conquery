@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
+import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Group;
@@ -38,6 +39,15 @@ public class SerializationTests {
 		SerializationTestUtil
 			.forType(Dataset.class)
 			.test(dataset);
+	}
+	
+	@Test
+	public void passwordCredential() throws IOException, JSONException{
+		PasswordCredential credential = new PasswordCredential(new String("testPassword").toCharArray());
+		
+		SerializationTestUtil
+			.forType(PasswordCredential.class)
+			.test(credential);
 	}
 	
 	@Test
