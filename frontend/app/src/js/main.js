@@ -17,7 +17,7 @@ const environment = {
   basename: isProduction
     ? "/" // Possibly: Run under a subpath in production
     : "/",
-  apiUrl: !!process.env.API_URL ? process.env.API_URL : "/api",
+  apiUrl: !!process.env.API_URL ? process.env.API_URL : "",
   disableLogin
 };
 
