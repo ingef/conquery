@@ -45,8 +45,10 @@ import com.google.common.collect.MoreCollectors;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import jetbrains.exodus.ArrayByteIterable;
 import jetbrains.exodus.ByteIterable;
+import jetbrains.exodus.ExodusException;
 import jetbrains.exodus.bindings.StringBinding;
 import jetbrains.exodus.env.Environment;
+import jetbrains.exodus.env.EnvironmentClosedException;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -71,6 +73,8 @@ import org.glassfish.hk2.utilities.binding.AbstractBinder;
 @Slf4j
 public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implements UserManageable, AuthApiUnprotectedResourceProvider, AuthAdminUnprotectedResourceProvider, AuthAdminResourceProvider {
 
+	private static final int ENVIRONMNENT_CLOSING_RETRYS = 2;
+	private static final int ENVIRONMNENT_CLOSING_TIMEOUT = 2; // seconds
 	private static final Class<? extends AuthenticationToken> TOKEN_CLASS = JwtToken.class;
 	private int jwtDuration; // Hours
 
@@ -287,5 +291,37 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 
 		});
 		jerseyConfig.register(UserAuthenticationManagementResource.class);
+	}
+
+	
+	//////////////////// LIFECYCLE MANAGEMENT ////////////////////
+		
+	@Override
+	public void destroy() throws InterruptedException {
+		for(int retries = 0; retries < ENVIRONMNENT_CLOSING_RETRYS; retries++) {			
+			try {
+				log.info("Closing the password environment.");
+				passwordEnvironment.close();
+				return;
+			}
+			catch (EnvironmentClosedException e) {
+				log.warn("Password environment was already closed, which is odd but mayby the stop() lifecycle event fired twice");
+				return;
+			}
+			catch (ExodusException e) {
+				if (retries == 0) {
+					log.info("The environment is still working on some transactions. Retry");				
+				}
+				log.info("Waiting for {} seconds to retry.");
+				Thread.sleep(ENVIRONMNENT_CLOSING_TIMEOUT*1000 /* milliseconds */);
+				continue;
+			}
+		}
+		// Close the environment with force
+		log.info("Closing the environment forcefully");
+		passwordEnvironment.getEnvironmentConfig().setEnvCloseForcedly(true);
+		passwordEnvironment.close();
+		return;
+
 	}
 }

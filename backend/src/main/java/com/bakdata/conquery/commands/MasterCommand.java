@@ -108,6 +108,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		
 		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
 		authController.init();
+		environment.lifecycle().manage(authController);
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {

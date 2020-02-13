@@ -9,12 +9,13 @@ import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.realm.AuthenticatingRealm;
+import org.apache.shiro.util.Destroyable;
 
 /**
  * Abstract class that needs to be implemented for authenticating realms in
  * Conquery.
  */
-public abstract class ConqueryAuthenticationRealm extends AuthenticatingRealm {
+public abstract class ConqueryAuthenticationRealm extends AuthenticatingRealm implements Destroyable {
 
 	@Override
 	protected final AuthenticationInfo doGetAuthenticationInfo(AuthenticationToken token) throws AuthenticationException {
@@ -50,4 +51,8 @@ public abstract class ConqueryAuthenticationRealm extends AuthenticatingRealm {
 	@Nullable
 	public abstract AuthenticationToken extractToken(ContainerRequestContext request);
 
+	@Override
+	public void destroy() throws Exception {
+		// Might be implemented if the realm needs to release resources
+	}
 }

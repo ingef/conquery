@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.auth.web.DefaultAuthFilter;
 import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import io.dropwizard.auth.AuthFilter;
+import io.dropwizard.lifecycle.Managed;
 import lombok.Getter;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ import org.apache.shiro.util.LifecycleUtils;
  */
 @Slf4j
 @RequiredArgsConstructor
-public final class AuthorizationController {
+public final class AuthorizationController implements Managed{
 	
 	@NonNull
 	private final AuthorizationConfig authorizationConfig;
@@ -50,20 +51,30 @@ public final class AuthorizationController {
 	private AuthFilter<AuthenticationToken, User> authenticationFilter;
 	@Getter
 	private List<Realm> realms = new ArrayList<>();
-
+	
 	public void init() {
-
 		initializeRealms(storage, authenticationConfigs, authenticationRealms, realms);
-
+		
 		registerShiro(realms);
-
+		
 		// Create Jersey filter for authentication
 		this.authenticationFilter = DefaultAuthFilter.asDropwizardFeature(this);
-
+		
+	}
+	
+	@Override
+	public void start() throws Exception {
+		// Call Shiros init on all realms
+		LifecycleUtils.init(realms);
 		// Register initial users for authorization and authentication (if the realm is able to)
 		initializeAuthConstellation(authorizationConfig, realms, storage);
 	}
-
+	
+	@Override
+	public void stop() throws Exception {
+		LifecycleUtils.destroy(authenticationRealms);
+	}
+	
 	private static void registerShiro(List<Realm> realms) {
 		// Register all realms in Shiro
 		log.info("Registering the following realms to Shiro:\n\t", realms.stream().map(Realm::getName).collect(Collectors.joining("\n\t")));
@@ -82,8 +93,6 @@ public final class AuthorizationController {
 		AuthorizingRealm authorizingRealm = new ConqueryAuthorizationRealm(storage);
 		realms.add(authorizingRealm);
 
-		// Call Shiros init on all realms
-		realms.stream().forEach(LifecycleUtils::init);
 	}
 
 	/**
