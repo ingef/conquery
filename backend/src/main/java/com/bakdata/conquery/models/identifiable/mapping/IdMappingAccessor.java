@@ -41,7 +41,7 @@ public interface IdMappingAccessor {
 		Arrays.fill(applicationMapping, -1);
 		for (int indexInHeader = 0; indexInHeader < csvHeader.length; indexInHeader++) {
 			String csvHeaderField = csvHeader[indexInHeader];
-			int indexInCsvHeader = findIndexfromMappingHeader(csvHeaderField);
+			int indexInCsvHeader = findIndexFromMappingHeader(csvHeaderField);
 			if (indexInCsvHeader != -1) {
 				applicationMapping[indexInHeader] = indexInCsvHeader;
 			}
@@ -54,7 +54,7 @@ public interface IdMappingAccessor {
 	 * @param csvHeaderField The header field in the CSV that is machted to the predefined required headers.
 	 * @return The index of the predefined header that matched best.
 	 */
-	int findIndexfromMappingHeader(String csvHeaderField);
+	int findIndexFromMappingHeader(String csvHeaderField);
 
 	/**
 	 * Extracts the Id information from a CSV line using this accessor

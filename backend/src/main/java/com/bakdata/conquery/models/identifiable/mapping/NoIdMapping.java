@@ -55,7 +55,7 @@ public class NoIdMapping extends IdMappingConfig {
 		}
 
 		@Override
-		public int findIndexfromMappingHeader(String csvHeaderField) {
+		public int findIndexFromMappingHeader(String csvHeaderField) {
 			return ArrayUtils.indexOf(getHeader(), csvHeaderField);
 		}
 	}
