@@ -24,6 +24,7 @@ public class ConqueryIntegrationTests extends IntegrationTests {
 	@Override
 	@TestFactory @Tag(TestTags.INTEGRATION_PROGRAMMATIC)
 	public Stream<DynamicNode> programmaticTests() throws IOException {
-		return super.programmaticTests();
+		return Stream.empty();
+//		return super.programmaticTests();
 	}
 }

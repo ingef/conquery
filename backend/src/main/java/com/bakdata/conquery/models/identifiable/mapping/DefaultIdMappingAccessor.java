@@ -14,7 +14,7 @@ public abstract class DefaultIdMappingAccessor implements IdMappingAccessor {
 	public DefaultIdMappingAccessor(IdMappingConfig mapping, int[] idsUsed) {
 		this.idsUsed = idsUsed;
 		this.header = new String[idsUsed.length];
-		for(int i=0; i<header.length; i++) {
+		for (int i = 0; i < header.length; i++) {
 			header[i] = mapping.getPrintIdFields()[idsUsed[i]];
 		}
 	}
