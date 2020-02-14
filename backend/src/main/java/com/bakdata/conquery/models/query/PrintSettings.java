@@ -7,6 +7,7 @@ import com.bakdata.conquery.models.query.resultinfo.SelectNameExtractor;
 import com.bakdata.conquery.models.query.resultinfo.SelectResultInfo;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
@@ -15,7 +16,8 @@ public class PrintSettings implements SelectNameExtractor {
 
 	private final boolean prettyPrint;
 	
-	private Function<SelectResultInfo, String> columnNamer = null;
+	@NonNull
+	private Function<SelectResultInfo, String> columnNamer = PrintSettings::defaultColumnName;
 	
 
 	/**
@@ -23,17 +25,22 @@ public class PrintSettings implements SelectNameExtractor {
 	 */
 	@Override
 	public String columnName(SelectResultInfo columnInfo) {
-		if (columnNamer != null) {
-			// If a columnNamer is supplied it is used
-			return columnNamer.apply(columnInfo);
+		if (columnNamer == null) {
+			// Should never be reached
+			throw new IllegalStateException("No column namer was supplied");
 		}
+		return columnNamer.apply(columnInfo);
+	}
+
+
+	private static String defaultColumnName(SelectResultInfo columnInfo) {
 		StringBuilder sb = new StringBuilder();
 		String cqLabel = columnInfo.getCqConcept().getLabel();
 		String conceptLabel = columnInfo.getSelect().getHolder().findConcept().getLabel();
 		
 		sb.append(conceptLabel);
 		sb.append(' ');
-		if (!cqLabel.equals(conceptLabel)) {
+		if (!cqLabel.equalsIgnoreCase(conceptLabel)) {
 			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);
 			sb.append(' ');
