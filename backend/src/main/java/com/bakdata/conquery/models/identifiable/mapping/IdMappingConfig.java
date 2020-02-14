@@ -52,6 +52,9 @@ public abstract class IdMappingConfig {
 		return ArrayUtils.subarray(getHeader(), 1, getHeaderSize());
 	}
 
+	/**
+	 * Header of the Mapping-CSV file.
+	 */
 	@JsonIgnore
 	public abstract String[] getHeader();
 

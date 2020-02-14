@@ -7,9 +7,9 @@ import lombok.ToString;
 public abstract class DefaultIdMappingAccessor implements IdMappingAccessor {
 
 	@Getter
-	private final int[] idsUsed;
+	protected final int[] idsUsed;
 	@Getter
-	private final String[] header;
+	protected final String[] header;
 
 	/**
 	 * Select values from array in order by index.
@@ -26,9 +26,9 @@ public abstract class DefaultIdMappingAccessor implements IdMappingAccessor {
 		return out;
 	}
 
-	public DefaultIdMappingAccessor(String[] header, int[] idsUsed) {
+	public DefaultIdMappingAccessor(int[] idsUsed, String[] header) {
 		this.idsUsed = idsUsed;
-		this.header = select(header, idsUsed);
+		this.header = header;
 	}
 
 	@Override
