@@ -3,6 +3,7 @@ tag-template: 'v$NEXT_PATCH_VERSION'
 branches:
   - 'master'
   - 'develop'
+  - 'prerelease/*'
 categories:
   - title: '⚙️ Dependencies'
     label: 'dependencies'
