@@ -87,12 +87,15 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 		UserId userId = null;
 
 		if (uid != null) {
-			userId = UserId.Parser.INSTANCE.parse(uid);
+			try {
+				userId = UserId.Parser.INSTANCE.parse(uid);		
+				return new DevelopmentToken(userId, uid);		
+			} catch (Exception e) {
+				// do default
+			}
 		}
-		else {
-			// If nothing was found execute the request as the default user
-			userId = defaultUser.getId();
-		}
+		// If nothing was found execute the request as the default user
+		userId = defaultUser.getId();
 		return new DevelopmentToken(userId, uid);
 	}
 }
