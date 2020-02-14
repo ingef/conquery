@@ -70,8 +70,8 @@ public class CQExternal implements CQElement {
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
 		IdAccessor idAccessor = mapping.mappingFromCsvHeader(
-				IdAccessorImpl.removeNonIdFields(values[0], format),
-				context.getNamespace().getStorage()
+				IdAccessorImpl.selectIdFields(values[0], format),
+				context.getNamespace().getStorage().getIdMapping()
 		);
 		List<List<String>> nonResolved = new ArrayList<>();
 
@@ -93,7 +93,7 @@ public class CQExternal implements CQElement {
 					}
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format));
+				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.selectIdFields(row, format));
 
 				int resolvedId;
 				if (id != null && (resolvedId = primary.getId(id.getCsvId())) != -1) {

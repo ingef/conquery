@@ -3,8 +3,6 @@ package com.bakdata.conquery.models.identifiable.mapping;
 import java.util.Arrays;
 import java.util.List;
 
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-
 public interface IdMappingAccessor {
 
 	String[] getHeader();
@@ -32,11 +30,10 @@ public interface IdMappingAccessor {
 	 *
 	 * @param csvHeader
 	 *            Array of the header Strings.
-	 * @param storage
-	 *            The Namespace Storage to use.
+	 * @param idMapping
 	 * @return The IdAccessor.
 	 */
-	default IdAccessor getApplicationMapping(String[] csvHeader, NamespaceStorage storage) {
+	default IdAccessor getApplicationMapping(String[] csvHeader, final PersistentIdMap idMapping) {
 		int[] applicationMapping = new int[csvHeader.length];
 		Arrays.fill(applicationMapping, -1);
 		for (int indexInHeader = 0; indexInHeader < csvHeader.length; indexInHeader++) {
@@ -46,7 +43,7 @@ public interface IdMappingAccessor {
 				applicationMapping[indexInHeader] = indexInCsvHeader;
 			}
 		}
-		return new IdAccessorImpl(this, applicationMapping, storage);
+		return new IdAccessorImpl(this, applicationMapping, idMapping);
 	}
 	
 	/**

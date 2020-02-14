@@ -4,7 +4,6 @@ import java.util.Arrays;
 import java.util.Iterator;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.worker.Namespace;
@@ -81,11 +80,11 @@ public abstract class IdMappingConfig {
 	}
 
 	@NonNull
-	public IdAccessor mappingFromCsvHeader(String[] csvHeader, NamespaceStorage namespaceStorage) {
+	public IdAccessor mappingFromCsvHeader(String[] csvHeader, PersistentIdMap idMapping) {
 		for (IdMappingAccessor accessor : getIdAccessors()) {
 			if (accessor.canBeApplied(Arrays.asList(csvHeader))) {
 				log.info("Using accessor (with required headers {}) to extract mapping from CSV with the header containing the ID columns: {}", accessor.getHeader(), csvHeader);
-				return accessor.getApplicationMapping(csvHeader, namespaceStorage);
+				return accessor.getApplicationMapping(csvHeader, idMapping);
 			}
 		}
 		log.info("Using the default accessor implementation.");
