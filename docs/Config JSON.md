@@ -148,7 +148,6 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | columnNamerScript | `String` | `"java.lang.String.format(\"%s %s %s\",columnInfo.getSelect().getHolder().findConcept().getLabel(), columnInfo.getCqConcept().getLabel(),columnInfo.getSelect().getLabel())"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | comment | `char` | `"\u0000"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | delimeter | `char` | `","` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | encoding | `Charset` | `"UTF-8"` |  |  | 
