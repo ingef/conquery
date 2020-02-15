@@ -13,8 +13,6 @@ type PropsType = {
   rightTabs: TabT[]
 };
 
-const AppWithAuthToken = WithAuthToken(App);
-
 const AppRouter = ({ history, ...rest }: PropsType) => {
   return (
     <Router history={history}>
@@ -22,7 +20,11 @@ const AppRouter = ({ history, ...rest }: PropsType) => {
         <Route path="/login" component={LoginPage} />
         <Route
           path="/*"
-          render={routeProps => <AppWithAuthToken {...routeProps} {...rest} />}
+          render={routeProps => (
+            <WithAuthToken {...routeProps}>
+              <App {...rest} />
+            </WithAuthToken>
+          )}
         />
       </Switch>
     </Router>
