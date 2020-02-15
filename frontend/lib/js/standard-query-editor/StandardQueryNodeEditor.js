@@ -4,6 +4,7 @@ import React from "react";
 
 import { createConnectedQueryNodeEditor } from "../query-node-editor";
 
+import type { StateType } from "../app/reducers";
 import type { PropsType } from "../query-node-editor/QueryNodeEditor";
 
 import {
@@ -27,13 +28,18 @@ const findNodeBeingEdited = query =>
     .reduce((acc, group) => [...acc, ...group.elements], [])
     .find(element => element.isEditing);
 
-const mapStateToProps = state => {
+const mapStateToProps = (state: StateType) => {
   const node = findNodeBeingEdited(state.queryEditor.query);
 
   const showTables =
     node &&
     node.tables &&
-    node.tables.some(table => table.filters && table.filters.length > 0);
+    node.tables.some(
+      table =>
+        (!!table.filters && table.filters.length > 0) ||
+        (!!table.selects && table.selects.length > 0) ||
+        (!!table.dateColumn && table.dateColumn.options.length > 0)
+    );
 
   return {
     node,
