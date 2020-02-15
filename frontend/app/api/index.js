@@ -368,4 +368,21 @@ module.exports = function(app, port) {
       }
     }, 500);
   });
+
+  app.get("/api/me", (req, res) => {
+    res.setHeader("Content-Type", "application/json");
+
+    res.send({
+      userName: "superUser",
+      permissions: [
+        {
+          domains: ["datasets"],
+          abilities: ["read", "download", "preserve_id"],
+          targets: ["imdb"],
+          creationTime: "2020-01-23T09:52:31.3318485"
+        }
+      ],
+      groups: []
+    });
+  });
 };

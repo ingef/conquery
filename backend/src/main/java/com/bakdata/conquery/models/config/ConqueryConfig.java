@@ -7,21 +7,21 @@ import java.util.NoSuchElementException;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.lang3.ArrayUtils;
-
-import com.bakdata.conquery.models.auth.AuthConfig;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
+import com.bakdata.conquery.models.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.auth.AuthorizationConfig;
+import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
+import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.util.DebugMode;
 import com.google.common.collect.MoreCollectors;
-
 import io.dropwizard.Configuration;
 import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.server.ServerFactory;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang3.ArrayUtils;
 
 @Getter @Setter
 public class ConqueryConfig extends Configuration {
@@ -53,7 +53,9 @@ public class ConqueryConfig extends Configuration {
 	@NotNull @Valid
 	private IdMappingConfig idMapping = new NoIdMapping();
 
-	private AuthConfig authentication = new DevAuthConfig();
+	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
+	
+	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
 	
 	private List<PluginConfig> plugins = new ArrayList<>();
 	/**

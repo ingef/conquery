@@ -5,8 +5,6 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jersey.IdParamConverter;
 import com.bakdata.conquery.io.jetty.CORSPreflightRequestFilter;
 import com.bakdata.conquery.io.jetty.CORSResponseFilter;
-import com.bakdata.conquery.models.auth.TokenExtractorFilter;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.api.APIResource;
@@ -30,18 +28,18 @@ public class ApiV1 implements ResourcesProvider {
 			@Override
 			protected void configure() {
 				bind(new ConceptsProcessor(master.getNamespaces())).to(ConceptsProcessor.class);
-				bind(new QueryProcessor(namespaces, master.getStorage())).to(QueryProcessor.class);
-				bind(new MeProcessor(namespaces.getMetaStorage())).to(MeProcessor.class);
+				bind(new MeProcessor(master.getStorage())).to(MeProcessor.class);
+				bind(new QueryProcessor(namespaces,master.getStorage())).to(QueryProcessor.class);
 			}
 		});
 		
-		environment.register(new TokenExtractorFilter(ConqueryConfig.getInstance().getAuthentication().getTokenExtractor()));
-		/*
-		 * register CORS-Preflight filter inbetween token extraction and authentication
-		 * to intercept unauthenticated OPTIONS requests
-		 */
 		environment.register(new CORSPreflightRequestFilter());
-		environment.register(master.getAuthDynamicFeature());
+		/*
+		 * Register the authentication filter which protects all resources registered in this servlet.
+		 * We use the same instance of the filter for the api servlet and the admin servlet to have a single 
+		 * point for authentication.
+		 */
+		environment.register(master.getAuthController().getAuthenticationFilter());
 		environment.register(QueryResource.class);
 		environment.register(new ResultCSVResource(namespaces, master.getConfig()));
 		environment.register(new StoredQueriesResource(namespaces));

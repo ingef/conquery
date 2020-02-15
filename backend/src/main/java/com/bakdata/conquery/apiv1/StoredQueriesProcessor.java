@@ -100,6 +100,7 @@ public class StoredQueriesProcessor {
 
 	/**
 	 * (Un)Shares a query with a specific group.
+	 * @throws JSONException 
 	 */
 	public void shareWithGroup(User user, ManagedQuery query, Group shareGroup, boolean shared) throws JSONException {
 		updateQueryVersions(user, query, Ability.SHARE, q -> {
@@ -119,26 +120,15 @@ public class StoredQueriesProcessor {
 							shareGroup.getId(),
 							userGroups));
 			}
-			try {
-				if (shared) {
-					addPermission(shareGroup, queryPermission, storage);
-					log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, shareGroup);
-				}
-				else {
-					removePermission(shareGroup, queryPermission, storage);
-					log
-						.trace(
-							"User {} unshares query {}. Removing permission {} from group {}.",
-							user,
-							q.getId(),
-							queryPermission,
-							shareGroup);
-				}
-				q.setShared(shared);
+			if (shared) {
+				addPermission(shareGroup, queryPermission, storage);
+				log.trace("User {} shares query {}. Adding permission {} to group {}.", user, q.getId(), queryPermission, shareGroup);
 			}
-			catch (JSONException e) {
-				log.error("Failed to set shared status for query " + query, e);
+			else {
+				removePermission(shareGroup, queryPermission, storage);
+				log.trace("User {} unshares query {}. Removing permission {} from group {}.", user, q.getId(), queryPermission, shareGroup);
 			}
+			q.setShared(shared);
 
 		});
 	}
