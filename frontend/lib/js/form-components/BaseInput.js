@@ -74,6 +74,14 @@ const BaseInput = (props: PropsType) => {
     }
   };
 
+  function safeOnChange(val: ?(string | number)) {
+    if (typeof val === "string" && val.length === 0) {
+      props.onChange(null);
+    } else {
+      props.onChange(val);
+    }
+  }
+
   return (
     <Root className={props.className}>
       {props.valueType === MONEY_RANGE && !!props.currencyConfig ? (
@@ -81,13 +89,13 @@ const BaseInput = (props: PropsType) => {
           currencyConfig={props.currencyConfig}
           placeholder={props.placeholder}
           value={props.value}
-          onChange={props.onChange}
+          onChange={safeOnChange}
         />
       ) : (
         <Input
           placeholder={props.placeholder}
           type={props.inputType}
-          onChange={e => props.onChange(e.target.value)}
+          onChange={e => safeOnChange(e.target.value)}
           onKeyPress={e => handleKeyPress(e)}
           value={props.value || ""}
           {...inputProps}
