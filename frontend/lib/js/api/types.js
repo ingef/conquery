@@ -87,8 +87,9 @@ export type StringFilterT = FilterBaseT & {
 };
 
 export type DateColumnT = {
-  options: SelectOptionT,
-  defaultValue: ?string
+  options: SelectOptionsT,
+  defaultValue: ?string,
+  value?: string
 };
 
 export type FilterT =
