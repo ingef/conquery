@@ -17,6 +17,7 @@ type PropsType = FieldPropsType & {
   className?: string,
   placeholder?: string,
   tinyLabel?: boolean,
+  large?: boolean,
   inputProps?: Object,
   currencyConfig?: CurrencyConfigT,
   fullWidth?: boolean
@@ -33,8 +34,10 @@ const InputText = (props: PropsType) => {
       fullWidth={props.fullWidth}
       label={props.label}
       tinyLabel={props.tinyLabel}
+      largeLabel={props.large}
     >
       <BaseInput
+        large={props.large}
         inputType={props.inputType || "text"}
         valueType={props.valueType}
         placeholder={props.placeholder}

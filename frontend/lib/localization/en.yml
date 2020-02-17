@@ -289,3 +289,10 @@ preview:
   min: "Min date"
   max: "Max date"
   span: "Date span"
+
+login:
+  headline: "Queries and Analyses"
+  username: "User name"
+  password: "Password"
+  error: "Login failed. Please check user name and password."
+  submit: "Login"
