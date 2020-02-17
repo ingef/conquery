@@ -30,6 +30,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.ResourceUtil;
+import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.auth.Auth;
 
 @Path("datasets/{" + DATASET + "}/queries")
@@ -40,10 +41,12 @@ public class QueryResource {
 	
 	private QueryProcessor processor;
 	private ResourceUtil dsUtil;
+	private MetricRegistry metricRegistry;
 	
 	@Inject
-	public QueryResource(QueryProcessor processor) {
+	public QueryResource(QueryProcessor processor, MetricRegistry metricRegistry) {
 		this.processor= processor;
+		this.metricRegistry = metricRegistry;
 		dsUtil = new ResourceUtil(processor.getNamespaces());
 	}
 

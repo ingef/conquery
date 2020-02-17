@@ -29,7 +29,7 @@ public class ApiV1 implements ResourcesProvider {
 			protected void configure() {
 				bind(new ConceptsProcessor(master.getNamespaces())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(master.getStorage())).to(MeProcessor.class);
-				bind(new QueryProcessor(namespaces,master.getStorage())).to(QueryProcessor.class);
+				bind(new QueryProcessor(namespaces,master.getStorage(), master.getMetricRegistry())).to(QueryProcessor.class);
 			}
 		});
 		
