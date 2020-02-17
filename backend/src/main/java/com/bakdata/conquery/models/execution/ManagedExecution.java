@@ -133,6 +133,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 							  .label(label)
 							  .id(getId())
 							  .own(getOwner().equals(user.getId()))
+							  .shared(!getOwner().equals(user.getId()))
 							  .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 							  .requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
 							  .owner(Optional.ofNullable(owner).orElse(null))
