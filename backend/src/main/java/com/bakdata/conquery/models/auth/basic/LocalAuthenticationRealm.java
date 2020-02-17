@@ -210,6 +210,9 @@ public class LocalAuthenticationRealm extends ConqueryAuthenticationRealm implem
 	 * @return The password credential.
 	 */
 	private static Optional<PasswordCredential> getTypePassword(List<CredentialType> credentials) {
+		if(credentials == null) {
+			return Optional.empty();
+		}
 		return credentials.stream()
 			.filter(PasswordCredential.class::isInstance)
 			.map(PasswordCredential.class::cast)

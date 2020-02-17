@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Container for holding a password. This credential type is used by the
@@ -17,5 +18,6 @@ import lombok.RequiredArgsConstructor;
 @AllArgsConstructor
 public class PasswordCredential implements CredentialType {
 
+	@NotEmpty
 	private char[] password;
 }
