@@ -39,6 +39,9 @@ import { reducer as queryUploadConceptListModal } from "../query-upload-concept-
 
 import { createQueryNodeEditorReducer } from "../query-node-editor";
 
+import type { StandardQueryEditorStateT } from "../standard-query-editor";
+import type { StartupStateT } from "../startup/reducer";
+
 // TODO: Introduce more StateTypes gradually
 export type StateType = {
   conceptTrees: ConceptTreesStateType,
@@ -46,7 +49,9 @@ export type StateType = {
   tooltip: TooltipStateType,
   panes: PanesStateType,
   uploadConceptListModal: UploadConceptListModalStateType,
-  user: UserStateT
+  user: UserStateT,
+  queryEditor: StandardQueryEditorStateT,
+  startup: StartupStateT
 };
 
 const buildAppReducer = (tabs: TabT[]) => {

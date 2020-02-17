@@ -65,7 +65,9 @@ import type {
   DraggedQueryType
 } from "./types";
 
-const initialState: StandardQueryType = [];
+export type StandardQueryStateT = StandardQueryType;
+
+const initialState: StandardQueryStateT = [];
 
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
@@ -870,9 +872,9 @@ const removeConceptFromNode = (state, action) => {
 //   }
 // ]
 const query = (
-  state: StandardQueryType = initialState,
+  state: StandardQueryStateT = initialState,
   action: Object
-): StandardQueryType => {
+): StandardQueryStateT => {
   switch (action.type) {
     case DROP_AND_NODE:
       return dropAndNode(state, action);

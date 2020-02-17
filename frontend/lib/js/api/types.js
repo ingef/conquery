@@ -101,7 +101,7 @@ export type FilterT =
 export type TableIdT = string;
 export type TableT = {
   id: TableIdT,
-  dateColumn: DateColumnT,
+  dateColumn: ?DateColumnT,
   connectorId: string, // TODO: Get rid of two ids here (unclear when which one should be used)
   label: string,
   exclude?: boolean,
