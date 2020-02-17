@@ -10,7 +10,7 @@ type APICallType = {
   error?: string
 };
 
-export type StateType = {
+export type QueryRunnerStateT = {
   runningQuery: ?(number | string),
   queryRunning: boolean,
   startQuery: APICallType,
@@ -23,7 +23,7 @@ export type StateType = {
 };
 
 export default function createQueryRunnerReducer(type: string): Function {
-  const initialState: StateType = {
+  const initialState: QueryRunnerStateT = {
     runningQuery: null,
     queryRunning: false,
     startQuery: {},
@@ -67,7 +67,10 @@ export default function createQueryRunnerReducer(type: string): Function {
     };
   };
 
-  return (state: StateType = initialState, action: Object): StateType => {
+  return (
+    state: QueryRunnerStateT = initialState,
+    action: Object
+  ): QueryRunnerStateT => {
     switch (action.type) {
       // To start a query
       case START_QUERY_START:

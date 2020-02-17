@@ -53,16 +53,16 @@ public class CQExternal implements CQElement {
 	public QPNode createQueryPlan(QueryPlanContext context, ConceptQueryPlan plan) {
 		throw new IllegalStateException("CQExternal needs to be resolved before creating a plan");
 	}
-	
+
 
 	@Override
 	public CQElement resolve(QueryResolveContext context) {
 		DirectDictionary primary = context.getNamespace().getStorage().getPrimaryDictionary();
 		Optional<DateFormat> dateFormat = format.stream()
-			.map(FormatColumn::getDateFormat)
-			.filter(Objects::nonNull)
-			.distinct()
-			.collect(MoreCollectors.toOptional());
+												.map(FormatColumn::getDateFormat)
+												.filter(Objects::nonNull)
+												.distinct()
+												.collect(MoreCollectors.toOptional());
 		int[] dateIndices = format.stream().filter(fc -> fc.getDateFormat() != null).mapToInt(format::indexOf).toArray();
 
 		Int2ObjectMap<CDateSet> includedEntities = new Int2ObjectOpenHashMap<>();
@@ -70,16 +70,16 @@ public class CQExternal implements CQElement {
 		IdMappingConfig mapping = ConqueryConfig.getInstance().getIdMapping();
 
 		IdAccessor idAccessor = mapping.mappingFromCsvHeader(
-			IdAccessorImpl.removeNonIdFields(values[0], format),
-			context.getNamespace().getStorage()
+				IdAccessorImpl.selectIdFields(values[0], format),
+				context.getNamespace().getStorage().getIdMapping()
 		);
 		List<List<String>> nonResolved = new ArrayList<>();
-		
+
 		// ignore the first row, because this is the header
 		for (int i = 1; i < values.length; i++) {
 			String[] row = values[i];
 			if (row.length != format.size()) {
-				throw new IllegalArgumentException("There are "+ format.size()+ " columns in the format but "+ row.length + " in at least one row");
+				throw new IllegalArgumentException("There are " + format.size() + " columns in the format but " + row.length + " in at least one row");
 			}
 
 			//read the dates from the row
@@ -93,13 +93,13 @@ public class CQExternal implements CQElement {
 					}
 				}).orElseGet(CDateSet::createFull);
 				// remove all fields from the data line that are not id fields, in case the mapping is not possible we avoid the data columns to be joined
-				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.removeNonIdFields(row, format));
-				
+				CsvEntityId id = idAccessor.getCsvEntityId(IdAccessorImpl.selectIdFields(row, format));
+
 				int resolvedId;
-				if(id!=null && (resolvedId=primary.getId(id.getCsvId())) != -1) {
+				if (id != null && (resolvedId = primary.getId(id.getCsvId())) != -1) {
 					includedEntities.put(
-						resolvedId,
-						Objects.requireNonNull(dates)
+							resolvedId,
+							Objects.requireNonNull(dates)
 					);
 				}
 				else {
@@ -110,27 +110,28 @@ public class CQExternal implements CQElement {
 				log.warn("failed to parse id from " + Arrays.toString(row), e);
 			}
 		}
-		if(!nonResolved.isEmpty()) {
+		if (!nonResolved.isEmpty()) {
 			log.warn(
-				"Could not resolve {} of the {} rows. Not resolved: {}",
-				nonResolved.size(),
-				values.length-1,
-				nonResolved.subList(0, Math.min(nonResolved.size(), 10))
+					"Could not resolve {} of the {} rows. Not resolved: {}",
+					nonResolved.size(),
+					values.length - 1,
+					nonResolved.subList(0, Math.min(nonResolved.size(), 10))
 			);
 		}
-		
+
 		return new CQExternalResolved(includedEntities);
 	}
-	
+
 	@Override
-	public void collectResultInfos(ResultInfoCollector collector) {}
+	public void collectResultInfos(ResultInfoCollector collector) {
+	}
 
 	public enum DateFormat {
 		EVENT_DATE {
 			@Override
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				return CDateSet.create(Collections.singleton(CDateRange.exactly(DateFormats.instance()
-					.parseToLocalDate(row[dateIndices[0]]))));
+																						   .parseToLocalDate(row[dateIndices[0]]))));
 			}
 		},
 		START_END_DATE {
@@ -138,8 +139,8 @@ public class CQExternal implements CQElement {
 			public CDateSet readDates(int[] dateIndices, String[] row) throws ParsingException {
 				LocalDate start = row[dateIndices[0]] == null ? null : DateFormats.instance().parseToLocalDate(row[dateIndices[0]]);
 				LocalDate end = (dateIndices.length < 2 || row[dateIndices[1]] == null) ?
-					null :
-					DateFormats.instance().parseToLocalDate(row[dateIndices[1]]);
+								null :
+								DateFormats.instance().parseToLocalDate(row[dateIndices[1]]);
 
 				CDateRange range;
 				if (start != null && end != null) {
