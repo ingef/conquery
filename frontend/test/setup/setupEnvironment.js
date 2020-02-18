@@ -5,6 +5,7 @@ export default function setupEnvironment() {
     basename: "/",
     // All API requests will be mocked, so this value doesn't really matter
     apiUrl: "http://localhost:8080",
-    isProduction: true
+    isProduction: true,
+    disableLogin: false
   });
 }

@@ -9,7 +9,7 @@ type RequestType = {
   headers?: Object
 };
 
-function fetchJsonUnauthorized(
+export function fetchJsonUnauthorized(
   url: string,
   request?: RequestType,
   rawBody?: boolean = false
