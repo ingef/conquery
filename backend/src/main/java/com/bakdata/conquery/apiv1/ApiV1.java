@@ -12,7 +12,6 @@ import com.bakdata.conquery.resources.api.ConceptResource;
 import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.DatasetResource;
 import com.bakdata.conquery.resources.api.FilterResource;
-import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.jersey.setup.JerseyEnvironment;
 import org.glassfish.hk2.utilities.binding.AbstractBinder;
 
@@ -31,7 +30,6 @@ public class ApiV1 implements ResourcesProvider {
 				bind(new ConceptsProcessor(master.getNamespaces())).to(ConceptsProcessor.class);
 				bind(new MeProcessor(master.getStorage())).to(MeProcessor.class);
 				bind(new QueryProcessor(namespaces, master.getStorage())).to(QueryProcessor.class);
-				bind(master.getMetricRegistry()).to(MetricRegistry.class);
 			}
 		});
 

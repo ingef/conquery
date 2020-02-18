@@ -31,7 +31,6 @@ import com.bakdata.conquery.resources.admin.ui.GroupUIResource;
 import com.bakdata.conquery.resources.admin.ui.RoleUIResource;
 import com.bakdata.conquery.resources.admin.ui.TablesUIResource;
 import com.bakdata.conquery.resources.admin.ui.UserUIResource;
-import com.codahale.metrics.MetricRegistry;
 import io.dropwizard.jersey.DropwizardResourceConfig;
 import io.dropwizard.jersey.jackson.JacksonMessageBodyProvider;
 import io.dropwizard.jersey.setup.JerseyContainerHolder;
@@ -95,14 +94,6 @@ public class AdminServlet {
 			@Override
 			protected void configure() {
 				bind(adminProcessor).to(AdminProcessor.class);
-			}
-		});
-
-		jerseyConfig.register(new AbstractBinder() {
-
-			@Override
-			protected void configure() {
-				bind(masterCommand.getMetricRegistry()).to(MetricRegistry.class);
 			}
 		});
 
