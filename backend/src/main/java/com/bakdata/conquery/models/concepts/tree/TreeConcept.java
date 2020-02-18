@@ -98,6 +98,14 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 		List<ConceptTreeChild> openList = new ArrayList<>();
 		openList.addAll(this.getChildren());
 
+		for (ConceptTreeConnector con : getConnectors()) {
+			if(con.getCondition() == null) {
+				continue;
+			}
+
+			con.getCondition().init(this);
+		}
+
 		for(int i=0;i<openList.size();i++) {
 			ConceptTreeChild ctc = openList.get(i);
 			

@@ -136,33 +136,37 @@ public class CalculateCBlocksJob extends Job {
 
 		cBlock.setMostSpecificChildren(new ArrayList<>(bucket.getNumberOfEvents()));
 
+
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 
 		for (BucketEntry entry : bucket.entries()) {
 			try {
 				final int event = entry.getEvent();
-				if (bucket.has(event, connector.getColumn())) {
-					int valueIndex = bucket.getString(event, connector.getColumn());
 
-					final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(
-						() -> bucket.calculateMap(event, info.getImp()));
+				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
+				int valueIndex = bucket.getString(event, connector.getColumn());
 
-					ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
+				// Events without values are skipped
+				// Events can also be filtered, allowing a single table to be used by multiple connectors.
+				if (!bucket.has(event, connector.getColumn())
+					|| (connector.getCondition() != null && !connector.getCondition().matches(stringType.getElement(valueIndex), rowMap))
+				) {
+					cBlock.getMostSpecificChildren().add(null);
+					continue;
+				}
 
-					if (child != null) {
-						cBlock.getMostSpecificChildren().add(child.getPrefix());
-						ConceptTreeNode<?> it = child;
-						while (it != null) {
-							cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
-							it = it.getParent();
-						}
-					}
-					else {
-						// see #174 improve handling by copying the relevant things from the old project
-						cBlock.getMostSpecificChildren().add(null);
+				ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
+
+				if (child != null) {
+					cBlock.getMostSpecificChildren().add(child.getPrefix());
+					ConceptTreeNode<?> it = child;
+					while (it != null) {
+						cBlock.getIncludedConcepts()[entry.getLocalEntity()] |= it.calculateBitMask();
+						it = it.getParent();
 					}
 				}
 				else {
+					// see #174 improve handling by copying the relevant things from the old project
 					cBlock.getMostSpecificChildren().add(null);
 				}
 			}
