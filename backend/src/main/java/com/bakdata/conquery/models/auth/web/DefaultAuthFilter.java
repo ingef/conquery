@@ -70,8 +70,9 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 			// Success an extracted token could be authenticated
 			log.trace("Authentication was successfull for token type {}", token.getClass().getName());
 			return;
+
 		}
-		log.warn("Non of the configured realms was able to successfully authenticate the following token(s).");
+		log.warn("Non of the configured realms was able to successfully authenticate the extracted token(s).");
 		log.trace("The failing tokens were: {}", failedTokens);
 		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}

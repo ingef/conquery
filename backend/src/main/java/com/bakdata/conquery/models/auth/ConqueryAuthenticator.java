@@ -11,8 +11,10 @@ import io.dropwizard.auth.Authenticator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
+import org.apache.shiro.authc.CredentialsException;
 
 /**
  * This dropwizard authenticator and the shiro realm are conceptually the same.
@@ -29,10 +31,20 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 
 	@Override
 	public Optional<User> authenticate(AuthenticationToken token) throws AuthenticationException {
-	
+		AuthenticationInfo info = null;
 		// Submit the token to Shiro (to all realms that were registered)
-		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
-		
+		try {
+			info = SecurityUtils.getSecurityManager().authenticate(token);
+		}
+		catch (CredentialsException|AccountException e) {
+			log.trace("Failed to authenticate the request",e);
+			return Optional.empty();
+		}
+		catch (org.apache.shiro.authc.AuthenticationException e) {
+			// Dropwizard only catches his own AuthenticationExceptions, here rethrow the
+			// exception as Shiro's
+			throw new AuthenticationException(e);
+		}
 		// All authenticating realms must return a UserId as identifying principal
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
@@ -41,6 +53,8 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 		
 		if(user != null) {
 			ConqueryMDC.setLocation(user.getId().toString());
+		} else {
+			log.trace("The user id {} could not be map to a user.", userId);
 		}
 		// If the user was present, all further authorization can know be perfomed on the user object
 		return Optional.ofNullable(user);
