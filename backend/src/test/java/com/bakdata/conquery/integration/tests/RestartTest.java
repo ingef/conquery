@@ -21,6 +21,7 @@ import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.bakdata.conquery.util.support.TestConquery;
+import com.codahale.metrics.MetricRegistry;
 import com.github.powerlibraries.io.In;
 import io.dropwizard.jersey.validation.Validators;
 import lombok.extern.slf4j.Slf4j;
@@ -54,7 +55,8 @@ public class RestartTest implements ProgrammaticIntegrationTest {
 				master.getNamespaces(),
 				master.getJobManager(),
 				master.getMaintenanceService(),
-				master.getValidator()
+				master.getValidator(),
+				new MetricRegistry() // TODO: 17.02.2020 what do? just mock it and ignore it?
 		);
 
 

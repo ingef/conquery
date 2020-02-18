@@ -123,6 +123,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		);
 	}
 
+	@JsonIgnore
 	public Duration getExecutionTime() {
 		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}

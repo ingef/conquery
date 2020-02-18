@@ -9,10 +9,8 @@ import javax.ws.rs.core.MediaType;
 import com.bakdata.conquery.apiv1.auth.JwtWrapper;
 import com.bakdata.conquery.apiv1.auth.UsernamePasswordToken;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
-import com.codahale.metrics.annotation.Metered;
 import lombok.AllArgsConstructor;
 
-@Metered
 @Path("/")
 @AllArgsConstructor
 public class TokenResource {

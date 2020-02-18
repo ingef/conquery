@@ -11,7 +11,7 @@ import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
-import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SharedMetricRegistries;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
@@ -20,7 +20,6 @@ public class QueryManager {
 
 	@NonNull
 	private final Namespace namespace;
-	private final MetricRegistry metricRegistry;
 
 	public ManagedQuery runQuery(IQuery query, User user) throws JSONException {
 		return runQuery(query, UUID.randomUUID(), user);
@@ -69,8 +68,8 @@ public class QueryManager {
 		query.addResult(result);
 
 		if (query.getState() != ExecutionState.RUNNING) {
-			metricRegistry.counter("queries.state." + query.getState()).inc();
-			metricRegistry.histogram("queries.time").update(query.getExecutionTime().toMillis());
+			SharedMetricRegistries.getDefault().counter("queries.state." + query.getState()).inc();
+			SharedMetricRegistries.getDefault().histogram("queries.time").update(query.getExecutionTime().toMillis());
 		}
 	}
 

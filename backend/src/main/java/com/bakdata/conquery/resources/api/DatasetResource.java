@@ -11,10 +11,8 @@ import javax.ws.rs.Produces;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.resources.hierarchies.HDatasets;
-import com.codahale.metrics.annotation.Metered;
 import lombok.Setter;
 
-@Metered
 @Setter
 @Produces({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})

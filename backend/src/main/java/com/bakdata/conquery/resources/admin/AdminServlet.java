@@ -64,7 +64,7 @@ public class AdminServlet {
 	private AdminProcessor adminProcessor;
 	private DropwizardResourceConfig jerseyConfig;
 
-	public void register(MasterCommand masterCommand, AuthorizationController controller, MetricRegistry metricRegistry) {
+	public void register(MasterCommand masterCommand, AuthorizationController controller) {
 		jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
 
@@ -97,7 +97,14 @@ public class AdminServlet {
 				bind(adminProcessor).to(AdminProcessor.class);
 			}
 		});
-		jerseyConfig.register(metricRegistry);
+
+		jerseyConfig.register(new AbstractBinder() {
+
+			@Override
+			protected void configure() {
+				bind(masterCommand.getMetricRegistry()).to(MetricRegistry.class);
+			}
+		});
 
 		// register root resources
 		jerseyConfig

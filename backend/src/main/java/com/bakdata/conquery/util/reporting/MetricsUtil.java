@@ -18,6 +18,7 @@ import com.codahale.metrics.MetricRegistry;
 import lombok.NonNull;
 
 public class MetricsUtil {
+
 	/**
 	 * Report all NamespacedIds to the metrics registry.
 	 */

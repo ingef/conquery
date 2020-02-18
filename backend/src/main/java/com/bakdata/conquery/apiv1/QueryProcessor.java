@@ -23,7 +23,7 @@ import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.bakdata.conquery.util.QueryUtils.SingleReusedChecker;
 import com.bakdata.conquery.util.reporting.MetricsUtil;
-import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SharedMetricRegistries;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -34,8 +34,6 @@ public class QueryProcessor {
 	@Getter
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
-
-	private final MetricRegistry metricRegistry;
 
 	/**
 	 * Creates a query for all datasets, then submits it for execution on the
@@ -54,12 +52,12 @@ public class QueryProcessor {
 		// Chain the checks and apply them to the tree
 		query.visit(externalIdChecker.andThen(singleReusedChecker).andThen(namespacedIdCollector).andThen(counter));
 
-		MetricsUtil.reportNamespacedIds(namespacedIdCollector.getIds(), user, metricRegistry, storage);
+		MetricsUtil.reportNamespacedIds(namespacedIdCollector.getIds(), user, SharedMetricRegistries.getDefault(), storage);
 
 		final GroupId primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage).getId();
 
 		// Basic estimation of Query complexity.
-		metricRegistry.histogram(primaryGroup + ".queries.complexity").update(counter.getCount());
+		SharedMetricRegistries.getDefault().histogram(primaryGroup + ".queries.complexity").update(counter.getCount());
 
 		// Evaluate the checks and take action
 		{

@@ -9,9 +9,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import com.codahale.metrics.Gauge;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SharedMetricRegistries;
+import com.codahale.metrics.Timer;
 import com.google.common.base.Stopwatch;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
@@ -24,6 +27,7 @@ public class JobExecutor extends Thread {
 	
 	public JobExecutor(String name) {
 		super("JobManager Worker "+name);
+		SharedMetricRegistries.getDefault().register("jobs." + name + ".queue", (Gauge<Integer>) jobs::size);
 	}
 
 	public void add(Job job) {
@@ -74,6 +78,7 @@ public class JobExecutor extends Thread {
 	@Override
 	public void run() {
 		ConqueryMDC.setLocation(this.getName());
+
 		while(!closed.get()) {
 			Job job;
 			try {
@@ -82,6 +87,9 @@ public class JobExecutor extends Thread {
 					currentJob.set(job);
 					job.getProgressReporter().start();
 					Stopwatch timer = Stopwatch.createStarted();
+
+					final Timer.Context time = SharedMetricRegistries.getDefault().timer(MetricRegistry.name(job.getClass(), "execute")).time();
+
 					try {
 						if(job.isCancelled()){
 							log.trace("{} skipping cancelled job {}", this.getName(), job);
@@ -92,10 +100,13 @@ public class JobExecutor extends Thread {
 						ConqueryMDC.setLocation(this.getName());
 						job.execute();
 						ConqueryMDC.setLocation(this.getName());
-						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+
 					}
 					catch (Throwable e) {
 						log.error("Job "+job+" failed", e);
+					}finally {
+						log.trace("{} finished job {} within {}", this.getName(), job, timer.stop());
+						time.stop();
 					}
 				}
 				busy.set(false);
