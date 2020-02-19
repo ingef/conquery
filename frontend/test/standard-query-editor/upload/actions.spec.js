@@ -30,7 +30,7 @@ describe("upload concepts dialog", () => {
       };
 
       nock(apiUrl())
-        .post(`/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
+        .post(`/api/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
           concepts: conceptCodes
         })
         .reply(200, { body: apiResponse });
@@ -74,7 +74,7 @@ describe("upload concepts dialog", () => {
       const conceptCodes = ["foo", "bar"];
 
       nock(apiUrl())
-        .post(`/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
+        .post(`/api/datasets/${datasetId}/concepts/${conceptId}/resolve`, {
           concepts: conceptCodes
         })
         .reply(404, {

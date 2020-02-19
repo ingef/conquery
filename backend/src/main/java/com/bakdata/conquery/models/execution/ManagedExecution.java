@@ -135,18 +135,22 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public ExecutionStatus buildStatus(URLBuilder url, User user) {
-		return ExecutionStatus.builder().label(label).id(getId()).own(true).createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
-			.requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
-			.owner(Optional.ofNullable(owner).orElse(null))
-			.ownerName(
-				Optional.ofNullable(owner).map(owner -> namespace.getStorage().getMetaStorage().getUser(owner)).map(User::getLabel)
-					.orElse(null))
-			.resultUrl(
-				isReadyToDownload(url, user)
-					? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
-						.to(ResultCSVResource.GET_CSV_PATH).get()
-					: null)
-			.build();
+		return ExecutionStatus.builder()
+							  .label(label)
+							  .id(getId())
+							  .own(getOwner().equals(user.getId()))
+							  .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+							  .requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
+							  .owner(Optional.ofNullable(owner).orElse(null))
+							  .ownerName(
+									  Optional.ofNullable(owner).map(owner -> namespace.getStorage().getMetaStorage().getUser(owner)).map(User::getLabel)
+											  .orElse(null))
+							  .resultUrl(
+									  isReadyToDownload(url, user)
+									  ? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
+										   .to(ResultCSVResource.GET_CSV_PATH).get()
+									  : null)
+							  .build();
 	}
 
 	public boolean isReadyToDownload(URLBuilder url, User user) {
