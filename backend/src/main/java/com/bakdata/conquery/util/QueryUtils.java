@@ -64,7 +64,7 @@ public class QueryUtils {
 				for (CQTable table : ((CQConcept) element).getTables()) {
 					table.getFilters().forEach(filter -> {
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name("queries", "concept", filter.getFilter().getClass().getSimpleName(), "usage"))
+											  .counter(MetricRegistry.name("queries", "concept", "class", filter.getFilter().getClass().getSimpleName(), "usage"))
 											  .inc();
 						SharedMetricRegistries.getDefault()
 											  .counter(MetricRegistry.name("query", "concept", "filter", filter.getFilter().getId().toStringWithoutDataset(), "usage"))
@@ -73,7 +73,7 @@ public class QueryUtils {
 
 					table.getSelects().forEach(select -> {
 						SharedMetricRegistries.getDefault()
-											  .counter(MetricRegistry.name("queries", "concept","classes", select.getClass().getSimpleName(), "usage"))
+											  .counter(MetricRegistry.name("queries", "concept","class", select.getClass().getSimpleName(), "usage"))
 											  .inc();
 
 						SharedMetricRegistries.getDefault()
