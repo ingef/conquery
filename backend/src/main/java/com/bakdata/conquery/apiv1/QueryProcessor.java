@@ -1,7 +1,6 @@
 package com.bakdata.conquery.apiv1;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.AuthorizationHelper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.AbilitySets;
@@ -11,7 +10,6 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.ManagedQuery;
@@ -23,6 +21,7 @@ import com.bakdata.conquery.util.QueryUtils.ExternalIdChecker;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.bakdata.conquery.util.QueryUtils.SingleReusedChecker;
 import com.bakdata.conquery.util.reporting.MetricsUtil;
+import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.SharedMetricRegistries;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -46,18 +45,18 @@ public class QueryProcessor {
 		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
 		SingleReusedChecker singleReusedChecker = new QueryUtils.SingleReusedChecker();
 		NamespacedIdCollector namespacedIdCollector = new QueryUtils.NamespacedIdCollector();
-		QueryUtils.ElementsCounter counter = new QueryUtils.ElementsCounter();
+		QueryUtils.QueryMetricsReporter metricsReporter = new QueryUtils.QueryMetricsReporter();
 
 
 		// Chain the checks and apply them to the tree
-		query.visit(externalIdChecker.andThen(singleReusedChecker).andThen(namespacedIdCollector).andThen(counter));
+		query.visit(externalIdChecker.andThen(singleReusedChecker).andThen(namespacedIdCollector).andThen(metricsReporter));
 
 		MetricsUtil.reportNamespacedIds(namespacedIdCollector.getIds(), user, SharedMetricRegistries.getDefault(), storage);
 
-		final GroupId primaryGroup = AuthorizationHelper.getPrimaryGroup(user, storage).getId();
 
 		// Basic estimation of Query complexity.
-		SharedMetricRegistries.getDefault().histogram(primaryGroup + ".queries.complexity").update(counter.getCount());
+		SharedMetricRegistries.getDefault().counter(MetricRegistry.name(query.getClass())).inc(); // Count usages of different types of Queries
+
 
 		// Evaluate the checks and take action
 		{

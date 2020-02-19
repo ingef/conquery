@@ -4,17 +4,21 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.Visitable;
+import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.NamespacedIdHolding;
+import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.specific.CQAnd;
+import com.bakdata.conquery.models.query.concept.specific.CQConcept;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
 import com.bakdata.conquery.models.query.concept.specific.CQOr;
 import com.bakdata.conquery.models.query.concept.specific.CQReusedQuery;
 import com.bakdata.conquery.models.query.visitor.QueryVisitor;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.SharedMetricRegistries;
 import lombok.Getter;
 import lombok.experimental.UtilityClass;
 
@@ -23,7 +27,7 @@ public class QueryUtils {
 
 	/**
 	 * Checks if the query requires to resolve external ids.
-	 * 
+	 *
 	 * @return True if a {@link CQExternal} is found.
 	 */
 	public static class ExternalIdChecker implements QueryVisitor {
@@ -43,19 +47,41 @@ public class QueryUtils {
 	}
 
 	/**
-	 * Count all Elements in the visitable tree.
+	 * Log the entire Query tree into Metrics
 	 */
-	public static class ElementsCounter implements QueryVisitor {
-
-		private final AtomicInteger elements = new AtomicInteger();
+	public static class QueryMetricsReporter implements QueryVisitor {
 
 		@Override
 		public void accept(Visitable element) {
-			elements.incrementAndGet();
-		}
+			if (element instanceof CQElement) {
+				SharedMetricRegistries.getDefault().counter(MetricRegistry.name("queries", element.getClass().getSimpleName(), "usage")).inc();
+			}
 
-		public int getCount(){
-			return elements.get();
+			if (element instanceof CQConcept) {
+				((CQConcept) element).getSelects()
+									 .forEach(select -> SharedMetricRegistries.getDefault().counter(MetricRegistry.name(select.getClass(), "usage")).inc());
+
+				for (CQTable table : ((CQConcept) element).getTables()) {
+					table.getFilters().forEach(filter -> {
+						SharedMetricRegistries.getDefault()
+											  .counter(MetricRegistry.name("queries", "concept", filter.getFilter().getClass().getSimpleName(), "usage"))
+											  .inc();
+						SharedMetricRegistries.getDefault()
+											  .counter(MetricRegistry.name("query", "concept", "filter", filter.getFilter().getId().toStringWithoutDataset(), "usage"))
+											  .inc();
+					});
+
+					table.getSelects().forEach(select -> {
+						SharedMetricRegistries.getDefault()
+											  .counter(MetricRegistry.name("queries", "concept","classes", select.getClass().getSimpleName(), "usage"))
+											  .inc();
+
+						SharedMetricRegistries.getDefault()
+											  .counter(MetricRegistry.name("queries", "concept", "select", select.getId().toString(), ".usage"))
+											  .inc();
+					});
+				}
+			}
 		}
 	}
 
@@ -64,7 +90,7 @@ public class QueryUtils {
 	 * Id. ie.: arbirtary CQAnd/CQOr with only them or then a ReusedQuery.
 	 *
 	 * @return Null if not only a single {@link CQReusedQuery} was found beside
-	 *         {@link CQAnd} / {@link CQOr}.
+	 * {@link CQAnd} / {@link CQOr}.
 	 */
 	public static class SingleReusedChecker implements QueryVisitor {
 

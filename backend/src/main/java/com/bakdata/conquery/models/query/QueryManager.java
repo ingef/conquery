@@ -50,6 +50,8 @@ public class QueryManager {
 	 */
 	public ManagedQuery executeQuery(ManagedQuery query) {
 
+		SharedMetricRegistries.getDefault().counter("queries.running").inc(); // Count currently running queries.
+
 		query.initExecutable(namespace);
 		query.start();
 
@@ -68,6 +70,7 @@ public class QueryManager {
 		query.addResult(result);
 
 		if (query.getState() != ExecutionState.RUNNING) {
+			SharedMetricRegistries.getDefault().counter("queries.running").dec();
 			SharedMetricRegistries.getDefault().counter("queries.state." + query.getState()).inc();
 			SharedMetricRegistries.getDefault().histogram("queries.time").update(query.getExecutionTime().toMillis());
 		}
