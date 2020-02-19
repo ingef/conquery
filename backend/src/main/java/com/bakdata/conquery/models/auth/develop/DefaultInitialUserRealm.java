@@ -84,6 +84,8 @@ public class DefaultInitialUserRealm extends ConqueryAuthenticationRealm {
 			uid = requestContext.getUriInfo().getQueryParameters().getFirst(UID_QUERY_STRING_PARAMETER);
 		}
 
+		uid = uid.replaceFirst("^Bearer ", "");
+
 		UserId userId = null;
 
 		if (uid != null) {
