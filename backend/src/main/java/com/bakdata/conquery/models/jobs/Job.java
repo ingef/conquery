@@ -4,7 +4,6 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.bakdata.conquery.util.progressreporter.ProgressReporter;
-
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.Setter;
@@ -26,7 +25,6 @@ public abstract class Job {
 	public boolean isCancelled() {
 		return cancelledState.get();
 	}
-
 
 	public abstract void execute() throws Exception;
 	public abstract String getLabel();

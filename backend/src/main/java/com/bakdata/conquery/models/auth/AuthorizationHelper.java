@@ -144,6 +144,15 @@ public class AuthorizationHelper {
 		}
 		return userGroups;
 	}
+
+	/**
+	 * Find the primary group of the user. All users must have a primary group.
+	 * @implNote Currently this is the first group of a user and should also be the only group.
+	 */
+	public static Group getPrimaryGroup(@NonNull User user, @NonNull MasterMetaStorage storage) {
+		// TODO: 17.02.2020 implement primary flag for user etc.
+		return Objects.requireNonNull(getGroupsOf(user, storage).get(0), () -> String.format("Did not find a group for User[%s]", user.getId()));
+	}
 	
 
 	

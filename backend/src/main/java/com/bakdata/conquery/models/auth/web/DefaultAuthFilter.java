@@ -4,7 +4,9 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.annotation.Priority;
 import javax.ws.rs.NotAuthorizedException;
+import javax.ws.rs.Priorities;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.PreMatching;
 import javax.ws.rs.core.SecurityContext;
@@ -34,6 +36,7 @@ import org.apache.shiro.realm.Realm;
 @Slf4j
 @PreMatching
 @RequiredArgsConstructor(access = AccessLevel.PRIVATE)
+@Priority(Priorities.AUTHENTICATION)
 public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 	private final AuthorizationController controller;

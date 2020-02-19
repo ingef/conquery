@@ -1,17 +1,19 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Objects;
+import java.util.UUID;
+
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.WorkerInformation;
+import com.codahale.metrics.SharedMetricRegistries;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
-
-import java.util.Objects;
-import java.util.UUID;
 
 @RequiredArgsConstructor
 public class QueryManager {
@@ -62,7 +64,13 @@ public class QueryManager {
 	 * @param result
 	 */
 	public void addQueryResult(ShardResult result) {
-		getQuery(result.getQueryId()).addResult(result);
+		final ManagedQuery query = getQuery(result.getQueryId());
+		query.addResult(result);
+
+		if (query.getState() != ExecutionState.RUNNING) {
+			SharedMetricRegistries.getDefault().counter("queries.state." + query.getState()).inc();
+			SharedMetricRegistries.getDefault().histogram("queries.time").update(query.getExecutionTime().toMillis());
+		}
 	}
 
 	public ManagedQuery getQuery(ManagedExecutionId id) {

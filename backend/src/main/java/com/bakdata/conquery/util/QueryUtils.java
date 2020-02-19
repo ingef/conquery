@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -38,6 +39,23 @@ public class QueryUtils {
 
 		public boolean resolvesExternalIds() {
 			return elements.size() > 0;
+		}
+	}
+
+	/**
+	 * Count all Elements in the visitable tree.
+	 */
+	public static class ElementsCounter implements QueryVisitor {
+
+		private final AtomicInteger elements = new AtomicInteger();
+
+		@Override
+		public void accept(Visitable element) {
+			elements.incrementAndGet();
+		}
+
+		public int getCount(){
+			return elements.get();
 		}
 	}
 

@@ -68,7 +68,8 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
 			.add(NamespaceCollection.class, namespaces);
-			
+
+
 		this.jobManager = new JobManager("master");
 		this.environment = environment;
 

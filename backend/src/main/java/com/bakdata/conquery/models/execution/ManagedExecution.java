@@ -119,7 +119,13 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			state,
 			queryId,
 			this.getClass().getSimpleName(),
-			(startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
+			getExecutionTime()
+		);
+	}
+
+	@JsonIgnore
+	public Duration getExecutionTime() {
+		return (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null;
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
