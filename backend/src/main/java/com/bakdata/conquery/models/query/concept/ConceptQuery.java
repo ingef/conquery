@@ -8,13 +8,19 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -57,5 +63,16 @@ public class ConceptQuery implements IQuery, Visitable {
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		root.visit(visitor);
+	}
+	
+	@Override
+	public ManagedExecution toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+		ConceptQuery query = this.resolve(new QueryResolveContext(
+			storage,
+			namespaces.get(submittedDataset)
+			));
+		ManagedQuery managed = new ManagedQuery(storage,query,userId, submittedDataset); //TODO
+		managed.initExecutable(storage, namespaces, submittedDataset);
+		return managed;
 	}
 }

@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -17,6 +18,7 @@ import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.ResultCSVResource;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
@@ -27,19 +29,20 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
 
-@NoArgsConstructor
+//@NoArgsConstructor
 @Getter
 @Setter
 @ToString
@@ -49,9 +52,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> {
 
 	protected DatasetId dataset;
-	protected UUID queryId = UUID.randomUUID();
+	protected UUID executionId = UUID.randomUUID();
 	@NotEmpty
-	protected String label = queryId.toString();
+	protected String label = executionId.toString();
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
@@ -68,21 +71,19 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore
-	protected transient Namespace namespace;
+	protected final transient MasterMetaStorage storage;
 
-	public ManagedExecution(Namespace namespace, UserId owner) {
+	public ManagedExecution(MasterMetaStorage storage, UserId owner, DatasetId submittedDataset) {
+		this.storage = storage;
 		this.owner = owner;
-		initExecutable(namespace);
+		this.dataset = submittedDataset;
 	}
 
-	public void initExecutable(@NonNull Namespace namespace) {
-		this.namespace = namespace;
-		this.dataset = namespace.getStorage().getDataset().getId();
-	}
+	public abstract void initExecutable(Namespaces namespaces);
 
 	@Override
 	public ManagedExecutionId createId() {
-		return new ManagedExecutionId(dataset, queryId);
+		return new ManagedExecutionId(dataset, executionId);
 	}
 
 	protected void fail() {
@@ -107,7 +108,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			state = ExecutionState.DONE;
 			execution.countDown();
 			try {
-				namespace.getStorage().getMetaStorage().updateExecution(this);
+				storage.updateExecution(this);
 			}
 			catch (JSONException e) {
 				log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
@@ -117,7 +118,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		log.info(
 			"{} {} {} within {}",
 			state,
-			queryId,
+			executionId,
 			this.getClass().getSimpleName(),
 			(startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
 	}
@@ -137,7 +138,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 							  .requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
 							  .owner(Optional.ofNullable(owner).orElse(null))
 							  .ownerName(
-									  Optional.ofNullable(owner).map(owner -> namespace.getStorage().getMetaStorage().getUser(owner)).map(User::getLabel)
+									  Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel)
 											  .orElse(null))
 							  .resultUrl(
 									  isReadyToDownload(url, user)
@@ -170,4 +171,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	@JsonIgnore
 	public abstract Set<NamespacedId> getUsedNamespacedIds();
+	
+	
+	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
+
+	public abstract void addResult(ShardResult result);
 }

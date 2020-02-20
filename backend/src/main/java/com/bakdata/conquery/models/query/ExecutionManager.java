@@ -1,7 +1,12 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.Objects;
+import java.util.UUID;
+
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;
 import com.bakdata.conquery.models.query.results.ShardResult;
@@ -10,11 +15,8 @@ import com.bakdata.conquery.models.worker.WorkerInformation;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 
-import java.util.Objects;
-import java.util.UUID;
-
 @RequiredArgsConstructor
-public class QueryManager {
+public class ExecutionManager {
 
 	@NonNull
 	private final Namespace namespace;
@@ -27,11 +29,9 @@ public class QueryManager {
 		return executeQuery(createQuery(query, queryId, user));
 	}
 
-	public ManagedQuery createQuery(IQuery query, UUID queryId, User user) throws JSONException {
-		query = query.resolve(new QueryResolveContext(
-				namespace.getStorage().getMetaStorage(),
-				namespace
-		));
+	public static ManagedExecution createQuery(SubmittedQuery query, UUID queryId, UserId userId) throws JSONException {
+		ManagedExecution query.wrapInManagedType(storage, namespaces, userId, submittedDataset)
+
 
 		ManagedQuery managed = new ManagedQuery(query, namespace, user.getId());
 		managed.setQueryId(queryId);
@@ -46,7 +46,7 @@ public class QueryManager {
 	 * @param query
 	 * @return
 	 */
-	public ManagedQuery executeQuery(ManagedQuery query) {
+	public ManagedExecution executeQuery(ManagedExecution query) {
 
 		query.initExecutable(namespace);
 		query.start();
@@ -65,8 +65,8 @@ public class QueryManager {
 		getQuery(result.getQueryId()).addResult(result);
 	}
 
-	public ManagedQuery getQuery(ManagedExecutionId id) {
-		return (ManagedQuery) Objects.requireNonNull(namespace.getStorage().getMetaStorage().getExecution(id),"Unable to find query " + id.toString());
+	public ManagedExecution getQuery(ManagedExecutionId id) {
+		return Objects.requireNonNull(namespace.getStorage().getMetaStorage().getExecution(id),"Unable to find query " + id.toString());
 	}
 
 }

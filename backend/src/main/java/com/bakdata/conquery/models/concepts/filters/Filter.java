@@ -43,7 +43,7 @@ public abstract class Filter<FE_TYPE> extends Labeled<FilterId> {
 		return ArrayUtils.contains(getRequiredColumns(), c);
 	}
 
-	public abstract FilterNode createAggregator(FE_TYPE filterValue);
+	public abstract FilterNode createAggregator(FE_TYPE filterValue);//, QueryPlanContext ctx);
 
 	@Override
 	public FilterId createId() {

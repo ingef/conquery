@@ -10,11 +10,9 @@ import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
-import com.bakdata.conquery.models.query.IQuery;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -25,7 +23,7 @@ public class ShardResult {
 
 	@ToString.Include
 	private ManagedExecutionId queryId;
-	private IQuery query;
+//	private IQuery query;
 	private List<EntityResult> results = new ArrayList<>();
 	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();

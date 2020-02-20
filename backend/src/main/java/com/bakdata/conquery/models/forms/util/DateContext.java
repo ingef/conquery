@@ -5,12 +5,13 @@ import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.apiv1.forms.FeatureGroup;
+import com.bakdata.conquery.apiv1.forms.IndexPlacement;
+import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.QuarterUtils;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
-import com.bakdata.eva.models.forms.FeatureGroup;
-import com.bakdata.eva.models.forms.IndexPlacement;
-import com.bakdata.eva.models.forms.TimeUnit;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

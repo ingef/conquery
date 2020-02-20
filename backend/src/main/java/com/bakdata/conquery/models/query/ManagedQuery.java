@@ -1,7 +1,9 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -9,28 +11,32 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.bakdata.conquery.models.query.results.ContainedEntityResult;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.FailedEntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ArrayUtils;
 
-@NoArgsConstructor
+//@NoArgsConstructor
 @Getter
 @Setter
 @ToString(callSuper = true)
@@ -38,10 +44,13 @@ import org.apache.commons.lang3.ArrayUtils;
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
 public class ManagedQuery extends ManagedExecution {
 
+	// Needs to be resolved externally before being executed
 	private IQuery query;
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 	private boolean shared = false;
+	@JsonIgnore
+	protected transient Namespace namespace;
 	/**
 	 * The number of contained entities the last time this query was executed.
 	 *
@@ -56,14 +65,13 @@ public class ManagedQuery extends ManagedExecution {
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
 
-	public ManagedQuery(IQuery query, Namespace namespace, UserId owner) {
-		super(namespace, owner);
+	public ManagedQuery(MasterMetaStorage storage, IQuery query, UserId owner, DatasetId submittedDataset) {
+		super(storage, owner, submittedDataset);
 		this.query = query;
 	}
 
 	@Override
-	public void initExecutable(Namespace namespace) {
-		super.initExecutable(namespace);
+	public void initExecutable(Namespaces namespaces) {
 		this.executingThreads = namespace.getWorkers().size();
 	}
 
@@ -72,7 +80,7 @@ public class ManagedQuery extends ManagedExecution {
 			if (er.isFailed() && state == ExecutionState.RUNNING) {
 				fail();
 				FailedEntityResult failed = er.asFailed();
-				log.error("Failed query {} at least for the entity {} with:\n{}", queryId, failed.getEntityId(), failed.getExceptionStackTrace());
+				log.error("Failed query {} at least for the entity {} with:\n{}", executionId, failed.getEntityId(), failed.getExceptionStackTrace());
 			}
 		}
 		synchronized (getExecution()) {
@@ -129,5 +137,14 @@ public class ManagedQuery extends ManagedExecution {
 		NamespacedIdCollector collector = new NamespacedIdCollector();
 		query.visit(collector);
 		return collector.getIds();
+	}
+
+	@Override
+	public Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context) {
+		if(context.getDataset().equals(getDataset())) {			
+			return Map.of(this.getId(), query.createQueryPlan(context));
+		}
+		log.trace("Did not create a QueryPlan for the query {} because the plan corresponds to dataset {} but the execution worker belongs to {}.", getId(), getDataset(), context.getDataset());
+		return Collections.emptyMap();
 	}
 }

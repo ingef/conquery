@@ -3,15 +3,12 @@ package com.bakdata.conquery.models.query;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
-@CPSBase
-public interface IQuery extends Visitable {
+public interface IQuery extends Visitable, SubmittedQuery{
 
 	IQuery resolve(QueryResolveContext context);
 	QueryPlan createQueryPlan(QueryPlanContext context);

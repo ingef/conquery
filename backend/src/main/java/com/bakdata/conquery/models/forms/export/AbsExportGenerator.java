@@ -1,21 +1,21 @@
 package com.bakdata.conquery.models.forms.export;
 
-import static com.bakdata.eva.forms.util.ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.forms.DateContextMode;
+import com.bakdata.conquery.apiv1.forms.export_form.AbsoluteMode;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.forms.managed.AbsoluteFormQuery;
+import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryManager;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
-import com.bakdata.eva.forms.queries.AbsoluteFormQuery;
-import com.bakdata.eva.models.forms.DateContextMode;
 import lombok.AllArgsConstructor;
 
 @AllArgsConstructor
@@ -25,12 +25,28 @@ public class AbsExportGenerator {
 	private User user;
 	private Namespaces namespaces;
 	
+	public static AbsoluteFormQuery generate(Namespaces namespaces, AbsoluteMode mode, DateContextMode resolution) {
+		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
+	
+		// Apply defaults to user concept
+		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
+		
+		AbsoluteFormQuery query = new AbsoluteFormQuery(
+			(ConceptQuery) prerequisite.getQuery(),
+			mode.getDateRange(),
+			createSubPlan(mode.getFeatures()),
+			resolution
+		);
+		
+		return query;
+	}
+	
 	public ManagedQuery executeQuery(AbsoluteMode mode, DateContextMode resolution) throws JSONException {
-		QueryManager queryManager = namespaces.get(dataset.getId()).getQueryManager();
+		ExecutionManager queryManager = namespaces.get(dataset.getId()).getQueryManager();
 		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
 		
 		// Apply defaults to user concept
-		DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
+		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
 		
 		AbsoluteFormQuery query = new AbsoluteFormQuery(
 			(ConceptQuery) prerequisite.getQuery(),

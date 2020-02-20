@@ -1,12 +1,9 @@
-package com.bakdata.conquery.models.forms.export;
+package com.bakdata.conquery.apiv1.forms.export_form;
 
-import java.util.List;
+import java.util.Map;
 
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -29,6 +26,6 @@ public abstract class Mode implements Visitable {
 	public String[] getAdditionalHeader() {
 		return ArrayUtils.EMPTY_STRING_ARRAY;
 	}
-
-	public abstract List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException;
+	
+	public abstract Map<String, IQuery> createSpecializedQuery(Namespaces namespaces);
 }

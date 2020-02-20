@@ -1,6 +1,7 @@
-package com.bakdata.conquery.models.forms.util;
+package com.bakdata.conquery.apiv1.forms;
 
 import com.bakdata.conquery.models.common.daterange.CDateRange;
+import com.bakdata.conquery.models.forms.util.DateContext;
 
 /**
  * Specifies the smallest time unit that should be used in the resulting
