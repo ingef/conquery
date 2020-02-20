@@ -48,7 +48,6 @@ public class ExecutionManager {
 	 */
 	public ManagedExecution executeQuery(ManagedExecution query) {
 
-		query.initExecutable(namespace);
 		query.start();
 
 		for(WorkerInformation worker : namespace.getWorkers()) {
