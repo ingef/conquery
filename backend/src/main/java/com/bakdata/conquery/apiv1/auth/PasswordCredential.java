@@ -1,6 +1,7 @@
 package com.bakdata.conquery.apiv1.auth;
 
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.auth.basic.LocalAuthenticationRealm;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
@@ -10,7 +11,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 /**
  * Container for holding a password. This credential type is used by the
- * {@link LocalAuthenticationRealm}.
+ * {@link LocalAuthenticationRealm} and can be used in the {@link AuthorizationConfig}. 
  */
 @CPSType(base = CredentialType.class, id = "PASSWORD")
 @Data

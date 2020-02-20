@@ -58,13 +58,13 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 			throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 		}
 
-		List<AuthenticationToken> failedTokens = new ArrayList<>();
+		int failedTokens = 0; 
 
 		// The authentication process
 		for (AuthenticationToken token : tokens) {
 			// Submit the token to dropwizard which forwards it to Shiro
 			if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
-				failedTokens.add(token);
+				failedTokens++;
 				continue;
 			}
 			// Success an extracted token could be authenticated
@@ -73,7 +73,7 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 		}
 		log.warn("Non of the configured realms was able to successfully authenticate the extracted token(s).");
-		log.trace("The failing tokens were: {}", failedTokens);
+		log.trace("The {} tokens failed.", failedTokens);
 		throw new NotAuthorizedException("Failed to authenticate request. The cause has been logged.");
 	}
 
