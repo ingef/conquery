@@ -252,7 +252,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 	 * Send a query onto the conquery instance and assert the result's size.
 	 */
 	public static void assertQueryResult(StandaloneSupport conquery, IQuery query, long size, ExecutionState state) throws JSONException {
-		final ManagedQuery managedQuery = conquery.getNamespace().getQueryManager().runQuery(query, conquery.getTestUser());
+		final ManagedQuery managedQuery = (ManagedQuery) conquery.getNamespace().getQueryManager().runQuery(query, conquery.getTestUser().getId());
 
 		managedQuery.awaitDone(2, TimeUnit.MINUTES);
 		assertThat(managedQuery.getState()).isEqualTo(state);

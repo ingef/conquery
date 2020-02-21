@@ -107,7 +107,7 @@ public class IntegrationUtils {
 
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data));
 
-			ManagedExecution managed = support.getNamespace().getQueryManager().runQuery(query, queryId, support.getTestUser());
+			ManagedExecution managed = support.getNamespace().getQueryManager().runQuery(query, queryId, support.getTestUser().getId());
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getState() == ExecutionState.FAILED) {

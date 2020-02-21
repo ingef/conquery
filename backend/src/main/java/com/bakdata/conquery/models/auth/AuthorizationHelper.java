@@ -244,7 +244,7 @@ public class AuthorizationHelper {
 	 * Checks if an execution is allowed to be downloaded by a user.
 	 * This checks all used {@link DatasetId}s for the {@link Ability.DOWNLOAD} on the user.
 	 */
-	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution exec) {
+	public static void authorizeDownloadDatasets(@NonNull User user, @NonNull ManagedExecution<?> exec) {
 		List<Permission> perms = exec.getUsedNamespacedIds().stream()
 			.map(NamespacedId::getDataset)
 			.distinct()

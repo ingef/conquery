@@ -5,6 +5,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -49,7 +50,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 @Slf4j
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> {
 
 	protected DatasetId dataset;
 	protected UUID executionId = UUID.randomUUID();
@@ -79,6 +80,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 		this.dataset = submittedDataset;
 	}
 
+	/**
+	 * Executed right before execution submission.
+	 * @param namespaces
+	 */
 	public abstract void initExecutable(Namespaces namespaces);
 
 	@Override
@@ -175,5 +180,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	
 	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
 
-	public abstract void addResult(ShardResult result);
+	public abstract void addResult(R result);
+	
+	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
 }

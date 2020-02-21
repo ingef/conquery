@@ -1,6 +1,5 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.function.Consumer;
 
@@ -11,11 +10,9 @@ import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.TimeSelector;
 import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
-import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
@@ -42,21 +39,21 @@ public class RelativeMode extends Mode {
 	@NotEmpty
 	private List<CQElement> outcomes;
 
-	@Override
-	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
-		return Collections.singletonList(
-			new RelExportGenerator(dataset, user, namespaces).execute(this, true)
-		);
-	}
+//	@Override
+//	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
+//		return Collections.singletonList(
+//			new RelExportGenerator(dataset, user, namespaces).execute(this, true)
+//		);
+//	}
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		features.forEach(e -> visitor.accept(e));
 		outcomes.forEach(e -> visitor.accept(e));
 	}
-
+	
 	@Override
-	public IQuery createSpecializedQuery(Namespaces namespaces) {
-		return RelExportGenerator.generate(namespaces, this);
+	public List<ManagedQuery> createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+		return List.of(RelExportGenerator.generate(namespaces, this, userId, submittedDataset));
 	}
 }

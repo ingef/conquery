@@ -7,20 +7,15 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -28,9 +23,9 @@ import lombok.Setter;
 
 @Getter
 @Setter
-@CPSType(id = "CONCEPT_QUERY", base = IQuery.class)
+@CPSType(id = "CONCEPT_QUERY", base = SubmittedQuery.class)
 @AllArgsConstructor(onConstructor = @__({@JsonCreator}))
-public class ConceptQuery implements IQuery, Visitable {
+public class ConceptQuery extends IQuery implements Visitable {
 
 	@Valid
 	@NotNull
@@ -65,14 +60,5 @@ public class ConceptQuery implements IQuery, Visitable {
 		root.visit(visitor);
 	}
 	
-	@Override
-	public ManagedExecution toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		ConceptQuery query = this.resolve(new QueryResolveContext(
-			storage,
-			namespaces.get(submittedDataset)
-			));
-		ManagedQuery managed = new ManagedQuery(storage,query,userId, submittedDataset); //TODO
-		managed.initExecutable(storage, namespaces, submittedDataset);
-		return managed;
-	}
+
 }

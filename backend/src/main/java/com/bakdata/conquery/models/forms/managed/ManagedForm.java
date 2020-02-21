@@ -5,15 +5,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -21,11 +23,11 @@ import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
-import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.util.concurrent.ListenableFuture;
+import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -40,19 +42,25 @@ import lombok.extern.slf4j.Slf4j;
 @ToString
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_FORM")
-public class ManagedForm extends ManagedExecution {
+public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	
-	protected Map<String,List<ManagedQuery>> subQueries;
-	//protected Form form;
-
 	@JsonIgnore
-	private transient ListenableFuture<ExecutionState> formFuture;
+	protected Map<String,List<ManagedQuery>> subQueries;
 
-	/**
-	 * Represents the mapping of result matrices with their output name to their actual queries.
-	 * The output name is later used to generate the name of the CSV file.
-	 */
-	protected Map<String,List<EntityResult>> internalQueryMapping;
+	private Map<ManagedExecutionId,ManagedQuery> flatSubQueries;
+	@JsonIgnore
+	private transient AtomicInteger openSubQueries;
+	
+	
+
+//	@JsonIgnore
+//	private transient ListenableFuture<ExecutionState> formFuture;
+
+//	/**
+//	 * Represents the mapping of result matrices with their output name to their actual queries.
+//	 * The output name is later used to generate the name of the CSV file.
+//	 */
+//	protected Map<String,List<EntityResult>> internalQueryMapping;
 
 	public ManagedForm(MasterMetaStorage storage, Map<String,List<ManagedQuery>> subQueries, UserId owner, DatasetId submittedDataset) {
 		super(storage,  owner, submittedDataset);
@@ -102,6 +110,12 @@ public class ManagedForm extends ManagedExecution {
 //	}
 	
 	@Override
+	public void start() {
+		flatSubQueries.values().forEach(ManagedQuery::start);
+		super.start();
+	}
+	
+	@Override
 	public ExecutionStatus buildStatus(URLBuilder url, User user) {
 		ExecutionStatus status = super.buildStatus(url, user);
 		// Send null here, because no usable value can be reported to the user for a form
@@ -111,10 +125,11 @@ public class ManagedForm extends ManagedExecution {
 
 	@Override
 	public ManagedQuery toResultQuery() {
-		if(internalQueryMapping.size() == 1 && internalQueryMapping.values().stream().collect(Collectors.toList()).get(0).size() == 1) {
-			// Get the query, only if there is only one in the whole execution
-			return internalQueryMapping.values().stream().collect(Collectors.toList()).get(0).get(0);
-		}
+//		if(subQueries.size() == 1) {
+//			// Get the query, only if there is only one in the whole execution
+//			subQueries.get(0).stream().flatMap()
+//			return internalQueryMapping.values().stream().collect(Collectors.toList()).get(0).get(0);
+//		}
 		throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 	}
 
@@ -135,22 +150,63 @@ public class ManagedForm extends ManagedExecution {
 	@Override
 	public Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context) {
 		Map<ManagedExecutionId,QueryPlan> plans = new HashMap<>();
-		for( Entry<String, List<ManagedQuery>> entry : subQueries.entrySet()) {
-			for(ManagedQuery subQuery : entry.getValue()) {
-				plans.putAll(subQuery.createQueryPlans(context));
-			}
+		for( ManagedQuery subQuery : flatSubQueries.values()) {
+			plans.putAll(subQuery.createQueryPlans(context));
 		}
 		return plans;
 	}
 
 	@Override
-	public void initExecutable() {
-		// TODO Auto-generated method stub
+	public void initExecutable(Namespaces namespaces) {
+		// init all subqueries
+		flatSubQueries = subQueries.values().stream().flatMap(List::stream).collect(Collectors.toMap(ManagedQuery::getId, Function.identity()));
+		flatSubQueries.values().forEach(mq -> mq.initExecutable(namespaces));
+		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
+		
+	}
+
+	/**
+	 * Distribute the result to a sub query.
+	 */
+	@Override
+	public void addResult(FormSharedResult result) {
+		ManagedQuery subQuery = flatSubQueries.get(result.getSubqueryId());
+		subQuery.addResult(result);
+		switch(subQuery.getState()) {
+			case CANCELED:
+				break;
+			case DONE:
+				if(openSubQueries.decrementAndGet() == 0) {
+					finish();
+				}
+				break;
+			case FAILED:
+				fail();
+				break;
+			case NEW:
+				break;
+			case RUNNING:
+				break;
+			default:
+				break;
+			
+		}
 		
 	}
 
 	@Override
-	public void addResult(ShardResult result) {
-		throw new UnsupportedOperationException();
+	public FormSharedResult getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry) {
+		FormSharedResult result = new FormSharedResult();
+		result.setQueryId(getId());
+		if(entry != null) {
+			result.setSubqueryId(entry.getKey());			
+		}
+		return result;
+	}
+	
+	@Data
+	@CPSType(id = "FORM_SHARD_RESULT", base = ShardResult.class)
+	public static class FormSharedResult extends ShardResult {
+		private ManagedExecutionId subqueryId;
 	}
 }

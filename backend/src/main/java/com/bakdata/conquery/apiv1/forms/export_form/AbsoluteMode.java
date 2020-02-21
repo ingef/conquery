@@ -11,7 +11,9 @@ import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.forms.export.AbsExportGenerator;
-import com.bakdata.conquery.models.query.IQuery;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -42,7 +44,7 @@ public class AbsoluteMode extends Mode {
 	}
 
 	@Override
-	public List<IQuery> createSpecializedQuery(Namespaces namespaces) {
-		return List.of(AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTER_WISE));
+	public List<ManagedQuery> createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+		return List.of(AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTER_WISE, userId, submittedDataset));
 	}
 }

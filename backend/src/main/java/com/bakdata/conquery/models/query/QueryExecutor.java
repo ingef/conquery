@@ -29,29 +29,27 @@ public class QueryExecutor implements Closeable {
 		this.pool = config.getQueries().getExecutionPool().createService("Query Executor %d");
 	}
 
-	public ShardResult execute(QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
+	public ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry) {
 
-		return execute(context, entry, pool);
+		return execute(result, context, entry, pool);
 	}
 
-	public static ShardResult execute(QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry, ListeningExecutorService executor) {
+	public static ShardResult execute(ShardResult result, QueryExecutionContext context, Entry<ManagedExecutionId, QueryPlan> entry, ListeningExecutorService executor) {
 		ManagedExecutionId executionId = entry.getKey();
 		Collection<Entity> entries = context.getStorage().getBucketManager().getEntities().values();
 
 		if(entries.isEmpty()) {
 			log.warn("entries for query {} are empty", executionId);
 		}
-		ShardResult result = new ShardResult();
-		result.setQueryId(executionId);
 		
 		List<ListenableFuture<EntityResult>> futures = entry.getValue()
 			.executeOn(context, entries)
 			.map(executor::submit)
 			.collect(Collectors.toList());
 		
-		result.setFuture(Futures.allAsList(futures));
-		
-		result.getFuture().addListener(result::finish, MoreExecutors.directExecutor());
+		ListenableFuture<List<EntityResult>> future = Futures.allAsList(futures);
+		result.setFuture(future);
+		future.addListener(result::finish, MoreExecutors.directExecutor());
 		return result;
 	}
 

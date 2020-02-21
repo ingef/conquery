@@ -8,6 +8,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
 import com.bakdata.conquery.apiv1.forms.TimeSelector;
 import com.bakdata.conquery.apiv1.forms.TimeUnit;
@@ -24,10 +25,10 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 
-@CPSType(id="RELATIVE_FORM_QUERY", base=IQuery.class)
+@CPSType(id="RELATIVE_FORM_QUERY", base=SubmittedQuery.class)
 @Getter
 @RequiredArgsConstructor(onConstructor_=@JsonCreator)
-public class RelativeFormQuery implements IQuery {
+public class RelativeFormQuery extends IQuery {
 	@NotNull @Valid
 	private final ConceptQuery query;
 	@NotNull @Valid

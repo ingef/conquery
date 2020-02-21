@@ -25,10 +25,9 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
+import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
-import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.util.ResourceUtil;
 import io.dropwizard.auth.Auth;
 
@@ -48,15 +47,15 @@ public class QueryResource {
 	}
 
 	@POST
-	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid IQuery query, @Context HttpServletRequest req) throws JSONException {
+	public ExecutionStatus postQuery(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @NotNull @Valid SubmittedQuery query, @Context HttpServletRequest req) throws JSONException {
 		authorize(user, datasetId, Ability.READ);
 		// Also look into the query and check the datasets
 		authorizeReadDatasets(user, query);
 		// Check reused query
-		for (ManagedExecutionId requiredQueryId : query
-			.collectRequiredQueries()) {
-			authorize(user, requiredQueryId, Ability.READ);
-		}
+//		for (ManagedExecutionId requiredQueryId : query
+//			.collectRequiredQueries()) {
+//			authorize(user, requiredQueryId, Ability.READ);
+//		}
 
 		return processor.postQuery(
 			dsUtil.getDataset(datasetId),
@@ -82,7 +81,7 @@ public class QueryResource {
 	public ExecutionStatus getStatus(@Auth User user, @PathParam(DATASET) DatasetId datasetId, @PathParam(QUERY) ManagedExecutionId queryId, @Context HttpServletRequest req) throws InterruptedException {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
-		ManagedQuery query = dsUtil.getManagedQuery(queryId);
+		ManagedExecution query = dsUtil.getManagedQuery(queryId);
 		query.awaitDone(10, TimeUnit.SECONDS);
 		return processor.getStatus(
 			dsUtil.getDataset(datasetId),

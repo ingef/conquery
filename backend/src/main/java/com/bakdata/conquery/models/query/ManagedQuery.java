@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
@@ -42,7 +43,7 @@ import org.apache.commons.lang3.ArrayUtils;
 @ToString(callSuper = true)
 @Slf4j
 @CPSType(base = ManagedExecution.class, id = "MANAGED_QUERY")
-public class ManagedQuery extends ManagedExecution {
+public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	// Needs to be resolved externally before being executed
 	private IQuery query;
@@ -72,6 +73,7 @@ public class ManagedQuery extends ManagedExecution {
 
 	@Override
 	public void initExecutable(Namespaces namespaces) {
+		this.namespace = namespaces.get(getDataset());
 		this.executingThreads = namespace.getWorkers().size();
 	}
 
@@ -146,5 +148,12 @@ public class ManagedQuery extends ManagedExecution {
 		}
 		log.trace("Did not create a QueryPlan for the query {} because the plan corresponds to dataset {} but the execution worker belongs to {}.", getId(), getDataset(), context.getDataset());
 		return Collections.emptyMap();
+	}
+
+	@Override
+	public ShardResult getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry) {
+		ShardResult result = new ShardResult();
+		result.setQueryId(getId());
+		return result;
 	}
 }

@@ -5,12 +5,13 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 
 @JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
 @CPSBase
-public interface SubmittedQuery {
+public interface SubmittedQuery extends Visitable {
 	
 	/**
 	 * Resolves the submitted query.
@@ -20,6 +21,6 @@ public interface SubmittedQuery {
 	 * @param submittedDataset
 	 * @return
 	 */
-	ManagedExecution toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset);
+	ManagedExecution<?> toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset);
 
 }

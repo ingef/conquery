@@ -4,11 +4,11 @@ import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.ConceptManipulator;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.ResultInfoDecorator;
@@ -23,19 +23,19 @@ public class RelExportGenerator {
 	private User user;
 	private Namespaces namespaces;
 	
-	public static RelativeFormQuery generate(Namespaces namespaces, RelativeMode mode) {
+	public static ManagedQuery generate(Namespaces namespaces, RelativeMode mode, UserId userId, DatasetId submittedDataset) {
 		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getOutcomes(), namespaces);
 		
-		return new RelativeFormQuery(
+		RelativeFormQuery query = new RelativeFormQuery(
 			(ConceptQuery) prerequisite.getQuery(),
 			setInfos(
-				AbsExportGenerator.createSubPlan(mode.getFeatures()),
+				AbsExportGenerator.createSubQuery(mode.getFeatures()),
 				FeatureGroup.FEATURE
 			),
 			setInfos(
-				AbsExportGenerator.createSubPlan(mode.getOutcomes()),
+				AbsExportGenerator.createSubQuery(mode.getOutcomes()),
 				FeatureGroup.OUTCOME
 			),
 			mode.getIndexSelector(),
@@ -44,6 +44,7 @@ public class RelExportGenerator {
 			mode.getTimeCountAfter(),
 			mode.getTimeUnit()
 		);
+		return query.toManagedExecution(namespaces.getMetaStorage(), namespaces, userId, submittedDataset);
 	}
 	
 	private static ArrayConceptQuery setInfos(ArrayConceptQuery arrayQuery, FeatureGroup group) {
@@ -58,8 +59,8 @@ public class RelExportGenerator {
 		return arrayQuery;
 	}
 
-	public ManagedQuery execute(RelativeMode relativeMode, boolean printUserFriendly) throws JSONException {
-		ExecutionManager queryManager = namespaces.get(dataset.getId()).getQueryManager();
-		return queryManager.runQuery(generate(relativeMode), user);
-	}
+//	public ManagedQuery execute(RelativeMode relativeMode, boolean printUserFriendly) throws JSONException {
+//		ExecutionManager queryManager = namespaces.get(dataset.getId()).getQueryManager();
+//		return queryManager.runQuery(generate(relativeMode), user);
+//	}
 }

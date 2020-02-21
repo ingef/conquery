@@ -6,11 +6,14 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 
+import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.mina.MessageSender;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.NamespaceMessage;
 import com.bakdata.conquery.models.messages.namespaces.specific.CollectQueryResult;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
@@ -18,6 +21,9 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 
+@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@CPSBase
+@CPSType(id = "SHARD_RESULT", base = ShardResult.class)
 @Getter @Setter @Slf4j @ToString(onlyExplicitlyIncluded = true)
 public class ShardResult {
 
