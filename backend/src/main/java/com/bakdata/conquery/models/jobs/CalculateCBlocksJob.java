@@ -130,6 +130,7 @@ public class CalculateCBlocksJob extends Job {
 
 		final ImportId importId = info.getImp().getId();
 
+		// Create index and insert into Tree.
 		TreeChildPrefixIndex.putIndexInto(treeConcept);
 
 		treeConcept.initializeIdCache(stringType, importId);
@@ -143,19 +144,21 @@ public class CalculateCBlocksJob extends Job {
 			try {
 				final int event = entry.getEvent();
 
+				// Lazy
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
 				int valueIndex = bucket.getString(event, connector.getColumn());
+				final String stringValue = stringType.getElement(valueIndex);
 
 				// Events without values are skipped
 				// Events can also be filtered, allowing a single table to be used by multiple connectors.
 				if (!bucket.has(event, connector.getColumn())
-					|| (connector.getCondition() != null && !connector.getCondition().matches(stringType.getElement(valueIndex), rowMap))
+					|| (connector.getCondition() != null && !connector.getCondition().matches(stringValue, rowMap))
 				) {
 					cBlock.getMostSpecificChildren().add(null);
 					continue;
 				}
 
-				ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, rowMap);
+				ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
 				if (child != null) {
 					cBlock.getMostSpecificChildren().add(child.getPrefix());

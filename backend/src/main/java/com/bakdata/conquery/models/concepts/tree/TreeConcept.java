@@ -196,8 +196,8 @@ public class TreeConcept extends Concept<ConceptTreeConnector> implements Concep
 			.map(ConceptTreeChild.class::cast);
 	}*/
 
-	public void initializeIdCache(AStringType type, ImportId importId) {
-		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type));
+	public void initializeIdCache(AStringType<?> type, ImportId importId) {
+		caches.computeIfAbsent(importId, id -> new ConceptTreeCache(this, type.size()));
 	}
 
 	@Override

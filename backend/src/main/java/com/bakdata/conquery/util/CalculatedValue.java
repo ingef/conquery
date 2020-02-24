@@ -6,6 +6,10 @@ import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.ToString;
 
+/**
+ *
+ * @param <T>
+ */
 @RequiredArgsConstructor @ToString(of="value")
 public class CalculatedValue<T> {
 	@NonNull
