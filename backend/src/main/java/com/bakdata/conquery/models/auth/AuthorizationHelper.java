@@ -161,16 +161,14 @@ public class AuthorizationHelper {
 		Set<Permission> tmpView = userPermissions;
 		for (Role role : user.getRoles()) {
 			// In order to avoid copying, we build a 'tree' of Sets as a SetView, 
-			Set<Permission> currentView = Sets.union(tmpView, role.getPermissions());
-			tmpView = currentView;
+			tmpView = Sets.union(tmpView, role.getPermissions());
 			
 		}
 		
 		for (Group group : storage.getAllGroups()) {
 			if(group.containsMember(user)) {
 				// Get effective permissions of the group
-				Set<Permission> currentView = Sets.union(tmpView, getEffectiveGroupPermissions(group.getId(), storage));
-				tmpView = currentView;
+				tmpView = Sets.union(tmpView, getEffectiveGroupPermissions(group.getId(), storage));
 			}
 		}
 		return tmpView;
