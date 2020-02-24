@@ -63,7 +63,6 @@ public class QueryProcessor {
 			}
 		}
 		
-//		ManagedExecution<?> mq = namespace.getQueryManager().runQuery(query, user.getId());
 
 		ManagedExecution<?> mq = ExecutionManager.runQuery(storage, namespaces, query, user.getId(), dataset.getId());
 		// Set abilities for submitted query
