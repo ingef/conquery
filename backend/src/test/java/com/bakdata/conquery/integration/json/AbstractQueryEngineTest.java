@@ -77,7 +77,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		)
 		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
 
-		List<String> actual = new QueryToCSVRenderer()
+		List<String> actual = QueryToCSVRenderer
 			.toCSV(
 				PRINT_SETTINGS,
 				managed,

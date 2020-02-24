@@ -50,9 +50,12 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	}
 
 	public ManagedForm toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		List<ManagedQuery> subQueries = timeMode.createSpecializedQuery(namespaces, userId, submittedDataset);
-		subQueries.forEach(q -> storage.addExecution(q));
-		return new ManagedForm(storage, Map.of(ConqueryConstants.SINGLE_RESULT_TABLE_NAME,subQueries), userId, submittedDataset);
+		return new ManagedForm(storage, this, userId, submittedDataset);
+	}
+
+	@Override
+	public Map<String,List<ManagedQuery>> createSubQueries(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+		return Map.of(ConqueryConstants.SINGLE_RESULT_TABLE_NAME,timeMode.createSpecializedQuery(namespaces, userId, submittedDataset));
 	}
 
 }

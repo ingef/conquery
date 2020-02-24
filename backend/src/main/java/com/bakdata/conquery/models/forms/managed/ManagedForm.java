@@ -1,5 +1,6 @@
 package com.bakdata.conquery.models.forms.managed;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -13,6 +14,7 @@ import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
+import com.bakdata.conquery.io.jackson.InternalOnly;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
@@ -56,13 +58,15 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@JsonIgnore
 	protected Map<String,List<ManagedQuery>> subQueries;
 
+	@InternalOnly
 	private Map<ManagedExecutionId,ManagedQuery> flatSubQueries;
+	
 	@JsonIgnore
 	private transient AtomicInteger openSubQueries;
 	
-	public ManagedForm(MasterMetaStorage storage, Map<String,List<ManagedQuery>> subQueries, UserId owner, DatasetId submittedDataset) {
+	public ManagedForm(MasterMetaStorage storage, Form submittedForm, UserId owner, DatasetId submittedDataset) {
 		super(storage,  owner, submittedDataset);
-		this.subQueries = subQueries;
+		this.submittedForm = submittedForm;
 	}
 	
 
@@ -70,10 +74,10 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@Override
 	public void initExecutable(@NonNull Namespaces namespaces) {
 		// init all subqueries
+		subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
 		flatSubQueries = subQueries.values().stream().flatMap(List::stream).collect(Collectors.toMap(ManagedQuery::getId, Function.identity()));
 		flatSubQueries.values().forEach(mq -> mq.initExecutable(namespaces));
 		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
-		
 	}
 	
 	@Override
@@ -91,12 +95,11 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 
 	@Override
-	public ManagedQuery toResultQuery() {
-//		if(subQueries.size() == 1) {
-//			// Get the query, only if there is only one in the whole execution
-//			subQueries.get(0).stream().flatMap()
-//			return internalQueryMapping.values().stream().collect(Collectors.toList()).get(0).get(0);
-//		}
+	public Collection<ManagedQuery> toResultQuery() {
+		if(subQueries.size() == 1) {
+			// Get the query, only if there is only one in the whole execution
+			return subQueries.values().iterator().next();
+		}
 		throw new UnsupportedOperationException("Can't return the result query of a multi query form");
 	}
 

@@ -67,7 +67,7 @@ public class ResultCSVResource {
 		IdMappingState mappingState = config.getIdMapping().initToExternal(user, exec);
 
 		try {
-			Stream<String> csv = new QueryToCSVRenderer().toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);
+			Stream<String> csv = QueryToCSVRenderer.toCSV(PRINT_SETTINGS, exec.toResultQuery(), mappingState);
 
 			log.info("Querying results for {}", queryId);
 			StreamingOutput out = new StreamingOutput() {

@@ -133,13 +133,12 @@ public class FormTest extends ConqueryTestSpec {
 	}
 
 	private void checkResults(ManagedForm managedForm, User user) throws IOException {
-		QueryToCSVRenderer renderer = new QueryToCSVRenderer();
 		Map<String, List<ManagedQuery>> managedMapping = managedForm.getSubQueries();
 		IdMappingState mappingState = idMapping
 			.initToExternal(user, managedForm);
 		for (Map.Entry<String, List<ManagedQuery>> managed : managedMapping.entrySet()) {
 			log.info("{} CSV TESTING: {}", getLabel(), managed.getKey());
-			List<String> actual = renderer
+			List<String> actual = QueryToCSVRenderer
 				.toCSV(
 					PRINT_SETTINGS,
 					managed.getValue(),

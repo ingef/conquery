@@ -17,7 +17,7 @@ import com.bakdata.conquery.util.QueryUtils;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.google.common.collect.MoreCollectors;
 
-public abstract class IQuery implements SubmittedQuery{
+public abstract class IQuery implements SubmittedQuery {
 
 	public abstract IQuery resolve(QueryResolveContext context);
 	public abstract QueryPlan createQueryPlan(QueryPlanContext context);

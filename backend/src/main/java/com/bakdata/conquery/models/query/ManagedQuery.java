@@ -1,6 +1,7 @@
 package com.bakdata.conquery.models.query;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -132,8 +133,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	public ManagedQuery toResultQuery() {
-		return this;
+	public Collection<ManagedQuery> toResultQuery() {
+		return List.of(this);
 	}
 
 	@Override

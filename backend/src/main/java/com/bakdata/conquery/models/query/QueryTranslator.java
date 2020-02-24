@@ -20,9 +20,7 @@ public class QueryTranslator {
 			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target);
 			return (T) new ConceptQuery(root);
 		}
-		else {
-			throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
-		}
+		throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
 	}
 	
 	public <T extends CQElement> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {

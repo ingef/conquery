@@ -4,6 +4,7 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -179,7 +180,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return buildStatus(null, user);
 	}
 
-	public abstract ManagedQuery toResultQuery();
+	public abstract Collection<ManagedQuery> toResultQuery();
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
@@ -196,5 +197,6 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	@JsonIgnore
 	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
 	
+	@JsonIgnore
 	public abstract SubmittedQuery getSubmitted();
 }
