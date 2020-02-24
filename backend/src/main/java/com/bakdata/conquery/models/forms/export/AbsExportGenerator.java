@@ -39,23 +39,6 @@ public class AbsExportGenerator {
 		return query.toManagedExecution(namespaces.getMetaStorage(), namespaces, userId, submittedDataset);
 	}
 	
-//	public ManagedQuery executeQuery(AbsoluteMode mode, DateContextMode resolution) throws JSONException {
-//		ExecutionManager queryManager = namespaces.get(dataset.getId()).getQueryManager();
-//		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
-//		
-//		// Apply defaults to user concept
-//		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
-//		
-//		AbsoluteFormQuery query = new AbsoluteFormQuery(
-//			(ConceptQuery) prerequisite.getQuery(),
-//			mode.getDateRange(),
-//			createSubQuery(mode.getFeatures()),
-//			resolution
-//		);
-//		
-//		return queryManager.runQuery(query, user);
-//	}
-	
 	public static ArrayConceptQuery createSubQuery(List<CQElement> features) {
 		List<ConceptQuery> cqWraps = features.stream().map(ConceptQuery::new).collect(Collectors.toList());
 		return createSubPlanFromQueries(cqWraps);

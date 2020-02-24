@@ -20,9 +20,7 @@ public abstract class Form implements SubmittedQuery {
 	@NonNull
 	@JsonInclude
 	private UUID id = UUID.randomUUID();
-	
-//	public abstract Map<String, List<ManagedQuery>> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException, IOException;
-//	
+
 	public abstract void init(Namespaces namespaces, User user);
 	
 }

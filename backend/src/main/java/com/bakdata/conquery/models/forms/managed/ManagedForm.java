@@ -9,7 +9,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.URLBuilder;
+import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
@@ -24,11 +26,13 @@ import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -44,6 +48,11 @@ import lombok.extern.slf4j.Slf4j;
 @CPSType(base = ManagedExecution.class, id = "MANAGED_FORM")
 public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	
+	/**
+	 * The form that was submitted through the api.
+	 */
+	private Form submittedForm;
+	
 	@JsonIgnore
 	protected Map<String,List<ManagedQuery>> subQueries;
 
@@ -51,63 +60,21 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@JsonIgnore
 	private transient AtomicInteger openSubQueries;
 	
-	
-
-//	@JsonIgnore
-//	private transient ListenableFuture<ExecutionState> formFuture;
-
-//	/**
-//	 * Represents the mapping of result matrices with their output name to their actual queries.
-//	 * The output name is later used to generate the name of the CSV file.
-//	 */
-//	protected Map<String,List<EntityResult>> internalQueryMapping;
-
 	public ManagedForm(MasterMetaStorage storage, Map<String,List<ManagedQuery>> subQueries, UserId owner, DatasetId submittedDataset) {
 		super(storage,  owner, submittedDataset);
 		this.subQueries = subQueries;
 	}
+	
 
-//	public void executeForm(ListeningExecutorService pool, MasterMetaStorage storage) {
-//		setState(ExecutionState.RUNNING);
-//		formFuture = pool.submit(() -> execute(storage));
-//		Futures.addCallback(
-//			formFuture,
-//			new FutureCallback<ExecutionState>() {
-//				@Override
-//				public void onSuccess(ExecutionState result) {
-//					if(result == ExecutionState.DONE) {
-//						finish();
-//					}
-//					else {
-//						fail();
-//					}
-//				}
-//				@Override
-//				public void onFailure(Throwable t) {
-//					log.error("Failed executing form "+form.getId(), t);
-//					fail();
-//				}
-//			},
-//			MoreExecutors.directExecutor()
-//		);
-//	}
-//	
-//	protected ExecutionState execute(MasterMetaStorage storage) throws JSONException, IOException {
-//		internalQueryMapping = form.executeQuery(
-//			getNamespace().getStorage().getDataset(),
-//			getNamespace().getStorage().getMetaStorage().getUser(getOwner()),
-//			getNamespace().getNamespaces()
-//		);
-//		for(List<ManagedQuery> internalQueries : internalQueryMapping.values()) {
-//			for(ManagedQuery internalQuery : internalQueries) {
-//				internalQuery.awaitDone(1, TimeUnit.DAYS);
-//				if(internalQuery.getState() != ExecutionState.DONE) {
-//					return ExecutionState.FAILED;
-//				}
-//			}
-//		}
-//		return ExecutionState.DONE;
-//	}
+
+	@Override
+	public void initExecutable(@NonNull Namespaces namespaces) {
+		// init all subqueries
+		flatSubQueries = subQueries.values().stream().flatMap(List::stream).collect(Collectors.toMap(ManagedQuery::getId, Function.identity()));
+		flatSubQueries.values().forEach(mq -> mq.initExecutable(namespaces));
+		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
+		
+	}
 	
 	@Override
 	public void start() {
@@ -156,15 +123,6 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		return plans;
 	}
 
-	@Override
-	public void initExecutable(Namespaces namespaces) {
-		// init all subqueries
-		flatSubQueries = subQueries.values().stream().flatMap(List::stream).collect(Collectors.toMap(ManagedQuery::getId, Function.identity()));
-		flatSubQueries.values().forEach(mq -> mq.initExecutable(namespaces));
-		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
-		
-	}
-
 	/**
 	 * Distribute the result to a sub query.
 	 */
@@ -208,5 +166,18 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@CPSType(id = "FORM_SHARD_RESULT", base = ShardResult.class)
 	public static class FormSharedResult extends ShardResult {
 		private ManagedExecutionId subqueryId;
+	}
+
+	@Override
+	public Set<Namespace> getRequiredNamespaces() {
+		return flatSubQueries.values().stream()
+			.map(ManagedQuery::getRequiredNamespaces)
+			.flatMap(Set::stream)
+			.collect(Collectors.toSet());
+	}
+
+	@Override
+	public SubmittedQuery getSubmitted() {
+		return submittedForm;
 	}
 }

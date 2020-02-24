@@ -10,6 +10,7 @@ import java.util.stream.Stream;
 
 import javax.validation.constraints.NotNull;
 
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -32,6 +33,7 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -72,7 +74,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	public void initExecutable(Namespaces namespaces) {
+	public void initExecutable(@NonNull Namespaces namespaces) {
 		this.namespace = namespaces.get(getDataset());
 		this.executingThreads = namespace.getWorkers().size();
 	}
@@ -155,5 +157,15 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		ShardResult result = new ShardResult();
 		result.setQueryId(getId());
 		return result;
+	}
+
+	@Override
+	public Set<Namespace> getRequiredNamespaces() {
+		return Set.of(namespace);
+	}
+
+	@Override
+	public SubmittedQuery getSubmitted() {
+		return query;
 	}
 }

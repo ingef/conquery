@@ -27,8 +27,11 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingState;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.PrintSettings;
 import com.bakdata.conquery.models.query.QueryToCSVRenderer;
@@ -107,10 +110,12 @@ public class FormTest extends ConqueryTestSpec {
 
 	@Override
 	public void executeTest(StandaloneSupport support) throws Exception {
-		MasterMetaStorage storage = support.getStandaloneCommand().getMaster().getStorage();
-		Namespaces namespaces = storage.getNamespaces();
+		Namespaces namespaces = support.getNamespace().getNamespaces();
+		MasterMetaStorage storage = support.getNamespace().getStorage().getMetaStorage();
+		UserId userId = support.getTestUser().getId();
+		DatasetId dataset = support.getNamespace().getDataset().getId();
 
-		ManagedExecution<?> managedForm = support.getNamespace().getQueryManager().runQuery(form, support.getTestUser().getId());
+		ManagedExecution<?> managedForm = ExecutionManager.runQuery(storage, namespaces, form, userId, dataset);
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {

@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 
 import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.ResultCSVResource;
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -29,10 +30,12 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
+import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -85,6 +88,14 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	 * @param namespaces
 	 */
 	public abstract void initExecutable(Namespaces namespaces);
+
+	/**
+	 * Returns the set of namespaces, this execution needs to be executed on.
+	 * The {@link ExecutionManager} then submits the queries to these namespaces.
+	 */
+	@JsonIgnore
+	public abstract Set<Namespace> getRequiredNamespaces();
+
 
 	@Override
 	public ManagedExecutionId createId() {
@@ -182,5 +193,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	public abstract void addResult(R result);
 	
+	@JsonIgnore
 	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
+	
+	public abstract SubmittedQuery getSubmitted();
 }

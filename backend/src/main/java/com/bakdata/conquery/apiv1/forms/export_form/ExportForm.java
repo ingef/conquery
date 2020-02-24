@@ -34,17 +34,6 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	private ManagedExecutionId queryGroup;
 	@NotNull @Valid @JsonManagedReference
 	private Mode timeMode;
-	
-//	@Override
-//	public Collection<ManagedExecutionId> getUsedQueries() {
-//		return Arrays.asList(queryGroup);
-//	}
-
-//	@Override
-//	public Map<String, List<ManagedQuery>> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
-//		return
-//			ImmutableMap.of(SINGLE_RESULT_TABLE_POSTFIX,timeMode.executeQuery(dataset, user, namespaces));
-//	}
 
 	@Override
 	public void init(Namespaces namespaces, User user) {

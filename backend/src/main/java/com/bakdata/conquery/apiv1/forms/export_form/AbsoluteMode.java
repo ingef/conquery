@@ -30,14 +30,6 @@ public class AbsoluteMode extends Mode {
 	@NotEmpty
 	private List<CQElement> features;
 
-//	@Override
-//	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
-//		return Collections.singletonList(
-//			new AbsExportGenerator(dataset, user, namespaces)
-//				.executeQuery(this, DateContextMode.QUARTER_WISE)
-//		);
-//	}
-
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		features.forEach(e -> visitor.accept(e));
@@ -45,6 +37,8 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public List<ManagedQuery> createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return List.of(AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTER_WISE, userId, submittedDataset));
+		return List.of(
+			AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTER_WISE, userId, submittedDataset)
+			);
 	}
 }

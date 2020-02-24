@@ -11,6 +11,7 @@ import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.util.QueryUtils;
@@ -51,7 +52,7 @@ public class QueryProcessor {
 				log.info("Re-executing Query {}", executionId);
 
 
-				final ManagedExecution<?> mq = namespace.getQueryManager().executeQuery(namespace.getQueryManager().getQuery(executionId));
+				final ManagedExecution<?> mq = ExecutionManager.executeQuery( namespaces, namespace.getQueryManager().getQuery(executionId));
 
 				return getStatus(dataset, mq, urlb, user);
 			}
@@ -62,8 +63,9 @@ public class QueryProcessor {
 			}
 		}
 		
-		ManagedExecution<?> mq = namespace.getQueryManager().runQuery(query, user.getId());
+//		ManagedExecution<?> mq = namespace.getQueryManager().runQuery(query, user.getId());
 
+		ManagedExecution<?> mq = ExecutionManager.runQuery(storage, namespaces, query, user.getId(), dataset.getId());
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
 
