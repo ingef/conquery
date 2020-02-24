@@ -173,7 +173,7 @@ public class Preprocessor {
 
 							long errors = errorCounter.getAndIncrement();
 
-							log.warn("Failed to parse `{}` from line: {} content: {}. Errors={}", e.getSource(), lineId, Arrays.toString(row), errors, e.getCause());
+							log.warn("Failed to parse `{}` from line: {} content: {}. Errors={}", e.getSource().getDescription(), lineId, Arrays.toString(row), errors, e.getCause());
 
 //
 //							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {

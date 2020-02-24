@@ -37,6 +37,11 @@ public abstract class OutputDescription implements Serializable {
 	 * Describes a transformation of an input row to a single value.
 	 */
 	public abstract class Output {
+
+		public OutputDescription getDescription(){
+			return OutputDescription.this;
+		}
+
 		/**
 		 * Parse the line/row
 		 * @param row the row to parse
