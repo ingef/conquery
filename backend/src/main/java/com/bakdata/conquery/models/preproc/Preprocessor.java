@@ -173,14 +173,17 @@ public class Preprocessor {
 
 							long errors = errorCounter.getAndIncrement();
 
-							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
-								log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, Arrays.toString(row), e.getCause());
-							}
-							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
-								log.warn("More erroneous lines occurred. Only the first "
-										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
-										 + " were printed.");
-							}
+							log.warn("Failed to parse `{}` from line: {} content: {}. Errors={}", e.getSource(), lineId, Arrays.toString(row), errors, e.getCause());
+
+//
+//							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+//								log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, Arrays.toString(row), e.getCause());
+//							}
+//							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
+//								log.warn("More erroneous lines occurred. Only the first "
+//										 + ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()
+//										 + " were printed.");
+//							}
 						}
 						finally {
 							//report progress
