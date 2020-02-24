@@ -6,11 +6,13 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * Outputs the current line in the file.
  */
 @Data
+@ToString
 @CPSType(id="LINE", base= OutputDescription.class)
 public class LineOutput extends OutputDescription {
 	

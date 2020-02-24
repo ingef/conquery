@@ -8,11 +8,13 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * Parse input column as {@link com.bakdata.conquery.models.common.CDate} based int.
  */
 @Data
+@ToString(of = {"inputColumn"})
 @CPSType(id = "EPOCH", base = OutputDescription.class)
 public class EpochOutput extends OutputDescription {
 

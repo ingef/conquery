@@ -9,11 +9,13 @@ import com.bakdata.conquery.models.types.MajorTypeId;
 import com.bakdata.conquery.models.types.parser.Parser;
 import it.unimi.dsi.fastutil.objects.Object2IntArrayMap;
 import lombok.Data;
+import lombok.ToString;
 
 /**
  * Parse input columns as {@link CDateRange}. Input values must be {@link com.bakdata.conquery.models.common.CDate} based ints.
  */
 @Data
+@ToString(of = {"startColumn", "endColumn"})
 @CPSType(id = "EPOCH_DATE_RANGE", base = OutputDescription.class)
 public class EpochDateRangeOutput extends OutputDescription {
 
