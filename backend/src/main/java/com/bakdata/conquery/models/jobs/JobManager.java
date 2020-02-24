@@ -15,8 +15,8 @@ public class JobManager implements Managed {
 
 
 	public JobManager(String labelSuffix) {
-		slowExecutor = new JobExecutor("slow " + labelSuffix);
-		fastExecutor = new JobExecutor("fast " + labelSuffix);
+		slowExecutor = new JobExecutor("Job Manager slow " + labelSuffix);
+		fastExecutor = new JobExecutor("Job Manager fast " + labelSuffix);
 	}
 
 	public void addSlowJob(Job job) {

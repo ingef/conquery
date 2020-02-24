@@ -24,9 +24,9 @@ public class JobExecutor extends Thread {
 	private final AtomicReference<Job> currentJob = new AtomicReference<>();
 	private final AtomicBoolean closed = new AtomicBoolean(false);
 	private final AtomicBoolean busy = new AtomicBoolean(false);
-	
+
 	public JobExecutor(String name) {
-		super("JobManager Worker "+name);
+		super(name);
 		SharedMetricRegistries.getDefault().register("jobs." + name + ".queue", (Gauge<Integer>) jobs::size);
 	}
 
@@ -73,6 +73,7 @@ public class JobExecutor extends Thread {
 	public void close() {
 		closed.set(true);
 		Uninterruptibles.joinUninterruptibly(this);
+		SharedMetricRegistries.getDefault().remove("jobs." + getName() + ".queue");
 	}
 	
 	@Override
