@@ -33,6 +33,7 @@ public class EpochOutput extends OutputDescription {
 					return null;
 				}
 
+
 				return Integer.parseInt(row[columnIndex]);
 			}
 		};

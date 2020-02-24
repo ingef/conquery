@@ -62,6 +62,15 @@ public abstract class OutputDescription implements Serializable {
 		}
 	}
 
+	@Data
+	public static class OutputException extends Exception {
+		private final Output source;
+		public OutputException(Output source, Exception cause){
+			super(cause);
+			this.source = source;
+		}
+	}
+
 	/**
 	 * Helper function to verify that all headers are present.
 	 * Throws an exception of one is missing.

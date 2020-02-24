@@ -169,12 +169,12 @@ public class Preprocessor {
 							result.addRow(primary, columns, applyOutputs(outputs, columns, row, lineId));
 
 						}
-						catch (ParsingException e) {
+						catch (OutputDescription.OutputException e) {
 
 							long errors = errorCounter.getAndIncrement();
 
 							if (log.isTraceEnabled() || errors < ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
-								log.warn("Failed to parse primary from line:" + lineId + " content:" + Arrays.toString(row), e);
+								log.warn("Failed to parse `{}` from line: {} content: {}", e.getSource(), lineId, Arrays.toString(row), e.getCause());
 							}
 							else if (errors == ConqueryConfig.getInstance().getPreprocessor().getMaximumPrintedErrors()) {
 								log.warn("More erroneous lines occurred. Only the first "
@@ -257,25 +257,30 @@ public class Preprocessor {
 	/**
 	 * Apply each output for a single row. Returning all resulting values.
 	 */
-	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId) throws ParsingException {
+	private static Object[] applyOutputs(List<OutputDescription.Output> outputs, PPColumn[] columns, String[] row, long lineId)
+			throws ParsingException, OutputDescription.OutputException {
 		Object[] outRow = new Object[outputs.size()];
 
-		for (int c = 0; c < outputs.size(); c++) {
+		for (int index = 0; index < outputs.size(); index++) {
+			final OutputDescription.Output out = outputs.get(index);
 
-			final OutputDescription.Output out = outputs.get(c);
-			final Parser<?> parser = columns[c].getParser();
+			try {
+				final Parser<?> parser = columns[index].getParser();
 
-			final Object result = out.createOutput(row, parser, lineId);
+				final Object result = out.createOutput(row, parser, lineId);
 
-			if (result == null) {
-				continue;
+				if (result == null) {
+					continue;
+				}
+
+				if (outRow == null) {
+					outRow = new Object[outputs.size()];
+				}
+
+				outRow[index] = result;
+			}catch (Exception e){
+				throw new OutputDescription.OutputException(out, e);
 			}
-
-			if (outRow == null) {
-				outRow = new Object[outputs.size()];
-			}
-
-			outRow[c] = result;
 		}
 		return outRow;
 	}
