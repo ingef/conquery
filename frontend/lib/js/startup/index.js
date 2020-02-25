@@ -1,4 +1,4 @@
 // @flow
 
-export { default as Startup } from "./Startup";
+export { useStartup } from "./useStartup";
 export { default as reducer } from "./reducer";
