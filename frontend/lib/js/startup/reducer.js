@@ -8,13 +8,13 @@ import {
 
 import type { GetFrontendConfigResponseT } from "../api/types";
 
-export type StateType = {
+export type StartupStateT = {
   loading: boolean,
   error: ?string,
   config: GetFrontendConfigResponseT
 };
 
-const initialState: StateType = {
+const initialState: StartupStateT = {
   loading: false,
   error: null,
   config: {
@@ -29,9 +29,9 @@ const initialState: StateType = {
 };
 
 const startup = (
-  state: StateType = initialState,
+  state: StartupStateT = initialState,
   action: Object
-): StateType => {
+): StartupStateT => {
   switch (action.type) {
     case LOAD_CONFIG_START:
       return {

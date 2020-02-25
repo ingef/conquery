@@ -28,7 +28,6 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.github.powerlibraries.io.In;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.primitives.Ints;
-
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import freemarker.template.TemplateException;
@@ -48,8 +47,8 @@ public class Import extends NamedImpl<ImportId> {
 	private String suffix;
 	@JsonIgnore
 	private transient BlockFactory blockFactory;
-	
-	
+
+
 	@Override
 	public ImportId createId() {
 		return new ImportId(table, getName());

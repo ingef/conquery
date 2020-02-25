@@ -1,17 +1,19 @@
 package com.bakdata.conquery.models;
+import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.UUID;
 
-import org.junit.jupiter.api.Test;
-
+import com.bakdata.conquery.apiv1.auth.PasswordCredential;
 import com.bakdata.conquery.io.jackson.serializer.SerializationTestUtil;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
+import com.bakdata.conquery.models.auth.entities.Group;
+import com.bakdata.conquery.models.auth.entities.Role;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
-import com.bakdata.conquery.models.auth.subjects.Mandator;
-import com.bakdata.conquery.models.auth.subjects.User;
 import com.bakdata.conquery.models.concepts.ValidityDate;
 import com.bakdata.conquery.models.concepts.tree.ConceptTreeConnector;
 import com.bakdata.conquery.models.concepts.tree.TreeConcept;
@@ -20,9 +22,12 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
+import com.bakdata.conquery.models.identifiable.IdMapSerialisationTest;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.identifiable.mapping.PersistentIdMap;
 import com.bakdata.conquery.models.types.MajorTypeId;
+import org.junit.jupiter.api.Test;
 
 public class SerializationTests {
 
@@ -37,41 +42,69 @@ public class SerializationTests {
 	}
 	
 	@Test
-	public void mandator() throws IOException, JSONException{
-		Mandator mandator = new Mandator("company", "company");
+	public void passwordCredential() throws IOException, JSONException{
+		PasswordCredential credential = new PasswordCredential(new String("testPassword").toCharArray());
 		
 		SerializationTestUtil
-			.forType(Mandator.class)
-			.test(mandator);
+			.forType(PasswordCredential.class)
+			.test(credential);
 	}
 	
 	@Test
+	public void mandator() throws IOException, JSONException{
+		Role mandator = new Role("company", "company");
+		
+		SerializationTestUtil
+			.forType(Role.class)
+			.test(mandator);
+	}
+	
+	/*
+	 * Only way to add permission without a storage.
+	 */
+	@Test
 	public void user() throws IOException, JSONException{
+		MasterMetaStorage storage = mock(MasterMetaStorage.class);
 		User user = new User("user", "user");
+		user.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
+		user
+			.addPermission(
+				storage,
+				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		Role role = new Role("company", "company");
+		user.addRole(storage, role);
+
+		CentralRegistry registry = new CentralRegistry();
+		registry.register(role);
 		
 		SerializationTestUtil
 			.forType(User.class)
+			.registry(registry)
 			.test(user);
 	}
 	
 	@Test
-	public void datasetPermission() throws IOException, JSONException{
-		DatasetPermission permission = new DatasetPermission(Ability.READ.asSet(), new DatasetId("dataset"));
-		
-		SerializationTestUtil
-			.forType(DatasetPermission.class)
-			.test(permission);
-	}
-	
-	@Test
-	public void queryPermission() throws IOException, JSONException{
-		QueryPermission permission = new QueryPermission(Ability.READ.asSet(), new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID()));
+	public void group() throws IOException, JSONException {
+		MasterMetaStorage storage = mock(MasterMetaStorage.class);
+		Group group = new Group("group", "group");
+		group.addPermission(storage, DatasetPermission.onInstance(Ability.READ, new DatasetId("test")));
+		group
+			.addPermission(
+				storage,
+				QueryPermission.onInstance(Ability.READ, new ManagedExecutionId(new DatasetId("dataset"), UUID.randomUUID())));
+		group.addRole(storage, new Role("company", "company"));
 
-		SerializationTestUtil
-			.forType(QueryPermission.class)
-			.test(permission);
+		Role role = new Role("company", "company");
+		group.addRole(storage, role);
+		User user = new User("userName", "userLabel");
+		group.addMember(storage, user);
+
+		CentralRegistry registry = new CentralRegistry();
+		registry.register(role);
+		registry.register(user);
+
+		SerializationTestUtil.forType(Group.class).registry(registry).test(group);
 	}
-	
 
 	@Test
 	public void treeConcept() throws IOException, JSONException{
@@ -126,5 +159,12 @@ public class SerializationTests {
 			.forType(TreeConcept.class)
 			.registry(registry)
 			.test(concept);
+	}
+
+	@Test
+	public void persistentIdMap() throws JSONException, IOException {
+		SerializationTestUtil.forType(PersistentIdMap.class)
+			.test(IdMapSerialisationTest.createTestPersistentMap());
+
 	}
 }

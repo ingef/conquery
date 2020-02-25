@@ -8,9 +8,7 @@ import { css } from "@emotion/core";
 import T from "i18n-react";
 import { DragSource } from "react-dnd";
 import { connect } from "react-redux";
-import { parseISO, formatDistance } from "date-fns";
-
-import { getDateLocale } from "../../localization";
+import { parseISO } from "date-fns";
 
 import { ErrorMessage } from "../../error-message";
 import { dndTypes } from "../../common/constants";
@@ -25,6 +23,7 @@ import WithTooltip from "../../tooltip/WithTooltip";
 import { EditableText, EditableTags } from "../../form-components";
 
 import { deletePreviousQueryModalOpen } from "../delete-modal/actions";
+import { canDownloadResult } from "../../user/selectors";
 
 import { type DraggedQueryType } from "../../standard-query-editor/types";
 
@@ -37,6 +36,7 @@ import {
 } from "./actions";
 
 import PreviousQueryTags from "./PreviousQueryTags";
+import { formatDateDistance } from "../../common/helpers";
 
 const nodeSource = {
   beginDrag(props, monitor, component): DraggedQueryType {
@@ -132,6 +132,7 @@ const StyledWithTooltip = styled(WithTooltip)`
 `;
 
 type PropsType = {
+  userCanDownloadResults: boolean,
   query: {
     id: number | string,
     label: string,
@@ -166,17 +167,18 @@ class PreviousQuery extends React.Component {
       onToggleEditPreviousQueryTags,
       onToggleEditPreviousQueryLabel,
       onRetagPreviousQuery,
-      onToggleSharePreviousQuery
+      onToggleSharePreviousQuery,
+      userCanDownloadResults
     } = this.props;
 
     const peopleFound = isEmpty(query.numberOfResults)
       ? T.translate("previousQuery.notExecuted")
       : `${query.numberOfResults} ${T.translate("previousQueries.results")}`;
-    const dateLocale = getDateLocale();
-    const executedAt = formatDistance(parseISO(query.createdAt), new Date(), {
-      locale: dateLocale,
-      addSuffix: true
-    });
+    const executedAt = formatDateDistance(
+      parseISO(query.createdAt),
+      new Date(),
+      true
+    );
     const label = query.label || query.id.toString();
     const mayEditQuery = query.own || query.shared;
     const isNotEditing = !(query.editingLabel || query.editingTags);
@@ -192,7 +194,7 @@ class PreviousQuery extends React.Component {
       >
         <TopInfos>
           <div>
-            {query.resultUrl ? (
+            {!!query.resultUrl && userCanDownloadResults ? (
               <WithTooltip text={T.translate("previousQuery.downloadResults")}>
                 <DownloadButton tight bare url={query.resultUrl}>
                   {peopleFound}
@@ -281,7 +283,8 @@ class PreviousQuery extends React.Component {
 }
 
 const mapStateToProps = state => ({
-  availableTags: state.previousQueries.tags
+  availableTags: state.previousQueries.tags,
+  userCanDownloadResults: canDownloadResult(state)
 });
 
 const mapDispatchToProps = dispatch => ({

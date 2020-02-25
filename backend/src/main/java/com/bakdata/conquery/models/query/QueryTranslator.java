@@ -1,15 +1,16 @@
 package com.bakdata.conquery.models.query;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.util.QueryUtils.NamespacedIdCollector;
 import lombok.experimental.UtilityClass;
-
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 @UtilityClass
 public class QueryTranslator {
@@ -17,9 +18,7 @@ public class QueryTranslator {
 	public <T extends IQuery> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		if(element instanceof ConceptQuery) {
 			CQElement root = replaceDataset(namespaces, ((ConceptQuery) element).getRoot(), target);
-			ConceptQuery translated = new ConceptQuery();
-			translated.setRoot(root);
-			return (T)translated;
+			return (T) new ConceptQuery(root);
 		}
 		else {
 			throw new IllegalStateException(String.format("Can't translate non ConceptQuery IQueries: %s", element.getClass()));
@@ -29,9 +28,12 @@ public class QueryTranslator {
 	public <T extends CQElement> T replaceDataset(Namespaces namespaces, T element, DatasetId target) {
 		try {
 			String value = Jackson.MAPPER.writeValueAsString(element);
+			
+			NamespacedIdCollector collector = new NamespacedIdCollector();
+			
+			element.visit(collector);
 	
-			Pattern[] patterns = element
-				.collectNamespacedIds()
+			Pattern[] patterns = collector.getIds()
 				.stream()
 				.map(NamespacedId::getDataset)
 				.map(DatasetId::toString)

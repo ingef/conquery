@@ -26,16 +26,16 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | connectors | list of [Connector](#Type-Connector) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | dataset | ID of `Dataset` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | connectors | list of [Connector](#Type-Connector) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | dataset | ID of `Dataset` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | hidden | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | additionalInfos | list of [KeyValue](#Type-KeyValue) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | additionalInfos | list of [KeyValue](#Type-KeyValue) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | globalToLocalOffset | `int` | `0` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | selects | list of [UniversalSelect](#Marker-UniversalSelect) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/TreeConcept.java) | selects | list of [UniversalSelect](#Marker-UniversalSelect) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### VIRTUAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/virtual/VirtualConcept.java)</sup></sub></sup>
@@ -49,14 +49,14 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | connectors | list of [Connector](#Type-Connector) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | dataset | ID of `Dataset` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | connectors | list of [Connector](#Type-Connector) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | dataset | ID of `Dataset` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Concept.java) | hidden | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | additionalInfos | list of [KeyValue](#Type-KeyValue) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/virtual/VirtualConcept.java) | selects | list of [Select](#Base-Select) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | additionalInfos | list of [KeyValue](#Type-KeyValue) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/virtual/VirtualConcept.java) | selects | list of [Select](#Base-Select) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 
@@ -80,7 +80,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/AndCondition.java) | conditions | list of [CTCondition](#Base-CTCondition) | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/AndCondition.java) | conditions | list of [CTCondition](#Base-CTCondition) | `null` |  |  | 
 </p></details>
 
 ### COLUMN_EQUAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java)</sup></sub></sup>
@@ -94,8 +94,8 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java) | column | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java) | values | list of `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java) | column | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/ColumnEqualCondition.java) | values | list of `String` | `null` |  |  | 
 </p></details>
 
 ### EQUAL<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/EqualCondition.java)</sup></sub></sup>
@@ -109,7 +109,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/EqualCondition.java) | values | list of `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/EqualCondition.java) | values | list of `String` | `null` |  |  | 
 </p></details>
 
 ### GROOVY<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/GroovyCondition.java)</sup></sub></sup>
@@ -123,7 +123,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/GroovyCondition.java) | script | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/GroovyCondition.java) | script | `String` | `null` |  |  | 
 </p></details>
 
 ### NOT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/NotCondition.java)</sup></sub></sup>
@@ -137,7 +137,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/NotCondition.java) | condition | [CTCondition](#Base-CTCondition) | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/NotCondition.java) | condition | [CTCondition](#Base-CTCondition) | `null` |  |  | 
 </p></details>
 
 ### OR<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/OrCondition.java)</sup></sub></sup>
@@ -151,7 +151,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/OrCondition.java) | conditions | list of [CTCondition](#Base-CTCondition) | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/OrCondition.java) | conditions | list of [CTCondition](#Base-CTCondition) | `null` |  |  | 
 </p></details>
 
 ### PREFIX_LIST<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixCondition.java)</sup></sub></sup>
@@ -165,7 +165,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixCondition.java) | prefixes | list of `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixCondition.java) | prefixes | list of `String` | `null` |  |  | 
 </p></details>
 
 ### PREFIX_RANGE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixRangeCondition.java)</sup></sub></sup>
@@ -179,8 +179,8 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixRangeCondition.java) | max | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixRangeCondition.java) | min | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixRangeCondition.java) | max | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/conditions/PrefixRangeCondition.java) | min | `String` | `null` |  |  | 
 </p></details>
 
 
@@ -204,16 +204,17 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | labels | bijective map from `String` to `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | values | list of `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | labels | bijective map from `String` to `String` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | searchType | one of PREFIX, CONTAINS, EXACT | `"EXACT"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | values | list of `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### COUNT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountFilter.java)</sup></sub></sup>
@@ -227,16 +228,15 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountFilter.java) | column | ID of `Column` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountFilter.java) | column | ID of `Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountFilter.java) | distinct | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountFilter.java) | distinctByColumn | list of ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountFilter.java) | distinctByColumn | list of ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### COUNT_QUARTERS<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/CountQuartersFilter.java)</sup></sub></sup>
@@ -250,14 +250,13 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### DATE_DISTANCE<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/DateDistanceFilter.java)</sup></sub></sup>
@@ -271,15 +270,14 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/DateDistanceFilter.java) | timeUnit | one of NANOS, MICROS, MILLIS, SECONDS, MINUTES, HOURS, HALF_DAYS, DAYS, WEEKS, MONTHS, YEARS, DECADES, CENTURIES, MILLENNIA, ERAS, FOREVER | `"YEARS"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### DURATION_SUM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/DurationSumFilter.java)</sup></sub></sup>
@@ -293,14 +291,13 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### NUMBER<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/NumberFilter.java)</sup></sub></sup>
@@ -314,14 +311,13 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### PREFIX_TEXT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/PrefixTextFilter.java)</sup></sub></sup>
@@ -335,14 +331,13 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### QUARTERS_IN_YEAR<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/QuartersInYearFilter.java)</sup></sub></sup>
@@ -356,14 +351,13 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/MultiSelectFilter.java)</sup></sub></sup>
@@ -377,16 +371,17 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | labels | bijective map from `String` to `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | values | list of `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | labels | bijective map from `String` to `String` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | searchType | one of PREFIX, CONTAINS, EXACT | `"EXACT"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | values | list of `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### SINGLE_SELECT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SelectFilter.java)</sup></sub></sup>
@@ -410,16 +405,17 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | labels | bijective map from `String` to `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | values | list of `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/SingleColumnFilter.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | labels | bijective map from `String` to `String` |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | searchType | one of PREFIX, CONTAINS, EXACT | `"EXACT"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | template | [FilterTemplate](#Type-FilterTemplate) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/AbstractSelectFilter.java) | values | list of `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### SUM<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java)</sup></sub></sup>
@@ -433,17 +429,16 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | template | [FilterTemplate](#Type-FilterTemplate) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java) | column | ID of `Column` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | allowDropFile | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | pattern | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/Filter.java) | unit | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java) | column | ID of `Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java) | distinct | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java) | distinctByColumn | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java) | subtractColumn | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java) | distinctByColumn | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/filters/specific/SumFilter.java) | subtractColumn | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 
@@ -467,12 +462,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountSelect.java) | column | ID of `Column` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountSelect.java) | column | ID of `Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountSelect.java) | distinct | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountSelect.java) | distinctByColumn | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountSelect.java) | distinctByColumn | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### COUNT_OCCURENCES<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/CountOccurencesSelect.java)</sup></sub></sup>
@@ -596,9 +591,9 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### FIRST<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/FirstValueSelect.java)</sup></sub></sup>
@@ -703,13 +698,13 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java) | column | ID of `Column` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/Select.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java) | column | ID of `Column` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java) | distinct | `boolean` | `false` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java) | distinctByColumn | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java) | subtractColumn | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java) | distinctByColumn | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/select/connector/specific/SumSelect.java) | subtractColumn | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 
@@ -729,12 +724,12 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | additionalInfos | list of [KeyValue](#Type-KeyValue) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | description | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/ConceptTreeChild.java) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/ConceptTreeChild.java) | condition | [CTCondition](#Base-CTCondition) | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | additionalInfos | list of [KeyValue](#Type-KeyValue) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ConceptElement.java) | description | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/ConceptTreeChild.java) | children | list of [ConceptTreeChild](#Type-ConceptTreeChild) | `[]` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/tree/ConceptTreeChild.java) | condition | [CTCondition](#Base-CTCondition) | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ### Type Connector<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/Connector.java)</sup></sub></sup>
@@ -783,8 +778,8 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/common/KeyValue.java) | key | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/common/KeyValue.java) | value | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/common/KeyValue.java) | key | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/common/KeyValue.java) | value | `String` | `null` |  |  | 
 </p></details>
 
 ### Type ValidityDate<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ValidityDate.java)</sup></sub></sup>
@@ -798,9 +793,9 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ValidityDate.java) | column | ID of `Column` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | ␀ | `"someLabel"` | shown in the frontend | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/concepts/ValidityDate.java) | column | ID of `Column` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/Labeled.java) | label | `String` | `null` | `"someLabel"` | shown in the frontend | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/identifiable/NamedImpl.java) | name | `String` | `null` |  |  | 
 </p></details>
 
 ---

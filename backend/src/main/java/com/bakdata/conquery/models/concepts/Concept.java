@@ -1,14 +1,5 @@
 package com.bakdata.conquery.models.concepts;
 
-import java.util.Collections;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Objects;
-
-import javax.validation.Valid;
-import javax.validation.Validator;
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
@@ -18,10 +9,17 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+
+import javax.validation.Valid;
+import javax.validation.Validator;
+import javax.validation.constraints.NotNull;
+import java.util.Collections;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Objects;
 
 /**
  * This is a single node or concept in a concept tree.
@@ -37,6 +35,7 @@ public abstract class Concept<CONNECTOR extends Connector> extends ConceptElemen
 	private List<CONNECTOR> connectors=Collections.emptyList();
 	@NotNull @Getter @Setter
 	private DatasetId dataset;
+
 	
 	public CONNECTOR getConnectorByName(String connector) {
 		return connectors

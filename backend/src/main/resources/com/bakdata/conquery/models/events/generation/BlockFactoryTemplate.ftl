@@ -7,14 +7,12 @@ import java.io.IOException;
 import com.bakdata.conquery.models.datasets.Import;
 import com.bakdata.conquery.models.events.generation.BlockFactory;
 import com.bakdata.conquery.io.DeserHelper;
-import com.bakdata.conquery.models.preproc.PPHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.preproc.PPColumn;
 import com.bakdata.conquery.models.dictionary.DictionaryMapping;
 import java.math.BigDecimal;
 import com.google.common.collect.Range;
 
-import com.bakdata.conquery.util.io.SmallIn;
-import com.bakdata.conquery.util.io.SmallOut;
 import java.time.LocalDate;
 
 import java.lang.Integer;
@@ -123,7 +121,7 @@ public class BlockFactory_${suffix} extends BlockFactory {
 	}
 	
 	@Override
-	public Bucket_${suffix} adaptValuesFrom(int bucketNumber, Import imp, Bucket source, PPHeader header) {
+	public Bucket_${suffix} adaptValuesFrom(int bucketNumber, Import imp, Bucket source, PreprocessedHeader header) {
 		Bucket_${suffix} result = construct(bucketNumber, imp, source.getOffsets());
 		BitStore nullBits = Bits.store(${imp.nullWidth}*source.getNumberOfEvents());
 		result.initFields(source.getNumberOfEvents());

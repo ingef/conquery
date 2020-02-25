@@ -93,6 +93,7 @@ deletePreviousQueryModal:
   areYouSure: "Diese Anfrage wirklich löschen?"
 
 common:
+  back: "Zurück"
   any: "Beliebig"
   save: "Speichern"
   edit: "Bearbeiten"
@@ -282,3 +283,16 @@ search:
 
 preview:
   preview: "Vorschau"
+  headline: "Ergebnisvorschau"
+  explanation: "Stellt die CSV-Datei der Ergebnisse dar"
+  total: "Zeilen"
+  min: "Min Datum"
+  max: "Max Datum"
+  span: "Datumsbereich"
+
+login:
+  headline: "Anfragen und Analyse"
+  username: "Nutzername"
+  password: "Passwort"
+  error: "Einloggen fehlgeschlagen. Bitte die Eingabe überprüfen."
+  submit: "Starten"

@@ -5,13 +5,40 @@ import java.util.Set;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 
-import lombok.EqualsAndHashCode;
+@CPSType(id = "DATASETS", base = StringPermissionBuilder.class)
+public class DatasetPermission extends StringPermissionBuilder {
 
-@CPSType(id="DATASET_PERMISSION", base=ConqueryPermission.class)
-@EqualsAndHashCode(callSuper=true)
-public class DatasetPermission extends IdentifiableInstancePermission<DatasetId> {
+	public static final String DOMAIN = "datasets";
 
-	public DatasetPermission(Set<Ability> abilities, DatasetId instanceId) {
-		super(abilities, instanceId);
+	private static final Set<Ability> ALLOWED_ABILITIES = AbilitySets.DATASET_CREATOR;
+	
+	public static final DatasetPermission INSTANCE = new DatasetPermission();
+	
+	public ConqueryPermission instancePermission(Ability ability, DatasetId instance) {
+		return instancePermission(ability, instance.toString());
+	}
+	
+	public ConqueryPermission instancePermission(Set<Ability> abilities, DatasetId instance) {
+		return instancePermission(abilities, instance.toString());
+	}
+
+	@Override
+	public String getDomain() {
+		return DOMAIN;
+	}
+
+	@Override
+	public Set<Ability> getAllowedAbilities() {
+		return ALLOWED_ABILITIES;
+	}
+	
+	
+	//// Helper functions
+	public static ConqueryPermission onInstance(Set<Ability> abilities, DatasetId instance) {
+		return INSTANCE.instancePermission(abilities, instance);
+	}
+
+	public static ConqueryPermission onInstance(Ability ability, DatasetId instance) {
+		return INSTANCE.instancePermission(ability, instance);
 	}
 }

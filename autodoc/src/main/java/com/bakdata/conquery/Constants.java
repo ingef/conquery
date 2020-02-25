@@ -31,7 +31,8 @@ import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.api.description.FERoot;
 import com.bakdata.conquery.models.api.description.FEValue;
-import com.bakdata.conquery.models.auth.AuthConfig;
+import com.bakdata.conquery.models.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.auth.AuthorizationConfig;
 import com.bakdata.conquery.models.common.KeyValue;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -79,7 +80,6 @@ import com.bakdata.conquery.util.Doc;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import io.dropwizard.auth.Auth;
 import io.dropwizard.jersey.PATCH;
 import io.dropwizard.util.Duration;
@@ -114,7 +114,8 @@ public class Constants {
 			.build(),
 		Group.builder().name("Config JSON")
 			.description("The `config.json` is required for every type of execution. Its root element is a [ConqueryConfig](#Type-ConqueryConfig) object.")
-			.base(new Base(AuthConfig.class, "An `AuthConfig` is used to define how users are authenticated."))
+			.base(new Base(AuthorizationConfig.class, "An `AuthorizationConfig` defines the initial users that are created on application startup and other permission related options."))
+			.base(new Base(AuthenticationConfig.class, "An `AuthenticationConfig` is used to define how specific realms for authentication are configured."))
 			.base(new Base(PluginConfig.class, "A `PluginConfig` is used to define settings for Conquery plugins."))
 			.base(new Base(IdMappingConfig.class, "An `IdMappingConfig` is used to define how multi column entity IDs are printed and parsed"))
 			.otherClass(APIConfig.class)

@@ -10,24 +10,25 @@ type APICallType = {
   error?: string
 };
 
-export type StateType = {
+export type QueryRunnerStateT = {
   runningQuery: ?(number | string),
   queryRunning: boolean,
   startQuery: APICallType,
   stopQuery: APICallType,
-  queryResult: APICallType & {
+  queryResult: ?(APICallType & {
+    datasetId?: string,
     resultCount?: number,
     resultUrl?: string
-  }
+  })
 };
 
 export default function createQueryRunnerReducer(type: string): Function {
-  const initialState: StateType = {
+  const initialState: QueryRunnerStateT = {
     runningQuery: null,
     queryRunning: false,
     startQuery: {},
     stopQuery: {},
-    queryResult: {}
+    queryResult: null
   };
 
   const capitalType = toUpperCaseUnderscore(type);
@@ -46,7 +47,7 @@ export default function createQueryRunnerReducer(type: string): Function {
     actionTypes[`QUERY_${capitalType}_RESULT_SUCCESS`];
   const QUERY_RESULT_ERROR = actionTypes[`QUERY_${capitalType}_RESULT_ERROR`];
 
-  const getQueryResult = data => {
+  const getQueryResult = (data, datasetId) => {
     if (data.status === "CANCELED")
       return {
         loading: false,
@@ -57,6 +58,7 @@ export default function createQueryRunnerReducer(type: string): Function {
 
     // E.G. STATUS DONE
     return {
+      datasetId,
       loading: false,
       success: true,
       error: null,
@@ -65,7 +67,10 @@ export default function createQueryRunnerReducer(type: string): Function {
     };
   };
 
-  return (state: StateType = initialState, action: Object): StateType => {
+  return (
+    state: QueryRunnerStateT = initialState,
+    action: Object
+  ): QueryRunnerStateT => {
     switch (action.type) {
       // To start a query
       case START_QUERY_START:
@@ -73,7 +78,7 @@ export default function createQueryRunnerReducer(type: string): Function {
           ...state,
           stopQuery: {},
           startQuery: { loading: true },
-          queryResult: {}
+          queryResult: null
         };
       case START_QUERY_SUCCESS:
         return {
@@ -112,11 +117,11 @@ export default function createQueryRunnerReducer(type: string): Function {
       case QUERY_RESULT_START:
         return { ...state, queryResult: { loading: true } };
       case QUERY_RESULT_RESET:
-        return { ...state, queryResult: {} };
+        return { ...state, queryResult: { loading: false } };
       case QUERY_RESULT_SUCCESS:
-        const { data } = action.payload;
+        const { data, datasetId } = action.payload;
 
-        const queryResult = getQueryResult(data);
+        const queryResult = getQueryResult(data, datasetId);
 
         return {
           ...state,

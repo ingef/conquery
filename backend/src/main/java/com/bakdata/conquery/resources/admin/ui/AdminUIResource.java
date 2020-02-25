@@ -1,46 +1,8 @@
 package com.bakdata.conquery.resources.admin.ui;
 
-import com.bakdata.conquery.apiv1.FilterSearch;
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
-import com.bakdata.conquery.models.auth.subjects.User;
-import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
-import com.bakdata.conquery.models.identifiable.ids.specific.MandatorId;
-import com.bakdata.conquery.models.jobs.Job;
-import com.bakdata.conquery.models.jobs.JobManagerStatus;
-import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
-import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
-import com.bakdata.conquery.models.worker.Namespace;
-import com.bakdata.conquery.models.worker.SlaveInformation;
-import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
-import com.bakdata.conquery.resources.admin.ui.model.UIView;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.Uninterruptibles;
-import groovy.lang.GroovyShell;
-import io.dropwizard.auth.Auth;
-import io.dropwizard.views.View;
-import lombok.RequiredArgsConstructor;
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
-import org.glassfish.jersey.media.multipart.FormDataParam;
-import org.hibernate.validator.constraints.NotEmpty;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.JOB_ID;
 
-import javax.inject.Inject;
-import javax.servlet.http.HttpServletRequest;
-import javax.ws.rs.Consumes;
-import javax.ws.rs.DELETE;
-import javax.ws.rs.GET;
-import javax.ws.rs.POST;
-import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
-import javax.ws.rs.Produces;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.UriBuilder;
 import java.net.SocketAddress;
 import java.time.LocalDate;
 import java.util.Collections;
@@ -51,13 +13,49 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import static com.bakdata.conquery.resources.ResourceConstants.*;
+import javax.inject.Inject;
+import javax.ws.rs.Consumes;
+import javax.ws.rs.GET;
+import javax.ws.rs.POST;
+import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriBuilder;
+
+import com.bakdata.conquery.apiv1.FilterSearch;
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.common.Range;
+import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
+import com.bakdata.conquery.models.jobs.Job;
+import com.bakdata.conquery.models.jobs.JobManagerStatus;
+import com.bakdata.conquery.models.messages.namespaces.specific.UpdateMatchingStatsMessage;
+import com.bakdata.conquery.models.messages.network.specific.CancelJobMessage;
+import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.SlaveInformation;
+import com.bakdata.conquery.resources.admin.rest.AdminProcessor;
+import com.bakdata.conquery.resources.admin.ui.model.UIView;
+import com.bakdata.conquery.resources.hierarchies.HAdmin;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.Uninterruptibles;
+import groovy.lang.GroovyShell;
+import io.dropwizard.auth.Auth;
+import io.dropwizard.views.View;
+import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
 @Path("/")
 @RequiredArgsConstructor(onConstructor_=@Inject)
-public class AdminUIResource {
+public class AdminUIResource extends HAdmin {
 	
 	public static final String[] AUTO_IMPORTS = Stream
 		.of(
@@ -106,7 +104,6 @@ public class AdminUIResource {
 	}
 
 	private Object executeScript(String script) {
-		HttpServletRequest request;
 		CompilerConfiguration config = new CompilerConfiguration();
 		config.addCompilationCustomizers(new ImportCustomizer().addImports(AUTO_IMPORTS));
 		GroovyShell groovy = new GroovyShell(config);
@@ -121,43 +118,11 @@ public class AdminUIResource {
 		}
 	}
 
-	@GET
-	@Path("/mandators")
-	public View getMandators() {
-		return new UIView<>("mandators.html.ftl", processor.getUIContext(), processor.getAllMandators());
-	}
 
 	@GET
 	@Path("datasets")
 	public View getDatasets() {
 		return new UIView<>("datasets.html.ftl", processor.getUIContext(), processor.getNamespaces().getAllDatasets());
-	}
-
-	@POST
-	@Path("/mandators")
-	@Consumes(MediaType.MULTIPART_FORM_DATA)
-	public Response postMandator(
-		@NotEmpty @FormDataParam("mandator_name") String name,
-		@NotEmpty @FormDataParam("mandator_id") String idString) throws JSONException {
-		processor.createMandator(name, idString);
-		return Response.ok().build();
-	}
-	
-	@DELETE
-	@Path("/mandators/{"+ MANDATOR_NAME +"}")
-	public Response deleteMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) throws JSONException {
-		processor.deleteMandator(mandatorId);
-		return Response.ok().build();
-	}
-	
-	/**
-	 * End point for retrieving information about a specific mandator.
-	 * @param mandatorId Unique id of the mandator.
-	 * @return A view holding the information about the mandator.
-	 */
-	@GET @Path("/mandators/{"+ MANDATOR_NAME +"}")
-	public View getMandator(@PathParam(MANDATOR_NAME)MandatorId mandatorId) {
-		return new UIView<>("mandator.html.ftl", processor.getUIContext(), processor.getMandatorContent(mandatorId));
 	}
 
 	@POST @Path("/update-matching-stats/{"+ DATASET_NAME +"}") @Consumes(MediaType.MULTIPART_FORM_DATA)
@@ -166,7 +131,9 @@ public class AdminUIResource {
 		Namespace ns = processor.getNamespaces().get(datasetId);
 		ns.sendToAll(new UpdateMatchingStatsMessage());
 
-		FilterSearch.init(processor.getNamespaces(), Collections.singleton(ns.getDataset()));
+
+
+		FilterSearch.updateSearch(processor.getNamespaces(), Collections.singleton(ns.getDataset()), processor.getJobManager());
 	}
 
 	@POST

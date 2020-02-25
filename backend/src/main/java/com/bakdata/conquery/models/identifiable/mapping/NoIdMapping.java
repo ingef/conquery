@@ -3,9 +3,8 @@ package com.bakdata.conquery.models.identifiable.mapping;
 import java.util.List;
 
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.NamespaceStorage;
-
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.ArrayUtils;
 
 @CPSType(base = IdMappingConfig.class, id = "NO_ID_MAPPING")
 public class NoIdMapping extends IdMappingConfig {
@@ -40,7 +39,7 @@ public class NoIdMapping extends IdMappingConfig {
 		}
 
 		@Override
-		public IdAccessor getApplicationMapping(String[] csvHeader, NamespaceStorage storage) {
+		public IdAccessor getApplicationMapping(String[] csvHeader, final PersistentIdMap idMapping) {
 			return NoIdAccessor.INSTANCE;
 		}
 
@@ -52,6 +51,11 @@ public class NoIdMapping extends IdMappingConfig {
 		@Override
 		public CsvEntityId getFallbackCsvId(String[] reorderedCsvLine) {
 			return new CsvEntityId(reorderedCsvLine[0]);
+		}
+
+		@Override
+		public int findIndexFromMappingHeader(String csvHeaderField) {
+			return ArrayUtils.indexOf(getHeader(), csvHeaderField);
 		}
 	}
 

@@ -20,14 +20,13 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.config.PreprocessingDirectories;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.SimpleJob.Executable;
-import com.bakdata.conquery.models.preproc.PPHeader;
+import com.bakdata.conquery.models.preproc.PreprocessedHeader;
 import com.bakdata.conquery.models.types.specific.AStringType;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.fasterxml.jackson.core.JsonParser;
 import com.github.powerlibraries.io.Out;
 import com.google.common.collect.Sets;
-
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -116,9 +115,9 @@ public class CollectEntitiesCommand extends ConqueryCommand {
 		@Override
 		public void execute() throws Exception {
 			try (HCFile hcFile = new HCFile(file, false)) {
-				PPHeader header;
+				PreprocessedHeader header;
 				try (JsonParser in = Jackson.BINARY_MAPPER.getFactory().createParser(hcFile.readHeader())) {
-					header = Jackson.BINARY_MAPPER.readerFor(PPHeader.class).readValue(in);
+					header = Jackson.BINARY_MAPPER.readerFor(PreprocessedHeader.class).readValue(in);
 
 					log.info("Reading {}", header.getName());
 

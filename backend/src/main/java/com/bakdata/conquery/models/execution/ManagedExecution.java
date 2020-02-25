@@ -1,12 +1,28 @@
 package com.bakdata.conquery.models.execution;
 
+import java.time.Duration;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.temporal.ChronoUnit;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
+import javax.annotation.Nullable;
+
 import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.ResultCSVResource;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.permissions.Ability;
+import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
+import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -23,23 +39,13 @@ import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.validator.constraints.NotEmpty;
 
-import javax.annotation.Nullable;
-import java.time.Duration;
-import java.time.LocalDateTime;
-import java.time.ZoneId;
-import java.time.temporal.ChronoUnit;
-import java.util.Optional;
-import java.util.UUID;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
-
 @NoArgsConstructor
 @Getter
 @Setter
 @ToString
 @Slf4j
 @CPSBase
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> {
 
 	protected DatasetId dataset;
@@ -49,8 +55,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
-	
-	//we don't want to store or send query results or other result metadata
+
+	protected boolean machineGenerated;
+
+	// we don't want to store or send query results or other result metadata
 	@JsonIgnore
 	protected transient ExecutionState state = ExecutionState.NEW;
 	@JsonIgnore
@@ -100,47 +108,66 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			execution.countDown();
 			try {
 				namespace.getStorage().getMetaStorage().updateExecution(this);
-			} catch (JSONException e) {
+			}
+			catch (JSONException e) {
 				log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
 			}
 		}
 
-		log.info("{} {} {} within {}", state, queryId, this.getClass().getSimpleName(), (startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
+		log.info(
+			"{} {} {} within {}",
+			state,
+			queryId,
+			this.getClass().getSimpleName(),
+			(startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
 	}
 
 	public void awaitDone(int time, TimeUnit unit) {
-		if(state == ExecutionState.RUNNING) {
+		if (state == ExecutionState.RUNNING) {
 			Uninterruptibles.awaitUninterruptibly(execution, time, unit);
 		}
 	}
-	
-	public ExecutionStatus buildStatus(URLBuilder url) {
-		return ExecutionStatus
-			.builder()
-			.label(label)
-			.id(getId())
-			.own(true)
-			.createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
-			.requiredTime((startTime != null && finishTime != null)
-				? ChronoUnit.MILLIS.between(startTime, finishTime)
-				: null)
-			.status(state)
-			.owner(Optional.ofNullable(owner).orElse(null))
-			.ownerName(Optional.ofNullable(owner).map(user -> namespace.getStorage().getMetaStorage().getUser(user)).map(User::getLabel).orElse(null))
-			.resultUrl(
-				url != null && state != ExecutionState.NEW
-				? url
-					.set(ResourceConstants.DATASET, dataset.getName())
-					.set(ResourceConstants.QUERY, getId().toString())
-					.to(ResultCSVResource.GET_CSV_PATH).get()
-				: null
-			)
-			.build();
+
+	public ExecutionStatus buildStatus(URLBuilder url, User user) {
+		return ExecutionStatus.builder()
+							  .label(label)
+							  .id(getId())
+							  .own(getOwner().equals(user.getId()))
+							  .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+							  .requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
+							  .owner(Optional.ofNullable(owner).orElse(null))
+							  .ownerName(
+									  Optional.ofNullable(owner).map(owner -> namespace.getStorage().getMetaStorage().getUser(owner)).map(User::getLabel)
+											  .orElse(null))
+							  .resultUrl(
+									  isReadyToDownload(url, user)
+									  ? url.set(ResourceConstants.DATASET, dataset.getName()).set(ResourceConstants.QUERY, getId().toString())
+										   .to(ResultCSVResource.GET_CSV_PATH).get()
+									  : null)
+							  .build();
 	}
 
-	public ExecutionStatus buildStatus() {
-		return buildStatus(null);
+	public boolean isReadyToDownload(URLBuilder url, User user) {
+		/* We cannot rely on checking this.dataset only for download permission because the actual execution might also fired queries on another dataset.
+		 * The member ManagedExecution.dataset only associates the execution with the dataset it was submitted to.
+		 */
+		boolean isPermittedDownload = user.isPermittedAll(getUsedNamespacedIds().stream()
+			.map(NamespacedId::getDataset)
+			.map(d -> DatasetPermission.onInstance(Ability.DOWNLOAD, d))
+			.collect(Collectors.toList()));
+		return url != null && state != ExecutionState.NEW && isPermittedDownload;
+	}
+
+	public ExecutionStatus buildStatus(User user) {
+		return buildStatus(null, user);
 	}
 
 	public abstract ManagedQuery toResultQuery();
+	
+	/**
+	 * Gives all {@link NamespacedId}s that were required in the execution.
+	 * @return A List of all {@link NamespacedId}s needed for the execution.
+	 */
+	@JsonIgnore
+	public abstract Set<NamespacedId> getUsedNamespacedIds();
 }

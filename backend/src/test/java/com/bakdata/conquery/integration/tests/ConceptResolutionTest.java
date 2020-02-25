@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.TimeUnit;
 
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.integration.IntegrationTest;
@@ -18,11 +17,10 @@ import com.bakdata.conquery.resources.api.ConceptsProcessor;
 import com.bakdata.conquery.resources.api.ConceptsProcessor.ResolvedConceptsResult;
 import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.github.powerlibraries.io.In;
-
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class ConceptResolutionTest implements ProgrammaticIntegrationTest, IntegrationTest.Simple {
+public class ConceptResolutionTest extends IntegrationTest.Simple implements ProgrammaticIntegrationTest {
 
 	@Override
 	public void execute(StandaloneSupport conquery) throws Exception {
@@ -36,8 +34,9 @@ public class ConceptResolutionTest implements ProgrammaticIntegrationTest, Integ
 		
 		test.importRequiredData(conquery);
 		FilterSearch
-			.init(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()))
-			.awaitTermination(1, TimeUnit.MINUTES);
+			.updateSearch(conquery.getNamespace().getNamespaces(), Collections.singleton(conquery.getNamespace().getDataset()), conquery.getDatasetsProcessor().getJobManager());
+
+		conquery.waitUntilWorkDone();
 
 		ConceptsProcessor processor = new ConceptsProcessor(conquery.getNamespace().getNamespaces());
 		TreeConcept concept = (TreeConcept) conquery.getNamespace().getStorage().getAllConcepts().iterator().next();

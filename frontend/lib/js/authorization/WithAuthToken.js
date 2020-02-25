@@ -1,36 +1,38 @@
 // @flow
 
 import React from "react";
-import queryString from "query-string";
-import { storeAuthToken } from "./helper";
+import { storeAuthToken, getStoredAuthToken } from "./helper";
+import { push } from "react-router-redux";
+import { isLoginDisabled } from "../environment";
+import { useDispatch } from "react-redux";
 
-const WithAuthToken = (Component: any) => {
-  type PropsType = {
-    location: {
-      search: Object
-    }
-  };
+type PropsType = {
+  children: React.ReactNode,
+  location: {
+    search: Object
+  }
+};
 
-  class AuthToken extends React.Component {
-    props: PropsType;
+const WithAuthToken = ({ location, children }: PropsType) => {
+  const dispatch = useDispatch();
+  const goToLogin = () => dispatch(push("/login"));
 
-    componentWillMount() {
-      const { search } = this.props.location;
-      const accessToken = search
-        ? queryString.parse(search).access_token
-        : null;
+  const { search } = location;
+  const params = new URLSearchParams(search);
+  const accessToken = params.get("access_token");
 
-      if (accessToken) storeAuthToken(accessToken);
-    }
+  if (accessToken) storeAuthToken(accessToken);
 
-    render() {
-      const { location, ...rest } = this.props;
+  if (!isLoginDisabled()) {
+    const authToken = getStoredAuthToken();
 
-      return <Component {...rest} />;
+    if (!authToken) {
+      goToLogin();
+      return null;
     }
   }
 
-  return AuthToken;
+  return <>{children}</>;
 };
 
 export default WithAuthToken;

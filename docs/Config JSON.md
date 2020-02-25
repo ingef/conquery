@@ -9,21 +9,69 @@ The `config.json` is required for every type of execution. Its root element is a
 
 ---
 
-## Base AuthConfig
-An `AuthConfig` is used to define how users are authenticated.
+## Base AuthorizationConfig
+An `AuthorizationConfig` defines the initial users that are created on application startup and other permission related options.
 
-Different types of AuthConfig can be used by setting `type` to one of the following values:
+Different types of AuthorizationConfig can be used by setting `type` to one of the following values:
 
 
-### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/DevAuthConfig.java)</sup></sub></sup>
+### DEFAULT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/DefaultAuthorizationConfig.java)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.DevAuthConfig`
+Java Type: `com.bakdata.conquery.models.auth.DefaultAuthorizationConfig`
 
 No fields can be set for this type.
 
+</p></details>
+
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevelopmentAuthorizationConfig.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig`
+
+No fields can be set for this type.
+
+</p></details>
+
+
+
+---
+
+## Base AuthenticationConfig
+An `AuthenticationConfig` is used to define how specific realms for authentication are configured.
+
+Different types of AuthenticationConfig can be used by setting `type` to one of the following values:
+
+
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.develop.DevAuthConfig`
+
+No fields can be set for this type.
+
+</p></details>
+
+### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.basic.LocalAuthenticationConfig`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java) | jwtDuration | `int` | `12` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java) | passwordStoreConfig | [XodusConfig](#Type-XodusConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java) | storeName | `String` | `"authenticationStore"` |  |  | 
 </p></details>
 
 
@@ -105,8 +153,10 @@ Supported Fields:
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | encoding | `Charset` | `"UTF-8"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | escape | `char` | `"\\"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | lineSeparator | `String` | `"\n"` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | maxColumns | `int` | `1000000` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | parseHeaders | `boolean` | `true` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | quote | `char` | `"\""` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | skipHeader | `boolean` | `true` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | skipHeader | `boolean` | `false` |  |  | 
 </p></details>
 
 ### Type ClusterConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ClusterConfig.java)</sup></sub></sup>
@@ -137,16 +187,17 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | additionalFormats | list of `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | additionalFormats | list of `String` | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | api | [APIConfig](#Type-APIConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | authentication | [AuthConfig](#Base-AuthConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | authentication | list of [AuthenticationConfig](#Base-AuthenticationConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | authorization | [AuthorizationConfig](#Base-AuthorizationConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | cluster | [ClusterConfig](#Type-ClusterConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | csv | [CSVConfig](#Type-CSVConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | debugMode | boolean or null | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | debugMode | boolean or null | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | frontend | [FrontendConfig](#Type-FrontendConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | idMapping | [IdMappingConfig](#Base-IdMappingConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | locale | [LocaleConfig](#Type-LocaleConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | plugins | list of `PluginConfig` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | plugins | list of `PluginConfig` | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | preprocessor | [PreprocessingConfig](#Type-PreprocessingConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | queries | [QueryConfig](#Type-QueryConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | standalone | [StandaloneConfig](#Type-StandaloneConfig) |  |  |  | 
@@ -234,7 +285,7 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | directories | list of [PreprocessingDirectories](#Type-PreprocessingDirectories) | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | directories | list of [PreprocessingDirectories](#Type-PreprocessingDirectories) | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | maximumPrintedErrors | `int` | `10` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingConfig.java) | threads | `int` | `2` |  |  | 
 </p></details>
@@ -250,9 +301,9 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingDirectories.java) | csv | `File` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingDirectories.java) | descriptions | `File` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingDirectories.java) | preprocessedOutput | `File` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingDirectories.java) | csv | `File` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingDirectories.java) | descriptions | `File` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/PreprocessingDirectories.java) | preprocessedOutput | `File` | `null` |  |  | 
 </p></details>
 
 ### Type QueryConfig<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/QueryConfig.java)</sup></sub></sup>
@@ -295,7 +346,6 @@ Supported Fields:
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | directory | `File` | `"./storage"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | preprocessedRoot | `File` | ␀ |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | useWeakDictionaryCaching | `boolean` | `true` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | validateOnWrite | `boolean` | `false` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/StorageConfig.java) | weakCacheDuration | `Duration` | `"48 hours"` |  |  | 
@@ -331,51 +381,51 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | cipherBasicIV | long or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | cipherId | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | cipherKey | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envCloseForcedly | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envGatherStatistics | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envIsReadonly | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envMaxParallelReadonlyTxns | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envMaxParallelTxns | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envMonitorTxnsCheckFreq | int or null | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | cipherBasicIV | long or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | cipherId | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | cipherKey | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envCloseForcedly | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envGatherStatistics | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envIsReadonly | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envMaxParallelReadonlyTxns | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envMaxParallelTxns | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envMonitorTxnsCheckFreq | int or null | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envMonitorTxnsTimeout | `Duration` | `"10 minutes"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envReadonlyEmptyStores | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envStoreGetCacheSize | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envTxnDowngradeAfterFlush | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envTxnReplayMaxCount | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envTxnReplayTimeout | long or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | fullFileReadonly | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcEnabled | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcFileMinAge | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcFilesDeletionDelay | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcFilesInterval | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcMinUtilization | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcRenameFiles | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcRunPeriod | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcStartIn | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcTransactionAcquireTimeout | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcTransactionTimeout | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcUseExclusiveTransaction | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcUtilizationFromFile | `String` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcUtilizationFromScratch | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheFreePhysicalMemoryThreshold | long or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheNonBlocking | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheOpenFilesCount | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCachePageSize | `Size` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheShared | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheUseNio | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCleanDirectoryExpected | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logClearInvalid | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logDurableWrite | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logFileSize | `Size` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logLockId | `String` | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envReadonlyEmptyStores | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envStoreGetCacheSize | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envTxnDowngradeAfterFlush | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envTxnReplayMaxCount | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | envTxnReplayTimeout | long or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | fullFileReadonly | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcEnabled | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcFileMinAge | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcFilesDeletionDelay | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcFilesInterval | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcMinUtilization | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcRenameFiles | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcRunPeriod | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcStartIn | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcTransactionAcquireTimeout | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcTransactionTimeout | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcUseExclusiveTransaction | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcUtilizationFromFile | `String` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | gcUtilizationFromScratch | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheFreePhysicalMemoryThreshold | long or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheNonBlocking | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheOpenFilesCount | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCachePageSize | `Size` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheShared | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCacheUseNio | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logCleanDirectoryExpected | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logClearInvalid | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logDurableWrite | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logFileSize | `Size` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logLockId | `String` | `null` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logLockTimeout | `Duration` | `"1 second"` |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logSyncPeriod | long or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | managementEnabled | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | managementOperationsRestricted | boolean or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | memoryUsage | `Size` | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | memoryUsagePercentage | int or null | ␀ |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | treeMaxPageSize | int or null | ␀ |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | logSyncPeriod | long or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | managementEnabled | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | managementOperationsRestricted | boolean or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | memoryUsage | `Size` | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | memoryUsagePercentage | int or null | `null` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/XodusConfig.java) | treeMaxPageSize | int or null | `null` |  |  | 
 </p></details>

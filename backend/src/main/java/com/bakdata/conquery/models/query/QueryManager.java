@@ -1,6 +1,6 @@
 package com.bakdata.conquery.models.query;
 
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.messages.namespaces.specific.ExecuteQuery;

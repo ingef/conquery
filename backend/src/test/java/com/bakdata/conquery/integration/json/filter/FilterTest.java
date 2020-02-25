@@ -9,9 +9,6 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
@@ -45,10 +42,11 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.univocity.parsers.csv.CsvFormat;
 import com.univocity.parsers.csv.CsvParserSettings;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.ArrayUtils;
 
 
 @Slf4j @Getter @Setter
@@ -186,8 +184,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 		cqTable.setFilters(Collections.singletonList(result));
 		cqTable.setId(connector.getId());
 
-		ConceptQuery conceptQuery = new ConceptQuery();
-
 		CQConcept cqConcept = new CQConcept();
 
 		cqTable.setConcept(cqConcept);
@@ -199,14 +195,11 @@ public class FilterTest extends AbstractQueryEngineTest {
 			CQDateRestriction restriction = new CQDateRestriction();
 			restriction.setDateRange(dateRange);
 			restriction.setChild(cqConcept);
-			conceptQuery.setRoot(restriction);
+			return new ConceptQuery(restriction);
 		}
 		else {
-			conceptQuery.setRoot(cqConcept);
+			return  new ConceptQuery(cqConcept);
 		}
-
-
-		return conceptQuery;
 	}
 
 	@Override

@@ -14,9 +14,9 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonMappingException;
 
-public interface NamespaceCollection extends Injectable {
+public abstract class NamespaceCollection implements Injectable {
 
-	static NamespaceCollection get(DeserializationContext ctxt) throws JsonMappingException {
+	public static NamespaceCollection get(DeserializationContext ctxt) throws JsonMappingException {
 		NamespaceCollection namespaces = (NamespaceCollection) ctxt
 				.findInjectableValue(NamespaceCollection.class.getName(), null, null);
 		if(namespaces == null) {
@@ -28,19 +28,19 @@ public interface NamespaceCollection extends Injectable {
 	}
 	
 	@Override
-	default MutableInjectableValues inject(MutableInjectableValues values) {
+	public MutableInjectableValues inject(MutableInjectableValues values) {
 		return values.add(NamespaceCollection.class, this);
 	}
-	
-	CentralRegistry findRegistry(DatasetId dataset);
-	@JsonIgnore
-	CentralRegistry getMetaRegistry();
 
-	default <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> T resolve(ID id) {
+	public abstract CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException;
+	@JsonIgnore
+	public abstract CentralRegistry getMetaRegistry();
+
+	public <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> T resolve(ID id) {
 		return findRegistry(id.getDataset()).resolve(id);
 	}
 	
-	default <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> Optional<T> getOptional(ID id) {
+	public <ID extends NamespacedId&IId<T>, T extends Identifiable<?>> Optional<T> getOptional(ID id) {
 		return findRegistry(id.getDataset()).getOptional(id);
 	}
 }

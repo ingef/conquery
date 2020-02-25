@@ -2,16 +2,22 @@ package com.bakdata.conquery.io.xodus.stores;
 
 import com.bakdata.conquery.io.jackson.Injectable;
 import com.bakdata.conquery.util.functions.ThrowingConsumer;
-
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 
+/**
+ * Store for storing only a single value.
+ */
 @Accessors(fluent=true) @Setter @Getter
 public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 
-	protected ThrowingConsumer<VALUE> onAdd;
-	protected ThrowingConsumer<VALUE> onRemove;
+	@NonNull
+	protected ThrowingConsumer<VALUE> onAdd = (v) -> {};
+
+	@NonNull
+	protected ThrowingConsumer<VALUE> onRemove = (v) -> {};
 	
 	public SingletonStore(Store<Boolean, VALUE> store, Injectable... injectables) {
 		super(store);
@@ -45,7 +51,7 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 	
 	protected void removed(VALUE value) {
 		try {
-			if(value != null && onRemove != null) {
+			if(value != null) {
 				onRemove.accept(value);
 			}
 		} catch(Exception e) {
@@ -55,7 +61,7 @@ public class SingletonStore<VALUE> extends KeyIncludingStore<Boolean, VALUE> {
 
 	protected void added(VALUE value) {
 		try {
-			if(value != null && onAdd != null) {
+			if(value != null) {
 				onAdd.accept(value);
 			}
 		} catch(Exception e) {

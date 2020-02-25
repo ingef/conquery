@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import styled from "@emotion/styled";
+import { css } from "@emotion/core";
 import T from "i18n-react";
 import { connect } from "react-redux";
 import Hotkeys from "react-hot-keys";
@@ -12,7 +13,8 @@ import AutoSizer from "react-virtualized-auto-sizer";
 import {
   getDiffInDays,
   parseStdDate,
-  formatStdDate
+  formatStdDate,
+  formatDateDistance
 } from "../common/helpers/dateHelper";
 
 import TransparentButton from "../button/TransparentButton";
@@ -21,7 +23,8 @@ import type { StateT as PreviewStateT } from "./reducer";
 import { closePreview } from "./actions";
 
 type PropsT = {
-  preview: PreviewStateT
+  preview: PreviewStateT,
+  onClose: () => void
 };
 
 const Preview = styled("div")`
@@ -31,25 +34,25 @@ const Preview = styled("div")`
   top: 0;
   left: 0;
   background-color: white;
-  padding: 60px 20px 0;
+  padding: 60px 20px 20px;
   z-index: 2;
-  overflow-x: auto;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 `;
 
 const TopRow = styled("div")`
-  margin: 0 0 20px;
+  margin: 12px 0 20px;
   width: 100%;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: space-between;
 `;
 
-const StatsRow = styled("div")`
+const StdRow = styled("div")`
   display: flex;
   align-items: center;
 `;
-const Stats = styled("div")``;
+
 const Stat = styled("code")`
   display: block;
   margin: 0;
@@ -57,38 +60,88 @@ const Stat = styled("code")`
   font-size: ${({ theme }) => theme.font.xs};
 `;
 
+const BStat = styled(Stat)`
+  font-weight: 700;
+`;
+
 const Line = styled("div")`
-  margin: 0;
   display: flex;
   width: 100%;
   align-items: center;
   line-height: 10px;
+
+  ${({ isHeader }) =>
+    isHeader &&
+    css`
+      border-bottom: "1px solid #ccc";
+      align-items: flex-end;
+      margin: "0 0 10px";
+      overflow-x: auto;
+    `};
 `;
 
 const Cell = styled("code")`
   padding: 1px 5px;
   font-size: ${({ theme }) => theme.font.xs};
-  display: flex;
-  align-items: center;
+  height: ${({ theme }) => theme.font.xs};
   width: ${({ isDates }) => (isDates ? "auto" : "100px")};
   flex-grow: ${({ isDates }) => (isDates ? "1" : "0")};
   flex-shrink: 0;
   background-color: white;
-  overflow-wrap: ${({ isHeader }) => (isHeader ? "break-word" : "normal")};
+  margin: 0;
   position: relative;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  display: ${({ isDates }) => (isDates ? "flex" : "block")};
+  align-items: center;
+  overflow: hidden;
+
+  ${({ isHeader }) =>
+    isHeader &&
+    css`
+      font-weight: 700;
+      overflow-wrap: break-word;
+      margin: 0 0 5px;
+      text-overflow: initial;
+      white-space: initial;
+      height: initial;
+    `};
 `;
 
 const Span = styled("div")`
   position: absolute;
   top: 0;
-  left: ${({ left }) => `${left}%`};
-  width: ${({ width }) => `${width}%`};
   height: 10px;
   background-color: ${({ theme }) => theme.col.blueGrayDark};
   margin-right: 10px;
   color: white;
-  text-shadow: 0 0 1px rgba(0, 0, 0, 0.2);
   font-size: ${({ theme }) => theme.font.tiny};
+  min-width: 1px;
+`;
+
+const Headline = styled("h2")`
+  font-size: ${({ theme }) => theme.font.md};
+  margin: 0;
+`;
+
+const Explanation = styled("p")`
+  font-size: ${({ theme }) => theme.font.sm};
+  margin: 0;
+`;
+
+const HeadInfo = styled("div")`
+  margin: 0 20px;
+`;
+
+const CSVFrame = styled("div")`
+  flex-grow: 1;
+  overflow: hidden;
+  padding: 10px;
+  box-shadow: 0 0 10px 0 rgba(0, 0, 0, 0.2);
+`;
+
+const Tr = styled("tr")`
+  line-height: 1;
 `;
 
 function detectColumn(cell) {
@@ -105,7 +158,16 @@ function getDaysDiff(d1, d2) {
   return Math.abs(getDiffInDays(d1, d2)) + 1;
 }
 
-// TODO: Use this to spread dates visualization correctly
+function getFirstAndLastDateOfRange(dateStr: string) {
+  const dateStrTrimmed = dateStr.slice(1, dateStr.length - 1);
+
+  const ranges = dateStrTrimmed.split(",");
+  const first = parseStdDate(ranges[0].split("/")[0]);
+  const last = parseStdDate(ranges[ranges.length - 1].split("/")[1]);
+
+  return { first, last };
+}
+
 function getMinMaxDates(rows: string[][], columns: string[]) {
   let min = null;
   let max = null;
@@ -117,16 +179,13 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
 
   for (let row of rows) {
     // To cut off '{' and '}'
-    const dateCol = row[dateColumnIdx];
-    const dateColTrimmed = dateCol.slice(1, dateCol.length - 1);
-    const ranges = dateColTrimmed.split(",");
-    const first = parseStdDate(ranges[0].split("/")[0]);
-    const last = parseStdDate(ranges[ranges.length - 1].split("/")[1]);
+    const cell = row[dateColumnIdx];
+    const { first, last } = getFirstAndLastDateOfRange(cell);
 
-    if (!min || first < min) {
+    if (!!first && (!min || first < min)) {
       min = first;
     }
-    if (!max || last > max) {
+    if (!!last && (!max || last > max)) {
       max = last;
     }
   }
@@ -139,18 +198,18 @@ function getMinMaxDates(rows: string[][], columns: string[]) {
 }
 
 export default connect(
-  state => ({ csv: state.preview.csv }),
+  state => ({ preview: state.preview }),
   dispatch => ({
     onClose: () => dispatch(closePreview())
   })
-)(({ csv, onClose }: PropsT) => {
-  if (!csv || csv.length < 2) return null;
+)(({ preview, onClose }: PropsT) => {
+  if (!preview.csv || preview.csv.length < 2) return null;
 
-  const columns = detectColumnsByHeader(csv[0]);
+  const columns = detectColumnsByHeader(preview.csv[0]);
 
   // Potentially, limit size:
   // const slice = csv.slice(1000);
-  const slice = csv.slice();
+  const slice = preview.csv.slice();
 
   const { min, max, diff } = getMinMaxDates(slice.slice(1), columns);
 
@@ -178,7 +237,10 @@ export default connect(
                   const width = (diffWidth / diff) * 100;
 
                   return (
-                    <Span key={k} left={left} width={width}>
+                    <Span
+                      key={k}
+                      style={{ left: `${left}%`, width: `${width}%` }}
+                    >
                       {diffWidth}
                     </Span>
                   );
@@ -187,7 +249,11 @@ export default connect(
           );
         }
 
-        return <Cell key={i}>{cell}</Cell>;
+        return (
+          <Cell title={cell} key={i}>
+            {cell}
+          </Cell>
+        );
       })}
     </Line>
   );
@@ -196,36 +262,80 @@ export default connect(
     <Preview>
       <Hotkeys keyName="escape" onKeyDown={onClose} />
       <TopRow>
-        <StatsRow>
-          <Stat>Total: {csv.length}</Stat>
-          <Stats>
-            <Stat>Min: {formatStdDate(min)}</Stat>
-            <Stat>Max: {formatStdDate(max)}</Stat>
-          </Stats>
-        </StatsRow>
-        <TransparentButton icon="times" onClick={onClose}>
-          {T.translate("common.done")}
-        </TransparentButton>
+        <StdRow>
+          <TransparentButton icon="times" onClick={onClose}>
+            {T.translate("common.back")}
+          </TransparentButton>
+          <HeadInfo>
+            <Headline>{T.translate("preview.headline")}</Headline>
+            <Explanation>{T.translate("preview.explanation")}</Explanation>
+          </HeadInfo>
+        </StdRow>
+        <table>
+          <tbody>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.total")}:</Stat>
+              </td>
+              <td>
+                <BStat>{preview.csv.length}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.min")}:</Stat>
+              </td>
+              <td>
+                <BStat>{min ? formatStdDate(min) : "-"}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.max")}:</Stat>
+              </td>
+              <td>
+                <BStat>{max ? formatStdDate(max) : "-"}</BStat>
+              </td>
+            </Tr>
+            <Tr>
+              <td>
+                <Stat>{T.translate("preview.span")}:</Stat>
+              </td>
+              <td>
+                <BStat>
+                  {!!min && !!max ? formatDateDistance(min, max) : "-"}
+                </BStat>
+              </td>
+            </Tr>
+          </tbody>
+        </table>
       </TopRow>
-      <Line>
-        {slice[0].map((cell, k) => (
-          <Cell key={k} isHeader={true}>
-            {cell}
-          </Cell>
-        ))}
-      </Line>
-      <AutoSizer>
-        {({ width, height }) => (
-          <List
-            height={height}
-            width={width}
-            itemCount={slice.length - 1}
-            itemSize={10}
-          >
-            {Row}
-          </List>
-        )}
-      </AutoSizer>
+      <CSVFrame>
+        <Line isHeader={true}>
+          {slice[0].map((cell, k) => (
+            <Cell
+              key={k}
+              isHeader={true}
+              title={cell}
+              isDates={columns[k] === "DATE_RANGE"}
+            >
+              {cell}
+            </Cell>
+          ))}
+        </Line>
+        <AutoSizer>
+          {({ width, height }) => (
+            <List
+              height={height}
+              width={width}
+              itemCount={slice.length - 1}
+              itemSize={12}
+            >
+              {Row}
+            </List>
+          )}
+        </AutoSizer>
+      </CSVFrame>
     </Preview>
   );
 });

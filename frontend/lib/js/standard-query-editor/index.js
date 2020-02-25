@@ -7,7 +7,15 @@ import { createQueryRunnerReducer } from "../query-runner";
 import { default as queryReducer } from "./reducer";
 import StandardQueryEditorTab from "./StandardQueryEditorTab";
 
+import type { StandardQueryStateT } from "./reducer";
+import type { QueryRunnerStateT } from "../query-runner/reducer";
+
 const queryRunnerReducer = createQueryRunnerReducer("standard");
+
+export type StandardQueryEditorStateT = {
+  query: StandardQueryStateT,
+  queryRunner: QueryRunnerStateT
+};
 
 const Tab: TabT = {
   key: "queryEditor",

@@ -106,6 +106,8 @@ const QueryEditorDropzone = ({
       acceptedDropTypes={DROP_TYPES}
       onDrop={onDrop}
       onSelectFile={onDropFile}
+      disableClick={isInitial}
+      showFileSelectButton={isInitial}
     >
       {isInitial && (
         <TextInitial>

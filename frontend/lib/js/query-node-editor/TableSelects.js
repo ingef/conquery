@@ -19,7 +19,7 @@ const TableSelects = ({
   onSelectTableSelects,
   excludeTable
 }: PropsType) => {
-  if (!selects) return null;
+  if (!selects || selects.length === 0) return null;
 
   return (
     <div>

@@ -8,11 +8,24 @@ import {
   addMonths,
   endOfMonth,
   isValid,
-  differenceInCalendarDays
+  differenceInCalendarDays,
+  formatDistance
 } from "date-fns";
+
+import { getDateLocale } from "../../localization";
 
 // To save the date in this format in the state
 const DATE_FORMAT = "yyyy-MM-dd";
+
+export const formatDateDistance = (
+  d1: Date,
+  d2: Date,
+  withSuffix: boolean = false
+) => {
+  const dateLocale = getDateLocale();
+
+  return formatDistance(d1, d2, { locale: dateLocale, addSuffix: withSuffix });
+};
 
 export const formatStdDate = (date: Date) => {
   return formatDate(date, DATE_FORMAT);
@@ -44,7 +57,7 @@ export const parseDate = (dateString: string, dateFormat: string) => {
   return isValid(date) ? date : null;
 };
 
-export const parseStdDate = dateString => {
+export const parseStdDate = (dateString: string) => {
   return parseDate(dateString, DATE_FORMAT);
 };
 

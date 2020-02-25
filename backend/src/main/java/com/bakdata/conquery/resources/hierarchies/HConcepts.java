@@ -11,7 +11,7 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConceptId;
-
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -22,6 +22,8 @@ public abstract class HConcepts extends HDatasets {
 	@PathParam(CONCEPT_NAME)
 	protected ConceptId conceptId;
 	protected Concept<?> concept;
+	@PathParam(DATASET_NAME)
+	protected DatasetId datasetId;
 	
 	@PostConstruct
 	@Override

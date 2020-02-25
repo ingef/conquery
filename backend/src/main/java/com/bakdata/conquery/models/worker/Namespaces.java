@@ -18,13 +18,12 @@ import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.WorkerId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
-public class Namespaces implements NamespaceCollection {
+public class Namespaces extends NamespaceCollection {
 
 	private ConcurrentMap<DatasetId, Namespace> datasets = new ConcurrentHashMap<>();
 	@NotNull
@@ -48,19 +47,27 @@ public class Namespaces implements NamespaceCollection {
 	
 	public void removeNamespace(DatasetId id) {
 		Namespace removed = datasets.remove(id);
+
 		if(removed != null) {
+			metaStorage.getCentralRegistry().remove(id);
+
 			workers.keySet().removeIf(w->w.getDataset().equals(id));
 			try {
-				removed.getStorage().close();
+				// remove all associated data.
+				removed.getStorage().remove();
 			}
 			catch(Exception e) {
-				log.error("Failed to shutdown storage "+removed, e);
+				log.error("Failed to delete storage "+removed, e);
 			}
 		}
 	}
 
 	@Override
-	public CentralRegistry findRegistry(DatasetId dataset) {
+	public CentralRegistry findRegistry(DatasetId dataset) throws NoSuchElementException {
+		if (!datasets.containsKey(dataset)) {
+			throw new NoSuchElementException(String.format("Did not find Dataset[%s] in [%s]", dataset, datasets.keySet()));
+		}
+
 		return datasets.get(dataset).getStorage().getCentralRegistry();
 	}
 	

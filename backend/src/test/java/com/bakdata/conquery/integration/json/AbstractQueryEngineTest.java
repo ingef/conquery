@@ -1,7 +1,14 @@
 package com.bakdata.conquery.integration.json;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.bakdata.conquery.integration.common.ResourceFile;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.query.IQuery;
@@ -18,14 +25,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.github.powerlibraries.io.In;
 import lombok.extern.slf4j.Slf4j;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
 @Slf4j
 public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 
@@ -35,13 +34,13 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 	protected abstract ResourceFile getExpectedCsv();
 
 	@JsonIgnore
-	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,"columnInfo.getSelect().getId().toStringWithoutDataset()");
+	private static final PrintSettings PRINT_SETTINGS = new PrintSettings(false,columnInfo -> columnInfo.getSelect().getId().toStringWithoutDataset());
 
 	@Override
 	public void executeTest(StandaloneSupport standaloneSupport) throws IOException, JSONException {
 		IQuery query = getQuery();
 
-		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().runQuery(query, DevAuthConfig.USER);
+		ManagedQuery managed = standaloneSupport.getNamespace().getQueryManager().runQuery(query, standaloneSupport.getTestUser());
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
 		while(managed.getState()!=ExecutionState.DONE && managed.getState()!=ExecutionState.FAILED) {
@@ -69,7 +68,11 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		.allSatisfy(v->assertThat(v).hasSameSizeAs(resultInfos.getInfos()));
 
 		List<String> actual = new QueryToCSVRenderer()
-			.toCSV(PRINT_SETTINGS, managed)
+			.toCSV(
+				PRINT_SETTINGS,
+				managed,
+				standaloneSupport.getConfig().getIdMapping()
+					.initToExternal(standaloneSupport.getTestUser(), managed))
 			.collect(Collectors.toList());
 
 		ResourceFile expectedCsv = getExpectedCsv();

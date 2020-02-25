@@ -4,7 +4,7 @@ import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.messages.namespaces.NamespacedMessage;
 import com.bakdata.conquery.models.messages.namespaces.WorkerMessage;
 import com.bakdata.conquery.models.query.ManagedQuery;
-import com.bakdata.conquery.models.query.QueryPlanContextImpl;
+import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.results.EntityResult;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Worker;
@@ -30,7 +30,7 @@ public class ExecuteQuery extends WorkerMessage {
 	@Override
 	public void react(Worker context) throws Exception {
 		try {
-			ShardResult result = context.getQueryExecutor().execute(new QueryPlanContextImpl(context), query);
+			ShardResult result = context.getQueryExecutor().execute(new QueryPlanContext(context), query);
 			result.getFuture().addListener(()->result.send(context), MoreExecutors.directExecutor());
 		} catch(Exception e) {
 			ShardResult result = new ShardResult();

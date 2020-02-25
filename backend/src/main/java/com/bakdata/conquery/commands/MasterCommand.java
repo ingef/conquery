@@ -1,5 +1,13 @@
 package com.bakdata.conquery.commands;
 
+import java.io.File;
+import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ScheduledExecutorService;
+
+import javax.validation.Validator;
+
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
 import com.bakdata.conquery.io.jackson.MutableInjectableValues;
 import com.bakdata.conquery.io.jersey.RESTServer;
@@ -12,10 +20,8 @@ import com.bakdata.conquery.io.mina.NetworkSession;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.io.xodus.MasterMetaStorageImpl;
 import com.bakdata.conquery.io.xodus.NamespaceStorage;
-import com.bakdata.conquery.models.auth.DefaultAuthFilter;
-import com.bakdata.conquery.models.auth.subjects.User;
+import com.bakdata.conquery.models.auth.AuthorizationController;
 import com.bakdata.conquery.models.config.ConqueryConfig;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.jobs.JobManager;
 import com.bakdata.conquery.models.jobs.ReactingJob;
 import com.bakdata.conquery.models.messages.SlowMessage;
@@ -27,8 +33,8 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.bakdata.conquery.resources.ResourcesProvider;
 import com.bakdata.conquery.resources.admin.AdminServlet;
 import com.bakdata.conquery.resources.admin.ShutdownTask;
+import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import io.dropwizard.auth.AuthFilter;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -37,14 +43,6 @@ import org.apache.mina.core.service.IoAcceptor;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
-
-import javax.validation.Validator;
-import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ScheduledExecutorService;
 
 @Slf4j
 @Getter
@@ -56,13 +54,15 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Validator validator;
 	private ConqueryConfig config;
 	private AdminServlet admin;
+	private AuthorizationController authController;
+	private AuthServlet authServletApp;
+	private AuthServlet authServletAdmin;
 	private ScheduledExecutorService maintenanceService;
 	private Namespaces namespaces = new Namespaces();
 	private Environment environment;
-	private AuthFilter<?, User> authDynamicFeature;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
-	public void run(ConqueryConfig config, Environment environment) throws IOException, JSONException {
+	public void run(ConqueryConfig config, Environment environment) {
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
 			.add(NamespaceCollection.class, namespaces);
@@ -89,7 +89,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			if (directory.getName().startsWith("dataset_")) {
 				NamespaceStorage datasetStorage = NamespaceStorage.tryLoad(validator, config.getStorage(), directory);
 				if (datasetStorage != null) {
-					Namespace ns = new Namespace(config.getCluster().getEntityBucketSize(), datasetStorage);
+					Namespace ns = new Namespace(datasetStorage);
 					ns.initMaintenance(maintenanceService);
 					namespaces.add(ns);
 				}
@@ -104,9 +104,9 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			sn.getStorage().setMetaStorage(storage);
 		}
 		
-		config.getAuthentication().initializeAuthConstellation(storage);
-
-		this.authDynamicFeature = DefaultAuthFilter.asDropwizardFeature(storage, config.getAuthentication());
+		authController = new AuthorizationController(config.getAuthorization(), config.getAuthentication(), storage);
+		authController.init();
+		environment.lifecycle().manage(authController);
 
 		log.info("Registering ResourcesProvider");
 		for (Class<? extends ResourcesProvider> resourceProvider : CPSTypeIdResolver.listImplementations(ResourcesProvider.class)) {
@@ -120,7 +120,14 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		}
 
 		admin = new AdminServlet();
-		admin.register(this);
+		admin.register(this, authController);
+		
+		// Register an unprotected servlet for logins on the app port
+		AuthServlet.registerUnprotectedApiResources(authController, environment.metrics(), config, environment.servlets(), environment.getObjectMapper());
+
+		// Register an unprotected servlet for logins on the admin port
+		AuthServlet.registerUnprotectedAdminResources(authController, environment.metrics(), config, environment.admin(), environment.getObjectMapper());
+		
 
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);

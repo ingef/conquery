@@ -15,8 +15,7 @@ import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.parser.specific.DateParser;
 import com.bakdata.conquery.models.types.parser.specific.DateRangeParser;
 import com.bakdata.conquery.models.types.parser.specific.string.StringParser;
-import com.bakdata.conquery.util.io.SmallOut;
-
+import com.esotericsoftware.kryo.io.Output;
 import io.dropwizard.util.Size;
 import lombok.Data;
 
@@ -33,7 +32,7 @@ public class Preprocessed {
 	private long writtenGroups = 0;
 	private List<List<Object[]>> entries = new ArrayList<>();
 	
-	private final SmallOut buffer = new SmallOut((int)Size.megabytes(50).toBytes());
+	private final Output buffer = new Output((int) Size.megabytes(50).toBytes());
 	private Import imp;
 
 	public Preprocessed(PreprocessingConfig config, ImportDescriptor descriptor) throws IOException {
@@ -96,7 +95,7 @@ public class Preprocessed {
 	}
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	private void writeRowToFile(SmallOut out, Import imp, int entityId, List<Object[]> events) throws IOException {
+	private void writeRowToFile(Output out, Import imp, int entityId, List<Object[]> events) throws IOException {
 		//transform values to their current subType
 		//we can't map the primary column since we do a lot of work which would destroy any compression anyway
 		//entityId = (Integer)primaryColumn.getType().transformFromMajorType(primaryColumn.getOriginalType(), Integer.valueOf(entityId));
@@ -123,7 +122,7 @@ public class Preprocessed {
 		writtenGroups++;
 	}
 	
-	public void writeToFile(SmallOut out) throws IOException {
+	public void writeToFile(Output out) throws IOException {
 		imp = Import.createForPreprocessing(descriptor.getTable(), descriptor.getName(), columns);
 		
 		for(int entityId = 0; entityId < entries.size(); entityId++) {
@@ -137,17 +136,17 @@ public class Preprocessed {
 	public void writeHeader(OutputStream out) throws IOException {
 		int hash = descriptor.calculateValidityHash();
 		
-		PPHeader header = PPHeader.builder()
-				.name(descriptor.getName())
-				.table(descriptor.getTable())
-				.rows(rows)
-				.eventRange(eventRange)
-				.primaryColumn(primaryColumn)
-				.columns(columns)
-				.groups(writtenGroups)
-				.validityHash(hash)
-				.suffix(imp.getSuffix())
-				.build();
+		PreprocessedHeader header = PreprocessedHeader.builder()
+													  .name(descriptor.getName())
+													  .table(descriptor.getTable())
+													  .rows(rows)
+													  .eventRange(eventRange)
+													  .primaryColumn(primaryColumn)
+													  .columns(columns)
+													  .groups(writtenGroups)
+													  .validityHash(hash)
+													  .suffix(imp.getSuffix())
+													  .build();
 		
 		try {
 			Jackson.BINARY_MAPPER.writeValue(out, header);

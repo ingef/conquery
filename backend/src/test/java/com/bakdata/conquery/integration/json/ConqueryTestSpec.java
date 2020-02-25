@@ -19,7 +19,6 @@ import com.fasterxml.jackson.databind.JavaType;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -40,19 +39,19 @@ public abstract class ConqueryTestSpec {
 		return label;
 	}
 
-	public <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass) throws IOException, JSONException {
+	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass) throws IOException, JSONException {
 		return parseSubTree(support, node, expectedClass, null);
 	}
 
-	public <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, Class<T> expectedClass, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		return parseSubTree(support, node, Jackson.MAPPER.getTypeFactory().constructParametricType(expectedClass, new JavaType[0]), modifierBeforeValidation);
 	}
 
-	public <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
+	public static <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType) throws IOException, JSONException {
 		return parseSubTree(support, node, expectedType, null);
 	}
 
-	public <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static  <T> T parseSubTree(StandaloneSupport support, JsonNode node, JavaType expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectInto(
 			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
 					Jackson.MAPPER.copy()
@@ -68,7 +67,7 @@ public abstract class ConqueryTestSpec {
 		return result;
 	}
 	
-	public <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
+	public static <T> List<T> parseSubTreeList(StandaloneSupport support, ArrayNode node, Class<?> expectedType, Consumer<T> modifierBeforeValidation) throws IOException, JSONException {
 		ObjectMapper mapper = support.getDataset().injectInto(
 			new SingletonNamespaceCollection(support.getNamespace().getStorage().getCentralRegistry()).injectInto(
 				Jackson.MAPPER.copy()
@@ -79,7 +78,8 @@ public abstract class ConqueryTestSpec {
 			T value;
 			try {
 				value = mapper.readerFor(expectedType).readValue(child);
-			} catch(Exception e) {
+			}
+			catch(Exception e) {
 				if(child.isValueNode()) {
 					String potentialPath = child.textValue();
 					try {

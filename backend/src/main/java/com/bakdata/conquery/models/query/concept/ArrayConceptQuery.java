@@ -3,6 +3,7 @@ package com.bakdata.conquery.models.query.concept;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Consumer;
 
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -10,10 +11,9 @@ import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.QueryPlanContext;
 import com.bakdata.conquery.models.query.QueryResolveContext;
+import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
-import com.bakdata.conquery.models.query.visitor.QueryVisitor;
-
 import lombok.Getter;
 import lombok.Setter;
 
@@ -59,7 +59,7 @@ public class ArrayConceptQuery implements IQuery {
 	}
 
 	@Override
-	public void visit(QueryVisitor visitor) {
+	public void visit(Consumer<Visitable> visitor) {
 		childQueries.forEach(q -> q.visit(visitor));
 	}
 

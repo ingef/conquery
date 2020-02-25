@@ -8,11 +8,13 @@ import {
 } from "./actionTypes";
 
 export type StateT = {
-  csv: ?(string[][])
+  csv: ?(string[][]),
+  isLoading: boolean
 };
 
 const initialState: StateT = {
-  csv: null
+  csv: null,
+  isLoading: false
 };
 
 export default (state: StateT = initialState, action: Object): StateT => {

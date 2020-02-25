@@ -12,7 +12,6 @@ import com.bakdata.conquery.models.config.StorageConfig;
 import com.bakdata.conquery.models.identifiable.CentralRegistry;
 import com.bakdata.conquery.util.functions.Collector;
 import com.google.common.base.Stopwatch;
-
 import jetbrains.exodus.env.Environment;
 import jetbrains.exodus.env.Environments;
 import lombok.Getter;
@@ -36,7 +35,10 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 
 	protected void createStores(Collector<KeyIncludingStore<?,?>> collector) {
 	}
-	
+
+	/**
+	 * Load all stores from disk.
+	 */
 	@Override
 	public void loadData() {
 		createStores(stores::add);
@@ -54,5 +56,13 @@ public abstract class ConqueryStorageImpl implements ConqueryStorage {
 			store.close();
 		}
 		environment.close();
+	}
+
+	/**
+	 * Clears the environment then closes it.
+	 */
+	public void remove() throws IOException {
+		environment.clear();
+		close();
 	}
 }
