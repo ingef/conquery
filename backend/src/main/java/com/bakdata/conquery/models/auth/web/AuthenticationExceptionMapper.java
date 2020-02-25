@@ -8,6 +8,9 @@ import io.dropwizard.jersey.errors.ErrorMessage;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authc.AuthenticationException;
 
+/**
+ * Interceptor for exceptions that were thrown during the authentication procedure of Shiro.
+ */
 @Slf4j
 public class AuthenticationExceptionMapper implements ExceptionMapper<AuthenticationException> {
 
