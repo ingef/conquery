@@ -113,6 +113,9 @@ public class CalculateCBlocksJob extends Job {
 		return new CBlock(info.getBucket().getId(), connector.getId());
 	}
 
+	/**
+	 * No CBlocks for VirtualConcepts
+	 */
 	private void calculateCBlock(CBlock cBlock, VirtualConceptConnector connector, CalculationInformation info) {}
 
 	private void calculateCBlock(CBlock cBlock, ConceptTreeConnector connector, CalculationInformation info) {
@@ -137,14 +140,13 @@ public class CalculateCBlocksJob extends Job {
 
 		cBlock.setMostSpecificChildren(new ArrayList<>(bucket.getNumberOfEvents()));
 
-
 		final ConceptTreeCache cache = treeConcept.getCache(importId);
 
 		for (BucketEntry entry : bucket.entries()) {
 			try {
 				final int event = entry.getEvent();
 
-				// Lazy
+				// Lazy evaluation of map to avoid allocations if possible.
 				final CalculatedValue<Map<String, Object>> rowMap = new CalculatedValue<>(() -> bucket.calculateMap(event, info.getImp()));
 				int valueIndex = bucket.getString(event, connector.getColumn());
 				final String stringValue = stringType.getElement(valueIndex);
@@ -160,6 +162,7 @@ public class CalculateCBlocksJob extends Job {
 
 				ConceptTreeChild child = cache.findMostSpecificChild(valueIndex, stringValue, rowMap);
 
+				// Add all Concepts and their path to the root to the CBlock
 				if (child != null) {
 					cBlock.getMostSpecificChildren().add(child.getPrefix());
 					ConceptTreeNode<?> it = child;

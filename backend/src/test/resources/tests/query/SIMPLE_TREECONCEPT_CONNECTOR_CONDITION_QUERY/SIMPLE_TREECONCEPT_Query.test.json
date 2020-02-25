@@ -62,10 +62,14 @@
 						"name": "datum",
 						"type": "DATE"
 					},
-					{
-						"name": "test_column",
-						"type": "STRING"
-					}
+                  {
+                    "name": "test_column",
+                    "type": "STRING"
+                  },
+                  {
+                    "name": "include",
+                    "type": "STRING"
+                  }
 				]
 			}
 		]
