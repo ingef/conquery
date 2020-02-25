@@ -4,17 +4,15 @@ import java.util.Optional;
 
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AccountException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
-import org.apache.shiro.authc.CredentialsException;
 
 /**
  * This dropwizard authenticator and the shiro realm are conceptually the same.
@@ -29,22 +27,13 @@ public class ConqueryAuthenticator implements Authenticator<AuthenticationToken,
 	
 	private final MasterMetaStorage storage;
 
+	/**
+	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.  
+	 */
 	@Override
-	public Optional<User> authenticate(AuthenticationToken token) throws AuthenticationException {
-		AuthenticationInfo info = null;
+	public Optional<User> authenticate(AuthenticationToken token) {
 		// Submit the token to Shiro (to all realms that were registered)
-		try {
-			info = SecurityUtils.getSecurityManager().authenticate(token);
-		}
-		catch (CredentialsException|AccountException e) {
-			log.trace("Failed to authenticate the request",e);
-			return Optional.empty();
-		}
-		catch (org.apache.shiro.authc.AuthenticationException e) {
-			// Dropwizard only catches his own AuthenticationExceptions, here rethrow the
-			// exception as Shiro's
-			throw new AuthenticationException(e);
-		}
+		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
 		// All authenticating realms must return a UserId as identifying principal
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
