@@ -55,7 +55,7 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 
 	@Override
 	public Map<String,List<ManagedQuery>> createSubQueries(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return Map.of(ConqueryConstants.SINGLE_RESULT_TABLE_NAME,timeMode.createSpecializedQuery(namespaces, userId, submittedDataset));
+		return Map.of(ConqueryConstants.SINGLE_RESULT_TABLE_NAME,List.of(timeMode.createSpecializedQuery(namespaces, userId, submittedDataset).toManagedExecution(namespaces.getMetaStorage(), namespaces, userId, submittedDataset)));
 	}
 
 }

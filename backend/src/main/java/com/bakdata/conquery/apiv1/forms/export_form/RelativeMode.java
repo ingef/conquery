@@ -11,9 +11,9 @@ import com.bakdata.conquery.apiv1.forms.TimeSelector;
 import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
+import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -53,7 +53,7 @@ public class RelativeMode extends Mode {
 	}
 	
 	@Override
-	public List<ManagedQuery> createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return List.of(RelExportGenerator.generate(namespaces, this, userId, submittedDataset));
+	public RelativeFormQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+		return RelExportGenerator.generate(namespaces, this, userId, submittedDataset);
 	}
 }

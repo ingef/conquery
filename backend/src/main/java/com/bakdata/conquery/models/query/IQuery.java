@@ -46,7 +46,6 @@ public abstract class IQuery implements SubmittedQuery {
 			namespaces.get(dataset)
 			));
 		ManagedQuery managed = new ManagedQuery(storage, query,userId, dataset);
-		managed.initExecutable(namespaces);
 		return managed;
 	}
 

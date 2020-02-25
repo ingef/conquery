@@ -19,11 +19,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class AbsExportGenerator {
 	
-//	private Dataset dataset;
-//	private User user;
-//	private Namespaces namespaces;
-	
-	public static ManagedQuery generate(Namespaces namespaces, AbsoluteMode mode, DateContextMode resolution, UserId userId, DatasetId submittedDataset) {
+	public static AbsoluteFormQuery generate(Namespaces namespaces, AbsoluteMode mode, DateContextMode resolution, UserId userId, DatasetId submittedDataset) {
 		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
 	
 		// Apply defaults to user concept
@@ -36,7 +32,7 @@ public class AbsExportGenerator {
 			resolution
 		);
 		
-		return query.toManagedExecution(namespaces.getMetaStorage(), namespaces, userId, submittedDataset);
+		return query;
 	}
 	
 	public static ArrayConceptQuery createSubQuery(List<CQElement> features) {

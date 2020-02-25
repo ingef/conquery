@@ -15,6 +15,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.ResourceConstants;
 import com.bakdata.conquery.apiv1.ResultCSVResource;
@@ -45,6 +46,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 
 //@NoArgsConstructor
@@ -63,6 +65,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
+
+	@NotNull
+	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 
 	protected boolean machineGenerated;
 

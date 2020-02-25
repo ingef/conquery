@@ -9,8 +9,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import javax.validation.constraints.NotNull;
-
 import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSType;
@@ -38,7 +36,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang3.ArrayUtils;
 
 //@NoArgsConstructor
 @Getter
@@ -50,8 +47,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 
 	// Needs to be resolved externally before being executed
 	private IQuery query;
-	@NotNull
-	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
+	
 	private boolean shared = false;
 	@JsonIgnore
 	protected transient Namespace namespace;
@@ -125,7 +121,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public ExecutionStatus buildStatus(URLBuilder url, User user) {
 		ExecutionStatus status = super.buildStatus(url, user);
-		status.setTags(tags);
+		status.setTags(getTags());
 		status.setQuery(query);
 		status.setNumberOfResults(lastResultCount);
 		status.setShared(shared);

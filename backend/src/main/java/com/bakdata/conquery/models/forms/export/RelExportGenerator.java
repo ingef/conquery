@@ -2,8 +2,6 @@ package com.bakdata.conquery.models.forms.export;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.export_form.RelativeMode;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.forms.managed.RelativeFormQuery;
 import com.bakdata.conquery.models.forms.util.ConceptManipulator;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -19,11 +17,7 @@ import lombok.AllArgsConstructor;
 @AllArgsConstructor
 public class RelExportGenerator {
 	
-	private Dataset dataset;
-	private User user;
-	private Namespaces namespaces;
-	
-	public static ManagedQuery generate(Namespaces namespaces, RelativeMode mode, UserId userId, DatasetId submittedDataset) {
+	public static RelativeFormQuery generate(Namespaces namespaces, RelativeMode mode, UserId userId, DatasetId submittedDataset) {
 		ManagedQuery prerequisite = (ManagedQuery)namespaces.getMetaStorage().getExecution(mode.getForm().getQueryGroup());
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getFeatures(), namespaces);
 		ConceptManipulator.DEFAULT_SELECTS_WHEN_EMPTY.consume(mode.getOutcomes(), namespaces);
@@ -44,7 +38,7 @@ public class RelExportGenerator {
 			mode.getTimeCountAfter(),
 			mode.getTimeUnit()
 		);
-		return query.toManagedExecution(namespaces.getMetaStorage(), namespaces, userId, submittedDataset);
+		return query;
 	}
 	
 	private static ArrayConceptQuery setInfos(ArrayConceptQuery arrayQuery, FeatureGroup group) {

@@ -1,11 +1,9 @@
 package com.bakdata.conquery.apiv1.forms.export_form;
 
-import java.util.List;
-
 import com.bakdata.conquery.io.cps.CPSBase;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
-import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonBackReference;
@@ -29,5 +27,5 @@ public abstract class Mode implements Visitable {
 		return ArrayUtils.EMPTY_STRING_ARRAY;
 	}
 	
-	public abstract List<ManagedQuery> createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
+	public abstract IQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset);
 }
