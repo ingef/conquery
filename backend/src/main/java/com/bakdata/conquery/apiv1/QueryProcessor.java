@@ -98,7 +98,7 @@ public class QueryProcessor {
 			try {
 				DatasetId targetDataset = targetNamespace.getDataset().getId();
 				IQuery translated = QueryTranslator.replaceDataset(namespaces, translateable, targetDataset);
-				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(storage, namespaces, translated, mq.getExecutionId(), user.getId(), targetDataset);
+				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(storage, namespaces, translated, mq.getQueryId(), user.getId(), targetDataset);
 				
 				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}

@@ -85,7 +85,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			if (er.isFailed() && state == ExecutionState.RUNNING) {
 				fail();
 				FailedEntityResult failed = er.asFailed();
-				log.error("Failed query {} at least for the entity {} with:\n{}", executionId, failed.getEntityId(), failed.getExceptionStackTrace());
+				log.error("Failed query {} at least for the entity {} with:\n{}", queryId, failed.getEntityId(), failed.getExceptionStackTrace());
 			}
 		}
 		synchronized (getExecution()) {

@@ -147,7 +147,7 @@ public class StoredQueriesProcessor {
 		for (Namespace ns : namespaces.getNamespaces()) {
 
 			if (user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), ns.getDataset().getId()))) {
-				ManagedExecutionId id = new ManagedExecutionId(ns.getDataset().getId(), query.getExecutionId());
+				ManagedExecutionId id = new ManagedExecutionId(ns.getDataset().getId(), query.getQueryId());
 				ManagedQuery exec = (ManagedQuery) storage.getExecution(id);
 				if (exec != null) {
 					if (user.isPermitted(QueryPermission.onInstance(requiredAbility, id))) {

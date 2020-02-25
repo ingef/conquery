@@ -57,9 +57,9 @@ import org.hibernate.validator.constraints.NotEmpty;
 public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> {
 
 	protected DatasetId dataset;
-	protected UUID executionId = UUID.randomUUID();
+	protected UUID queryId = UUID.randomUUID();
 	@NotEmpty
-	protected String label = executionId.toString();
+	protected String label = queryId.toString();
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
@@ -100,7 +100,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@Override
 	public ManagedExecutionId createId() {
-		return new ManagedExecutionId(dataset, executionId);
+		return new ManagedExecutionId(dataset, queryId);
 	}
 
 	protected void fail() {
@@ -135,7 +135,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		log.info(
 			"{} {} {} within {}",
 			state,
-			executionId,
+			queryId,
 			this.getClass().getSimpleName(),
 			(startTime != null && finishTime != null) ? Duration.between(startTime, finishTime) : null);
 	}
@@ -177,7 +177,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	}
 
 	public ExecutionStatus buildStatus(User user) {
-		return buildStatus(null, user);
+		return buildStatus( null, user);
 	}
 
 	public abstract Collection<ManagedQuery> toResultQuery();
