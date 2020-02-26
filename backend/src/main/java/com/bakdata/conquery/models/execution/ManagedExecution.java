@@ -17,8 +17,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.ResourceConstants;
-import com.bakdata.conquery.apiv1.ResultCSVResource;
 import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
@@ -39,6 +37,8 @@ import com.bakdata.conquery.models.query.queryplan.QueryPlan;
 import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;

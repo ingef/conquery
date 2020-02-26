@@ -1,9 +1,9 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
-import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorizeDownloadDatasets;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.io.BufferedWriter;
 import java.io.OutputStream;
@@ -24,6 +24,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.StreamingOutput;
 
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
 import com.bakdata.conquery.apiv1.URLBuilder.URLBuilderPath;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
@@ -59,7 +60,7 @@ public class ResultCSVResource {
 		authorize(user, datasetId, Ability.READ);
 		authorize(user, queryId, Ability.READ);
 
-		ManagedExecution exec = namespaces.getMetaStorage().getExecution(queryId);
+		ManagedExecution<?> exec = namespaces.getMetaStorage().getExecution(queryId);
 		
 		// Check if user is permitted to download on all datasets that were referenced by the query
 		authorizeDownloadDatasets(user, exec);

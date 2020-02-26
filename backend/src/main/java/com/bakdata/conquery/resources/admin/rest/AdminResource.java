@@ -39,11 +39,11 @@ public class AdminResource extends HAdmin {
 	@POST
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Path("datasets")
-	public Response addDataset(@NotEmpty @FormDataParam("dataset_name") String name) throws JSONException {
+	public Response addDataset(@NotEmpty @FormDataParam("dataset") String name) throws JSONException {
 		Dataset dataset = processor.addDataset(name);
 
 		return Response
-					   .seeOther(UriBuilder.fromPath("/admin/").path(DatasetsUIResource.class).resolveTemplate(ResourceConstants.DATASET_NAME, name).build())
+					   .seeOther(UriBuilder.fromPath("/admin/").path(DatasetsUIResource.class).resolveTemplate(ResourceConstants.DATASET, name).build())
 					   .build();
 	}
 

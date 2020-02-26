@@ -1,7 +1,7 @@
 package com.bakdata.conquery.resources.hierarchies;
 
-import static com.bakdata.conquery.resources.ResourceConstants.DATASET_NAME;
-import static com.bakdata.conquery.resources.ResourceConstants.TABLE_NAME;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.TABLE;
 
 import javax.annotation.PostConstruct;
 import javax.ws.rs.Path;
@@ -11,15 +11,14 @@ import javax.ws.rs.core.Response.Status;
 
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.identifiable.ids.specific.TableId;
-
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-@Path("datasets/{" + DATASET_NAME + "}/tables/{" + TABLE_NAME + "}")
+@Path("datasets/{" + DATASET + "}/tables/{" + TABLE + "}")
 public abstract class HTables extends HDatasets {
 	
-	@PathParam(TABLE_NAME)
+	@PathParam(TABLE)
 	protected TableId tableId;
 	protected Table table;
 	

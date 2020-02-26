@@ -52,9 +52,4 @@ public class RelExportGenerator {
 		}
 		return arrayQuery;
 	}
-
-//	public ManagedQuery execute(RelativeMode relativeMode, boolean printUserFriendly) throws JSONException {
-//		ExecutionManager queryManager = namespaces.get(dataset.getId()).getQueryManager();
-//		return queryManager.runQuery(generate(relativeMode), user);
-//	}
 }

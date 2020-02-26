@@ -103,7 +103,7 @@ public class FormTest extends ConqueryTestSpec {
 		support.waitUntilWorkDone();
 		form = parseForm(support);
 		MasterMetaStorage storage = support.getStandaloneCommand().getMaster().getStorage();
-		form.init(storage.getNamespaces(), support.getTestUser());
+		form.init(storage.getNamespaces());
 		log.info("{} FORM INIT", getLabel());
 		idMapping = support.getConfig().getIdMapping();
 	}

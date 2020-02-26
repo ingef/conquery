@@ -1,6 +1,6 @@
 package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
 
 import java.util.Collection;
 

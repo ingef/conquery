@@ -73,6 +73,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 
 	@Override
 	public void initExecutable(@NonNull Namespaces namespaces) {
+		submittedForm.init(namespaces);
 		// init all subqueries
 		subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
 		flatSubQueries = subQueries.values().stream().flatMap(List::stream).collect(Collectors.toMap(ManagedQuery::getId, Function.identity()));

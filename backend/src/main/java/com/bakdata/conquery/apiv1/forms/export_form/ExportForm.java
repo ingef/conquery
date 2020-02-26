@@ -12,9 +12,6 @@ import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.entities.User;
-import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -36,10 +33,6 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	private Mode timeMode;
 
 	@Override
-	public void init(Namespaces namespaces, User user) {
-	}
-
-	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		timeMode.visit(visitor);
 	}
@@ -47,10 +40,6 @@ public class ExportForm extends Form implements NamespacedIdHolding {
 	@Override
 	public Set<NamespacedId> collectNamespacedIds() {
 		return Set.of(queryGroup);
-	}
-
-	public ManagedForm toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return new ManagedForm(storage, this, userId, submittedDataset);
 	}
 
 	@Override
