@@ -18,12 +18,13 @@ import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import lombok.NonNull;
 
-@JsonTypeInfo(use=JsonTypeInfo.Id.CUSTOM, property="type")
+@JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
 @CPSBase
 public interface SubmittedQuery extends Visitable {
-	
+
 	/**
 	 * Resolves the submitted query.
+	 * 
 	 * @param storage
 	 * @param namespaces
 	 * @param userId
@@ -32,13 +33,12 @@ public interface SubmittedQuery extends Visitable {
 	 */
 	ManagedExecution<?> toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset);
 
-
 	Set<ManagedExecutionId> collectRequiredQueries();
-	
+
 	/**
 	 * Check implementation specific permissions.
 	 */
-	default void checkPermissions(@NonNull User user){
+	default void checkPermissions(@NonNull User user) {
 		// Also look into the query and check the datasets
 		authorizeReadDatasets(user, this);
 		// Check reused query
