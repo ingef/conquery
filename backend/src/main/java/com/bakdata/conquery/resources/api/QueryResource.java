@@ -56,11 +56,8 @@ public class QueryResource {
 		authorize(user, datasetId, Ability.READ);
 		// Also look into the query and check the datasets
 		authorizeReadDatasets(user, query);
-//		 Check reused query
-		for (ManagedExecutionId requiredQueryId : query
-			.collectRequiredQueries()) {
-			authorize(user, requiredQueryId, Ability.READ);
-		}
+		// Do query specific permission checks
+		query.checkPermissions(user);
 
 		return processor.postQuery(
 			dsUtil.getDataset(datasetId),
