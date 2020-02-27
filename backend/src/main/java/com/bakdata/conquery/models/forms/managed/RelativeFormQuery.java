@@ -63,6 +63,7 @@ public class RelativeFormQuery extends IQuery {
 	@Override
 	public RelativeFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new RelativeFormQueryPlan(query.createQueryPlan(context.withGenerateSpecialDateUnion(true)),
+			// At the moment we do not use the dates of feature and outcome query
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
 			outcomes.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
 			indexSelector, indexPlacement, timeCountBefore,	timeCountAfter, timeUnit);

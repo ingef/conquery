@@ -63,8 +63,10 @@ public class RelativeFormQueryPlan implements QueryPlan {
 		SubResult outcomeResult = executeSubQuery(ctx, FeatureGroup.OUTCOME, entity, contexts);
 
 		List<Object[]> values = new ArrayList<>();
+		// We look at the first result line to determine the length of the subresult
 		int featureLength = featureResult.getValues().get(0).length;
 		int outcomeLength = outcomeResult.getValues().get(0).length;
+		// Whole result is the concatenation of the subresults. However the sub result includes the date restriction which we drop.
 		int size = featureLength + outcomeLength - 2;
 
 		// merge the full (index == null) lines
