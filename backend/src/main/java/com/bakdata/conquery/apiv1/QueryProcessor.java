@@ -10,9 +10,10 @@ import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
+import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.IQuery;
-import com.bakdata.conquery.models.query.ManagedQuery;
 import com.bakdata.conquery.models.query.QueryTranslator;
 import com.bakdata.conquery.models.worker.Namespace;
 import com.bakdata.conquery.models.worker.Namespaces;
@@ -35,7 +36,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ExecutionStatus postQuery(Dataset dataset, IQuery query, URLBuilder urlb, User user) throws JSONException {
+	public ExecutionStatus postQuery(Dataset dataset, SubmittedQuery query, URLBuilder urlb, User user) throws JSONException {
 		Namespace namespace = namespaces.get(dataset.getId());
 		
 		// Initialize checks that need to traverse the query tree
@@ -54,7 +55,7 @@ public class QueryProcessor {
 				log.info("Re-executing Query {}", executionId);
 
 
-				final ManagedQuery mq = namespace.getQueryManager().executeQuery(namespace.getQueryManager().getQuery(executionId));
+				final ManagedExecution<?> mq = ExecutionManager.executeQuery( namespaces, namespace.getQueryManager().getQuery(executionId));
 
 				return getStatus(dataset, mq, urlb, user);
 			}
@@ -65,43 +66,53 @@ public class QueryProcessor {
 			}
 		}
 		
-		ManagedQuery mq = namespace.getQueryManager().runQuery(query, user);
 
+		ManagedExecution<?> mq = ExecutionManager.runQuery(storage, namespaces, query, user.getId(), dataset.getId());
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
 
-		// translate the query for all other datasets of user and submit it.
-		for (Namespace targetNamespace : namespaces.getNamespaces()) {
-			if (!user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
-				|| targetNamespace.getDataset().equals(dataset)) {
-				continue;
-			}
-
-			// Ensure that user is allowed to read all sub-queries of the actual query.
-			if (!query.collectRequiredQueries().stream()
-				.allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid))))
-				continue;
-
-			try {
-				IQuery translated = QueryTranslator.replaceDataset(namespaces, query, targetNamespace.getDataset().getId());
-				final ManagedQuery mqTranslated = targetNamespace.getQueryManager().createQuery(translated, mq.getQueryId(), user);
-
-				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
-			}
-			catch (Exception e) {
-				log.trace("Could not translate " + query + " to dataset " + targetNamespace.getDataset(), e);
-			}
+		if(query instanceof IQuery) {
+			translateToOtherDatasets(dataset, query, user, mq);
 		}
 
 		// return status
 		return getStatus(dataset, mq, urlb, user);
 	}
 
-	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution query, URLBuilder urlb, User user) {
+	private void translateToOtherDatasets(Dataset dataset, SubmittedQuery query, User user, ManagedExecution<?> mq) {
+		IQuery translateable = (IQuery) query;
+		// translate the query for all other datasets of user and submit it.
+		for (Namespace targetNamespace : namespaces.getNamespaces()) {
+			if (!user.isPermitted(DatasetPermission.onInstance(Ability.READ.asSet(), targetNamespace.getDataset().getId()))
+				|| targetNamespace.getDataset().equals(dataset)) {
+				continue;
+			}
+			
+			// Ensure that user is allowed to read all sub-queries of the actual query.
+			
+			if (!translateable.collectRequiredQueries().stream()
+				.allMatch(qid -> user.isPermitted(QueryPermission.onInstance(Ability.READ.asSet(), qid)))) {
+				continue;				
+			}
+			
+			try {
+				DatasetId targetDataset = targetNamespace.getDataset().getId();
+				IQuery translated = QueryTranslator.replaceDataset(namespaces, translateable, targetDataset);
+				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(storage, namespaces, translated, mq.getQueryId(), user.getId(), targetDataset);
+				
+				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
+			}
+			catch (Exception e) {
+				log.trace("Could not translate " + query + " to dataset " + targetNamespace.getDataset(), e);
+			}
+		}
+	}
+
+	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb, User user) {
 		return query.buildStatus(urlb, user);
 	}
 
-	public ExecutionStatus cancel(Dataset dataset, ManagedExecution query, URLBuilder urlb) {
+	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb) {
 
 		return null;
 	}

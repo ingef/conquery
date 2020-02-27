@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import com.bakdata.conquery.ConqueryConstants;
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.query.IQuery;
@@ -24,8 +25,8 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-@CPSType(id = "ARRAY_CONCEPT_QUERY", base = IQuery.class)
-public class ArrayConceptQuery implements IQuery {
+@CPSType(id = "ARRAY_CONCEPT_QUERY", base = SubmittedQuery.class)
+public class ArrayConceptQuery extends IQuery {
 	private List<ConceptQuery> childQueries = new ArrayList<>();
 
 	@Override
@@ -62,5 +63,4 @@ public class ArrayConceptQuery implements IQuery {
 	public void visit(Consumer<Visitable> visitor) {
 		childQueries.forEach(q -> q.visit(visitor));
 	}
-
 }
