@@ -46,7 +46,7 @@ public class StoredQueriesProcessor {
 	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
-		Collection<ManagedExecution> allQueries = storage.getAllExecutions();
+		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return allQueries
 			.stream()
@@ -68,7 +68,7 @@ public class StoredQueriesProcessor {
 			});
 	}
 
-	public void deleteQuery(Dataset dataset, ManagedExecution query) {
+	public void deleteQuery(Dataset dataset, ManagedExecution<?> query) {
 		storage.removeExecution(query.getId());
 	}
 
@@ -160,7 +160,7 @@ public class StoredQueriesProcessor {
 	}
 
 	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId, User user) {
-		ManagedExecution query = storage.getExecution(queryId);
+		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
 			return null;
 		}
