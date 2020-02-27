@@ -1,8 +1,8 @@
-package com.bakdata.conquery.apiv1;
+package com.bakdata.conquery.resources.api;
 
-import static com.bakdata.conquery.apiv1.ResourceConstants.DATASET;
-import static com.bakdata.conquery.apiv1.ResourceConstants.QUERY;
 import static com.bakdata.conquery.models.auth.AuthorizationHelper.authorize;
+import static com.bakdata.conquery.resources.ResourceConstants.DATASET;
+import static com.bakdata.conquery.resources.ResourceConstants.QUERY;
 
 import java.util.Collection;
 import java.util.List;
@@ -19,6 +19,8 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response.Status;
 
+import com.bakdata.conquery.apiv1.AdditionalMediaTypes;
+import com.bakdata.conquery.apiv1.StoredQueriesProcessor;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;

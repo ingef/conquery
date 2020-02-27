@@ -1,6 +1,8 @@
 package com.bakdata.conquery.handler;
 
-import static com.bakdata.conquery.Constants.*;
+import static com.bakdata.conquery.Constants.AUTH;
+import static com.bakdata.conquery.Constants.CONTEXT;
+import static com.bakdata.conquery.Constants.CPS_TYPE;
 import static com.bakdata.conquery.Constants.DOC;
 import static com.bakdata.conquery.Constants.ID_OF;
 import static com.bakdata.conquery.Constants.ID_REF;
@@ -9,6 +11,9 @@ import static com.bakdata.conquery.Constants.JSON_BACK_REFERENCE;
 import static com.bakdata.conquery.Constants.JSON_CREATOR;
 import static com.bakdata.conquery.Constants.JSON_IGNORE;
 import static com.bakdata.conquery.Constants.LIST_OF;
+import static com.bakdata.conquery.Constants.PATH;
+import static com.bakdata.conquery.Constants.PATH_PARAM;
+import static com.bakdata.conquery.Constants.RESTS;
 
 import java.io.Closeable;
 import java.io.File;
@@ -19,15 +24,10 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import javax.ws.rs.GET;
 import javax.ws.rs.core.UriBuilder;
-
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.lang3.tuple.Pair;
 
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
@@ -35,17 +35,16 @@ import com.bakdata.conquery.model.Base;
 import com.bakdata.conquery.model.CreateableDoc;
 import com.bakdata.conquery.model.Group;
 import com.bakdata.conquery.models.identifiable.ids.IId;
-import com.bakdata.conquery.resources.admin.ui.AdminUIResource;
 import com.bakdata.conquery.util.Doc;
 import com.bakdata.conquery.util.PrettyPrinter;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
+import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.MoreCollectors;
 import com.google.common.collect.Multimap;
 import com.google.common.primitives.Primitives;
-
 import io.github.classgraph.AnnotationInfo;
 import io.github.classgraph.ArrayTypeSignature;
 import io.github.classgraph.BaseTypeSignature;
@@ -60,6 +59,8 @@ import io.github.classgraph.TypeSignature;
 import io.github.classgraph.TypeVariableSignature;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.tuple.Pair;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -370,6 +371,11 @@ public class GroupHandler {
 					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(0))
 					+ " to "
 					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(1));
+			}
+			if(ClassToInstanceMap.class.isAssignableFrom(cl)) {
+				return "ClassToInstance map from "
+					+ printType(ctx.withGeneric(true), classRef.getTypeArguments().get(0))
+					+ " to instances of these classes.";
 			}
 			if(Map.class.isAssignableFrom(cl)) {
 				return "map from "

@@ -4,6 +4,9 @@ import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -12,11 +15,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
+import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.apiv1.ResourceConstants;
-import com.bakdata.conquery.apiv1.ResultCSVResource;
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.io.cps.CPSBase;
+import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
@@ -26,27 +30,32 @@ import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
+import com.bakdata.conquery.models.query.ExecutionManager;
 import com.bakdata.conquery.models.query.ManagedQuery;
+import com.bakdata.conquery.models.query.QueryPlanContext;
+import com.bakdata.conquery.models.query.queryplan.QueryPlan;
+import com.bakdata.conquery.models.query.results.ShardResult;
 import com.bakdata.conquery.models.worker.Namespace;
+import com.bakdata.conquery.models.worker.Namespaces;
+import com.bakdata.conquery.resources.ResourceConstants;
+import com.bakdata.conquery.resources.api.ResultCSVResource;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.ArrayUtils;
 import org.hibernate.validator.constraints.NotEmpty;
 
-@NoArgsConstructor
 @Getter
 @Setter
 @ToString
 @Slf4j
 @CPSBase
 @JsonTypeInfo(use = JsonTypeInfo.Id.CUSTOM, property = "type")
-public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecutionId> {
+public abstract class ManagedExecution<R extends ShardResult> extends IdentifiableImpl<ManagedExecutionId> {
 
 	protected DatasetId dataset;
 	protected UUID queryId = UUID.randomUUID();
@@ -55,6 +64,9 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
+
+	@NotNull
+	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
 
 	protected boolean machineGenerated;
 
@@ -68,17 +80,27 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
 	@JsonIgnore
-	protected transient Namespace namespace;
+	protected final transient MasterMetaStorage storage;
 
-	public ManagedExecution(Namespace namespace, UserId owner) {
+	public ManagedExecution(MasterMetaStorage storage, UserId owner, DatasetId submittedDataset) {
+		this.storage = storage;
 		this.owner = owner;
-		initExecutable(namespace);
+		this.dataset = submittedDataset;
 	}
 
-	public void initExecutable(@NonNull Namespace namespace) {
-		this.namespace = namespace;
-		this.dataset = namespace.getStorage().getDataset().getId();
-	}
+	/**
+	 * Executed right before execution submission.
+	 * @param namespaces
+	 */
+	public abstract void initExecutable(Namespaces namespaces);
+
+	/**
+	 * Returns the set of namespaces, this execution needs to be executed on.
+	 * The {@link ExecutionManager} then submits the queries to these namespaces.
+	 */
+	@JsonIgnore
+	public abstract Set<Namespace> getRequiredNamespaces();
+
 
 	@Override
 	public ManagedExecutionId createId() {
@@ -107,7 +129,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 			state = ExecutionState.DONE;
 			execution.countDown();
 			try {
-				namespace.getStorage().getMetaStorage().updateExecution(this);
+				storage.updateExecution(this);
 			}
 			catch (JSONException e) {
 				log.error("Failed to store {} after finishing: {}", getClass().getSimpleName(), this, e);
@@ -137,7 +159,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 							  .requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
 							  .owner(Optional.ofNullable(owner).orElse(null))
 							  .ownerName(
-									  Optional.ofNullable(owner).map(owner -> namespace.getStorage().getMetaStorage().getUser(owner)).map(User::getLabel)
+									  Optional.ofNullable(owner).map(owner -> storage.getUser(owner)).map(User::getLabel)
 											  .orElse(null))
 							  .resultUrl(
 									  isReadyToDownload(url, user)
@@ -159,10 +181,10 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public ExecutionStatus buildStatus(User user) {
-		return buildStatus(null, user);
+		return buildStatus( null, user);
 	}
 
-	public abstract ManagedQuery toResultQuery();
+	public abstract Collection<ManagedQuery> toResultQuery();
 	
 	/**
 	 * Gives all {@link NamespacedId}s that were required in the execution.
@@ -170,4 +192,15 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	 */
 	@JsonIgnore
 	public abstract Set<NamespacedId> getUsedNamespacedIds();
+	
+	
+	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
+
+	public abstract void addResult(R result);
+	
+	@JsonIgnore
+	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
+	
+	@JsonIgnore
+	public abstract SubmittedQuery getSubmitted();
 }
