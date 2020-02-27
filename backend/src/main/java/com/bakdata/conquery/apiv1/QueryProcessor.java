@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.auth.permissions.AbilitySets;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.auth.permissions.QueryPermission;
 import com.bakdata.conquery.models.datasets.Dataset;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -36,8 +35,7 @@ public class QueryProcessor {
 	 * Creates a query for all datasets, then submits it for execution on the
 	 * intended dataset.
 	 */
-	public ExecutionStatus postQuery(Dataset dataset, SubmittedQuery query, URLBuilder urlb, User user) throws JSONException {
-		Namespace namespace = namespaces.get(dataset.getId());
+	public ExecutionStatus postQuery(Dataset dataset, SubmittedQuery query, URLBuilder urlb, User user) {
 		
 		// Initialize checks that need to traverse the query tree
 		ExternalIdChecker externalIdChecker = new QueryUtils.ExternalIdChecker();
@@ -55,7 +53,7 @@ public class QueryProcessor {
 				log.info("Re-executing Query {}", executionId);
 
 
-				final ManagedExecution<?> mq = ExecutionManager.executeQuery( namespaces, namespace.getQueryManager().getQuery(executionId));
+				final ManagedExecution<?> mq = ExecutionManager.executeQuery( namespaces, storage.getExecution(executionId));
 
 				return getStatus(dataset, mq, urlb, user);
 			}
@@ -66,8 +64,9 @@ public class QueryProcessor {
 			}
 		}
 		
-
+		// Run the query on behalf of the user
 		ManagedExecution<?> mq = ExecutionManager.runQuery(storage, namespaces, query, user.getId(), dataset.getId());
+		
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
 

@@ -42,7 +42,6 @@ import lombok.extern.slf4j.Slf4j;
 /**
  * Internal runtime representation of a form query.
  */
-//@NoArgsConstructor
 @Getter
 @Setter
 @ToString
@@ -58,6 +57,9 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@JsonIgnore
 	protected Map<String,List<ManagedQuery>> subQueries;
 
+	/**
+	 * Subqueries that are send to the workers.
+	 */
 	@InternalOnly
 	private Map<ManagedExecutionId,ManagedQuery> flatSubQueries;
 	

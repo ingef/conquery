@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 
 import com.bakdata.conquery.apiv1.SubmittedQuery;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
@@ -35,8 +34,9 @@ public abstract class Form implements SubmittedQuery {
 		// Do nothing if not necessary
 	};
 	
-	public ManagedForm toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return new ManagedForm(storage, this, userId, submittedDataset);
+	@Override
+	public ManagedForm toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+		return new ManagedForm(namespaces.getMetaStorage(), this, userId, submittedDataset);
 	}
 	
 	@Override

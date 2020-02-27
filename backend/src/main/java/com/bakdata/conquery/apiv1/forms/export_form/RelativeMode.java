@@ -39,13 +39,6 @@ public class RelativeMode extends Mode {
 	@NotEmpty
 	private List<CQElement> outcomes;
 
-//	@Override
-//	public List<ManagedQuery> executeQuery(Dataset dataset, User user, Namespaces namespaces) throws JSONException {
-//		return Collections.singletonList(
-//			new RelExportGenerator(dataset, user, namespaces).execute(this, true)
-//		);
-//	}
-
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
 		features.forEach(e -> visitor.accept(e));

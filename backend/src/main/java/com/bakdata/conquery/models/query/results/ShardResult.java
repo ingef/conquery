@@ -29,7 +29,7 @@ public class ShardResult {
 
 	@ToString.Include
 	private ManagedExecutionId queryId;
-//	private IQuery query;
+
 	private List<EntityResult> results = new ArrayList<>();
 	@ToString.Include
 	private LocalDateTime startTime = LocalDateTime.now();

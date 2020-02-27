@@ -25,7 +25,7 @@ import lombok.Setter;
 @Setter
 @CPSType(id = "CONCEPT_QUERY", base = SubmittedQuery.class)
 @AllArgsConstructor(onConstructor = @__({@JsonCreator}))
-public class ConceptQuery extends IQuery implements Visitable {
+public class ConceptQuery extends IQuery {
 
 	@Valid
 	@NotNull

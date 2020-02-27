@@ -5,7 +5,6 @@ import java.util.Optional;
 import java.util.Set;
 
 import com.bakdata.conquery.apiv1.SubmittedQuery;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -39,13 +38,13 @@ public abstract class IQuery implements SubmittedQuery {
 	public abstract void collectResultInfos(ResultInfoCollector collector);
 	
 	@Override
-	public ManagedQuery toManagedExecution(MasterMetaStorage storage, Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
+	public ManagedQuery toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
 		DatasetId dataset = IQuery.getDataset(this, submittedDataset);
 		IQuery query = this.resolve(new QueryResolveContext(
-			storage,
+			namespaces.getMetaStorage(),
 			namespaces.get(dataset)
 			));
-		ManagedQuery managed = new ManagedQuery(storage, query,userId, dataset);
+		ManagedQuery managed = new ManagedQuery(namespaces.getMetaStorage(), query,userId, dataset);
 		return managed;
 	}
 

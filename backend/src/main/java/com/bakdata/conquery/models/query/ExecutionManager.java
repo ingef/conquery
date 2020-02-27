@@ -38,7 +38,7 @@ public class ExecutionManager {
 
 	public static ManagedExecution<?> createQuery(MasterMetaStorage storage, Namespaces namespaces, SubmittedQuery query, UUID queryId, UserId userId, DatasetId submittedDataset) {
 		// Transform the submitted query into an initialized execution
-		ManagedExecution<?> managed = query.toManagedExecution(storage, namespaces, userId, submittedDataset);
+		ManagedExecution<?> managed = query.toManagedExecution( namespaces, userId, submittedDataset);
 
 		managed.setQueryId(queryId);
 		
@@ -50,6 +50,7 @@ public class ExecutionManager {
 
 	public static ManagedExecution<?> executeQuery(Namespaces namespaces, ManagedExecution<?> execution){
 		
+		// Initialize the query / create subqueries
 		execution.initExecutable(namespaces);
 
 		execution.start();
