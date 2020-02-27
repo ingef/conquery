@@ -21,8 +21,9 @@ public interface ConceptManipulator {
 				
 				@Override
 				public void accept(Visitable element) {
-					if (element instanceof CQConcept)
-					consume((CQConcept) element, namespaces);
+					if (element instanceof CQConcept) {
+						consume((CQConcept) element, namespaces);
+					}					
 				}
 			});
 		}

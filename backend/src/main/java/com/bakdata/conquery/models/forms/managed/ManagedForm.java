@@ -7,7 +7,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.bakdata.conquery.apiv1.SubmittedQuery;
@@ -20,6 +19,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.forms.managed.ManagedForm.FormSharedResult;
+import com.bakdata.conquery.models.identifiable.IdMap;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -54,6 +54,10 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 */
 	private Form submittedForm;
 	
+	/**
+	 * Mapping of a result table name to a set of queries.
+	 * This is required by forms that have multiple results (CSVs) as output.
+	 */
 	@JsonIgnore
 	protected Map<String,List<ManagedQuery>> subQueries;
 
@@ -61,7 +65,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 * Subqueries that are send to the workers.
 	 */
 	@InternalOnly
-	private Map<ManagedExecutionId,ManagedQuery> flatSubQueries;
+	private IdMap<ManagedExecutionId, ManagedQuery> flatSubQueries = new IdMap<>();
 	
 	@JsonIgnore
 	private transient AtomicInteger openSubQueries;
@@ -78,7 +82,7 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		submittedForm.init(namespaces);
 		// init all subqueries
 		subQueries = submittedForm.createSubQueries(namespaces, super.getOwner(), super.getDataset());
-		flatSubQueries = subQueries.values().stream().flatMap(List::stream).collect(Collectors.toMap(ManagedQuery::getId, Function.identity()));
+		subQueries.values().stream().flatMap(List::stream).forEach(flatSubQueries::add);
 		flatSubQueries.values().forEach(mq -> mq.initExecutable(namespaces));
 		openSubQueries = new AtomicInteger(flatSubQueries.values().size());
 	}

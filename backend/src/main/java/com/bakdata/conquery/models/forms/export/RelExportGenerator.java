@@ -41,6 +41,10 @@ public class RelExportGenerator {
 		return query;
 	}
 	
+	/**
+	 * Wraps the feature/outcome query with the corresponding info, if it is a feature or outcome
+	 * do generate a ColumnDescriptor later on.
+	 */
 	private static ArrayConceptQuery setInfos(ArrayConceptQuery arrayQuery, FeatureGroup group) {
 		for(ConceptQuery childQueries : arrayQuery.getChildQueries()) {
 			
