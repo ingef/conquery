@@ -259,7 +259,7 @@ public class ConceptUpdateAndDeletionTest implements ProgrammaticIntegrationTest
 		UserId userId = conquery.getTestUser().getId();
 		DatasetId dataset = conquery.getNamespace().getDataset().getId();
 		
-		final ManagedQuery managedQuery = (ManagedQuery) ExecutionManager.runQuery(storage, namespaces, query, userId, dataset);
+		final ManagedQuery managedQuery = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, userId, dataset);
 
 		managedQuery.awaitDone(2, TimeUnit.MINUTES);
 		assertThat(managedQuery.getState()).isEqualTo(state);

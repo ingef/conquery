@@ -65,7 +65,7 @@ public class QueryProcessor {
 		}
 		
 		// Run the query on behalf of the user
-		ManagedExecution<?> mq = ExecutionManager.runQuery(storage, namespaces, query, user.getId(), dataset.getId());
+		ManagedExecution<?> mq = ExecutionManager.runQuery(namespaces, query, user.getId(), dataset.getId());
 		
 		// Set abilities for submitted query
 		user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mq.getId()));
@@ -97,7 +97,7 @@ public class QueryProcessor {
 			try {
 				DatasetId targetDataset = targetNamespace.getDataset().getId();
 				IQuery translated = QueryTranslator.replaceDataset(namespaces, translateable, targetDataset);
-				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(storage, namespaces, translated, mq.getQueryId(), user.getId(), targetDataset);
+				final ManagedExecution<?> mqTranslated = ExecutionManager.createQuery(namespaces, translated, mq.getQueryId(), user.getId(), targetDataset);
 				
 				user.addPermission(storage, QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, mqTranslated.getId()));
 			}

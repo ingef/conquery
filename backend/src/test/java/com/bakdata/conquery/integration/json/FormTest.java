@@ -115,7 +115,7 @@ public class FormTest extends ConqueryTestSpec {
 		UserId userId = support.getTestUser().getId();
 		DatasetId dataset = support.getNamespace().getDataset().getId();
 
-		ManagedExecution<?> managedForm = ExecutionManager.runQuery(storage, namespaces, form, userId, dataset);
+		ManagedExecution<?> managedForm = ExecutionManager.runQuery( namespaces, form, userId, dataset);
 
 		managedForm.awaitDone(10, TimeUnit.MINUTES);
 		if (managedForm.getState() != ExecutionState.DONE) {

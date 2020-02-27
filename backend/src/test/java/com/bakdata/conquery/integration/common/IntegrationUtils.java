@@ -95,7 +95,6 @@ public class IntegrationUtils {
 
 	public static void importPreviousQueries(StandaloneSupport support, RequiredData content) throws JSONException, IOException {
 		Namespaces namespaces = support.getNamespace().getNamespaces();
-		MasterMetaStorage storage = support.getNamespace().getStorage().getMetaStorage();
 		UserId userId = support.getTestUser().getId();
 		DatasetId dataset = support.getNamespace().getDataset().getId();
 		
@@ -116,7 +115,7 @@ public class IntegrationUtils {
 
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data));
 
-			ManagedExecution<?> managed = ExecutionManager.runQuery(storage, namespaces, query, queryId, userId, dataset);
+			ManagedExecution<?> managed = ExecutionManager.runQuery( namespaces, query, queryId, userId, dataset);
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getState() == ExecutionState.FAILED) {

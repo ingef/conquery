@@ -50,7 +50,7 @@ public abstract class AbstractQueryEngineTest extends ConqueryTestSpec {
 		
 		IQuery query = getQuery();
 		
-		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(storage, namespaces, query, userId, dataset);
+		ManagedQuery managed = (ManagedQuery) ExecutionManager.runQuery(namespaces, query, userId, dataset);
 
 		managed.awaitDone(10, TimeUnit.SECONDS);
 		while(managed.getState()!=ExecutionState.DONE && managed.getState()!=ExecutionState.FAILED) {

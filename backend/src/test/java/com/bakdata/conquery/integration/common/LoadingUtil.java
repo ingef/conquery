@@ -54,7 +54,7 @@ public class LoadingUtil {
 
 			ConceptQuery q = new ConceptQuery(new CQExternal(Arrays.asList(FormatColumn.ID, FormatColumn.DATE_SET), data));
 
-			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getStandaloneCommand().getMaster().getStorage(), support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset().getId());
+			ManagedExecution<?> managed = ExecutionManager.createQuery(support.getNamespace().getNamespaces(),q, queryId, user.getId(), support.getNamespace().getDataset().getId());
 			user.addPermission(support.getStandaloneCommand().getMaster().getStorage(), QueryPermission.onInstance(AbilitySets.QUERY_CREATOR, managed.getId()));
 			managed.awaitDone(1, TimeUnit.DAYS);
 

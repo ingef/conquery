@@ -4,7 +4,6 @@ import java.util.Objects;
 import java.util.UUID;
 
 import com.bakdata.conquery.apiv1.SubmittedQuery;
-import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -23,27 +22,27 @@ public class ExecutionManager {
 	@NonNull
 	private final Namespace namespace;
 
-	public static ManagedExecution<?> runQuery(MasterMetaStorage storage, Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
-		return executeQuery(namespaces, createQuery(storage, namespaces, query, userId, submittedDataset));
+	public static ManagedExecution<?> runQuery(Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
+		return executeQuery(namespaces, createQuery(namespaces, query, userId, submittedDataset));
 	}
 	
-	public static ManagedExecution<?> runQuery(MasterMetaStorage storage, Namespaces namespaces, SubmittedQuery query, UUID queryId, UserId userId, DatasetId submittedDataset) {
-		return executeQuery(namespaces, createQuery(storage, namespaces, query, queryId, userId, submittedDataset));
+	public static ManagedExecution<?> runQuery(Namespaces namespaces, SubmittedQuery query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+		return executeQuery(namespaces, createQuery(namespaces, query, queryId, userId, submittedDataset));
 	}
 	
 
-	public static ManagedExecution<?> createQuery(MasterMetaStorage storage, Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
-		return createQuery(storage, namespaces, query, UUID.randomUUID(), userId, submittedDataset);
+	public static ManagedExecution<?> createQuery(Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
+		return createQuery( namespaces, query, UUID.randomUUID(), userId, submittedDataset);
 	}
 
-	public static ManagedExecution<?> createQuery(MasterMetaStorage storage, Namespaces namespaces, SubmittedQuery query, UUID queryId, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> createQuery(Namespaces namespaces, SubmittedQuery query, UUID queryId, UserId userId, DatasetId submittedDataset) {
 		// Transform the submitted query into an initialized execution
 		ManagedExecution<?> managed = query.toManagedExecution( namespaces, userId, submittedDataset);
 
 		managed.setQueryId(queryId);
 		
 		// Store the execution
-		storage.addExecution(managed);
+		namespaces.getMetaStorage().addExecution(managed);
 
 		return managed;
 	}

@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
-import com.bakdata.conquery.apiv1.URLBuilder;
 import com.bakdata.conquery.apiv1.forms.Form;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.cps.CPSTypeIdResolver;
@@ -19,16 +18,12 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.FormPermission;
-import com.bakdata.conquery.models.execution.ExecutionStatus;
-import com.bakdata.conquery.models.execution.ManagedExecution;
-import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
 import com.bakdata.conquery.models.worker.Namespaces;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectReader;
 import io.github.classgraph.Resource;
 import io.github.classgraph.ResourceList;
 import lombok.Getter;
-import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -39,14 +34,6 @@ public class FormProcessor {
 	private final Namespaces namespaces;
 	private final MasterMetaStorage storage;
 	private static final Map<Class<? extends Form>, JsonNode> FRONTEND_FORM_CONFIGS = generateFEFormConfigMap();
-
-	public ExecutionStatus getStatus(ManagedExecutionId id, URLBuilder url, User user) {
-		return get(id).buildStatus(url, user);
-	}
-
-	public ManagedExecution<?> get(@NonNull ManagedExecutionId id) {
-		return storage.getExecution(id);
-	}
 
 	private static Map<Class<? extends Form>, JsonNode> generateFEFormConfigMap() {
 		Map<String, Class<? extends Form>> forms = new HashMap<>();
