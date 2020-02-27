@@ -37,7 +37,6 @@ import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
-import org.hibernate.validator.constraints.NotEmpty;
 
 @NoArgsConstructor
 @Getter
@@ -50,8 +49,8 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 
 	protected DatasetId dataset;
 	protected UUID queryId = UUID.randomUUID();
-	@NotEmpty
-	protected String label = queryId.toString();
+	protected String label;
+
 	protected LocalDateTime creationTime = LocalDateTime.now();
 	@Nullable
 	protected UserId owner;
@@ -129,7 +128,7 @@ public abstract class ManagedExecution extends IdentifiableImpl<ManagedExecution
 	}
 
 	public ExecutionStatus buildStatus(URLBuilder url, User user) {
-		return ExecutionStatus.builder().label(label).id(getId()).own(true).createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
+		return ExecutionStatus.builder().label(label == null ? queryId.toString() : label).id(getId()).own(true).createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 			.requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
 			.owner(Optional.ofNullable(owner).orElse(null))
 			.ownerName(
