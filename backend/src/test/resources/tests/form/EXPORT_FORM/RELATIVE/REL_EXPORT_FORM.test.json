@@ -9,7 +9,7 @@
         "queryGroup": "${dataset}.00000000-0000-0000-0000-000000000001",
         "timeMode":{
             "value": "RELATIVE",
-            "indexSelector": "FIRST",
+            "indexSelector": "EARLIEST",
             "timeUnit" : "QUARTERS",
             "features": [
                 {
