@@ -18,6 +18,7 @@ import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.apiv1.FilterTemplate;
 import com.bakdata.conquery.apiv1.IdLabel;
+import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRef;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
@@ -62,7 +63,6 @@ import com.bakdata.conquery.models.preproc.ImportDescriptor;
 import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
 import com.bakdata.conquery.models.preproc.outputs.Output;
-import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.query.concept.filter.FilterValue;
@@ -149,7 +149,7 @@ public class Constants {
 			.resource(QueryResource.class)
 			.resource(ResultCSVResource.class)
 			.resource(StoredQueriesResource.class)
-			.base(new Base(IQuery.class, ""))
+			.base(new Base(SubmittedQuery.class, ""))
 			.base(new Base(CQElement.class, ""))
 			.base(new Base(FilterValue.class, ""))
 			.hide(CQExternalResolved.class)
