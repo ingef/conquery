@@ -16,6 +16,7 @@ import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
@@ -23,6 +24,7 @@ import lombok.Setter;
  * and whose results are merged. If a SpecialDateUnion is required, the result will hold
  * the union of all dates from the separate queries.
  */
+@NoArgsConstructor
 @Getter
 @Setter
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = SubmittedQuery.class)
