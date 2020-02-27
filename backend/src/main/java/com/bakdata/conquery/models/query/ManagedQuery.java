@@ -48,7 +48,6 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	// Needs to be resolved externally before being executed
 	private IQuery query;
 	
-	private boolean shared = false;
 	@JsonIgnore
 	protected transient Namespace namespace;
 	/**
@@ -121,10 +120,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@Override
 	public ExecutionStatus buildStatus(URLBuilder url, User user) {
 		ExecutionStatus status = super.buildStatus(url, user);
-		status.setTags(getTags());
-		status.setQuery(query);
 		status.setNumberOfResults(lastResultCount);
-		status.setShared(shared);
 		return status;
 	}
 	

@@ -23,15 +23,15 @@ public class ExecutionManager {
 	private final Namespace namespace;
 
 	public static ManagedExecution<?> runQuery(Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
-		return executeQuery(namespaces, createQuery(namespaces, query, userId, submittedDataset));
+		return execute(namespaces, createExecution(namespaces, query, userId, submittedDataset));
 	}
 	
 	public static ManagedExecution<?> runQuery(Namespaces namespaces, SubmittedQuery query, UUID queryId, UserId userId, DatasetId submittedDataset) {
-		return executeQuery(namespaces, createQuery(namespaces, query, queryId, userId, submittedDataset));
+		return execute(namespaces, createQuery(namespaces, query, queryId, userId, submittedDataset));
 	}
 	
 
-	public static ManagedExecution<?> createQuery(Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
+	public static ManagedExecution<?> createExecution(Namespaces namespaces, SubmittedQuery query, UserId userId, DatasetId submittedDataset) {
 		return createQuery( namespaces, query, UUID.randomUUID(), userId, submittedDataset);
 	}
 
@@ -47,7 +47,7 @@ public class ExecutionManager {
 		return managed;
 	}
 
-	public static ManagedExecution<?> executeQuery(Namespaces namespaces, ManagedExecution<?> execution){
+	public static ManagedExecution<?> execute(Namespaces namespaces, ManagedExecution<?> execution){
 		
 		// Initialize the query / create subqueries
 		execution.initExecutable(namespaces);

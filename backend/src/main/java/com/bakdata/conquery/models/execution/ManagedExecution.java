@@ -25,6 +25,7 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
 import com.bakdata.conquery.models.exceptions.JSONException;
+import com.bakdata.conquery.models.forms.managed.ManagedForm;
 import com.bakdata.conquery.models.identifiable.IdentifiableImpl;
 import com.bakdata.conquery.models.identifiable.ids.NamespacedId;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
@@ -67,6 +68,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	@NotNull
 	private String[] tags = ArrayUtils.EMPTY_STRING_ARRAY;
+	private boolean shared = false;
 
 	protected boolean machineGenerated;
 
@@ -154,6 +156,9 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return ExecutionStatus.builder()
 							  .label(label)
 							  .id(getId())
+							  .query(getSubmitted())
+							  .tags(tags)
+							  .shared(shared)
 							  .own(getOwner().equals(user.getId()))
 							  .createdAt(getCreationTime().atZone(ZoneId.systemDefault()))
 							  .requiredTime((startTime != null && finishTime != null) ? ChronoUnit.MILLIS.between(startTime, finishTime) : null).status(state)
@@ -198,9 +203,17 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 
 	public abstract void addResult(R result);
 	
+	/**
+	 * Initializes the result that is send from a worker to the Master.
+	 * E.g. this function enables the {@link ManagedForm} to prepare the result in order to be
+	 * matched to its subqueries.
+	 */
 	@JsonIgnore
 	public abstract R getInitializedShardResult(Entry<ManagedExecutionId, QueryPlan> entry);
 	
+	/**
+	 * Returns the {@link SubmittedQuery} that caused this {@link ManagedExecution}. 
+	 */
 	@JsonIgnore
 	public abstract SubmittedQuery getSubmitted();
 }

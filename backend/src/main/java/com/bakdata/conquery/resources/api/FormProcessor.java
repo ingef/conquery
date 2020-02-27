@@ -5,7 +5,6 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -81,9 +80,8 @@ public class FormProcessor {
 
 	public Collection<JsonNode> getFormsForUser(User user) {
 		List<JsonNode> allowedForms = new ArrayList<>();
-		Iterator<Entry<Class<? extends Form>, JsonNode>> it = FRONTEND_FORM_CONFIGS.entrySet().iterator();
-		while(it.hasNext()) {
-			Entry<Class<? extends Form>, JsonNode> formMapping = it.next();
+		
+		for(Entry<Class<? extends Form>, JsonNode> formMapping : FRONTEND_FORM_CONFIGS.entrySet()) {			
 			if (user.isPermitted(FormPermission.onInstance(Ability.CREATE, formMapping.getKey()))) {
 				allowedForms.add(formMapping.getValue());
 			}

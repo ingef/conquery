@@ -53,7 +53,7 @@ public class QueryProcessor {
 				log.info("Re-executing Query {}", executionId);
 
 
-				final ManagedExecution<?> mq = ExecutionManager.executeQuery( namespaces, storage.getExecution(executionId));
+				final ManagedExecution<?> mq = ExecutionManager.execute( namespaces, storage.getExecution(executionId));
 
 				return getStatus(dataset, mq, urlb, user);
 			}

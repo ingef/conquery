@@ -53,7 +53,7 @@ public abstract class IQuery implements SubmittedQuery {
 	 * If none could be extracted the alternative dataset is chosen.
 	 * When more than one {@link DatasetId} is found an {@link IllegalArgumentException} is thrown.
 	 */
-	static DatasetId getDataset(IQuery query, DatasetId alternativeDataset) {
+	private static DatasetId getDataset(IQuery query, DatasetId alternativeDataset) {
 		NamespacedIdCollector collector = new QueryUtils.NamespacedIdCollector();
 		query.visit(collector);
 		// A query of this type is only allowed to reference a single dataset as it is executed in a single namespace of that dataset.
