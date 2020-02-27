@@ -41,14 +41,16 @@ public class IntegrationTests {
 		final String testRoot = Objects.requireNonNullElse(System.getenv(TestTags.TEST_DIRECTORY_ENVIRONMENT_VARIABLE), defaultTestRoot);
 
 		ResourceTree tree = new ResourceTree(null, null);
-		tree.addAll(CPSTypeIdResolver.SCAN_RESULT.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + ".*\\.test\\.json$")));
-
+		tree.addAll(
+			CPSTypeIdResolver.SCAN_RESULT
+				.getResourcesMatchingPattern(Pattern.compile("^" + testRoot + ".*\\.test\\.json$"))
+		);
+		
 		// collect tests from directory
 		if (tree.getChildren().isEmpty()) {
 			log.warn("Could not find tests in {}", testRoot);
 			return Collections.emptyList();
 		}
-
 		final ResourceTree reduced = tree.reduce();
 
 		if (reduced.getChildren().isEmpty()) {
