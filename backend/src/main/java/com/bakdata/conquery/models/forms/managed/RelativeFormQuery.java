@@ -10,7 +10,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.ConqueryConstants;
 import com.bakdata.conquery.apiv1.SubmittedQuery;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeSelector;
 import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.identifiable.ids.specific.ManagedExecutionId;
@@ -20,6 +19,7 @@ import com.bakdata.conquery.models.query.QueryResolveContext;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.ArrayConceptQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
+import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.resultinfo.ResultInfoCollector;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import lombok.Getter;
@@ -36,7 +36,7 @@ public class RelativeFormQuery extends IQuery {
 	@NotNull @Valid
 	private final ArrayConceptQuery outcomes;
 	@NotNull
-	private final TimeSelector indexSelector;
+	private final TemporalSampler indexSelector;
 	@NotNull
 	private final IndexPlacement indexPlacement;
 	@Min(0)

@@ -7,11 +7,11 @@ import java.util.OptionalInt;
 
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeSelector;
 import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.models.common.CDateSet;
 import com.bakdata.conquery.models.forms.util.DateContext;
 import com.bakdata.conquery.models.query.QueryExecutionContext;
+import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.query.entity.Entity;
 import com.bakdata.conquery.models.query.queryplan.ArrayConceptQueryPlan;
 import com.bakdata.conquery.models.query.queryplan.ConceptQueryPlan;
@@ -32,7 +32,7 @@ public class RelativeFormQueryPlan implements QueryPlan {
 	private final ConceptQueryPlan query;
 	private final ArrayConceptQueryPlan featurePlan;
 	private final ArrayConceptQueryPlan outcomePlan;
-	private final TimeSelector indexSelector;
+	private final TemporalSampler indexSelector;
 	private final IndexPlacement indexPlacement;
 	private final int timeCountBefore;
 	private final int timeCountAfter;

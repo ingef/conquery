@@ -7,7 +7,6 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
-import com.bakdata.conquery.apiv1.forms.TimeSelector;
 import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.models.forms.export.RelExportGenerator;
@@ -16,6 +15,7 @@ import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.models.query.Visitable;
 import com.bakdata.conquery.models.query.concept.CQElement;
+import com.bakdata.conquery.models.query.concept.specific.temporal.TemporalSampler;
 import com.bakdata.conquery.models.worker.Namespaces;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +33,7 @@ public class RelativeMode extends Mode {
 	@NotNull
 	private IndexPlacement indexPlacement;
 	@NotNull
-	private TimeSelector indexSelector;
+	private TemporalSampler indexSelector;
 	@NotEmpty
 	private List<CQElement> features;
 	@NotEmpty
