@@ -28,6 +28,13 @@ import lombok.Setter;
 @CPSType(id = "ARRAY_CONCEPT_QUERY", base = SubmittedQuery.class)
 public class ArrayConceptQuery extends IQuery {
 	private List<ConceptQuery> childQueries = new ArrayList<>();
+	
+	public ArrayConceptQuery( List<ConceptQuery> queries) {
+		if(queries == null || queries.isEmpty()) {
+			throw new IllegalArgumentException("No sub queries provided.");
+		}
+		this.childQueries = queries;
+	}
 
 	@Override
 	public ArrayConceptQuery resolve(QueryResolveContext context) {

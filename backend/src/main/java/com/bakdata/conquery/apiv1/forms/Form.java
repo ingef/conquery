@@ -32,7 +32,7 @@ public abstract class Form implements SubmittedQuery {
 	 */
 	public void init(Namespaces namespaces) {
 		// Do nothing if not necessary
-	};
+	}
 	
 	@Override
 	public ManagedForm toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {

@@ -37,12 +37,6 @@ public class AbsExportGenerator {
 	
 	public static ArrayConceptQuery createSubQuery(List<CQElement> features) {
 		List<ConceptQuery> cqWraps = features.stream().map(ConceptQuery::new).collect(Collectors.toList());
-		return createArrayConceptQuery(cqWraps);
-	}
-	
-	public static ArrayConceptQuery createArrayConceptQuery(List<ConceptQuery> featureQueries) {
-		ArrayConceptQuery subQuery = new ArrayConceptQuery();
-		subQuery.setChildQueries(featureQueries);
-		return subQuery;
+		return new ArrayConceptQuery(cqWraps);
 	}
 }
