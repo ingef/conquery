@@ -66,14 +66,18 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 			try {				
 				// Submit the token to dropwizard which forwards it to Shiro
 				if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
+					// This is the dropwizard way to indicate that authentication failed
 					failedTokens++;
+					// Continue with next token
 					continue;
 				}
 				// Success an extracted token could be authenticated
 				log.trace("Authentication was successfull for token type {}", token.getClass().getName());
 				return;
 			} catch (AuthenticationException e) {
+				// This is the shiro way to indicate that authentication failed
 				if(tokens.size() > 1) {
+					failedTokens++; 
 					log.trace("Token authentication failed:",e);
 					// If there is more than one token try the other ones too
 					continue;
