@@ -125,7 +125,7 @@
                             "label": {
                                 "de": "Zeitstempel Indexdatum"
                             },
-                            "defaultValue": "FIRST",
+                            "defaultValue": "EARLIEST",
                             "options": [
                                 {
                                     "label": {
