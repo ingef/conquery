@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.Accessors;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.realm.Realm;
 
@@ -62,15 +63,23 @@ public class DefaultAuthFilter extends AuthFilter<AuthenticationToken, User> {
 
 		// The authentication process
 		for (AuthenticationToken token : tokens) {
-			// Submit the token to dropwizard which forwards it to Shiro
-			if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
-				failedTokens++;
-				continue;
+			try {				
+				// Submit the token to dropwizard which forwards it to Shiro
+				if (!authenticate(requestContext, token, SecurityContext.BASIC_AUTH)) {
+					failedTokens++;
+					continue;
+				}
+				// Success an extracted token could be authenticated
+				log.trace("Authentication was successfull for token type {}", token.getClass().getName());
+				return;
+			} catch (AuthenticationException e) {
+				if(tokens.size() > 1) {
+					log.trace("Token authentication failed:",e);
+					// If there is more than one token try the other ones too
+					continue;
+				}
+				throw e;
 			}
-			// Success an extracted token could be authenticated
-			log.trace("Authentication was successfull for token type {}", token.getClass().getName());
-			return;
-
 		}
 		log.warn("Non of the configured realms was able to successfully authenticate the extracted token(s).");
 		log.trace("The {} tokens failed.", failedTokens);
