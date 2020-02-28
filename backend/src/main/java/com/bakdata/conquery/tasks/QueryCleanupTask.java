@@ -1,6 +1,7 @@
 package com.bakdata.conquery.tasks;
 
 import java.io.PrintWriter;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -46,19 +47,21 @@ public class QueryCleanupTask extends Task {
 
 				if (execution instanceof ManagedQuery) {
 					((ManagedQuery) execution).getQuery().visit(reusedChecker);
+
+
+					if (((ManagedQuery) execution).isShared())
+						continue;
+
+					if (ArrayUtils.isNotEmpty(((ManagedQuery) execution).getTags()))
+						continue;
 				}
 
 				if (execution.getLabel() != null)
 					continue;
 
-//				if (execution.getCreationTime().toLocalDate().isAfter(LocalDate.now().minusDays(30)))
-//					continue;
-
-				if (((ManagedQuery) execution).isShared())
+				if (execution.getCreationTime().toLocalDate().isAfter(LocalDate.now().minusDays(30)))
 					continue;
 
-				if (ArrayUtils.isNotEmpty(((ManagedQuery) execution).getTags()))
-					continue;
 
 				toDelete.add(execution.getId());
 			}
