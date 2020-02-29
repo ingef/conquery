@@ -37,7 +37,12 @@ export function fetchJsonUnauthorized(
         return response.json().catch(e => e);
       // Also handle empty responses
       // Reject other status
-      else return response.json().then(Promise.reject.bind(Promise));
+      else
+        return response
+          .json()
+          .then(parsed =>
+            Promise.reject({ status: response.status, ...parsed })
+          );
     },
     error => Promise.reject(error) // Network or connection failure
   );
