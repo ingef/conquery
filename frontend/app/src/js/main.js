@@ -3,6 +3,7 @@
 import conquery from "../../../lib/js";
 import StandardQueryEditorTab from "../../../lib/js/standard-query-editor";
 import TimebasedQueryEditorTab from "../../../lib/js/timebased-query-editor";
+import FormsTab from "../../../lib/js/external-forms";
 
 import theme from "../styles/theme";
 
@@ -21,6 +22,6 @@ const environment = {
   disableLogin
 };
 
-const tabs = [StandardQueryEditorTab, TimebasedQueryEditorTab];
+const tabs = [StandardQueryEditorTab, TimebasedQueryEditorTab, FormsTab];
 
 conquery(environment, tabs, theme);
