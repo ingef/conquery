@@ -82,12 +82,12 @@ export default function createQueryRunnerActions(
     return dispatch => {
       dispatch(stopQueryStart());
 
-      const apiMethod = isExternalForm ? api.deleteFormQuery : api.deleteQuery;
-
-      return apiMethod(datasetId, queryId).then(
-        r => dispatch(stopQuerySuccess(r)),
-        e => dispatch(stopQueryError(e))
-      );
+      return api
+        .deleteQuery(datasetId, queryId)
+        .then(
+          r => dispatch(stopQuerySuccess(r)),
+          e => dispatch(stopQueryError(e))
+        );
     };
   };
 
@@ -100,9 +100,7 @@ export default function createQueryRunnerActions(
     return dispatch => {
       dispatch(queryResultStart());
 
-      const apiMethod = isExternalForm ? api.getFormQuery : api.getQuery;
-
-      return apiMethod(datasetId, queryId).then(
+      return api.getQuery(datasetId, queryId).then(
         r => {
           // Indicate that looking for the result has stopped,
           // but not necessarily succeeded
