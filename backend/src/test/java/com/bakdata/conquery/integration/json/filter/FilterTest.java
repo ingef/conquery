@@ -9,27 +9,26 @@ import java.util.List;
 
 import javax.validation.constraints.NotNull;
 
-import com.bakdata.conquery.integration.common.RequiredColumn;
 import com.bakdata.conquery.integration.common.RequiredData;
 import com.bakdata.conquery.integration.common.RequiredTable;
 import com.bakdata.conquery.integration.common.ResourceFile;
 import com.bakdata.conquery.integration.json.AbstractQueryEngineTest;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
+import com.bakdata.conquery.integration.json.QueryTest;
 import com.bakdata.conquery.io.cps.CPSType;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.models.common.Range;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConcept;
 import com.bakdata.conquery.models.concepts.virtual.VirtualConceptConnector;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
-import com.bakdata.conquery.models.preproc.DateFormats;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
-import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -40,8 +39,6 @@ import com.bakdata.conquery.util.support.StandaloneSupport;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.univocity.parsers.csv.CsvFormat;
-import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
@@ -99,12 +96,9 @@ public class FilterTest extends AbstractQueryEngineTest {
 	}
 
 	private void importTableContents(StandaloneSupport support) throws IOException, JSONException {
-		CsvParserSettings settings = new CsvParserSettings();
-		CsvFormat format = new CsvFormat();
-		format.setLineSeparator("\n");
-		settings.setFormat(format);
-		settings.setHeaderExtractionEnabled(true);
-		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
+
+		ConqueryConfig.getInstance().setAdditionalFormats(ArrayUtils.EMPTY_STRING_ARRAY);
+
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : content.getTables()) {
@@ -113,21 +107,21 @@ public class FilterTest extends AbstractQueryEngineTest {
 			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
 			//create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);
-			ImportDescriptor desc = new ImportDescriptor();
+			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name, null);
+			TableImportDescriptor desc = new TableImportDescriptor();
 			desc.setInputFile(inputFile);
 			desc.setName(rTable.getName() + "_import");
 			desc.setTable(rTable.getName());
-			Input input = new Input();
+			TableInputDescriptor input = new TableInputDescriptor();
 			{
-				input.setPrimary(copyOutput(0, rTable.getPrimaryColumn()));
+				input.setPrimary(QueryTest.copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
-				input.setOutput(new Output[rTable.getColumns().length]);
+				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = copyOutput(i + 1, rTable.getColumns()[i]);
+					input.getOutput()[i] = QueryTest.copyOutput(rTable.getColumns()[i]);
 				}
 			}
-			desc.setInputs(new Input[]{input});
+			desc.setInputs(new TableInputDescriptor[]{input});
 			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 			preprocessedFiles.add(inputFile.getPreprocessedFile());
 		}
@@ -138,14 +132,6 @@ public class FilterTest extends AbstractQueryEngineTest {
 		for (File file : preprocessedFiles) {
 			support.getDatasetsProcessor().addImport(support.getDataset(), file);
 		}
-	}
-
-	private Output copyOutput(int columnPosition, RequiredColumn column) {
-		CopyOutput out = new CopyOutput();
-		out.setInputColumn(columnPosition);
-		out.setInputType(column.getType());
-		out.setName(column.getName());
-		return out;
 	}
 
 	private void importConcepts(StandaloneSupport support) throws JSONException, IOException, ConfigurationException {

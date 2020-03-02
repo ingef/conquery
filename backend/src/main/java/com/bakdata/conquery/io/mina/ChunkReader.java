@@ -8,23 +8,20 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import com.bakdata.conquery.io.jackson.Jackson;
+import com.bakdata.conquery.io.jackson.JacksonUtil;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.github.powerlibraries.io.Out;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.IOUtils;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.AttributeKey;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.codec.CumulativeProtocolDecoder;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
-
-import com.bakdata.conquery.io.jackson.Jackson;
-import com.bakdata.conquery.io.jackson.JacksonUtil;
-import com.bakdata.conquery.util.DebugMode;
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.github.powerlibraries.io.Out;
-
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 @Slf4j @RequiredArgsConstructor
 public class ChunkReader extends CumulativeProtocolDecoder {
@@ -77,7 +74,7 @@ public class ChunkReader extends CumulativeProtocolDecoder {
 					}
 				} catch (Exception e1) {
 					log.error("Failed to write the error json dump "+id+".json, trying as bin", e1);
-					if(DebugMode.isActive()) {
+					if(log.isTraceEnabled()) {
 						try (InputStream is = chunkedMessage.createInputStream()) {
 							File dumps = new File("dumps");
 							dumps.mkdirs();

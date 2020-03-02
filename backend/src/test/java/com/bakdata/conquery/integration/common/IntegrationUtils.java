@@ -18,18 +18,18 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.execution.ExecutionState;
 import com.bakdata.conquery.models.execution.ManagedExecution;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
-import com.bakdata.conquery.models.preproc.DateFormats;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-import com.bakdata.conquery.models.preproc.Input;
 import com.bakdata.conquery.models.preproc.InputFile;
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.ConceptQuery;
 import com.bakdata.conquery.models.query.concept.specific.CQExternal;
@@ -40,10 +40,13 @@ import com.univocity.parsers.csv.CsvParser;
 import com.univocity.parsers.csv.CsvParserSettings;
 import lombok.experimental.UtilityClass;
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.ArrayUtils;
 
 @UtilityClass
 public class IntegrationUtils {
+
+	public static User getDefaultUser() {
+		return ConqueryConfig.getInstance().getAuthorization().getInitialUsers().get(0).getUser();
+	}
 
 
 	/**
@@ -123,7 +126,6 @@ public class IntegrationUtils {
 
 	public static void importTableContents(StandaloneSupport support, Collection<RequiredTable> tables, Dataset dataset) throws IOException, JSONException {
 
-		DateFormats.initialize(ArrayUtils.EMPTY_STRING_ARRAY);
 		List<File> preprocessedFiles = new ArrayList<>();
 
 		for (RequiredTable rTable : tables) {
@@ -132,21 +134,21 @@ public class IntegrationUtils {
 			FileUtils.copyInputStreamToFile(rTable.getCsv().stream(), new File(support.getTmpDir(), rTable.getCsv().getName()));
 
 			//create import descriptor
-			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name);
-			ImportDescriptor desc = new ImportDescriptor();
+			InputFile inputFile = InputFile.fromName(support.getConfig().getPreprocessor().getDirectories()[0], name, null);
+			TableImportDescriptor desc = new TableImportDescriptor();
 			desc.setInputFile(inputFile);
 			desc.setName(rTable.getName() + "_import");
 			desc.setTable(rTable.getName());
-			Input input = new Input();
+			TableInputDescriptor input = new TableInputDescriptor();
 			{
-				input.setPrimary(copyOutput(0, rTable.getPrimaryColumn()));
+				input.setPrimary(copyOutput(rTable.getPrimaryColumn()));
 				input.setSourceFile(new File(inputFile.getCsvDirectory(), rTable.getCsv().getName()));
-				input.setOutput(new Output[rTable.getColumns().length]);
+				input.setOutput(new OutputDescription[rTable.getColumns().length]);
 				for (int i = 0; i < rTable.getColumns().length; i++) {
-					input.getOutput()[i] = copyOutput(i + 1, rTable.getColumns()[i]);
+					input.getOutput()[i] = copyOutput(rTable.getColumns()[i]);
 				}
 			}
-			desc.setInputs(new Input[]{input});
+			desc.setInputs(new TableInputDescriptor[]{input});
 			Jackson.MAPPER.writeValue(inputFile.getDescriptionFile(), desc);
 			preprocessedFiles.add(inputFile.getPreprocessedFile());
 		}
@@ -159,9 +161,9 @@ public class IntegrationUtils {
 		}
 	}
 
-	public static Output copyOutput(int columnPosition, RequiredColumn column) {
+	public static OutputDescription copyOutput(RequiredColumn column) {
 		CopyOutput out = new CopyOutput();
-		out.setInputColumn(columnPosition);
+		out.setInputColumn(column.getName());
 		out.setInputType(column.getType());
 		out.setName(column.getName());
 		return out;

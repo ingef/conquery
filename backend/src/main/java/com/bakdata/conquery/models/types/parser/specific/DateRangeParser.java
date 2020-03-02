@@ -2,11 +2,8 @@ package com.bakdata.conquery.models.types.parser.specific;
 
 import javax.annotation.Nonnull;
 
-import org.apache.commons.lang3.StringUtils;
-
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.exceptions.ParsingException;
-import com.bakdata.conquery.models.preproc.DateFormats;
 import com.bakdata.conquery.models.types.CType;
 import com.bakdata.conquery.models.types.parser.Decision;
 import com.bakdata.conquery.models.types.parser.NoopTransformer;
@@ -15,7 +12,9 @@ import com.bakdata.conquery.models.types.parser.Transformer;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeDateRange;
 import com.bakdata.conquery.models.types.specific.DateRangeTypePacked;
 import com.bakdata.conquery.models.types.specific.DateRangeTypeQuarter;
+import com.bakdata.conquery.util.DateFormats;
 import com.bakdata.conquery.util.PackedUnsigned1616;
+import org.apache.commons.lang3.StringUtils;
 
 public class DateRangeParser extends Parser<CDateRange> {
 
@@ -49,12 +48,10 @@ public class DateRangeParser extends Parser<CDateRange> {
 		if(parts.length!=2) {
 			throw ParsingException.of(value, "daterange");
 		}
-		DateFormats formats = DateFormats.instance();
-
 
 		return CDateRange.of(
-				formats.parseToLocalDate(parts[0]),
-				formats.parseToLocalDate(parts[1])
+				DateFormats.parseToLocalDate(parts[0]),
+				DateFormats.parseToLocalDate(parts[1])
 		);
 	}
 	

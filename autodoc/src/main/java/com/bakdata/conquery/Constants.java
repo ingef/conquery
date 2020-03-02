@@ -62,10 +62,10 @@ import com.bakdata.conquery.models.datasets.Column;
 import com.bakdata.conquery.models.datasets.Table;
 import com.bakdata.conquery.models.execution.ExecutionStatus;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
-import com.bakdata.conquery.models.preproc.ImportDescriptor;
-import com.bakdata.conquery.models.preproc.Input;
+import com.bakdata.conquery.models.preproc.TableImportDescriptor;
+import com.bakdata.conquery.models.preproc.TableInputDescriptor;
 import com.bakdata.conquery.models.preproc.outputs.AutoOutput;
-import com.bakdata.conquery.models.preproc.outputs.Output;
+import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.query.IQuery;
 import com.bakdata.conquery.models.query.concept.CQElement;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
@@ -102,9 +102,9 @@ public class Constants {
 			.build(),
 		Group.builder().name("Import JSONs")
 			.description("Each `*.import.json` has to contain exactly one [ImportDescriptor](#Type-ImportDescriptor).")
-			.base(new Base(Output.class, ""))
-			.otherClass(ImportDescriptor.class)
-			.otherClass(Input.class)
+			.base(new Base(OutputDescription.class, ""))
+			.otherClass(TableImportDescriptor.class)
+			.otherClass(TableInputDescriptor.class)
 			.hide(AutoOutput.class)
 			.build(),
 		Group.builder().name("Table JSONs")

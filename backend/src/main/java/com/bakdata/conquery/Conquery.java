@@ -60,7 +60,6 @@ public class Conquery extends Application<ConqueryConfig> {
 
 			@Override
 			public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-				configuration.initialize();
 			}
 
 			@Override
