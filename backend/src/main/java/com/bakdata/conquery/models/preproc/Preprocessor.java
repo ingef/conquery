@@ -7,6 +7,7 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -143,12 +144,21 @@ public class Preprocessor {
 					// Compile filter.
 					final GroovyPredicate filter = input.createFilter(headers);
 
-					final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap);
-					final List<OutputDescription.Output> outputs = new ArrayList<>();
 
-					// Instantiate Outputs based on descriptors (apply header positions)
-					for (OutputDescription op : input.getOutput()) {
-						outputs.add(op.createForHeaders(headerMap));
+					final OutputDescription.Output primaryOut;
+					final List<OutputDescription.Output> outputs;
+
+					try {
+						primaryOut = input.getPrimary().createForHeaders(headerMap);
+						outputs = new ArrayList<>();
+
+						// Instantiate Outputs based on descriptors (apply header positions)
+						for (OutputDescription op : input.getOutput()) {
+							outputs.add(op.createForHeaders(headerMap));
+						}
+					}
+					catch (InputMismatchException exc) {
+						throw new IllegalArgumentException(String.format("CSV=`%s`", input.getSourceFile()), exc);
 					}
 
 					String[] row;
