@@ -22,10 +22,12 @@ import com.bakdata.conquery.models.preproc.TableImportDescriptor;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.google.common.base.Strings;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import io.dropwizard.setup.Environment;
 import lombok.extern.slf4j.Slf4j;
 import net.sourceforge.argparse4j.impl.type.FileArgumentType;
+import net.sourceforge.argparse4j.impl.type.StringArgumentType;
 import net.sourceforge.argparse4j.inf.ArgumentGroup;
 import net.sourceforge.argparse4j.inf.Namespace;
 import net.sourceforge.argparse4j.inf.Subparser;
@@ -66,6 +68,10 @@ public class PreprocessorCommand extends ConqueryCommand {
 			 .type(new FileArgumentType().verifyIsDirectory().verifyCanRead())
 			 .help("Directory containing the import description files (*.import.json).");
 
+		group.addArgument("--tag").required(false)
+			 .type(new StringArgumentType())
+			 .help("Optional tag for input and output files: Will change input files from `filename.csv.gz` to `filename.$tag.csv.gz` and output files from `filename.cqpp` to `filename.$tag.cqpp`. Tag will also override the import-id to tag.");
+
 	}
 
 	@Override
@@ -76,15 +82,18 @@ public class PreprocessorCommand extends ConqueryCommand {
 
 		final Collection<TableImportDescriptor> descriptors;
 
+		// Tag if present is appended to input-file csvs, output-file cqpp and used as id of cqpps
+		final String tag = namespace.getString("tag");
+
 		if (namespace.get("in") != null && namespace.get("desc") != null && namespace.get("out") != null) {
 			log.info("Preprocessing from command line config.");
 			descriptors = findPreprocessingDescriptions(environment.getValidator(), new PreprocessingDirectories[]{
 					new PreprocessingDirectories(namespace.get("in"), namespace.get("desc"), namespace.get("out"))
-			});
+			}, tag);
 		}
 		else {
 			log.info("Preprocessing from config.json");
-			descriptors = findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories());
+			descriptors = findPreprocessingDescriptions(environment.getValidator(), config.getPreprocessor().getDirectories(), tag);
 		}
 
 
@@ -111,25 +120,34 @@ public class PreprocessorCommand extends ConqueryCommand {
 		pool.awaitTermination(24, TimeUnit.HOURS);
 	}
 
-	public static List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories) throws IOException, JSONException {
-		List<TableImportDescriptor> l = new ArrayList<>();
+	public static List<TableImportDescriptor> findPreprocessingDescriptions(Validator validator, PreprocessingDirectories[] directories, String tag) throws IOException, JSONException {
+		List<TableImportDescriptor> out = new ArrayList<>();
 		for (PreprocessingDirectories description : directories) {
-			File in = description.getDescriptions().getAbsoluteFile();
-			for (File descriptionFile : in.listFiles()) {
+
+			File inDir = description.getDescriptions().getAbsoluteFile();
+
+			for (File descriptionFile : inDir.listFiles()) {
 				if (!descriptionFile.getName().endsWith(ConqueryConstants.EXTENSION_DESCRIPTION)) {
 					continue;
 				}
 
-				InputFile file = InputFile.fromDescriptionFile(descriptionFile, description);
+				InputFile file = InputFile.fromDescriptionFile(descriptionFile, description, tag);
 				try {
-					TableImportDescriptor descr = file.readDescriptor(validator);
+					TableImportDescriptor descr = file.readDescriptor(validator, tag);
 					descr.setInputFile(file);
-					l.add(descr);
-				} catch (Exception e) {
+
+					// Override name to tag if present
+					if (!Strings.isNullOrEmpty(tag)) {
+						descr.setName(tag);
+					}
+
+					out.add(descr);
+				}
+				catch (Exception e) {
 					log.error("Failed to process " + LogUtil.printPath(descriptionFile), e);
 				}
 			}
 		}
-		return l;
+		return out;
 	}
 }

@@ -30,6 +30,7 @@ import com.bakdata.conquery.util.io.ConqueryFileUtil;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.bakdata.conquery.util.io.LogUtil;
 import com.bakdata.conquery.util.io.ProgressBar;
+import com.google.common.base.Strings;
 import com.google.common.io.CountingInputStream;
 import com.jakewharton.byteunits.BinaryByteUnit;
 import com.univocity.parsers.csv.CsvParser;
@@ -85,6 +86,18 @@ public class Preprocessor {
 	}
 
 	/**
+	 * Create version of file-name with tag.
+	 */
+	public static File getTaggedVersion(File file, String tag) {
+		if(Strings.isNullOrEmpty(tag)) {
+			return file;
+		}
+
+		return new File(file.getParentFile(), file.getName().replaceFirst("\\.", String.format(".%s.", tag)));
+	}
+
+
+	/**
 	 * Apply transformations in descriptor, then write them out to CQPP file for imports.
 	 *
 	 * Reads CSV file, per row extracts the primary key, then applies other transformations on each row, then compresses the data with {@link CType}.
@@ -93,23 +106,22 @@ public class Preprocessor {
 
 
 		//create temporary folders and check for correct permissions
-		File tmp = ConqueryFileUtil.createTempFile(descriptor
-														   .getInputFile()
-														   .getPreprocessedFile()
-														   .getName(), ConqueryConstants.EXTENSION_PREPROCESSED.substring(1));
+		final File preprocessedFile = descriptor.getInputFile().getPreprocessedFile();
+		File tmp = ConqueryFileUtil.createTempFile(preprocessedFile.getName(), ConqueryConstants.EXTENSION_PREPROCESSED.substring(1));
+
 		if (!Files.isWritable(tmp.getParentFile().toPath())) {
 			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(tmp.getParentFile()));
 		}
-		if (!Files.isWritable(descriptor.getInputFile().getPreprocessedFile().toPath().getParent())) {
-			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(descriptor
-																									 .getInputFile()
-																									 .getPreprocessedFile()
-																									 .toPath()
-																									 .getParent()));
+
+		if (!Files.isWritable(preprocessedFile.toPath().getParent())) {
+			throw new IllegalArgumentException("No write permission in " + LogUtil.printPath(preprocessedFile
+																									   .toPath()
+																									   .getParent()));
 		}
+
 		//delete target file if it exists
-		if (descriptor.getInputFile().getPreprocessedFile().exists()) {
-			FileUtils.forceDelete(descriptor.getInputFile().getPreprocessedFile());
+		if (preprocessedFile.exists()) {
+			FileUtils.forceDelete(preprocessedFile);
 		}
 
 		log.info("PREPROCESSING START in {}", descriptor.getInputFile().getDescriptionFile());
@@ -129,13 +141,15 @@ public class Preprocessor {
 				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
 				CsvParser parser = null;
 
-				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(input.getSourceFile()))) {
+				final File sourceFile = input.getSourceFile();
+
+				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(sourceFile))) {
 					long progress = 0;
 
 					// Create CSV parser according to config, but overriding some behaviour.
 					parser = new CsvParser(ConqueryConfig.getInstance().getCsv().withParseHeaders(true).withSkipHeader(false).createCsvParserSettings());
 
-					parser.beginParsing(CsvIo.isGZipped(input.getSourceFile()) ? new GZIPInputStream(countingIn) : countingIn);
+					parser.beginParsing(CsvIo.isGZipped(sourceFile) ? new GZIPInputStream(countingIn) : countingIn);
 
 					final String[] headers = parser.getContext().parsedHeaders();
 
@@ -158,7 +172,7 @@ public class Preprocessor {
 						}
 					}
 					catch (InputMismatchException exc) {
-						throw new IllegalArgumentException(String.format("CSV=`%s`", input.getSourceFile()), exc);
+						throw new IllegalArgumentException(String.format("CSV=`%s`", sourceFile), exc);
 					}
 
 					String[] row;
@@ -263,7 +277,7 @@ public class Preprocessor {
 		}
 
 		//if successful move the tmp file to the target location
-		FileUtils.moveFile(tmp, descriptor.getInputFile().getPreprocessedFile());
+		FileUtils.moveFile(tmp, preprocessedFile);
 		log.info("PREPROCESSING DONE in {}", descriptor.getInputFile().getDescriptionFile());
 	}
 

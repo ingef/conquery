@@ -10,7 +10,6 @@ import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.models.common.Range;
-import com.bakdata.conquery.models.exceptions.validators.ExistingFile;
 import com.bakdata.conquery.models.preproc.outputs.CopyOutput;
 import com.bakdata.conquery.models.preproc.outputs.OutputDescription;
 import com.bakdata.conquery.models.types.MajorTypeId;
@@ -39,7 +38,6 @@ public class TableInputDescriptor implements Serializable {
 	).map(Class::getName).toArray(String[]::new);
 
 	@NotNull
-	@ExistingFile
 	private File sourceFile;
 
 	private String filter;

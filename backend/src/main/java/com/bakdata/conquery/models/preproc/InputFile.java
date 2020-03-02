@@ -30,12 +30,14 @@ public class InputFile implements Serializable {
 	private File descriptionFile;
 	private File preprocessedFile;
 
-	public TableImportDescriptor readDescriptor(Validator validator) throws IOException, JSONException {
+	public TableImportDescriptor readDescriptor(Validator validator, String tag) throws IOException, JSONException {
 		try (Reader in = In.file(descriptionFile).withUTF8().asReader()) {
 			TableImportDescriptor descriptor = Jackson.MAPPER.readerFor(TableImportDescriptor.class).readValue(in);
-			for (TableInputDescriptor i : descriptor.getInputs()) {
-				i.setSourceFile(csvDirectory.toPath().resolve(i.getSourceFile().toPath()).toFile());
+
+			for (TableInputDescriptor inputDescriptor : descriptor.getInputs()) {
+				inputDescriptor.setSourceFile(Preprocessor.getTaggedVersion(csvDirectory.toPath().resolve(inputDescriptor.getSourceFile().toPath()).toFile(), tag));
 			}
+
 			if (validator != null) {
 				ValidatorHelper.failOnError(log, validator.validate(descriptor));
 			}
@@ -43,22 +45,19 @@ public class InputFile implements Serializable {
 		}
 	}
 
-	public TableImportDescriptor readDescriptor() throws IOException, JSONException {
-		return this.readDescriptor(null);
-	}
-
-	public static InputFile fromDescriptionFile(File descriptionFile, PreprocessingDirectories dirs) throws IOException {
+	public static InputFile fromDescriptionFile(File descriptionFile, PreprocessingDirectories dirs, String tag) throws IOException {
 		descriptionFile = descriptionFile.getAbsoluteFile();
 		return fromName(
 				dirs,
-				descriptionFile.getName().substring(0, descriptionFile.getName().length() - EXTENSION_DESCRIPTION.length())
+				descriptionFile.getName().substring(0, descriptionFile.getName().length() - EXTENSION_DESCRIPTION.length()),
+				tag
 		);
 	}
 
-	public static InputFile fromName(PreprocessingDirectories dirs, String extensionlessName) {
+	public static InputFile fromName(PreprocessingDirectories dirs, String extensionlessName, String tag) {
 		return builder()
 				.descriptionFile(new File(dirs.getDescriptions(), extensionlessName + EXTENSION_DESCRIPTION))
-				.preprocessedFile(new File(dirs.getPreprocessedOutput(), extensionlessName + EXTENSION_PREPROCESSED))
+				.preprocessedFile(Preprocessor.getTaggedVersion(new File(dirs.getPreprocessedOutput(), extensionlessName + EXTENSION_PREPROCESSED), tag))
 				.csvDirectory(dirs.getCsv().getAbsoluteFile())
 				.build();
 	}
