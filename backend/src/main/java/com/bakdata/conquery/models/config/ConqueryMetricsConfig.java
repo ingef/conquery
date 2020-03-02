@@ -6,5 +6,5 @@ import lombok.Setter;
 @Getter @Setter
 public class ConqueryMetricsConfig {
 	private int userActiveHours = 1;
-	private int groupTrackingMinSize = 0;
+	private int groupTrackingMinSize = 3;
 }
