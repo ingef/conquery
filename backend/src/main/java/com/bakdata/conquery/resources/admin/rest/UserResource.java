@@ -38,28 +38,28 @@ public class UserResource extends HUsers {
 
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
-	public Response postUsers(List<User> users) throws JSONException {
+	public Response postUsers(List<User> users) {
 		processor.addUsers(users);
 		return Response.ok().build();
 	}
 
 	@Path("{" + USER_ID + "}")
 	@DELETE
-	public Response deleteUser(@PathParam(USER_ID) UserId userId) throws JSONException {
+	public Response deleteUser(@PathParam(USER_ID) UserId userId) {
 		processor.deleteUser(userId);
 		return Response.ok().build();
 	}
 
 	@Path("{" + USER_ID + "}/" + ROLE_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@DELETE
-	public Response deleteRoleFromUser(@PathParam(USER_ID) UserId userId, @PathParam(ROLE_ID) RoleId roleId) throws JSONException {
+	public Response deleteRoleFromUser(@PathParam(USER_ID) UserId userId, @PathParam(ROLE_ID) RoleId roleId) {
 		processor.deleteRoleFrom(userId, roleId);
 		return Response.ok().build();
 	}
 
 	@Path("{" + USER_ID + "}/" + ROLE_PATH_ELEMENT + "/{" + ROLE_ID + "}")
 	@POST
-	public Response addRoleToUser(@PathParam(USER_ID) UserId userId, @PathParam(ROLE_ID) RoleId roleId) throws JSONException {
+	public Response addRoleToUser(@PathParam(USER_ID) UserId userId, @PathParam(ROLE_ID) RoleId roleId) {
 		processor.addRoleTo(userId, roleId);
 		return Response.ok().build();
 	}

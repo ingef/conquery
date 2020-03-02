@@ -24,10 +24,6 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriBuilder;
 
-import org.apache.commons.lang3.exception.ExceptionUtils;
-import org.codehaus.groovy.control.CompilerConfiguration;
-import org.codehaus.groovy.control.customizers.ImportCustomizer;
-
 import com.bakdata.conquery.apiv1.FilterSearch;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.jersey.ExtraMimeTypes;
@@ -47,11 +43,13 @@ import com.bakdata.conquery.resources.hierarchies.HAdmin;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.Uninterruptibles;
-
 import groovy.lang.GroovyShell;
 import io.dropwizard.auth.Auth;
 import io.dropwizard.views.View;
 import lombok.RequiredArgsConstructor;
+import org.apache.commons.lang3.exception.ExceptionUtils;
+import org.codehaus.groovy.control.CompilerConfiguration;
+import org.codehaus.groovy.control.customizers.ImportCustomizer;
 
 @Produces(MediaType.TEXT_HTML)
 @Consumes({ExtraMimeTypes.JSON_STRING, ExtraMimeTypes.SMILE_STRING})
@@ -133,7 +131,9 @@ public class AdminUIResource extends HAdmin {
 		Namespace ns = processor.getNamespaces().get(datasetId);
 		ns.sendToAll(new UpdateMatchingStatsMessage());
 
-		FilterSearch.init(processor.getNamespaces(), Collections.singleton(ns.getDataset()));
+
+
+		FilterSearch.updateSearch(processor.getNamespaces(), Collections.singleton(ns.getDataset()), processor.getJobManager());
 	}
 
 	@POST

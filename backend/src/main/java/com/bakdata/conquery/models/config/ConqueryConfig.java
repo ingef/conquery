@@ -9,6 +9,13 @@ import java.util.NoSuchElementException;
 
 import com.bakdata.conquery.models.auth.AuthConfig;
 import com.bakdata.conquery.models.auth.DevAuthConfig;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import com.bakdata.conquery.models.auth.AuthenticationConfig;
+import com.bakdata.conquery.models.auth.AuthorizationConfig;
+import com.bakdata.conquery.models.auth.develop.DevAuthConfig;
+import com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig;
 import com.bakdata.conquery.models.identifiable.mapping.IdMappingConfig;
 import com.bakdata.conquery.models.identifiable.mapping.NoIdMapping;
 import com.google.common.collect.MoreCollectors;
@@ -49,7 +56,9 @@ public class ConqueryConfig extends Configuration {
 	@NotNull @Valid
 	private IdMappingConfig idMapping = new NoIdMapping();
 
-	private AuthConfig authentication = new DevAuthConfig();
+	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
+
+	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
 	
 	private List<PluginConfig> plugins = new ArrayList<>();
 	/**

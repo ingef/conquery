@@ -15,7 +15,6 @@ import java.util.concurrent.TimeUnit;
 import com.bakdata.conquery.integration.json.ConqueryTestSpec;
 import com.bakdata.conquery.io.jackson.Jackson;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
@@ -106,7 +105,7 @@ public class IntegrationUtils {
 
 			ConceptQuery query = new ConceptQuery(new CQExternal(Arrays.asList(CQExternal.FormatColumn.ID, CQExternal.FormatColumn.DATE_SET), data));
 
-			ManagedExecution managed = support.getNamespace().getQueryManager().runQuery(query, queryId, DevAuthConfig.USER);
+			ManagedExecution managed = support.getNamespace().getQueryManager().runQuery(query, queryId, support.getTestUser());
 			managed.awaitDone(1, TimeUnit.DAYS);
 
 			if (managed.getState() == ExecutionState.FAILED) {

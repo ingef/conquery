@@ -61,6 +61,9 @@ class EditableTagsForm extends React.Component<PropsType> {
           autoFocus={true}
           placeholder={T.translate("reactSelect.tagPlaceholder")}
           noOptionsMessage={() => T.translate("reactSelect.noResults")}
+          formatCreateLabel={inputValue =>
+            T.translate("common.create") + `: "${inputValue}"`
+          }
         />
         <StyledPrimaryButton type="submit" small disabled={this.props.loading}>
           {T.translate("common.save")}

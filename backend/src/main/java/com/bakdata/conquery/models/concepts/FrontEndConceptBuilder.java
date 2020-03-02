@@ -209,7 +209,6 @@ public class FrontEndConceptBuilder {
 			.unit(filter.getUnit())
 			.allowDropFile(filter.getAllowDropFile())
 			.pattern(filter.getPattern())
-			.template(filter.getTemplate())
 			.build();
 		try {
 			filter.configureFrontend(f);

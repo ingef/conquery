@@ -348,6 +348,27 @@ module.exports = function(app, port) {
     res.send(config);
   });
 
+  app.post("/auth", function response(req, res) {
+    setTimeout(() => {
+      res.setHeader("Content-Type", "application/json");
+
+      const { user, password } = req.body;
+
+      if (user === "test" && password === "test") {
+        res.send({
+          access_token: "12345"
+        });
+      } else {
+        res.status(422);
+        res.send(
+          JSON.stringify({
+            message: "Login failed"
+          })
+        );
+      }
+    }, 500);
+  });
+
   app.get("/api/me", (req, res) => {
     res.setHeader("Content-Type", "application/json");
 

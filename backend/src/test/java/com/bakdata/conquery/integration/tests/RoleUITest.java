@@ -2,13 +2,12 @@ package com.bakdata.conquery.integration.tests;
 
 import static com.bakdata.conquery.resources.ResourceConstants.ROLE_ID;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
-import javax.ws.rs.core.Response;
 
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
+
+import javax.ws.rs.core.Response;
 
 import com.bakdata.conquery.integration.IntegrationTest;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
@@ -17,7 +16,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.DatasetPermission;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.DatasetId;
 import com.bakdata.conquery.models.identifiable.ids.specific.RoleId;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
@@ -46,17 +44,12 @@ public class RoleUITest extends IntegrationTest.Simple implements ProgrammaticIn
 		try {
 	
 			storage = conquery.getStandaloneCommand().getMaster().getStorage();
-			try {
-				storage.addRole(mandator);
-				storage.addUser(user);
-				// override permission object, because it might have changed by the subject
-				// owning the permission
-				permission = mandator.addPermission(storage, permission);
-				user.addRole(storage, mandator);
-			}
-			catch (JSONException e) {
-				fail("Failed when adding to storage.",e);
-			}
+			storage.addRole(mandator);
+			storage.addUser(user);
+			// override permission object, because it might have changed by the subject
+			// owning the permission
+			permission = mandator.addPermission(storage, permission);
+			user.addRole(storage, mandator);
 			
 			String base = String.format("http://localhost:%d/admin/", conquery.getAdminPort());
 			URI classBase = HierarchyHelper.fromHierachicalPathResourceMethod(base, RoleUIResource.class, "getRole")

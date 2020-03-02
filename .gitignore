@@ -60,5 +60,4 @@ nbactions.xml
 
 **/.iml
 **/.idea
-**.xd
-**.lck
+/storage/
