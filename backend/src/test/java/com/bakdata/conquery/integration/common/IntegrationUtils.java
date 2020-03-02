@@ -18,6 +18,7 @@ import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.Role;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.concepts.Concept;
+import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.models.datasets.Dataset;
 import com.bakdata.conquery.models.exceptions.ConfigurationException;
 import com.bakdata.conquery.models.exceptions.JSONException;
@@ -42,6 +43,10 @@ import org.apache.commons.io.FileUtils;
 
 @UtilityClass
 public class IntegrationUtils {
+
+	public static User getDefaultUser() {
+		return ConqueryConfig.getInstance().getAuthorization().getInitialUsers().get(0).getUser();
+	}
 
 
 	/**

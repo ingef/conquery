@@ -1,14 +1,9 @@
 package com.bakdata.conquery.models.config;
 
-import javax.validation.Valid;
-import javax.validation.constraints.NotNull;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.NoSuchElementException;
 
-import com.bakdata.conquery.models.auth.AuthConfig;
-import com.bakdata.conquery.models.auth.DevAuthConfig;
 import javax.validation.Valid;
 import javax.validation.constraints.NotNull;
 
