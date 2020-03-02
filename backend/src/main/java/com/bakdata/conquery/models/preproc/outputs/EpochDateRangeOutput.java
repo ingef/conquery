@@ -24,6 +24,11 @@ public class EpochDateRangeOutput extends OutputDescription {
 	@NotNull
 	private String startColumn, endColumn;
 
+	/**
+	 * Parse null values as open date-range if true.
+	 */
+	public boolean allowOpen = false;
+
 	@Override
 	public Output createForHeaders(Object2IntArrayMap<String> headers) {
 		assertRequiredHeaders(headers, startColumn, endColumn);
@@ -34,6 +39,10 @@ public class EpochDateRangeOutput extends OutputDescription {
 		return new Output() {
 			@Override
 			protected Object parseLine(String[] row, Parser<?> type, long sourceLine) throws ParsingException {
+				if (!allowOpen && (row[startIndex] == null || row[endIndex] == null)) {
+					throw new IllegalArgumentException("Open Ranges are not allowed.");
+				}
+
 				if (row[startIndex] == null && row[endIndex] == null) {
 					return null;
 				}
