@@ -71,7 +71,7 @@ public class ActiveUsersFilter implements ContainerRequestFilter {
 			return;
 		}
 
-		activeUsers.get(((User) userPrincipal), () -> {
+		activeUsers.get((User) userPrincipal, () -> {
 			incrementPrimaryGroupCount((User) userPrincipal);
 			return true;
 		});
