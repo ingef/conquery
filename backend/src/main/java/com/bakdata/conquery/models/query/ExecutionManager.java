@@ -79,7 +79,7 @@ public class ExecutionManager {
 	 * @param result
 	 */
 	public <R extends ShardResult, E extends ManagedExecution<R>> void addQueryResult(R result) {
-		((E)getQuery(result.getQueryId())).addResult(result);
+		((E)getQuery(result.getQueryId())).addResult(namespace.getNamespaces().getMetaStorage(), result);
 	}
 
 	public ManagedExecution<?> getQuery(@NonNull ManagedExecutionId id) {

@@ -58,6 +58,7 @@ public class StoredQueriesProcessor {
 				try {
 					return Stream.of(
 						mq.buildStatus(
+							storage,
 							URLBuilder.fromRequest(req),
 							user));
 				}
@@ -164,7 +165,7 @@ public class StoredQueriesProcessor {
 		if (query == null) {
 			return null;
 		}
-		return query.buildStatus(user);
+		return query.buildStatus(storage, user);
 	}
 
 	public void shareQuery(User user, ManagedQuery query, Collection<GroupId> groupIds, Boolean shared) throws JSONException {

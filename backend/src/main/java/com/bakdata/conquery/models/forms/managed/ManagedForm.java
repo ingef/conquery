@@ -70,8 +70,8 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	@JsonIgnore
 	private transient AtomicInteger openSubQueries;
 	
-	public ManagedForm(MasterMetaStorage storage, Form submittedForm, UserId owner, DatasetId submittedDataset) {
-		super(storage,  owner, submittedDataset);
+	public ManagedForm(Form submittedForm, UserId owner, DatasetId submittedDataset) {
+		super(owner, submittedDataset);
 		this.submittedForm = submittedForm;
 	}
 	
@@ -94,8 +94,8 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	}
 	
 	@Override
-	public ExecutionStatus buildStatus(URLBuilder url, User user) {
-		ExecutionStatus status = super.buildStatus(url, user);
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
+		ExecutionStatus status = super.buildStatus(storage, url, user);
 		// Send null here, because no usable value can be reported to the user for a form
 		status.setNumberOfResults(null);
 		return status;
@@ -137,15 +137,15 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 	 * Distribute the result to a sub query.
 	 */
 	@Override
-	public void addResult(FormSharedResult result) {
+	public void addResult(@NonNull MasterMetaStorage storage, FormSharedResult result) {
 		ManagedQuery subQuery = flatSubQueries.get(result.getSubqueryId());
-		subQuery.addResult(result);
+		subQuery.addResult(storage, result);
 		switch(subQuery.getState()) {
 			case CANCELED:
 				break;
 			case DONE:
 				if(openSubQueries.decrementAndGet() == 0) {
-					finish();
+					finish(storage);
 				}
 				break;
 			case FAILED:

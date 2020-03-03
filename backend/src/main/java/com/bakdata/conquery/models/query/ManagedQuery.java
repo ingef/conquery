@@ -64,8 +64,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	@JsonIgnore
 	private transient List<EntityResult> results = new ArrayList<>();
 
-	public ManagedQuery(MasterMetaStorage storage, IQuery query, UserId owner, DatasetId submittedDataset) {
-		super(storage, owner, submittedDataset);
+	public ManagedQuery(IQuery query, UserId owner, DatasetId submittedDataset) {
+		super(owner, submittedDataset);
 		this.query = query;
 	}
 
@@ -75,7 +75,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 		this.executingThreads = namespace.getWorkers().size();
 	}
 
-	public void addResult(ShardResult result) {
+	@Override
+	public void addResult(@NonNull MasterMetaStorage storage, ShardResult result) {
 		for (EntityResult er : result.getResults()) {
 			if (er.isFailed() && state == ExecutionState.RUNNING) {
 				fail();
@@ -87,7 +88,7 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 			executingThreads--;
 			results.addAll(result.getResults());
 			if (executingThreads == 0 && state == ExecutionState.RUNNING) {
-				finish();
+				finish(storage);
 			}
 		}
 	}
@@ -103,9 +104,9 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 
 	@Override
-	protected void finish() {
+	protected void finish(@NonNull MasterMetaStorage storage) {
 		lastResultCount = results.stream().flatMap(ContainedEntityResult::filterCast).count();
-		super.finish();
+		super.finish(storage);
 	}
 
 	public Stream<ContainedEntityResult> fetchContainedEntityResult() {
@@ -118,8 +119,8 @@ public class ManagedQuery extends ManagedExecution<ShardResult> {
 	}
 	
 	@Override
-	public ExecutionStatus buildStatus(URLBuilder url, User user) {
-		ExecutionStatus status = super.buildStatus(url, user);
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
+		ExecutionStatus status = super.buildStatus(storage, url, user);
 		status.setNumberOfResults(lastResultCount);
 		return status;
 	}

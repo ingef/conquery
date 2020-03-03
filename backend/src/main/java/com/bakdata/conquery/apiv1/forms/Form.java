@@ -36,7 +36,7 @@ public abstract class Form implements SubmittedQuery {
 	
 	@Override
 	public ManagedForm toManagedExecution(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return new ManagedForm(namespaces.getMetaStorage(), this, userId, submittedDataset);
+		return new ManagedForm(this, userId, submittedDataset);
 	}
 	
 	@Override

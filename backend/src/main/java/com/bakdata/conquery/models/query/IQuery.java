@@ -44,7 +44,7 @@ public abstract class IQuery implements SubmittedQuery {
 			namespaces.getMetaStorage(),
 			namespaces.get(dataset)
 			));
-		ManagedQuery managed = new ManagedQuery(namespaces.getMetaStorage(), query,userId, dataset);
+		ManagedQuery managed = new ManagedQuery(query,userId, dataset);
 		return managed;
 	}
 

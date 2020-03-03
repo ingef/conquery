@@ -108,7 +108,7 @@ public class QueryProcessor {
 	}
 
 	public ExecutionStatus getStatus(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb, User user) {
-		return query.buildStatus(urlb, user);
+		return query.buildStatus(storage, urlb, user);
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb) {

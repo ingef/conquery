@@ -44,6 +44,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.google.common.util.concurrent.Uninterruptibles;
 import lombok.Getter;
+import lombok.NonNull;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.extern.slf4j.Slf4j;
@@ -81,11 +82,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	private transient LocalDateTime startTime;
 	@JsonIgnore
 	protected transient LocalDateTime finishTime;
-	@JsonIgnore
-	protected final transient MasterMetaStorage storage;
 
-	public ManagedExecution(MasterMetaStorage storage, UserId owner, DatasetId submittedDataset) {
-		this.storage = storage;
+	public ManagedExecution(UserId owner, DatasetId submittedDataset) {
 		this.owner = owner;
 		this.dataset = submittedDataset;
 	}
@@ -122,7 +120,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		state = ExecutionState.RUNNING;
 	}
 
-	protected void finish() {
+	protected void finish(@NonNull MasterMetaStorage storage) {
 		if (getState() == ExecutionState.NEW)
 			log.error("Query {} was never run.", getId());
 
@@ -152,7 +150,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		}
 	}
 
-	public ExecutionStatus buildStatus(URLBuilder url, User user) {
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, URLBuilder url, User user) {
 		return ExecutionStatus.builder()
 							  .label(label)
 							  .id(getId())
@@ -185,8 +183,8 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 		return url != null && state != ExecutionState.NEW && isPermittedDownload;
 	}
 
-	public ExecutionStatus buildStatus(User user) {
-		return buildStatus( null, user);
+	public ExecutionStatus buildStatus(@NonNull MasterMetaStorage storage, User user) {
+		return buildStatus(storage, null, user);
 	}
 
 	public abstract Collection<ManagedQuery> toResultQuery();
@@ -201,7 +199,7 @@ public abstract class ManagedExecution<R extends ShardResult> extends Identifiab
 	
 	public abstract Map<ManagedExecutionId,QueryPlan> createQueryPlans(QueryPlanContext context);
 
-	public abstract void addResult(R result);
+	public abstract void addResult(@NonNull MasterMetaStorage storage, R result);
 	
 	/**
 	 * Initializes the result that is send from a worker to the Master.
