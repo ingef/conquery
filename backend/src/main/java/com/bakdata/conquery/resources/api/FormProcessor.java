@@ -71,7 +71,7 @@ public class FormProcessor {
 			if(prev != null ) {				
 				throw new IllegalStateException(String.format("Could not map %s to form %s because there was already a mapping:\n%s", config.getPathRelativeToClasspathElement(), formType, prev));
 			}
-			info.append(String.format(infoFormat, formType, config.getPathRelativeToClasspathElement(), formClass));
+			info.append(String.format(infoFormat, formType, config.getPath(), formClass));
 		}
 		log.info("Found form config mapping for form:\n{}", info.toString());
 		
