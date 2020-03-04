@@ -46,7 +46,7 @@ public class StoredQueriesProcessor {
 	}
 
 	public Stream<ExecutionStatus> getAllQueries(Dataset dataset, HttpServletRequest req, User user) {
-		Collection<ManagedExecution> allQueries = storage.getAllExecutions();
+		Collection<ManagedExecution<?>> allQueries = storage.getAllExecutions();
 
 		return allQueries
 			.stream()
@@ -58,6 +58,7 @@ public class StoredQueriesProcessor {
 				try {
 					return Stream.of(
 						mq.buildStatus(
+							storage,
 							URLBuilder.fromRequest(req),
 							user));
 				}
@@ -68,7 +69,7 @@ public class StoredQueriesProcessor {
 			});
 	}
 
-	public void deleteQuery(Dataset dataset, ManagedExecution query) {
+	public void deleteQuery(Dataset dataset, ManagedExecution<?> query) {
 		storage.removeExecution(query.getId());
 	}
 
@@ -160,11 +161,11 @@ public class StoredQueriesProcessor {
 	}
 
 	public ExecutionStatus getQueryWithSource(Dataset dataset, ManagedExecutionId queryId, User user) {
-		ManagedExecution query = storage.getExecution(queryId);
+		ManagedExecution<?> query = storage.getExecution(queryId);
 		if (query == null) {
 			return null;
 		}
-		return query.buildStatus(user);
+		return query.buildStatus(storage, user);
 	}
 
 	public void shareQuery(User user, ManagedQuery query, Collection<GroupId> groupIds, Boolean shared) throws JSONException {
