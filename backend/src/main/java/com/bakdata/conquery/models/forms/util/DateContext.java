@@ -61,48 +61,61 @@ public class DateContext {
 	/**
 	 * Returns the date ranges that fit into a mask specified as date range, which
 	 * are optional subdivided in to year-wise or quarter-wise date ranges.
+	 * If a smaller subdivision mode is chosen, 
 	 *
 	 * @param dateRangeMask The mask that is applied onto the dates.
-	 * @param resultMode    The subdivision mode that defines the granularity of the
+	 * @param subdivisionMode    The subdivision mode that defines the granularity of the
 	 *                      result.
+	 * @param alsoCreateCoarserSubdivisions Also creates DateContext for the coarser subdivisionModes.
 	 * @return All date ranges as wrapped into {@link DateContext} that were in the
 	 *         mask.
 	 */
-	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode resultMode) {
+	public static List<DateContext> generateAbsoluteContexts(CDateRange dateRangeMask, DateContextMode subdivisionMode, boolean alsoCreateCoarserSubdivisions) {
 		List<DateContext> dcList = new ArrayList<>();
-
-		// Add whole time span
-		DateContext dc = new DateContext(dateRangeMask);
-		dc.setFeatureGroup(FeatureGroup.OUTCOME);
-		dcList.add(dc);
-
+		
 		int index = 0;
-		// Handle years
-		if (resultMode == DateContextMode.YEAR_WISE) {
-			List<CDateRange> maskYears = dateRangeMask.getCoveredYears();
-			for (CDateRange yearInMask : maskYears) {
-				dc = new DateContext(
-					yearInMask,
-					FeatureGroup.OUTCOME,
-					index++,
-					null
-				);
-				dcList.add(dc);
-			}
-		}
-
-		// Handle quarters
-		if (resultMode == DateContextMode.QUARTER_WISE) {
-			List<CDateRange> maskQuarters = dateRangeMask.getCoveredQuarters();
-			for (CDateRange quarterInMask : maskQuarters) {
-				dc = new DateContext(
-					quarterInMask,
-					FeatureGroup.OUTCOME,
-					index++,
-					null
-				);
-				dcList.add(dc);
-			}
+		switch(subdivisionMode) {
+			case QUARTER_WISE:
+				List<CDateRange> maskQuarters = dateRangeMask.getCoveredQuarters();
+				for (CDateRange quarterInMask : maskQuarters) {
+					DateContext dc = new DateContext(
+						quarterInMask,
+						FeatureGroup.OUTCOME,
+						index++,
+						null
+						);
+					dcList.add(dc);
+				}
+				if(!alsoCreateCoarserSubdivisions) {
+					break;
+				}
+				// Intended fall-through
+			case YEAR_WISE:
+				// Handle years
+				List<CDateRange> maskYears = dateRangeMask.getCoveredYears();
+				for (CDateRange yearInMask : maskYears) {
+					DateContext dc = new DateContext(
+						yearInMask,
+						FeatureGroup.OUTCOME,
+						index++,
+						null
+						);
+					dcList.add(0,dc);
+				}
+				if(!alsoCreateCoarserSubdivisions) {
+					break;
+				}
+				// Intended fall-through
+			case COMPLETE_ONLY:
+				// Add whole time span
+				DateContext dc = new DateContext(dateRangeMask);
+				dc.setFeatureGroup(FeatureGroup.OUTCOME);
+				dcList.add(0,dc);
+				break;
+				
+			default:
+				throw new IllegalStateException(String.format("The mode %s of %s ", subdivisionMode, DateContextMode.class.getSimpleName()));
+			
 		}
 
 		return dcList;

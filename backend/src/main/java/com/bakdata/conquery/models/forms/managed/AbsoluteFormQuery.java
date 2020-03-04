@@ -40,13 +40,16 @@ public class AbsoluteFormQuery extends IQuery {
 	@NotNull
 	private final DateContextMode resultMode;
 	
+	private final boolean alsoCreateCoarserSubdivisions;
+	
 	@Override
 	public AbsoluteFormQuery resolve(QueryResolveContext context) {
 		return new AbsoluteFormQuery(
 			query.resolve(context),
 			dateRange,
 			features,
-			resultMode
+			resultMode,
+			alsoCreateCoarserSubdivisions
 		);
 	}
 
@@ -54,7 +57,7 @@ public class AbsoluteFormQuery extends IQuery {
 	public AbsoluteFormQueryPlan createQueryPlan(QueryPlanContext context) {
 		return new AbsoluteFormQueryPlan(
 			query.createQueryPlan(context.withGenerateSpecialDateUnion(false)),
-			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resultMode),
+			DateContext.generateAbsoluteContexts(CDateRange.of(dateRange), resultMode, alsoCreateCoarserSubdivisions ),
 			features.createQueryPlan(context.withGenerateSpecialDateUnion(false))
 		);
 	}

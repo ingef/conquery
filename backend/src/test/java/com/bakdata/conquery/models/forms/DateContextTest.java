@@ -6,7 +6,6 @@ import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Test;
 import com.bakdata.conquery.apiv1.forms.DateContextMode;
 import com.bakdata.conquery.apiv1.forms.FeatureGroup;
 import com.bakdata.conquery.apiv1.forms.IndexPlacement;
@@ -14,13 +13,25 @@ import com.bakdata.conquery.apiv1.forms.TimeUnit;
 import com.bakdata.conquery.models.common.CDate;
 import com.bakdata.conquery.models.common.daterange.CDateRange;
 import com.bakdata.conquery.models.forms.util.DateContext;
+import org.junit.jupiter.api.Test;
 
 public class DateContextTest {
 
 	@Test
-	public void rangeAbsCompleteTest() {
+	public void rangeAbsCompleteTestWithCoarse() {
+		// Because COMPLETE_ONLY is the most coarse subdivision mode this has the same output as DateContextTest#rangeAbsCompleteTestWithoutCoarse
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.COMPLETE_ONLY);
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.COMPLETE_ONLY, true);
+
+		DateContext dc = new DateContext(mask);
+		dc.setFeatureGroup(FeatureGroup.OUTCOME);
+		assertThat(contexts).isEqualTo(Arrays.asList(dc));
+	}
+	
+	@Test
+	public void rangeAbsCompleteTestWithoutCoarse() {
+		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.COMPLETE_ONLY, false);
 
 		DateContext dc = new DateContext(mask);
 		dc.setFeatureGroup(FeatureGroup.OUTCOME);
@@ -28,9 +39,9 @@ public class DateContextTest {
 	}
 
 	@Test
-	public void rangeAbsYearTest() {
+	public void rangeAbsYearTestWithCoarse() {
 		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.YEAR_WISE);
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.YEAR_WISE, true);
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrder (
 			mask,
@@ -42,14 +53,54 @@ public class DateContextTest {
 		);
 		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
 	}
-
+	
 	@Test
-	public void rangeAbsQuarterTest() {
-		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 4, 21));
-		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.QUARTER_WISE);
+	public void rangeAbsYearTestWithoutCoarse() {
+		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2005, 4, 21));
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.YEAR_WISE, false);
 
 		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrder (
+			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 12, 31)),
+			CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)),
+			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 12, 31)),
+			CDateRange.of(LocalDate.of(2004, 1, 1), LocalDate.of(2004, 12, 31)),
+			CDateRange.of(LocalDate.of(2005, 1, 1), LocalDate.of(2005, 4, 21))
+		);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+	}
+
+	@Test
+	public void rangeAbsQuarterTestWithCoarse() {
+		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 4, 21));
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.QUARTER_WISE, true);
+
+		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrder (
+			// Complete
 			mask,
+			// Years
+			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 12, 31)),
+			CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 12, 31)),
+			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 4, 21)),			
+			// Quarters
+			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 6, 30)),
+			CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)),
+			CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)),
+			CDateRange.of(LocalDate.of(2002, 1, 1), LocalDate.of(2002, 3, 31)),
+			CDateRange.of(LocalDate.of(2002, 4, 1), LocalDate.of(2002, 6, 30)),
+			CDateRange.of(LocalDate.of(2002, 7, 1), LocalDate.of(2002, 9, 30)),
+			CDateRange.of(LocalDate.of(2002, 10, 1), LocalDate.of(2002, 12, 31)),
+			CDateRange.of(LocalDate.of(2003, 1, 1), LocalDate.of(2003, 3, 31)),
+			CDateRange.of(LocalDate.of(2003, 4, 1), LocalDate.of(2003, 4, 21))
+		);
+		assertThat(contexts).extracting(DateContext::getFeatureGroup).containsOnly(FeatureGroup.OUTCOME);
+	}
+	
+	@Test
+	public void rangeAbsQuarterTestWithoutCoarse() {
+		CDateRange mask = CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2003, 4, 21));
+		List<DateContext> contexts = DateContext.generateAbsoluteContexts(mask, DateContextMode.QUARTER_WISE, false);
+
+		assertThat(contexts).extracting(DateContext::getDateRange).containsExactlyInAnyOrder (
 			CDateRange.of(LocalDate.of(2001, 5, 23), LocalDate.of(2001, 6, 30)),
 			CDateRange.of(LocalDate.of(2001, 7, 1), LocalDate.of(2001, 9, 30)),
 			CDateRange.of(LocalDate.of(2001, 10, 1), LocalDate.of(2001, 12, 31)),

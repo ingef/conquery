@@ -29,6 +29,8 @@ public class AbsoluteMode extends Mode {
 
 	@NotEmpty
 	private List<CQElement> features;
+	
+	private boolean alsoCreateCoarserSubdivisions = true;
 
 	@Override
 	public void visit(Consumer<Visitable> visitor) {
@@ -37,6 +39,6 @@ public class AbsoluteMode extends Mode {
 
 	@Override
 	public IQuery createSpecializedQuery(Namespaces namespaces, UserId userId, DatasetId submittedDataset) {
-		return AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTER_WISE, userId, submittedDataset);
+		return AbsExportGenerator.generate(namespaces, this, DateContextMode.QUARTER_WISE, alsoCreateCoarserSubdivisions, userId, submittedDataset);
 	}
 }
