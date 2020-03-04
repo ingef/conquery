@@ -40,7 +40,10 @@ function canDoEverything(permissions: Permission[], datasetId: string) {
 
 function canDo(
   state: StateType,
-  canDoWithPermissions: (permissions: Permission[]) => boolean,
+  canDoWithPermissions: (
+    permissions: Permission[],
+    datasetId: string
+  ) => boolean,
   context?: ContextT
 ) {
   const permissions = selectPermissions(state);
@@ -48,25 +51,28 @@ function canDo(
   if (!permissions) return false;
 
   const { selectedDatasetId } = state.datasets;
-  const dataset: ?string =
+  const datasetId: ?string =
     context && context.datasetId ? context.datasetId : selectedDatasetId;
 
-  if (!dataset) {
+  if (!datasetId) {
     return false;
   }
 
-  if (canDoNothing(permissions, dataset)) return false;
-  if (canDoEverything(permissions, dataset)) return true;
+  if (canDoNothing(permissions, datasetId)) return false;
+  if (canDoEverything(permissions, datasetId)) return true;
 
-  return canDoWithPermissions(permissions);
+  return canDoWithPermissions(permissions, datasetId);
 }
 
 export function canDownloadResult(state: StateType, datasetId?: string) {
   return canDo(
     state,
-    permissions => {
-      return permissions.some(permission =>
-        permission.abilities.includes("download")
+    (permissions, finalDatasetId) => {
+      return permissions.some(
+        permission =>
+          permissionHasDataset(permission) &&
+          permissionFitsTarget(permission, finalDatasetId) &&
+          permission.abilities.includes("download")
       );
     },
     { datasetId }
@@ -74,9 +80,12 @@ export function canDownloadResult(state: StateType, datasetId?: string) {
 }
 
 export function canUploadResult(state: StateType) {
-  return canDo(state, permissions => {
-    return permissions.some(permission =>
-      permission.abilities.includes("preserve_id")
+  return canDo(state, (permissions, datasetId) => {
+    return permissions.some(
+      permission =>
+        permissionHasDataset(permission) &&
+        permissionFitsTarget(permission, datasetId) &&
+        permission.abilities.includes("preserve_id")
     );
   });
 }
