@@ -112,7 +112,7 @@ public class QueryProcessor {
 	}
 
 	public ExecutionStatus cancel(Dataset dataset, ManagedExecution<?> query, URLBuilder urlb) {
-
+		// TODO implement query cancel functionality
 		return null;
 	}
 }

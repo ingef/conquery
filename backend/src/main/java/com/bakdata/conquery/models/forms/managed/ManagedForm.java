@@ -141,20 +141,19 @@ public class ManagedForm extends ManagedExecution<FormSharedResult> {
 		ManagedQuery subQuery = flatSubQueries.get(result.getSubqueryId());
 		subQuery.addResult(storage, result);
 		switch(subQuery.getState()) {
-			case CANCELED:
-				break;
 			case DONE:
 				if(openSubQueries.decrementAndGet() == 0) {
 					finish(storage);
 				}
 				break;
 			case FAILED:
+				// Fail the whole execution if a subquery fails
 				fail();
 				break;
+			case CANCELED:
+				// Ideally sub queries can not be canceled by a user, so do nothing
 			case NEW:
-				break;
 			case RUNNING:
-				break;
 			default:
 				break;
 			
