@@ -278,5 +278,10 @@
 		"method": "GET",
 		"path": "/auth-overview",
 		"clazz": "AuthOverviewResource"
+	},
+	{
+		"method": "GET",
+		"path": "/auth-overview/group/{groupId}",
+		"clazz": "AuthOverviewResource"
 	}
 ]
