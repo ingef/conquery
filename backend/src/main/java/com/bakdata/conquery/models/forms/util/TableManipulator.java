@@ -9,7 +9,6 @@ import com.bakdata.conquery.models.concepts.select.Select;
 import com.bakdata.conquery.models.identifiable.ids.specific.ConnectorSelectId;
 import com.bakdata.conquery.models.query.concept.filter.CQTable;
 import com.bakdata.conquery.models.worker.Namespaces;
-
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -80,9 +79,11 @@ public class TableManipulator {
 
 		@Override
 		public TableManipulator build() {
-			TableManipulator foo = super.build();
-			foo.init();
-			return foo;
+			// The builder is called indirectly using this method to ensure its members are
+			// properly set by ensuring that the init funciton is called.
+			TableManipulator tm = super.build();
+			tm.init();
+			return tm;
 		}
 	}
 

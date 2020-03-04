@@ -50,9 +50,7 @@ public class ResultModifier {
 			result.replaceAll(modification);
 			return result;
 		}
-		else {
-			throw new UnsupportedOperationException();
-		}
+		throw new UnsupportedOperationException();
 	}
 	
 	/**
