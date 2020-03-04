@@ -139,14 +139,17 @@ public class DateContext {
 			List<CDateRange> featureRanges = null;
 			List<CDateRange> outcomeRanges = null;
 
-			if (timeUnit.equals(TimeUnit.DAYS)) {
-				featureRanges = featureRange.getCoveredDays();
-				outcomeRanges = outcomeRange.getCoveredDays();
-			} else if (timeUnit.equals(TimeUnit.QUARTERS)) {
-				featureRanges = featureRange.getCoveredQuarters();
-				outcomeRanges = outcomeRange.getCoveredQuarters();
-			} else {
-				throw new IllegalArgumentException("Resolution " + timeUnit + " not supported.");
+			switch(timeUnit) {
+				case DAYS:
+					featureRanges = featureRange.getCoveredDays();
+					outcomeRanges = outcomeRange.getCoveredDays();
+					break;
+				case QUARTERS:
+					featureRanges = featureRange.getCoveredQuarters();
+					outcomeRanges = outcomeRange.getCoveredQuarters();
+					break;
+				default:
+					throw new IllegalArgumentException("Resolution " + timeUnit + " not supported.");				
 			}
 
 			int numRanges = featureRanges.size();
@@ -185,7 +188,7 @@ public class DateContext {
 					return CDateRange.of(event - featureTime + 1, event);
 				case QUARTERS:
 					LocalDate eventRangeStart = QuarterUtils
-						.getFirstDayOfQuarter(LocalDate.ofEpochDay(event).minus(featureTime - 1, IsoFields.QUARTER_YEARS));
+						.getFirstDayOfQuarter(CDate.toLocalDate(event).minus(featureTime - 1, IsoFields.QUARTER_YEARS));
 					LocalDate eventRangeEnd = QuarterUtils.getLastDayOfQuarter(event);
 					return CDateRange.of(eventRangeStart, eventRangeEnd);
 				default:
@@ -198,9 +201,9 @@ public class DateContext {
 				return CDateRange.of(event - featureTime, event - 1);
 			case QUARTERS:
 				LocalDate eventRangeStart = QuarterUtils
-						.getFirstDayOfQuarter(LocalDate.ofEpochDay(event).minus(featureTime, IsoFields.QUARTER_YEARS));
+						.getFirstDayOfQuarter(CDate.toLocalDate(event).minus(featureTime, IsoFields.QUARTER_YEARS));
 				LocalDate eventRangeEnd = QuarterUtils
-						.getLastDayOfQuarter(LocalDate.ofEpochDay(event).minus(1, IsoFields.QUARTER_YEARS));
+						.getLastDayOfQuarter(CDate.toLocalDate(event).minus(1, IsoFields.QUARTER_YEARS));
 				return CDateRange.of(eventRangeStart, eventRangeEnd);
 			default:
 				throw new IllegalArgumentException("Unsupported Resolution: " + timeUnit);
@@ -219,31 +222,41 @@ public class DateContext {
 	 */
 	private static CDateRange generateOutcomeRange(int event, IndexPlacement indexPlacement, int outcomeTime,
 		TimeUnit resolution) {
-		if (indexPlacement.equals(IndexPlacement.AFTER)) {
-			switch (resolution) {
-				case DAYS:
-					return CDateRange.of(event, event + outcomeTime - 1);
-				case QUARTERS:
-					LocalDate eventRangeStart = QuarterUtils.getFirstDayOfQuarter(event);
-					LocalDate eventRangeEnd = QuarterUtils.getLastDayOfQuarter(
+		switch(indexPlacement) {
+			case AFTER:
+				switch (resolution) {
+					case DAYS:
+						return CDateRange.of(event, event + outcomeTime - 1);
+					case QUARTERS:
+						LocalDate eventRangeStart = QuarterUtils.getFirstDayOfQuarter(event);
+						LocalDate eventRangeEnd = QuarterUtils.getLastDayOfQuarter(
 							LocalDate.ofEpochDay(event).plus(outcomeTime - 1, IsoFields.QUARTER_YEARS));
-					return CDateRange.of(eventRangeStart, eventRangeEnd);
-				default:
-					throw new IllegalArgumentException("Unsupported Resolution: " + resolution);
-			}
-		}
-		// eventIndex == NEUTRAL or BEFORE
-		switch (resolution) {
-			case DAYS:
-				return CDateRange.of(event + 1, event + outcomeTime);
-			case QUARTERS:
-				LocalDate eventRangeStart = QuarterUtils
-						.getFirstDayOfQuarter(LocalDate.ofEpochDay(event).plus(1, IsoFields.QUARTER_YEARS));
-				LocalDate eventRangeEnd = QuarterUtils
-						.getLastDayOfQuarter(LocalDate.ofEpochDay(event).plus(outcomeTime, IsoFields.QUARTER_YEARS));
-				return CDateRange.of(eventRangeStart, eventRangeEnd);
+						return CDateRange.of(eventRangeStart, eventRangeEnd);
+					default:
+						throw new IllegalArgumentException("Unsupported Resolution: " + resolution);
+				}
+				// Not reachable
+
+			case BEFORE:
+			case NEUTRAL:
+				switch (resolution) {
+					case DAYS:
+						return CDateRange.of(event + 1, event + outcomeTime);
+					case QUARTERS:
+						LocalDate eventRangeStart = QuarterUtils
+						.getFirstDayOfQuarter(CDate.toLocalDate(event).plus(1, IsoFields.QUARTER_YEARS));
+						LocalDate eventRangeEnd = QuarterUtils
+							.getLastDayOfQuarter(CDate.toLocalDate(event).plus(outcomeTime, IsoFields.QUARTER_YEARS));
+						return CDateRange.of(eventRangeStart, eventRangeEnd);
+					default:
+						throw new IllegalArgumentException("Unsupported Resolution: " + resolution);
+				}
+				// Not reachable
+
 			default:
-				throw new IllegalArgumentException("Unsupported Resolution: " + resolution);
+				throw new IllegalArgumentException("Unsupported index placement: " + indexPlacement);
+			
 		}
+		
 	}
 }
