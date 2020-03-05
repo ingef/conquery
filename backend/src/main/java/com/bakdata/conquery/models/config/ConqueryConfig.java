@@ -52,9 +52,9 @@ public class ConqueryConfig extends Configuration {
 	
 	@NotNull @Valid
 	private IdMappingConfig idMapping = new NoIdMapping();
-
+	@Valid @NotNull
 	private List<AuthenticationConfig> authentication = List.of(new DevAuthConfig());
-	
+	@Valid @NotNull
 	private AuthorizationConfig authorization = new DevelopmentAuthorizationConfig();
 	
 	private List<PluginConfig> plugins = new ArrayList<>();
