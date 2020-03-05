@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.InputMismatchException;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
@@ -134,14 +133,14 @@ public class Preprocessor {
 
 		try (HCFile outFile = new HCFile(tmp, true)) {
 			for (int inputSource = 0; inputSource < descriptor.getInputs().length; inputSource++) {
+				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
+				final File sourceFile = input.getSourceFile();
 
-				final String name = String.format("%s:%s[%d]", descriptor.toString(), descriptor.getTable(), inputSource);
+				final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile);
 				ConqueryMDC.setLocation(name);
 
-				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
 				CsvParser parser = null;
 
-				final File sourceFile = input.getSourceFile();
 
 				try (CountingInputStream countingIn = new CountingInputStream(new FileInputStream(sourceFile))) {
 					long progress = 0;
@@ -159,21 +158,14 @@ public class Preprocessor {
 					final GroovyPredicate filter = input.createFilter(headers);
 
 
-					final OutputDescription.Output primaryOut;
-					final List<OutputDescription.Output> outputs;
+					final OutputDescription.Output primaryOut = input.getPrimary().createForHeaders(headerMap);
+					final List<OutputDescription.Output> outputs = new ArrayList<>();
 
-					try {
-						primaryOut = input.getPrimary().createForHeaders(headerMap);
-						outputs = new ArrayList<>();
+					// Instantiate Outputs based on descriptors (apply header positions)
+					for (OutputDescription op : input.getOutput()) {
+						outputs.add(op.createForHeaders(headerMap));
+					}
 
-						// Instantiate Outputs based on descriptors (apply header positions)
-						for (OutputDescription op : input.getOutput()) {
-							outputs.add(op.createForHeaders(headerMap));
-						}
-					}
-					catch (InputMismatchException exc) {
-						throw new IllegalArgumentException(String.format("CSV=`%s`", sourceFile), exc);
-					}
 
 					String[] row;
 
