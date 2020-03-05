@@ -44,6 +44,9 @@ export default connect(
         onChange={values => onSearch(values ? values.map(v => v.value) : [])}
         placeholder={T.translate("reactSelect.searchPlaceholder")}
         noOptionsMessage={() => T.translate("reactSelect.noResults")}
+        formatCreateLabel={inputValue =>
+          T.translate("common.create") + `: "${inputValue}"`
+        }
       />
     </Root>
   );

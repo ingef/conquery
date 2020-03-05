@@ -9,21 +9,69 @@ The `config.json` is required for every type of execution. Its root element is a
 
 ---
 
-## Base AuthConfig
-An `AuthConfig` is used to define how users are authenticated.
+## Base AuthorizationConfig
+An `AuthorizationConfig` defines the initial users that are created on application startup and other permission related options.
 
-Different types of AuthConfig can be used by setting `type` to one of the following values:
+Different types of AuthorizationConfig can be used by setting `type` to one of the following values:
 
 
-### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/DevAuthConfig.java)</sup></sub></sup>
+### DEFAULT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/DefaultAuthorizationConfig.java)</sup></sub></sup>
 
 
 <details><summary>Details</summary><p>
 
-Java Type: `com.bakdata.conquery.models.auth.DevAuthConfig`
+Java Type: `com.bakdata.conquery.models.auth.DefaultAuthorizationConfig`
 
 No fields can be set for this type.
 
+</p></details>
+
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevelopmentAuthorizationConfig.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.develop.DevelopmentAuthorizationConfig`
+
+No fields can be set for this type.
+
+</p></details>
+
+
+
+---
+
+## Base AuthenticationConfig
+An `AuthenticationConfig` is used to define how specific realms for authentication are configured.
+
+Different types of AuthenticationConfig can be used by setting `type` to one of the following values:
+
+
+### DEVELOPMENT<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/develop/DevAuthConfig.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.develop.DevAuthConfig`
+
+No fields can be set for this type.
+
+</p></details>
+
+### LOCAL_AUTHENTICATION<sup><sub><sup> [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java)</sup></sub></sup>
+
+
+<details><summary>Details</summary><p>
+
+Java Type: `com.bakdata.conquery.models.auth.basic.LocalAuthenticationConfig`
+
+Supported Fields:
+
+|  | Field | Type | Default | Example | Description |
+| --- | --- | --- | --- | --- | --- |
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java) | jwtDuration | `int` | `12` |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java) | passwordStoreConfig | [XodusConfig](#Type-XodusConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/auth/basic/LocalAuthenticationConfig.java) | storeName | `String` | `"authenticationStore"` |  |  | 
 </p></details>
 
 
@@ -100,7 +148,6 @@ Supported Fields:
 
 |  | Field | Type | Default | Example | Description |
 | --- | --- | --- | --- | --- | --- |
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | columnNamerScript | `String` | `"java.lang.String.format(\"%s %s %s\",columnInfo.getSelect().getHolder().findConcept().getLabel(), columnInfo.getCqConcept().getLabel(),columnInfo.getSelect().getLabel())"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | comment | `char` | `"\u0000"` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | delimeter | `char` | `","` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/CSVConfig.java) | encoding | `Charset` | `"UTF-8"` |  |  | 
@@ -142,7 +189,8 @@ Supported Fields:
 | --- | --- | --- | --- | --- | --- |
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | additionalFormats | list of `String` | `[]` |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | api | [APIConfig](#Type-APIConfig) |  |  |  | 
-| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | authentication | [AuthConfig](#Base-AuthConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | authentication | list of [AuthenticationConfig](#Base-AuthenticationConfig) |  |  |  | 
+| [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | authorization | [AuthorizationConfig](#Base-AuthorizationConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | cluster | [ClusterConfig](#Type-ClusterConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | csv | [CSVConfig](#Type-CSVConfig) |  |  |  | 
 | [✎](https://github.com/bakdata/conquery/edit/develop/backend/src/main/java/com/bakdata/conquery/models/config/ConqueryConfig.java) | debugMode | boolean or null | `null` |  |  | 

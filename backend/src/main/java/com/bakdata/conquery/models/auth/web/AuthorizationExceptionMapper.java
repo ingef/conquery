@@ -1,13 +1,12 @@
-package com.bakdata.conquery.models.auth;
+package com.bakdata.conquery.models.auth.web;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 
-import org.apache.shiro.authz.AuthorizationException;
-
 import io.dropwizard.jersey.errors.ErrorMessage;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.authz.AuthorizationException;
 
 /**
  * This mapper intercepts all {@link AuthorizationException}s that occur during a request.
@@ -22,7 +21,7 @@ public class AuthorizationExceptionMapper implements ExceptionMapper<Authorizati
 		log.warn("Shiro failed to authorize the request. See the following trace:", exception);
 		return Response.status(Response.Status.UNAUTHORIZED)
 			.type(MediaType.APPLICATION_JSON_TYPE)
-			.entity(new ErrorMessage(Response.Status.UNAUTHORIZED.getStatusCode(), "Your error has been logged"))
+			.entity(new ErrorMessage(Response.Status.FORBIDDEN.getStatusCode(), "Your error has been logged"))
 			.build();
 	}
 

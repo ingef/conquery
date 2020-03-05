@@ -35,13 +35,6 @@ public class CSVConfig {
 	private int maxColumns = 1_000_000; // This should be sufficiently large.
 	
 	/**
-	 * Script used to generate the CSV column names from CQConcept and Select information.
-	 * The script has an instance of SelectResultInfo named columnInfo available to construct the name.
-	 */
-	@ValidColumnNamer
-	private String columnNamerScript = "java.lang.String.format(\"%s %s %s\",columnInfo.getSelect().getHolder().findConcept().getLabel(), columnInfo.getCqConcept().getLabel(),columnInfo.getSelect().getLabel())";
-	
-	/**
 	 * Helper method to generate parser settings from the provided options in this class.
 	 * @return Setting object that can be passed into a {@link CsvParser}.
 	 */

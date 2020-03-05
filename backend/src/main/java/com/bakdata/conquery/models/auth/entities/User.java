@@ -12,7 +12,6 @@ import javax.validation.constraints.NotNull;
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.util.SinglePrincipalCollection;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import lombok.Getter;
 import lombok.NonNull;
@@ -80,7 +79,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 		return new UserId(name);
 	}
 
-	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
+	public void addRole(MasterMetaStorage storage, Role role) {
 		if(roles.add(role)) {
 			log.trace("Added role {} to user {}", role.getId(), getId());
 			updateStorage(storage);
@@ -88,7 +87,7 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 	
 	@Override
-	public void removeRole(MasterMetaStorage storage, Role role) throws JSONException {
+	public void removeRole(MasterMetaStorage storage, Role role) {
 		if(roles.remove(role)) {
 			log.trace("Removed role {} from user {}", role.getId(), getId());				
 			updateStorage(storage);
@@ -96,11 +95,11 @@ public class User extends FilteredUser<UserId> implements Principal, RoleOwner {
 	}
 
 	public Set<Role> getRoles(){
-		return Set.copyOf(roles);
+		return Collections.unmodifiableSet(roles);
 	}
 	
 	@Override
-	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
+	protected void updateStorage(MasterMetaStorage storage) {
 		storage.updateUser(this);
 	}
 

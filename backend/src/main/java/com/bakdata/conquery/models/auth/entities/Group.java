@@ -8,7 +8,6 @@ import javax.validation.constraints.NotNull;
 
 import com.bakdata.conquery.io.jackson.serializer.MetaIdRefCollection;
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
-import com.bakdata.conquery.models.exceptions.JSONException;
 import com.bakdata.conquery.models.identifiable.ids.specific.GroupId;
 import lombok.Getter;
 import lombok.NonNull;
@@ -49,7 +48,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	@Override
-	protected void updateStorage(MasterMetaStorage storage) throws JSONException {
+	protected void updateStorage(MasterMetaStorage storage) {
 		storage.updateGroup(this);
 	}
 
@@ -58,14 +57,14 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 		return new GroupId(name);
 	}
 
-	public void addMember(MasterMetaStorage storage, User user) throws JSONException {
+	public void addMember(MasterMetaStorage storage, User user) {
 		if(members.add(user)) {
 			log.trace("Added user {} to group {}", user.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
-	public void removeMember(MasterMetaStorage storage, User user) throws JSONException {
+	public void removeMember(MasterMetaStorage storage, User user) {
 		if(members.remove(user)) {
 			log.trace("Removed user {} from group {}", user.getId(), getId());				
 			updateStorage(storage);
@@ -77,17 +76,17 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	public Set<User> getMembers() {
-		return Set.copyOf(members);
+		return Collections.unmodifiableSet(members);
 	}
 
-	public void addRole(MasterMetaStorage storage, Role role) throws JSONException {
+	public void addRole(MasterMetaStorage storage, Role role) {
 		if (roles.add(role)) {
 			log.trace("Added role {} to group {}", role.getId(), getId());
 			updateStorage(storage);
 		}
 	}
 
-	public void removeRole(MasterMetaStorage storage, Role role) throws JSONException {
+	public void removeRole(MasterMetaStorage storage, Role role) {
 		if (roles.remove(role)) {
 			log.trace("Removed role {} from group {}", role.getId(), getId());
 			updateStorage(storage);
@@ -95,7 +94,7 @@ public class Group extends PermissionOwner<GroupId> implements RoleOwner {
 	}
 
 	public Set<Role> getRoles() {
-		return Set.copyOf(roles);
+		return Collections.unmodifiableSet(roles);
 	}
 
 }

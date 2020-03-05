@@ -18,8 +18,7 @@ public class QueryPermission extends StringPermissionBuilder {
 		Ability.SHARE,
 		Ability.TAG,
 		Ability.CANCEL,
-		Ability.LABEL,
-		Ability.DOWNLOAD
+		Ability.LABEL
 		);
 	
 	public static final QueryPermission INSTANCE = new QueryPermission();

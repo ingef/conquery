@@ -2,20 +2,17 @@ package com.bakdata.conquery.models.auth;
 
 import java.util.Optional;
 
-import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.AuthenticationInfo;
-import org.apache.shiro.mgt.DefaultSecurityManager;
-import org.apache.shiro.mgt.SecurityManager;
-import org.apache.shiro.realm.Realm;
-
 import com.bakdata.conquery.io.xodus.MasterMetaStorage;
 import com.bakdata.conquery.models.auth.entities.User;
+import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.identifiable.ids.specific.UserId;
 import com.bakdata.conquery.util.io.ConqueryMDC;
-
-import io.dropwizard.auth.AuthenticationException;
 import io.dropwizard.auth.Authenticator;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.shiro.SecurityUtils;
+import org.apache.shiro.authc.AuthenticationInfo;
+import org.apache.shiro.authc.AuthenticationToken;
 
 /**
  * This dropwizard authenticator and the shiro realm are conceptually the same.
@@ -25,27 +22,30 @@ import lombok.extern.slf4j.Slf4j;
  * We need this authenticator to plug in the security, and hereby shiro, into the AuthFilter.
  */
 @Slf4j
-public class ConqueryAuthenticator implements Authenticator<ConqueryToken, User>{
+@RequiredArgsConstructor
+public class ConqueryAuthenticator implements Authenticator<AuthenticationToken, User>{
 	
 	private final MasterMetaStorage storage;
-	
-	public ConqueryAuthenticator(MasterMetaStorage storage, Realm realm) {
-		this.storage = storage;
-		
-		SecurityManager securityManager = new DefaultSecurityManager(realm);
-		SecurityUtils.setSecurityManager(securityManager);
-		log.debug("Security manager registered");
-	}
 
+	/**
+	 * The execeptions thrown by Shiro will be catched by {@link AuthenticationExceptionMapper}.  
+	 */
 	@Override
-	public Optional<User> authenticate(ConqueryToken token) throws AuthenticationException {
-		
+	public Optional<User> authenticate(AuthenticationToken token) {
+		// Submit the token to Shiro (to all realms that were registered)
 		AuthenticationInfo info = SecurityUtils.getSecurityManager().authenticate(token);
+		// All authenticating realms must return a UserId as identifying principal
 		UserId userId = (UserId)info.getPrincipals().getPrimaryPrincipal();
 
+		// The UserId is queried in the MasterMetaStorage, the central place for authorization information
 		User user = storage.getUser(userId);
 		
-		ConqueryMDC.setLocation(user.getId().toString());
+		if(user != null) {
+			ConqueryMDC.setLocation(user.getId().toString());
+		} else {
+			log.trace("The user id {} could not be map to a user.", userId);
+		}
+		// If the user was present, all further authorization can know be perfomed on the user object
 		return Optional.ofNullable(user);
 	}
 

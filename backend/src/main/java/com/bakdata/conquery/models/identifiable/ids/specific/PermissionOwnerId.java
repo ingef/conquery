@@ -7,7 +7,6 @@ import com.bakdata.conquery.models.auth.entities.PermissionOwner;
 import com.bakdata.conquery.models.identifiable.ids.AId;
 import com.bakdata.conquery.models.identifiable.ids.IId;
 import com.bakdata.conquery.models.identifiable.ids.IdIterator;
-
 import lombok.EqualsAndHashCode;
 import lombok.RequiredArgsConstructor;
 

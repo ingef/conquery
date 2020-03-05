@@ -6,7 +6,7 @@ import { getConceptsByIdsWithTablesAndSelects } from "../concept-trees/globalTre
 
 import { isEmpty, objectWithoutKey } from "../common/helpers";
 
-import type { DateRangeT } from "../api/types";
+import type { DateRangeT, TableT } from "../api/types";
 
 import { resetAllFiltersInTables } from "../model/table";
 import { selectsWithDefaults } from "../model/select";
@@ -65,7 +65,9 @@ import type {
   DraggedQueryType
 } from "./types";
 
-const initialState: StandardQueryType = [];
+export type StandardQueryStateT = StandardQueryType;
+
+const initialState: StandardQueryStateT = [];
 
 const filterItem = (
   item: DraggedNodeType | DraggedQueryType
@@ -484,6 +486,16 @@ const mergeSelects = (savedSelects, conceptOrTable) => {
   });
 };
 
+const mergeDateColumn = (savedTable: TableT, table: TableT) => {
+  if (!table || !table.dateColumn || !savedTable.dateColumn)
+    return savedTable.dateColumn;
+
+  return {
+    ...savedTable.dateColumn,
+    value: table.dateColumn.value
+  };
+};
+
 const mergeTables = (savedTables, concept) => {
   return savedTables
     ? savedTables.map(savedTable => {
@@ -492,12 +504,14 @@ const mergeTables = (savedTables, concept) => {
         const table = concept.tables.find(t => t.id === savedTable.connectorId);
         const filters = mergeFiltersFromSavedConcept(savedTable, table);
         const selects = mergeSelects(savedTable.selects, table);
+        const dateColumn = mergeDateColumn(savedTable, table);
 
         return {
           ...savedTable,
           exclude: !table,
           filters,
-          selects
+          selects,
+          dateColumn
         };
       })
     : [];
@@ -858,9 +872,9 @@ const removeConceptFromNode = (state, action) => {
 //   }
 // ]
 const query = (
-  state: StandardQueryType = initialState,
+  state: StandardQueryStateT = initialState,
   action: Object
-): StandardQueryType => {
+): StandardQueryStateT => {
   switch (action.type) {
     case DROP_AND_NODE:
       return dropAndNode(state, action);

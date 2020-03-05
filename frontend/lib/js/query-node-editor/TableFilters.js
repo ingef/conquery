@@ -52,7 +52,7 @@ const Row = styled("div")`
 `;
 
 const TableFilters = (props: PropsType) => {
-  if (!props.filters) return null;
+  if (!props.filters || props.filters.length === 0) return null;
 
   return (
     <div>
