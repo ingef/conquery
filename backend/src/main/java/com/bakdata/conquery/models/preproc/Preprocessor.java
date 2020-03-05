@@ -136,7 +136,7 @@ public class Preprocessor {
 				final TableInputDescriptor input = descriptor.getInputs()[inputSource];
 				final File sourceFile = input.getSourceFile();
 
-				final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile);
+				final String name = String.format("%s:%s[%d/%s]", descriptor.toString(), descriptor.getTable(), inputSource, sourceFile.getName());
 				ConqueryMDC.setLocation(name);
 
 				CsvParser parser = null;
