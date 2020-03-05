@@ -94,7 +94,7 @@ const TableView = (props: PropsType) => {
               onLoadFilterSuggestions(
                 datasetId,
                 node.tree,
-                selectedTable.id,
+                table.id,
                 filterId,
                 prefix,
                 editorState.selectedInputTableIdx,

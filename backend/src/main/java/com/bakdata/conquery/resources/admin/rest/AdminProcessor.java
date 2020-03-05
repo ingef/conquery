@@ -35,7 +35,6 @@ import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.permissions.Ability;
 import com.bakdata.conquery.models.auth.permissions.ConqueryPermission;
 import com.bakdata.conquery.models.auth.permissions.StringPermissionBuilder;
-import com.bakdata.conquery.models.auth.permissions.WildcardPermission;
 import com.bakdata.conquery.models.concepts.Concept;
 import com.bakdata.conquery.models.concepts.Connector;
 import com.bakdata.conquery.models.concepts.StructureNode;
@@ -87,6 +86,7 @@ import lombok.Getter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.tuple.Pair;
+import org.apache.shiro.authz.Permission;
 
 /**
  * This class holds the logic for several admin http endpoints.
@@ -267,12 +267,12 @@ public class AdminProcessor {
 			.build();
 	}
 
-	private List<Pair<FEPermission, String>> wrapInFEPermission(Collection<ConqueryPermission> permissions) {
+	private List<Pair<FEPermission, String>> wrapInFEPermission(Collection<Permission> permissions) {
 		List<Pair<FEPermission, String>> fePermissions = new ArrayList<>();
 
-		for (ConqueryPermission permission : permissions) {
-			if (permission instanceof WildcardPermission) {
-				fePermissions.add(Pair.of(FEPermission.from(permission), permission.toString()));
+		for (Permission permission : permissions) {
+			if (permission instanceof ConqueryPermission) {
+				fePermissions.add(Pair.of(FEPermission.from((ConqueryPermission)permission), permission.toString()));
 
 			}
 			else {
