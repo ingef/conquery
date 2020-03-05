@@ -86,7 +86,7 @@ public class AuthServlet {
 		DropwizardResourceConfig jerseyConfig = new DropwizardResourceConfig(metrics);
 		jerseyConfig.setUrlPattern("/auth");
 
-		RESTServer.configure(config, jerseyConfig);
+		RESTServer.configure(config.getServerFactory(), jerseyConfig, config.getApi().isAllowCORSRequests());
 
 		JettyConfigurationUtil.configure(jerseyConfig);
 		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));

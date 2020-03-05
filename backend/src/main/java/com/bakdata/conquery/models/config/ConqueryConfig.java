@@ -50,8 +50,11 @@ public class ConqueryConfig extends Configuration {
 	@Valid @NotNull
 	private FrontendConfig frontend = new FrontendConfig();
 
+	@Valid @NotNull
+	private ServerFactory slaveServlet = new DefaultServerFactory();
+
 	private ConqueryMetricsConfig metricsConfig = new ConqueryMetricsConfig();
-	
+
 	@NotNull @Valid
 	private IdMappingConfig idMapping = new NoIdMapping();
 	@Valid @NotNull

@@ -72,7 +72,7 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		this.jobManager = new JobManager("master");
 		this.environment = environment;
 
-		RESTServer.configure(config, environment.jersey().getResourceConfig());
+		RESTServer.configure(config.getServerFactory(), environment.jersey().getResourceConfig(), config.getApi().isAllowCORSRequests());
 
 		environment.lifecycle().manage(jobManager);
 

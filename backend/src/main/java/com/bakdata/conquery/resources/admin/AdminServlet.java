@@ -67,7 +67,7 @@ public class AdminServlet {
 		jerseyConfig = new DropwizardResourceConfig(masterCommand.getEnvironment().metrics());
 		jerseyConfig.setUrlPattern("/admin");
 
-		RESTServer.configure(masterCommand.getConfig(), jerseyConfig);
+		RESTServer.configure(masterCommand.getConfig().getServerFactory(), jerseyConfig, masterCommand.getConfig().getApi().isAllowCORSRequests());
 
 		JettyConfigurationUtil.configure(jerseyConfig);
 		JerseyContainerHolder servletContainerHolder = new JerseyContainerHolder(new ServletContainer(jerseyConfig));

@@ -1,13 +1,14 @@
 package com.bakdata.conquery.commands;
 
-import javax.validation.Validator;
-
 import java.io.File;
 import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import javax.validation.Validator;
+
+import com.bakdata.conquery.Conquery;
 import com.bakdata.conquery.io.mina.BinaryJacksonCoder;
 import com.bakdata.conquery.io.mina.CQProtocolCodecFilter;
 import com.bakdata.conquery.io.mina.ChunkReader;
@@ -29,8 +30,12 @@ import com.bakdata.conquery.models.query.QueryExecutor;
 import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
+import com.bakdata.conquery.resources.admin.SlaveServlet;
+import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.lifecycle.Managed;
+import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
@@ -43,9 +48,10 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
+import org.eclipse.jetty.util.component.ContainerLifeCycle;
 
 @Slf4j @Getter
-public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed {
+public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHandler, Managed {
 
 	private NioSocketConnector connector;
 	private JobManager jobManager;
@@ -56,14 +62,64 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 	@Setter
 	private String label = "slave";
 	private ScheduledExecutorService scheduler;
+	private Environment environment;
+	private SlaveServlet slaveServlet;
 
-	public SlaveCommand() {
-		super("slave", "Connects this instance as a slave to a running master.");
+	public SlaveCommand(Conquery conquery) {
+		super(conquery,"slave", "Connects this instance as a slave to a running master.");
 	}
-	
 
 	@Override
+	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+		final Environment environment = new Environment(bootstrap.getApplication().getName(),
+														bootstrap.getObjectMapper(),
+														bootstrap.getValidatorFactory().getValidator(),
+														bootstrap.getMetricRegistry(),
+														bootstrap.getClassLoader(),
+														bootstrap.getHealthCheckRegistry());
+
+		configuration.getMetricsFactory().configure(environment.lifecycle(),
+													bootstrap.getMetricRegistry());
+		configuration.getServerFactory().configure(environment);
+
+		bootstrap.run(configuration, environment);
+
+		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
+		try {
+			run(environment, namespace, configuration);
+			environment.lifecycle().attach(lifeCycle);
+			lifeCycle.start();
+
+			Runtime.getRuntime().addShutdownHook(new Thread() {
+				@Override
+				public void run() {
+					try {
+						lifeCycle.stop();
+					}
+					catch (Exception e) {
+						log.error("Interrupted during shutdown", e);
+					}
+				}
+			});
+		}
+		catch(Throwable t) {
+			log.error("Uncaught Exception in "+getName(), t);
+			lifeCycle.stop();
+			throw t;
+		}
+	}
+
+
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
+		this.config = Cloner.clone(config);
+
+		// This allows us to have several Servlet definitions in the same config json while relying on ServerCommand for management.
+		this.config.setServerFactory(this.config.getSlaveServlet());
+
+		environment.jersey().setUrlPattern("slaves/*");
+
+		this.environment = environment;
+
 		connector = new NioSocketConnector();
 
 		jobManager = new JobManager(label);
@@ -77,12 +133,13 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 				.scheduledExecutorService("Scheduled Messages")
 				.build();
 		}
-		
+
+		slaveServlet = new SlaveServlet();
+		slaveServlet.register(this); // TODO: 04.03.2020 save this
+
+
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
-
-		this.config = config;
-		
 		File storageDir = config.getStorage().getDirectory();
 		for(File directory : storageDir.listFiles()) {
 			if(directory.getName().startsWith("worker_")) {
@@ -98,6 +155,8 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 				}
 			}
 		}
+
+		super.run(environment, namespace, this.config);
 	}
 	
 	@Override
@@ -236,4 +295,6 @@ public class SlaveCommand extends ConqueryCommand implements IoHandler, Managed 
 			log.warn("Failed to report job manager status", e);
 		}
 	}
+
+
 }

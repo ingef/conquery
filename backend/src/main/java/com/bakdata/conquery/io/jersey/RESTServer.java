@@ -8,23 +8,23 @@ import com.bakdata.conquery.io.jetty.JsonValidationExceptionMapper;
 import com.bakdata.conquery.models.auth.entities.User;
 import com.bakdata.conquery.models.auth.web.AuthenticationExceptionMapper;
 import com.bakdata.conquery.models.auth.web.AuthorizationExceptionMapper;
-import com.bakdata.conquery.models.config.ConqueryConfig;
 import io.dropwizard.auth.AuthValueFactoryProvider;
 import io.dropwizard.jersey.errors.EarlyEofExceptionMapper;
 import io.dropwizard.jersey.errors.LoggingExceptionMapper;
 import io.dropwizard.server.DefaultServerFactory;
+import io.dropwizard.server.ServerFactory;
 import lombok.experimental.UtilityClass;
 import org.glassfish.jersey.server.ResourceConfig;
 
 @UtilityClass
 public class RESTServer {
 
-	public static void configure(ConqueryConfig config, ResourceConfig jersey) {
+	public static void configure(ServerFactory serverFactory, ResourceConfig jersey, boolean allowCORSRequests) {
 		// Bind User class to REST authentication
 		jersey.register(new AuthValueFactoryProvider.Binder<>(User.class));
 		//change exception mapper behavior because of JERSEY-2437
 		//https://github.com/eclipse-ee4j/jersey/issues/2709
-		((DefaultServerFactory) config.getServerFactory()).setRegisterDefaultExceptionMappers(false);
+		((DefaultServerFactory) serverFactory).setRegisterDefaultExceptionMappers(false);
 		// Register custom mapper
 		jersey.register(new AuthenticationExceptionMapper());
 		jersey.register(new AuthorizationExceptionMapper());
@@ -34,7 +34,7 @@ public class RESTServer {
 		jersey.register(ConqueryJsonExceptionMapper.class);
 		jersey.register(new EarlyEofExceptionMapper());
 		//allow cross origin
-		if(config.getApi().isAllowCORSRequests()) {
+		if(allowCORSRequests) {
 			jersey.register(CORSResponseFilter.class);
 		}
 		//disable all browser caching if not expressly wanted

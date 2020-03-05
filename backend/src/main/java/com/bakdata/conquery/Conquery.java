@@ -1,9 +1,9 @@
 package com.bakdata.conquery;
 
-import javax.tools.ToolProvider;
-
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+
+import javax.tools.ToolProvider;
 
 import ch.qos.logback.classic.Level;
 import com.bakdata.conquery.commands.CollectEntitiesCommand;
@@ -50,7 +50,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		//main config file is json
 		bootstrap.setConfigurationFactoryFactory(JsonConfigurationFactory::new);
 
-		bootstrap.addCommand(new SlaveCommand());
+		bootstrap.addCommand(new SlaveCommand(this));
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
@@ -66,7 +66,10 @@ public class Conquery extends Application<ConqueryConfig> {
 			@Override
 			public void initialize(Bootstrap<?> bootstrap) {
 				// Allow overriding of config from environment variables.
-				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), new EnvironmentVariableSubstitutor(true)));
+				final EnvironmentVariableSubstitutor substitutor = new EnvironmentVariableSubstitutor(false);
+				substitutor.setDisableSubstitutionInValues(false);
+
+				bootstrap.setConfigurationSourceProvider(new SubstitutingSourceProvider(bootstrap.getConfigurationSourceProvider(), substitutor));
 			}
 		});
 		//register frontend
