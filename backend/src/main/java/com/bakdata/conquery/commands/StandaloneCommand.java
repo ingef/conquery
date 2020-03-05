@@ -2,6 +2,7 @@ package com.bakdata.conquery.commands;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Vector;
 import java.util.concurrent.ExecutionException;
@@ -15,7 +16,9 @@ import com.bakdata.conquery.models.config.ConqueryConfig;
 import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-
+import io.dropwizard.jetty.ConnectorFactory;
+import io.dropwizard.jetty.HttpConnectorFactory;
+import io.dropwizard.server.DefaultServerFactory;
 import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
@@ -74,6 +77,7 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 		);
 		
 		List<Future<SlaveCommand>> tasks = new ArrayList<>();
+
 		for(int i=0;i<config.getStandalone().getNumberOfSlaves();i++) {
 			final int id = i;
 			tasks.add(starterPool.submit(() -> {
@@ -82,7 +86,14 @@ public class StandaloneCommand extends io.dropwizard.cli.ServerCommand<ConqueryC
 				clone.getStorage().setDirectory(new File(clone.getStorage().getDirectory(), "slave_" + id));
 				clone.getStorage().getDirectory().mkdir();
 
-				SlaveCommand sc = new SlaveCommand();
+				// TODO: 05.03.2020 Check if this works in standalone and master/slave
+				final DefaultServerFactory slaveServlet = new DefaultServerFactory();
+				final ConnectorFactory connectorFactory = HttpConnectorFactory.admin();
+				((HttpConnectorFactory) connectorFactory).setPort(0); // Force random allocation to avoid collision.
+				slaveServlet.setAdminConnectors(Collections.singletonList(connectorFactory));
+				clone.setSlaveServlet(slaveServlet);
+
+				SlaveCommand sc = new SlaveCommand(conquery);
 				sc.setLabel("slave " + id);
 				this.slaves.add(sc);
 				sc.run(environment, namespace, clone);

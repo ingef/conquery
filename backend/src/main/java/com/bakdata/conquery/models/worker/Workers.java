@@ -48,6 +48,10 @@ public class Workers extends NamespaceCollection {
 		throw new UnsupportedOperationException("Workers should never be asked about the meta registry");
 	}
 
+	public Worker getDatasetWorker(DatasetId datasetId) {
+		return dataset2Worker.get(datasetId);
+	}
+
 	public void removeWorkersFor(DatasetId dataset) {
 		Worker removed = dataset2Worker.remove(dataset);
 		if(removed == null) {

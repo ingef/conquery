@@ -22,6 +22,7 @@ public class ResourceConstants {
 	public static final String USER_ID = "userId";
 	public static final String ROLE_ID = "roleId";
 	public static final String GROUP_ID = "groupId";
+	public static final String WORKER_ID = "workerId";
 
 	/**
 	 * Method to generate a data-model of this class's static members so that they
