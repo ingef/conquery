@@ -40,7 +40,7 @@ public class PrintSettings implements SelectNameExtractor {
 		
 		sb.append(conceptLabel);
 		sb.append(' ');
-		if (!cqLabel.equalsIgnoreCase(conceptLabel)) {
+		if (cqLabel != null && !cqLabel.equalsIgnoreCase(conceptLabel)) {
 			// If these labels differ, the user might changed the label of the concept in the frontend, or a TreeChild was posted
 			sb.append(cqLabel);
 			sb.append(' ');
