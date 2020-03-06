@@ -54,6 +54,7 @@ public class Conquery extends Application<ConqueryConfig> {
 		bootstrap.addCommand(new PreprocessorCommand());
 		bootstrap.addCommand(new CollectEntitiesCommand());
 		bootstrap.addCommand(new StandaloneCommand(this));
+		bootstrap.addCommand(new MasterCommand(this));
 
 		//do some setup in other classes after initialization but before running a command
 		bootstrap.addBundle(new ConfiguredBundle<ConqueryConfig>() {
@@ -111,8 +112,8 @@ public class Conquery extends Application<ConqueryConfig> {
 
 	@Override
 	public void run(ConqueryConfig configuration, Environment environment) throws Exception {
-		master = new MasterCommand();
-		master.run(configuration, environment);
+//		master = new MasterCommand(this);
+//		master.run(configuration, environment);
 	}
 
 

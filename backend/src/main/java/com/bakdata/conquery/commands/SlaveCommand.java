@@ -31,11 +31,9 @@ import com.bakdata.conquery.models.worker.Worker;
 import com.bakdata.conquery.models.worker.WorkerInformation;
 import com.bakdata.conquery.models.worker.Workers;
 import com.bakdata.conquery.resources.admin.SlaveServlet;
-import com.bakdata.conquery.util.io.Cloner;
 import com.bakdata.conquery.util.io.ConqueryMDC;
 import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.lifecycle.Managed;
-import io.dropwizard.setup.Bootstrap;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.Setter;
@@ -48,7 +46,6 @@ import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
 import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketConnector;
-import org.eclipse.jetty.util.component.ContainerLifeCycle;
 
 @Slf4j @Getter
 public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHandler, Managed {
@@ -62,63 +59,63 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 	@Setter
 	private String label = "slave";
 	private ScheduledExecutorService scheduler;
-	private Environment environment;
 	private SlaveServlet slaveServlet;
 
 	public SlaveCommand(Conquery conquery) {
 		super(conquery,"slave", "Connects this instance as a slave to a running master.");
 	}
 
+//	@Override
+//	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
+//		final Environment environment = new Environment(bootstrap.getApplication().getName(),
+//														bootstrap.getObjectMapper(),
+//														bootstrap.getValidatorFactory().getValidator(),
+//														bootstrap.getMetricRegistry(),
+//														bootstrap.getClassLoader(),
+//														bootstrap.getHealthCheckRegistry());
+//
+//		configuration.getMetricsFactory().configure(environment.lifecycle(),
+//													bootstrap.getMetricRegistry());
+//		configuration.getServerFactory().configure(environment);
+//
+//		bootstrap.run(configuration, environment);
+//
+//		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
+//
+//		try {
+//			run(environment, namespace, configuration);
+//			environment.lifecycle().attach(lifeCycle);
+//			lifeCycle.start();
+//
+//			Runtime.getRuntime().addShutdownHook(new Thread() {
+//				@Override
+//				public void run() {
+//					try {
+//						lifeCycle.stop();
+//					}
+//					catch (Exception e) {
+//						log.error("Interrupted during shutdown", e);
+//					}
+//				}
+//			});
+//		}
+//		catch(Throwable t) {
+//			log.error("Uncaught Exception in "+getName(), t);
+//			lifeCycle.stop();
+//			throw t;
+//		}
+//	}
+
+
 	@Override
-	protected void run(Bootstrap<ConqueryConfig> bootstrap, Namespace namespace, ConqueryConfig configuration) throws Exception {
-		final Environment environment = new Environment(bootstrap.getApplication().getName(),
-														bootstrap.getObjectMapper(),
-														bootstrap.getValidatorFactory().getValidator(),
-														bootstrap.getMetricRegistry(),
-														bootstrap.getClassLoader(),
-														bootstrap.getHealthCheckRegistry());
-
-		configuration.getMetricsFactory().configure(environment.lifecycle(),
-													bootstrap.getMetricRegistry());
-		configuration.getServerFactory().configure(environment);
-
-		bootstrap.run(configuration, environment);
-
-		ContainerLifeCycle lifeCycle = new ContainerLifeCycle();
-		try {
-			run(environment, namespace, configuration);
-			environment.lifecycle().attach(lifeCycle);
-			lifeCycle.start();
-
-			Runtime.getRuntime().addShutdownHook(new Thread() {
-				@Override
-				public void run() {
-					try {
-						lifeCycle.stop();
-					}
-					catch (Exception e) {
-						log.error("Interrupted during shutdown", e);
-					}
-				}
-			});
-		}
-		catch(Throwable t) {
-			log.error("Uncaught Exception in "+getName(), t);
-			lifeCycle.stop();
-			throw t;
-		}
-	}
-
-
 	protected void run(Environment environment, Namespace namespace, ConqueryConfig config) throws Exception {
-		this.config = Cloner.clone(config);
+		this.config = config;
 
+		// If we are a slave, we start our own server, for which we need a different server config.
 		// This allows us to have several Servlet definitions in the same config json while relying on ServerCommand for management.
-		this.config.setServerFactory(this.config.getSlaveServlet());
-
-		environment.jersey().setUrlPattern("slaves/*");
-
-		this.environment = environment;
+		if(isSlaveCommand(namespace)) {
+			this.config.setServerFactory(this.config.getSlaveServlet());
+		}
 
 		connector = new NioSocketConnector();
 
@@ -135,12 +132,12 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 		}
 
 		slaveServlet = new SlaveServlet();
-		slaveServlet.register(this); // TODO: 04.03.2020 save this
-
+		slaveServlet.register(this.getConfig(), environment, this.getWorkers()); // TODO: 04.03.2020 save this
 
 		scheduler.scheduleAtFixedRate(this::reportJobManagerStatus, 30, 1, TimeUnit.SECONDS);
 
 		File storageDir = config.getStorage().getDirectory();
+
 		for(File directory : storageDir.listFiles()) {
 			if(directory.getName().startsWith("worker_")) {
 				WorkerStorage workerStorage = WorkerStorage.tryLoad(validator, config.getStorage(), directory);
@@ -156,15 +153,21 @@ public class SlaveCommand extends ServerCommand<ConqueryConfig> implements IoHan
 			}
 		}
 
-		super.run(environment, namespace, this.config);
+		if(isSlaveCommand(namespace)) {
+			super.run(environment, namespace, this.config);
+		}
 	}
-	
+
+	private boolean isSlaveCommand(Namespace namespace) {
+		return namespace.getString("command").equalsIgnoreCase("slave");
+	}
+
 	@Override
 	public void messageReceived(IoSession session, Object message) throws Exception {
 		setLocation(session);
 		if(message instanceof SlaveMessage) {
 			SlaveMessage srm = (SlaveMessage) message;
-			log.trace("Slave recieved {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
+			log.trace("Slave received {} from {}", message.getClass().getSimpleName(), session.getRemoteAddress());
 			ReactingJob<SlaveMessage, NetworkMessageContext.Slave> job = new ReactingJob<>(srm, context);
 			
 			if(((Message)message).isSlowMessage()) {

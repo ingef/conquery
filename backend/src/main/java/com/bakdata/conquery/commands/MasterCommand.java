@@ -36,18 +36,22 @@ import com.bakdata.conquery.resources.admin.ShutdownTask;
 import com.bakdata.conquery.resources.unprotected.AuthServlet;
 import com.bakdata.conquery.tasks.QueryCleanupTask;
 import com.bakdata.conquery.util.io.ConqueryMDC;
+import io.dropwizard.Application;
+import io.dropwizard.cli.ServerCommand;
 import io.dropwizard.lifecycle.Managed;
 import io.dropwizard.setup.Environment;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.mina.core.service.IoAcceptor;
-import org.apache.mina.core.service.IoHandlerAdapter;
+import org.apache.mina.core.service.IoHandler;
+import org.apache.mina.core.session.IdleStatus;
 import org.apache.mina.core.session.IoSession;
+import org.apache.mina.filter.FilterEvent;
 import org.apache.mina.transport.socket.nio.NioSocketAcceptor;
 
 @Slf4j
 @Getter
-public class MasterCommand extends IoHandlerAdapter implements Managed {
+public class MasterCommand extends ServerCommand<ConqueryConfig> implements IoHandler, Managed {
 
 	private IoAcceptor acceptor;
 	private MasterMetaStorage storage;
@@ -63,7 +67,15 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	private Environment environment;
 	private List<ResourcesProvider> providers = new ArrayList<>();
 
-	public void run(ConqueryConfig config, Environment environment) {
+	public MasterCommand(Application<ConqueryConfig> application) {
+		super(application, "master", "the master server");
+	}
+
+	@Override
+	public void run(Environment environment, net.sourceforge.argparse4j.inf.Namespace namespace, ConqueryConfig configuration) {
+		this.config = configuration;
+
+
 		//inject namespaces into the objectmapper
 		((MutableInjectableValues)environment.getObjectMapper().getInjectableValues())
 			.add(NamespaceCollection.class, namespaces);
@@ -136,6 +148,20 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 		ShutdownTask shutdown = new ShutdownTask();
 		environment.admin().addTask(shutdown);
 		environment.lifecycle().addServerLifecycleListener(shutdown);
+
+
+		// Start server
+		try {
+			super.run(environment, namespace, configuration);
+		}
+		catch (Exception e) {
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void sessionCreated(IoSession session) throws Exception {
+
 	}
 
 	@Override
@@ -148,6 +174,11 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 	public void sessionClosed(IoSession session) throws Exception {
 		ConqueryMDC.setLocation("Master[" + session.getLocalAddress().toString() + "]");
 		log.info("Client '{}' disconnected ", session.getAttribute(MinaAttributes.IDENTIFIER));
+	}
+
+	@Override
+	public void sessionIdle(IoSession session, IdleStatus status) throws Exception {
+
 	}
 
 	@Override
@@ -178,6 +209,21 @@ public class MasterCommand extends IoHandlerAdapter implements Managed {
 			log.error("Unknown message type {} in {}", message.getClass(), message);
 			return;
 		}
+	}
+
+	@Override
+	public void messageSent(IoSession session, Object message) throws Exception {
+
+	}
+
+	@Override
+	public void inputClosed(IoSession session) throws Exception {
+
+	}
+
+	@Override
+	public void event(IoSession session, FilterEvent event) throws Exception {
+
 	}
 
 	@Override
